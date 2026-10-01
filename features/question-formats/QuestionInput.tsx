@@ -128,7 +128,10 @@ function MultipleChoiceInput({
   );
 }
 
-function TrueFalseInput({ locked, onSubmit }: QuestionInputProps<PracticeQuestionOfType<"true-false">>) {
+function TrueFalseInput({
+  locked,
+  onSubmit,
+}: QuestionInputProps<PracticeQuestionOfType<"true-false">>) {
   return <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />;
 }
 
@@ -586,7 +589,10 @@ function LocalEstimationInput({
   question,
   locked,
   onSubmit,
-}: Pick<QuestionInputProps<PracticeQuestionOfType<"estimation">>, "question" | "locked" | "onSubmit">) {
+}: Pick<
+  QuestionInputProps<PracticeQuestionOfType<"estimation">>,
+  "question" | "locked" | "onSubmit"
+>) {
   const [value, setValue] = useState(question.initialValue);
 
   return (

@@ -28,7 +28,10 @@ export function BackLink({ label, className, ...props }: BackLinkProps) {
   );
 }
 
-export type BackButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "aria-label" | "children"> &
+export type BackButtonProps = Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  "aria-label" | "children"
+> &
   BackControlLabelProps;
 
 export function BackButton({ label, className, type = "button", ...props }: BackButtonProps) {

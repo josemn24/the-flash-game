@@ -20,7 +20,14 @@ export async function testConcurrentCommands(sql) {
   await sql(
     `begin; ${await readFile("supabase/tests/support/command-fixtures.sql", "utf8")} commit;`,
   );
-  async function invoke(actor, command, input, hold = false, role = "service_role", schema = "private") {
+  async function invoke(
+    actor,
+    command,
+    input,
+    hold = false,
+    role = "service_role",
+    schema = "private",
+  ) {
     const marker = `flash_concurrency_${randomUUID().replaceAll("-", "")}`;
     const operation =
       sql(`begin; set local application_name = ${quote(marker)}; set local role ${role};
@@ -86,7 +93,11 @@ export async function testConcurrentCommands(sql) {
   );
   requireOneConflict(seasonActivations, "Only one concurrent season activation succeeds");
   assert.equal(
-    (await sql(`select count(*) from public.seasons where room_id=${quote(seasonRaceRoom)} and status='active';`)).trim(),
+    (
+      await sql(
+        `select count(*) from public.seasons where room_id=${quote(seasonRaceRoom)} and status='active';`,
+      )
+    ).trim(),
     "1",
     "Concurrent season activation leaves exactly one active season",
   );
@@ -127,7 +138,9 @@ export async function testConcurrentCommands(sql) {
       (${quote(editorialItemTwo)}, ${quote(editorialVersion)}, ${quote(editorialQuestionVersionTwo)}, 2, 50, 1, '{}'::jsonb);
     commit;`);
   const editorialUpdatedAt = (
-    await sql(`select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`)
+    await sql(
+      `select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`,
+    )
   ).trim();
   const editorialDocument = (title) => ({
     challenge: {
@@ -201,7 +214,9 @@ export async function testConcurrentCommands(sql) {
       join private.question_versions version on version.id = item.question_version_id
       where item.challenge_version_id=${quote(editorialVersion)}
       order by item.position;`)
-  ).trim().split("\n");
+  )
+    .trim()
+    .split("\n");
   for (const [index, currentQuestion] of currentEditorialQuestions.entries()) {
     const [questionVersionId, questionUpdatedAt] = currentQuestion.split("|");
     await sql(`begin;
@@ -220,7 +235,9 @@ export async function testConcurrentCommands(sql) {
   ).trim();
   assert.equal(publishedBeforeRace, "draft", "A concurrent edit leaves the draft unpublished");
   const editorialPublishUpdatedAt = (
-    await sql(`select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`)
+    await sql(
+      `select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`,
+    )
   ).trim();
   const editorialPublications = await race(
     "superadmin",
@@ -242,7 +259,11 @@ export async function testConcurrentCommands(sql) {
   );
   requireOneConflict(editorialPublications, "Only one concurrent editorial publication succeeds");
   assert.equal(
-    (await sql(`select count(*) from private.challenge_versions where id=${quote(editorialVersion)} and status='published';`)).trim(),
+    (
+      await sql(
+        `select count(*) from private.challenge_versions where id=${quote(editorialVersion)} and status='published';`,
+      )
+    ).trim(),
     "1",
     "Concurrent editorial publication leaves one published version",
   );

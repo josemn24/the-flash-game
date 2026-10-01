@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ readPrivateHealth: vi.fn() }));
-vi.mock("@/infrastructure/supabase/platform/health", () => ({ readPrivateHealth: mocks.readPrivateHealth }));
+vi.mock("@/infrastructure/supabase/platform/health", () => ({
+  readPrivateHealth: mocks.readPrivateHealth,
+}));
 
 import { GET } from "./route";
 

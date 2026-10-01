@@ -59,12 +59,24 @@ async function transaction<T>(authUserId: string, run: (client: PoolClient) => P
 
 async function call<T>(authUserId: string, name: string, input: object) {
   return transaction(authUserId, async (client) => {
-    const result = await client.query<{ result: T }>(`select private.${name}($1::jsonb) as result`, [JSON.stringify(input)]);
+    const result = await client.query<{ result: T }>(
+      `select private.${name}($1::jsonb) as result`,
+      [JSON.stringify(input)],
+    );
     return result.rows[0]?.result as T;
   });
 }
 
-export function prepareAvatarAsset(authUserId: string, input: { assetId: string; objectPath: string; mimeType: string; byteSize: number; idempotencyKey: string }) {
+export function prepareAvatarAsset(
+  authUserId: string,
+  input: {
+    assetId: string;
+    objectPath: string;
+    mimeType: string;
+    byteSize: number;
+    idempotencyKey: string;
+  },
+) {
   return call<AvatarAssetRecord>(authUserId, "prepare_avatar_upload_command", input);
 }
 
@@ -100,7 +112,10 @@ export function archiveQuestionAsset(authUserId: string, input: object) {
   return call<QuestionAssetRecord>(authUserId, "archive_question_asset_command", input);
 }
 
-export function readCompetitiveQuestionAsset(authUserId: string, input: { attemptId: string; assetId: string }) {
+export function readCompetitiveQuestionAsset(
+  authUserId: string,
+  input: { attemptId: string; assetId: string },
+) {
   return call<QuestionAssetRecord>(authUserId, "read_competitive_question_asset", input);
 }
 

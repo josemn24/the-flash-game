@@ -17,24 +17,25 @@ S14 limita el editor de Supervivencia a formatos con evaluación server-side.
 
 ## Runtime scope
 
-El servidor lee `FLASH_RUNTIME_SCOPE`:
+El servidor lee `FLASH_RUNTIME_SCOPE` para aplicar controles operativos y de origen; no selecciona
+la composición de datos:
 
-- `pilot`: solo rutas persistidas; cualquier fallo de Auth, PostgREST o PostgreSQL termina en un
-  error recuperable, `404` autorizado o `503`. No hay fallback a fixtures.
-- `development`: permite las rutas explícitas de práctica, preview y demo.
+- `pilot`: cualquier fallo de Auth, PostgREST o PostgreSQL termina en un error recuperable, `404`
+  autorizado o `503`. No hay fallback a fixtures.
+- `development`: conserva los controles locales y permite verificar las pruebas de la aplicación.
 - `test`: permite verificar contratos mock aislados y pruebas de UI.
 
 Un build con `NODE_ENV=production` usa `pilot` si la variable no está definida. Un valor desconocido
 falla al arrancar la composición server-only.
 
-| Superficie                                  | Pilot                                                                                             | Development/Test                           |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                          | Supabase; mocks solo en aliases explícitos |
-| `/desafios/[challengeId]?roomId=<UUID>`     | Supabase; Flash, Supervivencia y Pirámide admiten los formatos con evaluación competitiva migrada | Supabase                                   |
-| `/desafios/[challengeId]` sin sala          | 404                                                                                               | Preview mock explícito                     |
-| aliases como `tabarnia-room`                | 404                                                                                               | Demo mock                                  |
-| `/formatos`, `/flash-pop/**`                | Demo/práctica                                                                                     | Demo/práctica                              |
-| `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                           | Supabase + autorización                    |
+| Superficie                                  | Pilot                                                                                             | Development/Test             |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                          | Supabase                     |
+| `/desafios/[challengeId]?roomId=<slug>`     | Supabase; Flash, Supervivencia y Pirámide admiten los formatos con evaluación competitiva migrada | Supabase                     |
+| `/desafios/[challengeId]` sin sala          | 404                                                                                               | 404                          |
+| aliases como `tabarnia-room`                | Supabase; 404 si no existe como sala persistida                                                   | Supabase; nunca fixture mock |
+| `/formatos`, `/flash-pop/**`                | Demo/práctica                                                                                     | Demo/práctica                |
+| `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                           | Supabase + autorización      |
 
 ## Contrato HTTP
 

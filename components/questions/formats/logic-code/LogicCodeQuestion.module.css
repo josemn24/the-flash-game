@@ -1,5 +1,4 @@
 @layer app-formats {
-
   .clues {
     display: grid;
     gap: 0.45rem;

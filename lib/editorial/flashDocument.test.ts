@@ -181,15 +181,17 @@ describe("Flash editorial document", () => {
       },
     })) as unknown as TestQuestion[];
 
-    expect(() => parseFlashEditorialDocument({ ...document, questions: document.questions.slice(0, 6) }))
-      .toThrow("exactamente siete niveles");
+    expect(() =>
+      parseFlashEditorialDocument({ ...document, questions: document.questions.slice(0, 6) }),
+    ).toThrow("exactamente siete niveles");
     const duplicate = structuredClone(document);
     (duplicate.questions[6] as unknown as { modeConfig: { levelId: string } }).modeConfig.levelId =
       "level-1";
     expect(() => parseFlashEditorialDocument(duplicate)).toThrow("válidos y únicos");
     const invalidBriefing = structuredClone(document);
-    (invalidBriefing.questions[0] as unknown as { modeConfig: { briefing: unknown } }).modeConfig.briefing =
-      { title: "", format: "", description: "" };
+    (
+      invalidBriefing.questions[0] as unknown as { modeConfig: { briefing: unknown } }
+    ).modeConfig.briefing = { title: "", format: "", description: "" };
     expect(() => parseFlashEditorialDocument(invalidBriefing)).toThrow("válidos y únicos");
   });
 

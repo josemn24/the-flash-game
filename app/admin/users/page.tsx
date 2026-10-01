@@ -6,7 +6,7 @@ import {
 } from "@/application/administration/errors";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { SuperadminUserCreation } from "@/components/admin/SuperadminUserCreation.client";
-import { getSuperadminOperatorPageModel } from "@/server/data-access";
+import { getSuperadminOperatorPageModel } from "@/server/production-data-access";
 
 export const dynamic = "force-dynamic";
 

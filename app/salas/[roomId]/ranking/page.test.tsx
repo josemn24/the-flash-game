@@ -1,12 +1,22 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { FlashPopRoomRanking } from "@/components/game/modes/flash-pop/FlashPopRoomRanking";
 import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+
+const mocks = vi.hoisted(() => ({
+  getRoomRankingPageModel: vi.fn(),
+}));
+
+vi.mock("@/server/production-data-access", () => mocks);
+
 import { dynamic, generateMetadata } from "./page";
 
 describe("room ranking route", () => {
   it("exposes Tabarnia and renders accumulated points", async () => {
     expect(dynamic).toBe("force-dynamic");
+    mocks.getRoomRankingPageModel.mockResolvedValue(
+      await mockRoomQueries.getRanking("tabarnia-room", mockQueryContext()),
+    );
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({

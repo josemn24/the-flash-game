@@ -173,9 +173,7 @@ function toResult(rows: AlphabetResultRow[]): RoomChallengeResult {
 }
 
 export class SupabaseAlphabetQueries {
-  constructor(
-    private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader,
-  ) {}
+  constructor(private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader) {}
 
   async getPlayable(roomKey: string, publicationId: string) {
     const viewer = await this.currentViewer.getCurrentViewer();

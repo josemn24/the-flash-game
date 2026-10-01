@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopLobby } from "@/components/game";
-import { getFlashPopLobbyPageModel } from "@/server/data-access";
+import { getFlashPopLobbyPageModel } from "@/server/demo-data-access";
 
 export const metadata: Metadata = {
   title: "The Flash — Lobby",

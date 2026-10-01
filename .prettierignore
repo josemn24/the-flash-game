@@ -9,6 +9,7 @@ node_modules/
 out/
 build/
 coverage/
+supabase/.temp/
 
 # Generated files
 next-env.d.ts

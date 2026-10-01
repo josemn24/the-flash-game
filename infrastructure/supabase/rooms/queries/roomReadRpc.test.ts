@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { callHistoryRead } from "./roomReadRpc";
+import { isRoomHistoryReadRow } from "./roomReadGuards";
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
@@ -29,7 +30,7 @@ describe("room read RPC transport", () => {
     await callHistoryRead(
       "get_room_history",
       { target_room_slug: "room-key" },
-      (_value: unknown): _value is unknown => true,
+      isRoomHistoryReadRow,
       expiration,
     );
 

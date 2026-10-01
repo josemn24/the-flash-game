@@ -32,7 +32,9 @@ function cell(board: Locator, row: number, column: number) {
 }
 
 test.describe("E06 — Word-search competitivo", () => {
-  test("persiste errores, oculta soluciones y recupera selecciones idempotentes", async ({ page }) => {
+  test("persiste errores, oculta soluciones y recupera selecciones idempotentes", async ({
+    page,
+  }) => {
     test.setTimeout(90_000);
     const data = await fixture();
     await openFlash(page, data.users.alice);
@@ -83,7 +85,9 @@ test.describe("E06 — Word-search competitivo", () => {
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").filter({ hasText: "Sopa" }).locator("summary").click();
-    await expect(page.getByText("Las palabras se encuentran en la primera y segunda fila.")).toBeVisible();
+    await expect(
+      page.getByText("Las palabras se encuentran en la primera y segunda fila."),
+    ).toBeVisible();
   });
 
   test("el spectator no puede iniciar el Flash E06", async ({ page }) => {

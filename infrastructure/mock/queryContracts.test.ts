@@ -139,19 +139,21 @@ describe("MockRoomQueries contract", () => {
     const pyramidScheduleId = scheduledChallengeRouteAliases["tabarnia-challenge-05"];
     const pyramidItemIds = new Set(
       mockDomainStore.challengeItems
-        .filter((item) => item.challengeVersionId === mockDomainStore.scheduledChallenges.find(({ id }) => id === pyramidScheduleId)?.challengeVersionId)
+        .filter(
+          (item) =>
+            item.challengeVersionId ===
+            mockDomainStore.scheduledChallenges.find(({ id }) => id === pyramidScheduleId)
+              ?.challengeVersionId,
+        )
         .filter((item) => item.position > 2)
         .map(({ id }) => id),
     );
     const partialAnswers = mockDomainStore.attemptAnswers.filter(
       (answer) => !pyramidItemIds.has(answer.challengeItemId),
     );
-    const model = await new MockRoomQueries(withStore({ attemptAnswers: partialAnswers })).getMemberDetail(
-      "tabarnia-room",
-      "ches",
-      ownerContext,
-      "tabarnia-challenge-05",
-    );
+    const model = await new MockRoomQueries(
+      withStore({ attemptAnswers: partialAnswers }),
+    ).getMemberDetail("tabarnia-room", "ches", ownerContext, "tabarnia-challenge-05");
 
     expect(model?.reviewItems).toHaveLength(7);
     expect(model?.reviewItems.filter(({ status }) => status === "locked")).toHaveLength(5);

@@ -244,9 +244,7 @@ export class SupabaseAttemptCommands implements Pick<
     );
   }
 
-  submitWordSearchSelection(
-    input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0],
-  ) {
+  submitWordSearchSelection(input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0]) {
     return callAttemptCommand<SubmitWordSearchSelectionResult>(
       this.identity,
       "submit_word_search_selection",

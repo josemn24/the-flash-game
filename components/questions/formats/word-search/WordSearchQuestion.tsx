@@ -3,11 +3,7 @@
 import type { CSSProperties, KeyboardEvent, PointerEvent as ReactPointerEvent } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckIcon } from "@/components/ui";
-import {
-  findWordSearchTarget,
-  getWordSearchPath,
-  normalizeWordSearchText,
-} from "@/lib/wordSearch";
+import { findWordSearchTarget, getWordSearchPath, normalizeWordSearchText } from "@/lib/wordSearch";
 import type {
   WordSearchAnswer,
   WordSearchQuestion as WordSearchQuestionType,
@@ -15,11 +11,23 @@ import type {
 import styles from "./WordSearchQuestion.module.css";
 
 type BoardProps = {
-  question: { readonly grid: WordSearchQuestionType["grid"]; readonly letters: readonly string[] } & {
-    targets: readonly { readonly id: string; readonly word: string; readonly startCell?: number; readonly endCell?: number }[];
+  question: {
+    readonly grid: WordSearchQuestionType["grid"];
+    readonly letters: readonly string[];
+  } & {
+    targets: readonly {
+      readonly id: string;
+      readonly word: string;
+      readonly startCell?: number;
+      readonly endCell?: number;
+    }[];
   };
   foundWordIds: readonly string[];
-  foundSelections?: readonly { readonly targetId: string; readonly startCell: number; readonly endCell: number }[];
+  foundSelections?: readonly {
+    readonly targetId: string;
+    readonly startCell: number;
+    readonly endCell: number;
+  }[];
   previewCells?: number[];
   invalidCells?: number[];
   revealSolution?: boolean;
@@ -39,12 +47,18 @@ function cellsForTargets(
   targetIds: Set<string>,
   foundSelections?: BoardProps["foundSelections"],
 ) {
-  const selections = new Map((foundSelections ?? []).map((selection) => [selection.targetId, selection]));
+  const selections = new Map(
+    (foundSelections ?? []).map((selection) => [selection.targetId, selection]),
+  );
   return new Set(
     question.targets.flatMap((target) =>
       targetIds.has(target.id)
         ? selections.has(target.id)
-          ? (getWordSearchPath(question.grid, selections.get(target.id)!.startCell, selections.get(target.id)!.endCell) ?? [])
+          ? (getWordSearchPath(
+              question.grid,
+              selections.get(target.id)!.startCell,
+              selections.get(target.id)!.endCell,
+            ) ?? [])
           : target.startCell !== undefined && target.endCell !== undefined
             ? (getWordSearchPath(question.grid, target.startCell, target.endCell) ?? [])
             : []
@@ -71,7 +85,10 @@ export function WordSearchBoard({
   onPointerUp,
 }: BoardProps) {
   const foundIds = useMemo(() => new Set(foundWordIds), [foundWordIds]);
-  const foundCells = useMemo(() => cellsForTargets(question, foundIds, foundSelections), [foundIds, foundSelections, question]);
+  const foundCells = useMemo(
+    () => cellsForTargets(question, foundIds, foundSelections),
+    [foundIds, foundSelections, question],
+  );
   const missingIds = useMemo(
     () =>
       new Set(
@@ -351,10 +368,7 @@ export function WordSearchQuestion({
   };
 
   return (
-    <section
-      className={`${styles.root} ${className ?? ""}`}
-      aria-label="Sopa de letras"
-    >
+    <section className={`${styles.root} ${className ?? ""}`} aria-label="Sopa de letras">
       <div className={styles.header}>
         <span>Palabras</span>
         <strong>

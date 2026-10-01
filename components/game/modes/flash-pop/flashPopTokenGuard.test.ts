@@ -54,9 +54,7 @@ describe("product design-system boundaries", () => {
       new RegExp(
         "\\bPop(?:Avatar|Button|ButtonLink|Chip|Card|Canvas|IconButton|Timer|TimerDisplay|GameHeader)\\b|" +
           ["legacy", "Compat", "Format"].join(""),
-      ).test(
-        readFileSync(path, "utf8"),
-      ),
+      ).test(readFileSync(path, "utf8")),
     );
     const forbiddenThemeFiles = productFiles.filter((path) =>
       new RegExp(
@@ -68,9 +66,7 @@ describe("product design-system boundaries", () => {
           ["Question", "Variant"].join(""),
           ["legacy", "Compat", "Format"].join(""),
         ].join("|"),
-      ).test(
-        readFileSync(path, "utf8"),
-      ),
+      ).test(readFileSync(path, "utf8")),
     );
 
     expect(forbiddenImportFiles).toEqual([]);

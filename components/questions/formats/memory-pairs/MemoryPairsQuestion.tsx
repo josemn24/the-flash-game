@@ -90,10 +90,7 @@ export function MemoryPairsQuestion({
   };
 
   return (
-    <section
-      className={styles.root}
-      aria-label="Memoria de parejas"
-    >
+    <section className={styles.root} aria-label="Memoria de parejas">
       <div className={styles.header}>
         <span>Encuentra las parejas</span>
         <strong>

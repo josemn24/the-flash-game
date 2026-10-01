@@ -91,9 +91,9 @@ export function isValidEscapePublicConfiguration(configuration: EscapeQuestionCo
 
   return Boolean(
     target &&
-      target.orientation === "horizontal" &&
-      target.row === configuration.grid.exit.row &&
-      !isEscapeSolved(configuration, configuration.initialBlocks),
+    target.orientation === "horizontal" &&
+    target.row === configuration.grid.exit.row &&
+    !isEscapeSolved(configuration, configuration.initialBlocks),
   );
 }
 

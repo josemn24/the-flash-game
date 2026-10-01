@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from "react";
 import { CheckIcon, ClockIcon, CrossIcon } from "@/components/ui";
-import { calculateResultAccuracy, getAnswerResultAccuracyUnit } from "@/features/game/resultSummary";
+import {
+  calculateResultAccuracy,
+  getAnswerResultAccuracyUnit,
+} from "@/features/game/resultSummary";
 import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
 import type { PracticeChallenge } from "@/types/gameplay/practice";
 import {
@@ -43,7 +46,8 @@ export function CompetitiveResultScreen({
     const incorrect = results.filter(({ status }) => status === "incorrect").length;
     const unanswered = results.filter(({ status }) => status === "unanswered").length;
     const accuracy = calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit));
-    const title = accuracy >= 80 ? "Sprint brutal." : accuracy >= 50 ? "Buen ritmo." : "Desafío superado.";
+    const title =
+      accuracy >= 80 ? "Sprint brutal." : accuracy >= 50 ? "Buen ritmo." : "Desafío superado.";
 
     return {
       gameTitle: challenge.title,
@@ -59,7 +63,14 @@ export function CompetitiveResultScreen({
       metrics: [
         { label: "Correctas", value: correct, icon: <CheckIcon />, tone: "success" },
         ...(partial > 0
-          ? [{ label: "Aproximadas", value: partial, icon: <span>≈</span>, tone: "social" as const }]
+          ? [
+              {
+                label: "Aproximadas",
+                value: partial,
+                icon: <span>≈</span>,
+                tone: "social" as const,
+              },
+            ]
           : []),
         { label: "Falladas", value: incorrect, icon: <CrossIcon />, tone: "danger" },
         { label: "Sin contestar", value: unanswered, icon: <ClockIcon /> },
@@ -69,11 +80,7 @@ export function CompetitiveResultScreen({
 
   if (showReview) {
     return (
-      <ReviewAnswers
-        challenge={challenge}
-        results={results}
-        onBack={() => setShowReview(false)}
-      />
+      <ReviewAnswers challenge={challenge} results={results} onBack={() => setShowReview(false)} />
     );
   }
 

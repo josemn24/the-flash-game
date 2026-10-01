@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-09-29.
+Última actualización documental: 2026-09-30.
 
 # Estado actual del proyecto
 
@@ -128,8 +128,8 @@ rutas competitivas. Consulta
   concurrencia optimista, y vuelven al detalle de la sala con avisos contextuales. `/admin/questions`
   conserva su biblioteca funcional dentro del shell común; `/admin/questions/new` y
   `/admin/questions/[questionVersionId]` también usan ese shell con breadcrumbs coherentes.
-- Recorridos mock para ajustes, práctica, previews y modos distintos de Flash, únicamente en scope
-  `development`/`test` o bajo rutas demo explícitas.
+- Recorrido mock server-side únicamente bajo la ruta demo explícita `/flash-pop`; `/formatos` mantiene
+  su práctica local y las rutas de salas, desafíos y administración usan siempre Supabase.
 
 ### Modelo operativo de la beta cerrada
 
@@ -148,12 +148,12 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 | Ruta                                                                | Estado                                                                                                                               |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `/`                                                                 | Perfil y tarjetas de salas reales cuando hay sesión; práctica/demo mock en el resto.                                                 |
-| `/salas/[roomId]`                                                   | Detalle de sala real con calendario temporal para salas persistidas; no cae silenciosamente al mock.                                 |
+| `/`                                                                 | Perfil y tarjetas de salas reales cuando hay sesión; `AuthPanel` sin sesión.                                                         |
+| `/salas/[roomId]`                                                   | Detalle de sala real con calendario temporal para salas persistidas; no acepta aliases mock ni cae silenciosamente al mock.          |
 | `/salas/[roomId]/ranking`                                           | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                                           |
 | `/salas/[roomId]/historial`                                         | Historial real de Flash, Supervivencia y Pirámide para salas persistidas.                                                            |
 | `/salas/[roomId]/historial/[challengeId]`                           | Ranking histórico por publicación; 404 si no es accesible o no está consolidada.                                                     |
-| `/salas/[roomId]/historial/[challengeId]/[memberId]`                | Revisión histórica de Flash, Supervivencia y Pirámide; sin acceso para spectators.                                                  |
+| `/salas/[roomId]/historial/[challengeId]/[memberId]`                | Revisión histórica de Flash, Supervivencia y Pirámide; sin acceso para spectators.                                                   |
 | `/salas/[roomId]/ajustes`                                           | Ajustes reales parciales: el owner puede conceder/quitar admin y eliminar lógicamente miembros; otras operaciones siguen pendientes. |
 | `/admin`                                                            | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.                              |
 | `/admin/rooms`                                                      | Gestión protegida de salas activas y creación de salas.                                                                              |
@@ -204,23 +204,24 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   `test`/`invalidated` y publicaciones `cancelled` quedan fuera de la proyección histórica.
 - S17 y S20 ya permiten corrección administrativa local; la aplicación de la migración y la validación de
   estas RPC contra un proyecto Supabase remoto siguen pendientes.
-- Las rutas de práctica y preview pueden recibir soluciones y calcular localmente: no deben
-  confundirse con el recorrido competitivo migrado.
+- `/flash-pop` puede recibir soluciones y calcular localmente como demo explícita: no debe confundirse
+  con el recorrido competitivo migrado.
 
 ## Verificación actual
 
-Estado verificado a 2026-09-29:
+Estado verificado a 2026-09-30:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
   `20260929210000_remove_legacy_flash_history_wrappers`.
 - `npm run docs:check`: correcto; los enlaces de la documentación vigente pasan.
 - `npm run typecheck`: correcto.
 - `npm run type-architecture`: correcto.
-- `npm run lint`: correcto.
-- `npm run build`: correcto con Next.js 16.2.10.
-- `npm test`: 145 archivos y 840 tests correctos.
-- `npm run format:check`: informa 156 archivos sin formato canónico.
-- `npm run stylelint`: informa 6 errores de selectores duplicados en 5 módulos CSS.
+- `npm run lint`: correcto, con `--max-warnings=0`.
+- `npm run build`: correcto con Next.js 16.2.10 en un checkout aislado del workspace; el checkout
+  principal tenía un proceso Next activo manteniendo `.next/lock`.
+- `npm test`: 158 archivos y 928 tests correctos.
+- `npm run format:check`: correcto; `supabase/.temp/` queda excluido por ser salida generada de la CLI.
+- `npm run stylelint`: correcto; no informa errores.
 - `npm run test:pwa:worker` y `npm run dictionary:check`: correctos.
 - `npm run supabase:schema:test`: correcto; 54 esquemas declarativos, inventario de seguridad,
   expiración por inactividad y carreras de comandos pasan contra Supabase local.

@@ -1,4 +1,4 @@
-> Estado: vigente. Fotografía de las comprobaciones automatizadas del repositorio a 2026-09-29;
+> Estado: vigente. Fotografía de las comprobaciones automatizadas del repositorio a 2026-09-30;
 > no sustituye una auditoría manual de accesibilidad o interacción.
 
 # QA actual
@@ -27,12 +27,13 @@ de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
 - `npm run docs:check`: correcto; 65 archivos Markdown comprobados.
 - `npm run typecheck`: correcto.
 - `npm run type-architecture`: correcto.
-- `npm run lint`: correcto.
-- `npm run build`: correcto con Next.js 16.2.10.
-- `npm test`: 145 archivos y 840 tests correctos.
-- `npm run format:check`: informa 156 archivos sin formato canónico; queda pendiente como deuda de
-  formato y no bloquea la verificación funcional.
-- `npm run stylelint`: informa 6 errores de selectores duplicados en 5 módulos CSS.
+- `npm run lint`: correcto, con `--max-warnings=0`.
+- `npm run build`: correcto con Next.js 16.2.10 en un checkout aislado; el workspace principal tenía
+  un proceso Next activo manteniendo `.next/lock`.
+- `npm test`: 158 archivos y 928 tests correctos.
+- `npm run format:check`: correcto; `supabase/.temp/` queda excluido por ser salida generada de la
+  CLI.
+- `npm run stylelint`: correcto; no informa errores.
 - `npm run test:pwa:worker`: correcto; el service worker es JavaScript válido.
 - `npm run dictionary:check`: correcto; los diccionarios de 4 y 5 letras están actualizados.
 - `npm run supabase:schema:test`: correcto; 54 archivos declarativos, inventario de seguridad y la
@@ -63,15 +64,11 @@ No se debe interpretar la existencia de un test focal histórico como validació
 
 - La CLI local tiene staging vinculado, pero no se ha aplicado ni validado S17 en ese proyecto remoto.
 - La validación E2E persistida es local y reproducible; no cubre staging o producción.
-- Prettier mantiene 156 archivos sin formato canónico.
-- El gate global de Vitest pasa con 840 tests; la suite SQL también pasa con Supabase local.
-- ESLint no presenta errores; mantiene una advertencia preexistente de dependencia de hook en
-  `features/game/useServerFlashSession.ts`.
-- Stylelint informa seis selectores duplicados en
-  `app/flash-pop-concepts/FlashPopConcepts.module.css`, `components/auth/AuthPanel.module.css`,
-  `components/game/shared/ChallengeIntro.module.css`,
-  `components/game/modes/alphabet/AlphabetGameApp.module.css` y
-  `components/game/modes/flash-pop/RoomLeaderboard.module.css`.
+- Prettier no informa archivos pendientes; la salida generada de `supabase/.temp/` está excluida.
+- El gate global de Vitest pasa con 928 tests; la suite SQL también pasa con Supabase local.
+- ESLint y Stylelint no presentan errores ni warnings.
+- El build se verificó en un checkout aislado porque el workspace principal mantiene un proceso Next
+  activo sobre `.next/lock`.
 - La integración Supabase y los E2E persistidos no forman parte de esta fotografía; la validación
   remota/staging sigue pendiente.
 - No existe una ronda manual exhaustiva vigente para todos los formatos, viewports, VoiceOver y

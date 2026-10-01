@@ -15,10 +15,7 @@ export function FlashPopRoomRanking({
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <BackLink
-          href={`/salas/${roomId}`}
-          label="Volver al detalle de la sala"
-        />
+        <BackLink href={`/salas/${roomId}`} label="Volver al detalle de la sala" />
       </header>
 
       <RoomLeaderboard

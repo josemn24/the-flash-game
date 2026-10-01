@@ -1,6 +1,4 @@
-import type {
-  ChallengeCompletion,
-} from "@/types/gameplay";
+import type { ChallengeCompletion } from "@/types/gameplay";
 import type {
   RoomDailyLeaderboardEntry,
   RoomDetailModel,

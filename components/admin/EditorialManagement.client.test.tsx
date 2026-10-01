@@ -1,6 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { FlashEditorialDocument, SuperadminEditorialContext } from "@/types/view-models/editorial";
+import type {
+  FlashEditorialDocument,
+  SuperadminEditorialContext,
+} from "@/types/view-models/editorial";
 import { EditorialManagement } from "./EditorialManagement.client";
 
 const document: FlashEditorialDocument = {
@@ -102,7 +105,12 @@ describe("EditorialManagement", () => {
       source: "supabase",
     };
     const markup = renderToStaticMarkup(
-      <EditorialManagement context={context} canCreate={false} allowNewDraft={false} title="Flash beta" />,
+      <EditorialManagement
+        context={context}
+        canCreate={false}
+        allowNewDraft={false}
+        title="Flash beta"
+      />,
     );
 
     expect(markup).toContain("Flash beta");

@@ -1,12 +1,22 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { FlashPopRoomSettings } from "@/components/game/modes/flash-pop/FlashPopRoomSettings";
 import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+
+const mocks = vi.hoisted(() => ({
+  getRoomSettingsPageModel: vi.fn(),
+}));
+
+vi.mock("@/server/production-data-access", () => mocks);
+
 import RoomSettingsPage, { dynamic, generateMetadata } from "./page";
 
 describe("room settings route", () => {
   it("exposes Tabarnia and its settings view", async () => {
     expect(dynamic).toBe("force-dynamic");
+    mocks.getRoomSettingsPageModel.mockResolvedValue(
+      await mockRoomQueries.getSettings("tabarnia-room", mockQueryContext()),
+    );
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({
@@ -23,6 +33,9 @@ describe("room settings route", () => {
   });
 
   it("renders the full route through the data-access boundary", async () => {
+    mocks.getRoomSettingsPageModel.mockResolvedValue(
+      await mockRoomQueries.getSettings("tabarnia-room", mockQueryContext()),
+    );
     const element = await RoomSettingsPage({
       params: Promise.resolve({ roomId: "tabarnia-room" }),
     });

@@ -1,5 +1,4 @@
 @layer app-formats {
-
   .header {
     display: flex;
     width: min(100%, 31rem);

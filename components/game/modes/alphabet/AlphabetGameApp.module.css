@@ -1,5 +1,4 @@
 @layer app-formats {
-
   .screen {
     position: relative;
     z-index: 1;
@@ -776,7 +775,6 @@
       width: 1rem;
       height: 1rem;
     }
-
   }
 
   /* Alphabet is a product mode, so its shell consumes the global Flash Pop theme. */
@@ -824,10 +822,10 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     border-color: var(--color-border);
   }
-  .headerChallengeLink {
+  .shell .headerChallengeLink {
     color: var(--color-ink-muted);
   }
-  .headerChallengeLink:hover {
+  .shell .headerChallengeLink:hover {
     color: var(--color-ink);
   }
   .headerMark {

@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  type CSSProperties,
-  type FormEvent,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { type CSSProperties, type FormEvent, useEffect, useId, useRef, useState } from "react";
 import { MotionButton } from "@/components/ui";
 import { ServerOperationStatus } from "@/components/questions/shared";
 import type { ServerMiniWordleProgress } from "@/types/gameplay/challenge";

@@ -6,11 +6,7 @@ import type { RoomMemberDetailQueries } from "@/application/queries";
 import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
 import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/assets/privateQuestionAssetResolver";
 import { createClient } from "@/lib/supabase/server";
-import type {
-  RoomDailyLeaderboardEntry,
-  RoomHistoryDetailModel,
-  RoomMemberDetailModel,
-} from "@/types/view-models";
+import type { RoomDailyLeaderboardEntry, RoomMemberDetailModel } from "@/types/view-models";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
 import type { AttemptExpirationQueries } from "@/infrastructure/supabase/attempts/attemptExpiration";
 import type { RoomHistoryReadRow, RoomReadRow } from "./roomReadContracts";

@@ -20,7 +20,6 @@ import type {
   ZipQuestion,
 } from "@/types/gameplay/practice";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
-import { isValidTimeZone } from "@/lib/zonedDateTime";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
 import {
   isValidEstimationAnswer,

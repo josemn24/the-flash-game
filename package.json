@@ -33,7 +33,7 @@
     "type-architecture": "node scripts/check-type-architecture.mjs",
     "supabase:types": "node scripts/generate-supabase-types.mjs",
     "supabase:types:check": "node scripts/generate-supabase-types.mjs --check",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings=0",
     "stylelint": "stylelint \"**/*.{css,module.css}\"",
     "style-architecture": "node scripts/check-style-architecture.mjs",
     "format": "prettier --write .",

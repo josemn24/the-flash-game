@@ -56,11 +56,7 @@ export function ChallengeIntro({
       exit={{ opacity: 0, y: -18 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
     >
-      <GameHeader
-        left={
-          <BackLink href={returnTo} label="Volver a desafíos" />
-        }
-      />
+      <GameHeader left={<BackLink href={returnTo} label="Volver a desafíos" />} />
 
       <div className={styles.content}>
         <section className={styles.stageCard} aria-labelledby="challenge-intro-title">

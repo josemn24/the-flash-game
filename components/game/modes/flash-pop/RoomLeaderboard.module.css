@@ -99,9 +99,6 @@
   .playerCard.selected {
     border-color: var(--color-social);
     background: var(--color-surface-soft);
-  }
-
-  .playerCard.selected {
     box-shadow:
       0 0 0 2px var(--color-social),
       var(--shadow-control);

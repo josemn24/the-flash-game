@@ -47,8 +47,8 @@ export const scenario = {
           },
           solutionPayload: {
             solution: [
-              0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22,
-              23, 24,
+              0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23,
+              24,
             ],
             explanation: "El camino serpentea por las cinco filas.",
           },
@@ -62,7 +62,10 @@ export const scenario = {
         reason: "F16",
       },
     });
-    assert(!created.error && created.data?.questionCount === 2, "El portal crea un Flash editorial F16");
+    assert(
+      !created.error && created.data?.questionCount === 2,
+      "El portal crea un Flash editorial F16",
+    );
 
     const context = await clients.superadmin.rpc("get_superadmin_editorial_context");
     const draft = context.data?.entries?.find(
@@ -89,7 +92,10 @@ export const scenario = {
         reason: "Publicar F16",
       },
     });
-    assert(!published.error && published.data?.status === "published", "El portal publica el Flash F16");
+    assert(
+      !published.error && published.data?.status === "published",
+      "El portal publica el Flash F16",
+    );
 
     const playable = await rpc(clients.alice, "get_my_flash_challenge", {
       target_room_slug: fixture.data.room.slug,

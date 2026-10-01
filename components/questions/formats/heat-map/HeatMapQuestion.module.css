@@ -1,5 +1,4 @@
 @layer app-formats {
-
   .surface img {
     object-fit: contain;
     pointer-events: none;

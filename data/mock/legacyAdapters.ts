@@ -1,6 +1,6 @@
 import {
   getPlayerRouteKey,
-  getRoomRouteKey,
+  getMockRoomKey,
   getScheduledChallengeRouteKey,
   selectBestCompletedAttempt,
   selectChallengeRanking,
@@ -87,9 +87,9 @@ export function toLegacyRoomSnapshot(
   const season = store.seasons.find(
     (candidate) => candidate.roomId === roomId && candidate.status === "active",
   );
-  const roomRouteKey = getRoomRouteKey(roomId);
+  const mockRoomKey = getMockRoomKey(roomId);
   const currentPlayerRouteKey = getPlayerRouteKey(currentPlayerId);
-  if (!room || !season || !roomRouteKey || !currentPlayerRouteKey) return null;
+  if (!room || !season || !mockRoomKey || !currentPlayerRouteKey) return null;
 
   const schedules = store.scheduledChallenges.filter((schedule) => schedule.seasonId === season.id);
   const totals = new Map(
@@ -100,7 +100,7 @@ export function toLegacyRoomSnapshot(
   );
 
   return {
-    id: roomRouteKey,
+    id: mockRoomKey,
     title: room.title,
     description: room.description,
     currentUserId: currentPlayerRouteKey,

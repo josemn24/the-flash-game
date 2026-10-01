@@ -3,14 +3,29 @@ import { uploadStorageObject } from "../../support/supabase-local.mjs";
 
 const namespace = "the-flash-game:e10";
 
-const domainIds = Object.fromEntries([
-  "room", "season", "challenge", "challengeVersion", "questionOne", "questionTwo",
-  "questionVersionOne", "questionVersionTwo", "questionAsset", "challengeItemOne", "challengeItemTwo", "publication",
-].map((label) => [label, `e10-${label}`]));
+const domainIds = Object.fromEntries(
+  [
+    "room",
+    "season",
+    "challenge",
+    "challengeVersion",
+    "questionOne",
+    "questionTwo",
+    "questionVersionOne",
+    "questionVersionTwo",
+    "questionAsset",
+    "challengeItemOne",
+    "challengeItemTwo",
+    "publication",
+  ].map((label) => [label, `e10-${label}`]),
+);
 
 const tags = {
-  domains: ["culture"], topics: ["landmarks"], cognitiveSkills: ["recall"],
-  formatSkills: ["progressive-image"], lifeSkills: [],
+  domains: ["culture"],
+  topics: ["landmarks"],
+  cognitiveSkills: ["recall"],
+  formatSkills: ["progressive-image"],
+  lifeSkills: [],
 };
 
 export const scenario = {
@@ -25,17 +40,28 @@ export const scenario = {
     const dateStart = "2000-01-01T00:00:00Z";
     const dateEnd = "2999-01-01T00:00:00Z";
     const multipleChoice = {
-      category: "Cultura general", tags, question: "¿Cuál es la capital de Portugal?",
-      options: ["Lisboa", "Oporto", "Braga"], media: null, promptVisual: null,
+      category: "Cultura general",
+      tags,
+      question: "¿Cuál es la capital de Portugal?",
+      options: ["Lisboa", "Oporto", "Braga"],
+      media: null,
+      promptVisual: null,
     };
     const progressiveImage = {
-      category: "Arquitectura", tags, question: "¿Qué monumento aparece en la imagen?",
+      category: "Arquitectura",
+      tags,
+      question: "¿Qué monumento aparece en la imagen?",
       surface: {
         assetId: "__QUESTION_ASSET_ID__",
         alt: "Imagen progresivamente revelada de un monumento europeo",
-        width: 847, height: 566, fit: "contain", position: "50% 50%",
+        width: 847,
+        height: 566,
+        fit: "contain",
+        position: "50% 50%",
       },
-      revealDurationMs: 12000, answerLabel: "¿Qué aparece?", answerPlaceholder: "Tu respuesta…",
+      revealDurationMs: 12000,
+      answerLabel: "¿Qué aparece?",
+      answerPlaceholder: "Tu respuesta…",
     };
     return `
 begin;
@@ -71,10 +97,14 @@ values
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({ correctAnswer: "Lisboa", explanation: "Lisboa es la capital de Portugal." }))}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(JSON.stringify({
-    correctAnswer: "Torre Eiffel", acceptedAnswers: ["torre eiffel", "eiffel tower"],
-    solutionAlt: "La Torre Eiffel en París", explanation: "La imagen muestra la Torre Eiffel.",
-  }))});
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(
+    JSON.stringify({
+      correctAnswer: "Torre Eiffel",
+      acceptedAnswers: ["torre eiffel", "eiffel tower"],
+      solutionAlt: "La Torre Eiffel en París",
+      explanation: "La imagen muestra la Torre Eiffel.",
+    }),
+  )});
 update private.question_versions set status = 'published', published_at = ${sqlString(dateStart)};
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values (${sqlUuid(domainIds.challenge)}, 'e10-flash-progressive-image', ${sqlString(accounts.alice.playerId)});
@@ -109,7 +139,10 @@ commit;
       publicationId: stableId(domainIds.publication),
       challengeId: stableId(domainIds.challenge),
       challengeVersionId: stableId(domainIds.challengeVersion),
-      challengeItemIds: [stableId(domainIds.challengeItemOne), stableId(domainIds.challengeItemTwo)],
+      challengeItemIds: [
+        stableId(domainIds.challengeItemOne),
+        stableId(domainIds.challengeItemTwo),
+      ],
     };
   },
 };

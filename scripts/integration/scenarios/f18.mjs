@@ -37,11 +37,32 @@ export const scenario = {
             question: "Mueve los bloques para liberar la pieza amarilla.",
             grid: { rows: 6, columns: 6, exit: { side: "right", row: 2 } },
             initialBlocks: [
-              { id: "target", kind: "target", orientation: "horizontal", row: 2, column: 0, length: 2 },
+              {
+                id: "target",
+                kind: "target",
+                orientation: "horizontal",
+                row: 2,
+                column: 0,
+                length: 2,
+              },
               { id: "a", kind: "obstacle", orientation: "vertical", row: 1, column: 2, length: 2 },
               { id: "b", kind: "obstacle", orientation: "vertical", row: 0, column: 4, length: 3 },
-              { id: "c", kind: "obstacle", orientation: "horizontal", row: 0, column: 1, length: 2 },
-              { id: "d", kind: "obstacle", orientation: "horizontal", row: 4, column: 1, length: 2 },
+              {
+                id: "c",
+                kind: "obstacle",
+                orientation: "horizontal",
+                row: 0,
+                column: 1,
+                length: 2,
+              },
+              {
+                id: "d",
+                kind: "obstacle",
+                orientation: "horizontal",
+                row: 4,
+                column: 1,
+                length: 2,
+              },
             ],
             boardLabel: "Tablero Escape F18",
           },
@@ -65,7 +86,10 @@ export const scenario = {
         reason: "F18",
       },
     });
-    assert(!created.error && created.data?.questionCount === 2, "El portal crea un Flash editorial F18");
+    assert(
+      !created.error && created.data?.questionCount === 2,
+      "El portal crea un Flash editorial F18",
+    );
 
     const context = await clients.superadmin.rpc("get_superadmin_editorial_context");
     const draft = context.data?.entries?.find(
@@ -92,7 +116,10 @@ export const scenario = {
         reason: "Publicar F18",
       },
     });
-    assert(!published.error && published.data?.status === "published", "El portal publica el Flash F18");
+    assert(
+      !published.error && published.data?.status === "published",
+      "El portal publica el Flash F18",
+    );
 
     const playable = await rpc(clients.alice, "get_my_flash_challenge", {
       target_room_slug: fixture.data.room.slug,
@@ -105,9 +132,18 @@ export const scenario = {
     );
     const escape = playable[1];
     const serialized = JSON.stringify(escape);
-    assert(escape.question_type === "escape" && escape.payload_schema_version === 1, "F18 publica Escape v1");
-    assert(!serialized.includes("referenceSolution"), "El payload jugable no expone la solución de referencia");
-    assert(!serialized.includes("optimalMoves"), "El payload jugable no expone el óptimo editorial");
+    assert(
+      escape.question_type === "escape" && escape.payload_schema_version === 1,
+      "F18 publica Escape v1",
+    );
+    assert(
+      !serialized.includes("referenceSolution"),
+      "El payload jugable no expone la solución de referencia",
+    );
+    assert(
+      !serialized.includes("optimalMoves"),
+      "El payload jugable no expone el óptimo editorial",
+    );
     assert(!serialized.includes("solutionPayload"), "La lectura jugable no expone solutionPayload");
 
     const spectator = await rpc(clients.bob, "get_my_flash_challenge", {

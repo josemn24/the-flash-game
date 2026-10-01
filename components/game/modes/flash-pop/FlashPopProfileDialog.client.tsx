@@ -102,7 +102,9 @@ export function FlashPopProfileDialog({
       const result = await onSave({ name: draft.name.trim(), file: selectedFile });
       if (!result.ok) {
         const isAvatarError =
-          result.code === "invalid_file" || result.code === "storage_unavailable" || result.code === "conflict";
+          result.code === "invalid_file" ||
+          result.code === "storage_unavailable" ||
+          result.code === "conflict";
         setErrors(isAvatarError ? { avatar: result.message } : { name: result.message });
       }
     } catch {
@@ -147,7 +149,11 @@ export function FlashPopProfileDialog({
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.avatarField}>
-            <Avatar name={draft.name || profile.name} src={previewSrc ?? profile.avatarSrc} size="lg" />
+            <Avatar
+              name={draft.name || profile.name}
+              src={previewSrc ?? profile.avatarSrc}
+              size="lg"
+            />
             <div className={styles.avatarCopy}>
               <label htmlFor="profile-avatar">Imagen de perfil</label>
               <span>JPEG, PNG o WebP. Máximo 5 MB y 2048 px.</span>

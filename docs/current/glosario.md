@@ -22,31 +22,31 @@ Una sala contiene temporadas. Una temporada publica desafíos periódicos. Cada 
 
 ## Términos principales
 
-| Español                 | Inglés                | Uso recomendado                                                                                                                                   |
-| ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Juego / Producto        | Game / Product        | The Flash completo. Evitar usar "juego" para desafíos o partidas concretas cuando pueda generar ambigüedad.                                       |
-| Sala                    | Room                  | Grupo privado creado por un usuario para invitar amigos y competir juntos.                                                                        |
-| Temporada               | Season                | Ciclo competitivo dentro de una sala, con inicio, fin y ranking acumulado.                                                                        |
-| Desafío                 | Challenge             | Evento jugable periódico publicado en una sala durante una temporada.                                                                             |
-| Modo de juego           | Game Mode             | Reglas globales del desafío, como Flash, Supervivencia, Cadena, La Pirámide, Alfabeto, Apuesta de confianza o Respuesta rara.                     |
-| Prueba                  | Trial / Task          | Unidad jugable individual vista por el usuario. Es más amplia que "pregunta" y cubre puzzles, memoria, laberintos, estimaciones o mapas.          |
-| Pregunta                | Question              | Unidad técnica actual del modelo de datos. También puede usarse cuando la prueba es claramente textual o interrogativa.                           |
-| Formato de pregunta     | Question Format       | Tipo de interacción de una prueba: elección múltiple, verdadero/falso, ordenar, estimación, mapa de calor, Mini-Wordle, laberinto, etc.           |
-| Intento                 | Attempt               | Ejecución de un jugador sobre un desafío o una prueba. Útil para rankings y resultados.                                                           |
-| Intento en progreso     | In-progress attempt   | Intento iniciado que todavía no ha terminado. Puede reanudarse mientras conserve ese estado.                                                      |
-| Sesión controladora     | Controlling session   | Token HttpOnly que autoriza el progreso de un intento. En el MVP solo hay una; una segunda sesión se bloquea y no toma el control.                |
-| Interacción preparada   | Prepared interaction  | Unidad temporal e intervalo persistidos antes de entregar su payload público. Se considera consumida aunque la respuesta HTTP se pierda.          |
-| Recuperación            | Recovery              | Reanudación autoritativa que reconcilia una respuesta recibida o resuelve la interacción preparada según el modo antes de mostrar contenido nuevo. |
-| Pase por interrupción   | Recovery-interrupted pass | Cierre auditable de la letra activa de Alfabeto al recuperar; no equivale al pase voluntario ni crea una respuesta final.                      |
-| Abandono                | Abandoned             | Terminación de un intento iniciado antes de llegar al final; consume el intento único y no permite repetirlo.                                     |
-| Expirado                | Expired               | Publicación que termina antes de que el jugador inicie su intento. No equivale a abandono y no produce respuestas ni puntos.                      |
-| Partida                 | Run / Playthrough     | Sesión completa de un jugador dentro de un desafío. Usar con cuidado para no confundirlo con el desafío publicado para toda la sala.              |
-| Ranking / Clasificación | Leaderboard           | Tabla de posiciones. En producto puede usarse "ranking"; en inglés usar `leaderboard`, no `ranking`.                                              |
-| Ranking del desafío     | Challenge Leaderboard | Clasificación puntual de un desafío concreto.                                                                                                     |
-| Ranking de temporada    | Season Leaderboard    | Clasificación acumulada de una temporada.                                                                                                         |
-| Puntuación              | Score                 | Puntos obtenidos por un jugador.                                                                                                                  |
-| Puntos                  | Points                | Unidades numéricas de puntuación.                                                                                                                 |
-| Flash Points            | Flash Points          | Puntos obtenidos al jugar un desafío y acumulados en el total de la temporada activa de la sala. Es la única puntuación competitiva del producto. |
+| Español                 | Inglés                    | Uso recomendado                                                                                                                                    |
+| ----------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Juego / Producto        | Game / Product            | The Flash completo. Evitar usar "juego" para desafíos o partidas concretas cuando pueda generar ambigüedad.                                        |
+| Sala                    | Room                      | Grupo privado creado por un usuario para invitar amigos y competir juntos.                                                                         |
+| Temporada               | Season                    | Ciclo competitivo dentro de una sala, con inicio, fin y ranking acumulado.                                                                         |
+| Desafío                 | Challenge                 | Evento jugable periódico publicado en una sala durante una temporada.                                                                              |
+| Modo de juego           | Game Mode                 | Reglas globales del desafío, como Flash, Supervivencia, Cadena, La Pirámide, Alfabeto, Apuesta de confianza o Respuesta rara.                      |
+| Prueba                  | Trial / Task              | Unidad jugable individual vista por el usuario. Es más amplia que "pregunta" y cubre puzzles, memoria, laberintos, estimaciones o mapas.           |
+| Pregunta                | Question                  | Unidad técnica actual del modelo de datos. También puede usarse cuando la prueba es claramente textual o interrogativa.                            |
+| Formato de pregunta     | Question Format           | Tipo de interacción de una prueba: elección múltiple, verdadero/falso, ordenar, estimación, mapa de calor, Mini-Wordle, laberinto, etc.            |
+| Intento                 | Attempt                   | Ejecución de un jugador sobre un desafío o una prueba. Útil para rankings y resultados.                                                            |
+| Intento en progreso     | In-progress attempt       | Intento iniciado que todavía no ha terminado. Puede reanudarse mientras conserve ese estado.                                                       |
+| Sesión controladora     | Controlling session       | Token HttpOnly que autoriza el progreso de un intento. En el MVP solo hay una; una segunda sesión se bloquea y no toma el control.                 |
+| Interacción preparada   | Prepared interaction      | Unidad temporal e intervalo persistidos antes de entregar su payload público. Se considera consumida aunque la respuesta HTTP se pierda.           |
+| Recuperación            | Recovery                  | Reanudación autoritativa que reconcilia una respuesta recibida o resuelve la interacción preparada según el modo antes de mostrar contenido nuevo. |
+| Pase por interrupción   | Recovery-interrupted pass | Cierre auditable de la letra activa de Alfabeto al recuperar; no equivale al pase voluntario ni crea una respuesta final.                          |
+| Abandono                | Abandoned                 | Terminación de un intento iniciado antes de llegar al final; consume el intento único y no permite repetirlo.                                      |
+| Expirado                | Expired                   | Publicación que termina antes de que el jugador inicie su intento. No equivale a abandono y no produce respuestas ni puntos.                       |
+| Partida                 | Run / Playthrough         | Sesión completa de un jugador dentro de un desafío. Usar con cuidado para no confundirlo con el desafío publicado para toda la sala.               |
+| Ranking / Clasificación | Leaderboard               | Tabla de posiciones. En producto puede usarse "ranking"; en inglés usar `leaderboard`, no `ranking`.                                               |
+| Ranking del desafío     | Challenge Leaderboard     | Clasificación puntual de un desafío concreto.                                                                                                      |
+| Ranking de temporada    | Season Leaderboard        | Clasificación acumulada de una temporada.                                                                                                          |
+| Puntuación              | Score                     | Puntos obtenidos por un jugador.                                                                                                                   |
+| Puntos                  | Points                    | Unidades numéricas de puntuación.                                                                                                                  |
+| Flash Points            | Flash Points              | Puntos obtenidos al jugar un desafío y acumulados en el total de la temporada activa de la sala. Es la única puntuación competitiva del producto.  |
 
 ### Convención visual de Flash Points
 

@@ -51,7 +51,9 @@ try {
     try {
       result = await sql(source);
     } catch (error) {
-      throw new Error(`${file}:\n${error instanceof Error ? error.message : String(error)}`, { cause: error });
+      throw new Error(`${file}:\n${error instanceof Error ? error.message : String(error)}`, {
+        cause: error,
+      });
     }
     if (/^not ok|^Bail out!|# Looks like you failed/m.test(result) || !/^1\.\.\d+/m.test(result))
       throw new Error(`${file}:\n${result}`);

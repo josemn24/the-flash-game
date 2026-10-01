@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminShell, EditorialManagement } from "@/components/admin";
-import { getSuperadminNewChallengePageModel } from "@/server/data-access";
+import { getSuperadminNewChallengePageModel } from "@/server/production-data-access";
 import { loadAdminPageModel } from "../../section-page";
 
 export const dynamic = "force-dynamic";

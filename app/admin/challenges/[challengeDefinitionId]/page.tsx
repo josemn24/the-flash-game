@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminNotice, AdminShell, EditorialManagement } from "@/components/admin";
 import { ButtonLink } from "@/components/ui";
-import { getSuperadminChallengeDetailPageModel } from "@/server/data-access";
+import { getSuperadminChallengeDetailPageModel } from "@/server/production-data-access";
 import { loadAdminPageModel } from "../../section-page";
 
 export const dynamic = "force-dynamic";
@@ -30,9 +30,7 @@ export default async function AdminChallengeDetailPage({
   const page = await loadAdminPageModel(() =>
     getSuperadminChallengeDetailPageModel(
       challengeDefinitionId,
-      query.compareFrom && query.compareTo
-        ? [query.compareFrom, query.compareTo]
-        : undefined,
+      query.compareFrom && query.compareTo ? [query.compareFrom, query.compareTo] : undefined,
     ),
   );
   if (!page) notFound();
@@ -45,7 +43,7 @@ export default async function AdminChallengeDetailPage({
           ? "Nueva versión creada como borrador."
           : query.editorial === "archived"
             ? "Versión editorial archivada."
-        : null;
+            : null;
   const hasDraft = page.editorial.entries.some((entry) => entry.status === "draft");
   return (
     <AdminShell

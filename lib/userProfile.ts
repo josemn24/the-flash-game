@@ -30,7 +30,7 @@ export function validateProfileName(name: string) {
 export function validateProfileImage(
   file: Pick<File, "size" | "type">,
 ): ProfileImageValidationError | null {
-  if (! ["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
     return "type";
   }
 

@@ -80,7 +80,10 @@ const editorialDocument = {
         media: null,
         promptVisual: null,
       },
-      solutionPayload: { correctAnswer: "Correr", explanation: "Correr es una actividad deportiva." },
+      solutionPayload: {
+        correctAnswer: "Correr",
+        explanation: "Correr es una actividad deportiva.",
+      },
     },
     {
       slug: "e2e-classification",

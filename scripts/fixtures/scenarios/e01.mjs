@@ -79,16 +79,20 @@ values
     'mini-wordle', 90000, ${sqlString(JSON.stringify(miniWordle))}, ${sqlString(accounts.alice.playerId)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
-  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({
-    correctAnswer: "Lisboa",
-    explanation: "Lisboa es la capital de Portugal.",
-  }))}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(JSON.stringify({
-    correctAnswer: "JESUS",
-    additionalGuesses: ["JOSUE", "JACOB"],
-    dictionaryId: "es-general-5.v1",
-    explanation: "Jesús es una figura central del cristianismo.",
-  }))});
+  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(
+    JSON.stringify({
+      correctAnswer: "Lisboa",
+      explanation: "Lisboa es la capital de Portugal.",
+    }),
+  )}),
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(
+    JSON.stringify({
+      correctAnswer: "JESUS",
+      additionalGuesses: ["JOSUE", "JACOB"],
+      dictionaryId: "es-general-5.v1",
+      explanation: "Jesús es una figura central del cristianismo.",
+    }),
+  )});
 update private.question_versions set status = 'published', published_at = ${sqlString(dateStart)};
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values (${sqlUuid(domainIds.challenge)}, 'e01-flash-mini-wordle', ${sqlString(accounts.alice.playerId)});

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { isFlashPopPreviewChallenge } from "@/features/flash-pop/demoSocial";
-import { getPlayableChallengePageModel } from "@/server/data-access";
+import { getFlashPopChallengePageModel } from "@/server/demo-data-access";
 
 type Props = { params: Promise<{ challengeId: string }> };
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const model = await getPlayableChallengePageModel((await params).challengeId);
+  const model = await getFlashPopChallengePageModel((await params).challengeId);
   return model?.challenge.mode === "pyramid"
     ? { title: `${model.challenge.title} — The Flash`, description: model.challenge.description }
     : { title: "Reto no disponible — The Flash" };
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FlashPopChallengePage({ params }: Props) {
   const challengeId = (await params).challengeId;
-  const model = await getPlayableChallengePageModel(challengeId);
+  const model = await getFlashPopChallengePageModel(challengeId);
   if (!isFlashPopPreviewChallenge(challengeId) || model?.challenge.mode !== "pyramid") {
     notFound();
   }

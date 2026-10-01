@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminAttemptList } from "@/components/admin";
-import { getSuperadminAttemptListPageModel } from "@/server/data-access";
+import { getSuperadminAttemptListPageModel } from "@/server/production-data-access";
 import { loadAdminPageModel } from "../../../../section-page";
 
 export const dynamic = "force-dynamic";

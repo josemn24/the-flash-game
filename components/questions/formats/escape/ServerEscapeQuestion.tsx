@@ -108,7 +108,9 @@ export function ServerEscapeQuestion({
   const blocksRef = useRef(configuration.initialBlocks.map((block) => ({ ...block })));
   const movesRef = useRef<EscapeMove[]>([]);
   const dragRef = useRef<DragState | null>(null);
-  const [blocks, setBlocks] = useState(() => configuration.initialBlocks.map((block) => ({ ...block })));
+  const [blocks, setBlocks] = useState(() =>
+    configuration.initialBlocks.map((block) => ({ ...block })),
+  );
   const [moves, setMoves] = useState<EscapeMove[]>([]);
   const [selectedId, setSelectedId] = useState(configuration.initialBlocks[0]?.id ?? "");
   const [dragVisual, setDragVisual] = useState<DragVisual>(null);
@@ -161,14 +163,19 @@ export function ServerEscapeQuestion({
     event.preventDefault();
     selectBlock(block);
     const current = blockStart(block);
-    const destinations = getEscapeLegalDestinations(configuration, blocksRef.current, block.id).filter(
-      (destination) => (event.key === negativeKey ? destination < current : destination > current),
+    const destinations = getEscapeLegalDestinations(
+      configuration,
+      blocksRef.current,
+      block.id,
+    ).filter((destination) =>
+      event.key === negativeKey ? destination < current : destination > current,
     );
     if (!destinations.length) {
       setAnnouncement("No hay espacio libre en esa dirección.");
       return;
     }
-    const destination = event.key === negativeKey ? Math.max(...destinations) : Math.min(...destinations);
+    const destination =
+      event.key === negativeKey ? Math.max(...destinations) : Math.min(...destinations);
     publishMove({ blockId: block.id, from: current, to: destination });
   };
 
@@ -209,13 +216,17 @@ export function ServerEscapeQuestion({
         : nearest,
     );
     drag.currentDestination = destination;
-    setDragVisual({ blockId: block.id, offset: (clampedPosition - drag.startPosition) * drag.cellSize });
+    setDragVisual({
+      blockId: block.id,
+      offset: (clampedPosition - drag.startPosition) * drag.cellSize,
+    });
   };
 
   const handlePointerUp = (event: ReactPointerEvent<HTMLButtonElement>) => {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
     const destination = drag.currentDestination;
     dragRef.current = null;
     setDragVisual(null);
@@ -226,7 +237,8 @@ export function ServerEscapeQuestion({
 
   const handlePointerCancel = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (dragRef.current?.pointerId !== event.pointerId) return;
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
     dragRef.current = null;
     setDragVisual(null);
     setAnnouncement("Movimiento cancelado.");
@@ -260,7 +272,10 @@ export function ServerEscapeQuestion({
     submissionState === "error" || (submissionState === "submitting" && submissionStatusVisible);
 
   return (
-    <section className={styles.root} aria-label={question.boardLabel ?? "Escape, puzzle de bloques deslizantes"}>
+    <section
+      className={styles.root}
+      aria-label={question.boardLabel ?? "Escape, puzzle de bloques deslizantes"}
+    >
       <div className={styles.header}>
         {!question.hideObjectiveLabel && (
           <span>{question.objectiveLabel ?? "Saca el bloque amarillo"}</span>
@@ -277,7 +292,11 @@ export function ServerEscapeQuestion({
           role="group"
           aria-label={question.boardLabel ?? "Tablero Escape de seis por seis"}
         >
-          <span className={styles.exit} style={{ top: `${question.grid.exit.row * (100 / 6)}%` }} aria-hidden="true">
+          <span
+            className={styles.exit}
+            style={{ top: `${question.grid.exit.row * (100 / 6)}%` }}
+            aria-hidden="true"
+          >
             →
           </span>
           {blocks.map((block, index) => {
@@ -297,7 +316,9 @@ export function ServerEscapeQuestion({
                 }}
                 disabled={locked || completed}
                 aria-pressed={selectedId === block.id}
-                aria-keyshortcuts={block.orientation === "horizontal" ? "ArrowLeft ArrowRight" : "ArrowUp ArrowDown"}
+                aria-keyshortcuts={
+                  block.orientation === "horizontal" ? "ArrowLeft ArrowRight" : "ArrowUp ArrowDown"
+                }
                 aria-label={`${blockLabel(block, symbols[block.id])}${selectedId === block.id ? ", seleccionado" : ""}`}
                 onClick={() => selectBlock(block)}
                 onKeyDown={(event) => handleKeyDown(event, block)}

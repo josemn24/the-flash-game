@@ -4,7 +4,7 @@ import type {
   RoomMembershipCommands,
 } from "@/application/ports/room-membership-commands";
 import type { MockDomainStore } from "@/data/mock/store";
-import { resolvePlayerRouteKey, resolveRoomRouteKey } from "@/data/mock/selectors";
+import { resolveMockRoomKey, resolvePlayerRouteKey } from "@/data/mock/selectors";
 import type { MockCurrentViewerProvider } from "@/infrastructure/mock/currentViewer";
 import type { RoomMembershipRole } from "@/types/view-models";
 
@@ -36,7 +36,7 @@ export class MockRoomMembershipCommands implements RoomMembershipCommands {
   ) {}
 
   async manageMember(input: ManageRoomMemberInput): Promise<ManageRoomMemberResult> {
-    const roomId = resolveRoomRouteKey(input.roomKey);
+    const roomId = resolveMockRoomKey(input.roomKey);
     const targetPlayerId = resolvePlayerRouteKey(input.targetMemberKey);
     const viewer = await this.viewerProvider.getCurrentViewer();
     if (!roomId || !targetPlayerId) throw new Error("member_not_found");

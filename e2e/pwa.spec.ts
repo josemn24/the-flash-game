@@ -53,9 +53,9 @@ test.describe("PWA service worker", () => {
 
     const cachedPaths = cacheSnapshot.flatMap((cache) => cache.urls);
     expect(cachedPaths.some((url) => url === "/" || url.startsWith("/admin/"))).toBe(false);
-    expect(cachedPaths.some((url) => url.startsWith("/salas/") || url.startsWith("/desafios/"))).toBe(
-      false,
-    );
+    expect(
+      cachedPaths.some((url) => url.startsWith("/salas/") || url.startsWith("/desafios/")),
+    ).toBe(false);
   });
 
   test("does not replay competitive POST requests", async ({ page }) => {

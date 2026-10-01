@@ -45,9 +45,7 @@ function terminalReviewRow(row: FlashResultRow): ServerFlashTerminalReview {
 }
 
 export class SupabaseSurvivalQueries {
-  constructor(
-    private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader,
-  ) {}
+  constructor(private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader) {}
 
   async getTerminalReview(attemptId: string): Promise<ServerFlashTerminalReview[]> {
     const rows = (

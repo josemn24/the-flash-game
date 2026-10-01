@@ -106,9 +106,9 @@ test.describe("S17 — corrección y versionado editorial", () => {
     await expect(page.locator("#editorial-management-title")).toHaveText("Flash S17 E2E corregido");
 
     const compareFrom = page.locator("select[name='compareFrom']");
-    const versions = await compareFrom.locator("option").evaluateAll((items) =>
-      items.map((item) => (item as HTMLOptionElement).value),
-    );
+    const versions = await compareFrom
+      .locator("option")
+      .evaluateAll((items) => items.map((item) => (item as HTMLOptionElement).value));
     expect(versions.length).toBeGreaterThanOrEqual(2);
     await compareFrom.selectOption(versions.at(-1)!);
     await page.locator("select[name='compareTo']").selectOption(versions[0]!);
@@ -122,7 +122,9 @@ test.describe("S17 — corrección y versionado editorial", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await archiveForm.getByRole("button", { name: "Archivar versión" }).click();
     await expect(page).toHaveURL(/editorial=archived$/);
-    await expect(page.locator("article").filter({ hasText: "v1" }).getByText("Archivado")).toBeVisible();
+    await expect(
+      page.locator("article").filter({ hasText: "v1" }).getByText("Archivado"),
+    ).toBeVisible();
     await expect(
       page.locator("article").filter({ hasText: "v2" }).getByText("Publicado", { exact: true }),
     ).toBeVisible();

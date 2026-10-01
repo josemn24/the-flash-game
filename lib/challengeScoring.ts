@@ -1,4 +1,8 @@
-import type { FlashChallenge, PyramidChallenge, SurvivalChallenge } from "@/types/gameplay/challenge";
+import type {
+  FlashChallenge,
+  PyramidChallenge,
+  SurvivalChallenge,
+} from "@/types/gameplay/challenge";
 import type { PracticeQuestion } from "@/types/gameplay/practice";
 import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 

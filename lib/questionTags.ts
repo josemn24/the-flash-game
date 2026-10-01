@@ -1,8 +1,4 @@
-import type {
-  DomainTagId,
-  QuestionTags,
-  TopicTagId,
-} from "@/types/domain/tags";
+import type { DomainTagId, QuestionTags, TopicTagId } from "@/types/domain/tags";
 
 export type {
   CognitiveSkillTagId,

@@ -81,15 +81,19 @@ values
     'escape', 30000, ${sqlString(JSON.stringify(escape))}, ${sqlString(accounts.alice.playerId)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
-  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({
-    correctAnswer: "Lisboa",
-    explanation: "Lisboa es la capital de Portugal.",
-  }))}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(JSON.stringify({
-    referenceSolution,
-    optimalMoves: 4,
-    explanation: "La referencia despeja los tres obstáculos antes de mover el objetivo.",
-  }))});
+  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(
+    JSON.stringify({
+      correctAnswer: "Lisboa",
+      explanation: "Lisboa es la capital de Portugal.",
+    }),
+  )}),
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(
+    JSON.stringify({
+      referenceSolution,
+      optimalMoves: 4,
+      explanation: "La referencia despeja los tres obstáculos antes de mover el objetivo.",
+    }),
+  )});
 update private.question_versions set status = 'published', published_at = ${sqlString(dateStart)}
 where status = 'draft';
 insert into private.challenge_definitions (id, slug, created_by_player_id)
@@ -123,7 +127,10 @@ commit;
       publicationId: stableId(domainIds.publication),
       challengeId: stableId(domainIds.challenge),
       challengeVersionId: stableId(domainIds.challengeVersion),
-      challengeItemIds: [stableId(domainIds.challengeItemOne), stableId(domainIds.challengeItemTwo)],
+      challengeItemIds: [
+        stableId(domainIds.challengeItemOne),
+        stableId(domainIds.challengeItemTwo),
+      ],
     };
   },
 };

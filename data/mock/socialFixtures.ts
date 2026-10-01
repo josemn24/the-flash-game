@@ -3,7 +3,7 @@ import {
   CONTENT_PUBLISHED_AT,
   ROOM_CREATED_AT,
   playerRouteAliases,
-  roomRouteAliases,
+  mockRoomKeys,
   scheduledChallengeRouteAliases,
   type PlayerRouteKey,
   type ScheduledChallengeRouteKey,
@@ -58,7 +58,7 @@ export const platformRoleAssignments: readonly PlatformRoleAssignment[] = [
 
 export const rooms: readonly Room[] = [
   {
-    id: roomRouteAliases["tabarnia-room"],
+    id: mockRoomKeys["tabarnia-room"],
     title: "Tabarnia",
     description: "Sala privada mock para la primera temporada de The Flash.",
     timeZone: "Europe/Madrid",
@@ -79,7 +79,7 @@ const membershipRoles: Readonly<Record<PlayerRouteKey, RoomMembership["role"]>> 
 
 export const roomMemberships: readonly RoomMembership[] = playerFixtures.map(([key], index) => ({
   id: mockId.roomMembership(`tabarnia-room:${key}`),
-  roomId: roomRouteAliases["tabarnia-room"],
+  roomId: mockRoomKeys["tabarnia-room"],
   playerId: playerRouteAliases[key],
   role: membershipRoles[key],
   status: "active",
@@ -94,7 +94,7 @@ export const roomInvitations: readonly RoomInvitation[] = [];
 export const seasons: readonly Season[] = [
   {
     id: mockId.season("tabarnia-season-1"),
-    roomId: roomRouteAliases["tabarnia-room"],
+    roomId: mockRoomKeys["tabarnia-room"],
     title: "Primera temporada",
     status: "active",
     startsAt: utc("2026-08-31T22:00:00.000Z"),

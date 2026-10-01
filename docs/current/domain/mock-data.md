@@ -8,9 +8,10 @@ contenido, identidad, salas, membresías, temporadas, publicaciones, intentos y 
 S01, los recorridos reales no lo usan como fuente de persistencia y no existe ningún flujo
 legacy → store en producción.
 
-Los IDs persistibles son UUID v5 deterministas generados solo en `data/mock`. Los slugs legibles
-siguen siendo la identidad de las rutas públicas y se resuelven mediante los mapas de aliases. El
-jugador de la sesión demo se declara aparte; no existe `currentUserId` en `Room`.
+Los IDs persistibles son UUID v5 deterministas generados solo en `data/mock`. Las claves legibles de
+los fixtures se usan únicamente para materializar datos mock y tests; no seleccionan la composición
+de las rutas reales. El jugador de la sesión demo se declara aparte; no existe `currentUserId` en
+`Room`.
 
 ## Fuente editorial de contenido
 
@@ -82,9 +83,11 @@ del contenido público. Incluye escenarios negativos aislados de relaciones y es
 
 ## Fase 4 cerrada y límite actual
 
-Las rutas de práctica y preview acceden al store mediante contratos asíncronos, el adaptador mock y
-la fachada `server/data-access.ts`. Las rutas reales persistidas usan la misma fachada para seleccionar
-Auth, RPCs y PostgreSQL mediante `infrastructure/supabase/`. Consulta
+Las demos server-side de Flash Pop acceden al store mediante contratos asíncronos, el adaptador mock y
+la fachada explícita `server/demo-data-access.ts`. Las rutas reales persistidas usan
+`server/production-data-access.ts` para seleccionar Auth, RPCs y PostgreSQL mediante
+`infrastructure/supabase/`. No existe una fachada compartida que seleccione entre ambas composiciones.
+Consulta
 [`data-access.md`](data-access.md) para la composición, autorización y DTOs.
 
 S01 cubre Auth, provisioning de jugador y nombre; S02 cubre home, salas, detalle e introducción;

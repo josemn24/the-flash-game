@@ -47,8 +47,7 @@ export const scenario = {
       boardLabel: "Tablero Zip F16",
     };
     const solution = [
-      0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23,
-      24,
+      0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24,
     ];
 
     return `
@@ -79,14 +78,18 @@ values
     'zip', 35000, ${sqlString(JSON.stringify(zip))}, ${sqlString(accounts.alice.playerId)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
-  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({
-    correctAnswer: "Lisboa",
-    explanation: "Lisboa es la capital de Portugal.",
-  }))}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(JSON.stringify({
-    solution,
-    explanation: "El camino serpentea por las cinco filas.",
-  }))});
+  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(
+    JSON.stringify({
+      correctAnswer: "Lisboa",
+      explanation: "Lisboa es la capital de Portugal.",
+    }),
+  )}),
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(
+    JSON.stringify({
+      solution,
+      explanation: "El camino serpentea por las cinco filas.",
+    }),
+  )});
 update private.question_versions set status = 'published', published_at = ${sqlString(dateStart)};
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values (${sqlUuid(domainIds.challenge)}, 'f16-flash-zip', ${sqlString(accounts.alice.playerId)});
@@ -119,7 +122,10 @@ commit;
       publicationId: stableId(domainIds.publication),
       challengeId: stableId(domainIds.challenge),
       challengeVersionId: stableId(domainIds.challengeVersion),
-      challengeItemIds: [stableId(domainIds.challengeItemOne), stableId(domainIds.challengeItemTwo)],
+      challengeItemIds: [
+        stableId(domainIds.challengeItemOne),
+        stableId(domainIds.challengeItemTwo),
+      ],
     };
   },
 };

@@ -50,17 +50,18 @@ decisiones y después los documentos afectados.
 
 ## Estado de la última revisión
 
-- Fecha: 2026-09-28.
+- Fecha: 2026-09-30.
 - 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
   y E01–E06/E10 sobre Supabase local.
 - La revisión declarativa canónica es `20260927172602_cancel-scheduled-challenge`; el repositorio contiene
   53 archivos declarativos de esquema, además de 30 tablas, una vista,
   funciones públicas/privadas y políticas RLS.
-- `npm run typecheck`, `npm run docs:check`, `npm run schema:revision:check`, `npm test` y `npm run build`
-  pasan en la comprobación actual; el detalle completo está en [`current/qa.md`](current/qa.md).
-- `npm run format:check` mantiene avisos en 156 archivos y `npm run stylelint` informa 6 errores de
-  selectores duplicados en 5 módulos CSS.
+- `npm run typecheck`, `npm run docs:check`, `npm run schema:revision:check`, `npm test`, `npm run lint`,
+  `npm run stylelint` y `npm run build` pasan en la comprobación actual; el build se ejecutó en un
+  checkout aislado porque el workspace principal mantiene `.next/lock`. El detalle completo está en
+  [`current/qa.md`](current/qa.md).
+- `npm run format:check` pasa; `supabase/.temp/` queda excluido por ser salida generada de la CLI.
 - `npm run supabase:schema:test` no se pudo verificar en esta ejecución porque el daemon de Docker no
   estaba disponible; la validación remota sigue pendiente y sus límites están documentados en
   [`supabase/schemas/README.md`](../supabase/schemas/README.md).

@@ -59,10 +59,7 @@ export function SlidingPuzzleQuestion({
   };
 
   return (
-    <section
-      className={styles.root}
-      aria-label="Rompecabezas deslizante de tres por tres"
-    >
+    <section className={styles.root} aria-label="Rompecabezas deslizante de tres por tres">
       <p className={styles.instructions}>
         Desliza las fichas junto al hueco hasta ordenarlas del 1 al 8. También puedes usar las
         flechas.

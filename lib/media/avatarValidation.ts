@@ -17,11 +17,7 @@ export type AvatarInspection = {
 };
 
 export type AvatarInspectionError =
-  | "empty"
-  | "too_large"
-  | "unsupported_type"
-  | "corrupt"
-  | "dimensions";
+  "empty" | "too_large" | "unsupported_type" | "corrupt" | "dimensions";
 
 function readUint16(bytes: Uint8Array, offset: number) {
   return (bytes[offset] << 8) | bytes[offset + 1];
@@ -51,7 +47,11 @@ function inspectPng(bytes: Uint8Array) {
   if (bytes.length < 24 || !is(bytes, 0, "\x89PNG\r\n\x1a\n") || !is(bytes, 12, "IHDR")) {
     return null;
   }
-  return { mimeType: "image/png" as const, width: readUint32(bytes, 16), height: readUint32(bytes, 20) };
+  return {
+    mimeType: "image/png" as const,
+    width: readUint32(bytes, 16),
+    height: readUint32(bytes, 20),
+  };
 }
 
 function inspectJpeg(bytes: Uint8Array) {
@@ -94,14 +94,27 @@ function inspectWebp(bytes: Uint8Array) {
   }
   if (is(bytes, 12, "VP8 ")) {
     const start = 20;
-    if (bytes.length < start + 10 || bytes[start + 3] !== 0x9d || bytes[start + 4] !== 0x01 || bytes[start + 5] !== 0x2a) {
+    if (
+      bytes.length < start + 10 ||
+      bytes[start + 3] !== 0x9d ||
+      bytes[start + 4] !== 0x01 ||
+      bytes[start + 5] !== 0x2a
+    ) {
       return null;
     }
-    return { mimeType: "image/webp" as const, width: readUint16(bytes, start + 6) & 0x3fff, height: readUint16(bytes, start + 8) & 0x3fff };
+    return {
+      mimeType: "image/webp" as const,
+      width: readUint16(bytes, start + 6) & 0x3fff,
+      height: readUint16(bytes, start + 8) & 0x3fff,
+    };
   }
   if (is(bytes, 12, "VP8L") && bytes.length >= 25 && bytes[20] === 0x2f) {
     const bits = bytes[21] | (bytes[22] << 8) | (bytes[23] << 16) | (bytes[24] << 24);
-    return { mimeType: "image/webp" as const, width: 1 + (bits & 0x3fff), height: 1 + ((bits >>> 14) & 0x3fff) };
+    return {
+      mimeType: "image/webp" as const,
+      width: 1 + (bits & 0x3fff),
+      height: 1 + ((bits >>> 14) & 0x3fff),
+    };
   }
   return null;
 }
@@ -135,7 +148,10 @@ export function inspectImageBytes(
 }
 
 export function inspectAvatarBytes(input: Uint8Array): AvatarInspection {
-  return inspectImageBytes(input, { maxBytes: AVATAR_MAX_BYTES, maxDimension: AVATAR_MAX_DIMENSION });
+  return inspectImageBytes(input, {
+    maxBytes: AVATAR_MAX_BYTES,
+    maxDimension: AVATAR_MAX_DIMENSION,
+  });
 }
 
 export function inspectQuestionAssetBytes(input: Uint8Array): AvatarInspection {
@@ -146,7 +162,8 @@ export function inspectQuestionAssetBytes(input: Uint8Array): AvatarInspection {
 }
 
 export function validateAvatarSelection(file: Pick<File, "size" | "type">) {
-  if (!AVATAR_ALLOWED_MIME_TYPES.includes(file.type as AvatarMimeType)) return "unsupported_type" as const;
+  if (!AVATAR_ALLOWED_MIME_TYPES.includes(file.type as AvatarMimeType))
+    return "unsupported_type" as const;
   if (file.size <= 0 || file.size > AVATAR_MAX_BYTES) return "too_large" as const;
   return null;
 }

@@ -521,8 +521,9 @@ export function EditorialManagement({
                 </div>
                 <p className={styles.helper}>
                   Las preguntas publicadas son referencias inmutables. Para corregir el enunciado o
-                  la solución, crea una nueva versión desde <Link href="/admin/questions">la
-                  biblioteca de preguntas</Link> y selecciónala después en este desafío.
+                  la solución, crea una nueva versión desde{" "}
+                  <Link href="/admin/questions">la biblioteca de preguntas</Link> y selecciónala
+                  después en este desafío.
                 </p>
               </>
             ) : null}
@@ -686,7 +687,10 @@ export function EditorialManagement({
                   <span>Comparar versión base</span>
                   <select
                     name="compareFrom"
-                    defaultValue={comparison?.from.challengeVersionId ?? historicalEntries[0]?.challengeVersionId}
+                    defaultValue={
+                      comparison?.from.challengeVersionId ??
+                      historicalEntries[0]?.challengeVersionId
+                    }
                   >
                     {context.entries.map((entry) => (
                       <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
@@ -699,7 +703,10 @@ export function EditorialManagement({
                   <span>Comparar con</span>
                   <select
                     name="compareTo"
-                    defaultValue={comparison?.to.challengeVersionId ?? historicalEntries.at(-1)?.challengeVersionId}
+                    defaultValue={
+                      comparison?.to.challengeVersionId ??
+                      historicalEntries.at(-1)?.challengeVersionId
+                    }
                   >
                     {context.entries.map((entry) => (
                       <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
@@ -712,7 +719,10 @@ export function EditorialManagement({
                   Comparar versiones
                 </Button>
                 {comparison ? (
-                  <Link href={`/admin/challenges/${challengeDefinitionId}`} className={styles.inlineLink}>
+                  <Link
+                    href={`/admin/challenges/${challengeDefinitionId}`}
+                    className={styles.inlineLink}
+                  >
                     Limpiar comparación
                   </Link>
                 ) : null}
@@ -721,8 +731,8 @@ export function EditorialManagement({
             <ErrorMessage state={revisionState} />
             <ErrorMessage state={archiveState} />
             {comparison ? <ComparisonPanel comparison={comparison} /> : null}
-          <div className={styles.publishedList}>
-            {historicalEntries.map((entry) => (
+            <div className={styles.publishedList}>
+              {historicalEntries.map((entry) => (
                 <Card
                   as="article"
                   surface="soft"
@@ -797,8 +807,8 @@ export function EditorialManagement({
                     ) : null}
                   </div>
                 </Card>
-            ))}
-          </div>
+              ))}
+            </div>
           </>
         ) : (
           <p className={styles.helper}>Todavía no hay versiones publicadas.</p>

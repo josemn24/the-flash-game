@@ -9,12 +9,7 @@ describe("ReviewAnswers", () => {
     if (challenge?.mode !== "survival") throw new Error("Expected survival challenge");
 
     const markup = renderToStaticMarkup(
-      <ReviewAnswers
-        challenge={challenge}
-        results={[]}
-        onBack={() => {}}
-        onReplay={() => {}}
-      />,
+      <ReviewAnswers challenge={challenge} results={[]} onBack={() => {}} onReplay={() => {}} />,
     );
 
     expect(markup).toContain("Historial de respuestas");

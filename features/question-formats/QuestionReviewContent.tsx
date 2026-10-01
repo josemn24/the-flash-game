@@ -72,7 +72,10 @@ import type {
 } from "@/types/gameplay/practice";
 import type { AnswerValue } from "@/types/contracts";
 
-type ReviewProps<T extends PracticeQuestion = PracticeQuestion> = { question: T; result: AnswerResult };
+type ReviewProps<T extends PracticeQuestion = PracticeQuestion> = {
+  question: T;
+  result: AnswerResult;
+};
 
 function answerLabel(value: AnswerValue | null) {
   if (value === null) return "Sin respuesta";
@@ -102,7 +105,10 @@ function AnswerPair({ answer, correct }: { answer: AnswerValue | null; correct: 
   );
 }
 
-function ChoiceReview({ question, result }: ReviewProps<PracticeQuestionOfType<"multiple-choice">>) {
+function ChoiceReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"multiple-choice">>) {
   return <AnswerPair answer={result.answer} correct={question.correctAnswer} />;
 }
 
@@ -161,7 +167,10 @@ function MatchingReview({ question, result }: ReviewProps<PracticeQuestionOfType
   );
 }
 
-function ConnectPairsReview({ question, result }: ReviewProps<PracticeQuestionOfType<"connect-pairs">>) {
+function ConnectPairsReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"connect-pairs">>) {
   const answer = isConnectPairsAnswer(result.answer) ? result.answer : null;
   const details = result.details?.type === "connect-pairs" ? result.details : undefined;
   const showSubmittedPaths = answer !== null && !result.isCorrect;
@@ -415,7 +424,10 @@ function HeatMapReview({ question, result }: ReviewProps<PracticeQuestionOfType<
   );
 }
 
-function ImageLabelingReview({ question, result }: ReviewProps<PracticeQuestionOfType<"image-labeling">>) {
+function ImageLabelingReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"image-labeling">>) {
   if (question.task === "identify-one") {
     const answer = typeof result.answer === "string" ? result.answer : null;
     return (
@@ -534,7 +546,10 @@ function LogicCodeReview({ question, result }: ReviewProps<PracticeQuestionOfTyp
   );
 }
 
-function ClassificationReview({ question, result }: ReviewProps<PracticeQuestionOfType<"classification">>) {
+function ClassificationReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"classification">>) {
   const answer = isClassificationAnswer(result.answer) ? result.answer : null;
   return (
     <div className={styles.classificationReviewList}>
@@ -614,7 +629,10 @@ function FlashMemoryGrid({
   );
 }
 
-function FlashMemoryReview({ question, result }: ReviewProps<PracticeQuestionOfType<"flash-memory">>) {
+function FlashMemoryReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"flash-memory">>) {
   const answer = isFlashMemoryAnswer(result.answer) ? result.answer : null;
   const details = result.details?.type === "flash-memory" ? result.details : undefined;
   return (
@@ -651,7 +669,10 @@ function FlashMemoryReview({ question, result }: ReviewProps<PracticeQuestionOfT
   );
 }
 
-function getMatchedMemoryPairIds(question: PracticeQuestionOfType<"memory-pairs">, result: AnswerResult) {
+function getMatchedMemoryPairIds(
+  question: PracticeQuestionOfType<"memory-pairs">,
+  result: AnswerResult,
+) {
   const answer = isMemoryPairsAnswer(result.answer) ? result.answer : null;
   const tileById = new Map(question.tiles.map((tile) => [tile.id, tile]));
   return new Set(
@@ -729,7 +750,10 @@ function MemoryPairsGrid({
   );
 }
 
-function MemoryPairsReview({ question, result }: ReviewProps<PracticeQuestionOfType<"memory-pairs">>) {
+function MemoryPairsReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"memory-pairs">>) {
   const answer = isMemoryPairsAnswer(result.answer) ? result.answer : null;
   const details = result.details?.type === "memory-pairs" ? result.details : undefined;
   const matchedPairIds = getMatchedMemoryPairIds(question, result);
@@ -770,7 +794,10 @@ function MemoryPairsReview({ question, result }: ReviewProps<PracticeQuestionOfT
   );
 }
 
-function SimonSequenceReview({ question, result }: ReviewProps<PracticeQuestionOfType<"simon-sequence">>) {
+function SimonSequenceReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"simon-sequence">>) {
   const submittedSteps = isSimonSequenceAnswer(result.answer) ? result.answer : [];
   const details = result.details?.type === "simon-sequence" ? result.details : undefined;
   const labelFor = (step: string) => question.pads.find((pad) => pad.id === step)?.label ?? step;
@@ -799,7 +826,10 @@ function SimonSequenceReview({ question, result }: ReviewProps<PracticeQuestionO
   );
 }
 
-function LogicMatrixReview({ question, result }: ReviewProps<PracticeQuestionOfType<"logic-matrix">>) {
+function LogicMatrixReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"logic-matrix">>) {
   const piecesById = new Map(question.pieces.map((piece) => [piece.id, piece]));
   const labelFor = (pieceId: string | null) =>
     pieceId ? (piecesById.get(pieceId)?.label ?? pieceId) : "Casilla vacía";
@@ -832,7 +862,10 @@ function LogicMatrixReview({ question, result }: ReviewProps<PracticeQuestionOfT
   );
 }
 
-function MiniSudokuReview({ question, result }: ReviewProps<PracticeQuestionOfType<"mini-sudoku">>) {
+function MiniSudokuReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"mini-sudoku">>) {
   const answer: MiniSudokuAnswer | null = isMiniSudokuAnswer(result.answer)
     ? (result.answer as MiniSudokuAnswer)
     : null;
@@ -866,7 +899,10 @@ function MiniSudokuReview({ question, result }: ReviewProps<PracticeQuestionOfTy
   );
 }
 
-function MiniNonogramReview({ question, result }: ReviewProps<PracticeQuestionOfType<"mini-nonogram">>) {
+function MiniNonogramReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"mini-nonogram">>) {
   const answer: MiniNonogramAnswer | null = isMiniNonogramAnswer(result.answer)
     ? (result.answer as MiniNonogramAnswer)
     : null;
@@ -968,7 +1004,10 @@ function SlidingPuzzleBoard({ tiles, label }: { tiles: Array<number | null>; lab
   );
 }
 
-function SlidingPuzzleReview({ question, result }: ReviewProps<PracticeQuestionOfType<"sliding-puzzle">>) {
+function SlidingPuzzleReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"sliding-puzzle">>) {
   const answer: SlidingPuzzleAnswer | null = isSlidingPuzzleAnswer(result.answer)
     ? (result.answer as SlidingPuzzleAnswer)
     : null;
@@ -1262,7 +1301,10 @@ function WordHashtagReviewBoard({
   );
 }
 
-function WordHashtagReview({ question, result }: ReviewProps<PracticeQuestionOfType<"word-hashtag">>) {
+function WordHashtagReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"word-hashtag">>) {
   const answer: WordHashtagAnswer = isWordHashtagAnswer(result.answer)
     ? result.answer
     : { swaps: [] };
@@ -1313,7 +1355,10 @@ function WordHashtagReview({ question, result }: ReviewProps<PracticeQuestionOfT
   );
 }
 
-function WordSearchReview({ question, result }: ReviewProps<PracticeQuestionOfType<"word-search">>) {
+function WordSearchReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"word-search">>) {
   const answer: WordSearchAnswer = isWordSearchAnswer(result.answer)
     ? result.answer
     : { foundWordIds: [] };
@@ -1355,7 +1400,10 @@ function WordSearchReview({ question, result }: ReviewProps<PracticeQuestionOfTy
   );
 }
 
-function MiniWordleReview({ question, result }: ReviewProps<PracticeQuestionOfType<"mini-wordle">>) {
+function MiniWordleReview({
+  question,
+  result,
+}: ReviewProps<PracticeQuestionOfType<"mini-wordle">>) {
   const answer = isMiniWordleAnswer(result.answer) ? result.answer : null;
   const details = result.details?.type === "mini-wordle" ? result.details : undefined;
   const wordLength = getMiniWordleWordLength(question);

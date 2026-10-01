@@ -3,7 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { PublicFunctionArgs, RawRpcResponse } from "@/lib/supabase/rpcTypes";
 import type { AttemptExpirationQueries } from "@/infrastructure/supabase/attempts/attemptExpiration";
-import { isRoomCalendarReadRow, isRoomReadRow } from "./roomReadGuards";
+import { isRoomReadRow } from "./roomReadGuards";
 
 type RoomReadFunctionName =
   "get_my_room_cards" | "get_room_detail" | "get_room_introduction" | "get_room_calendar";

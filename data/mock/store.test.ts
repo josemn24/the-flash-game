@@ -4,7 +4,7 @@ import {
   DEMO_REFERENCE_TIME,
   demoIdentity,
   playerRouteAliases,
-  roomRouteAliases,
+  mockRoomKeys,
   scheduledChallengeRouteAliases,
 } from "@/data/mock/constants";
 import { deterministicMockUuid, mockId, utc } from "@/data/mock/identity";
@@ -18,7 +18,7 @@ import {
 } from "@/data/mock/compat/legacyQuestionAdapter";
 import {
   resolvePlayerRouteKey,
-  resolveRoomRouteKey,
+  resolveMockRoomKey,
   resolveScheduledChallengeRouteKey,
   selectChallengeRanking,
   selectOpenScheduledChallenge,
@@ -40,14 +40,14 @@ describe("normalized mock domain store", () => {
       deterministicMockUuid("room", "player"),
     );
     expect(Object.values(playerRouteAliases).every((id) => uuidV5Pattern.test(id))).toBe(true);
-    expect(resolveRoomRouteKey("tabarnia-room")).toBe(roomRouteAliases["tabarnia-room"]);
+    expect(resolveMockRoomKey("tabarnia-room")).toBe(mockRoomKeys["tabarnia-room"]);
     for (const [routeKey, id] of Object.entries(playerRouteAliases)) {
       expect(resolvePlayerRouteKey(routeKey)).toBe(id);
     }
     for (const [routeKey, id] of Object.entries(scheduledChallengeRouteAliases)) {
       expect(resolveScheduledChallengeRouteKey(routeKey)).toBe(id);
     }
-    expect(resolveRoomRouteKey("unknown")).toBeNull();
+    expect(resolveMockRoomKey("unknown")).toBeNull();
   });
 
   it("passes all relational and scoring integrity rules", () => {
@@ -158,7 +158,7 @@ describe("normalized mock domain store", () => {
       ["Rielbe", 158],
       ["Palmera", 98],
     ]);
-    const history = selectRoomHistory(roomRouteAliases["tabarnia-room"]);
+    const history = selectRoomHistory(mockRoomKeys["tabarnia-room"]);
     expect(history).toHaveLength(5);
     expect(history.every(({ scheduledChallenge }) => scheduledChallenge.status === "closed")).toBe(
       true,

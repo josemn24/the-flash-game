@@ -1,20 +1,11 @@
 import "server-only";
 
 import { cache } from "react";
-import {
-  isMockRoomRoute,
-  isMockRoomRouteEnabled,
-  mockChallengeQueries,
-  mockCurrentViewerProvider,
-  mockRoomQueries,
-} from "@/infrastructure/mock/composition";
 import { supabaseRoomQueries } from "@/infrastructure/supabase/rooms/queries/roomQueries";
 import { supabaseFlashQueries } from "@/infrastructure/supabase/gameplay/flashQueries";
 import { supabaseAlphabetQueries } from "@/infrastructure/supabase/gameplay/alphabetQueries";
 import { supabaseSurvivalQueries } from "@/infrastructure/supabase/gameplay/survivalQueries";
 import { supabasePyramidQueries } from "@/infrastructure/supabase/gameplay/pyramidQueries";
-import type { UtcIsoDateTime } from "@/types/domain";
-import type { QueryContext } from "@/types/view-models";
 import { getCurrentViewerProfile } from "@/server/profile";
 import { requireSuperadmin } from "@/server/admin";
 import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/admin/superadminEditorialQueries";
@@ -22,22 +13,11 @@ import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/adm
 import { supabaseSuperadminRoomQueries } from "@/infrastructure/supabase/admin/superadminQueries";
 import { supabaseSuperadminAttemptQueries } from "@/infrastructure/supabase/admin/superadminAttemptQueries";
 import { supabaseSuperadminDashboardQueries } from "@/infrastructure/supabase/admin/superadminDashboardQueries";
-import { mocksEnabled } from "@/server/runtime-scope";
 import type {
   EditorialContentStatus,
   SuperadminChallengeSummary,
   SuperadminEditorialEntry,
 } from "@/types/view-models/editorial";
-
-const getCurrentViewer = cache(() => mockCurrentViewerProvider.getCurrentViewer());
-
-const getQueryContext = cache(async (): Promise<QueryContext> => {
-  const viewer = await getCurrentViewer();
-  return {
-    viewerId: viewer.playerId,
-    now: new Date().toISOString() as UtcIsoDateTime,
-  };
-});
 
 export const getHomePageModel = cache(async () => {
   const viewer = await getCurrentViewerProfile();
@@ -50,85 +30,44 @@ export const getHomePageModel = cache(async () => {
 });
 
 export const getRoomDetailPageModel = cache(async (roomKey: string) =>
-  isMockRoomRouteEnabled(roomKey)
-    ? mockRoomQueries.getDetail(roomKey, await getQueryContext())
-    : isMockRoomRoute(roomKey)
-      ? null
-      : supabaseRoomQueries.getDetail(roomKey),
+  supabaseRoomQueries.getDetail(roomKey),
 );
 
 export const getRoomIntroductionPageModel = cache(async (roomKey: string, challengeKey: string) =>
-  isMockRoomRoute(roomKey) ? null : supabaseRoomQueries.getIntroduction(roomKey, challengeKey),
+  supabaseRoomQueries.getIntroduction(roomKey, challengeKey),
 );
 
 export const getRoomSettingsPageModel = cache(async (roomKey: string) =>
-  isMockRoomRouteEnabled(roomKey)
-    ? mockRoomQueries.getSettings(roomKey, await getQueryContext())
-    : isMockRoomRoute(roomKey)
-      ? null
-      : supabaseRoomQueries.getSettings(roomKey),
+  supabaseRoomQueries.getSettings(roomKey),
 );
 
 export const getRoomRankingPageModel = cache(async (roomKey: string) =>
-  isMockRoomRouteEnabled(roomKey)
-    ? mockRoomQueries.getRanking(roomKey, await getQueryContext())
-    : isMockRoomRoute(roomKey)
-      ? null
-      : supabaseRoomQueries.getRanking(roomKey),
+  supabaseRoomQueries.getRanking(roomKey),
 );
 
 export const getRoomMemberDetailPageModel = cache(
   async (roomKey: string, memberKey: string, publicationKey?: string) =>
-    isMockRoomRouteEnabled(roomKey)
-      ? mockRoomQueries.getMemberDetail(
-          roomKey,
-          memberKey,
-          await getQueryContext(),
-          publicationKey,
-        )
-      : isMockRoomRoute(roomKey)
-        ? null
-        : supabaseRoomQueries.getMemberDetail(roomKey, memberKey, publicationKey),
+    supabaseRoomQueries.getMemberDetail(roomKey, memberKey, publicationKey),
 );
 
 export const getRoomHistoryPageModel = cache(async (roomKey: string) =>
-  isMockRoomRouteEnabled(roomKey)
-    ? mockRoomQueries.listHistory(roomKey, await getQueryContext())
-    : isMockRoomRoute(roomKey)
-      ? null
-      : supabaseRoomQueries.listHistory(roomKey),
+  supabaseRoomQueries.listHistory(roomKey),
 );
 
 export const getRoomHistoryDetailPageModel = cache(async (roomKey: string, challengeKey: string) =>
-  isMockRoomRouteEnabled(roomKey)
-    ? mockRoomQueries.getHistoryDetail(roomKey, challengeKey, await getQueryContext())
-    : isMockRoomRoute(roomKey)
-      ? null
-      : supabaseRoomQueries.getHistoryDetail(roomKey, challengeKey),
+  supabaseRoomQueries.getHistoryDetail(roomKey, challengeKey),
 );
 
 export const getPlayableChallengePageModel = cache(
   async (challengeKey: string, roomKey: string | null = null) => {
-    if (roomKey && isMockRoomRoute(roomKey)) {
-      if (!mocksEnabled()) return null;
-      return mockChallengeQueries.getPlayable(challengeKey, roomKey, await getQueryContext());
-    }
-    if (roomKey) {
-      if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(challengeKey)) return null;
-      return (
-        (await supabaseFlashQueries.getPlayable(roomKey, challengeKey)) ??
-        (await supabaseAlphabetQueries.getPlayable(roomKey, challengeKey)) ??
-        (await supabaseSurvivalQueries.getPlayable(roomKey, challengeKey)) ??
-        supabasePyramidQueries.getPlayable(roomKey, challengeKey)
-      );
-    }
-    if (!mocksEnabled()) return null;
-    return mockChallengeQueries.getPlayable(challengeKey, roomKey, await getQueryContext());
+    if (!roomKey || !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(challengeKey)) return null;
+    return (
+      (await supabaseFlashQueries.getPlayable(roomKey, challengeKey)) ??
+      (await supabaseAlphabetQueries.getPlayable(roomKey, challengeKey)) ??
+      (await supabaseSurvivalQueries.getPlayable(roomKey, challengeKey)) ??
+      supabasePyramidQueries.getPlayable(roomKey, challengeKey)
+    );
   },
-);
-
-export const getFlashPopLobbyPageModel = cache(async () =>
-  mockChallengeQueries.getFlashPopLobby(await getQueryContext()),
 );
 
 export const getSuperadminDashboardPageModel = cache(async () => {
@@ -218,10 +157,7 @@ export const getSuperadminNewChallengePageModel = cache(async () => {
 });
 
 export const getSuperadminChallengeDetailPageModel = cache(
-  async (
-    challengeDefinitionId: string,
-    comparisonIds?: readonly [string, string],
-  ) => {
+  async (challengeDefinitionId: string, comparisonIds?: readonly [string, string]) => {
     const access = await requireSuperadmin();
     const [detail, questionLibrary, comparison] = await Promise.all([
       supabaseSuperadminEditorialQueries.getChallengeDetail(challengeDefinitionId),

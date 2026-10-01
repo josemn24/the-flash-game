@@ -18,7 +18,12 @@ type AdminShellProps = {
   readonly children: ReactNode;
 };
 
-export function AdminShell({ operator, activeSection, breadcrumbs = [], children }: AdminShellProps) {
+export function AdminShell({
+  operator,
+  activeSection,
+  breadcrumbs = [],
+  children,
+}: AdminShellProps) {
   return (
     <Canvas as="div" contentClassName={styles.content}>
       <a className={styles.skipLink} href="#admin-main-content">
@@ -57,7 +62,11 @@ export function AdminShell({ operator, activeSection, breadcrumbs = [], children
           <ol>
             {breadcrumbs.map((breadcrumb, index) => (
               <li key={`${breadcrumb.label}-${index}`}>
-                {breadcrumb.href ? <Link href={breadcrumb.href}>{breadcrumb.label}</Link> : <span>{breadcrumb.label}</span>}
+                {breadcrumb.href ? (
+                  <Link href={breadcrumb.href}>{breadcrumb.label}</Link>
+                ) : (
+                  <span>{breadcrumb.label}</span>
+                )}
                 {index < breadcrumbs.length - 1 ? <span aria-hidden="true">/</span> : null}
               </li>
             ))}
@@ -65,7 +74,9 @@ export function AdminShell({ operator, activeSection, breadcrumbs = [], children
         </nav>
       ) : null}
 
-      <main id="admin-main-content" className={styles.main} tabIndex={-1}>{children}</main>
+      <main id="admin-main-content" className={styles.main} tabIndex={-1}>
+        {children}
+      </main>
     </Canvas>
   );
 }

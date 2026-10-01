@@ -30,7 +30,7 @@ for (const file of files) {
     violations.push(`${file}: usa los tokens de marca en lugar de literales #d7ff18/#d7ff19`);
   }
 
-  if (source.includes('data-variant="flash-pop"') || source.includes('data-theme')) {
+  if (source.includes('data-variant="flash-pop"') || source.includes("data-theme")) {
     violations.push(`${file}: no puede depender de atributos de tema o variante`);
   }
 }
@@ -52,7 +52,9 @@ if (importantOutsideMotion) {
 }
 
 if (globalStyles.includes("app-variants") || globalStyles.includes("data-theme")) {
-  violations.push("app/globals.css: el tema único no puede declarar capas ni atributos de variantes");
+  violations.push(
+    "app/globals.css: el tema único no puede declarar capas ni atributos de variantes",
+  );
 }
 
 if (violations.length > 0) {

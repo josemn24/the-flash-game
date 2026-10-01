@@ -3,11 +3,11 @@ import { getCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatu
 import { projectLegacyAttempt } from "@/data/mock/compat/legacyAdapters";
 import {
   getPlayerRouteKey,
-  getRoomRouteKey,
+  getMockRoomKey,
   getScheduledChallengeRouteKey,
   resolvePlayerRouteKey,
   resolveScheduledChallengeRouteKey,
-  resolveRoomRouteKey,
+  resolveMockRoomKey,
   selectChallengeRanking,
   selectOpenScheduledChallenge,
   selectRoomHistory,
@@ -246,7 +246,7 @@ export class MockRoomQueries implements RoomQueries {
   constructor(private readonly store: DomainStore) {}
 
   private roomAccess(roomKey: string, viewerId: PlayerId) {
-    const roomId = resolveRoomRouteKey(roomKey);
+    const roomId = resolveMockRoomKey(roomKey);
     const room = roomId ? this.store.rooms.find(({ id }) => id === roomId) : undefined;
     const membership = room ? this.effectiveMembership(room.id, viewerId) : undefined;
     return room && membership ? { room, membership } : null;
@@ -398,7 +398,7 @@ export class MockRoomQueries implements RoomQueries {
 
   private roomCard(roomId: RoomId, context: QueryContext): RoomCardModel | null {
     const room = this.store.rooms.find(({ id }) => id === roomId);
-    const roomKey = room ? getRoomRouteKey(room.id) : null;
+    const roomKey = room ? getMockRoomKey(room.id) : null;
     const season = room ? this.activeSeason(room.id) : null;
     if (!room || !roomKey || !season) return null;
     const leaderboard = this.seasonLeaderboard(room.id, season);

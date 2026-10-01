@@ -46,7 +46,9 @@ describe("readPrivateHealth", () => {
       checks: { auth: true, database: true, schema: true },
     });
 
-    const markerQuery = client.query.mock.calls.find(([query]) => String(query).includes("schema_revision_marker"))?.[0];
+    const markerQuery = client.query.mock.calls.find(([query]) =>
+      String(query).includes("schema_revision_marker"),
+    )?.[0];
     expect(pgMocks.Pool).toHaveBeenCalledWith({
       connectionString: process.env.SUPABASE_DB_URL,
       max: 1,

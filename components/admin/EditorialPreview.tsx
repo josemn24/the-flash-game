@@ -241,7 +241,12 @@ function renderQuestion(
       >
         <p className={styles.category}>{question.publicPayload.category ?? ""}</p>
         <h4>{question.publicPayload.question}</h4>
-        <ZipBoard question={boardQuestion} path={[]} solutionPath={boardQuestion.solution} disabled />
+        <ZipBoard
+          question={boardQuestion}
+          path={[]}
+          solutionPath={boardQuestion.solution}
+          disabled
+        />
         <p className={styles.solution}>
           Solución privada: <strong>{boardQuestion.solution.length} celdas verificadas</strong>
         </p>
@@ -284,7 +289,8 @@ function renderQuestion(
           label="Solución de referencia de Escape"
         />
         <p className={styles.solution}>
-          Solución privada: <strong>{question.solutionPayload.optimalMoves} movimientos óptimos</strong>
+          Solución privada:{" "}
+          <strong>{question.solutionPayload.optimalMoves} movimientos óptimos</strong>
         </p>
       </QuestionFrame>
     );

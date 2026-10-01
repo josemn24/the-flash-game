@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AnswerValue } from "@/types/contracts";
 import type { AnswerResult } from "@/types/gameplay/result";
@@ -547,7 +547,7 @@ export function useServerFlashSession({
     }
   };
 
-  const activatePreparedPyramid = async (preparation: PyramidPreparation) => {
+  const activatePreparedPyramid = useEffectEvent(async (preparation: PyramidPreparation) => {
     if (pyramidActivationInFlight.current || !attemptRef.current) return;
     pyramidActivationInFlight.current = true;
     try {
@@ -586,7 +586,7 @@ export function useServerFlashSession({
       pyramidActivationInFlight.current = false;
       pyramidStartInFlight.current = false;
     }
-  };
+  });
 
   useEffect(() => {
     if (

@@ -293,7 +293,9 @@ for (const file of productionFiles) {
     }
 
     if (layer === "application" && isApplicationForbiddenImport(imported.specifier)) {
-      violations.push(`${relative} imports framework or infrastructure dependency ${imported.specifier}`);
+      violations.push(
+        `${relative} imports framework or infrastructure dependency ${imported.specifier}`,
+      );
     }
 
     if (layer === "app" && ["data", "infrastructure", "test-utils"].includes(area)) {
@@ -345,13 +347,67 @@ for (const file of productionFiles) {
   }
 }
 
-const serverFacade = path.join(process.cwd(), "server", "data-access.ts");
-const serverFacadeSource = await readFile(serverFacade, "utf8");
-if (!/^import ["']server-only["'];/m.test(serverFacadeSource)) {
-  violations.push("server/data-access.ts is missing the server-only marker");
+const serverFacadeFiles = [
+  "server/production-data-access.ts",
+  "server/demo-data-access.ts",
+  "server/production-room-members.ts",
+];
+for (const relative of serverFacadeFiles) {
+  const facadePath = path.join(process.cwd(), relative);
+  const facadeSource = await readFile(facadePath, "utf8");
+  if (!/^import ["']server-only["'];/m.test(facadeSource)) {
+    violations.push(`${relative} is missing the server-only marker`);
+  }
+  if (
+    relative.endsWith("data-access.ts") &&
+    !/import\s+\{\s*cache\s*\}\s+from\s+["']react["']/.test(facadeSource)
+  ) {
+    violations.push(`${relative} does not use React request memoization`);
+  }
+  if (
+    relative === "server/production-data-access.ts" &&
+    /@\/infrastructure\/mock\//.test(facadeSource)
+  ) {
+    violations.push(`${relative} imports mock infrastructure`);
+  }
+  if (
+    relative === "server/production-room-members.ts" &&
+    /@\/(?:infrastructure\/mock|data\/mock)\//.test(facadeSource)
+  ) {
+    violations.push(`${relative} imports mock infrastructure or data`);
+  }
+  if (
+    relative === "server/demo-data-access.ts" &&
+    /@\/infrastructure\/supabase\//.test(facadeSource)
+  ) {
+    violations.push(`${relative} imports production Supabase infrastructure`);
+  }
 }
-if (!/import\s+\{\s*cache\s*\}\s+from\s+["']react["']/.test(serverFacadeSource)) {
-  violations.push("server/data-access.ts does not use React request memoization");
+
+for (const file of productionFiles) {
+  const relative = path.relative(process.cwd(), file);
+  if (!relative.startsWith(`server${path.sep}`)) continue;
+  const source = await readFile(file, "utf8");
+  if (relative === "server/demo-data-access.ts") continue;
+  if (/@\/infrastructure\/mock\//.test(source) || /@\/data\/mock\//.test(source)) {
+    violations.push(`${relative} imports mock composition or data`);
+  }
+}
+
+for (const file of productionFiles) {
+  const relative = path.relative(process.cwd(), file);
+  const source = await readFile(file, "utf8");
+  const isProductionRoute =
+    relative.startsWith(`app${path.sep}salas${path.sep}`) ||
+    relative.startsWith(`app${path.sep}desafios${path.sep}`) ||
+    relative.startsWith(`app${path.sep}admin${path.sep}`);
+  const isDemoRoute = relative.startsWith(`app${path.sep}flash-pop${path.sep}`);
+  if (isProductionRoute && source.includes("@/server/demo-data-access")) {
+    violations.push(`${relative} imports the demo server facade`);
+  }
+  if (isDemoRoute && source.includes("@/server/production-data-access")) {
+    violations.push(`${relative} imports the production server facade`);
+  }
 }
 
 const attemptCommandsPort = path.join(process.cwd(), "application", "ports", "attempt-commands.ts");

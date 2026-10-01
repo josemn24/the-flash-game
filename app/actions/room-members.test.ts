@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
-vi.mock("@/server/room-members", () => ({
+vi.mock("@/server/production-room-members", () => ({
   isValidRoomMemberTarget: mocks.isValidRoomMemberTarget,
   manageRoomMemberCommand: mocks.manageRoomMemberCommand,
 }));
@@ -21,8 +21,8 @@ function formData(values: Record<string, string>) {
 }
 
 const valid = {
-  roomKey: "tabarnia-room",
-  targetMemberKey: "marta",
+  roomKey: "tabarnia",
+  targetMemberKey: "00000000-0000-4000-8000-000000000002",
   action: "grant_admin",
   idempotencyKey: "action-test-1",
 };
@@ -47,7 +47,7 @@ describe("manageRoomMember", () => {
   it("delegates the command and revalidates both room views", async () => {
     await expect(manageRoomMember({}, formData(valid))).resolves.toEqual({ ok: true });
     expect(mocks.manageRoomMemberCommand).toHaveBeenCalledWith(valid);
-    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(1, "/salas/tabarnia-room/ajustes");
-    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(2, "/salas/tabarnia-room");
+    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(1, "/salas/tabarnia/ajustes");
+    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(2, "/salas/tabarnia");
   });
 });

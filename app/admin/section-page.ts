@@ -1,5 +1,8 @@
 import { notFound, redirect } from "next/navigation";
-import { AuthenticationRequiredError, SuperadminAccessDeniedError } from "@/application/administration/errors";
+import {
+  AuthenticationRequiredError,
+  SuperadminAccessDeniedError,
+} from "@/application/administration/errors";
 
 export async function loadAdminPageModel<T>(loader: () => Promise<T>): Promise<T> {
   try {

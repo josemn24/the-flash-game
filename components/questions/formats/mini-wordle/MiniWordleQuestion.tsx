@@ -99,11 +99,7 @@ export function MiniWordleQuestion({
   useEffect(() => {
     const previousGuessCount = previousGuessCountRef.current;
     previousGuessCountRef.current = guesses.length;
-    if (
-      guesses.length > previousGuessCount &&
-      guesses.length < maxAttempts &&
-      !locked
-    ) {
+    if (guesses.length > previousGuessCount && guesses.length < maxAttempts && !locked) {
       inputRef.current?.focus();
     }
   }, [guesses.length, locked, maxAttempts]);

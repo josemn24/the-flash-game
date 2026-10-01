@@ -333,7 +333,10 @@ export type QuestionContractMap = {
       readonly initialLetters: readonly (string | null)[];
       readonly maxMoves: number;
     };
-    readonly solution: { readonly words: ContractShapes.WordHashtagWords; readonly explanation?: string };
+    readonly solution: {
+      readonly words: ContractShapes.WordHashtagWords;
+      readonly explanation?: string;
+    };
     readonly answer: ContractShapes.WordHashtagAnswer;
     readonly reveal: never;
   };

@@ -18,11 +18,7 @@ import {
   useRoomAttemptResume,
   useRoomAttemptSnapshot,
 } from "@/features/rooms/useRoomAttemptSnapshot";
-import type {
-  AlphabetChallenge,
-  AnswerStatus,
-  ChallengeCompletionResult,
-} from "@/types/gameplay";
+import type { AlphabetChallenge, AnswerStatus, ChallengeCompletionResult } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";
 import styles from "./FlashPopAlphabetGame.module.css";
 

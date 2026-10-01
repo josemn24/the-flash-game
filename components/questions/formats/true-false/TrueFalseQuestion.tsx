@@ -12,11 +12,7 @@ export function TrueFalseQuestion({
   onSubmit: (answer: boolean) => void;
 }) {
   return (
-    <div
-      className={`${styles.root}`}
-      role="group"
-      aria-label="Opciones de respuesta"
-    >
+    <div className={`${styles.root}`} role="group" aria-label="Opciones de respuesta">
       <motion.button
         type="button"
         className={`${styles.button} ${styles.trueButton}`}

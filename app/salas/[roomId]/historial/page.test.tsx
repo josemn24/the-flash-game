@@ -1,12 +1,22 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { FlashPopRoomHistory } from "@/components/game/modes/flash-pop/FlashPopRoomHistory";
 import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+
+const mocks = vi.hoisted(() => ({
+  getRoomHistoryPageModel: vi.fn(),
+}));
+
+vi.mock("@/server/production-data-access", () => mocks);
+
 import { dynamic, generateMetadata } from "./page";
 
 describe("room history route", () => {
   it("exposes Tabarnia and renders previous games", async () => {
     expect(dynamic).toBe("force-dynamic");
+    mocks.getRoomHistoryPageModel.mockResolvedValue(
+      await mockRoomQueries.listHistory("tabarnia-room", mockQueryContext()),
+    );
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
     ).resolves.toMatchObject({

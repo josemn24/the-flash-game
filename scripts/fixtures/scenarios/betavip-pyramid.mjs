@@ -10,7 +10,15 @@ function question(slug, type, prompt, timeLimitMs, publicFields, solutionPayload
   return {
     slug,
     type,
-    points: { "odd-one-out": 10, "logic-matrix": 12, zip: 13, "connect-pairs": 14, escape: 15, "logic-code": 17, queens: 19 }[type],
+    points: {
+      "odd-one-out": 10,
+      "logic-matrix": 12,
+      zip: 13,
+      "connect-pairs": 14,
+      escape: 15,
+      "logic-code": 17,
+      queens: 19,
+    }[type],
     timeLimitMs,
     payloadSchemaVersion: 1,
     publicPayload: {
@@ -27,7 +35,8 @@ export const BETA_VIP_PYRAMID = {
   slug: "betavip-cumbre-logica-ii",
   title: "Cumbre lógica II",
   subtitle: "Siete formatos, una cima",
-  description: "Una ruta de lógica avanzada que combina clasificación, patrones, recorridos y restricciones.",
+  description:
+    "Una ruta de lógica avanzada que combina clasificación, patrones, recorridos y restricciones.",
   modeConfig: {},
 };
 
@@ -50,7 +59,9 @@ export const betaVipPyramidQuestions = [
       instruction: "Completa un único recorrido ortogonal del 1 al 8.",
     },
     {
-      solution: [0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24],
+      solution: [
+        0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24,
+      ],
       explanation: "El recorrido serpentea por las cinco filas sin repetir ninguna celda.",
     },
   ),
@@ -73,11 +84,24 @@ export const betaVipPyramidQuestions = [
         { id: "triangle-left", symbol: "▲←", label: "Triángulo y flecha izquierda" },
         { id: "square-left", symbol: "■←", label: "Cuadrado y flecha izquierda" },
       ],
-      cells: ["circle-up", "triangle-right", "square-down", "triangle-down", "square-up", "circle-right", "square-right", "circle-down", null],
+      cells: [
+        "circle-up",
+        "triangle-right",
+        "square-down",
+        "triangle-down",
+        "square-up",
+        "circle-right",
+        "square-right",
+        "circle-down",
+        null,
+      ],
       optionIds: ["triangle-up", "triangle-left", "circle-up", "square-left"],
       showPieceLabels: false,
     },
-    { correctOptionId: "triangle-up", explanation: "La última celda necesita el triángulo con la flecha hacia arriba." },
+    {
+      correctOptionId: "triangle-up",
+      explanation: "La última celda necesita el triángulo con la flecha hacia arriba.",
+    },
   ),
   question(
     "betavip-cumbre-logica-ii-intruso",
@@ -93,7 +117,10 @@ export const betaVipPyramidQuestions = [
         { id: "cube-125", label: "125" },
       ],
     },
-    { correctAnswer: "cube-81", explanation: "8, 27, 64 y 125 son cubos perfectos; 81 es la única excepción." },
+    {
+      correctAnswer: "cube-81",
+      explanation: "8, 27, 64 y 125 son cubos perfectos; 81 es la única excepción.",
+    },
   ),
   question(
     "betavip-cumbre-logica-ii-conexiones",
@@ -117,7 +144,8 @@ export const betaVipPyramidQuestions = [
         diamond: [20, 15, 10, 5, 6, 7],
         star: [8, 13, 18, 17, 16, 11, 12],
       },
-      explanation: "Las cuatro rutas forman una espiral fragmentada y cubren las 25 casillas sin cruces ni solapamientos.",
+      explanation:
+        "Las cuatro rutas forman una espiral fragmentada y cubren las 25 casillas sin cruces ni solapamientos.",
     },
   ),
   question(
@@ -191,6 +219,10 @@ export const betaVipPyramidQuestions = [
       regions: [0, 1, 1, 1, 4, 0, 2, 1, 4, 4, 0, 2, 1, 4, 3, 0, 2, 4, 4, 3, 2, 2, 3, 3, 3],
       prefilledQueens: [2],
     },
-    { solution: [2, 5, 13, 16, 24], explanation: "La solución respeta las cinco filas, columnas y regiones sin coronas adyacentes." },
+    {
+      solution: [2, 5, 13, 16, 24],
+      explanation:
+        "La solución respeta las cinco filas, columnas y regiones sin coronas adyacentes.",
+    },
   ),
 ];

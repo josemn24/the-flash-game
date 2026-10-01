@@ -60,7 +60,10 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
     ).toBeVisible();
   });
 
-  test("bloquea una segunda sesión y no muestra una acción de abandono", async ({ page, browser }) => {
+  test("bloquea una segunda sesión y no muestra una acción de abandono", async ({
+    page,
+    browser,
+  }) => {
     test.setTimeout(60_000);
     const data = await fixture();
     const secondContext = await browser.newContext();

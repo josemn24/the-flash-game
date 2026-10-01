@@ -1,4 +1,4 @@
-import { demoIdentity, roomRouteAliases } from "@/data/mock/constants";
+import { demoIdentity, mockRoomKeys } from "@/data/mock/constants";
 import { mockDomainStore } from "@/data/mock/store";
 import { getScheduledChallengeRouteKey } from "@/data/mock/selectors";
 import { toLegacyRoomHistory, toLegacyRoomSnapshot } from "@/data/mock/legacyAdapters";
@@ -9,7 +9,7 @@ import type { PlayerId, UtcIsoDateTime } from "@/types/domain";
 import type { QueryContext } from "@/types/view-models";
 
 export const demoRoom = toLegacyRoomSnapshot(
-  roomRouteAliases["tabarnia-room"],
+  mockRoomKeys["tabarnia-room"],
   demoIdentity.currentPlayerId,
 ) as Room;
 
@@ -27,7 +27,7 @@ export function mockQueryContext(
 }
 
 export function getMockRoomHistory(roomId: string) {
-  const roomIdValue = roomRouteAliases[roomId as keyof typeof roomRouteAliases];
+  const roomIdValue = mockRoomKeys[roomId as keyof typeof mockRoomKeys];
   return roomIdValue ? toLegacyRoomHistory(roomIdValue) : [];
 }
 

@@ -6,7 +6,7 @@ import { legacyChallenges } from "@/data/mock/compat/legacyChallengeAdapter";
 import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import {
   getPlayerRouteKey,
-  resolveRoomRouteKey,
+  resolveMockRoomKey,
   resolveScheduledChallengeRouteKey,
   selectBestCompletedAttempt,
 } from "@/data/mock/selectors";
@@ -107,7 +107,7 @@ export class MockChallengeQueries implements ChallengeQueries {
     if (!schedule) return null;
     let roomContext;
     if (roomKey !== null) {
-      const roomId = resolveRoomRouteKey(roomKey);
+      const roomId = resolveMockRoomKey(roomKey);
       const season = this.store.seasons.find(({ id }) => id === schedule.seasonId);
       const room = roomId ? this.store.rooms.find(({ id }) => id === roomId) : undefined;
       const membership = room

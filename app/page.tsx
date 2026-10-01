@@ -1,6 +1,6 @@
 import { AuthPanel } from "@/components/auth/AuthPanel.client";
 import { FlashPopHome } from "@/components/game";
-import { getHomePageModel } from "@/server/data-access";
+import { getHomePageModel } from "@/server/production-data-access";
 
 export const dynamic = "force-dynamic";
 

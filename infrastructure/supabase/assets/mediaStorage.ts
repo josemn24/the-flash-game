@@ -1,7 +1,11 @@
 import "server-only";
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { MediaStorage, MediaUploadInspection, MediaUploadPreparation } from "@/application/ports/media-storage";
+import type {
+  MediaStorage,
+  MediaUploadInspection,
+  MediaUploadPreparation,
+} from "@/application/ports/media-storage";
 import { inspectAvatarBytes, inspectQuestionAssetBytes } from "@/lib/media/avatarValidation";
 
 const AVATAR_BUCKET = "avatars" as const;
@@ -18,7 +22,9 @@ function getAdminClient(): SupabaseClient {
 export const supabaseMediaStorage: MediaStorage = {
   async prepareUpload(input): Promise<MediaUploadPreparation> {
     const client = getAdminClient();
-    const { data, error } = await client.storage.from(input.bucket).createSignedUploadUrl(input.objectPath);
+    const { data, error } = await client.storage
+      .from(input.bucket)
+      .createSignedUploadUrl(input.objectPath);
     if (error || !data?.signedUrl || !data.token) throw new Error("storage_unavailable");
     return {
       assetId: input.assetId,
@@ -30,11 +36,15 @@ export const supabaseMediaStorage: MediaStorage = {
   },
 
   async inspectUpload(input): Promise<MediaUploadInspection> {
-    const bucket = input.objectPath.startsWith("question-assets/") ? "question-assets" : AVATAR_BUCKET;
+    const bucket = input.objectPath.startsWith("question-assets/")
+      ? "question-assets"
+      : AVATAR_BUCKET;
     const { data, error } = await getAdminClient().storage.from(bucket).download(input.objectPath);
     if (error || !data) throw new Error("upload_missing");
     const bytes = new Uint8Array(await data.arrayBuffer());
-    return bucket === "question-assets" ? inspectQuestionAssetBytes(bytes) : inspectAvatarBytes(bytes);
+    return bucket === "question-assets"
+      ? inspectQuestionAssetBytes(bytes)
+      : inspectAvatarBytes(bytes);
   },
 
   async deleteObject(input) {
@@ -44,8 +54,7 @@ export const supabaseMediaStorage: MediaStorage = {
 
   async createSignedReadUrl(input) {
     const { data, error } = await getAdminClient()
-      .storage
-      .from(input.bucket)
+      .storage.from(input.bucket)
       .createSignedUrl(input.objectPath, input.expiresInSeconds);
     if (error || !data?.signedUrl) throw new Error("storage_unavailable");
     return {

@@ -15,11 +15,12 @@ export async function resolveCompetitiveQuestionPayload(input: {
   if (!isRecord(input.publicPayload)) {
     return input.publicPayload;
   }
-  const referenceKey = isRecord(input.publicPayload.surface) && typeof input.publicPayload.surface.assetId === "string"
-    ? "surface"
-    : isRecord(input.publicPayload.media) && typeof input.publicPayload.media.assetId === "string"
-      ? "media"
-      : null;
+  const referenceKey =
+    isRecord(input.publicPayload.surface) && typeof input.publicPayload.surface.assetId === "string"
+      ? "surface"
+      : isRecord(input.publicPayload.media) && typeof input.publicPayload.media.assetId === "string"
+        ? "media"
+        : null;
   if (!referenceKey) return input.publicPayload;
   const reference = input.publicPayload[referenceKey] as Record<string, unknown>;
 
@@ -39,8 +40,7 @@ export async function resolveCompetitiveQuestionPayload(input: {
   }
   return {
     ...input.publicPayload,
-    [referenceKey]: referenceKey === "media"
-      ? runtimeReference
-      : { ...runtimeReference, src: signed.signedUrl },
+    [referenceKey]:
+      referenceKey === "media" ? runtimeReference : { ...runtimeReference, src: signed.signedUrl },
   };
 }

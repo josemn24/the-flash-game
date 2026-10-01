@@ -12,7 +12,7 @@ import type {
   PipesAnswer,
   PipesQuestion as PipesQuestionType,
   PipesTileKind,
-  } from "@/types/gameplay/practice";
+} from "@/types/gameplay/practice";
 import styles from "./PipesQuestion.module.css";
 
 const KIND_LABEL: Record<PipesTileKind, string> = {
@@ -196,10 +196,7 @@ export function PipesQuestion({
   };
 
   return (
-    <section
-      className={styles.root}
-      aria-label="Tuberías, conecta toda la red"
-    >
+    <section className={styles.root} aria-label="Tuberías, conecta toda la red">
       <div className={styles.header}>
         <span>Conecta toda la red</span>
         <strong>{answer.moves} giros</strong>

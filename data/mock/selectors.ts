@@ -1,9 +1,9 @@
 import {
   playerRouteAliases,
-  roomRouteAliases,
+  mockRoomKeys,
   scheduledChallengeRouteAliases,
   type PlayerRouteKey,
-  type RoomRouteKey,
+  type MockRoomKey,
   type ScheduledChallengeRouteKey,
 } from "@/data/mock/constants";
 import { mockDomainStore, type MockDomainStore } from "@/data/mock/store";
@@ -26,12 +26,12 @@ function reverseAliases<Value extends string>(aliases: Readonly<Record<string, V
   return new Map(Object.entries(aliases).map(([routeKey, id]) => [id, routeKey]));
 }
 
-const roomRouteById = reverseAliases(roomRouteAliases);
+const mockRoomKeyById = reverseAliases(mockRoomKeys);
 const playerRouteById = reverseAliases(playerRouteAliases);
 const scheduledChallengeRouteById = reverseAliases(scheduledChallengeRouteAliases);
 
-export function resolveRoomRouteKey(routeKey: string): RoomId | null {
-  return roomRouteAliases[routeKey as RoomRouteKey] ?? null;
+export function resolveMockRoomKey(roomKey: string): RoomId | null {
+  return mockRoomKeys[roomKey as MockRoomKey] ?? null;
 }
 
 export function resolvePlayerRouteKey(routeKey: string): PlayerId | null {
@@ -42,8 +42,8 @@ export function resolveScheduledChallengeRouteKey(routeKey: string): ScheduledCh
   return scheduledChallengeRouteAliases[routeKey as ScheduledChallengeRouteKey] ?? null;
 }
 
-export function getRoomRouteKey(id: RoomId): RoomRouteKey | null {
-  return (roomRouteById.get(id) as RoomRouteKey | undefined) ?? null;
+export function getMockRoomKey(id: RoomId): MockRoomKey | null {
+  return (mockRoomKeyById.get(id) as MockRoomKey | undefined) ?? null;
 }
 
 export function getPlayerRouteKey(id: PlayerId): PlayerRouteKey | null {

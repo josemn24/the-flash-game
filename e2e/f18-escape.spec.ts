@@ -35,9 +35,13 @@ async function solveEscape(page: Page) {
     const startY = buttonBox!.y + buttonBox!.height / 2;
     await page.mouse.move(startX, startY);
     await page.mouse.down();
-    await page.mouse.move(startX + (axis === "x" ? distance * cellSize : 0), startY + (axis === "y" ? distance * cellSize : 0), {
-      steps: 8,
-    });
+    await page.mouse.move(
+      startX + (axis === "x" ? distance * cellSize : 0),
+      startY + (axis === "y" ? distance * cellSize : 0),
+      {
+        steps: 8,
+      },
+    );
     await page.mouse.up();
     await expect(page.getByText(new RegExp(`${count} movimiento`))).toBeVisible();
   };
@@ -49,7 +53,9 @@ async function solveEscape(page: Page) {
 }
 
 test.describe("F18 — escape competitivo", () => {
-  test("oculta la solución, acepta la ruta final y reintenta idempotentemente", async ({ page }) => {
+  test("oculta la solución, acepta la ruta final y reintenta idempotentemente", async ({
+    page,
+  }) => {
     test.setTimeout(75_000);
     const data = await fixture();
     await openFlash(page, data.users.charlie);

@@ -9,7 +9,13 @@ type AdminSectionHeaderProps = {
   readonly trailing?: ReactNode;
 };
 
-export function AdminSectionHeader({ eyebrow, title, id, description, trailing }: AdminSectionHeaderProps) {
+export function AdminSectionHeader({
+  eyebrow,
+  title,
+  id,
+  description,
+  trailing,
+}: AdminSectionHeaderProps) {
   return (
     <div className={styles.root}>
       <div>

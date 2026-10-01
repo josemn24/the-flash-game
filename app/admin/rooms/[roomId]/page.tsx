@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminRoomDetail, type AdminRoomTab } from "@/components/admin";
-import { getSuperadminRoomDetailPageModel } from "@/server/data-access";
+import { getSuperadminRoomDetailPageModel } from "@/server/production-data-access";
 import { loadAdminPageModel } from "../../section-page";
 
 export const dynamic = "force-dynamic";
@@ -49,12 +49,12 @@ export default async function AdminRoomPage({ params, searchParams }: AdminRoomP
     query.member === "added"
       ? "Usuario incorporado a la sala."
       : query.created === "1"
-      ? notices.created
-      : query.season
-        ? notices.season
-        : query.calendar
-          ? notices.calendar
-          : null;
+        ? notices.created
+        : query.season
+          ? notices.season
+          : query.calendar
+            ? notices.calendar
+            : null;
 
   return <AdminRoomDetail model={page} tab={tab} notice={notice} />;
 }

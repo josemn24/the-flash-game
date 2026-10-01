@@ -1,8 +1,5 @@
 import { SCORING_POLICIES, type ScoringPolicy } from "@/features/question-formats/scoringPolicies";
-import type {
-  PracticeQuestionOfType,
-  PracticeQuestionType,
-} from "@/types/gameplay/practice";
+import type { PracticeQuestionOfType, PracticeQuestionType } from "@/types/gameplay/practice";
 
 export type QuestionFormatGuide<T extends PracticeQuestionType = PracticeQuestionType> = {
   id: T;

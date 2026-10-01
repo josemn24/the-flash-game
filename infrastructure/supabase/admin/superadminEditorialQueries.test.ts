@@ -86,7 +86,14 @@ const questionDocument = {
   type: "multiple-choice" as const,
   payloadSchemaVersion: 1 as const,
   timeLimitMs: 15000,
-  publicPayload: { category: "Test", tags: {}, question: "Question", options: ["A", "B"], media: null, promptVisual: null },
+  publicPayload: {
+    category: "Test",
+    tags: {},
+    question: "Question",
+    options: ["A", "B"],
+    media: null,
+    promptVisual: null,
+  },
   solutionPayload: { correctAnswer: "A", explanation: "A" },
 };
 const libraryEntry = {
@@ -167,7 +174,10 @@ describe("SupabaseSuperadminEditorialQueries", () => {
 
   it("reads one challenge detail and returns null for an invalid or missing definition", async () => {
     const queries = new SupabaseSuperadminEditorialQueries();
-    mocks.rpc.mockResolvedValue({ data: { challengeDefinitionId: entry.challengeDefinitionId, entries: [entry] }, error: null });
+    mocks.rpc.mockResolvedValue({
+      data: { challengeDefinitionId: entry.challengeDefinitionId, entries: [entry] },
+      error: null,
+    });
 
     await expect(queries.getChallengeDetail(entry.challengeDefinitionId)).resolves.toEqual({
       challengeDefinitionId: entry.challengeDefinitionId,
@@ -213,8 +223,12 @@ describe("SupabaseSuperadminEditorialQueries", () => {
       document,
       reason: "Test update",
     };
-    await expect(queries.updateFlashDraft(updateInput)).resolves.toMatchObject({ source: "supabase" });
-    expect(mocks.rpc).toHaveBeenLastCalledWith("update_superadmin_flash_draft", { input: updateInput });
+    await expect(queries.updateFlashDraft(updateInput)).resolves.toMatchObject({
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("update_superadmin_flash_draft", {
+      input: updateInput,
+    });
 
     const publishInput = {
       idempotencyKey: "editorial-test-3",
@@ -230,8 +244,12 @@ describe("SupabaseSuperadminEditorialQueries", () => {
       sourceChallengeVersionId: entry.challengeVersionId,
       reason: "Create revision",
     };
-    await expect(queries.createChallengeRevision(revisionInput)).resolves.toMatchObject({ source: "supabase" });
-    expect(mocks.rpc).toHaveBeenLastCalledWith("create_superadmin_challenge_revision", { input: revisionInput });
+    await expect(queries.createChallengeRevision(revisionInput)).resolves.toMatchObject({
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("create_superadmin_challenge_revision", {
+      input: revisionInput,
+    });
 
     const archiveInput = {
       idempotencyKey: "editorial-test-5",
@@ -239,8 +257,12 @@ describe("SupabaseSuperadminEditorialQueries", () => {
       expectedUpdatedAt: entry.updatedAt,
       reason: "Archive version",
     };
-    await expect(queries.archiveChallengeVersion(archiveInput)).resolves.toMatchObject({ source: "supabase" });
-    expect(mocks.rpc).toHaveBeenLastCalledWith("archive_superadmin_challenge_version", { input: archiveInput });
+    await expect(queries.archiveChallengeVersion(archiveInput)).resolves.toMatchObject({
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("archive_superadmin_challenge_version", {
+      input: archiveInput,
+    });
 
     mocks.rpc.mockResolvedValue({ data: { ...entry, document: null }, error: null });
     await expect(queries.createFlashDraft(input)).resolves.toMatchObject({
@@ -251,15 +273,32 @@ describe("SupabaseSuperadminEditorialQueries", () => {
   });
 
   it("reads the library and routes version commands through dedicated RPCs", async () => {
-    const detail = { questionDefinitionId, slug: "question-library", versions: [{ ...libraryEntry, document: questionDocument }] };
-    mocks.rpc.mockResolvedValue({ data: { entries: [libraryEntry], total: 1, page: 1, pageSize: 25 }, error: null });
+    const detail = {
+      questionDefinitionId,
+      slug: "question-library",
+      versions: [{ ...libraryEntry, document: questionDocument }],
+    };
+    mocks.rpc.mockResolvedValue({
+      data: { entries: [libraryEntry], total: 1, page: 1, pageSize: 25 },
+      error: null,
+    });
     const queries = new SupabaseSuperadminEditorialQueries();
-    await expect(queries.getQuestionLibrary({ status: "all" })).resolves.toMatchObject({ total: 1, source: "supabase" });
-    expect(mocks.rpc).toHaveBeenLastCalledWith("get_superadmin_question_library", { input: { status: "all" } });
+    await expect(queries.getQuestionLibrary({ status: "all" })).resolves.toMatchObject({
+      total: 1,
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("get_superadmin_question_library", {
+      input: { status: "all" },
+    });
 
     mocks.rpc.mockResolvedValue({ data: detail, error: null });
-    await expect(queries.getQuestionVersion(questionVersionId)).resolves.toMatchObject({ slug: "question-library", source: "supabase" });
-    expect(mocks.rpc).toHaveBeenLastCalledWith("get_superadmin_question_version", { question_version_id: questionVersionId });
+    await expect(queries.getQuestionVersion(questionVersionId)).resolves.toMatchObject({
+      slug: "question-library",
+      source: "supabase",
+    });
+    expect(mocks.rpc).toHaveBeenLastCalledWith("get_superadmin_question_version", {
+      question_version_id: questionVersionId,
+    });
 
     const input = { idempotencyKey: "question-test-1", document: questionDocument, reason: "Test" };
     await expect(queries.createQuestionDraft(input)).resolves.toMatchObject({ source: "supabase" });
@@ -275,21 +314,31 @@ describe("SupabaseSuperadminEditorialQueries", () => {
   });
 
   it("maps authorization and domain errors", async () => {
-    mocks.rpc.mockResolvedValue({ data: null, error: { code: "42501", message: "not_authorized" } });
-    await expect(new SupabaseSuperadminEditorialQueries().publishFlash({
-      idempotencyKey: "editorial-test-4",
-      challengeVersionId: entry.challengeVersionId,
-      expectedUpdatedAt: entry.updatedAt,
-      reason: "Test",
-    })).rejects.toBeInstanceOf(SuperadminAccessDeniedError);
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { code: "42501", message: "not_authorized" },
+    });
+    await expect(
+      new SupabaseSuperadminEditorialQueries().publishFlash({
+        idempotencyKey: "editorial-test-4",
+        challengeVersionId: entry.challengeVersionId,
+        expectedUpdatedAt: entry.updatedAt,
+        reason: "Test",
+      }),
+    ).rejects.toBeInstanceOf(SuperadminAccessDeniedError);
 
-    mocks.rpc.mockResolvedValue({ data: null, error: { code: "55000", message: "content_not_draft" } });
-    await expect(new SupabaseSuperadminEditorialQueries().publishFlash({
-      idempotencyKey: "editorial-test-5",
-      challengeVersionId: entry.challengeVersionId,
-      expectedUpdatedAt: entry.updatedAt,
-      reason: "Test",
-    })).rejects.toMatchObject({
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { code: "55000", message: "content_not_draft" },
+    });
+    await expect(
+      new SupabaseSuperadminEditorialQueries().publishFlash({
+        idempotencyKey: "editorial-test-5",
+        challengeVersionId: entry.challengeVersionId,
+        expectedUpdatedAt: entry.updatedAt,
+        reason: "Test",
+      }),
+    ).rejects.toMatchObject({
       code: "content_not_draft",
       name: "SuperadminEditorialCommandError",
     } satisfies Partial<SuperadminEditorialCommandError>);

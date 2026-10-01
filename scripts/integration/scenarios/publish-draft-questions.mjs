@@ -1,4 +1,10 @@
-export async function publishDraftQuestions({ client, slugs, idempotencyKeyPrefix, reason, assert }) {
+export async function publishDraftQuestions({
+  client,
+  slugs,
+  idempotencyKeyPrefix,
+  reason,
+  assert,
+}) {
   const library = await client.rpc("get_superadmin_question_library", {
     input: { status: "draft", pageSize: 25 },
   });
@@ -22,7 +28,8 @@ export async function publishDraftQuestions({ client, slugs, idempotencyKeyPrefi
       !published.error &&
         published.data?.versions?.some(
           (version) =>
-            version.questionVersionId === question.questionVersionId && version.status === "published",
+            version.questionVersionId === question.questionVersionId &&
+            version.status === "published",
         ),
       `El superadmin publica la pregunta ${slug}`,
     );

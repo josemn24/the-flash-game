@@ -41,7 +41,9 @@ async function swap(page: Page, fromCell: number, toCell: number) {
 }
 
 test.describe("F19 — word-hashtag competitivo", () => {
-  test("mantiene la solución privada y reintenta un swap con la misma idempotency key", async ({ page }) => {
+  test("mantiene la solución privada y reintenta un swap con la misma idempotency key", async ({
+    page,
+  }) => {
     test.setTimeout(75_000);
     const data = await fixture();
     await openFlash(page, data.users.charlie);
@@ -84,7 +86,9 @@ test.describe("F19 — word-hashtag competitivo", () => {
     await expect(page.locator('[aria-label="Solución del Hashtag de palabras"]')).toBeVisible();
   });
 
-  test("rechaza un swap inválido sin consumirlo y conserva el draft al hacer timeout", async ({ page }) => {
+  test("rechaza un swap inválido sin consumirlo y conserva el draft al hacer timeout", async ({
+    page,
+  }) => {
     test.setTimeout(90_000);
     const data = await fixture();
     await openFlash(page, data.users.alice);

@@ -31,11 +31,7 @@ import {
   calculateResultAccuracy,
   getAnswerResultAccuracyUnit,
 } from "@/features/game/resultSummary";
-import type {
-  AnswerResult,
-  ChallengeCompletionResult,
-  FlashChallenge,
-} from "@/types/gameplay";
+import type { AnswerResult, ChallengeCompletionResult, FlashChallenge } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";
 import styles from "./FlashPopFlashGame.module.css";
 

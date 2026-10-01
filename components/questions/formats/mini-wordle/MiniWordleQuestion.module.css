@@ -1,5 +1,4 @@
 @layer app-formats {
-
   .hint {
     border-left: 2px solid var(--color-social);
     padding-left: 0.75rem;

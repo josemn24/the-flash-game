@@ -22,7 +22,10 @@ import { requireSuperadmin } from "@/server/admin";
 
 export async function getSuperadminQuestionVersion(
   questionVersionId: string,
-  queries: Pick<SuperadminEditorialQueries, "getQuestionVersion"> = supabaseSuperadminEditorialQueries,
+  queries: Pick<
+    SuperadminEditorialQueries,
+    "getQuestionVersion"
+  > = supabaseSuperadminEditorialQueries,
 ) {
   await requireSuperadmin();
   return queries.getQuestionVersion(questionVersionId);

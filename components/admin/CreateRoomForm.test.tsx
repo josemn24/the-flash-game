@@ -15,9 +15,7 @@ describe("CreateRoomForm", () => {
   });
 
   it("places the create action in the rooms overview when enabled", () => {
-    const markup = renderToStaticMarkup(
-      <AdminRoomsOverview rooms={[]} showAction />,
-    );
+    const markup = renderToStaticMarkup(<AdminRoomsOverview rooms={[]} showAction />);
 
     expect(markup).toContain("Crear nueva sala privada");
     expect(markup).not.toContain("Crear una sala privada");

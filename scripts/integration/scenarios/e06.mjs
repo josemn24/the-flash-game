@@ -37,12 +37,42 @@ export const scenario = {
             tags: { domains: ["language"], topics: ["vocabulary"] },
             grid: { rows: 6, columns: 6 },
             letters: [
-              "C", "A", "S", "A", "X", "X",
-              "Ñ", "A", "N", "D", "Ú", "Z",
-              "B", "Q", "E", "R", "T", "Y",
-              "G", "H", "I", "J", "K", "L",
-              "M", "O", "P", "V", "W", "F",
-              "Á", "É", "Í", "Ó", "Ú", "Ü",
+              "C",
+              "A",
+              "S",
+              "A",
+              "X",
+              "X",
+              "Ñ",
+              "A",
+              "N",
+              "D",
+              "Ú",
+              "Z",
+              "B",
+              "Q",
+              "E",
+              "R",
+              "T",
+              "Y",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "O",
+              "P",
+              "V",
+              "W",
+              "F",
+              "Á",
+              "É",
+              "Í",
+              "Ó",
+              "Ú",
+              "Ü",
             ],
             targets: [
               { id: "casa", word: "CASA" },
@@ -60,14 +90,24 @@ export const scenario = {
       ],
     };
     const created = await clients.superadmin.rpc("create_superadmin_flash_draft", {
-      input: { idempotencyKey: "integration-e06-create", document: editorialDocument, reason: "E06" },
+      input: {
+        idempotencyKey: "integration-e06-create",
+        document: editorialDocument,
+        reason: "E06",
+      },
     });
-    assert(!created.error && created.data?.questionCount === 2, "El portal crea un Flash mixto E06");
+    assert(
+      !created.error && created.data?.questionCount === 2,
+      "El portal crea un Flash mixto E06",
+    );
     const context = await clients.superadmin.rpc("get_superadmin_editorial_context");
     const draft = context.data?.entries?.find(
       (entry) => entry.challengeVersionId === created.data?.challengeVersionId,
     );
-    assert(draft?.document?.questions?.[1]?.type === "word-search", "El portal conserva Word-search");
+    assert(
+      draft?.document?.questions?.[1]?.type === "word-search",
+      "El portal conserva Word-search",
+    );
     assert(
       draft?.document?.questions?.[1]?.solutionPayload?.positionsByTargetId?.casa,
       "La biblioteca conserva la solución privada",
@@ -87,7 +127,10 @@ export const scenario = {
         reason: "Publicar E06",
       },
     });
-    assert(!published.error && published.data?.status === "published", "El portal publica el Flash E06");
+    assert(
+      !published.error && published.data?.status === "published",
+      "El portal publica el Flash E06",
+    );
 
     const playable = await rpc(clients.alice, "get_my_flash_challenge", {
       target_room_slug: fixture.data.room.slug,
@@ -99,8 +142,14 @@ export const scenario = {
       "E06 publica Word-search en segunda posición",
     );
     const serialized = JSON.stringify(playable);
-    assert(!serialized.includes("startCell") && !serialized.includes("endCell"), "El payload jugable no expone posiciones");
-    assert(!serialized.includes("positionsByTargetId"), "El payload jugable no expone la solución privada");
+    assert(
+      !serialized.includes("startCell") && !serialized.includes("endCell"),
+      "El payload jugable no expone posiciones",
+    );
+    assert(
+      !serialized.includes("positionsByTargetId"),
+      "El payload jugable no expone la solución privada",
+    );
 
     const spectator = await rpc(clients.bob, "get_my_flash_challenge", {
       target_room_slug: fixture.data.room.slug,

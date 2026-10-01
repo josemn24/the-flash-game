@@ -21,7 +21,7 @@ import type {
   EscapeMove,
   EscapeQuestion as EscapeQuestionType,
   EscapeQuestionConfiguration,
-  } from "@/types/gameplay/practice";
+} from "@/types/gameplay/practice";
 import styles from "./EscapeQuestion.module.css";
 
 type DragState = {

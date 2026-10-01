@@ -1,10 +1,9 @@
-import { demoIdentity, roomRouteAliases } from "@/data/mock/constants";
+import { demoIdentity } from "@/data/mock/constants";
 import { mockDomainStore } from "@/data/mock/store";
 import { MockChallengeQueries } from "@/infrastructure/mock/challengeQueries";
 import { MockCurrentViewerProvider } from "@/infrastructure/mock/currentViewer";
 import { MockRoomQueries } from "@/infrastructure/mock/roomQueries";
 import { MockRoomMembershipCommands } from "@/infrastructure/mock/roomMembershipCommands";
-import { mocksEnabled } from "@/server/runtime-scope";
 
 export const mockCurrentViewerProvider = new MockCurrentViewerProvider(
   mockDomainStore,
@@ -16,11 +15,3 @@ export const mockRoomMembershipCommands = new MockRoomMembershipCommands(
   mockDomainStore,
   mockCurrentViewerProvider,
 );
-
-export function isMockRoomRoute(roomKey: string) {
-  return Object.hasOwn(roomRouteAliases, roomKey);
-}
-
-export function isMockRoomRouteEnabled(roomKey: string) {
-  return mocksEnabled() && isMockRoomRoute(roomKey);
-}

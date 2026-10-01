@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RoomChallengeClient } from "@/components/game/RoomChallengeClient.client";
 import { RoomChallengeIntroduction } from "@/components/game/shared";
-import { getPlayableChallengePageModel, getRoomIntroductionPageModel } from "@/server/data-access";
+import {
+  getPlayableChallengePageModel,
+  getRoomIntroductionPageModel,
+} from "@/server/production-data-access";
 
 type Props = {
   params: Promise<{ challengeId: string }>;

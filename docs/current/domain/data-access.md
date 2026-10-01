@@ -20,7 +20,7 @@ La dirección vigente es:
 
 ```text
 Server Components
-→ server/data-access.ts
+→ server/production-data-access.ts
 → server/profile.ts
 → Supabase Auth/RPC/RLS
 → PostgreSQL
@@ -28,7 +28,7 @@ Server Components
 Las lecturas de S02, S03, E01, S06 y S07 siguen una frontera específica:
 
 Server Components
-→ server/data-access.ts
+→ server/production-data-access.ts
 → infrastructure/supabase/rooms/queries/roomQueries.ts
 → capacidades de sala (lobby, ranking, settings, history y member detail)
 → puertos CurrentViewerReader y PrivateQuestionAssetResolver
@@ -37,14 +37,14 @@ Server Components
 → PostgreSQL privado/RLS
 
 Portal privado `/admin`
-→ server/data-access.ts
+→ server/production-data-access.ts
 → server/admin.ts
 → infrastructure/supabase/admin/superadminQueries.ts
 → public.get_superadmin_portal_context() con temporadas y zona horaria
 → asignación privada de plataforma y salas activas
 
 Dashboard del portal `/admin`
-→ server/data-access.ts
+→ server/production-data-access.ts
 → server/admin.ts
 → infrastructure/supabase/admin/superadminDashboardQueries.ts
 → public.get_superadmin_dashboard_context()
@@ -94,7 +94,7 @@ Reconciliación bajo demanda de intentos
 → `abandoned` sin puntos; una acción que encuentra el cierre recibe `attempt_inactivity_expired`
 
 Lectura editorial protegida del portal `/admin`
-→ server/data-access.ts
+→ server/production-data-access.ts
 → server/admin-editorial.ts
 → infrastructure/supabase/admin/superadminEditorialQueries.ts
 → public.get_superadmin_editorial_context()
@@ -147,10 +147,10 @@ Eventos Progressive-clues del Flash competitivo
 → `private.progressive_clue_reveal_events` + `private.answer_receipts`
 → evaluador confiable desde `progressiveCluesRevealed` reconstruido por PostgreSQL
 
-Las consultas aún no migradas conservan este flujo:
+Las demos explícitas de Flash Pop conservan este flujo:
 
 Server Components
-→ server/data-access.ts
+→ server/demo-data-access.ts
 → application/queries
 → infrastructure/mock
 → mockDomainStore
@@ -158,11 +158,11 @@ Server Components
 → Client Components
 ```
 
-En S22 la selección de esa composición está gobernada por `FLASH_RUNTIME_SCOPE`. En `pilot`, los
-aliases mock y la rama roomless devuelven ausencia y no llegan al adaptador mock; un fallo de la
-fuente persistida se propaga como error recuperable. `RoomSessionProvider` puede seguir montado para
-las demos, pero `RoomChallengeClient` solo consulta y escribe sus resultados locales cuando la
-persistencia declarada es `mock`; un modelo `server` nunca se sobrescribe con `localResults`.
+La composición mock no se selecciona por `roomKey` ni por `FLASH_RUNTIME_SCOPE`. Solo las rutas
+explícitas de Flash Pop importan `server/demo-data-access.ts`; `/salas/*`, `/desafios/*`, `/admin/*`
+y la home importan `server/production-data-access.ts`. Un fallo de la fuente persistida se propaga
+como error recuperable y nunca activa un fallback mock. `RoomSessionProvider` puede seguir montado
+para las demos, pero un modelo `server` nunca se sobrescribe con `localResults`.
 
 E01 entrega a la UI únicamente el payload público y `progress` seguro (`guesses`, `feedback`,
 `attemptsUsed`, `maxAttempts`). La solución, `additionalGuesses` y `dictionaryId` quedan en el
@@ -232,7 +232,7 @@ intentos y respuestas normalizados.
 
 ## Composición de servidor
 
-`server/data-access.ts` lleva el marcador `server-only`. Para la home, delega en
+`server/production-data-access.ts` lleva el marcador `server-only`. Para la home, delega en
 `server/profile.ts`, que valida la sesión con `auth.getUser()`, llama al RPC estrecho
 `public.provision_player` y devuelve un DTO mínimo. El nombre se actualiza mediante la política RLS
 del propio jugador; no existe DML de aplicación con `service_role`.
@@ -247,8 +247,8 @@ esas lecturas ejecuta la reconciliación acotada a la sala para que los intentos
 política no oculten indefinidamente la publicación. Carga
 en paralelo los rankings necesarios para el detalle de miembro. Las filas JSON se validan antes de
 convertirse a view models; los UUID de jugador son el `memberId` canónico y un error RPC o una fila
-inválida se propaga. Las consultas todavía mock se limitan a los aliases explícitos del demo, por lo
-que una sala real no puede caer silenciosamente en `MockRoomQueries`.
+inválida se propaga. Las consultas mock no participan en las rutas de sala. Las vistas reales no
+aceptan aliases de fixtures ni pueden caer silenciosamente en `MockRoomQueries`.
 
 `get_my_room_cards` reutiliza el mismo `get_season_ranking` para `current_position`. Así, puntos,
 empates y la posición visible en home/detalle proceden de una sola semántica SQL. El RPC de desafío

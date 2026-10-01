@@ -1,8 +1,5 @@
 import type { MiniWordleQuestion } from "@/types/gameplay";
-import type {
-  MiniWordleLetterFeedback,
-  MiniWordleWordLength,
-} from "@/types/domain/mini-wordle";
+import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
 
 export type {
   MiniWordleLetterFeedback,

@@ -36,6 +36,9 @@ jobs:
       - name: Type architecture
         run: npm run type-architecture
 
+      - name: Documentation links
+        run: npm run docs:check
+
       - name: Style architecture
         run: npm run style-architecture
 

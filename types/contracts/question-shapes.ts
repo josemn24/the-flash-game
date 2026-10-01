@@ -137,19 +137,29 @@ export type MemoryPairsTile = {
 export type MemoryPairsAnswer = { readonly attempts: Array<[string, string]> };
 
 export type SimonSequencePad = { readonly id: string; readonly label: string };
-export type LogicMatrixPiece = { readonly id: string; readonly symbol: string; readonly label: string };
+export type LogicMatrixPiece = {
+  readonly id: string;
+  readonly symbol: string;
+  readonly label: string;
+};
 
 export type MiniSudokuAnswer = Record<string, number>;
 export type MiniNonogramAnswer = Record<string, true>;
 
 export type QueensBoardSize = 4 | 5 | 6 | 7 | 8;
-export type QueensGrid = { [Size in QueensBoardSize]: { rows: Size; columns: Size } }[QueensBoardSize];
+export type QueensGrid = {
+  [Size in QueensBoardSize]: { rows: Size; columns: Size };
+}[QueensBoardSize];
 export type QueensAnswer = { readonly queens: number[]; readonly marks: number[] };
 
 export type MazeCell = "wall" | "path" | "start" | "exit";
 export type TimeMazeAnswer = { readonly path: number[] };
 
-export type ZipCheckpoint = { readonly value: number; readonly cell: number; readonly label?: string };
+export type ZipCheckpoint = {
+  readonly value: number;
+  readonly cell: number;
+  readonly label?: string;
+};
 export type ZipAnswer = { readonly path: number[] };
 
 export type PipesTileKind = "end" | "straight" | "corner" | "tee";
@@ -182,7 +192,10 @@ export type EscapeQuestionConfiguration = Pick<EscapeQuestion, "grid" | "initial
 export type EscapeAnswer = { readonly moves: EscapeMove[] };
 
 export type ErrorReconstructionStep = { readonly id: string; readonly text: string };
-export type ErrorReconstructionAnswer = { readonly stepId: string; readonly correction?: string | null };
+export type ErrorReconstructionAnswer = {
+  readonly stepId: string;
+  readonly correction?: string | null;
+};
 
 export type AnagramTile = { readonly id: string; readonly value: string };
 

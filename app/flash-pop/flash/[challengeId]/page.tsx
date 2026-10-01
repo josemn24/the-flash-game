@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopFlashGame } from "@/components/game";
 import { FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
-import { getPlayableChallengePageModel } from "@/server/data-access";
+import { getFlashPopChallengePageModel } from "@/server/demo-data-access";
 import type { FlashChallenge } from "@/types/gameplay/challenge";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export async function generateMetadata({
   params: Promise<{ challengeId: string }>;
 }): Promise<Metadata> {
   const { challengeId } = await params;
-  const model = await getPlayableChallengePageModel(challengeId);
+  const model = await getFlashPopChallengePageModel(challengeId);
   return {
     title:
       model?.challenge.mode === "flash"
@@ -29,7 +29,7 @@ export default async function FlashPopFlashPage({
   params: Promise<{ challengeId: string }>;
 }) {
   const { challengeId } = await params;
-  const model = await getPlayableChallengePageModel(challengeId);
+  const model = await getFlashPopChallengePageModel(challengeId);
   if (challengeId !== FLASH_POP_FLASH_PILOT_ID || model?.challenge.mode !== "flash") notFound();
   return <FlashPopFlashGame challenge={model.challenge as FlashChallenge} />;
 }

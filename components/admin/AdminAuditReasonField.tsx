@@ -6,7 +6,11 @@ type AdminAuditReasonFieldProps = {
   readonly error?: ReactNode;
 };
 
-export function AdminAuditReasonField({ label = "Motivo de auditoría", placeholder = "Describe el motivo de la operación", error }: AdminAuditReasonFieldProps) {
+export function AdminAuditReasonField({
+  label = "Motivo de auditoría",
+  placeholder = "Describe el motivo de la operación",
+  error,
+}: AdminAuditReasonFieldProps) {
   return (
     <label>
       <span>{label}</span>

@@ -1,4 +1,9 @@
-import type { QueensAnswer, QueensBoardSize, QueensGrid, QueensQuestion } from "@/types/gameplay/practice";
+import type {
+  QueensAnswer,
+  QueensBoardSize,
+  QueensGrid,
+  QueensQuestion,
+} from "@/types/gameplay/practice";
 
 export const QUEENS_MIN_SIZE = 4;
 export const QUEENS_MAX_SIZE = 8;

@@ -45,10 +45,7 @@ export function MiniSudokuQuestion({
   };
 
   return (
-    <section
-      className={styles.root}
-      aria-label="Mini-sudoku de cuatro por cuatro"
-    >
+    <section className={styles.root} aria-label="Mini-sudoku de cuatro por cuatro">
       <div className={styles.grid} role="grid" aria-label="Cuadrícula de mini-sudoku">
         {grid.map((givenValue, index) => {
           const isBlank = givenValue === null;

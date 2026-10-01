@@ -1,8 +1,11 @@
 import { notFound, redirect } from "next/navigation";
-import { AuthenticationRequiredError, SuperadminAccessDeniedError } from "@/application/administration/errors";
+import {
+  AuthenticationRequiredError,
+  SuperadminAccessDeniedError,
+} from "@/application/administration/errors";
 import { AdminShell } from "@/components/admin";
 import { QuestionLibraryManagement } from "@/components/admin/QuestionLibraryManagement.client";
-import { getSuperadminQuestionLibraryPageModel } from "@/server/data-access";
+import { getSuperadminQuestionLibraryPageModel } from "@/server/production-data-access";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +28,9 @@ export default async function QuestionsPage() {
       breadcrumbs={[{ label: "Resumen", href: "/admin" }, { label: "Preguntas" }]}
     >
       <QuestionLibraryManagement
-        library={page.library ?? { entries: [], total: 0, page: 1, pageSize: 25, source: "supabase" }}
+        library={
+          page.library ?? { entries: [], total: 0, page: 1, pageSize: 25, source: "supabase" }
+        }
       />
     </AdminShell>
   );
