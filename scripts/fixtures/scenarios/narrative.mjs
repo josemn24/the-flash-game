@@ -135,14 +135,18 @@ values
     'multiple-choice', 15000, ${sqlString(JSON.stringify(questionTwo))}, ${sqlString(alice)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
-  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({
-    correctAnswer: "Antártida",
-    explanation: "NARRATIVE_PRIVATE_ONE: La Antártida rodea el Polo Sur.",
-  }))}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(JSON.stringify({
-    correctAnswer: "Termómetro",
-    explanation: "NARRATIVE_PRIVATE_TWO: El termómetro registra la temperatura.",
-  }))});
+  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(
+    JSON.stringify({
+      correctAnswer: "Antártida",
+      explanation: "NARRATIVE_PRIVATE_ONE: La Antártida rodea el Polo Sur.",
+    }),
+  )}),
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(
+    JSON.stringify({
+      correctAnswer: "Termómetro",
+      explanation: "NARRATIVE_PRIVATE_TWO: El termómetro registra la temperatura.",
+    }),
+  )});
 update private.question_versions
 set status = 'published', published_at = ${sqlString(dateStart)};
 insert into private.challenge_definitions (id, slug, created_by_player_id)

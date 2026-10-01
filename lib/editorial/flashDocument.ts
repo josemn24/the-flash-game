@@ -1563,8 +1563,8 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
   if (!validQuestionCount) {
     throw new FlashEditorialValidationError([
       challenge.mode === "pyramid"
-      ? "La Pirámide requiere exactamente siete niveles."
-      : `Flash requiere entre ${FLASH_MIN_QUESTIONS} y ${FLASH_MAX_QUESTIONS} preguntas.`,
+        ? "La Pirámide requiere exactamente siete niveles."
+        : `Flash requiere entre ${FLASH_MIN_QUESTIONS} y ${FLASH_MAX_QUESTIONS} preguntas.`,
     ]);
   }
 

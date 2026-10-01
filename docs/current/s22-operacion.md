@@ -28,14 +28,14 @@ la composición de datos:
 Un build con `NODE_ENV=production` usa `pilot` si la variable no está definida. Un valor desconocido
 falla al arrancar la composición server-only.
 
-| Superficie                                  | Pilot                                                                                             | Development/Test             |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                          | Supabase                     |
+| Superficie                                  | Pilot                                                                                                        | Development/Test             |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                                     | Supabase                     |
 | `/desafios/[challengeId]?roomId=<slug>`     | Supabase; Flash, Narrative, Supervivencia y Pirámide admiten los formatos con evaluación competitiva migrada | Supabase                     |
-| `/desafios/[challengeId]` sin sala          | 404                                                                                               | 404                          |
-| aliases como `tabarnia-room`                | Supabase; 404 si no existe como sala persistida                                                   | Supabase; nunca fixture mock |
-| `/formatos`, `/demo/**`                     | Demo/práctica; `/flash-pop/**` redirige permanentemente a `/demo/**`                              | Demo/práctica                |
-| `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                           | Supabase + autorización      |
+| `/desafios/[challengeId]` sin sala          | 404                                                                                                          | 404                          |
+| aliases como `tabarnia-room`                | Supabase; 404 si no existe como sala persistida                                                              | Supabase; nunca fixture mock |
+| `/formatos`, `/demo/**`                     | Demo/práctica; `/flash-pop/**` redirige permanentemente a `/demo/**`                                         | Demo/práctica                |
+| `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                                      | Supabase + autorización      |
 
 ## Contrato HTTP
 

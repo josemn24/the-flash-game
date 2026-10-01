@@ -13,17 +13,17 @@ import {
   MotionButton,
 } from "@/components/ui";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
-import {
-  ChallengeResultScreen,
-  ServerFlashQuestionStage,
-} from "@/components/game/shared";
+import { ChallengeResultScreen, ServerFlashQuestionStage } from "@/components/game/shared";
 import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
 import {
   FlashPopFeedback,
   getFlashPopFeedbackCopy,
 } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { ReviewStage } from "@/components/game/modes/flash-pop/FlashPopCompetitiveHelpers";
-import { calculateResultAccuracy, getAnswerResultAccuracyUnit } from "@/features/game/resultSummary";
+import {
+  calculateResultAccuracy,
+  getAnswerResultAccuracyUnit,
+} from "@/features/game/resultSummary";
 import { useServerNarrativeSession } from "@/features/game/useServerNarrativeSession";
 import type {
   AnswerResult,
@@ -123,7 +123,9 @@ function NarrativeSceneScreen({
               alt={scene.media.alt}
               fill
               sizes="(max-width: 799px) 100vw, 68vw"
-              className={scene.media.fit === "contain" ? styles.storyImageContain : styles.storyImage}
+              className={
+                scene.media.fit === "contain" ? styles.storyImageContain : styles.storyImage
+              }
               style={{ objectPosition: scene.media.position }}
               priority={scene.id === "scene-prologue-recording"}
             />
@@ -132,7 +134,9 @@ function NarrativeSceneScreen({
             {scene.id === "scene-prologue-recording" ? (
               <div className={styles.tapeSignal} aria-label="Siseo de una grabación antigua">
                 <span>REC · ARCHIVO</span>
-                {Array.from({ length: 12 }, (_, index) => <i key={index} />)}
+                {Array.from({ length: 12 }, (_, index) => (
+                  <i key={index} />
+                ))}
               </div>
             ) : null}
           </div>
@@ -308,9 +312,16 @@ export function ServerNarrativeGame({
                 </motion.div>
               ) : null}
               {session.phase === "recovering" ? (
-                <Card key="recovering" role="status" aria-live="polite" className="mx-auto mt-12 max-w-xl">
+                <Card
+                  key="recovering"
+                  role="status"
+                  aria-live="polite"
+                  className="mx-auto mt-12 max-w-xl"
+                >
                   <h1>Recuperando partida</h1>
-                  <p className="mt-2">Comprobamos de forma segura el último estado de tu intento.</p>
+                  <p className="mt-2">
+                    Comprobamos de forma segura el último estado de tu intento.
+                  </p>
                 </Card>
               ) : null}
               {session.phase === "scene" && session.currentStep?.type === "scene" ? (
@@ -330,7 +341,12 @@ export function ServerNarrativeGame({
                 )
               ) : null}
               {session.phase === "preparing" ? (
-                <Card key="preparing" role="status" aria-live="polite" className="mx-auto mt-12 max-w-xl">
+                <Card
+                  key="preparing"
+                  role="status"
+                  aria-live="polite"
+                  className="mx-auto mt-12 max-w-xl"
+                >
                   <h1>Preparando la siguiente prueba</h1>
                   <p className="mt-2">La pregunta se libera ahora desde el servidor.</p>
                 </Card>
@@ -412,7 +428,11 @@ export function ServerNarrativeGame({
                 </motion.div>
               ) : null}
               {session.phase === "results" ? (
-                <motion.div key="narrative-results" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <motion.div
+                  key="narrative-results"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
                   <NarrativeResult
                     results={session.results}
                     score={session.score}
@@ -424,7 +444,11 @@ export function ServerNarrativeGame({
                 </motion.div>
               ) : null}
               {session.phase === "review" && session.reviewChallenge ? (
-                <motion.div key="narrative-review" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                <motion.div
+                  key="narrative-review"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                >
                   <ReviewStage
                     challenge={session.reviewChallenge}
                     results={session.results}

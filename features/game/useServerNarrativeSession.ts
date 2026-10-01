@@ -107,9 +107,7 @@ function answerResultsFromRecovery(value: unknown): AnswerResult[] {
       isCorrect: status === "correct" || status === "partial",
       points: Number(answer.points ?? 0),
       timeUsed: Number(answer.timeUsedMs ?? 0) / 1000,
-      ...(answer.resultDetails
-        ? { details: answer.resultDetails as AnswerResult["details"] }
-        : {}),
+      ...(answer.resultDetails ? { details: answer.resultDetails as AnswerResult["details"] } : {}),
     };
   });
 }
@@ -145,9 +143,7 @@ function reviewChallengeFor(
       description: challenge.description,
       mode: "flash",
       questions,
-      questionPoints: Object.fromEntries(
-        challenge.slots.map((slot) => [slot.id, slot.points]),
-      ),
+      questionPoints: Object.fromEntries(challenge.slots.map((slot) => [slot.id, slot.points])),
     };
   } catch {
     return null;
@@ -358,7 +354,8 @@ export function useServerNarrativeSession({
       await advanceFrom(stepIndex, currentAttempt);
     } catch (error) {
       const expired = markExpired(error);
-      if (!expired) setStartNotice("No hemos podido cargar la siguiente prueba. Inténtalo de nuevo.");
+      if (!expired)
+        setStartNotice("No hemos podido cargar la siguiente prueba. Inténtalo de nuevo.");
       setBusy(false);
       if (!expired) setPhase("scene");
     }
@@ -398,15 +395,17 @@ export function useServerNarrativeSession({
         FLASH_POP_FEEDBACK_DURATION[result.status as keyof typeof FLASH_POP_FEEDBACK_DURATION] ??
         1800;
       transitionTimerRef.current = setTimeout(() => {
-        void advanceFrom(questionIndexFor(sequence, currentQuestion.id), nextAttempt).catch((error) => {
-          if (!markExpired(error)) {
-            setSubmissionState("error");
-            setSubmissionStatusVisible(true);
-            setSubmissionError("No hemos podido cargar el siguiente tramo.");
-            setPhase("transition");
-            setBusy(false);
-          }
-        });
+        void advanceFrom(questionIndexFor(sequence, currentQuestion.id), nextAttempt).catch(
+          (error) => {
+            if (!markExpired(error)) {
+              setSubmissionState("error");
+              setSubmissionStatusVisible(true);
+              setSubmissionError("No hemos podido cargar el siguiente tramo.");
+              setPhase("transition");
+              setBusy(false);
+            }
+          },
+        );
       }, duration);
     } catch (error) {
       if (markExpired(error)) return;
@@ -447,7 +446,9 @@ export function useServerNarrativeSession({
     setAttempt(recoveredAttempt);
     if (response.phase === "results") {
       setScore(Number(response.score ?? roomContext.result?.flashPoints ?? 0));
-      setReviewChallenge(reviewChallengeFor(challenge, terminalReviewFromResponse(response.review)));
+      setReviewChallenge(
+        reviewChallengeFor(challenge, terminalReviewFromResponse(response.review)),
+      );
       setPhase("results");
       return;
     }

@@ -1,6 +1,10 @@
 import "server-only";
 
-import type { PublicFunctionArgs, PublicFunctionRow, RawRpcResponse } from "@/lib/supabase/rpcTypes";
+import type {
+  PublicFunctionArgs,
+  PublicFunctionRow,
+  RawRpcResponse,
+} from "@/lib/supabase/rpcTypes";
 import { createClient } from "@/lib/supabase/server";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
 import type {
@@ -73,7 +77,7 @@ function narrativeStep(
   value: unknown,
   itemIdByQuestionSlug: ReadonlyMap<string, string>,
 ): ServerNarrativeStep | null {
-  if (!isRecord(value) || value.type !== "scene" && value.type !== "question") return null;
+  if (!isRecord(value) || (value.type !== "scene" && value.type !== "question")) return null;
   if (value.type === "scene") {
     return isScene(value.scene) ? { type: "scene", scene: value.scene } : null;
   }
@@ -119,7 +123,9 @@ function isNarrativeReadRow(value: unknown): value is NarrativeReadRow {
     typeof value.item_position === "number" &&
     typeof value.question_slug === "string" &&
     typeof value.question_type === "string" &&
-    serverQuestionTypes.has(value.question_type as ServerFlashChallenge["slots"][number]["questionType"]) &&
+    serverQuestionTypes.has(
+      value.question_type as ServerFlashChallenge["slots"][number]["questionType"],
+    ) &&
     typeof value.payload_schema_version === "number" &&
     typeof value.time_limit_ms === "number" &&
     typeof value.item_points === "number"
@@ -139,10 +145,9 @@ function isNarrativeResultRow(value: unknown): value is NarrativeResultRow {
   );
 }
 
-async function callNarrativeRead<Name extends "get_my_narrative_challenge" | "get_my_narrative_result">(
-  functionName: Name,
-  args: PublicFunctionArgs<Name>,
-) {
+async function callNarrativeRead<
+  Name extends "get_my_narrative_challenge" | "get_my_narrative_result",
+>(functionName: Name, args: PublicFunctionArgs<Name>) {
   const supabase = await createClient();
   const response = await supabase.rpc(functionName, args);
   const { data, error } = response as RawRpcResponse<typeof response>;
@@ -150,7 +155,11 @@ async function callNarrativeRead<Name extends "get_my_narrative_challenge" | "ge
   return Array.isArray(data) ? data : [];
 }
 
-function toRoomContext(row: NarrativeReadRow, viewerId: string, result?: RoomChallengeResult): GameRoomContext {
+function toRoomContext(
+  row: NarrativeReadRow,
+  viewerId: string,
+  result?: RoomChallengeResult,
+): GameRoomContext {
   return {
     roomId: row.room_slug,
     roomTitle: row.room_title,
@@ -198,16 +207,20 @@ function toResult(rows: readonly NarrativeResultRow[]): RoomChallengeResult {
 
 export class SupabaseNarrativeQueries {
   async getPlayable(roomKey: string, publicationId: string, context: QueryContext) {
-    const rows = (await callNarrativeRead("get_my_narrative_challenge", {
-      target_room_slug: roomKey,
-      target_publication_id: publicationId,
-    })).filter(isNarrativeReadRow);
+    const rows = (
+      await callNarrativeRead("get_my_narrative_challenge", {
+        target_room_slug: roomKey,
+        target_publication_id: publicationId,
+      })
+    ).filter(isNarrativeReadRow);
     const first = rows[0];
     if (!first || rows.length !== first.question_count || first.challenge_mode !== "narrative") {
       return null;
     }
 
-    const itemIdByQuestionSlug = new Map(rows.map((row) => [row.question_slug, row.challenge_item_id]));
+    const itemIdByQuestionSlug = new Map(
+      rows.map((row) => [row.question_slug, row.challenge_item_id]),
+    );
     const config = narrativeConfig(first.challenge_mode_config, itemIdByQuestionSlug);
     if (!config) return null;
 
@@ -234,9 +247,11 @@ export class SupabaseNarrativeQueries {
 
     let resultRows: NarrativeResultRow[] = [];
     if (first.own_attempt_status === "completed" && first.own_attempt_id) {
-      resultRows = (await callNarrativeRead("get_my_narrative_result", {
-        target_attempt_id: first.own_attempt_id,
-      })).filter(isNarrativeResultRow);
+      resultRows = (
+        await callNarrativeRead("get_my_narrative_result", {
+          target_attempt_id: first.own_attempt_id,
+        })
+      ).filter(isNarrativeResultRow);
     }
     const result = resultRows.length ? toResult(resultRows) : undefined;
     let terminalReview: ServerFlashTerminalReview[] | undefined = resultRows.length
@@ -282,9 +297,11 @@ export class SupabaseNarrativeQueries {
   }
 
   async getTerminalReview(attemptId: string) {
-    return (await callNarrativeRead("get_my_narrative_result", {
-      target_attempt_id: attemptId,
-    }))
+    return (
+      await callNarrativeRead("get_my_narrative_result", {
+        target_attempt_id: attemptId,
+      })
+    )
       .filter(isNarrativeResultRow)
       .map((row) => ({
         challengeItemId: row.challenge_item_id,
