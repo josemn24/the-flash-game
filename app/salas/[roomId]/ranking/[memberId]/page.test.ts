@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({
   getRoomMemberDetailPageModel: vi.fn(),
 }));
 
-vi.mock("@/server/production-data-access", () => mocks);
+vi.mock("@/server/production-room-data-access", () => mocks);
 import MemberRankingPage, { dynamic, generateMetadata } from "./page";
 
 vi.mock("next/navigation", () => ({

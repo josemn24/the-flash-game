@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AdminNotice, AdminRoomsOverview, AdminShell } from "@/components/admin";
-import { getSuperadminRoomsPageModel } from "@/server/production-data-access";
+import { getSuperadminRoomsPageModel } from "@/server/production-admin-data-access";
 import { loadAdminPageModel } from "../section-page";
 
 export const dynamic = "force-dynamic";

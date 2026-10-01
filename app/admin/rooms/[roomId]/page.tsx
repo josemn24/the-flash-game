@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminRoomDetail, type AdminRoomTab } from "@/components/admin";
-import { getSuperadminRoomDetailPageModel } from "@/server/production-data-access";
+import { getSuperadminRoomDetailPageModel } from "@/server/production-admin-data-access";
 import { loadAdminPageModel } from "../../section-page";
 
 export const dynamic = "force-dynamic";

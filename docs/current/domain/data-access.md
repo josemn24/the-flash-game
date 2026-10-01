@@ -20,7 +20,7 @@ La dirección vigente es:
 
 ```text
 Server Components
-→ server/production-data-access.ts
+→ server/production-home-data-access.ts
 → server/profile.ts
 → Supabase Auth/RPC/RLS
 → PostgreSQL
@@ -28,7 +28,7 @@ Server Components
 Las lecturas de S02, S03, E01, S06 y S07 siguen una frontera específica:
 
 Server Components
-→ server/production-data-access.ts
+→ server/production-room-data-access.ts
 → infrastructure/supabase/rooms/queries/roomQueries.ts
 → capacidades de sala (lobby, ranking, settings, history y member detail)
 → puertos CurrentViewerReader y PrivateQuestionAssetResolver
@@ -37,14 +37,14 @@ Server Components
 → PostgreSQL privado/RLS
 
 Portal privado `/admin`
-→ server/production-data-access.ts
+→ server/production-admin-data-access.ts
 → server/admin.ts
 → infrastructure/supabase/admin/superadminQueries.ts
 → public.get_superadmin_portal_context() con temporadas y zona horaria
 → asignación privada de plataforma y salas activas
 
 Dashboard del portal `/admin`
-→ server/production-data-access.ts
+→ server/production-admin-data-access.ts
 → server/admin.ts
 → infrastructure/supabase/admin/superadminDashboardQueries.ts
 → public.get_superadmin_dashboard_context()
@@ -94,7 +94,7 @@ Reconciliación bajo demanda de intentos
 → `abandoned` sin puntos; una acción que encuentra el cierre recibe `attempt_inactivity_expired`
 
 Lectura editorial protegida del portal `/admin`
-→ server/production-data-access.ts
+→ server/production-admin-data-access.ts
 → server/admin-editorial.ts
 → infrastructure/supabase/admin/superadminEditorialQueries.ts
 → public.get_superadmin_editorial_context()
@@ -159,8 +159,10 @@ Server Components
 ```
 
 La composición mock no se selecciona por `roomKey` ni por `FLASH_RUNTIME_SCOPE`. Solo las rutas
-explícitas de Flash Pop importan `server/demo-data-access.ts`; `/salas/*`, `/desafios/*`, `/admin/*`
-y la home importan `server/production-data-access.ts`. Un fallo de la fuente persistida se propaga
+explícitas de Flash Pop importan `server/demo-data-access.ts`; `/salas/*` importan
+`server/production-room-data-access.ts`, `/desafios/*` combinan las fachadas de desafíos y salas,
+`/admin/*` importa `server/production-admin-data-access.ts` y la home importa
+`server/production-home-data-access.ts`. Un fallo de la fuente persistida se propaga
 como error recuperable y nunca activa un fallback mock. `RoomSessionProvider` puede seguir montado
 para las demos, pero un modelo `server` nunca se sobrescribe con `localResults`.
 
@@ -232,7 +234,8 @@ intentos y respuestas normalizados.
 
 ## Composición de servidor
 
-`server/production-data-access.ts` lleva el marcador `server-only`. Para la home, delega en
+Las fachadas `server/production-*-data-access.ts` llevan el marcador `server-only` y memoizan con
+`cache` de React. La fachada de home delega en
 `server/profile.ts`, que valida la sesión con `auth.getUser()`, llama al RPC estrecho
 `public.provision_player` y devuelve un DTO mínimo. El nombre se actualiza mediante la política RLS
 del propio jugador; no existe DML de aplicación con `service_role`.

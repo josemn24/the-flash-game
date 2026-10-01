@@ -5,7 +5,7 @@ import {
 } from "@/application/administration/errors";
 import { AdminShell } from "@/components/admin";
 import { QuestionLibraryManagement } from "@/components/admin/QuestionLibraryManagement.client";
-import { getSuperadminQuestionLibraryPageModel } from "@/server/production-data-access";
+import { getSuperadminQuestionLibraryPageModel } from "@/server/production-admin-data-access";
 
 export const dynamic = "force-dynamic";
 

@@ -4,7 +4,7 @@ import {
   AuthenticationRequiredError,
   SuperadminAccessDeniedError,
 } from "@/application/administration/errors";
-import { getSuperadminDashboardPageModel } from "@/server/production-data-access";
+import { getSuperadminDashboardPageModel } from "@/server/production-admin-data-access";
 
 export const dynamic = "force-dynamic";
 

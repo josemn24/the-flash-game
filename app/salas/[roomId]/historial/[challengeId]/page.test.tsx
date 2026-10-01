@@ -7,7 +7,7 @@ const mocks = vi.hoisted(() => ({
   getRoomHistoryDetailPageModel: vi.fn(),
 }));
 
-vi.mock("@/server/production-data-access", () => mocks);
+vi.mock("@/server/production-room-data-access", () => mocks);
 
 import { dynamic, generateMetadata } from "./page";
 

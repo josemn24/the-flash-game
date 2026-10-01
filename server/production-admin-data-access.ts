@@ -1,12 +1,6 @@
 import "server-only";
 
 import { cache } from "react";
-import { supabaseRoomQueries } from "@/infrastructure/supabase/rooms/queries/roomQueries";
-import { supabaseFlashQueries } from "@/infrastructure/supabase/gameplay/flashQueries";
-import { supabaseAlphabetQueries } from "@/infrastructure/supabase/gameplay/alphabetQueries";
-import { supabaseSurvivalQueries } from "@/infrastructure/supabase/gameplay/survivalQueries";
-import { supabasePyramidQueries } from "@/infrastructure/supabase/gameplay/pyramidQueries";
-import { getCurrentViewerProfile } from "@/server/profile";
 import { requireSuperadmin } from "@/server/admin";
 import { supabaseSuperadminEditorialQueries } from "@/infrastructure/supabase/admin/superadminEditorialQueries";
 import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/admin/superadminCalendarQueries";
@@ -18,57 +12,6 @@ import type {
   SuperadminChallengeSummary,
   SuperadminEditorialEntry,
 } from "@/types/view-models/editorial";
-
-export const getHomePageModel = cache(async () => {
-  const viewer = await getCurrentViewerProfile();
-  if (!viewer) return null;
-
-  return {
-    rooms: await supabaseRoomQueries.listCards(),
-    currentViewer: viewer,
-  };
-});
-
-export const getRoomDetailPageModel = cache(async (roomKey: string) =>
-  supabaseRoomQueries.getDetail(roomKey),
-);
-
-export const getRoomIntroductionPageModel = cache(async (roomKey: string, challengeKey: string) =>
-  supabaseRoomQueries.getIntroduction(roomKey, challengeKey),
-);
-
-export const getRoomSettingsPageModel = cache(async (roomKey: string) =>
-  supabaseRoomQueries.getSettings(roomKey),
-);
-
-export const getRoomRankingPageModel = cache(async (roomKey: string) =>
-  supabaseRoomQueries.getRanking(roomKey),
-);
-
-export const getRoomMemberDetailPageModel = cache(
-  async (roomKey: string, memberKey: string, publicationKey?: string) =>
-    supabaseRoomQueries.getMemberDetail(roomKey, memberKey, publicationKey),
-);
-
-export const getRoomHistoryPageModel = cache(async (roomKey: string) =>
-  supabaseRoomQueries.listHistory(roomKey),
-);
-
-export const getRoomHistoryDetailPageModel = cache(async (roomKey: string, challengeKey: string) =>
-  supabaseRoomQueries.getHistoryDetail(roomKey, challengeKey),
-);
-
-export const getPlayableChallengePageModel = cache(
-  async (challengeKey: string, roomKey: string | null = null) => {
-    if (!roomKey || !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(challengeKey)) return null;
-    return (
-      (await supabaseFlashQueries.getPlayable(roomKey, challengeKey)) ??
-      (await supabaseAlphabetQueries.getPlayable(roomKey, challengeKey)) ??
-      (await supabaseSurvivalQueries.getPlayable(roomKey, challengeKey)) ??
-      supabasePyramidQueries.getPlayable(roomKey, challengeKey)
-    );
-  },
-);
 
 export const getSuperadminDashboardPageModel = cache(async () => {
   // Keep the page behind the same server-side guard as every other portal entry point.

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { AdminAttemptDetail } from "@/components/admin";
-import { getSuperadminAttemptInspectionPageModel } from "@/server/production-data-access";
+import { getSuperadminAttemptInspectionPageModel } from "@/server/production-admin-data-access";
 import { loadAdminPageModel } from "../../../../../section-page";
 
 export const dynamic = "force-dynamic";

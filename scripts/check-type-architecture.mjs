@@ -348,7 +348,10 @@ for (const file of productionFiles) {
 }
 
 const serverFacadeFiles = [
-  "server/production-data-access.ts",
+  "server/production-home-data-access.ts",
+  "server/production-room-data-access.ts",
+  "server/production-challenge-data-access.ts",
+  "server/production-admin-data-access.ts",
   "server/demo-data-access.ts",
   "server/production-room-members.ts",
 ];
@@ -365,13 +368,7 @@ for (const relative of serverFacadeFiles) {
     violations.push(`${relative} does not use React request memoization`);
   }
   if (
-    relative === "server/production-data-access.ts" &&
-    /@\/infrastructure\/mock\//.test(facadeSource)
-  ) {
-    violations.push(`${relative} imports mock infrastructure`);
-  }
-  if (
-    relative === "server/production-room-members.ts" &&
+    relative !== "server/demo-data-access.ts" &&
     /@\/(?:infrastructure\/mock|data\/mock)\//.test(facadeSource)
   ) {
     violations.push(`${relative} imports mock infrastructure or data`);
@@ -405,7 +402,7 @@ for (const file of productionFiles) {
   if (isProductionRoute && source.includes("@/server/demo-data-access")) {
     violations.push(`${relative} imports the demo server facade`);
   }
-  if (isDemoRoute && source.includes("@/server/production-data-access")) {
+  if (isDemoRoute && /@\/server\/production-[^"']+-data-access/.test(source)) {
     violations.push(`${relative} imports the production server facade`);
   }
 }

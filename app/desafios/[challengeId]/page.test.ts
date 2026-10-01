@@ -7,7 +7,8 @@ const mocks = vi.hoisted(() => ({
   getRoomIntroductionPageModel: vi.fn(),
 }));
 
-vi.mock("@/server/production-data-access", () => mocks);
+vi.mock("@/server/production-challenge-data-access", () => mocks);
+vi.mock("@/server/production-room-data-access", () => mocks);
 
 import ChallengePage, { dynamic } from "./page";
 

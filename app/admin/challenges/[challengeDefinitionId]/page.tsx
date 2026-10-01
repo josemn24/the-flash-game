@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminNotice, AdminShell, EditorialManagement } from "@/components/admin";
 import { ButtonLink } from "@/components/ui";
-import { getSuperadminChallengeDetailPageModel } from "@/server/production-data-access";
+import { getSuperadminChallengeDetailPageModel } from "@/server/production-admin-data-access";
 import { loadAdminPageModel } from "../../section-page";
 
 export const dynamic = "force-dynamic";

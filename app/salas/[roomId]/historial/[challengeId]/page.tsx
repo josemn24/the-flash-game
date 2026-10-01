@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopRoomHistoryDetail } from "@/components/game";
-import { getRoomHistoryDetailPageModel } from "@/server/production-data-access";
+import { getRoomHistoryDetailPageModel } from "@/server/production-room-data-access";
 
 type Props = {
   params: Promise<{ roomId: string; challengeId: string }>;

@@ -5,7 +5,7 @@ import {
 } from "@/application/administration/errors";
 import { AdminShell } from "@/components/admin";
 import { QuestionVersionEditor } from "@/components/admin/QuestionVersionEditor.client";
-import { getSuperadminNewQuestionPageModel } from "@/server/production-data-access";
+import { getSuperadminNewQuestionPageModel } from "@/server/production-admin-data-access";
 
 export const dynamic = "force-dynamic";
 

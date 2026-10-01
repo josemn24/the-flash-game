@@ -84,8 +84,10 @@ del contenido público. Incluye escenarios negativos aislados de relaciones y es
 ## Fase 4 cerrada y límite actual
 
 Las demos server-side de Flash Pop acceden al store mediante contratos asíncronos, el adaptador mock y
-la fachada explícita `server/demo-data-access.ts`. Las rutas reales persistidas usan
-`server/production-data-access.ts` para seleccionar Auth, RPCs y PostgreSQL mediante
+la fachada explícita `server/demo-data-access.ts`. Las rutas reales persistidas usan fachadas
+separadas por recorrido (`server/production-home-data-access.ts`,
+`server/production-room-data-access.ts`, `server/production-challenge-data-access.ts` y
+`server/production-admin-data-access.ts`) para seleccionar Auth, RPCs y PostgreSQL mediante
 `infrastructure/supabase/`. No existe una fachada compartida que seleccione entre ambas composiciones.
 Consulta
 [`data-access.md`](data-access.md) para la composición, autorización y DTOs.
