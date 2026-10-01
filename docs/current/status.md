@@ -213,6 +213,8 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   estas RPC contra un proyecto Supabase remoto siguen pendientes.
 - `/demo/**` puede recibir soluciones y calcular localmente como demo explícita: no debe confundirse
   con el recorrido competitivo migrado.
+- La Fase 3 retira la compatibilidad productiva: los barrels y aliases legacy quedan limitados a
+  adaptadores mock y tests, y `npm run type-architecture` bloquea nuevas dependencias cruzadas.
 
 ## Verificación actual
 

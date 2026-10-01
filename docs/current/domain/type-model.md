@@ -16,8 +16,7 @@ types/contracts    Entradas y salidas que pueden cruzar el límite cliente-servi
 types/gameplay     Estado y resultados internos de las sesiones de juego actuales
 types/gameplay/practice  Preguntas y desafíos completos para práctica, previews y demos
 types/view-models  Datos derivados y preparados para componentes concretos
-types/compat       Fachadas temporales para consumidores que aún no han migrado
-types/legacy       Agregados anidados confinados a compatibilidad
+types/legacy       Agregados anidados confinados a mocks, adaptadores y tests
 ```
 
 Las importaciones deben apuntar hacia capas más fundamentales. `domain` es independiente del resto
@@ -57,10 +56,10 @@ respuestas correctas, tolerancias, rutas, tableros resueltos y métricas óptima
 
 ## Compatibilidad histórica
 
-La UI y el código de producción ya no importan `@/types/compat/*`; esas fachadas se eliminaron al
-completar la migración. Los entrypoints históricos (`@/types/game`, `@/types/room`,
+La UI y el código de producción ya no importan barrels legacy ni `@/components/game/index`. No existe
+un `types/compat` productivo. Los entrypoints históricos (`@/types/game`, `@/types/room`,
 `@/types/challenge`, `@/types/question`, etc.) se conservan únicamente para fixtures y adaptadores
-legacy que todavía necesitan una transición independiente. Sus nombres anidados se mantienen como
+mock, tests y type tests que todavía necesitan compatibilidad. Sus nombres anidados se mantienen como
 aliases marcados como obsoletos:
 
 - `Room` equivale a `LegacyRoomSnapshot`.
@@ -71,8 +70,8 @@ aliases marcados como obsoletos:
 
 El código nuevo debe importar desde `@/types/domain`, `@/types/contracts`, `@/types/gameplay` o
 `@/types/view-models`. El almacén mock usa IDs opacos UUID v5 y resuelve las rutas legibles mediante
-aliases. Los tipos legacy solo se importan en `types/compat` y en adaptadores bajo
-`data/mock/compat`. Los constructores deterministas pertenecen exclusivamente a `data/mock`; no
+aliases. Los tipos legacy solo se importan en `data/mock`, `infrastructure/mock`, `test-utils` y
+tests explícitos. Los constructores deterministas pertenecen exclusivamente a `data/mock`; no
 forman parte del dominio ni anticipan los adaptadores reales de Supabase.
 
 ## Comprobaciones

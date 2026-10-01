@@ -2,11 +2,11 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada para las slices verificadas. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19,
+Las slices verificadas consolidan la integración real de Supabase. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19,
 E01–E06/E10 y el portal privado consolidan la integración real de Supabase y completan el
-recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash/Supervivencia/Pirámide competitivo →
+recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash/Narrative/Supervivencia/Pirámide competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
-introducción, el gameplay Flash/Supervivencia/Pirámide, los rankings, el historial común cerrado y la revisión completa consultan o
+introducción, el gameplay Flash/Narrative/Supervivencia/Pirámide, los rankings, el historial común cerrado y la revisión completa consultan o
 mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
 superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
 transaccional de sala, owner y grupo inicial desde el portal. Alphabet ya usa una proyección
@@ -14,7 +14,8 @@ server-only y los comandos competitivos existentes; los ajustes de sala ya tiene
 membresías (conceder/quitar admin y eliminación lógica por el owner), mientras que transferencia,
 bloqueo/desbloqueo e invitaciones completas siguen pendientes. Supervivencia aporta vidas autoritativas;
 S15 integra Pirámide con niveles, evaluación, finalización y revisión server-side, verificada en el
-stack local. Narrativa sigue mock hasta su vertical slice.
+stack local. Narrative reutiliza el ciclo genérico de intentos y también usa la lectura y sesión
+server-backed; la edición narrativa avanzada sigue fuera de alcance.
 
 La dirección vigente es:
 
@@ -151,15 +152,17 @@ Eventos Progressive-clues del Flash competitivo
 → `private.progressive_clue_reveal_events` + `private.answer_receipts`
 → evaluador confiable desde `progressiveCluesRevealed` reconstruido por PostgreSQL
 
-Las demos explícitas de Flash Pop conservan este flujo:
+La composición productiva de los recorridos competitivos sigue este flujo:
 
 Server Components
-→ server/demo-data-access.ts
+→ server/production-*-data-access.ts
 → application/queries
-→ infrastructure/mock
-→ mockDomainStore
+→ infrastructure/supabase
+→ Supabase
 → DTOs y view models
 → Client Components
+
+Las superficies locales siguen `server/demo-data-access.ts → application/queries → infrastructure/mock → mockDomainStore`.
 ```
 
 Las dos composiciones son explícitas y request-safe: `server/composition/production.ts` conecta
@@ -407,8 +410,9 @@ frontera de seguridad.
 ## Compatibilidad temporal
 
 `PlayableChallengePageModel` conserva el `Challenge` gameplay completo para no reescribir los 31
-formatos ni la evaluación local en rutas mock/práctica. El recorrido competitivo de Pirámide usa
-`ServerPyramidChallenge` y una lectura por checkpoint que no envía soluciones ni niveles futuros.
+formatos ni la evaluación local en rutas mock/práctica. Los recorridos competitivos de Flash,
+Alphabet, Supervivencia, Narrative y Pirámide usan proyecciones `Server*Challenge` y lecturas que
+no envían soluciones ni niveles futuros.
 
 `RoomSessionProvider` y el `localStorage` de Pirámide permanecen disponibles solo en recorridos
 mock/práctica. Los modelos
@@ -429,6 +433,8 @@ adaptadores internos que todavía necesita para entregar los modelos de gameplay
 - componentes, features y utilidades cliente no importan servidor, infraestructura ni datos;
 - solo `infrastructure/mock` y el código de test pueden leer `data/mock`;
 - la infraestructura mock no consume proyecciones legacy de nivel superior;
+- las rutas productivas no importan barrels legacy ni el barrel mixto de gameplay;
+- las rutas competitivas no habilitan `persistence: "mock"`;
 - la fachada conserva `server-only` y la memoización de petición.
 
 Los tests de contrato se ejecutan contra los adaptadores mock y el adaptador Supabase incluye acceso

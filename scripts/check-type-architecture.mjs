@@ -36,6 +36,10 @@ const LEGACY_TYPE_IMPORTS = new Set([
   "@/types/user",
   "@/types/legacy",
 ]);
+const MIXED_GAME_BARRELS = new Set(["@/components/game", "@/components/game/index"]);
+// These are the only repository areas allowed to retain legacy compatibility.
+// They are local fixtures/adapters or test support, never competitive production code.
+const LOCAL_COMPATIBILITY_PATHS = ["data/mock/", "infrastructure/mock/", "test-utils/"];
 const LAYERS = ["domain", "contracts", "gameplay", "view-models", "legacy"];
 const FORBIDDEN_PROJECT_AREAS = [
   "application",
@@ -81,6 +85,23 @@ function importsIn(source) {
     typeOnly: Boolean(typeOnly),
     specifier,
   }));
+}
+
+function isLegacyTypeSpecifier(specifier) {
+  return (
+    LEGACY_TYPE_IMPORTS.has(specifier) ||
+    specifier.startsWith("@/types/legacy/") ||
+    specifier.startsWith("@/types/compat/")
+  );
+}
+
+function isMockInfrastructure(relative) {
+  return relative.startsWith(`infrastructure${path.sep}mock${path.sep}`);
+}
+
+function isExplicitLocalCompatibilityPath(relative) {
+  const normalized = relative.split(path.sep).join("/");
+  return LOCAL_COMPATIBILITY_PATHS.some((prefix) => normalized.startsWith(prefix));
 }
 
 const files = (
@@ -226,14 +247,17 @@ for (const file of productionFiles) {
     relative ===
       path.join("app", "api", "competitive", "attempts", "[attemptId]", "answer", "route.ts");
   const isRoomAdapter = isRoomSupabaseAdapter(relative);
+  const isMockAdapter = isMockInfrastructure(relative);
+  const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
 
   for (const imported of importsIn(source)) {
-    if (LEGACY_TYPE_IMPORTS.has(imported.specifier)) {
+    if (isLegacyTypeSpecifier(imported.specifier) && !isLocalCompatibility) {
       violations.push(`${relative} imports legacy type barrel ${imported.specifier}`);
     }
 
     if (
       imported.specifier.startsWith("@/types/compat/") &&
+      !isMockAdapter &&
       !COMPATIBILITY_IMPORT_ALLOWLIST.has(relative)
     ) {
       violations.push(`${relative} imports compatibility type ${imported.specifier}`);
@@ -281,6 +305,16 @@ for (const file of productionFiles) {
     }
 
     const area = projectArea(imported.specifier);
+
+    if (MIXED_GAME_BARRELS.has(imported.specifier)) {
+      violations.push(
+        `${relative} imports the retired mixed game barrel; use demo, production or practice`,
+      );
+    }
+
+    if (imported.specifier.startsWith("@/data/mock/compat/") && !isMockAdapter) {
+      violations.push(`${relative} imports local mock compatibility outside infrastructure/mock`);
+    }
 
     if (
       layer === "application" &&
@@ -421,7 +455,8 @@ for (const file of productionFiles) {
   const importedSpecifiers = importsIn(source).map(({ specifier }) => specifier);
   const isAppRoute = relative.startsWith(`app${path.sep}`);
   const isDemoRoute = relative.startsWith(`app${path.sep}demo${path.sep}`);
-  const isProductionRoute = isAppRoute && !isDemoRoute;
+  const isPracticeRoute = relative.startsWith(`app${path.sep}formatos${path.sep}`);
+  const isProductionRoute = isAppRoute && !isDemoRoute && !isPracticeRoute;
   if (
     relative.startsWith(`app${path.sep}flash-pop`) ||
     relative.startsWith(`app${path.sep}flash-pop-concepts`) ||
@@ -458,6 +493,43 @@ for (const file of productionFiles) {
     violations.push(`${relative} imports the mixed game barrel; use demo, production or practice`);
   }
   if (
+    isAppRoute &&
+    importedSpecifiers.some(
+      (specifier) => specifier === "@/components/game/RoomChallengeClient.client",
+    )
+  ) {
+    violations.push(
+      `${relative} imports RoomChallengeClient directly; use the production game barrel`,
+    );
+  }
+  if (
+    isProductionRoute &&
+    importedSpecifiers.some(
+      (specifier) =>
+        specifier === "@/components/game/demo" || specifier === "@/components/game/practice",
+    )
+  ) {
+    violations.push(`${relative} imports a non-production game barrel from a production route`);
+  }
+  if (
+    isDemoRoute &&
+    importedSpecifiers.some(
+      (specifier) =>
+        specifier === "@/components/game/production" || specifier === "@/components/game/practice",
+    )
+  ) {
+    violations.push(`${relative} imports a non-demo game barrel from a demo route`);
+  }
+  if (
+    isPracticeRoute &&
+    importedSpecifiers.some(
+      (specifier) =>
+        specifier === "@/components/game/demo" || specifier === "@/components/game/production",
+    )
+  ) {
+    violations.push(`${relative} imports a non-practice game barrel from a practice route`);
+  }
+  if (
     (relative.startsWith(`app${path.sep}salas${path.sep}`) ||
       relative.startsWith(`app${path.sep}desafios${path.sep}`)) &&
     /(?:persistence|gameplayPersistence)\s*[:=][^\n]*["']mock["']/.test(source)
@@ -467,7 +539,13 @@ for (const file of productionFiles) {
 }
 
 const competitiveReaderSource = await readFile(
-  path.join(process.cwd(), "infrastructure", "supabase", "gameplay", "competitiveChallengeQueries.ts"),
+  path.join(
+    process.cwd(),
+    "infrastructure",
+    "supabase",
+    "gameplay",
+    "competitiveChallengeQueries.ts",
+  ),
   "utf8",
 );
 for (const mode of ["flash", "alphabet", "survival", "narrative", "pyramid"]) {

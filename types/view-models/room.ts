@@ -71,7 +71,8 @@ export type GameRoomContext = {
   memberId: string;
   availabilityStatus: ChallengeAvailabilityStatus;
   attemptStatus: CompetitiveAttemptStatus;
-  gameplayPersistence?: GameplayPersistence;
+  /** Competitive room contexts never opt into the local mock runtime. */
+  gameplayPersistence?: Extract<GameplayPersistence, "server">;
   result?: RoomChallengeResult;
 };
 

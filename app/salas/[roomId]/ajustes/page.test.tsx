@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { FlashPopRoomSettings } from "@/components/game/modes/flash-pop/FlashPopRoomSettings";
+import { FlashPopRoomSettings } from "@/components/game/production";
 import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
 
 const mocks = vi.hoisted(() => ({

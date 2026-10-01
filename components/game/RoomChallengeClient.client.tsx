@@ -104,8 +104,7 @@ export function RoomChallengeClient({
   persistence?: GameplayPersistence;
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
-  const persistence =
-    persistenceProp ?? roomContext?.gameplayPersistence ?? (roomContext ? "server" : "mock");
+  const persistence = resolveGameplayPersistence(roomContext, persistenceProp);
   const { recordCompletion, getCompletion } = useRoomSession();
   // Server-backed competitive sessions must never be shadowed by the
   // client-only demo store. The provider remains available for explicit
@@ -202,4 +201,11 @@ export function RoomChallengeClient({
       onComplete={roomContext ? onComplete : undefined}
     />
   );
+}
+
+export function resolveGameplayPersistence(
+  roomContext: GameRoomContext | undefined,
+  persistenceProp: GameplayPersistence | undefined,
+): GameplayPersistence {
+  return roomContext ? "server" : (persistenceProp ?? "mock");
 }

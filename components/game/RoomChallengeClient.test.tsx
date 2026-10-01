@@ -1,7 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
-import { RoomChallengeClient } from "./RoomChallengeClient.client";
+import type { GameRoomContext } from "@/types/view-models/room";
+import { RoomChallengeClient, resolveGameplayPersistence } from "./RoomChallengeClient.client";
 
 const challenge = legacyChallenges[0]!;
 const socialSnapshot = {
@@ -11,6 +12,20 @@ const socialSnapshot = {
 };
 
 describe("RoomChallengeClient", () => {
+  it("forces server persistence whenever a competitive room context exists", () => {
+    const roomContext = {
+      roomId: "room",
+      roomTitle: "Room",
+      returnTo: "/salas/room",
+      memberId: "member",
+      availabilityStatus: "available",
+      attemptStatus: "available",
+    } satisfies GameRoomContext;
+
+    expect(resolveGameplayPersistence(roomContext, "mock")).toBe("server");
+    expect(resolveGameplayPersistence(undefined, "mock")).toBe("mock");
+  });
+
   it("does not mount a competitive game for a completed attempt", () => {
     const markup = renderToStaticMarkup(
       <RoomChallengeClient

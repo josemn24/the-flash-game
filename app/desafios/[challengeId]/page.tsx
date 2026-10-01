@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { RoomChallengeClient } from "@/components/game/RoomChallengeClient.client";
+import { RoomChallengeClient } from "@/components/game/production";
 import { RoomChallengeIntroduction } from "@/components/game/shared";
 import { getPlayableChallengePageModel } from "@/server/production-challenge-data-access";
 import { getRoomIntroductionPageModel } from "@/server/production-room-data-access";

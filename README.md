@@ -1,7 +1,7 @@
 # The Flash
 
 The Flash es un juego de preguntas diseñado como un sprint contra el reloj. La versión actual
-combina una experiencia de práctica mock con recorridos competitivos persistidos de Flash y Narrative sobre Supabase,
+combina una experiencia de práctica local con recorridos competitivos persistidos de Flash y Narrative sobre Supabase,
 además de consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva
 de 31 formatos.
 
@@ -29,7 +29,7 @@ de 31 formatos.
 - Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
 La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
-recorridos competitivos persistidos en Supabase. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
+recorridos competitivos persistidos en Supabase. Las rutas competitivas no tienen fallback al mock. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
 F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10 conectan Auth, provisioning de jugador,
 lecturas de salas, el intento Flash de 2 a 20 preguntas, su evaluación server-side, recuperación y
 los rankings de temporada/publicación actual, el historial común de Flash/Supervivencia/Narrative/Pirámide y la revisión completa después de volver. El
@@ -79,6 +79,7 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 | `npm run lint`                       | Comprueba la calidad estática del código.                                                                |
 | `npm run typecheck`                  | Valida todos los contratos TypeScript sin emitir código.                                                 |
 | `npm run type-architecture`          | Comprueba las dependencias entre las capas de tipos.                                                     |
+| `npm run mock-data:check`            | Valida fixtures, adaptadores y límites del almacén mock local.                                           |
 | `npm test`                           | Ejecuta los tests unitarios con Vitest.                                                                  |
 | `npm run build`                      | Genera la compilación optimizada de producción.                                                          |
 | `npm run start`                      | Sirve localmente una compilación de producción.                                                          |
@@ -128,9 +129,9 @@ archivo de credenciales después.
 app/             Entrada de Next.js: rutas, layouts, metadata y estilos globales
 application/     Consultas, casos de uso y contratos independientes de Next.js
 components/      Pantallas, UI compartida e islas interactivas
-data/            Fixtures canónicos, store mock y proyecciones transitorias
+data/            Fixtures canónicos y store mock local, sin dependencia de rutas competitivas
 features/        Comportamiento de producto: sesiones, juego y catálogo
-infrastructure/  Adaptadores concretos mock y Supabase
+infrastructure/  Adaptadores concretos mock/locales y Supabase
 lib/             Lógica pura reutilizable: scoring, validación y utilidades
 server/          Composición server-only, sesión y fachadas para las rutas
 types/           Tipos de dominio, contratos, gameplay y view models
@@ -167,8 +168,8 @@ app/ → server/ → application/ → infrastructure/mock/ → data/mock/
 
 `lib/` y `types/` son piezas transversales: `lib/` concentra funciones puras y `types/` separa
 entidades del dominio, contratos públicos, estado de gameplay y modelos preparados para la UI.
-`data/` conserva el store y los fixtures del prototipo; parte de sus archivos antiguos es
-transitoria y no debe tomarse como el destino final de la persistencia.
+`data/` conserva los fixtures y el store mock local; sus adaptadores de compatibilidad solo pueden
+alcanzarse desde la composición mock o desde tests.
 
 Las superficies de demo y práctica viven bajo `/demo/**`. `/demo/flash-pop` es el lobby mock, y
 `/demo/flash-pop/ui-kit`, `/demo/flash-pop-concepts` y `/demo/flash-pop-typography` son laboratorios
@@ -176,9 +177,10 @@ visuales. Las URLs históricas `/flash-pop/**`, `/flash-pop-concepts` y `/flash-
 redirigen permanentemente a sus equivalentes bajo `/demo/**`. Las rutas competitivas `/salas/**`,
 `/desafios/**` y `/admin/**` no usan la fachada demo ni los fixtures mock.
 
-La estructura actual es deliberadamente una arquitectura de transición: las slices se migran por
-recorridos completos y el mock se conserva solo donde aún no existe una slice real o para práctica.
-No se pretende añadir más capas hasta que aporten una necesidad concreta. La explicación completa de
+La arquitectura consolidada separa composición y datos: `server/composition/production.ts` es la
+única entrada de producción competitiva; `server/composition/demo.ts` y `infrastructure/mock/` solo
+sirven para demo, práctica y tests. Los barrels `components/game/demo`, `production` y `practice`
+evitan mezclar esas superficies. La explicación completa de
 responsabilidades, dependencias y evolución está en [`docs/current/architecture.md`](docs/current/architecture.md).
 
 ## Modelo de dominio

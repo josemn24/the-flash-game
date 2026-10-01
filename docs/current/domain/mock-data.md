@@ -2,7 +2,7 @@
 
 ## Estado
 
-La fase 3 está cerrada. `mockDomainStore` es un conjunto de tablas planas con las entidades de
+La Fase 3 retira la compatibilidad productiva. `mockDomainStore` es un conjunto de tablas planas con las entidades de
 `@/types/domain` y sigue siendo la fuente de fixtures de práctica, previews y tests de contrato para
 contenido, identidad, salas, membresías, temporadas, publicaciones, intentos y respuestas. Desde
 S01, los recorridos reales no lo usan como fuente de persistencia y no existe ningún flujo
@@ -60,14 +60,15 @@ solo representa visualmente Flash Points.
 
 El superadministrador demo es un jugador con rol global, sin membresía ni intentos competitivos.
 
-## Compatibilidad y validación
+## Compatibilidad local y validación
 
 Las antiguas fachadas de `data/` para `demoRoom`, preguntas, desafíos, publicaciones e historial se
 han retirado. Los tests que necesitan contratos de gameplay usan helpers exclusivos de
 `test-utils/mockGameplay.ts` y `test-utils/mockRoom.ts`, respaldados por fixtures canónicos y por
 los adaptadores internos necesarios para materializar la UI. No queda código de apoyo en
 `test-utils/legacy`; los adaptadores de compatibilidad que aún necesita la infraestructura viven en
-`data/mock/compat` y son la única entrada permitida a las proyecciones antiguas.
+`data/mock/compat` y son la única entrada permitida a las proyecciones antiguas. Ninguna ruta
+competitiva puede alcanzarlos ni utilizarlos como fallback.
 
 La integridad se valida sin modificar archivos:
 
@@ -81,7 +82,7 @@ El primer comando comprueba UUID, slugs, autenticación, roles, membresías, inv
 ventanas, cancelaciones, puntos, intentos, respuestas, rankings, historial, round trips y separación
 del contenido público. Incluye escenarios negativos aislados de relaciones y estados temporales.
 
-## Fase 4 cerrada y límite actual
+## Composición local y límite actual
 
 Las demos server-side de Flash Pop acceden al store mediante contratos asíncronos, los adaptadores
 por capacidad (`MockRoomLobbyQueries`, `MockRoomRankingQueries`, `MockRoomSettingsQueries`,
@@ -101,8 +102,8 @@ S01 cubre Auth, provisioning de jugador y nombre; S02 cubre home, salas, detalle
 S03 cubre el Flash competitivo de dos preguntas; S04 cubre recuperación, sesión exclusiva y
 abandono; S06 consulta los rankings reales de temporada y de la publicación abierta; S07 consulta
 historial común de Flash, Narrative, Supervivencia y Pirámide, ranking histórico y revisión autorizada de los cuatro modos después de volver. S08–S12 añaden portal
-privado, temporadas, publicación editorial Flash mínima y calendario local; Storage y los demás modos
-siguen usando mock o están pendientes de sus propias slices. La beta provisionará miembros
+privado, temporadas, publicación editorial Flash mínima y calendario local; Storage y la edición
+narrativa avanzada siguen fuera de esta fase. La beta provisionará miembros
 directamente desde ese portal, sin flujo público de invitaciones.
 
 Como compatibilidad de la práctica y de previews, `PlayableChallengePageModel` todavía puede llevar

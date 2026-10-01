@@ -248,10 +248,11 @@ orden y metadatos, y `prepare` entrega el payload de una pregunta. La UI conserv
 para práctica y demos.
 
 La frontera de composición también es explícita: `server/composition/demo.ts` es el único composition
-root mock; `server/composition/production.ts` conecta las lecturas Supabase. Las rutas bajo
+root local; `server/composition/production.ts` conecta las lecturas Supabase. Las rutas bajo
 `app/demo/**` pueden importar la fachada demo, mientras que `/salas`, `/desafios` y `/admin` no pueden
-importar `data/mock`, `infrastructure/mock` ni el barrel mixto de gameplay. `npm run type-architecture`
-comprueba estas reglas y verifica que cada modo competitivo tenga lector Supabase registrado.
+importar `data/mock`, `infrastructure/mock`, tipos legacy ni barrels de gameplay retirados.
+`npm run type-architecture` comprueba estas reglas y verifica que cada modo competitivo tenga lector
+Supabase registrado.
 
 Adaptadores previstos:
 
@@ -411,44 +412,45 @@ types/
   contracts/               frontera serializable pública/privada
   gameplay/               estado local de sesión
   view-models/             proyecciones de pantalla
-  legacy/                  compatibilidad temporal
+  legacy/                  aliases históricos solo para mocks y tests
 
 lib/                       reglas puras y algoritmos existentes
-data/mock/                  fixtures y adaptador mock temporal
+data/mock/                  fixtures y adaptador local soportado
 infrastructure/
-  mock/                    implementación actual
-  supabase/                implementación futura
+  mock/                    implementación local para demo/práctica/tests
+  supabase/                implementación productiva
 server/
   composition/             composition roots demo y producción
   *-data-access.ts         fachadas server-only y semántica de Next.js
 ```
 
-Las proyecciones legacy de `data/*.ts` deben permanecer aisladas y dejar de recibir consumidores
-nuevos. Cuando se sustituya el mock, se conserva el contrato de `application` y se cambia la
-composición de infraestructura, no las páginas ni los modos de juego.
+Las proyecciones y aliases legacy deben permanecer aislados y no reciben consumidores productivos
+nuevos. Los adaptadores que todavía necesita `infrastructure/mock` son compatibilidad local explícita;
+si quedan sin consumidores se eliminan junto con sus exports. La composición competitiva no puede
+seleccionar el mock como fallback.
 
 ## 5. Encaje con el Next.js actual
 
 El repositorio ya tiene una base compatible con esta propuesta:
 
-| Área actual                                       | Responsabilidad actual                                      | Evolución prevista                                                                                                                                      |
-| ------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `app/page.tsx`, `app/salas/**`, `app/desafios/**` | Server Components dinámicos que cargan modelos              | Mantenerlos finos; usar consultas/casos de uso server-only                                                                                              |
-| `app/formatos/**`                                 | Biblioteca editorial estática con ejemplos cliente          | Mantener Server Components y una isla por ejemplo                                                                                                       |
-| `server/production-home-data-access.ts`           | Fachada `server-only` de la home y memoización por petición | Mantenerla limitada a la carga de identidad y salas de la home                                                                                          |
-| `server/production-room-data-access.ts`           | Fachada `server-only` de salas, rankings e historial        | Mantenerla sin dependencias mock y limitada a consultas de sala                                                                                         |
-| `server/production-challenge-data-access.ts`      | Fachada `server-only` de desafíos jugables reales           | Mantenerla sin dependencias mock y limitada a la selección de gameplay persistido                                                                       |
-| `server/production-admin-data-access.ts`          | Fachada `server-only` del portal de administración          | Mantener autorización superadmin y consultas administrativas separadas de las rutas públicas                                                            |
-| `server/demo-data-access.ts`                      | Fachada `server-only` exclusiva de Flash Pop mock           | Mantenerla limitada a rutas `/demo/**`; las URLs antiguas solo redirigen                                                                                |
-| `server/composition/production.ts`                | Conecta capacidades Supabase con casos de uso de lectura    | Único composition root de las lecturas públicas reales; no capturar sesión en estado global                                                             |
-| `server/composition/demo.ts`                      | Conecta adaptadores mock con casos de uso demo              | Único composition root de Flash Pop mock                                                                                                                |
-| `application/queries/`                            | Contratos de lectura independientes de Next.js              | Mantener capacidades pequeñas; no reintroducir agregadores por tabla                                                                                    |
-| `infrastructure/mock/`                            | Consultas y composición sobre `mockDomainStore`             | Mantener como adaptador de pruebas; Supabase se organiza por capacidades en `rooms`, `attempts`, `gameplay`, `assets`, `identity`, `admin` y `platform` |
-| `data/mock/`                                      | Fixtures canónicos, store normalizado y validación          | Fuente del adaptador mock, nunca dependencia de UI productiva                                                                                           |
-| `components/game/**`                              | Shell cliente, modos, resultados y revisión                 | Usar barrels explícitos `demo`, `production` y `practice`; conservar estado inmediato y sustituir reporter local por comandos de servidor               |
-| `features/rooms/**`                               | Resultados y snapshots locales en memoria                   | Convertirlos en caché de UI; el intento oficial vivirá en servidor                                                                                      |
-| `lib/**`                                          | Scoring, ranking, disponibilidad y algoritmos puros         | Reutilizar en dominio/servidor y cubrir con tests de contrato                                                                                           |
-| `types/contracts/**`                              | Separación de payload público, solución y respuesta         | Usar el payload público en competición y mantener solución privada                                                                                      |
+| Área actual                                       | Responsabilidad actual                                      | Evolución prevista                                                                                                                                                           |
+| ------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/page.tsx`, `app/salas/**`, `app/desafios/**` | Server Components dinámicos que cargan modelos              | Mantenerlos finos; usar consultas/casos de uso server-only                                                                                                                   |
+| `app/formatos/**`                                 | Biblioteca editorial estática con ejemplos cliente          | Mantener Server Components y una isla por ejemplo                                                                                                                            |
+| `server/production-home-data-access.ts`           | Fachada `server-only` de la home y memoización por petición | Mantenerla limitada a la carga de identidad y salas de la home                                                                                                               |
+| `server/production-room-data-access.ts`           | Fachada `server-only` de salas, rankings e historial        | Mantenerla sin dependencias mock y limitada a consultas de sala                                                                                                              |
+| `server/production-challenge-data-access.ts`      | Fachada `server-only` de desafíos jugables reales           | Mantenerla sin dependencias mock y limitada a la selección de gameplay persistido                                                                                            |
+| `server/production-admin-data-access.ts`          | Fachada `server-only` del portal de administración          | Mantener autorización superadmin y consultas administrativas separadas de las rutas públicas                                                                                 |
+| `server/demo-data-access.ts`                      | Fachada `server-only` exclusiva de Flash Pop mock           | Mantenerla limitada a rutas `/demo/**`; las URLs antiguas solo redirigen                                                                                                     |
+| `server/composition/production.ts`                | Conecta capacidades Supabase con casos de uso de lectura    | Único composition root de las lecturas públicas reales; no capturar sesión en estado global                                                                                  |
+| `server/composition/demo.ts`                      | Conecta adaptadores mock con casos de uso demo              | Único composition root de Flash Pop mock                                                                                                                                     |
+| `application/queries/`                            | Contratos de lectura independientes de Next.js              | Mantener capacidades pequeñas; no reintroducir agregadores por tabla                                                                                                         |
+| `infrastructure/mock/`                            | Consultas y composición sobre `mockDomainStore`             | Mantener como adaptador local de demo, práctica y tests; Supabase se organiza por capacidades en `rooms`, `attempts`, `gameplay`, `assets`, `identity`, `admin` y `platform` |
+| `data/mock/`                                      | Fixtures canónicos, store normalizado y validación          | Fuente del adaptador local, nunca dependencia de UI competitiva                                                                                                              |
+| `components/game/**`                              | Shell cliente, modos, resultados y revisión                 | Usar barrels explícitos `demo`, `production` y `practice`; conservar estado local en demo/práctica y comandos de servidor en competición                                     |
+| `features/rooms/**`                               | Resultados y snapshots locales en memoria                   | Convertirlos en caché de UI; el intento oficial vivirá en servidor                                                                                                           |
+| `lib/**`                                          | Scoring, ranking, disponibilidad y algoritmos puros         | Reutilizar en dominio/servidor y cubrir con tests de contrato                                                                                                                |
+| `types/contracts/**`                              | Separación de payload público, solución y respuesta         | Usar el payload público en competición y mantener solución privada                                                                                                           |
 
 El flujo objetivo de una partida será:
 

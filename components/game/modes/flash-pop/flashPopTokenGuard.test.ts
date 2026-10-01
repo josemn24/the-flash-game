@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -89,9 +89,7 @@ describe("product design-system boundaries", () => {
     expect(readFileSync(join(componentsRoot, "questions/index.ts"), "utf8")).toContain(
       'export * from "./formats"',
     );
-    expect(readFileSync(join(componentsRoot, "game/index.ts"), "utf8")).toContain(
-      'export * from "./shared"',
-    );
+    expect(existsSync(join(componentsRoot, "game/index.ts"))).toBe(false);
     expect(readFileSync(join(componentsRoot, "game/demo.ts"), "utf8")).toContain(
       'from "./modes/flash-pop/FlashPopLobby.client"',
     );
