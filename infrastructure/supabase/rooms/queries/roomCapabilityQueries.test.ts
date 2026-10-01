@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { QueryContext } from "@/types/view-models";
 import { SupabaseRoomHistoryQueries } from "./roomHistoryQueries";
 import { SupabaseRoomLobbyQueries } from "./roomLobbyQueries";
 import { SupabaseRoomMemberDetailQueries } from "./roomMemberDetailQueries";
@@ -48,6 +49,11 @@ const viewer = {
   name: "Bob Viewer",
 };
 
+const queryContext = {
+  viewer,
+  now: "2026-09-30T10:00:00.000Z",
+} as QueryContext;
+
 const roomRow = {
   room_slug: "room-key",
   room_title: "Sala",
@@ -92,9 +98,7 @@ describe("room capability queries", () => {
       });
     });
 
-    const pending = new SupabaseRoomLobbyQueries({
-      getCurrentViewer: mocks.getCurrentViewerProfile,
-    }).getDetail("room-key");
+    const pending = new SupabaseRoomLobbyQueries().getDetail("room-key", queryContext);
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(events).toEqual([
@@ -126,9 +130,7 @@ describe("room capability queries", () => {
     mocks.callRoomRead.mockResolvedValue([]);
 
     await expect(
-      new SupabaseRoomHistoryQueries(expiration, {
-        getCurrentViewer: mocks.getCurrentViewerProfile,
-      }).listHistory("room-key"),
+      new SupabaseRoomHistoryQueries(expiration).listHistory("room-key", queryContext),
     ).resolves.toBeNull();
   });
 
@@ -145,9 +147,8 @@ describe("room capability queries", () => {
 
     const model = await new SupabaseRoomMemberDetailQueries(
       { expireStaleAttemptsForRoom: vi.fn() },
-      { getCurrentViewer: mocks.getCurrentViewerProfile },
       { resolve: mocks.privateAssetResolve },
-    ).getMemberDetail("room-key", memberKey, historyRow.publication_id);
+    ).getMemberDetail("room-key", memberKey, queryContext, historyRow.publication_id);
 
     expect(model).not.toBeNull();
     expect(mocks.privateAssetResolve).not.toHaveBeenCalled();
@@ -165,9 +166,8 @@ describe("room capability queries", () => {
 
     await new SupabaseRoomMemberDetailQueries(
       { expireStaleAttemptsForRoom: vi.fn() },
-      { getCurrentViewer: mocks.getCurrentViewerProfile },
       { resolve: mocks.privateAssetResolve },
-    ).getMemberDetail("room-key", memberKey, historyRow.publication_id);
+    ).getMemberDetail("room-key", memberKey, queryContext, historyRow.publication_id);
 
     expect(mocks.privateAssetResolve).toHaveBeenCalledWith({
       authUserId: "auth-user-id",
@@ -182,11 +182,11 @@ describe("room capability queries", () => {
     await expect(
       new SupabaseRoomMemberDetailQueries(
         { expireStaleAttemptsForRoom: vi.fn() },
-        { getCurrentViewer: mocks.getCurrentViewerProfile },
         { resolve: mocks.privateAssetResolve },
       ).getMemberDetail(
         "room-key",
         "00000000-0000-0000-0000-000000000003",
+        queryContext,
         historyRow.publication_id,
       ),
     ).resolves.toBeNull();

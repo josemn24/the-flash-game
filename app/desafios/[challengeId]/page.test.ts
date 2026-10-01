@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { mockChallengeQueries } from "@/infrastructure/mock/composition";
+import { mockCompetitiveChallengeQueries } from "@/infrastructure/mock/composition";
 import { mockQueryContext } from "@/test-utils/mockRoom";
 
 const mocks = vi.hoisted(() => ({
@@ -21,9 +21,9 @@ vi.mock("next/navigation", () => ({
 describe("challenge route room context", () => {
   it("passes Tabarnia context to the canonical challenge route", async () => {
     mocks.getPlayableChallengePageModel.mockResolvedValue(
-      await mockChallengeQueries.getPlayable(
-        "tabarnia-challenge-05",
+      await mockCompetitiveChallengeQueries.getPlayable(
         "tabarnia-room",
+        "tabarnia-challenge-05",
         await mockQueryContext(),
       ),
     );

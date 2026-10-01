@@ -1,9 +1,11 @@
 import "server-only";
 
-import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type { RoomHistoryQueries } from "@/application/queries";
-import type { RoomHistoryDetailModel, RoomHistoryListModel } from "@/types/view-models";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
+import type {
+  QueryContext,
+  RoomHistoryDetailModel,
+  RoomHistoryListModel,
+} from "@/types/view-models";
 import type { AttemptExpirationQueries } from "@/infrastructure/supabase/attempts/attemptExpiration";
 import type { RoomHistoryReadRow } from "./roomReadContracts";
 import { isRoomHistoryReadRow } from "./roomReadGuards";
@@ -11,12 +13,10 @@ import { callHistoryRead, callRoomRead } from "./roomReadRpc";
 import { toHistoricalLeaderboard, toHistoryEntry } from "./roomHistoryMappers";
 
 export class SupabaseRoomHistoryQueries implements RoomHistoryQueries {
-  constructor(
-    private readonly attemptExpiration: AttemptExpirationQueries,
-    private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader,
-  ) {}
+  constructor(private readonly attemptExpiration: AttemptExpirationQueries) {}
 
-  async listHistory(roomKey: string): Promise<RoomHistoryListModel | null> {
+  async listHistory(roomKey: string, _context: QueryContext): Promise<RoomHistoryListModel | null> {
+    void _context;
     const rows = await callHistoryRead(
       "get_room_history",
       { target_room_slug: roomKey },
@@ -25,8 +25,6 @@ export class SupabaseRoomHistoryQueries implements RoomHistoryQueries {
     );
     const first = rows[0];
     if (!first) {
-      const viewer = await this.currentViewer.getCurrentViewer();
-      if (!viewer) return null;
       // The RPC intentionally returns no rows for an unknown or inaccessible room.
       // Resolve the room separately only to distinguish an accessible empty history.
       const roomRows = await callRoomRead("get_room_detail", { target_room_slug: roomKey });
@@ -66,6 +64,7 @@ export class SupabaseRoomHistoryQueries implements RoomHistoryQueries {
   async getHistoryDetail(
     roomKey: string,
     publicationKey: string,
+    context: QueryContext,
   ): Promise<RoomHistoryDetailModel | null> {
     if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(publicationKey)) return null;
     const rows = await callHistoryRead(
@@ -79,7 +78,7 @@ export class SupabaseRoomHistoryQueries implements RoomHistoryQueries {
     return {
       roomId: first.room_slug,
       roomTitle: first.room_title,
-      currentUserId: (await this.currentViewer.getCurrentViewer())?.playerId ?? "",
+      currentUserId: context.viewer.playerId,
       entry: toHistoryEntry(first),
       ranking: toHistoricalLeaderboard(rows),
       canReviewMembers: first.viewer_role !== "spectator",

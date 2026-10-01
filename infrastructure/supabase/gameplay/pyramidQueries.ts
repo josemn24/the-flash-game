@@ -1,6 +1,5 @@
 import "server-only";
 
-import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import { createClient } from "@/lib/supabase/server";
 import {
   callFlashRead,
@@ -14,7 +13,7 @@ import {
 } from "@/infrastructure/supabase/gameplay/flashQueries";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
 import type { ServerFlashTerminalReview, ServerPyramidChallenge } from "@/types/gameplay/challenge";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
+import type { QueryContext } from "@/types/view-models";
 
 type PyramidReadRow = Omit<
   GeneratedCompetitiveReadRow<"get_my_pyramid_challenge">,
@@ -63,8 +62,6 @@ function terminalReviewRow(row: FlashResultRow): ServerFlashTerminalReview {
 }
 
 export class SupabasePyramidQueries {
-  constructor(private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader) {}
-
   async getTerminalReview(attemptId: string): Promise<ServerFlashTerminalReview[]> {
     const rows = (
       await callFlashRead("get_my_pyramid_result", { target_attempt_id: attemptId })
@@ -89,9 +86,8 @@ export class SupabasePyramidQueries {
     );
   }
 
-  async getPlayable(roomKey: string, publicationId: string) {
-    const viewer = await this.currentViewer.getCurrentViewer();
-    if (!viewer) return null;
+  async getPlayable(roomKey: string, publicationId: string, context: QueryContext) {
+    const viewer = context.viewer;
     const rows = (
       await callFlashRead("get_my_pyramid_challenge", {
         target_room_slug: roomKey,

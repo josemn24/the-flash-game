@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
 
 const mocks = vi.hoisted(() => ({
   getRoomMemberDetailPageModel: vi.fn(),
@@ -18,7 +18,7 @@ describe("room member ranking route", () => {
   it("exposes Tabarnia members and player metadata", async () => {
     expect(dynamic).toBe("force-dynamic");
     mocks.getRoomMemberDetailPageModel.mockResolvedValue(
-      await mockRoomQueries.getMemberDetail("tabarnia-room", "ches", mockQueryContext()),
+      await mockRoomReadCapabilities.getMemberDetail("tabarnia-room", "ches", mockQueryContext()),
     );
     await expect(
       generateMetadata({
@@ -32,7 +32,7 @@ describe("room member ranking route", () => {
 
   it("resolves a known member", async () => {
     mocks.getRoomMemberDetailPageModel.mockResolvedValue(
-      await mockRoomQueries.getMemberDetail("tabarnia-room", "ches", mockQueryContext()),
+      await mockRoomReadCapabilities.getMemberDetail("tabarnia-room", "ches", mockQueryContext()),
     );
     const element = await MemberRankingPage({
       params: Promise.resolve({

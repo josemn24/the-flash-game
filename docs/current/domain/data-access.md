@@ -21,7 +21,10 @@ La dirección vigente es:
 ```text
 Server Components
 → server/production-home-data-access.ts
-→ server/profile.ts
+→ server/composition/production.ts
+→ application/use-cases/room-reads.ts
+→ application/queries (capacidades de lobby)
+→ infrastructure/supabase/identity + rooms
 → Supabase Auth/RPC/RLS
 → PostgreSQL
 
@@ -29,9 +32,10 @@ Las lecturas de S02, S03, E01, S06 y S07 siguen una frontera específica:
 
 Server Components
 → server/production-room-data-access.ts
-→ infrastructure/supabase/rooms/queries/roomQueries.ts
+→ server/composition/production.ts
+→ application/use-cases/room-reads.ts
 → capacidades de sala (lobby, ranking, settings, history y member detail)
-→ puertos CurrentViewerReader y PrivateQuestionAssetResolver
+→ infrastructure/supabase/rooms/*
 → infraestructura Supabase compartida
 → RPCs públicas de lectura estrecha
 → PostgreSQL privado/RLS
@@ -158,6 +162,13 @@ Server Components
 → Client Components
 ```
 
+Las dos composiciones son explícitas y request-safe: `server/composition/production.ts` conecta
+lecturas Supabase y `server/composition/demo.ts` conecta las lecturas mock. Las fachadas conservan
+`server-only`, `cache()` y la traducción de ausencia a la navegación de Next.js, pero no importan
+adaptadores concretos. Una composición no captura cookies ni perfiles en un singleton; el
+`CurrentViewerReader` resuelve el actor por petición y el caso de uso crea un único `QueryContext`
+con ese perfil y el reloj de consulta.
+
 La composición mock no se selecciona por `roomKey` ni por `FLASH_RUNTIME_SCOPE`. Solo las rutas
 explícitas de Flash Pop importan `server/demo-data-access.ts`; `/salas/*` importan
 `server/production-room-data-access.ts`, `/desafios/*` combinan las fachadas de desafíos y salas,
@@ -214,19 +225,20 @@ invitación.
 
 ## Contratos de aplicación
 
-`application/queries` define `CurrentViewerProvider`, `RoomQueries`, `RoomLobbyQueries`,
-`RoomRankingQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`, `SuperadminPortalQueries`,
-`SuperadminDashboardQueries`,
-`SuperadminEditorialQueries` y `ChallengeQueries`. `application/ports` añade
+`application/queries` define `CurrentViewerProvider`, las capacidades `RoomLobbyQueries`,
+`RoomRankingQueries`, `RoomSettingsQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`,
+`DemoChallengeQueries` y `CompetitiveChallengeQueries`, además de los contratos de
+superadministración. `application/ports` añade
 `CurrentViewerReader`, `PrivateQuestionAssetResolver`, `SuperadminRoomCommands`,
 `SuperadminEditorialCommands`, `SuperadminCalendarCommands` y `SuperadminCalendarQueries` para
 separar las dependencias de lectura de sala y las mutaciones administrativas de las consultas. Esta
 capa solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni
 adaptadores.
 
-Todas las consultas reciben un `QueryContext` con el jugador autenticado simulado y el instante de
-la petición. Las entradas usan aliases de ruta legibles. Los UUID canónicos se resuelven y quedan
-encapsulados en infraestructura.
+Todas las consultas reciben un `QueryContext` con el perfil autenticado ya resuelto y el instante de
+la petición. El contexto se construye exclusivamente en los casos de uso server-side: no acepta
+`viewerId`, `authUserId`, tokens ni clientes Supabase desde una ruta. Las entradas usan aliases de
+ruta legibles. Los UUID canónicos se resuelven y quedan encapsulados en infraestructura.
 
 Los DTOs de sala no devuelven identidades de autenticación, roles globales, filas canónicas ni
 payloads privados. Los rankings y el historial se calculan desde membresías, publicaciones,
@@ -235,15 +247,19 @@ intentos y respuestas normalizados.
 ## Composición de servidor
 
 Las fachadas `server/production-*-data-access.ts` llevan el marcador `server-only` y memoizan con
-`cache` de React. La fachada de home delega en
-`server/profile.ts`, que valida la sesión con `auth.getUser()`, llama al RPC estrecho
-`public.provision_player` y devuelve un DTO mínimo. El nombre se actualiza mediante la política RLS
-del propio jugador; no existe DML de aplicación con `service_role`.
+`cache` de React y delegan en `productionReadServices`. `server/profile.ts` conserva su frontera
+independiente para el perfil y queda fuera de esta migración de lecturas de home, salas y desafíos.
+Esa frontera valida la sesión con `auth.getUser()`, llama al RPC estrecho `public.provision_player`
+y devuelve un DTO mínimo. El nombre se actualiza mediante la política RLS del propio jugador; no
+existe DML de aplicación con `service_role`.
 
 La home, el detalle S02, los rankings S06 y el historial/revisión S07 delegan en
-`SupabaseRoomQueries`. El adaptador implementa `listCards`, `getDetail`, `getIntroduction`,
-`getRanking`, `listHistory`, `getHistoryDetail` y `getMemberDetail`. Para una sala real resuelve la
-temporada desde `get_room_detail`, consulta `get_season_ranking` y, cuando corresponde,
+`ApplicationRoomReads`. El caso de uso resuelve una vez el perfil actual, construye el
+`QueryContext` y delega cada operación en una capacidad de sala. Los adaptadores concretos son
+`SupabaseRoomLobbyQueries`, `SupabaseRoomRankingQueries`, `SupabaseRoomSettingsQueries`,
+`SupabaseRoomHistoryQueries` y `SupabaseRoomMemberDetailQueries`; ninguno agrupa el contrato de
+otra capacidad. Para una sala real el adaptador correspondiente resuelve la temporada desde
+`get_room_detail`, consulta `get_season_ranking` y, cuando corresponde,
 `get_challenge_ranking`. S07 usa `get_room_history` para agrupar publicaciones cerradas y
 `get_room_member_review` para reconstruir la revisión desde la versión histórica enlazada. Antes de
 esas lecturas ejecuta la reconciliación acotada a la sala para que los intentos que ya cumplen la
@@ -251,7 +267,7 @@ política no oculten indefinidamente la publicación. Carga
 en paralelo los rankings necesarios para el detalle de miembro. Las filas JSON se validan antes de
 convertirse a view models; los UUID de jugador son el `memberId` canónico y un error RPC o una fila
 inválida se propaga. Las consultas mock no participan en las rutas de sala. Las vistas reales no
-aceptan aliases de fixtures ni pueden caer silenciosamente en `MockRoomQueries`.
+aceptan aliases de fixtures ni pueden caer silenciosamente en la composición demo.
 
 `get_my_room_cards` reutiliza el mismo `get_season_ranking` para `current_position`. Así, puntos,
 empates y la posición visible en home/detalle proceden de una sola semántica SQL. El RPC de desafío
@@ -264,14 +280,15 @@ de PostgreSQL; `can_start` requiere una publicación compatible y `can_continue`
 un intento propio en curso incluso después del cierre o de finalizar la temporada. El portal usa una
 lectura separada de calendario y comandos de programación/reprogramación exclusivos de superadmin.
 
-`SupabaseRoomQueries` es el composition root público de las lecturas de sala. Delega en las
-capacidades de lobby, ranking, settings, history y member detail, que reciben explícitamente los
-puertos `CurrentViewerReader` y, cuando corresponde, `PrivateQuestionAssetResolver`. La
-implementación Supabase de esos puertos concentra Auth, `provision_player` y la resolución de URLs
-firmadas. Ningún parámetro de URL ni dato del cliente puede elegir la identidad de consulta, y las
-assets privadas solo se resuelven para el miembro autorizado. Sus funciones usan `cache` de React
-para compartir una misma promesa dentro de la petición, incluida la lectura repetida por
-`generateMetadata` y por la página. No hay caché persistente ni compartida entre usuarios.
+`server/composition/production.ts` es el único composition root de las lecturas públicas reales.
+Conecta las cinco capacidades de sala y el adaptador competitivo con sus dependencias de
+infraestructura. La implementación Supabase concentra Auth, RLS, RPCs, reconciliación y resolución
+de URLs firmadas. Ningún parámetro de URL ni dato del cliente puede elegir la identidad de consulta,
+y las assets privadas solo se resuelven para el miembro autorizado. `ApplicationRoomReads` y
+`ApplicationCompetitiveChallengeReads` reciben un contexto ya autenticado y no conocen cookies,
+redirects, `notFound()` ni Supabase. Las fachadas usan `cache` de React para compartir una misma
+promesa dentro de la petición, incluida la lectura repetida por `generateMetadata` y por la página.
+No hay caché persistente ni compartida entre usuarios.
 
 Los clientes Supabase se tipan con `lib/supabase/database.types.ts`, generado desde el schema
 `public` de la base local mediante `npm run supabase:types`. Estos tipos describen el contrato de

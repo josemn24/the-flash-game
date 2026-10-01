@@ -1,20 +1,13 @@
 import "server-only";
 
-import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type { RoomSettingsQueries } from "@/application/queries";
-import type { RoomSettingsModel } from "@/types/view-models";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
+import type { QueryContext, RoomSettingsModel } from "@/types/view-models";
 import { isSeasonRankingReadRow } from "./roomReadGuards";
 import { callRankingRead, callRoomRead } from "./roomReadRpc";
 import { asMemberPreviews } from "./roomViewMappers";
 
 export class SupabaseRoomSettingsQueries implements RoomSettingsQueries {
-  constructor(private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader) {}
-
-  async getSettings(roomKey: string): Promise<RoomSettingsModel | null> {
-    const viewer = await this.currentViewer.getCurrentViewer();
-    if (!viewer) return null;
-
+  async getSettings(roomKey: string, context: QueryContext): Promise<RoomSettingsModel | null> {
     const rows = await callRoomRead("get_room_detail", { target_room_slug: roomKey });
     const row = rows[0];
     if (!row) return null;
@@ -33,7 +26,7 @@ export class SupabaseRoomSettingsQueries implements RoomSettingsQueries {
     return {
       roomId: row.room_slug,
       title: row.room_title,
-      currentUserId: viewer.playerId,
+      currentUserId: context.viewer.playerId,
       viewerRole: row.membership_role,
       canManageMembers: row.membership_role === "owner",
       memberCount: row.member_count,
@@ -43,12 +36,13 @@ export class SupabaseRoomSettingsQueries implements RoomSettingsQueries {
         initials: member.initials,
         avatarSrc: member.src,
         totalFlashPoints: flashPointsByPlayer.get(member.id) ?? 0,
-        role: member.id === viewer.playerId ? row.membership_role : (member.role ?? "member"),
+        role:
+          member.id === context.viewer.playerId ? row.membership_role : (member.role ?? "member"),
         canManage:
           row.membership_role === "owner" &&
-          member.id !== viewer.playerId &&
+          member.id !== context.viewer.playerId &&
           (member.role ?? "member") !== "owner",
-        isCurrentUser: member.id === viewer.playerId,
+        isCurrentUser: member.id === context.viewer.playerId,
       })),
     };
   }

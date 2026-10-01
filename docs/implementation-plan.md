@@ -289,7 +289,7 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   metadatos de CU-14.
 - **UI:** inicio, `app/salas/[roomId]`, `FlashPopRoomDetail` e introducción. Tratar sala vacía,
   ausencia de temporada, ausencia de posición y rol espectador sin inventar valores.
-- **Mocks retirados:** `MockRoomQueries.listCards/getDetail` y metadatos mock para este recorrido;
+- **Mocks retirados:** las capacidades mock de lobby (`listCards/getDetail`) y metadatos mock para este recorrido;
   quitar la superposición de resultados locales en salas reales.
 - **Backend/dominio:** consultas de sala bajo membresía; misma ausencia para recurso inexistente
   o ajeno. Separar introducción de `getPlayable`; metadata usa la misma autorización. Mapear
@@ -402,7 +402,7 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Objetivo / CU:** comparar resultados guardados; CU-22 y CU-23.
 - **UI:** ranking de sala, `RoomLeaderboard`, `FlashPopRoomRanking` y resumen de inicio/sala. Las
   filas Supabase son estáticas: no enlazan al detalle de miembro hasta S07.
-- **Mocks retirados:** rankings de `MockRoomQueries`, peers sintéticos y fusiones de `localResults`
+- **Mocks retirados:** rankings del adaptador mock de sala, peers sintéticos y fusiones de `localResults`
   para las vistas migradas; no borrar utilidades puras que sigan sirviendo a presentación/práctica.
 - **Backend/dominio:** consultas mínimas por publicación/temporada. Ejecutar rankings con contexto
   `authenticated` autorizado o componer una lectura privada equivalente con autorización explícita;
@@ -426,7 +426,7 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   de resultado propio y abandono. Las rutas reales usan UUIDs:
   `/salas/[roomId]/historial/[challengeId]` y
   `/salas/[roomId]/historial/[challengeId]/[memberId]`.
-- **Mocks retirados:** `MockRoomQueries.listHistory/getHistoryDetail/getMemberDetail`, historial de
+- **Mocks retirados:** las capacidades mock de historial y revisión (`listHistory/getHistoryDetail/getMemberDetail`), historial de
   fixtures y mezcla local de resultados para esos recorridos. La competición de Supervivencia y
   Pirámide usa persistencia S14/S15; Narrativa continúa mock.
 - **Backend/dominio:** `RoomHistoryQueries` y `RoomMemberDetailQueries` delegan en

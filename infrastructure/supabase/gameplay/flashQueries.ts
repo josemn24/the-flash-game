@@ -1,6 +1,5 @@
 import "server-only";
 
-import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type {
   PublicFunctionArgs,
   PublicFunctionRow,
@@ -11,8 +10,8 @@ import { FLASH_MAX_QUESTIONS, FLASH_MIN_QUESTIONS } from "@/lib/editorial/flashD
 import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type { GameRoomContext } from "@/types/view-models";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
+import type { QueryContext } from "@/types/view-models";
 
 type FlashReadOverrides = {
   publication_status: "scheduled" | "open" | "closed" | "cancelled";
@@ -279,11 +278,8 @@ export function toRoomContext(
 }
 
 export class SupabaseFlashQueries {
-  constructor(private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader) {}
-
-  async getPlayable(roomKey: string, publicationId: string) {
-    const viewer = await this.currentViewer.getCurrentViewer();
-    if (!viewer) return null;
+  async getPlayable(roomKey: string, publicationId: string, context: QueryContext) {
+    const viewer = context.viewer;
     const rows = (
       await callFlashRead("get_my_flash_challenge", {
         target_room_slug: roomKey,

@@ -1,5 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { SupabaseRoomQueries } from "./roomQueries";
+import type {
+  RoomHistoryQueries,
+  RoomLobbyQueries,
+  RoomMemberDetailQueries,
+  RoomRankingQueries,
+  RoomSettingsQueries,
+} from "@/application/queries";
+import { supabaseAttemptExpiration } from "@/infrastructure/supabase/attempts/attemptExpiration";
+import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/assets/privateQuestionAssetResolver";
+import type { QueryContext } from "@/types/view-models";
+import { defineRoomReadPublicContract } from "@/test-utils/roomReadContract";
+import { SupabaseRoomHistoryQueries } from "./roomHistoryQueries";
+import { SupabaseRoomLobbyQueries } from "./roomLobbyQueries";
+import { SupabaseRoomMemberDetailQueries } from "./roomMemberDetailQueries";
+import { SupabaseRoomRankingQueries } from "./roomRankingQueries";
+import { SupabaseRoomSettingsQueries } from "./roomSettingsQueries";
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
@@ -26,6 +41,42 @@ const viewer = {
   name: "Bob Viewer",
   avatarSrc: "/avatars/bob.png",
 };
+
+const queryContext = {
+  viewer,
+  now: "2026-09-30T10:00:00.000Z",
+} as QueryContext;
+
+type RoomReadCapabilities = RoomHistoryQueries &
+  RoomLobbyQueries &
+  RoomMemberDetailQueries &
+  RoomRankingQueries &
+  RoomSettingsQueries;
+
+function createRoomReadCapabilities(): RoomReadCapabilities {
+  const lobby = new SupabaseRoomLobbyQueries();
+  const ranking = new SupabaseRoomRankingQueries();
+  const settings = new SupabaseRoomSettingsQueries();
+  const history = new SupabaseRoomHistoryQueries(supabaseAttemptExpiration);
+  const memberDetail = new SupabaseRoomMemberDetailQueries(
+    supabaseAttemptExpiration,
+    supabasePrivateQuestionAssetResolver,
+  );
+
+  return {
+    listCards: (context) => lobby.listCards(context),
+    getDetail: (roomKey, context) => lobby.getDetail(roomKey, context),
+    getIntroduction: (roomKey, challengeKey, context) =>
+      lobby.getIntroduction(roomKey, challengeKey, context),
+    getRanking: (roomKey, context) => ranking.getRanking(roomKey, context),
+    getSettings: (roomKey, context) => settings.getSettings(roomKey, context),
+    listHistory: (roomKey, context) => history.listHistory(roomKey, context),
+    getHistoryDetail: (roomKey, publicationKey, context) =>
+      history.getHistoryDetail(roomKey, publicationKey, context),
+    getMemberDetail: (roomKey, memberKey, context, publicationKey) =>
+      memberDetail.getMemberDetail(roomKey, memberKey, context, publicationKey),
+  };
+}
 
 const roomRow = {
   room_id: "00000000-0000-0000-0000-000000000010",
@@ -119,7 +170,7 @@ const challengeRows = [
   },
 ];
 
-describe("SupabaseRoomQueries S06 rankings", () => {
+describe("Supabase room read capabilities S06 rankings", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getCurrentViewerProfile.mockResolvedValue(viewer);
@@ -134,8 +185,20 @@ describe("SupabaseRoomQueries S06 rankings", () => {
     });
   });
 
+  defineRoomReadPublicContract("Supabase room read public contract", async () => {
+    const capabilities = createRoomReadCapabilities();
+    return Promise.all([
+      capabilities.listCards(queryContext),
+      capabilities.getDetail("s06-main", queryContext),
+      capabilities.getSettings("s06-main", queryContext),
+      capabilities.getRanking("s06-main", queryContext),
+      capabilities.getMemberDetail("s06-main", viewer.id, queryContext),
+      capabilities.listHistory("s06-main", queryContext),
+    ]);
+  });
+
   it("maps the season ranking and keeps UUIDs as member IDs", async () => {
-    const model = await new SupabaseRoomQueries().getRanking("s06-main");
+    const model = await createRoomReadCapabilities().getRanking("s06-main", queryContext);
 
     expect(model).toMatchObject({
       roomId: "s06-main",
@@ -168,7 +231,7 @@ describe("SupabaseRoomQueries S06 rankings", () => {
   });
 
   it("loads both leaderboards in parallel for a real room detail", async () => {
-    const detail = await new SupabaseRoomQueries().getDetail("s06-main");
+    const detail = await createRoomReadCapabilities().getDetail("s06-main", queryContext);
 
     expect(detail?.source).toBe("supabase");
     expect(detail?.currentUser).toMatchObject({
@@ -196,7 +259,7 @@ describe("SupabaseRoomQueries S06 rankings", () => {
   });
 
   it("maps room settings from member previews and season points", async () => {
-    const model = await new SupabaseRoomQueries().getSettings("s06-main");
+    const model = await createRoomReadCapabilities().getSettings("s06-main", queryContext);
 
     expect(model).toMatchObject({
       roomId: "s06-main",
@@ -234,6 +297,15 @@ describe("SupabaseRoomQueries S06 rankings", () => {
   });
 
   it("marks the owner as the only viewer who can manage members", async () => {
+    const ownerContext = {
+      viewer: {
+        id: "00000000-0000-0000-0000-000000000001",
+        playerId: "00000000-0000-0000-0000-000000000001",
+        name: "Alice Owner",
+        avatarSrc: undefined,
+      },
+      now: queryContext.now,
+    } as QueryContext;
     mocks.getCurrentViewerProfile.mockResolvedValue({
       id: "00000000-0000-0000-0000-000000000001",
       playerId: "00000000-0000-0000-0000-000000000001",
@@ -250,7 +322,9 @@ describe("SupabaseRoomQueries S06 rankings", () => {
       }),
     });
 
-    await expect(new SupabaseRoomQueries().getSettings("s06-main")).resolves.toMatchObject({
+    await expect(
+      createRoomReadCapabilities().getSettings("s06-main", ownerContext),
+    ).resolves.toMatchObject({
       viewerRole: "owner",
       canManageMembers: true,
       members: [
@@ -271,7 +345,9 @@ describe("SupabaseRoomQueries S06 rankings", () => {
     });
     mocks.createClient.mockResolvedValue(client);
 
-    await expect(new SupabaseRoomQueries().getSettings("s06-no-season")).resolves.toMatchObject({
+    await expect(
+      createRoomReadCapabilities().getSettings("s06-no-season", queryContext),
+    ).resolves.toMatchObject({
       memberCount: 3,
       members: [
         expect.objectContaining({ name: "Alice Owner", totalFlashPoints: 0 }),
@@ -281,15 +357,13 @@ describe("SupabaseRoomQueries S06 rankings", () => {
     });
   });
 
-  it("returns null without a viewer or for an inaccessible room", async () => {
-    mocks.getCurrentViewerProfile.mockResolvedValueOnce(null);
-    await expect(new SupabaseRoomQueries().getSettings("s06-main")).resolves.toBeNull();
-
-    mocks.getCurrentViewerProfile.mockResolvedValue(viewer);
+  it("returns null for an inaccessible room", async () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async () => ({ data: [], error: null })),
     });
-    await expect(new SupabaseRoomQueries().getSettings("s06-missing")).resolves.toBeNull();
+    await expect(
+      createRoomReadCapabilities().getSettings("s06-missing", queryContext),
+    ).resolves.toBeNull();
   });
 
   it("propagates settings RPC errors instead of falling back to mock data", async () => {
@@ -297,9 +371,9 @@ describe("SupabaseRoomQueries S06 rankings", () => {
       rpc: vi.fn(async () => ({ data: null, error: { message: "permission denied" } })),
     });
 
-    await expect(new SupabaseRoomQueries().getSettings("s06-main")).rejects.toThrow(
-      "Supabase room read failed (get_room_detail): permission denied",
-    );
+    await expect(
+      createRoomReadCapabilities().getSettings("s06-main", queryContext),
+    ).rejects.toThrow("Supabase room read failed (get_room_detail): permission denied");
   });
 
   it("returns null without a season and does not leak ranking data", async () => {
@@ -313,8 +387,12 @@ describe("SupabaseRoomQueries S06 rankings", () => {
     });
     mocks.createClient.mockResolvedValue(client);
 
-    await expect(new SupabaseRoomQueries().getRanking("s06-no-season")).resolves.toBeNull();
-    await expect(new SupabaseRoomQueries().getDetail("s06-no-season")).resolves.toMatchObject({
+    await expect(
+      createRoomReadCapabilities().getRanking("s06-no-season", queryContext),
+    ).resolves.toBeNull();
+    await expect(
+      createRoomReadCapabilities().getDetail("s06-no-season", queryContext),
+    ).resolves.toMatchObject({
       roomLeaderboard: [],
       dailyLeaderboard: [],
     });
@@ -328,7 +406,7 @@ describe("SupabaseRoomQueries S06 rankings", () => {
       }),
     });
 
-    await expect(new SupabaseRoomQueries().getRanking("s06-main")).rejects.toThrow(
+    await expect(createRoomReadCapabilities().getRanking("s06-main", queryContext)).rejects.toThrow(
       "Supabase ranking read failed (get_season_ranking): permission denied",
     );
   });
@@ -341,7 +419,7 @@ describe("SupabaseRoomQueries S06 rankings", () => {
       }),
     });
 
-    await expect(new SupabaseRoomQueries().getRanking("s06-main")).rejects.toThrow(
+    await expect(createRoomReadCapabilities().getRanking("s06-main", queryContext)).rejects.toThrow(
       "Supabase ranking read returned an invalid row (get_season_ranking, 0)",
     );
   });
@@ -355,13 +433,13 @@ describe("SupabaseRoomQueries S06 rankings", () => {
       }),
     });
 
-    await expect(new SupabaseRoomQueries().getDetail("s06-main")).rejects.toThrow(
+    await expect(createRoomReadCapabilities().getDetail("s06-main", queryContext)).rejects.toThrow(
       "Supabase room read returned an invalid row (get_room_calendar, 0)",
     );
   });
 });
 
-describe("SupabaseRoomQueries room card resilience", () => {
+describe("Supabase room lobby capability resilience", () => {
   it("keeps a room without an active season when member previews are null", async () => {
     const rpc = vi.fn(async (functionName: string) => {
       if (functionName === "get_my_room_cards") {
@@ -396,7 +474,7 @@ describe("SupabaseRoomQueries room card resilience", () => {
     });
     mocks.createClient.mockResolvedValue({ rpc });
 
-    await expect(new SupabaseRoomQueries().listCards()).resolves.toMatchObject([
+    await expect(createRoomReadCapabilities().listCards(queryContext)).resolves.toMatchObject([
       { roomId: "s02-no-season", title: "Sala sin temporada", dailyChallenge: null },
     ]);
   });
@@ -597,7 +675,7 @@ const reviewRows = [
   },
 ];
 
-describe("SupabaseRoomQueries S07 history and review", () => {
+describe("Supabase history and review capabilities S07", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getCurrentViewerProfile.mockResolvedValue(viewer);
@@ -616,7 +694,7 @@ describe("SupabaseRoomQueries S07 history and review", () => {
           : { data: [], error: null },
       ),
     });
-    const model = await new SupabaseRoomQueries().listHistory("s06-main");
+    const model = await createRoomReadCapabilities().listHistory("s06-main", queryContext);
     expect(model?.entries).toHaveLength(2);
     expect(model?.rankings[historyRows[0].publication_id]).toEqual([
       expect.objectContaining({ memberId: viewer.id, startedAt: historyRows[0].started_at }),
@@ -641,9 +719,10 @@ describe("SupabaseRoomQueries S07 history and review", () => {
         return { data: challengeRows, error: null };
       }),
     });
-    const model = await new SupabaseRoomQueries().getMemberDetail(
+    const model = await createRoomReadCapabilities().getMemberDetail(
       "s06-main",
       viewer.id,
+      queryContext,
       historyRows[0].publication_id,
     );
     expect(model).toMatchObject({
@@ -668,16 +747,18 @@ describe("SupabaseRoomQueries S07 history and review", () => {
           : { data: [], error: null },
       ),
     });
-    const model = await new SupabaseRoomQueries().getHistoryDetail(
+    const model = await createRoomReadCapabilities().getHistoryDetail(
       "s06-main",
       historyRows[1].publication_id,
+      queryContext,
     );
     expect(model?.ranking).toEqual([]);
     expect(model?.canReviewMembers).toBe(true);
     await expect(
-      new SupabaseRoomQueries().getMemberDetail(
+      createRoomReadCapabilities().getMemberDetail(
         "s06-main",
         viewer.id,
+        queryContext,
         historyRows[1].publication_id,
       ),
     ).resolves.toBeNull();
@@ -687,27 +768,27 @@ describe("SupabaseRoomQueries S07 history and review", () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async () => ({ data: [{ ...historyRows[0], player_count: "1" }], error: null })),
     });
-    await expect(new SupabaseRoomQueries().listHistory("s06-main")).rejects.toThrow(
-      "Supabase history read returned an invalid row",
-    );
+    await expect(
+      createRoomReadCapabilities().listHistory("s06-main", queryContext),
+    ).rejects.toThrow("Supabase history read returned an invalid row");
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async () => ({ data: null, error: { message: "permission denied" } })),
     });
-    await expect(new SupabaseRoomQueries().listHistory("s06-main")).rejects.toThrow(
-      "Supabase history read failed (get_room_history): permission denied",
-    );
+    await expect(
+      createRoomReadCapabilities().listHistory("s06-main", queryContext),
+    ).rejects.toThrow("Supabase history read failed (get_room_history): permission denied");
   });
 
-  it("keeps the public constructor compatible while accepting the new ports", async () => {
-    const currentViewer = { getCurrentViewer: vi.fn().mockResolvedValue(null) };
-    const privateQuestionAssets = { resolve: vi.fn() };
+  it("uses the viewer carried by the query context", async () => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) => {
+        if (functionName === "get_room_detail") return { data: [roomRow], error: null };
+        if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
+        return { data: [], error: null };
+      }),
+    });
+    const model = await createRoomReadCapabilities().getRanking("s06-main", queryContext);
 
-    await expect(
-      new SupabaseRoomQueries(undefined, currentViewer, privateQuestionAssets).getRanking(
-        "s06-main",
-      ),
-    ).resolves.toBeNull();
-    expect(currentViewer.getCurrentViewer).toHaveBeenCalledOnce();
-    expect(privateQuestionAssets.resolve).not.toHaveBeenCalled();
+    expect(model?.currentUserId).toBe(viewer.playerId);
   });
 });

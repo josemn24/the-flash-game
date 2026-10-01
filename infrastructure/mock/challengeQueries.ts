@@ -1,4 +1,4 @@
-import type { ChallengeQueries } from "@/application/queries";
+import type { CompetitiveChallengeQueries, DemoChallengeQueries } from "@/application/queries";
 import { projectLegacyAttempt } from "@/data/mock/compat/legacyAdapters";
 import { getCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
 import { initials } from "@/lib/roomPresentation";
@@ -21,7 +21,7 @@ const PRIMARY_CHALLENGE_KEY = "tabarnia-challenge-05";
 const SECONDARY_CHALLENGE_KEY = "tabarnia-challenge-06";
 const tones = ["social", "coral", "blue", "aqua", "ink", "reward"] as const;
 
-export class MockChallengeQueries implements ChallengeQueries {
+export class MockChallengeReadProjection {
   constructor(private readonly store: DomainStore) {}
 
   private socialSnapshot(challengeKey: string, viewerId: PlayerId): FlashPopSocialSnapshot {
@@ -97,7 +97,11 @@ export class MockChallengeQueries implements ChallengeQueries {
     return { currentPlayer, players, peers };
   }
 
-  async getPlayable(challengeKey: string, roomKey: string | null, context: QueryContext) {
+  private async getPlayableModel(
+    challengeKey: string,
+    roomKey: string | null,
+    context: QueryContext,
+  ) {
     const challenge = legacyChallenges.find(({ id }) => id === challengeKey);
     if (!challenge) return null;
     const scheduledChallengeId = resolveScheduledChallengeRouteKey(challengeKey);
@@ -114,7 +118,7 @@ export class MockChallengeQueries implements ChallengeQueries {
         ? this.store.roomMemberships.find(
             (candidate) =>
               candidate.roomId === room.id &&
-              candidate.playerId === context.viewerId &&
+              candidate.playerId === context.viewer.playerId &&
               candidate.status === "active" &&
               candidate.role !== "spectator",
           )
@@ -122,7 +126,7 @@ export class MockChallengeQueries implements ChallengeQueries {
       if (!room || !season || season.roomId !== room.id || !membership) return null;
       const competitiveAttempts = this.store.attempts.filter(
         (attempt) =>
-          attempt.playerId === context.viewerId &&
+          attempt.playerId === context.viewer.playerId &&
           attempt.scheduledChallengeId === schedule.id &&
           attempt.kind === "competitive",
       );
@@ -133,15 +137,16 @@ export class MockChallengeQueries implements ChallengeQueries {
         new Date(context.now),
       );
       const completedAttempt = selectBestCompletedAttempt(
-        context.viewerId,
+        context.viewer.playerId,
         schedule.id,
         this.store,
       );
       const attempt = completedAttempt
         ? projectLegacyAttempt(completedAttempt.id, this.store)
         : undefined;
-      const memberId = getPlayerRouteKey(context.viewerId);
-      if (!memberId) throw new Error(`Missing route alias for viewer "${context.viewerId}".`);
+      const memberId = getPlayerRouteKey(context.viewer.playerId);
+      if (!memberId)
+        throw new Error(`Missing route alias for viewer "${context.viewer.playerId}".`);
       roomContext = {
         roomId: roomKey,
         roomTitle: room.title,
@@ -157,18 +162,26 @@ export class MockChallengeQueries implements ChallengeQueries {
     return {
       challenge,
       roomContext,
-      socialSnapshot: this.socialSnapshot(challengeKey, context.viewerId),
+      socialSnapshot: this.socialSnapshot(challengeKey, context.viewer.playerId),
     };
+  }
+
+  async getPreview(challengeKey: string, context: QueryContext) {
+    return this.getPlayableModel(challengeKey, null, context);
+  }
+
+  async getPlayable(roomKey: string, challengeKey: string, context: QueryContext) {
+    return this.getPlayableModel(challengeKey, roomKey, context);
   }
 
   async getFlashPopLobby(context: QueryContext) {
     const [primary, secondary] = await Promise.all([
-      this.getPlayable(PRIMARY_CHALLENGE_KEY, null, context),
-      this.getPlayable(SECONDARY_CHALLENGE_KEY, null, context),
+      this.getPreview(PRIMARY_CHALLENGE_KEY, context),
+      this.getPreview(SECONDARY_CHALLENGE_KEY, context),
     ]);
     if (!primary || !secondary) throw new Error("The Flash lobby challenges are missing.");
-    const viewer = this.store.players.find(({ id }) => id === context.viewerId);
-    const viewerKey = getPlayerRouteKey(context.viewerId);
+    const viewer = this.store.players.find(({ id }) => id === context.viewer.playerId);
+    const viewerKey = getPlayerRouteKey(context.viewer.playerId);
     if (!viewer || !viewerKey) throw new Error("The Flash lobby viewer is missing.");
     return {
       primary,
@@ -179,5 +192,25 @@ export class MockChallengeQueries implements ChallengeQueries {
         avatarSrc: viewer.avatarPath ?? undefined,
       },
     };
+  }
+}
+
+export class MockDemoChallengeQueries implements DemoChallengeQueries {
+  constructor(private readonly delegate: MockChallengeReadProjection) {}
+
+  getPreview(challengeKey: string, context: QueryContext) {
+    return this.delegate.getPreview(challengeKey, context);
+  }
+
+  getFlashPopLobby(context: QueryContext) {
+    return this.delegate.getFlashPopLobby(context);
+  }
+}
+
+export class MockCompetitiveChallengeQueries implements CompetitiveChallengeQueries {
+  constructor(private readonly delegate: MockChallengeReadProjection) {}
+
+  getPlayable(roomKey: string, challengeKey: string, context: QueryContext) {
+    return this.delegate.getPlayable(roomKey, challengeKey, context);
   }
 }

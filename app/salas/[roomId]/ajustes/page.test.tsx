@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { FlashPopRoomSettings } from "@/components/game/modes/flash-pop/FlashPopRoomSettings";
-import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
 
 const mocks = vi.hoisted(() => ({
   getRoomSettingsPageModel: vi.fn(),
@@ -15,7 +15,7 @@ describe("room settings route", () => {
   it("exposes Tabarnia and its settings view", async () => {
     expect(dynamic).toBe("force-dynamic");
     mocks.getRoomSettingsPageModel.mockResolvedValue(
-      await mockRoomQueries.getSettings("tabarnia-room", mockQueryContext()),
+      await mockRoomReadCapabilities.getSettings("tabarnia-room", mockQueryContext()),
     );
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
@@ -23,7 +23,7 @@ describe("room settings route", () => {
       title: "Ajustes de Tabarnia — The Flash",
     });
 
-    const model = await mockRoomQueries.getSettings("tabarnia-room", mockQueryContext());
+    const model = await mockRoomReadCapabilities.getSettings("tabarnia-room", mockQueryContext());
     if (!model) throw new Error("Expected settings model");
     const markup = renderToStaticMarkup(<FlashPopRoomSettings model={model} />);
 
@@ -34,7 +34,7 @@ describe("room settings route", () => {
 
   it("renders the full route through the data-access boundary", async () => {
     mocks.getRoomSettingsPageModel.mockResolvedValue(
-      await mockRoomQueries.getSettings("tabarnia-room", mockQueryContext()),
+      await mockRoomReadCapabilities.getSettings("tabarnia-room", mockQueryContext()),
     );
     const element = await RoomSettingsPage({
       params: Promise.resolve({ roomId: "tabarnia-room" }),

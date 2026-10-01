@@ -1,6 +1,5 @@
 import "server-only";
 
-import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import { createClient } from "@/lib/supabase/server";
 import {
   callFlashRead,
@@ -17,7 +16,7 @@ import type {
   ServerFlashTerminalReview,
   ServerSurvivalChallenge,
 } from "@/types/gameplay/challenge";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
+import type { QueryContext } from "@/types/view-models";
 
 type SurvivalReadRow = GeneratedCompetitiveReadRow<"get_my_survival_challenge"> & {
   challenge_mode: "survival";
@@ -45,8 +44,6 @@ function terminalReviewRow(row: FlashResultRow): ServerFlashTerminalReview {
 }
 
 export class SupabaseSurvivalQueries {
-  constructor(private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader) {}
-
   async getTerminalReview(attemptId: string): Promise<ServerFlashTerminalReview[]> {
     const rows = (
       await callFlashRead("get_my_survival_result", { target_attempt_id: attemptId })
@@ -71,9 +68,8 @@ export class SupabaseSurvivalQueries {
     );
   }
 
-  async getPlayable(roomKey: string, publicationId: string) {
-    const viewer = await this.currentViewer.getCurrentViewer();
-    if (!viewer) return null;
+  async getPlayable(roomKey: string, publicationId: string, context: QueryContext) {
+    const viewer = context.viewer;
     const rows = (
       await callFlashRead("get_my_survival_challenge", {
         target_room_slug: roomKey,

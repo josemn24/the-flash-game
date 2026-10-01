@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function FlashPopPage() {
   const model = await getFlashPopLobbyPageModel();
+  if (!model) notFound();
   if (model.primary.challenge.mode !== "pyramid" || model.secondary.challenge.mode !== "pyramid")
     notFound();
   return <FlashPopLobby model={model} />;

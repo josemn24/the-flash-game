@@ -3,7 +3,8 @@ import { DEMO_REFERENCE_TIME, demoIdentity, playerRouteAliases } from "@/data/mo
 import { mockDomainStore } from "@/data/mock/store";
 import { MockCurrentViewerProvider } from "./currentViewer";
 import { MockRoomMembershipCommands, resetMockMembershipOverrides } from "./roomMembershipCommands";
-import { MockRoomQueries } from "./roomQueries";
+import { MockRoomReadProjection } from "./roomQueries";
+import { MockRoomSettingsQueries } from "./roomReadQueries";
 
 afterEach(() => resetMockMembershipOverrides());
 
@@ -40,10 +41,18 @@ describe("MockRoomMembershipCommands", () => {
     ).rejects.toThrow("idempotency_conflict");
 
     await expect(
-      new MockRoomQueries(mockDomainStore).getSettings("tabarnia-room", {
-        viewerId: demoIdentity.currentPlayerId,
-        now: DEMO_REFERENCE_TIME,
-      }),
+      new MockRoomSettingsQueries(new MockRoomReadProjection(mockDomainStore)).getSettings(
+        "tabarnia-room",
+        {
+          viewer: {
+            playerId: demoIdentity.currentPlayerId,
+            id: "player",
+            name: "Kike",
+            avatarSrc: "/flash-pop/avatars/player.jpeg",
+          },
+          now: DEMO_REFERENCE_TIME,
+        },
+      ),
     ).resolves.toMatchObject({
       members: expect.arrayContaining([expect.objectContaining({ id: "marta", role: "admin" })]),
     });
@@ -73,10 +82,18 @@ describe("MockRoomMembershipCommands", () => {
     ).resolves.toMatchObject({ role: "member", status: "removed" });
 
     await expect(
-      new MockRoomQueries(mockDomainStore).getSettings("tabarnia-room", {
-        viewerId: demoIdentity.currentPlayerId,
-        now: DEMO_REFERENCE_TIME,
-      }),
+      new MockRoomSettingsQueries(new MockRoomReadProjection(mockDomainStore)).getSettings(
+        "tabarnia-room",
+        {
+          viewer: {
+            playerId: demoIdentity.currentPlayerId,
+            id: "player",
+            name: "Kike",
+            avatarSrc: "/flash-pop/avatars/player.jpeg",
+          },
+          now: DEMO_REFERENCE_TIME,
+        },
+      ),
     ).resolves.toMatchObject({
       members: expect.not.arrayContaining([expect.objectContaining({ id: "laura" })]),
     });

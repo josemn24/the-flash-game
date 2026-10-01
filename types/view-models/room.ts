@@ -172,7 +172,7 @@ export type RoomIntroductionModel = {
   canStart: boolean;
   competitivePlayable: boolean;
   availabilityStatus: "upcoming" | "available" | "closed" | "cancelled";
-  source: "supabase";
+  source: "mock" | "supabase";
 };
 
 export type RoomMemberDetailModel = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
 import type { ChallengeCompletion } from "@/types/gameplay";
 import { applyRoomChallengeResult } from "./localResults";
 
@@ -16,7 +16,7 @@ const completion = (flashPoints: number): ChallengeCompletion => ({
 
 describe("local room results", () => {
   it("does not apply the same competitive challenge twice", async () => {
-    const model = await mockRoomQueries.getDetail(
+    const model = await mockRoomReadCapabilities.getDetail(
       "tabarnia-room",
       mockQueryContext(new Date("2026-09-06T12:00:00.000Z")),
     );

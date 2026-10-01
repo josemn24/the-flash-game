@@ -1,4 +1,10 @@
-import type { RoomQueries } from "@/application/queries";
+import type {
+  RoomHistoryQueries,
+  RoomLobbyQueries,
+  RoomMemberDetailQueries,
+  RoomRankingQueries,
+  RoomSettingsQueries,
+} from "@/application/queries";
 import { getCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
 import { projectLegacyAttempt } from "@/data/mock/compat/legacyAdapters";
 import {
@@ -32,6 +38,7 @@ import type {
   RoomDailyLeaderboardEntry,
   RoomLeaderboardEntry,
   RoomMemberViewModel,
+  RoomIntroductionModel,
 } from "@/types/view-models";
 import type { AnswerReview, AnswerResult } from "@/types/gameplay";
 import type { PracticeChallenge, PracticeQuestion } from "@/types/gameplay/practice";
@@ -242,7 +249,14 @@ function historicalReviewProjection(
   };
 }
 
-export class MockRoomQueries implements RoomQueries {
+export class MockRoomReadProjection
+  implements
+    RoomHistoryQueries,
+    RoomLobbyQueries,
+    RoomMemberDetailQueries,
+    RoomRankingQueries,
+    RoomSettingsQueries
+{
   constructor(private readonly store: DomainStore) {}
 
   private roomAccess(roomKey: string, viewerId: PlayerId) {
@@ -402,9 +416,9 @@ export class MockRoomQueries implements RoomQueries {
     const season = room ? this.activeSeason(room.id) : null;
     if (!room || !roomKey || !season) return null;
     const leaderboard = this.seasonLeaderboard(room.id, season);
-    const viewerKey = getPlayerRouteKey(context.viewerId);
+    const viewerKey = getPlayerRouteKey(context.viewer.playerId);
     const viewer = leaderboard.find(({ memberId }) => memberId === viewerKey);
-    if (!viewerKey) throw new Error(`Missing route alias for viewer "${context.viewerId}".`);
+    if (!viewerKey) throw new Error(`Missing route alias for viewer "${context.viewer.playerId}".`);
     const daily = this.dailyChallenge(
       selectOpenScheduledChallenge(season.id, new Date(context.now), this.store),
     );
@@ -443,7 +457,8 @@ export class MockRoomQueries implements RoomQueries {
   async listCards(context: QueryContext) {
     const roomIds = this.store.roomMemberships
       .filter(
-        (membership) => membership.playerId === context.viewerId && membership.status === "active",
+        (membership) =>
+          membership.playerId === context.viewer.playerId && membership.status === "active",
       )
       .map(({ roomId }) => roomId);
     return roomIds.flatMap((roomId) => {
@@ -452,11 +467,59 @@ export class MockRoomQueries implements RoomQueries {
     });
   }
 
+  async getIntroduction(
+    roomKey: string,
+    challengeKey: string,
+    context: QueryContext,
+  ): Promise<RoomIntroductionModel | null> {
+    const access = this.roomAccess(roomKey, context.viewer.playerId);
+    const scheduleId = resolveScheduledChallengeRouteKey(challengeKey);
+    const schedule = scheduleId
+      ? this.store.scheduledChallenges.find(({ id }) => id === scheduleId)
+      : undefined;
+    if (!access || !schedule || schedule.seasonId !== this.activeSeason(access.room.id)?.id) {
+      return null;
+    }
+    const version = this.challengeVersion(schedule);
+    const now = new Date(context.now).getTime();
+    const publicationStatus = schedule.status;
+    const availabilityStatus =
+      publicationStatus === "cancelled"
+        ? "cancelled"
+        : now < new Date(schedule.opensAt).getTime()
+          ? "upcoming"
+          : now >= new Date(schedule.closesAt).getTime()
+            ? "closed"
+            : "available";
+    const questionCount = this.store.challengeItems.filter(
+      ({ challengeVersionId }) => challengeVersionId === version.id,
+    ).length;
+    const canStart = availabilityStatus === "available" && access.membership.role !== "spectator";
+    return {
+      roomId: roomKey,
+      roomTitle: access.room.title,
+      role: access.membership.role,
+      publicationId: challengeKey,
+      publicationStatus,
+      opensAt: schedule.opensAt,
+      closesAt: schedule.closesAt,
+      challengeTitle: getChallengeDisplayTitle(version.title, version.mode),
+      challengeSubtitle: version.subtitle,
+      mode: version.mode,
+      maxScore: version.maxScore,
+      questionCount,
+      canStart,
+      competitivePlayable: canStart,
+      availabilityStatus,
+      source: "mock",
+    };
+  }
+
   async getDetail(roomKey: string, context: QueryContext) {
-    const access = this.roomAccess(roomKey, context.viewerId);
+    const access = this.roomAccess(roomKey, context.viewer.playerId);
     const season = access ? this.activeSeason(access.room.id) : null;
     if (!access || !season) return null;
-    const current = this.player(context.viewerId);
+    const current = this.player(context.viewer.playerId);
     const roomLeaderboard = this.seasonLeaderboard(access.room.id, season);
     const roomEntry = roomLeaderboard.find(({ memberId }) => memberId === current.routeKey);
     const daily = this.dailyChallenge(
@@ -468,7 +531,7 @@ export class MockRoomQueries implements RoomQueries {
       ? getCompetitiveAttemptStatus(
           this.store.attempts.filter(
             (attempt) =>
-              attempt.playerId === context.viewerId &&
+              attempt.playerId === context.viewer.playerId &&
               attempt.scheduledChallengeId === daily.schedule.id &&
               attempt.kind === "competitive",
           ),
@@ -509,7 +572,7 @@ export class MockRoomQueries implements RoomQueries {
   }
 
   async getSettings(roomKey: string, context: QueryContext) {
-    const access = this.roomAccess(roomKey, context.viewerId);
+    const access = this.roomAccess(roomKey, context.viewer.playerId);
     const season = access ? this.activeSeason(access.room.id) : null;
     if (!access || !season) return null;
     const flashPoints = new Map(
@@ -518,8 +581,9 @@ export class MockRoomQueries implements RoomQueries {
         flashPoints,
       ]),
     );
-    const currentKey = getPlayerRouteKey(context.viewerId);
-    if (!currentKey) throw new Error(`Missing route alias for viewer "${context.viewerId}".`);
+    const currentKey = getPlayerRouteKey(context.viewer.playerId);
+    if (!currentKey)
+      throw new Error(`Missing route alias for viewer "${context.viewer.playerId}".`);
     const members = this.activePlayers(access.room.id).map(({ player, routeKey }) => ({
       id: routeKey,
       name: player.displayName,
@@ -552,9 +616,9 @@ export class MockRoomQueries implements RoomQueries {
   }
 
   async getRanking(roomKey: string, context: QueryContext) {
-    const access = this.roomAccess(roomKey, context.viewerId);
+    const access = this.roomAccess(roomKey, context.viewer.playerId);
     const season = access ? this.activeSeason(access.room.id) : null;
-    const currentUserId = getPlayerRouteKey(context.viewerId);
+    const currentUserId = getPlayerRouteKey(context.viewer.playerId);
     if (!access || !season || !currentUserId) return null;
     return {
       roomId: roomKey,
@@ -570,7 +634,7 @@ export class MockRoomQueries implements RoomQueries {
     context: QueryContext,
     publicationKey?: string,
   ) {
-    const access = this.roomAccess(roomKey, context.viewerId);
+    const access = this.roomAccess(roomKey, context.viewer.playerId);
     const memberId = resolvePlayerRouteKey(memberKey);
     const memberMembership =
       access && memberId
@@ -682,7 +746,7 @@ export class MockRoomQueries implements RoomQueries {
   }
 
   async listHistory(roomKey: string, context: QueryContext) {
-    const access = this.roomAccess(roomKey, context.viewerId);
+    const access = this.roomAccess(roomKey, context.viewer.playerId);
     if (!access) return null;
     const history = selectRoomHistory(access.room.id, this.store);
     const entries = history.flatMap(({ scheduledChallenge, playedAt, participantCount }) => {
@@ -726,8 +790,8 @@ export class MockRoomQueries implements RoomQueries {
 
   async getHistoryDetail(roomKey: string, challengeKey: string, context: QueryContext) {
     const history = await this.listHistory(roomKey, context);
-    const access = this.roomAccess(roomKey, context.viewerId);
-    const currentUserId = getPlayerRouteKey(context.viewerId);
+    const access = this.roomAccess(roomKey, context.viewer.playerId);
+    const currentUserId = getPlayerRouteKey(context.viewer.playerId);
     const entry = history?.entries.find((candidate) => candidate.challengeId === challengeKey);
     if (!history || !access || !currentUserId || !entry) return null;
     return {

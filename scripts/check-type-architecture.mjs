@@ -379,13 +379,24 @@ for (const relative of serverFacadeFiles) {
   ) {
     violations.push(`${relative} imports production Supabase infrastructure`);
   }
+  if (
+    [
+      "server/production-home-data-access.ts",
+      "server/production-room-data-access.ts",
+      "server/production-challenge-data-access.ts",
+    ].includes(relative) &&
+    /@\/infrastructure\//.test(facadeSource)
+  ) {
+    violations.push(`${relative} imports infrastructure directly; use server/composition`);
+  }
 }
 
 for (const file of productionFiles) {
   const relative = path.relative(process.cwd(), file);
   if (!relative.startsWith(`server${path.sep}`)) continue;
   const source = await readFile(file, "utf8");
-  if (relative === "server/demo-data-access.ts") continue;
+  if (relative === "server/demo-data-access.ts" || relative === "server/composition/demo.ts")
+    continue;
   if (/@\/infrastructure\/mock\//.test(source) || /@\/data\/mock\//.test(source)) {
     violations.push(`${relative} imports mock composition or data`);
   }

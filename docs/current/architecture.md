@@ -165,6 +165,13 @@ application/
 Una función de caso de uso puede llamar a varias operaciones de persistencia; no debe ser un simple
 alias de una tabla.
 
+Las lecturas públicas siguen la misma disciplina. `ApplicationRoomReads` crea el `QueryContext`
+desde `CurrentViewerReader` y el reloj, y delega en una capacidad de lobby, ranking, settings,
+historial o revisión. `ApplicationDemoChallengeReads` y `ApplicationCompetitiveChallengeReads`
+separan previews mock de desafíos jugables persistidos. Estos casos de uso no conocen cookies,
+`redirect()`, `notFound()`, `cache()` ni clientes Supabase; esas responsabilidades permanecen en
+las fachadas `server/*-data-access.ts` y en los composition roots server-only.
+
 ### 2.4 Lógica de dominio
 
 El dominio expresa reglas que deben ser ciertas independientemente de la UI o del proveedor de
@@ -241,8 +248,8 @@ Adaptadores previstos:
 
 ```text
 infrastructure/
-  mock/       adaptador actual sobre mockDomainStore
-  supabase/   adaptador real sobre PostgreSQL/Supabase para las slices persistidas actuales
+  mock/       adaptadores demo y de contrato sobre mockDomainStore
+  supabase/   adaptadores reales sobre PostgreSQL/Supabase para las slices persistidas actuales
 ```
 
 Reglas de persistencia:
@@ -354,7 +361,7 @@ Reglas concretas:
 5. `app` usa la fachada server-only o entradas de backend; no lee `data/mock` directamente.
 6. `components` y `features` cliente no importan `server`, `infrastructure` ni `data`.
 7. `infrastructure` implementa puertos; no es importada desde el dominio.
-   En concreto, los adaptadores Supabase de sala (`roomQueries` y sus capacidades, RPCs,
+   En concreto, los adaptadores Supabase de sala (sus capacidades, RPCs,
    contratos, guards y mappers) solo consumen tipos/puertos de `application`, módulos puros de
    `lib`, tipos y otros módulos de infraestructura: no importan `server/*`, `features/*` ni
    `application/presentation/*`. Las reglas puras de gameplay y la presentación compartida viven
@@ -402,7 +409,9 @@ data/mock/                  fixtures y adaptador mock temporal
 infrastructure/
   mock/                    implementación actual
   supabase/                implementación futura
-server/                    composición server-only y contexto de sesión
+server/
+  composition/             composition roots demo y producción
+  *-data-access.ts         fachadas server-only y semántica de Next.js
 ```
 
 Las proyecciones legacy de `data/*.ts` deben permanecer aisladas y dejar de recibir consumidores
@@ -422,7 +431,9 @@ El repositorio ya tiene una base compatible con esta propuesta:
 | `server/production-challenge-data-access.ts`      | Fachada `server-only` de desafíos jugables reales           | Mantenerla sin dependencias mock y limitada a la selección de gameplay persistido                                                                       |
 | `server/production-admin-data-access.ts`          | Fachada `server-only` del portal de administración          | Mantener autorización superadmin y consultas administrativas separadas de las rutas públicas                                                            |
 | `server/demo-data-access.ts`                      | Fachada `server-only` exclusiva de Flash Pop mock           | Mantenerla limitada a rutas demo explícitas                                                                                                             |
-| `application/queries/`                            | Contratos de lectura independientes de Next.js              | Añadir contratos de comandos y puertos mínimos                                                                                                          |
+| `server/composition/production.ts`                | Conecta capacidades Supabase con casos de uso de lectura    | Único composition root de las lecturas públicas reales; no capturar sesión en estado global                                                             |
+| `server/composition/demo.ts`                      | Conecta adaptadores mock con casos de uso demo              | Único composition root de Flash Pop mock                                                                                                                |
+| `application/queries/`                            | Contratos de lectura independientes de Next.js              | Mantener capacidades pequeñas; no reintroducir agregadores por tabla                                                                                    |
 | `infrastructure/mock/`                            | Consultas y composición sobre `mockDomainStore`             | Mantener como adaptador de pruebas; Supabase se organiza por capacidades en `rooms`, `attempts`, `gameplay`, `assets`, `identity`, `admin` y `platform` |
 | `data/mock/`                                      | Fixtures canónicos, store normalizado y validación          | Fuente del adaptador mock, nunca dependencia de UI productiva                                                                                           |
 | `components/game/**`                              | Shell cliente, modos, resultados y revisión                 | Conservar estado inmediato; sustituir reporter local por comandos de servidor                                                                           |
@@ -496,7 +507,9 @@ reales en sus recorridos; esas piezas mock son puntos de sustitución, no el con
 
 - Las reglas puras siguen probándose con unit tests y type tests.
 - Cada caso de uso de escritura tendrá tests de aplicación contra dobles de sus puertos.
-- Los adaptadores mock tendrán tests de contrato que también deberá cumplir Supabase.
+- Los adaptadores mock y Supabase comparten un harness de contrato para roles, ausencia, historial,
+  revisión y ausencia de datos sensibles; el mapeo y la validación de RPC permanecen junto a cada
+  adaptador.
 - Las Route Handlers y Server Actions tendrán pocas pruebas de transporte; la mayor parte de la
   cobertura estará en aplicación y dominio.
 - Los componentes cliente conservarán tests de interacción, timeout, revisión y accesibilidad.

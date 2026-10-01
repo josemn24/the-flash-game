@@ -1,8 +1,7 @@
 import "server-only";
 
-import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type { RoomLobbyQueries } from "@/application/queries";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
+import type { QueryContext } from "@/types/view-models";
 import type { RoomCalendarReadRow } from "./roomReadContracts";
 import {
   isChallengeRankingReadRow,
@@ -21,15 +20,12 @@ import {
 } from "./roomViewMappers";
 
 export class SupabaseRoomLobbyQueries implements RoomLobbyQueries {
-  constructor(private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader) {}
-
-  async listCards() {
+  async listCards(_context: QueryContext) {
+    void _context;
     return (await callRoomRead("get_my_room_cards")).map(toCard);
   }
 
-  async getDetail(roomKey: string) {
-    const viewer = await this.currentViewer.getCurrentViewer();
-    if (!viewer) return null;
+  async getDetail(roomKey: string, context: QueryContext) {
     const rows = await callRoomRead("get_room_detail", { target_room_slug: roomKey });
     const row = rows[0];
     if (!row) return null;
@@ -54,14 +50,15 @@ export class SupabaseRoomLobbyQueries implements RoomLobbyQueries {
 
     return toDetail(
       row,
-      viewer,
+      context.viewer,
       toSeasonLeaderboard(seasonRows),
       toChallengeLeaderboard(dailyRows),
       calendarRows.map((value) => toCalendarEntry(value as RoomCalendarReadRow)),
     );
   }
 
-  async getIntroduction(roomKey: string, challengeKey: string) {
+  async getIntroduction(roomKey: string, challengeKey: string, _context: QueryContext) {
+    void _context;
     if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(challengeKey)) return null;
     const rows = await callRoomRead(
       "get_room_introduction",

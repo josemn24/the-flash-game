@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
 import { FlashPopRoomDetail } from "@/components/game/modes/flash-pop/FlashPopRoomDetail.client";
 
 vi.mock("next/navigation", () => ({
@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
 const now = new Date("2026-09-06T12:00:00.000Z");
 
 async function getRoomDetailModel() {
-  const model = await mockRoomQueries.getDetail("tabarnia-room", mockQueryContext(now));
+  const model = await mockRoomReadCapabilities.getDetail("tabarnia-room", mockQueryContext(now));
   if (!model) throw new Error("Expected room detail model");
   return model;
 }

@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { FlashPopRoomHistory } from "@/components/game/modes/flash-pop/FlashPopRoomHistory";
-import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
 
 const mocks = vi.hoisted(() => ({
   getRoomHistoryPageModel: vi.fn(),
@@ -15,7 +15,7 @@ describe("room history route", () => {
   it("exposes Tabarnia and renders previous games", async () => {
     expect(dynamic).toBe("force-dynamic");
     mocks.getRoomHistoryPageModel.mockResolvedValue(
-      await mockRoomQueries.listHistory("tabarnia-room", mockQueryContext()),
+      await mockRoomReadCapabilities.listHistory("tabarnia-room", mockQueryContext()),
     );
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
@@ -23,7 +23,7 @@ describe("room history route", () => {
       title: "Historial de Tabarnia — The Flash",
     });
 
-    const model = await mockRoomQueries.listHistory("tabarnia-room", mockQueryContext());
+    const model = await mockRoomReadCapabilities.listHistory("tabarnia-room", mockQueryContext());
     if (!model) throw new Error("Expected history model");
     const markup = renderToStaticMarkup(<FlashPopRoomHistory {...model} />);
 

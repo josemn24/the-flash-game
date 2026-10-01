@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { FlashPopRoomRanking } from "@/components/game/modes/flash-pop/FlashPopRoomRanking";
-import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
 
 const mocks = vi.hoisted(() => ({
   getRoomRankingPageModel: vi.fn(),
@@ -15,7 +15,7 @@ describe("room ranking route", () => {
   it("exposes Tabarnia and renders accumulated points", async () => {
     expect(dynamic).toBe("force-dynamic");
     mocks.getRoomRankingPageModel.mockResolvedValue(
-      await mockRoomQueries.getRanking("tabarnia-room", mockQueryContext()),
+      await mockRoomReadCapabilities.getRanking("tabarnia-room", mockQueryContext()),
     );
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
@@ -23,7 +23,7 @@ describe("room ranking route", () => {
       title: "Ranking de Tabarnia — The Flash",
     });
 
-    const model = await mockRoomQueries.getRanking("tabarnia-room", mockQueryContext());
+    const model = await mockRoomReadCapabilities.getRanking("tabarnia-room", mockQueryContext());
     if (!model) throw new Error("Expected ranking model");
     const markup = renderToStaticMarkup(
       <FlashPopRoomRanking

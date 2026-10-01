@@ -1,15 +1,8 @@
 import "server-only";
 
 import { cache } from "react";
-import { supabaseRoomQueries } from "@/infrastructure/supabase/rooms/queries/roomQueries";
-import { getCurrentViewerProfile } from "@/server/profile";
+import { productionReadServices } from "@/server/composition/production";
 
 export const getHomePageModel = cache(async () => {
-  const viewer = await getCurrentViewerProfile();
-  if (!viewer) return null;
-
-  return {
-    rooms: await supabaseRoomQueries.listCards(),
-    currentViewer: viewer,
-  };
+  return productionReadServices.rooms.getHome();
 });

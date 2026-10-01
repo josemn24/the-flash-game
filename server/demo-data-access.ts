@@ -1,22 +1,10 @@
 import "server-only";
 
 import { cache } from "react";
-import { mockChallengeQueries, mockCurrentViewerProvider } from "@/infrastructure/mock/composition";
-import type { UtcIsoDateTime } from "@/types/domain";
-import type { QueryContext } from "@/types/view-models";
+import { demoReadServices } from "@/server/composition/demo";
 
-const getQueryContext = cache(async (): Promise<QueryContext> => {
-  const viewer = await mockCurrentViewerProvider.getCurrentViewer();
-  return {
-    viewerId: viewer.playerId,
-    now: new Date().toISOString() as UtcIsoDateTime,
-  };
-});
-
-export const getFlashPopLobbyPageModel = cache(async () =>
-  mockChallengeQueries.getFlashPopLobby(await getQueryContext()),
-);
+export const getFlashPopLobbyPageModel = cache(async () => demoReadServices.challenges.getLobby());
 
 export const getFlashPopChallengePageModel = cache(async (challengeKey: string) =>
-  mockChallengeQueries.getPlayable(challengeKey, null, await getQueryContext()),
+  demoReadServices.challenges.getPreview(challengeKey),
 );

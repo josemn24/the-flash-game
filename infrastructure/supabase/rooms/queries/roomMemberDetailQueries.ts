@@ -1,12 +1,14 @@
 import "server-only";
 
-import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type { PrivateQuestionAssetResolver } from "@/application/ports/private-question-assets";
 import type { RoomMemberDetailQueries } from "@/application/queries";
-import { supabaseCurrentViewerReader } from "@/infrastructure/supabase/identity/currentViewer";
 import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/assets/privateQuestionAssetResolver";
 import { createClient } from "@/lib/supabase/server";
-import type { RoomDailyLeaderboardEntry, RoomMemberDetailModel } from "@/types/view-models";
+import type {
+  QueryContext,
+  RoomDailyLeaderboardEntry,
+  RoomMemberDetailModel,
+} from "@/types/view-models";
 import { resolveAvatarPath } from "@/lib/media/publicAvatar";
 import type { AttemptExpirationQueries } from "@/infrastructure/supabase/attempts/attemptExpiration";
 import type { RoomHistoryReadRow, RoomReadRow } from "./roomReadContracts";
@@ -33,17 +35,16 @@ import { toChallengeLeaderboard, toSeasonLeaderboard } from "./roomViewMappers";
 export class SupabaseRoomMemberDetailQueries implements RoomMemberDetailQueries {
   constructor(
     private readonly attemptExpiration: AttemptExpirationQueries,
-    private readonly currentViewer: CurrentViewerReader = supabaseCurrentViewerReader,
     private readonly privateQuestionAssets: PrivateQuestionAssetResolver = supabasePrivateQuestionAssetResolver,
   ) {}
 
   async getMemberDetail(
     roomKey: string,
     memberKey: string,
+    context: QueryContext,
     publicationKey?: string,
   ): Promise<RoomMemberDetailModel | null> {
-    const viewer = await this.currentViewer.getCurrentViewer();
-    if (!viewer || !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(memberKey)) return null;
+    if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(memberKey)) return null;
 
     let historyRow: RoomHistoryReadRow | undefined;
     let currentRoomRow: RoomReadRow | undefined;
@@ -108,7 +109,7 @@ export class SupabaseRoomMemberDetailQueries implements RoomMemberDetailQueries 
         (isRecord(surface) && typeof surface.assetId === "string")
       );
     });
-    if (reviewNeedsPrivateAsset && memberKey === viewer.playerId) {
+    if (reviewNeedsPrivateAsset && memberKey === context.viewer.playerId) {
       const authClient = await createClient();
       const { data: authData } = await authClient.auth.getUser();
       if (authData.user) {
@@ -131,8 +132,8 @@ export class SupabaseRoomMemberDetailQueries implements RoomMemberDetailQueries 
     if (!reviewMember && !seasonEntry) return null;
     const member = toHistoricalMember(reviewRows, {
       id: memberKey,
-      name: seasonEntry?.display_name ?? viewer.name,
-      avatarSrc: resolveAvatarPath(seasonEntry?.avatar_path) ?? viewer.avatarSrc,
+      name: seasonEntry?.display_name ?? context.viewer.name,
+      avatarSrc: resolveAvatarPath(seasonEntry?.avatar_path) ?? context.viewer.avatarSrc,
     });
     member.totalFlashPoints = seasonEntry?.flash_points ?? 0;
     const roomLeaderboard = toSeasonLeaderboard(seasonRows);

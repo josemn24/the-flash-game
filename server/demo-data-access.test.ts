@@ -7,6 +7,7 @@ import {
 describe("demo server composition", () => {
   it("loads the Flash Pop lobby from the mock composition", async () => {
     const model = await getFlashPopLobbyPageModel();
+    if (!model) throw new Error("Expected the demo lobby to be available.");
 
     expect(model.primary.challenge.mode).toBe("pyramid");
     expect(model.secondary.challenge.mode).toBe("pyramid");
