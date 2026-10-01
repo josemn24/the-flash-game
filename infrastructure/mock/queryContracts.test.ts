@@ -38,11 +38,14 @@ const ownerContext: QueryContext = {
   now: DEMO_REFERENCE_TIME,
 };
 
+// The intersection is a test subject assembled from concrete capabilities; it
+// is not exported as an application or infrastructure adapter.
 type RoomReadCapabilities = RoomHistoryQueries &
   RoomLobbyQueries &
   RoomMemberDetailQueries &
   RoomRankingQueries &
   RoomSettingsQueries;
+// Demo and competitive adapters are composed here only to exercise the shared contract.
 type ChallengeReadCapabilities = DemoChallengeQueries & CompetitiveChallengeQueries;
 
 function withStore(changes: Partial<DomainStore>): DomainStore {

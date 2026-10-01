@@ -3,7 +3,7 @@ import { DEMO_REFERENCE_TIME, demoIdentity, playerRouteAliases } from "@/data/mo
 import { mockDomainStore } from "@/data/mock/store";
 import { MockCurrentViewerProvider } from "./currentViewer";
 import { MockRoomMembershipCommands, resetMockMembershipOverrides } from "./roomMembershipCommands";
-import { MockRoomReadProjection } from "./roomQueries";
+import { MockRoomReadProjection } from "./roomReadProjection";
 import { MockRoomSettingsQueries } from "./roomReadQueries";
 
 afterEach(() => resetMockMembershipOverrides());

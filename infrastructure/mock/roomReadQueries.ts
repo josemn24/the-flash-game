@@ -5,7 +5,7 @@ import type {
   RoomRankingQueries,
   RoomSettingsQueries,
 } from "@/application/queries";
-import { MockRoomReadProjection } from "./roomQueries";
+import { MockRoomReadProjection } from "./roomReadProjection";
 
 export class MockRoomLobbyQueries implements RoomLobbyQueries {
   constructor(private readonly delegate: MockRoomReadProjection) {}

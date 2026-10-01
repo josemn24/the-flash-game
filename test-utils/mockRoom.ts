@@ -9,7 +9,7 @@ import type {
   RoomRankingQueries,
   RoomSettingsQueries,
 } from "@/application/queries";
-import { MockRoomReadProjection } from "@/infrastructure/mock/roomQueries";
+import { MockRoomReadProjection } from "@/infrastructure/mock/roomReadProjection";
 import {
   MockRoomHistoryQueries,
   MockRoomLobbyQueries,
@@ -27,6 +27,7 @@ export const demoRoom = toLegacyRoomSnapshot(
   demoIdentity.currentPlayerId,
 ) as Room;
 
+/** Explicit test composition; production receives each capability separately. */
 type MockRoomReadCapabilities = RoomHistoryQueries &
   RoomLobbyQueries &
   RoomMemberDetailQueries &

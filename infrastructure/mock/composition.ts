@@ -6,7 +6,7 @@ import {
   MockDemoChallengeQueries,
 } from "@/infrastructure/mock/challengeQueries";
 import { MockCurrentViewerProvider } from "@/infrastructure/mock/currentViewer";
-import { MockRoomReadProjection } from "@/infrastructure/mock/roomQueries";
+import { MockRoomReadProjection } from "@/infrastructure/mock/roomReadProjection";
 import {
   MockRoomHistoryQueries,
   MockRoomLobbyQueries,
