@@ -46,7 +46,7 @@ export async function POST(
     if (!isJsonAnswer(answer)) {
       throw new AttemptApiError("invalid_answer", 400);
     }
-    const commands = commandsFor(identity);
+    const commands = commandsFor(identity, requestId);
     const { evaluated, received } = await commands.submitAnswer({
       attemptId: attemptId as AttemptId,
       sessionToken,

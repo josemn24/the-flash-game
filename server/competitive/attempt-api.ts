@@ -1,3 +1,7 @@
+import {
+  competitivePerformanceObserver,
+  instrumentCompetitiveCommands,
+} from "@/infrastructure/observability/competitivePerformance";
 import "server-only";
 
 import { randomBytes, randomUUID } from "node:crypto";
@@ -262,22 +266,26 @@ export async function clearAttemptToken(
   }
 }
 
-export function commandsFor(identity: AuthenticatedActor) {
+export function commandsFor(identity: AuthenticatedActor, requestId?: string) {
   const limit = consumeCompetitiveRateLimit(identity.authUserId);
   void limit;
   const tokenGenerator: AttemptSessionTokenGenerator = { generate: newAttemptToken };
-  return new ApplicationAttemptUseCases({
-    actor: identity,
-    commands: new SupabaseAttemptCommands(identity),
-    evaluator: supabaseCompetitiveEvaluator,
-    privateQuestionAssets: supabasePrivateQuestionAssetResolver,
-    sessionTokens: tokenGenerator,
-    beforeInteractiveAction: ({ attemptId, challengeMode }) => {
-      if (challengeMode === "alphabet") {
-        consumeAlphabetActionRateLimit(identity.authUserId, attemptId);
-      }
-    },
-  }) satisfies AttemptUseCases;
+  return instrumentCompetitiveCommands(
+    new ApplicationAttemptUseCases({
+      actor: identity,
+      commands: new SupabaseAttemptCommands(identity),
+      evaluator: supabaseCompetitiveEvaluator,
+      privateQuestionAssets: supabasePrivateQuestionAssetResolver,
+      sessionTokens: tokenGenerator,
+      performanceObserver: competitivePerformanceObserver,
+      beforeInteractiveAction: ({ attemptId, challengeMode }) => {
+        if (challengeMode === "alphabet") {
+          consumeAlphabetActionRateLimit(identity.authUserId, attemptId);
+        }
+      },
+    }),
+    requestId,
+  ) satisfies AttemptUseCases;
 }
 
 export function mapAttemptError(error: unknown): AttemptApiError {

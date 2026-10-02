@@ -1,8 +1,13 @@
+import {
+  competitivePerformanceObserver,
+  countCompetitiveDatabaseCall,
+} from "@/infrastructure/observability/competitivePerformance";
 import "server-only";
 
 import { Pool, type PoolClient } from "pg";
 import type {
   AttemptCommands,
+  AttemptContext,
   EvaluationContext,
   RecordEvaluationCommand,
   RecoverAttemptCommand,
@@ -131,6 +136,7 @@ function commandCode(error: unknown) {
     "progressive_clues_requires_reveal_command",
     "unsupported_question",
     "invalid_question_payload",
+    "invalid_attempt_context",
   ];
   return known.find((candidate) => message.includes(candidate)) ?? "command_failed";
 }
@@ -139,7 +145,21 @@ async function transaction<T>(
   identity: VerifiedAuthIdentity,
   run: (client: PoolClient) => Promise<T>,
 ) {
-  const client = await getPool().connect();
+  const connection = await competitivePerformanceObserver.measure("pool.wait", () =>
+    getPool().connect(),
+  );
+  const client = new Proxy(connection, {
+    get(target, key) {
+      if (key === "query")
+        return (...args: unknown[]) => {
+          countCompetitiveDatabaseCall("sqlQueries");
+          return Reflect.apply(target.query, target, args);
+        };
+      const value = Reflect.get(target, key);
+      return typeof value === "function" ? value.bind(target) : value;
+    },
+  });
+  countCompetitiveDatabaseCall("transactions");
   try {
     await beginAsServiceRole(client, identity);
     const result = await run(client);
@@ -184,6 +204,20 @@ async function expireStaleAttempt(client: PoolClient, attemptId: string) {
   }
 }
 
+function isAttemptContext(value: unknown): value is AttemptContext {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const context = value as Record<string, unknown>;
+  return (
+    Object.keys(context).length === 2 &&
+    typeof context.challengeMode === "string" &&
+    ["flash", "alphabet", "survival", "pyramid", "narrative"].includes(context.challengeMode) &&
+    typeof context.scheduledChallengeId === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      context.scheduledChallengeId,
+    )
+  );
+}
+
 export class SupabaseAttemptCommands implements Pick<
   AttemptCommands,
   | "start"
@@ -204,6 +238,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "completeFromPersistedAnswers"
   | "abandon"
   | "recover"
+  | "readAttemptContext"
   | "readRecovery"
 > {
   constructor(private readonly identity: VerifiedAuthIdentity) {}
@@ -316,6 +351,19 @@ export class SupabaseAttemptCommands implements Pick<
 
   recover(input: RecoverAttemptCommand) {
     return callAttemptCommand<RecoverAttemptResult>(this.identity, "recover_attempt", input);
+  }
+
+  readAttemptContext(attemptId: string, sessionToken: string) {
+    return transaction<AttemptContext>(this.identity, async (client) => {
+      await expireStaleAttempt(client, attemptId);
+      const result = await client.query<{ read_attempt_context: unknown }>(
+        "select private.read_attempt_context($1::uuid, $2::text)",
+        [attemptId, sessionToken],
+      );
+      const context = result.rows[0]?.read_attempt_context;
+      if (!isAttemptContext(context)) throw new AttemptCommandError("invalid_attempt_context");
+      return context;
+    });
   }
 
   readRecovery(attemptId: string, sessionToken: string) {

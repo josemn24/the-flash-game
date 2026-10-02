@@ -1,116 +1,138 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { GameMode } from "@/types/domain/content";
 import type { CompetitiveChallengePageModel, QueryContext } from "@/types/view-models";
-import {
-  CompetitiveChallengeModeReader,
-  SupabaseCompetitiveChallengeQueries,
-} from "./competitiveChallengeQueries";
+import { SupabaseCompetitiveChallengeQueries } from "./competitiveChallengeQueries";
+import { supabaseAlphabetQueries } from "./alphabetQueries";
+import { supabaseFlashQueries } from "./flashQueries";
+import { supabaseSurvivalQueries } from "./survivalQueries";
+import { supabasePyramidQueries } from "./pyramidQueries";
+import { supabaseNarrativeQueries } from "./narrativeQueries";
 
-const challengeKey = "00000000-0000-4000-8000-000000000001";
+const clientMocks = vi.hoisted(() => ({ rpc: vi.fn() }));
+vi.mock("@/lib/supabase/server", () => ({ createClient: async () => clientMocks }));
+const challengeKey = "abcdef12-0000-4000-8000-abcdef123456";
 const context = {
-  viewer: {
-    playerId: "player-1",
-    id: "player",
-    name: "Player",
-    avatarSrc: undefined,
-  },
+  viewer: { playerId: "player-1", name: "Player" },
   now: "2026-09-30T10:00:00.000Z",
 } as QueryContext;
-
-function model(mode: string): CompetitiveChallengePageModel {
+const modes: GameMode[] = ["flash", "alphabet", "survival", "pyramid", "narrative"];
+function projection(mode: GameMode) {
   return {
-    challenge: { mode } as CompetitiveChallengePageModel["challenge"],
-  } as CompetitiveChallengePageModel;
-}
-
-function reader(result: CompetitiveChallengePageModel | null): CompetitiveChallengeModeReader {
-  return { getPlayable: vi.fn().mockResolvedValue(result) };
-}
-
-function readers(
-  overrides: Partial<Record<keyof typeof defaultReaders, CompetitiveChallengeModeReader>> = {},
-) {
-  return {
-    ...defaultReaders,
-    ...overrides,
+    mode,
+    rows: [{ challenge_mode: mode, room_slug: "room", publication_id: challengeKey }],
   };
 }
+function readers() {
+  return Object.fromEntries(
+    modes.map((mode) => [
+      mode,
+      {
+        getPlayableFromRows: vi
+          .fn()
+          .mockResolvedValue({ challenge: { mode } } as CompetitiveChallengePageModel),
+      },
+    ]),
+  ) as Record<GameMode, { getPlayableFromRows: ReturnType<typeof vi.fn> }>;
+}
 
-const defaultReaders = {
-  flash: reader(null),
-  alphabet: reader(null),
-  survival: reader(null),
-  pyramid: reader(null),
-  narrative: reader(null),
-};
-
+beforeEach(() => vi.clearAllMocks());
 describe("SupabaseCompetitiveChallengeQueries", () => {
-  it("tries Flash, Alphabet, Survival, Pyramid and Narrative in order until one matches", async () => {
-    const flash = reader(null);
-    const alphabet = reader(null);
-    const survival = reader(model("survival"));
-    const pyramid = reader(model("pyramid"));
-    const narrative = reader(model("narrative"));
-    const queries = new SupabaseCompetitiveChallengeQueries(
-      readers({ flash, alphabet, survival, pyramid, narrative }),
-    );
-
-    await expect(queries.getPlayable("room", challengeKey, context)).resolves.toMatchObject({
-      challenge: { mode: "survival" },
+  it.each(modes)("uses exactly one initial RPC and only the %s builder", async (mode) => {
+    const builders = readers();
+    const envelope = projection(mode);
+    clientMocks.rpc.mockResolvedValue({ data: envelope, error: null });
+    const query = new SupabaseCompetitiveChallengeQueries(builders);
+    await expect(query.getPlayable("room", challengeKey, context)).resolves.toMatchObject({
+      challenge: { mode },
     });
-    expect(flash.getPlayable).toHaveBeenCalledWith("room", challengeKey, context);
-    expect(alphabet.getPlayable).toHaveBeenCalledWith("room", challengeKey, context);
-    expect(survival.getPlayable).toHaveBeenCalledWith("room", challengeKey, context);
-    expect(pyramid.getPlayable).not.toHaveBeenCalled();
-  });
-
-  it("returns the first matching mode and forwards the same query context", async () => {
-    const flash = reader(model("flash"));
-    const alphabet = reader(model("alphabet"));
-    const queries = new SupabaseCompetitiveChallengeQueries(readers({ flash, alphabet }));
-
-    const result = await queries.getPlayable("room", challengeKey, context);
-
-    expect(result).toMatchObject({ challenge: { mode: "flash" } });
-    expect(flash.getPlayable).toHaveBeenCalledTimes(1);
-    expect(alphabet.getPlayable).not.toHaveBeenCalled();
-    expect((flash.getPlayable as ReturnType<typeof vi.fn>).mock.calls[0]?.[2]).toBe(context);
-  });
-
-  it("propagates a Supabase reader error without trying a mock fallback", async () => {
-    const error = new Error("Supabase mode read failed");
-    const flash: CompetitiveChallengeModeReader = {
-      getPlayable: vi.fn().mockRejectedValue(error),
-    };
-    const alphabet = reader(model("alphabet"));
-    const queries = new SupabaseCompetitiveChallengeQueries(readers({ flash, alphabet }));
-
-    await expect(queries.getPlayable("room", challengeKey, context)).rejects.toBe(error);
-    expect(alphabet.getPlayable).not.toHaveBeenCalled();
-  });
-
-  it("returns null when every mode returns null", async () => {
-    const flash = reader(null);
-    const alphabet = reader(null);
-    const survival = reader(null);
-    const pyramid = reader(null);
-    const narrative = reader(null);
-    const queries = new SupabaseCompetitiveChallengeQueries(
-      readers({ flash, alphabet, survival, pyramid, narrative }),
+    expect(clientMocks.rpc).toHaveBeenCalledExactlyOnceWith("get_my_competitive_challenge", {
+      target_room_slug: "room",
+      target_publication_id: challengeKey,
+    });
+    expect(builders[mode].getPlayableFromRows).toHaveBeenCalledExactlyOnceWith(
+      envelope.rows,
+      context,
     );
-
-    await expect(queries.getPlayable("room", challengeKey, context)).resolves.toBeNull();
-    expect(flash.getPlayable).toHaveBeenCalledTimes(1);
-    expect(alphabet.getPlayable).toHaveBeenCalledTimes(1);
-    expect(survival.getPlayable).toHaveBeenCalledTimes(1);
-    expect(pyramid.getPlayable).toHaveBeenCalledTimes(1);
-    expect(narrative.getPlayable).toHaveBeenCalledTimes(1);
+    for (const other of modes.filter((value) => value !== mode))
+      expect(builders[other].getPlayableFromRows).not.toHaveBeenCalled();
   });
 
-  it("does not query any mode for an invalid route key", async () => {
-    const flash = reader(model("flash"));
-    const queries = new SupabaseCompetitiveChallengeQueries(readers({ flash }));
+  it("preserves authorized absence without selecting a builder", async () => {
+    clientMocks.rpc.mockResolvedValue({ data: null, error: null });
+    const builders = readers();
+    await expect(
+      new SupabaseCompetitiveChallengeQueries(builders).getPlayable("room", challengeKey, context),
+    ).resolves.toBeNull();
+    for (const builder of Object.values(builders))
+      expect(builder.getPlayableFromRows).not.toHaveBeenCalled();
+  });
 
-    await expect(queries.getPlayable("room", "not-a-publication", context)).resolves.toBeNull();
-    expect(flash.getPlayable).not.toHaveBeenCalled();
+  it("accepts uppercase UUID route keys with canonical SQL identifiers", async () => {
+    clientMocks.rpc.mockResolvedValue({ data: projection("flash"), error: null });
+    await expect(
+      new SupabaseCompetitiveChallengeQueries(readers()).getPlayable(
+        "room",
+        challengeKey.toUpperCase(),
+        context,
+      ),
+    ).resolves.toMatchObject({ challenge: { mode: "flash" } });
+  });
+
+  it("propagates infrastructure and enrichment errors", async () => {
+    clientMocks.rpc.mockResolvedValue({ data: null, error: { message: "unavailable" } });
+    await expect(
+      new SupabaseCompetitiveChallengeQueries(readers()).getPlayable("room", challengeKey, context),
+    ).rejects.toThrow("unavailable");
+    clientMocks.rpc.mockResolvedValue({ data: projection("flash"), error: null });
+    const builders = readers();
+    const error = new Error("asset failure");
+    builders.flash.getPlayableFromRows.mockRejectedValue(error);
+    await expect(
+      new SupabaseCompetitiveChallengeQueries(builders).getPlayable("room", challengeKey, context),
+    ).rejects.toBe(error);
+  });
+
+  it.each([
+    undefined,
+    [],
+    {},
+    { mode: "other", rows: [{}] },
+    { mode: "flash", rows: [] },
+    { mode: "flash", rows: {} },
+    { mode: "flash", rows: [null] },
+    { mode: "flash", rows: projection("alphabet").rows },
+    { ...projection("flash"), rows: [...projection("flash").rows, ...projection("alphabet").rows] },
+    { ...projection("flash"), rows: [{ ...projection("flash").rows[0], room_slug: "wrong" }] },
+  ])("rejects malformed or inconsistent envelopes %#", async (data) => {
+    clientMocks.rpc.mockResolvedValue({ data, error: null });
+    const builders = readers();
+    await expect(
+      new SupabaseCompetitiveChallengeQueries(builders).getPlayable("room", challengeKey, context),
+    ).rejects.toThrow();
+    for (const builder of Object.values(builders))
+      expect(builder.getPlayableFromRows).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    supabaseFlashQueries,
+    supabaseAlphabetQueries,
+    supabaseSurvivalQueries,
+    supabasePyramidQueries,
+    supabaseNarrativeQueries,
+  ])("rejects malformed rows with the existing mode guard %#", async (builder) => {
+    await expect(builder.getPlayableFromRows([{}], context)).rejects.toThrow(
+      "Invalid competitive challenge rows",
+    );
+    expect(clientMocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["room", "bad-key"],
+    ["", challengeKey],
+  ])("avoids reads for invalid routes", async (room, key) => {
+    await expect(
+      new SupabaseCompetitiveChallengeQueries(readers()).getPlayable(room, key, context),
+    ).resolves.toBeNull();
+    expect(clientMocks.rpc).not.toHaveBeenCalled();
   });
 });

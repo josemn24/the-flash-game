@@ -31,7 +31,7 @@ export async function POST(
     const challengeItemId = requireUuid(body, "challengeItemId") as ChallengeItemId;
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
-    const result = await commandsFor(identity).activate({
+    const result = await commandsFor(identity, requestId).activate({
       attemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),

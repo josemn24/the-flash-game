@@ -20,6 +20,8 @@ contenido Flash/Supervivencia y programa su calendario local.
 - [`architecture/server-client-architecture.md`](architecture/server-client-architecture.md): límites
   entre servidor y cliente.
 - [`qa.md`](qa.md): estado vigente de las comprobaciones automatizadas y sus limitaciones.
+- [`competitive-read-performance.md`](competitive-read-performance.md): contratos de lectura,
+  diagnóstico opcional y comparación local del camino competitivo.
 - [`glosario.md`](glosario.md): vocabulario del producto.
 
 Las decisiones normativas están en [`../decisions/README.md`](../decisions/README.md), no duplicadas

@@ -128,6 +128,13 @@ export async function runSelectedE2E(args) {
           env: scenarioEnv,
         },
       );
+      if (process.env.E2E_COMPETITIVE_PROJECTIONS === "1") {
+        await run(process.execPath, [
+          "scripts/check-competitive-projections.mjs",
+          "--scenario",
+          scenario,
+        ]);
+      }
     } catch (error) {
       if (process.env.E2E_CONTINUE_ON_FAILURE !== "1") throw error;
       failedScenarios.push(scenario);

@@ -69,6 +69,10 @@ function createUseCases(overrides: Partial<AttemptUseCaseDependencies> = {}) {
     recordEvaluation: vi.fn(),
     completeFromPersistedAnswers: vi.fn(),
     recover: vi.fn(),
+    readAttemptContext: vi.fn().mockResolvedValue({
+      challengeMode: "alphabet",
+      scheduledChallengeId: snapshot().scheduledChallengeId,
+    }),
     readRecovery: vi.fn(),
     abandon: vi.fn(),
   } as unknown as AttemptCommands;
@@ -134,7 +138,10 @@ describe("ApplicationAttemptUseCases", () => {
 
   it("receives before evaluating, resolves private assets, and records idempotently", async () => {
     const { commands, evaluator, privateQuestionAssets, useCases } = createUseCases();
-    vi.mocked(commands.readRecovery).mockResolvedValue(snapshot({ challengeMode: "alphabet" }));
+    vi.mocked(commands.readAttemptContext).mockResolvedValue({
+      challengeMode: "alphabet",
+      scheduledChallengeId: snapshot().scheduledChallengeId,
+    });
     vi.mocked(commands.receiveAnswer).mockResolvedValue({
       attemptId,
       lockVersion: 4,
@@ -155,9 +162,20 @@ describe("ApplicationAttemptUseCases", () => {
 
     const result = await useCases.submitAnswer(answerInput);
 
+    expect(commands.readAttemptContext).toHaveBeenCalledWith(attemptId, answerInput.sessionToken);
+    expect(commands.readRecovery).not.toHaveBeenCalled();
     expect(commands.receiveAnswer).toHaveBeenCalledWith(answerInput);
     expect(privateQuestionAssets.resolve).toHaveBeenCalledOnce();
     expect(evaluator.evaluate).toHaveBeenCalledOnce();
+    expect(vi.mocked(commands.receiveAnswer).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(commands.readEvaluationContext).mock.invocationCallOrder[0],
+    );
+    expect(vi.mocked(commands.readEvaluationContext).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(evaluator.evaluate).mock.invocationCallOrder[0],
+    );
+    expect(vi.mocked(evaluator.evaluate).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(commands.recordEvaluation).mock.invocationCallOrder[0],
+    );
     expect(commands.recordEvaluation).toHaveBeenCalledWith(
       expect.objectContaining({
         receiptId,
@@ -173,7 +191,10 @@ describe("ApplicationAttemptUseCases", () => {
   it("applies the mode action guard to answers and passes without exposing it to routes", async () => {
     const beforeInteractiveAction = vi.fn();
     const { commands, useCases } = createUseCases({ beforeInteractiveAction });
-    vi.mocked(commands.readRecovery).mockResolvedValue(snapshot({ challengeMode: "alphabet" }));
+    vi.mocked(commands.readAttemptContext).mockResolvedValue({
+      challengeMode: "alphabet",
+      scheduledChallengeId: snapshot().scheduledChallengeId,
+    });
     vi.mocked(commands.receiveAnswer).mockResolvedValue({
       attemptId,
       lockVersion: 4,
@@ -203,6 +224,26 @@ describe("ApplicationAttemptUseCases", () => {
     });
     expect(commands.pass).toHaveBeenCalledOnce();
   });
+
+  it.each(["submitAnswer", "pass"] as const)(
+    "stops %s before writes or scoring when the guard rejects",
+    async (operation) => {
+      const denied = new Error("rate limit");
+      const { commands, evaluator, useCases } = createUseCases({
+        beforeInteractiveAction: () => {
+          throw denied;
+        },
+      });
+      await expect(useCases[operation](answerInput)).rejects.toBe(denied);
+      expect(commands.readAttemptContext).toHaveBeenCalledOnce();
+      expect(commands.readRecovery).not.toHaveBeenCalled();
+      expect(commands.receiveAnswer).not.toHaveBeenCalled();
+      expect(commands.pass).not.toHaveBeenCalled();
+      expect(commands.readEvaluationContext).not.toHaveBeenCalled();
+      expect(commands.recordEvaluation).not.toHaveBeenCalled();
+      expect(evaluator.evaluate).not.toHaveBeenCalled();
+    },
+  );
 
   it("evaluates a pending recovery receipt and completes a terminal recovery from persisted answers", async () => {
     const { commands, useCases } = createUseCases();
@@ -259,12 +300,17 @@ describe("ApplicationAttemptUseCases", () => {
 
     expect(result.completed).toBeUndefined();
     expect(result.snapshot.allItemsResolved).toBe(false);
+    expect(commands.readRecovery).toHaveBeenCalledOnce();
+    expect(commands.readAttemptContext).not.toHaveBeenCalled();
     expect(commands.completeFromPersistedAnswers).not.toHaveBeenCalled();
   });
 
   it("uses the current lock version when completing and abandoning", async () => {
     const { commands, useCases } = createUseCases();
-    vi.mocked(commands.readRecovery).mockResolvedValue(snapshot({ lockVersion: 9 }));
+    vi.mocked(commands.readAttemptContext).mockResolvedValue({
+      challengeMode: "flash",
+      scheduledChallengeId: snapshot().scheduledChallengeId,
+    });
     vi.mocked(commands.completeFromPersistedAnswers).mockResolvedValue({
       attemptId,
       lockVersion: 10,
@@ -281,6 +327,8 @@ describe("ApplicationAttemptUseCases", () => {
     const complete = await useCases.complete({ ...answerInput, lockVersion: 9 });
     const abandon = await useCases.abandon({ ...answerInput, lockVersion: 10 });
 
+    expect(commands.readAttemptContext).toHaveBeenCalledTimes(2);
+    expect(commands.readRecovery).not.toHaveBeenCalled();
     expect(complete.scheduledChallengeId).toBe(snapshot().scheduledChallengeId);
     expect(commands.completeFromPersistedAnswers).toHaveBeenCalledWith({
       ...answerInput,

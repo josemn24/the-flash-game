@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { AttemptCommandError, callAttemptCommand } from "./attemptCommands";
+import {
+  AttemptCommandError,
+  callAttemptCommand,
+  SupabaseAttemptCommands,
+} from "./attemptCommands";
 
 const pgMocks = vi.hoisted(() => ({ Pool: vi.fn() }));
 vi.mock("pg", () => ({ Pool: pgMocks.Pool }));
@@ -83,5 +87,78 @@ describe("Supabase attempt database connection", () => {
     ).rejects.toMatchObject({ code: "attempt_inactivity_expired" });
     expect(queries.some((query) => query.includes("private.expire_stale_attempts"))).toBe(true);
     expect(queries.some((query) => query.includes("private.prepare_interaction"))).toBe(false);
+  });
+
+  const attemptId = "00000000-0000-4000-8000-000000000003";
+  const context = {
+    challengeMode: "alphabet",
+    scheduledChallengeId: "00000000-0000-4000-8000-000000000002",
+  };
+  const commands = new SupabaseAttemptCommands({
+    authUserId: "00000000-0000-4000-8000-000000000001",
+  });
+
+  it("reads only authorized metadata after claims and expiry, then commits and releases", async () => {
+    client.query.mockImplementation(async (sql: string) => ({
+      rows: sql.includes("private.read_attempt_context")
+        ? [{ read_attempt_context: context }]
+        : [{ result: { abandonedAttempts: 0 } }],
+    }));
+    await expect(commands.readAttemptContext(attemptId, "session-token")).resolves.toEqual(context);
+    const calls = client.query.mock.calls;
+    expect(calls[0]?.[0]).toBe("BEGIN");
+    expect(calls.findIndex(([sql]) => sql.includes("request.jwt.claims"))).toBeLessThan(
+      calls.findIndex(([sql]) => sql.includes("expire_stale_attempts")),
+    );
+    expect(client.query).toHaveBeenCalledWith(
+      "select private.read_attempt_context($1::uuid, $2::text)",
+      [attemptId, "session-token"],
+    );
+    expect(calls.some(([sql]) => sql.includes("read_attempt_recovery"))).toBe(false);
+    expect(calls.at(-1)?.[0]).toBe("COMMIT");
+    expect(client.release).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    null,
+    {},
+    { ...context, challengeMode: "unknown" },
+    { ...context, challengeMode: ["flash"] },
+    { ...context, scheduledChallengeId: "bad" },
+    { ...context, answers: [] },
+  ])("rolls back malformed context %#", async (value) => {
+    client.query.mockImplementation(async (sql: string) => ({
+      rows: sql.includes("private.read_attempt_context")
+        ? [{ read_attempt_context: value }]
+        : [{ result: { abandonedAttempts: 0 } }],
+    }));
+    await expect(commands.readAttemptContext(attemptId, "session-token")).rejects.toMatchObject({
+      code: "invalid_attempt_context",
+    });
+    expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
+    expect(client.release).toHaveBeenCalledOnce();
+  });
+
+  it("does not read metadata when pre-expiry rejects the operation", async () => {
+    client.query.mockResolvedValue({ rows: [{ result: { abandonedAttempts: 1 } }] });
+    await expect(commands.readAttemptContext(attemptId, "session-token")).rejects.toMatchObject({
+      code: "attempt_inactivity_expired",
+    });
+    expect(client.query.mock.calls.some(([sql]) => sql.includes("read_attempt_context"))).toBe(
+      false,
+    );
+    expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
+    expect(client.release).toHaveBeenCalledOnce();
+  });
+
+  it("uses the existing error translation on SQL failure", async () => {
+    client.query.mockImplementation(async (sql: string) => {
+      if (sql.includes("private.read_attempt_context")) throw new Error("session_revoked");
+      return { rows: [{ result: { abandonedAttempts: 0 } }] };
+    });
+    await expect(commands.readAttemptContext(attemptId, "session-token")).rejects.toMatchObject({
+      code: "session_revoked",
+    });
+    expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
   });
 });

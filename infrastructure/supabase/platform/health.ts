@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261001104420_narrative-recovery-history";
+const canonicalSchemaRevision = "20261002131451_competitive-read-projections";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -56,6 +56,8 @@ async function checkDatabase() {
           like '%jsonb_build_object(''foundWordIds''%'
         and to_regprocedure('private.zip_content_valid(jsonb,jsonb)') is not null
         and to_regprocedure('private.escape_content_valid(jsonb,jsonb)') is not null
+        and to_regprocedure('private.read_attempt_context(uuid,text)') is not null
+        and to_regprocedure('public.get_my_competitive_challenge(text,uuid)') is not null
           and to_regprocedure('private.prepare_interaction(jsonb)') is not null
           and to_regprocedure('public.get_room_member_review(text,uuid,uuid)') is not null
           and to_regprocedure('public.get_superadmin_challenge_catalog()') is not null

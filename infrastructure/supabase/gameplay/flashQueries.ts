@@ -1,3 +1,8 @@
+import { validateCompetitiveRows } from "./competitiveReadProjection";
+import {
+  competitivePerformanceObserver,
+  countCompetitiveDatabaseCall,
+} from "@/infrastructure/observability/competitivePerformance";
 import "server-only";
 
 import type {
@@ -120,7 +125,8 @@ export function isFlashReadRow<Name extends CompetitiveReadFunctionName = "get_m
     typeof value.publication_id === "string" &&
     (value.publication_status === "scheduled" ||
       value.publication_status === "open" ||
-      value.publication_status === "closed") &&
+      value.publication_status === "closed" ||
+      value.publication_status === "cancelled") &&
     typeof value.challenge_id === "string" &&
     typeof value.challenge_version_id === "string" &&
     typeof value.challenge_title === "string" &&
@@ -247,7 +253,11 @@ export async function callFlashRead(
   args: PublicFunctionArgs<typeof functionName>,
 ) {
   const supabase = await createClient();
-  const response = await supabase.rpc(functionName, args);
+  countCompetitiveDatabaseCall("rpcCalls");
+  const response = await competitivePerformanceObserver.measure(
+    functionName.endsWith("_challenge") ? "challenge.initial" : "challenge.enrichment",
+    () => supabase.rpc(functionName, args),
+  );
   const { data, error } = response as RawRpcResponse<typeof response>;
   if (error) throw new Error(`Supabase flash read failed (${functionName}): ${error.message}`);
   return Array.isArray(data) ? data : [];
@@ -279,14 +289,23 @@ export function toRoomContext(
 
 export class SupabaseFlashQueries {
   async getPlayable(roomKey: string, publicationId: string, context: QueryContext) {
-    const viewer = context.viewer;
-    const rows = (
+    return this.getPlayableFromRows(
       await callFlashRead("get_my_flash_challenge", {
         target_room_slug: roomKey,
         target_publication_id: publicationId,
-      })
-    ).filter(isFlashReadRow);
+      }),
+      context,
+    );
+  }
+
+  async getPlayableFromRows(rawRows: readonly unknown[], context: QueryContext) {
+    const viewer = context.viewer;
+    const rows = validateCompetitiveRows(rawRows, isFlashReadRow);
     const first = rows[0];
+    if (first?.publication_status === "cancelled") return null;
+    if (first && rows.length !== first.question_count) {
+      throw new Error("Incomplete competitive challenge rows");
+    }
     if (!first || first.challenge_mode !== "flash" || rows.length !== first.question_count)
       return null;
 

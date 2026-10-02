@@ -176,6 +176,9 @@ isOneToOne: false
               "alphabet_letter": string,"answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_id": string,"attempt_lock_version": number,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"challenge_description": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_subtitle": string,"challenge_title": string,"item_position": number,"payload_schema_version": number,"points": number,"presented_at": string,"public_payload": Json,"question_type": string,"question_version_id": string,"result_details": Json,"scheduled_challenge_id": string,"solution_payload": Json,"submitted_at": string,"time_used_ms": number
             }[]
                            },
+"get_my_competitive_challenge":
+{ Args: { "target_publication_id": string,"target_room_slug": string }; Returns: Json
+                           },
 "get_my_flash_challenge":
 { Args: { "target_publication_id": string,"target_room_slug": string }; Returns: {
               "challenge_description": string,"challenge_id": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_mode": string,"challenge_slug": string,"challenge_subtitle": string,"challenge_title": string,"challenge_version_id": string,"item_points": number,"item_position": number,"own_attempt_completed_at": string,"own_attempt_deadline_at": string,"own_attempt_id": string,"own_attempt_lock_version": number,"own_attempt_score": number,"own_attempt_started_at": string,"own_attempt_status": string,"payload_schema_version": number,"publication_closes_at": string,"publication_id": string,"publication_opens_at": string,"publication_status": string,"question_count": number,"question_type": string,"question_version_id": string,"room_id": string,"room_slug": string,"room_title": string,"time_limit_ms": number

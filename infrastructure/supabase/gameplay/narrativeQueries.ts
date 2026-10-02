@@ -1,3 +1,8 @@
+import { validateCompetitiveRows } from "./competitiveReadProjection";
+import {
+  competitivePerformanceObserver,
+  countCompetitiveDatabaseCall,
+} from "@/infrastructure/observability/competitivePerformance";
 import "server-only";
 
 import { competitiveQuestionTypesFor } from "@/features/question-formats/capabilities";
@@ -133,7 +138,11 @@ async function callNarrativeRead<
   Name extends "get_my_narrative_challenge" | "get_my_narrative_result",
 >(functionName: Name, args: PublicFunctionArgs<Name>) {
   const supabase = await createClient();
-  const response = await supabase.rpc(functionName, args);
+  countCompetitiveDatabaseCall("rpcCalls");
+  const response = await competitivePerformanceObserver.measure(
+    functionName.endsWith("_challenge") ? "challenge.initial" : "challenge.enrichment",
+    () => supabase.rpc(functionName, args),
+  );
   const { data, error } = response as RawRpcResponse<typeof response>;
   if (error) throw new Error(`Supabase narrative read failed (${functionName}): ${error.message}`);
   return Array.isArray(data) ? data : [];
@@ -191,13 +200,21 @@ function toResult(rows: readonly NarrativeResultRow[]): RoomChallengeResult {
 
 export class SupabaseNarrativeQueries {
   async getPlayable(roomKey: string, publicationId: string, context: QueryContext) {
-    const rows = (
+    return this.getPlayableFromRows(
       await callNarrativeRead("get_my_narrative_challenge", {
         target_room_slug: roomKey,
         target_publication_id: publicationId,
-      })
-    ).filter(isNarrativeReadRow);
+      }),
+      context,
+    );
+  }
+
+  async getPlayableFromRows(rawRows: readonly unknown[], context: QueryContext) {
+    const rows = validateCompetitiveRows(rawRows, isNarrativeReadRow);
     const first = rows[0];
+    if (first && rows.length !== first.question_count) {
+      throw new Error("Incomplete competitive challenge rows");
+    }
     if (!first || rows.length !== first.question_count || first.challenge_mode !== "narrative") {
       return null;
     }

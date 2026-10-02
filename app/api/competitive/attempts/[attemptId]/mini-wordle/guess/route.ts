@@ -40,7 +40,7 @@ export async function POST(
     ) {
       throw new AttemptApiError("invalid_guess", 400);
     }
-    const result = await commandsFor(identity).submitMiniWordleGuess({
+    const result = await commandsFor(identity, requestId).submitMiniWordleGuess({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),

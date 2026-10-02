@@ -41,7 +41,7 @@ export async function POST(
     ) {
       throw new AttemptApiError("invalid_queens_placement", 400);
     }
-    const result = await commandsFor(identity).submitQueensPlacement({
+    const result = await commandsFor(identity, requestId).submitQueensPlacement({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),

@@ -29,6 +29,7 @@
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:e2e:raw": "playwright test",
     "mock-data:check": "vitest run data/mock/store.test.ts data/mock/validate.test.ts",
+    "performance:summary": "node scripts/summarize-competitive-performance.mjs",
     "typecheck": "tsc --noEmit",
     "type-architecture": "node scripts/check-type-architecture.mjs",
     "supabase:types": "node scripts/generate-supabase-types.mjs",

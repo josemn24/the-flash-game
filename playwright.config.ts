@@ -58,7 +58,7 @@ const localEnv = {
   // Keep production's smaller admin burst while allowing the local browser run to complete.
   FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260928193000_pyramid_level_activation",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261002131451_competitive-read-projections",
 };
 
 export default defineConfig({
@@ -72,6 +72,7 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
+    stdout: process.env.FLASH_PERFORMANCE_DIAGNOSTICS === "1" ? "pipe" : "ignore",
     command: isPwaE2e
       ? `npm run start -- --hostname 127.0.0.1 --port ${e2ePort}`
       : `npm run dev -- --hostname 127.0.0.1 --port ${e2ePort}`,

@@ -1,3 +1,4 @@
+import { validateCompetitiveRows } from "./competitiveReadProjection";
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
@@ -69,14 +70,23 @@ export class SupabaseSurvivalQueries {
   }
 
   async getPlayable(roomKey: string, publicationId: string, context: QueryContext) {
-    const viewer = context.viewer;
-    const rows = (
+    return this.getPlayableFromRows(
       await callFlashRead("get_my_survival_challenge", {
         target_room_slug: roomKey,
         target_publication_id: publicationId,
-      })
-    ).filter(isSurvivalReadRow);
+      }),
+      context,
+    );
+  }
+
+  async getPlayableFromRows(rawRows: readonly unknown[], context: QueryContext) {
+    const viewer = context.viewer;
+    const rows = validateCompetitiveRows(rawRows, isSurvivalReadRow);
     const first = rows[0];
+    if (first?.publication_status === "cancelled") return null;
+    if (first && rows.length !== first.question_count) {
+      throw new Error("Incomplete competitive challenge rows");
+    }
     if (
       !first ||
       rows.length !== first.question_count ||

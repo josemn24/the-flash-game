@@ -30,7 +30,7 @@ export async function POST(
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
-    const commands = commandsFor(identity);
+    const commands = commandsFor(identity, requestId);
     const result = await commands.pass({
       attemptId: attemptId as AttemptId,
       sessionToken,

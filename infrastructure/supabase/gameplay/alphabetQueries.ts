@@ -1,3 +1,8 @@
+import { validateCompetitiveRows } from "./competitiveReadProjection";
+import {
+  competitivePerformanceObserver,
+  countCompetitiveDatabaseCall,
+} from "@/infrastructure/observability/competitivePerformance";
 import "server-only";
 
 import type {
@@ -139,7 +144,11 @@ async function callAlphabetRead(
   args: PublicFunctionArgs<typeof functionName>,
 ) {
   const supabase = await createClient();
-  const response = await supabase.rpc(functionName, args);
+  countCompetitiveDatabaseCall("rpcCalls");
+  const response = await competitivePerformanceObserver.measure(
+    functionName.endsWith("_challenge") ? "challenge.initial" : "challenge.enrichment",
+    () => supabase.rpc(functionName, args),
+  );
   const { data, error } = response as RawRpcResponse<typeof response>;
   if (error) throw new Error(`Supabase alphabet read failed (${functionName}): ${error.message}`);
   return Array.isArray(data) ? data : [];
@@ -173,14 +182,22 @@ function toResult(rows: AlphabetResultRow[]): RoomChallengeResult {
 
 export class SupabaseAlphabetQueries {
   async getPlayable(roomKey: string, publicationId: string, context: QueryContext) {
-    const viewer = context.viewer;
-    const rows = (
+    return this.getPlayableFromRows(
       await callAlphabetRead("get_my_alphabet_challenge", {
         target_room_slug: roomKey,
         target_publication_id: publicationId,
-      })
-    ).filter(isAlphabetReadRow);
+      }),
+      context,
+    );
+  }
+
+  async getPlayableFromRows(rawRows: readonly unknown[], context: QueryContext) {
+    const viewer = context.viewer;
+    const rows = validateCompetitiveRows(rawRows, isAlphabetReadRow);
     const first = rows[0];
+    if (first && rows.length !== first.question_count) {
+      throw new Error("Incomplete competitive challenge rows");
+    }
     if (!first || rows.length !== first.question_count) return null;
 
     let resultRows: AlphabetResultRow[] = [];

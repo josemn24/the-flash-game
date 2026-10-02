@@ -1051,6 +1051,16 @@
       "arguments": "target_receipt uuid, session_token text",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
+    },
+    "private.read_attempt_context": {
+      "arguments": "target_attempt uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "public.get_my_competitive_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
     }
   }
 }

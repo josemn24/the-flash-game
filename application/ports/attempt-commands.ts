@@ -37,7 +37,11 @@ import type {
   RevealProgressiveClueResult,
 } from "@/types/contracts/attempts";
 import type { AnswerStatus } from "@/types/domain/attempt";
-import type { AnswerReceiptId, QuestionVersionId } from "@/types/domain/identifiers";
+import type {
+  AnswerReceiptId,
+  QuestionVersionId,
+  ScheduledChallengeId,
+} from "@/types/domain/identifiers";
 import type { DurationMs, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 import type { QuestionType } from "@/types/contracts/questions";
 import type { GameMode } from "@/types/domain/content";
@@ -54,6 +58,11 @@ export type RecordEvaluationCommand = AttemptCommandInput & {
   readonly resultDetails?: JsonValue;
 };
 export type RecoverAttemptCommand = RecoverAttemptInput;
+/** Minimal authorized metadata; no progress, answers or evaluation content. */
+export type AttemptContext = {
+  readonly challengeMode: GameMode;
+  readonly scheduledChallengeId: ScheduledChallengeId;
+};
 export type EvaluationReceipt = {
   readonly receiptId: AnswerReceiptId;
   readonly answer: JsonValue;
@@ -118,6 +127,7 @@ export interface AttemptCommands {
     readonly idempotencyKey: string;
   }): Promise<FinishAttemptResult>;
   recover(input: RecoverAttemptCommand): Promise<RecoverAttemptResult>;
+  readAttemptContext(attemptId: string, sessionToken: string): Promise<AttemptContext>;
   readRecovery(attemptId: string, sessionToken: string): Promise<AttemptRecoverySnapshot>;
   abandon(input: AttemptCommandInput): Promise<FinishAttemptResult>;
   acceptInvitation(input: AcceptInvitationInput): Promise<AcceptInvitationResult>;

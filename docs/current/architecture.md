@@ -302,6 +302,19 @@ intentos: `mode_config` contiene solo escenas y configuración pública, `challe
 orden y metadatos, y `prepare` entrega el payload de una pregunta. La UI conserva mocks únicamente
 para práctica y demos.
 
+Las acciones `submitAnswer`, `pass`, `complete` y `abandon` leen únicamente el
+`AttemptContext` autorizado (`challengeMode`, `scheduledChallengeId`) mediante
+`private.read_attempt_context`; `recover` conserva el snapshot completo. Una respuesta genérica
+mantiene cuatro transacciones: contexto mínimo, recepción, contexto privado de evaluación y
+registro. El scoring ocurre entre la tercera y la cuarta, sin transacción abierta. El límite
+general precede al caso de uso y el de Alfabeto precede a recepción/pase.
+
+La carga inicial competitiva ejecuta `public.get_my_competitive_challenge` una sola vez. SQL
+resuelve el modo y reutiliza su proyección autorizada; el adaptador valida `{ mode, rows }` y
+selecciona el constructor correspondiente. Resultados, revisión y assets conservan sus lecturas
+posteriores. Los contratos, diagnóstico y mediciones locales están en
+[lecturas competitivas](competitive-read-performance.md).
+
 La frontera de composición también es explícita: `server/composition/demo.ts` es el único composition
 root local; `server/composition/production.ts` conecta las lecturas Supabase. Las rutas bajo
 `app/demo/**` pueden importar la fachada demo, mientras que `/salas`, `/desafios` y `/admin` no pueden

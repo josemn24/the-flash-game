@@ -1,4 +1,12 @@
-import type { AttemptCommands, EvaluationContext } from "@/application/ports/attempt-commands";
+import {
+  observePerformance,
+  type PerformanceObserver,
+} from "@/application/ports/performance-observer";
+import type {
+  AttemptCommands,
+  AttemptContext,
+  EvaluationContext,
+} from "@/application/ports/attempt-commands";
 import type { AttemptSessionTokenGenerator } from "@/application/ports/actors";
 import type { CompetitiveEvaluator } from "@/application/ports/competitive-evaluator";
 import type { PrivateQuestionAssetResolver } from "@/application/ports/private-question-assets";
@@ -14,7 +22,6 @@ import type {
   ActivateInteractionInput,
   ActivateInteractionResult,
   AttemptCommandInput,
-  AttemptRecoverySnapshot,
   CompleteAttemptInput,
   FinishAttemptResult,
   PassInteractionInput,
@@ -65,15 +72,17 @@ export type AttemptUseCaseDependencies = {
     | "recordEvaluation"
     | "completeFromPersistedAnswers"
     | "recover"
+    | "readAttemptContext"
     | "readRecovery"
     | "abandon"
   >;
   readonly evaluator: CompetitiveEvaluator;
   readonly privateQuestionAssets: PrivateQuestionAssetResolver;
   readonly sessionTokens: AttemptSessionTokenGenerator;
+  readonly performanceObserver?: PerformanceObserver;
   readonly beforeInteractiveAction?: (input: {
     readonly attemptId: string;
-    readonly challengeMode: AttemptRecoverySnapshot["challengeMode"];
+    readonly challengeMode: AttemptContext["challengeMode"];
   }) => void;
 };
 
@@ -91,6 +100,7 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
   private readonly evaluator: CompetitiveEvaluator;
   private readonly privateQuestionAssets: PrivateQuestionAssetResolver;
   private readonly sessionTokens: AttemptSessionTokenGenerator;
+  private readonly performanceObserver?: PerformanceObserver;
   private readonly beforeInteractiveAction?: AttemptUseCaseDependencies["beforeInteractiveAction"];
 
   constructor(dependencies: AttemptUseCaseDependencies) {
@@ -99,6 +109,7 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
     this.evaluator = dependencies.evaluator;
     this.privateQuestionAssets = dependencies.privateQuestionAssets;
     this.sessionTokens = dependencies.sessionTokens;
+    this.performanceObserver = dependencies.performanceObserver;
     this.beforeInteractiveAction = dependencies.beforeInteractiveAction;
   }
 
@@ -126,12 +137,17 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
   }
 
   async submitAnswer(input: SubmitAnswerInput): Promise<SubmitAnswerUseCaseResult> {
-    const snapshot = await this.commands.readRecovery(input.attemptId, input.sessionToken);
+    const context = await observePerformance(this.performanceObserver, "attempt.context", () =>
+      this.commands.readAttemptContext(input.attemptId, input.sessionToken),
+    );
+    this.performanceObserver?.setMode(context.challengeMode);
     this.beforeInteractiveAction?.({
       attemptId: input.attemptId,
-      challengeMode: snapshot.challengeMode,
+      challengeMode: context.challengeMode,
     });
-    const received = await this.commands.receiveAnswer(input);
+    const received = await observePerformance(this.performanceObserver, "attempt.receive", () =>
+      this.commands.receiveAnswer(input),
+    );
     const evaluated = await this.evaluateReceipt({
       attemptId: input.attemptId,
       sessionToken: input.sessionToken,
@@ -155,7 +171,10 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
       });
     }
 
-    const snapshot = await this.commands.readRecovery(input.attemptId, input.sessionToken);
+    const snapshot = await observePerformance(this.performanceObserver, "attempt.context", () =>
+      this.commands.readRecovery(input.attemptId, input.sessionToken),
+    );
+    if (snapshot.challengeMode) this.performanceObserver?.setMode(snapshot.challengeMode);
     let completed: FinishAttemptResult | undefined;
     if (
       snapshot.allItemsResolved ||
@@ -179,24 +198,39 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
   }
 
   async complete(input: CompleteAttemptInput): Promise<FinishAttemptUseCaseResult> {
-    const snapshot = await this.commands.readRecovery(input.attemptId, input.sessionToken);
-    const result = await this.commands.completeFromPersistedAnswers(input);
-    return { result, scheduledChallengeId: snapshot.scheduledChallengeId };
+    const context = await observePerformance(this.performanceObserver, "attempt.context", () =>
+      this.commands.readAttemptContext(input.attemptId, input.sessionToken),
+    );
+    this.performanceObserver?.setMode(context.challengeMode);
+    const result = await observePerformance(this.performanceObserver, "attempt.finish", () =>
+      this.commands.completeFromPersistedAnswers(input),
+    );
+    return { result, scheduledChallengeId: context.scheduledChallengeId };
   }
 
   async abandon(input: AttemptCommandInput): Promise<FinishAttemptUseCaseResult> {
-    const snapshot = await this.commands.readRecovery(input.attemptId, input.sessionToken);
-    const result = await this.commands.abandon(input);
-    return { result, scheduledChallengeId: snapshot.scheduledChallengeId };
+    const context = await observePerformance(this.performanceObserver, "attempt.context", () =>
+      this.commands.readAttemptContext(input.attemptId, input.sessionToken),
+    );
+    this.performanceObserver?.setMode(context.challengeMode);
+    const result = await observePerformance(this.performanceObserver, "attempt.finish", () =>
+      this.commands.abandon(input),
+    );
+    return { result, scheduledChallengeId: context.scheduledChallengeId };
   }
 
   async pass(input: PassInteractionInput): Promise<PassInteractionResult> {
-    const snapshot = await this.commands.readRecovery(input.attemptId, input.sessionToken);
+    const context = await observePerformance(this.performanceObserver, "attempt.context", () =>
+      this.commands.readAttemptContext(input.attemptId, input.sessionToken),
+    );
+    this.performanceObserver?.setMode(context.challengeMode);
     this.beforeInteractiveAction?.({
       attemptId: input.attemptId,
-      challengeMode: snapshot.challengeMode,
+      challengeMode: context.challengeMode,
     });
-    return this.commands.pass(input);
+    return observePerformance(this.performanceObserver, "attempt.pass", () =>
+      this.commands.pass(input),
+    );
   }
 
   async submitMiniWordleGuess(
@@ -251,26 +285,37 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
     readonly receiptId: AnswerReceiptId;
     readonly idempotencyKey: string;
   }): Promise<SubmitAnswerResult> {
-    const context = await this.commands.readEvaluationContext(input.receiptId, input.sessionToken);
+    const context = await observePerformance(
+      this.performanceObserver,
+      "attempt.evaluation-context",
+      () => this.commands.readEvaluationContext(input.receiptId, input.sessionToken),
+    );
+    this.performanceObserver?.setMode(context.mode);
     const resolvedContext: EvaluationContext = {
       ...context,
-      publicPayload: (await this.privateQuestionAssets.resolve({
-        authUserId: this.actor.authUserId,
-        attemptId: input.attemptId,
-        publicPayload: context.publicPayload,
-      })) as EvaluationContext["publicPayload"],
+      publicPayload: (await observePerformance(this.performanceObserver, "attempt.assets", () =>
+        this.privateQuestionAssets.resolve({
+          authUserId: this.actor.authUserId,
+          attemptId: input.attemptId,
+          publicPayload: context.publicPayload,
+        }),
+      )) as EvaluationContext["publicPayload"],
     };
-    const result = this.evaluator.evaluate(resolvedContext);
-    const recorded = await this.commands.recordEvaluation({
-      attemptId: input.attemptId as SubmitAnswerResult["attemptId"],
-      sessionToken: input.sessionToken,
-      lockVersion: input.lockVersion,
-      idempotencyKey: input.idempotencyKey,
-      receiptId: input.receiptId,
-      status: result.status,
-      points: result.points,
-      ...(result.details ? { resultDetails: result.details } : {}),
-    });
+    const result = await observePerformance(this.performanceObserver, "attempt.scoring", () =>
+      this.evaluator.evaluate(resolvedContext),
+    );
+    const recorded = await observePerformance(this.performanceObserver, "attempt.record", () =>
+      this.commands.recordEvaluation({
+        attemptId: input.attemptId as SubmitAnswerResult["attemptId"],
+        sessionToken: input.sessionToken,
+        lockVersion: input.lockVersion,
+        idempotencyKey: input.idempotencyKey,
+        receiptId: input.receiptId,
+        status: result.status,
+        points: result.points,
+        ...(result.details ? { resultDetails: result.details } : {}),
+      }),
+    );
     return {
       ...recorded,
       ...(result.details ? { details: result.details } : {}),
