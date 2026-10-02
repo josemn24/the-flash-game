@@ -71,7 +71,12 @@ test.describe("E10 — Progressive-image competitivo", () => {
     await page.reload();
     await expect(page.getByText("Desafío completado")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
-    await expect(page.getByText("Torre Eiffel en París")).toBeVisible();
+    await page
+      .locator("details")
+      .filter({ hasText: "Imagen progresiva" })
+      .locator("summary")
+      .click();
+    await expect(page.getByRole("img", { name: "La Torre Eiffel en París" })).toBeVisible();
     await expect(page.getByText(/Imagen revelada al responder/)).toBeVisible();
   });
 

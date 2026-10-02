@@ -29,14 +29,18 @@ test.describe("S08 — crear una sala privada", () => {
     await signIn(page, data.users.superadmin);
     await page.goto("/admin/rooms");
 
-    const ownerGroup = page.getByRole("group", { name: "Propietario inicial" });
+    await page.getByRole("button", { name: "Crear nueva sala privada" }).click();
+    const dialog = page.getByRole("dialog", { name: "Crear una sala privada" });
+    await expect(dialog).toBeVisible();
+
+    const ownerGroup = dialog.getByRole("group", { name: "Propietario inicial" });
     await ownerGroup.getByRole("textbox").fill(data.data.ownerEmail);
     await ownerGroup.getByRole("button", { name: "Buscar" }).click();
     await expect(ownerGroup.getByText("Owner S08")).toBeVisible();
 
     for (const member of data.data.memberEmails) {
-      await page.getByRole("button", { name: "Añadir miembro" }).click();
-      const row = page.locator('[aria-label="Email del miembro"]').last().locator("..");
+      await dialog.getByRole("button", { name: "Añadir miembro" }).click();
+      const row = dialog.locator('[aria-label="Email del miembro"]').last().locator("..");
       await row.getByLabel("Email del miembro").fill(member.email);
       await row.getByLabel("Rol del miembro").selectOption(member.role);
       await row.getByRole("button", { name: "Buscar" }).click();
@@ -49,18 +53,18 @@ test.describe("S08 — crear una sala privada", () => {
       );
     }
 
-    await page.getByLabel("Título").fill(data.data.title);
-    await page.getByLabel("Descripción").fill("Sala creada desde E2E");
-    await page.getByLabel("Motivo de auditoría").fill("Preparación de la beta E2E");
-    await expect(page.getByRole("button", { name: "Crear sala" })).toBeEnabled();
-    await page.getByRole("button", { name: "Crear sala" }).click();
+    await dialog.getByLabel("Título").fill(data.data.title);
+    await dialog.getByLabel("Descripción").fill("Sala creada desde E2E");
+    await dialog.getByLabel("Motivo de auditoría").fill("Preparación de la beta E2E");
+    await expect(dialog.getByRole("button", { name: "Crear sala" })).toBeEnabled();
+    await dialog.getByRole("button", { name: "Crear sala" }).click();
 
     await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?created=1$/);
     await expect(
       page.getByRole("status").filter({ hasText: "Sala creada correctamente" }),
     ).toBeVisible();
     await expect(page.getByRole("heading", { name: data.data.title }).first()).toBeVisible();
-    await expect(page.getByRole("link", { name: "Temporadas" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Temporadas", exact: true })).toBeVisible();
 
     await page.reload();
     await expect(page.getByRole("heading", { name: data.data.title }).first()).toBeVisible();

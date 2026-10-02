@@ -1,5 +1,6 @@
 import "server-only";
 
+import { competitiveQuestionTypesFor } from "@/features/question-formats/capabilities";
 import type {
   PublicFunctionArgs,
   PublicFunctionRow,
@@ -24,28 +25,11 @@ import type { CompetitiveChallengePageModel } from "@/types/view-models";
 type NarrativeReadRow = PublicFunctionRow<"get_my_narrative_challenge">;
 type NarrativeResultRow = PublicFunctionRow<"get_my_narrative_result">;
 
-const serverQuestionTypes = new Set<ServerFlashChallenge["slots"][number]["questionType"]>([
-  "multiple-choice",
-  "mini-wordle",
-  "logic-code",
-  "logic-matrix",
-  "connect-pairs",
-  "progressive-clues",
-  "matching",
-  "progressive-image",
-  "queens",
-  "true-false",
-  "odd-one-out",
-  "ordering",
-  "anagram",
-  "classification",
-  "estimation",
-  "heat-map",
-  "word-search",
-  "word-hashtag",
-  "zip",
-  "escape",
-]);
+const serverQuestionTypes = new Set<ServerFlashChallenge["slots"][number]["questionType"]>(
+  competitiveQuestionTypesFor(
+    "narrative",
+  ) as ServerFlashChallenge["slots"][number]["questionType"][],
+);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);

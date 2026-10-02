@@ -11,6 +11,7 @@ import {
   FlashEditorialValidationError,
   parseFlashEditorialJson,
 } from "@/lib/editorial/flashDocument";
+import { findEditorialCapabilityIssue } from "@/features/question-formats/capabilityPreflight";
 import { requireSuperadmin } from "@/server/admin";
 import {
   archiveSuperadminChallengeVersion,
@@ -89,7 +90,13 @@ function parseDocument(formData: FormData, fieldErrors: Record<string, string>) 
     return null;
   }
   try {
-    return parseFlashEditorialJson(source);
+    const document = parseFlashEditorialJson(source);
+    const capabilityIssue = findEditorialCapabilityIssue(document);
+    if (capabilityIssue) {
+      fieldErrors.document = capabilityIssue.message;
+      return null;
+    }
+    return document;
   } catch (error) {
     fieldErrors.document =
       error instanceof FlashEditorialValidationError

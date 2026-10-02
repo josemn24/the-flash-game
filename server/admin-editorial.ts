@@ -13,6 +13,8 @@ import type {
   UpdateQuestionDraftInput,
 } from "@/application/ports/superadmin-editorial-commands";
 import type { SuperadminEditorialQueries } from "@/application/ports/superadmin-editorial-commands";
+import { SuperadminEditorialCommandError } from "@/application/administration/errors";
+import { findEditorialCapabilityIssue } from "@/features/question-formats/capabilityPreflight";
 import {
   supabaseSuperadminEditorialCommands,
   supabaseSuperadminEditorialQueries,
@@ -47,11 +49,18 @@ export function updateSuperadminFlashDraft(
   return commands.updateFlashDraft(input);
 }
 
-export function publishSuperadminFlash(
+export async function publishSuperadminFlash(
   input: PublishFlashInput,
   commands: SuperadminEditorialCommands = supabaseSuperadminEditorialCommands,
+  queries: Pick<SuperadminEditorialQueries, "getContext"> = supabaseSuperadminEditorialQueries,
 ) {
   consumeAdminRateLimit("superadmin");
+  const context = await queries.getContext();
+  const version = context.entries.find(
+    (entry) => entry.challengeVersionId === input.challengeVersionId,
+  );
+  const capabilityIssue = version?.document ? findEditorialCapabilityIssue(version.document) : null;
+  if (capabilityIssue) throw new SuperadminEditorialCommandError(capabilityIssue.code);
   return commands.publishFlash(input);
 }
 

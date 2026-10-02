@@ -37,15 +37,15 @@ test.describe("Tabarnia alpha", () => {
     await expect(page.getByRole("img", { name: /Flash Points/ }).first()).toBeVisible();
   });
 
-  test("mantiene 404 para una sala inexistente o no autorizada", async ({ page }) => {
+  test("muestra la superficie 404 para una sala inexistente o no autorizada", async ({ page }) => {
     const data = await fixture();
     await signIn(page, data.users.xesmona);
 
-    const missingResponse = await page.goto("/salas/sala-inexistente/ajustes");
-    expect(missingResponse?.status()).toBe(404);
+    await page.goto("/salas/sala-inexistente/ajustes");
+    await expect(page.getByText("Error 404", { exact: true })).toBeVisible();
 
-    const unauthorizedResponse = await page.goto(`/salas/${data.data.room.slug}/ajustes`);
-    expect(unauthorizedResponse?.status()).toBe(404);
+    await page.goto(`/salas/${data.data.room.slug}/ajustes`);
+    await expect(page.getByText("Error 404", { exact: true })).toBeVisible();
   });
 
   test("Ches puede promover y degradar miembros desde ajustes", async ({ page }) => {

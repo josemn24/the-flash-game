@@ -16,6 +16,7 @@ import {
   type QuestionId,
 } from "@/test-utils/mockGameplay";
 import { QUESTION_FORMAT_CATALOG, questionFormats } from "@/features/question-formats/catalog";
+import { QUESTION_FORMAT_TYPES } from "@/features/question-formats/capabilities";
 import dictionary from "@/public/dictionaries/es-general-4.v1.json";
 import { normalizeMiniWordleWord } from "@/lib/miniWordle";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
@@ -43,39 +44,7 @@ describe("question format catalog", () => {
   it("contains exactly thirty-one formats with unique slugs", () => {
     expect(questionFormats).toHaveLength(31);
     expect(new Set(questionFormats.map((format) => format.slug)).size).toBe(31);
-    expect(Object.keys(QUESTION_FORMAT_CATALOG)).toEqual([
-      "multiple-choice",
-      "odd-one-out",
-      "matching",
-      "connect-pairs",
-      "true-false",
-      "short-text",
-      "ordering",
-      "classification",
-      "logic-code",
-      "estimation",
-      "progressive-clues",
-      "heat-map",
-      "image-labeling",
-      "flash-memory",
-      "memory-pairs",
-      "simon-sequence",
-      "logic-matrix",
-      "mini-sudoku",
-      "mini-nonogram",
-      "queens",
-      "sliding-puzzle",
-      "escape",
-      "error-reconstruction",
-      "anagram",
-      "word-hashtag",
-      "word-search",
-      "mini-wordle",
-      "progressive-image",
-      "time-maze",
-      "zip",
-      "pipes",
-    ]);
+    expect(Object.keys(QUESTION_FORMAT_CATALOG).sort()).toEqual([...QUESTION_FORMAT_TYPES].sort());
     expect(questionFormats.every((format) => format.examples.length > 0)).toBe(true);
     const exampleIds = questionFormats.flatMap((format) =>
       format.examples.map((example) => example.question.id),

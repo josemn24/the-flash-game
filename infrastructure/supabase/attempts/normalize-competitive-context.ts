@@ -1,4 +1,5 @@
 import type { EvaluationContext } from "@/application/ports/attempt-commands";
+import { competitiveCapabilityFor } from "@/features/question-formats/capabilities";
 import type { PublicQuestion, QuestionReveal, QuestionSolution } from "@/types/contracts";
 import type { QuestionTagSet } from "@/types/domain/content";
 import type { CompetitiveQuestionResolutionInput } from "@/application/ports/competitive-evaluator";
@@ -205,37 +206,10 @@ function validateStoredCompetitiveQuestion(
   | WordHashtagQuestion
   | ZipQuestion
   | EscapeQuestion {
+  const capability = competitiveCapabilityFor(context.questionType, context.mode);
   if (
-    ![
-      "multiple-choice",
-      "mini-wordle",
-      "logic-code",
-      "logic-matrix",
-      "progressive-clues",
-      "matching",
-      "progressive-image",
-      "queens",
-      "true-false",
-      "odd-one-out",
-      "ordering",
-      "anagram",
-      "classification",
-      "estimation",
-      "heat-map",
-      "word-search",
-      "word-hashtag",
-      "zip",
-      "escape",
-      "connect-pairs",
-      "short-text",
-    ].includes(context.questionType) ||
-    (context.payloadSchemaVersion !== 1 &&
-      !(
-        (context.questionType === "progressive-image" ||
-          context.questionType === "estimation" ||
-          context.questionType === "heat-map") &&
-        context.payloadSchemaVersion === 2
-      )) ||
+    capability === null ||
+    !capability.payloadSchemaVersions.includes(context.payloadSchemaVersion) ||
     context.itemConfigSchemaVersion !== 1 ||
     context.modeConfigSchemaVersion !== 1
   ) {
