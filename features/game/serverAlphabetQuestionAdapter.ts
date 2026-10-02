@@ -1,10 +1,14 @@
-import type { ShortTextQuestion } from "@/types/gameplay/practice";
-import type { AlphabetChallenge } from "@/types/gameplay/challenge";
+import { questionWithSolution as shortTextWithSolution } from "@/features/question-formats/formats/short-text/review";
+import { hasOnlyKeys, shortTextPublicPayloadKeys } from "@/lib/question-formats/stored-common";
+import { ServerFlashQuestionError } from "@/lib/question-formats/public-common";
+import { readPublic } from "@/lib/question-formats/short-text/public";
 import type {
+  AlphabetChallenge,
   ServerAlphabetChallenge,
   ServerAlphabetQuestion,
   ServerFlashTerminalReview,
 } from "@/types/gameplay/challenge";
+import type { ShortTextQuestion } from "@/types/gameplay/practice";
 
 export class ServerAlphabetQuestionError extends Error {
   constructor() {
@@ -27,8 +31,7 @@ export function questionFromAlphabetPayload(
   points: number,
 ): ServerAlphabetQuestion {
   const value = record(payload);
-  const allowedKeys = new Set(["category", "tags", "question", "answerPlaceholder"]);
-  if (Object.keys(value).some((key) => !allowedKeys.has(key))) {
+  if (!hasOnlyKeys(value, shortTextPublicPayloadKeys)) {
     throw new ServerAlphabetQuestionError();
   }
   const prompt = value.question ?? value.prompt;
@@ -42,45 +45,22 @@ export function questionFromAlphabetPayload(
   ) {
     throw new ServerAlphabetQuestionError();
   }
-  return {
-    id,
-    type: "short-text",
-    letter,
-    category: typeof value.category === "string" ? value.category : "",
-    tags: { domains: [], topics: [], cognitiveSkills: [], lifeSkills: [], formatSkills: [] },
-    question: prompt,
-    timeLimit: timeLimitMs / 1000,
-    points,
-    answerPlaceholder: typeof value.answerPlaceholder === "string" ? value.answerPlaceholder : null,
-  };
+  return { ...readPublic({ id, payload, timeLimitMs, points }), letter };
 }
 
 function questionWithSolution(
   question: ServerAlphabetQuestion,
   row?: ServerFlashTerminalReview,
 ): ShortTextQuestion {
-  const solution = record(row?.solutionPayload ?? {});
-  const correctAnswer = solution.correctAnswer;
-  const acceptedAnswers = solution.acceptedAnswers;
-  if (
-    typeof correctAnswer !== "string" ||
-    !Array.isArray(acceptedAnswers) ||
-    !acceptedAnswers.every((answer) => typeof answer === "string")
-  ) {
-    throw new ServerAlphabetQuestionError();
+  try {
+    const reviewed = shortTextWithSolution(question, row);
+    const { letter, ...result } = reviewed as ShortTextQuestion & { letter?: string };
+    void letter;
+    return result;
+  } catch (error) {
+    if (error instanceof ServerFlashQuestionError) throw new ServerAlphabetQuestionError();
+    throw error;
   }
-  return {
-    id: question.id,
-    type: "short-text",
-    category: question.category,
-    tags: question.tags,
-    question: question.question,
-    correctAnswer,
-    acceptedAnswers,
-    timeLimit: question.timeLimit,
-    points: question.points,
-    explanation: typeof solution.explanation === "string" ? solution.explanation : "",
-  };
 }
 
 export function alphabetChallengeWithReview(

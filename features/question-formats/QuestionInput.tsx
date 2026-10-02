@@ -1,16 +1,13 @@
 "use client";
 
-import { motion } from "motion/react";
-import type { ComponentType, FormEvent } from "react";
-import { useState } from "react";
 import {
-  AnswerOption,
   AnagramQuestion,
+  AnswerOption,
   ClassificationQuestion,
   ConnectPairsQuestion,
-  EstimationQuestion,
   ErrorReconstructionQuestionInput,
   EscapeQuestion,
+  EstimationQuestion,
   FlashMemoryQuestion,
   HeatMapQuestion,
   ImageLabelingQuestion,
@@ -28,6 +25,7 @@ import {
   ProgressiveCluesQuestion,
   ProgressiveImageQuestion,
   QueensQuestion,
+  ServerOperationStatus,
   SimonSequenceQuestion,
   SlidingPuzzleQuestion,
   TimeMazeQuestion,
@@ -35,15 +33,11 @@ import {
   WordHashtagQuestion,
   WordSearchQuestion,
   ZipQuestion,
-  ServerOperationStatus,
 } from "@/components/questions";
-import { ArrowIcon } from "@/components/ui";
-import styles from "./QuestionInput.module.css";
-import textStyles from "./TextAnswerControls.module.css";
 import { isQueensAnswer } from "@/lib/queens";
 import {
-  isConnectPairsAnswer,
   isClassificationAnswer,
+  isConnectPairsAnswer,
   isErrorReconstructionAnswer,
   isMatchingAnswer,
   isMiniWordleAnswer,
@@ -57,6 +51,10 @@ import type {
   PracticeQuestionOfType,
   PracticeQuestionType,
 } from "@/types/gameplay/practice";
+import type { ComponentType } from "react";
+import { useState } from "react";
+import { ShortTextInput } from "./formats/short-text/ShortTextInput";
+import styles from "./QuestionInput.module.css";
 
 type CommonProps<T extends PracticeQuestionType> = {
   locked: boolean;
@@ -186,50 +184,6 @@ function ConnectPairsInput({
       onProgress={onProgress}
       onSubmit={onSubmit}
     />
-  );
-}
-
-function ShortTextInput({
-  question,
-  locked,
-  onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"short-text">>) {
-  const [answer, setAnswer] = useState("");
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const value = answer.trim();
-    if (value && !locked) onSubmit(value);
-  };
-
-  return (
-    <form className="mt-8" onSubmit={submit}>
-      <label className={textStyles.label} htmlFor={`answer-${question.id}`}>
-        Escribe tu respuesta
-      </label>
-      <div className={textStyles.row}>
-        <input
-          id={`answer-${question.id}`}
-          className={textStyles.input}
-          type="text"
-          value={answer}
-          onChange={(event) => setAnswer(event.target.value)}
-          placeholder="Tu respuesta…"
-          disabled={locked}
-          autoComplete="off"
-          autoFocus
-        />
-        <motion.button
-          className={styles.textSubmitButton}
-          type="submit"
-          disabled={locked || !answer.trim()}
-          whileTap={{ scale: 0.96 }}
-          aria-label="Enviar respuesta"
-        >
-          <ArrowIcon className="h-6 w-6" />
-        </motion.button>
-      </div>
-      <p className={textStyles.hint}>No importan las mayúsculas, las tildes ni los espacios.</p>
-    </form>
   );
 }
 

@@ -131,7 +131,7 @@ export type ProgressiveCluesQuestion = ResolvedBaseQuestion & {
 
 export type ProgressiveImageQuestion = ResolvedBaseQuestion & {
   type: "progressive-image";
-  surface: ImageSurface;
+  surface: QuestionContractMap["progressive-image"]["public"]["surface"];
   solutionAlt: string;
   revealDuration: number;
   correctAnswer: string;

@@ -9,11 +9,10 @@ import {
   QUESTION_FORMAT_TYPES,
   competitiveQuestionTypesFor,
 } from "./capabilities";
-import {
-  COMPETITIVE_ADAPTERS,
-  FORMAT_PUBLIC_VALIDATORS,
-  FORMAT_SOLUTION_VALIDATORS,
-} from "./formatRegistries";
+import { COMPETITIVE_ADAPTERS } from "@/features/game/competitive/formats/adapter";
+import { FORMAT_PUBLIC_VALIDATORS } from "@/lib/question-formats/publicRegistry";
+import { FORMAT_SOLUTION_VALIDATORS } from "@/lib/question-formats/storedRegistry";
+
 import { SCORING_POLICIES } from "./scoringPolicies";
 import { SCORING } from "@/lib/scoringCore/registry";
 
@@ -54,23 +53,21 @@ describe("format capability manifest", () => {
           capability.practice.rendererKey as keyof typeof QUESTION_INPUT_RENDERERS
         ],
       ).toBeTypeOf("function");
-      expect(
-        FORMAT_PUBLIC_VALIDATORS[
-          capability.validation.publicValidatorKey as keyof typeof FORMAT_PUBLIC_VALIDATORS
-        ],
-      ).toBe(true);
-      expect(
-        FORMAT_SOLUTION_VALIDATORS[
-          capability.validation.solutionValidatorKey as keyof typeof FORMAT_SOLUTION_VALIDATORS
-        ],
-      ).toBe(true);
+      if (Object.keys(capability.competitive).length) {
+        expect(FORMAT_PUBLIC_VALIDATORS[type as keyof typeof FORMAT_PUBLIC_VALIDATORS]).toBeTypeOf(
+          "function",
+        );
+        expect(
+          FORMAT_SOLUTION_VALIDATORS[type as keyof typeof FORMAT_SOLUTION_VALIDATORS],
+        ).toBeTypeOf("function");
+      }
       expect(SCORING[type].policy).toBe(capability.scoringPolicyId);
       expect(SCORING_POLICIES[type].id).toBe(capability.scoringPolicyId);
       for (const competitive of Object.values(capability.competitive)) {
         if (!competitive) continue;
         expect(
           COMPETITIVE_ADAPTERS[competitive.adapterKey as keyof typeof COMPETITIVE_ADAPTERS],
-        ).toBe(true);
+        ).toHaveProperty("compose", expect.any(Function));
         expect(competitive.payloadSchemaVersions.length).toBeGreaterThan(0);
       }
     }

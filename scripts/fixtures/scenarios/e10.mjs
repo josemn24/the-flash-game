@@ -44,7 +44,14 @@ export const scenario = {
       tags,
       question: "¿Cuál es la capital de Portugal?",
       options: ["Lisboa", "Oporto", "Braga"],
-      media: null,
+      media: {
+        type: "image",
+        assetId: stableId(domainIds.questionAsset),
+        alt: "Contexto visual de elección múltiple",
+        width: 847,
+        height: 566,
+        fit: "contain",
+      },
       promptVisual: null,
     };
     const progressiveImage = {
@@ -90,7 +97,7 @@ values
 insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id)
 values
-  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlUuid(domainIds.questionOne)}, 1, 1, 'multiple-choice', 15000,
+  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlUuid(domainIds.questionOne)}, 1, 2, 'multiple-choice', 15000,
    ${sqlString(JSON.stringify(multipleChoice))}, ${sqlString(accounts.alice.playerId)}),
   (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlUuid(domainIds.questionTwo)}, 1, 2, 'progressive-image', 20000,
    ${sqlString(JSON.stringify(progressiveImage).replace("__QUESTION_ASSET_ID__", stableId(domainIds.questionAsset)))}, ${sqlString(accounts.alice.playerId)});
@@ -139,6 +146,7 @@ commit;
       publicationId: stableId(domainIds.publication),
       challengeId: stableId(domainIds.challenge),
       challengeVersionId: stableId(domainIds.challengeVersion),
+      questionAssetId: stableId(domainIds.questionAsset),
       challengeItemIds: [
         stableId(domainIds.challengeItemOne),
         stableId(domainIds.challengeItemTwo),

@@ -1,31 +1,10 @@
 "use client";
+import { CompetitiveQuestionInput } from "@/features/question-formats/competitiveInputRegistry";
+import type { CompetitiveInputProps } from "@/features/question-formats/competitiveInputTypes";
 
+import { GameHeader, Timer } from "@/components/ui";
 import { useId } from "react";
-import { AnswerOption, QuestionMedia } from "@/components/questions/shared";
-import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wordle/ServerMiniWordleQuestion";
-import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
-import { LogicMatrixQuestion } from "@/components/questions/formats/logic-matrix/LogicMatrixQuestion";
-import { ServerMatchingQuestion } from "@/components/questions/formats/matching/ServerMatchingQuestion";
-import { ServerProgressiveCluesQuestion } from "@/components/questions/formats/progressive-clues/ServerProgressiveCluesQuestion";
-import { ServerQueensQuestion } from "@/components/questions/formats/queens/ServerQueensQuestion";
-import { ProgressiveImageQuestion } from "@/components/questions/formats/progressive-image/ProgressiveImageQuestion";
-import { TrueFalseQuestion } from "@/components/questions/formats/true-false/TrueFalseQuestion";
-import { OddOneOutQuestion } from "@/components/questions/formats/odd-one-out/OddOneOutQuestion";
-import { OrderingQuestion } from "@/components/questions/formats/ordering/OrderingQuestion";
-import { AnagramQuestion } from "@/components/questions/formats/anagram/AnagramQuestion";
-import { ClassificationQuestion } from "@/components/questions/formats/classification/ClassificationQuestion";
-import { EstimationQuestion } from "@/components/questions/formats/estimation/EstimationQuestion";
-import { HeatMapQuestion } from "@/components/questions/formats/heat-map/HeatMapQuestion";
-import { ServerWordSearchQuestion } from "@/components/questions/formats/word-search/ServerWordSearchQuestion";
-import { ServerZipQuestion } from "@/components/questions/formats/zip/ServerZipQuestion";
-import { ServerEscapeQuestion } from "@/components/questions/formats/escape/ServerEscapeQuestion";
-import { ConnectPairsQuestion } from "@/components/questions/formats/connect-pairs/ConnectPairsQuestion";
-import { ServerWordHashtagQuestion } from "@/components/questions/formats/word-hashtag/ServerWordHashtagQuestion";
-import { Timer, GameHeader } from "@/components/ui";
 import { LifeHearts } from "./LifeHearts";
-import type { AnswerValue } from "@/types/contracts";
-import type { ConnectPairsQuestion as ClientConnectPairsQuestion } from "@/types/gameplay/practice";
-import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
 import styles from "./QuestionStage.module.css";
 import variantStyles from "./QuestionStageVariants.module.css";
 
@@ -36,96 +15,26 @@ function splitPrompt(prompt: string) {
     : { title: prompt };
 }
 
-export function ServerFlashQuestionStage({
-  question,
-  questionNumber,
-  totalQuestions,
-  locked,
-  pendingAnswer,
-  submissionState,
-  submissionStatusVisible,
-  submissionError,
-  onRetrySubmission,
-  onSubmit,
-  onProgress,
-  onMiniWordleGuess,
-  onLogicCodeAttempt,
-  queensState,
-  queensStatusVisible,
-  queensError,
-  onQueensDraft,
-  onQueensValidate,
-  onRetryQueensValidation,
-  wordSearchState,
-  wordSearchStatusVisible,
-  wordSearchError,
-  lastWordSearchSelection,
-  onWordSearchSelection,
-  onRetryWordSearch,
-  onWordHashtagSwap,
-  revealState,
-  revealStatusVisible,
-  revealError,
-  onRevealProgressiveClue,
-  onRetryReveal,
-  onTimeUp,
-  deadlineAt,
-  presentedAt,
-  livesRemaining,
-  totalLives,
-  presentation,
-  showTimer = true,
-}: {
-  readonly question: ServerFlashQuestion;
-  readonly questionNumber: number;
-  readonly totalQuestions: number;
-  readonly locked: boolean;
-  readonly pendingAnswer?: AnswerValue | null;
-  readonly submissionState: "idle" | "submitting" | "error";
-  readonly submissionStatusVisible: boolean;
-  readonly submissionError?: string;
-  readonly onRetrySubmission?: () => void;
-  readonly onSubmit: (answer: AnswerValue) => void;
-  readonly onProgress: (answer: AnswerValue) => void;
-  readonly onMiniWordleGuess: (guess: string) => void;
-  readonly onLogicCodeAttempt: (code: string) => void;
-  readonly queensState: "idle" | "submitting" | "error";
-  readonly queensStatusVisible: boolean;
-  readonly queensError?: string;
-  readonly onQueensDraft: (queens: readonly number[]) => void;
-  readonly onQueensValidate: (queens: readonly number[]) => void;
-  readonly onRetryQueensValidation?: () => void;
-  readonly wordSearchState: "idle" | "submitting" | "error";
-  readonly wordSearchStatusVisible: boolean;
-  readonly wordSearchError?: string;
-  readonly lastWordSearchSelection?: {
-    readonly startCell: number;
-    readonly endCell: number;
-    readonly correct: boolean;
-  };
-  readonly onWordSearchSelection: (startCell: number, endCell: number) => void;
-  readonly onRetryWordSearch?: () => void;
-  readonly onWordHashtagSwap: (fromCell: number, toCell: number) => void;
-  readonly revealState: "idle" | "submitting" | "error";
-  readonly revealStatusVisible: boolean;
-  readonly revealError?: string;
-  readonly onRevealProgressiveClue: () => void;
-  readonly onRetryReveal?: () => void;
-  readonly onTimeUp: () => void;
-  readonly deadlineAt?: number | null;
-  readonly presentedAt?: number | null;
-  readonly livesRemaining?: number;
-  readonly totalLives?: number;
-  readonly presentation?: "default" | "pyramid";
-  readonly showTimer?: boolean;
-}) {
+export function ServerFlashQuestionStage(props: CompetitiveInputProps) {
+  const {
+    question,
+    questionNumber,
+    totalQuestions,
+    locked,
+    onTimeUp,
+    deadlineAt,
+    livesRemaining,
+    totalLives,
+    presentation,
+    showTimer = true,
+  } = props;
+
   const titleId = useId();
   const pyramidPresentation = presentation === "pyramid";
   const prompt = pyramidPresentation
     ? { title: question.question }
     : splitPrompt(question.question);
-  const selected =
-    question.type === "multiple-choice" && typeof pendingAnswer === "string" ? pendingAnswer : null;
+
   const timer = (
     <Timer
       duration={question.timeLimit}
@@ -188,290 +97,7 @@ export function ServerFlashQuestionStage({
       >
         {prompt.context ? <p className={styles.promptContext}>{prompt.context}</p> : null}
         <h1 id={titleId}>{prompt.title}</h1>
-        {question.type === "mini-wordle" ? (
-          <ServerMiniWordleQuestion
-            question={question}
-            progress={question.progress}
-            locked={locked}
-            submissionState={submissionState}
-            submissionStatusVisible={submissionStatusVisible}
-            submissionError={submissionError}
-            onRetry={onRetrySubmission}
-            onSubmit={onMiniWordleGuess}
-          />
-        ) : question.type === "logic-code" ? (
-          <ServerLogicCodeQuestion
-            clues={question.clues}
-            codeLength={question.codeLength}
-            progress={question.progress}
-            locked={locked}
-            submissionState={submissionState}
-            submissionStatusVisible={submissionStatusVisible}
-            submissionError={submissionError}
-            onRetry={onRetrySubmission}
-            onSubmit={onLogicCodeAttempt}
-          />
-        ) : question.type === "progressive-clues" ? (
-          <ServerProgressiveCluesQuestion
-            progress={question.progress}
-            locked={locked}
-            submissionState={submissionState}
-            submissionStatusVisible={submissionStatusVisible}
-            submissionError={submissionError}
-            onRetry={onRetrySubmission}
-            revealState={revealState}
-            revealStatusVisible={revealStatusVisible}
-            revealError={revealError}
-            onReveal={onRevealProgressiveClue}
-            onRetryReveal={onRetryReveal}
-            onSubmit={(answer) => onSubmit(answer)}
-          />
-        ) : question.type === "matching" ? (
-          <ServerMatchingQuestion
-            key={question.id}
-            leftItems={question.leftItems}
-            rightItems={question.rightItems}
-            pendingAnswer={pendingAnswer}
-            locked={locked}
-            submissionState={submissionState}
-            submissionStatusVisible={submissionStatusVisible}
-            submissionError={submissionError}
-            onSubmit={onSubmit}
-            onProgress={onProgress}
-            onRetry={onRetrySubmission}
-          />
-        ) : question.type === "progressive-image" ? (
-          <ProgressiveImageQuestion
-            surface={question.surface}
-            revealDuration={question.revealDuration}
-            answerLabel={question.answerLabel ?? undefined}
-            answerPlaceholder={question.answerPlaceholder ?? undefined}
-            locked={locked}
-            presentedAtMs={presentedAt ?? undefined}
-            onTimedResponseStart={() => undefined}
-            onSubmit={onSubmit}
-            submissionState={submissionState}
-            submissionStatusVisible={submissionStatusVisible}
-            submissionError={submissionError}
-            onRetrySubmission={onRetrySubmission}
-          />
-        ) : question.type === "queens" ? (
-          <ServerQueensQuestion
-            key={question.id}
-            question={question}
-            progress={question.progress}
-            locked={locked}
-            validationState={queensState}
-            validationStatusVisible={queensStatusVisible}
-            validationError={queensError}
-            onDraft={onQueensDraft}
-            onValidate={onQueensValidate}
-            onRetry={onRetryQueensValidation}
-          />
-        ) : question.type === "word-search" ? (
-          <ServerWordSearchQuestion
-            question={question}
-            progress={question.progress}
-            locked={locked}
-            selectionState={wordSearchState}
-            selectionStatusVisible={wordSearchStatusVisible}
-            selectionError={wordSearchError}
-            lastSelection={lastWordSearchSelection}
-            onSelect={onWordSearchSelection}
-            onRetry={onRetryWordSearch}
-          />
-        ) : question.type === "word-hashtag" ? (
-          <ServerWordHashtagQuestion
-            key={question.id}
-            question={question}
-            locked={locked}
-            submissionState={submissionState}
-            submissionStatusVisible={submissionStatusVisible}
-            submissionError={submissionError}
-            onRetry={onRetrySubmission}
-            onSwap={onWordHashtagSwap}
-          />
-        ) : question.type === "logic-matrix" ? (
-          <>
-            <LogicMatrixQuestion
-              pieces={[...question.pieces]}
-              cells={[...question.cells]}
-              optionIds={[...question.optionIds]}
-              showPieceLabels={question.showPieceLabels}
-              locked={locked}
-              onSubmit={onSubmit}
-            />
-          </>
-        ) : question.type === "zip" ? (
-          <ServerZipQuestion
-            question={question}
-            initialAnswer={
-              pendingAnswer &&
-              typeof pendingAnswer === "object" &&
-              !Array.isArray(pendingAnswer) &&
-              "path" in pendingAnswer &&
-              Array.isArray((pendingAnswer as { path?: unknown }).path)
-                ? (pendingAnswer as { path: number[] })
-                : undefined
-            }
-            locked={locked}
-            submissionState={submissionState}
-            submissionStatusVisible={submissionStatusVisible}
-            submissionError={submissionError}
-            onRetry={onRetrySubmission}
-            onProgress={onProgress}
-            onSubmit={onSubmit}
-          />
-        ) : question.type === "escape" ? (
-          <ServerEscapeQuestion
-            question={question}
-            locked={locked}
-            submissionState={submissionState}
-            submissionStatusVisible={submissionStatusVisible}
-            submissionError={submissionError}
-            onRetry={onRetrySubmission}
-            onProgress={onProgress}
-            onSubmit={onSubmit}
-          />
-        ) : question.type === "connect-pairs" ? (
-          <ConnectPairsQuestion
-            question={
-              {
-                id: question.id,
-                type: "connect-pairs",
-                category: question.category,
-                tags: question.tags,
-                question: question.question,
-                grid: question.grid,
-                pairs: [...question.pairs],
-                solutionPaths: {},
-                requireFullCoverage: true,
-                timeLimit: question.timeLimit,
-                points: question.points,
-                explanation: "",
-              } satisfies ClientConnectPairsQuestion
-            }
-            initialAnswer={
-              pendingAnswer &&
-              typeof pendingAnswer === "object" &&
-              !Array.isArray(pendingAnswer) &&
-              "paths" in pendingAnswer &&
-              pendingAnswer.paths &&
-              typeof pendingAnswer.paths === "object" &&
-              !Array.isArray(pendingAnswer.paths)
-                ? (pendingAnswer as { paths: Record<string, number[]> })
-                : undefined
-            }
-            locked={locked}
-            onProgress={onProgress}
-            onSubmit={onSubmit}
-          />
-        ) : question.type === "true-false" ? (
-          <>
-            <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />
-          </>
-        ) : question.type === "odd-one-out" ? (
-          <>
-            <OddOneOutQuestion items={[...question.items]} locked={locked} onSubmit={onSubmit} />
-          </>
-        ) : question.type === "ordering" ? (
-          <>
-            <OrderingQuestion
-              items={[...question.items]}
-              directionLabels={question.directionLabels ?? undefined}
-              locked={locked}
-              onSubmit={onSubmit}
-            />
-          </>
-        ) : question.type === "anagram" ? (
-          <>
-            <AnagramQuestion
-              tiles={[...question.tiles]}
-              hint={question.hint ?? undefined}
-              locked={locked}
-              onSubmit={onSubmit}
-            />
-          </>
-        ) : question.type === "classification" ? (
-          <>
-            <ClassificationQuestion
-              items={[...question.items]}
-              categories={[...question.categories]}
-              initialAnswer={
-                pendingAnswer && typeof pendingAnswer === "object" && !Array.isArray(pendingAnswer)
-                  ? (pendingAnswer as Record<string, string>)
-                  : undefined
-              }
-              locked={locked}
-              onProgress={onProgress}
-              onSubmit={onSubmit}
-            />
-          </>
-        ) : question.type === "estimation" ? (
-          <>
-            {question.media ? (
-              <div className="mt-5">
-                <QuestionMedia media={question.media} prominent />
-              </div>
-            ) : null}
-            <EstimationQuestion
-              min={question.min}
-              max={question.max}
-              step={question.step}
-              value={typeof pendingAnswer === "number" ? pendingAnswer : question.initialValue}
-              unit={question.unit}
-              locked={locked}
-              onChange={onProgress}
-              onSubmit={onSubmit}
-            />
-          </>
-        ) : question.type === "heat-map" ? (
-          <>
-            {question.surface ? (
-              <div className="mt-5">
-                <HeatMapQuestion
-                  key={`${question.id}:${pendingAnswer && typeof pendingAnswer === "object" ? "draft" : "initial"}`}
-                  question={{ surface: question.surface }}
-                  initialAnswer={
-                    pendingAnswer &&
-                    typeof pendingAnswer === "object" &&
-                    !Array.isArray(pendingAnswer) &&
-                    typeof (pendingAnswer as Record<string, unknown>).x === "number" &&
-                    typeof (pendingAnswer as Record<string, unknown>).y === "number"
-                      ? (pendingAnswer as { x: number; y: number })
-                      : undefined
-                  }
-                  locked={locked}
-                  onProgress={onProgress}
-                  onSubmit={onSubmit}
-                />
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <>
-            {question.type === "multiple-choice" && question.media ? (
-              <div className="mt-5">
-                <QuestionMedia media={question.media} prominent />
-              </div>
-            ) : null}
-            <div className="mt-7 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
-              {question.type === "multiple-choice"
-                ? question.options.map((option, index) => (
-                    <AnswerOption
-                      key={option}
-                      label={option}
-                      index={index}
-                      selected={selected === option}
-                      pending={selected === option}
-                      disabled={locked}
-                      onSelect={() => onSubmit(option)}
-                    />
-                  ))
-                : null}
-            </div>
-          </>
-        )}
+        {<CompetitiveQuestionInput {...props} />}
       </section>
     </div>
   );

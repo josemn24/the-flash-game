@@ -1,0 +1,5131 @@
+[
+  {
+    "id": "multiple-choice-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "question-1",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "category": "Test",
+        "tags": {},
+        "question": "¿Pregunta 1?",
+        "options": ["A", "B"],
+        "media": null,
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "A",
+        "explanation": "A"
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "question-1",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 15000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "A",
+        "explanation": "A"
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "question-1",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "category": "Test",
+        "tags": {},
+        "question": "¿Pregunta 1?",
+        "options": ["A", "B"],
+        "media": null,
+        "promptVisual": null
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "multiple-choice-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "question-1",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "category": "Test",
+        "tags": {},
+        "question": "¿Pregunta 1?",
+        "options": ["A", "B"],
+        "media": null,
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "A",
+        "explanation": "A"
+      }
+    }
+  },
+  {
+    "id": "true-false-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "true-false-question",
+      "type": "true-false",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 12000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": "¿Es correcto?"
+      },
+      "solutionPayload": {
+        "correctAnswer": false,
+        "explanation": "No es correcto."
+      }
+    }
+  },
+  {
+    "id": "true-false-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "true-false-question",
+      "type": "true-false",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 12000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": false,
+        "explanation": "No es correcto."
+      }
+    }
+  },
+  {
+    "id": "true-false-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "true-false-question",
+      "type": "true-false",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 12000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": "¿Es correcto?"
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "true-false-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "true-false-question",
+      "type": "true-false",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 12000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": "¿Es correcto?"
+      },
+      "solutionPayload": {
+        "correctAnswer": false,
+        "explanation": "No es correcto."
+      }
+    }
+  },
+  {
+    "id": "odd-one-out-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "odd-one-out-question",
+      "type": "odd-one-out",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 14000,
+      "publicPayload": {
+        "category": "Ciencias",
+        "tags": {},
+        "question": "¿Cuál no pertenece?",
+        "items": [
+          {
+            "id": "horse",
+            "label": "Caballo"
+          },
+          {
+            "id": "zebra",
+            "label": "Cebra"
+          },
+          {
+            "id": "bison",
+            "label": "Bisonte"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "correctAnswer": "bison",
+        "explanation": "El bisonte es un bóvido."
+      }
+    }
+  },
+  {
+    "id": "odd-one-out-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "odd-one-out-question",
+      "type": "odd-one-out",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 14000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "bison",
+        "explanation": "El bisonte es un bóvido."
+      }
+    }
+  },
+  {
+    "id": "odd-one-out-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "odd-one-out-question",
+      "type": "odd-one-out",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 14000,
+      "publicPayload": {
+        "category": "Ciencias",
+        "tags": {},
+        "question": "¿Cuál no pertenece?",
+        "items": [
+          {
+            "id": "horse",
+            "label": "Caballo"
+          },
+          {
+            "id": "zebra",
+            "label": "Cebra"
+          },
+          {
+            "id": "bison",
+            "label": "Bisonte"
+          }
+        ]
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "odd-one-out-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "odd-one-out-question",
+      "type": "odd-one-out",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 14000,
+      "publicPayload": {
+        "category": "Ciencias",
+        "tags": {},
+        "question": "¿Cuál no pertenece?",
+        "items": [
+          {
+            "id": "horse",
+            "label": "Caballo"
+          },
+          {
+            "id": "zebra",
+            "label": "Cebra"
+          },
+          {
+            "id": "bison",
+            "label": "Bisonte"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "correctAnswer": "bison",
+        "explanation": "El bisonte es un bóvido."
+      }
+    }
+  },
+  {
+    "id": "ordering-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "ordering-question",
+      "type": "ordering",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Ordena de oeste a este.",
+        "items": ["Nueva York", "Denver", "San Diego"],
+        "directionLabels": {
+          "start": "Más al oeste",
+          "end": "Más al este"
+        }
+      },
+      "solutionPayload": {
+        "correctOrder": ["San Diego", "Denver", "Nueva York"],
+        "explanation": "Orden geográfico."
+      }
+    }
+  },
+  {
+    "id": "ordering-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "ordering-question",
+      "type": "ordering",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctOrder": ["San Diego", "Denver", "Nueva York"],
+        "explanation": "Orden geográfico."
+      }
+    }
+  },
+  {
+    "id": "ordering-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "ordering-question",
+      "type": "ordering",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Ordena de oeste a este.",
+        "items": ["Nueva York", "Denver", "San Diego"],
+        "directionLabels": {
+          "start": "Más al oeste",
+          "end": "Más al este"
+        }
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "ordering-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "ordering-question",
+      "type": "ordering",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Ordena de oeste a este.",
+        "items": ["Nueva York", "Denver", "San Diego"],
+        "directionLabels": {
+          "start": "Más al oeste",
+          "end": "Más al este"
+        }
+      },
+      "solutionPayload": {
+        "correctOrder": ["San Diego", "Denver", "Nueva York"],
+        "explanation": "Orden geográfico."
+      }
+    }
+  },
+  {
+    "id": "estimation-v2",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "initialValue": 30,
+        "unit": "km/h",
+        "media": null
+      },
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": 18,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "estimation-v2-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 22000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": 18,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "estimation-v2-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "initialValue": 30,
+        "unit": "km/h",
+        "media": null
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "estimation-v2-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "initialValue": 30,
+        "unit": "km/h",
+        "media": null
+      },
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": 18,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v2",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "assetId": "11111111-1111-4111-8111-111111111111",
+          "alt": "Mapa sin etiquetas de Estados Unidos",
+          "width": 1859,
+          "height": 968,
+          "fit": "contain"
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": {
+        "target": {
+          "x": 0.38,
+          "y": 0.58
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v2-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 18000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "target": {
+          "x": 0.38,
+          "y": 0.58
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v2-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "assetId": "11111111-1111-4111-8111-111111111111",
+          "alt": "Mapa sin etiquetas de Estados Unidos",
+          "width": 1859,
+          "height": 968,
+          "fit": "contain"
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "heat-map-v2-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "assetId": "11111111-1111-4111-8111-111111111111",
+          "alt": "Mapa sin etiquetas de Estados Unidos",
+          "width": 1859,
+          "height": 968,
+          "fit": "contain"
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": {
+        "target": {
+          "x": 0.38,
+          "y": 0.58
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "anagram-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-race-anagram",
+      "type": "anagram",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Deporte",
+        "tags": {},
+        "question": "Forma una palabra relacionada con el desafío.",
+        "tiles": [
+          {
+            "id": "a",
+            "value": "A"
+          },
+          {
+            "id": "c",
+            "value": "C"
+          },
+          {
+            "id": "r-1",
+            "value": "R"
+          },
+          {
+            "id": "r-2",
+            "value": "R"
+          },
+          {
+            "id": "a-2",
+            "value": "A"
+          },
+          {
+            "id": "e",
+            "value": "E"
+          },
+          {
+            "id": "r-3",
+            "value": "R"
+          }
+        ],
+        "hint": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "CARRERA",
+        "explanation": "La palabra es carrera."
+      }
+    }
+  },
+  {
+    "id": "anagram-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-race-anagram",
+      "type": "anagram",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "CARRERA",
+        "explanation": "La palabra es carrera."
+      }
+    }
+  },
+  {
+    "id": "anagram-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-race-anagram",
+      "type": "anagram",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Deporte",
+        "tags": {},
+        "question": "Forma una palabra relacionada con el desafío.",
+        "tiles": [
+          {
+            "id": "a",
+            "value": "A"
+          },
+          {
+            "id": "c",
+            "value": "C"
+          },
+          {
+            "id": "r-1",
+            "value": "R"
+          },
+          {
+            "id": "r-2",
+            "value": "R"
+          },
+          {
+            "id": "a-2",
+            "value": "A"
+          },
+          {
+            "id": "e",
+            "value": "E"
+          },
+          {
+            "id": "r-3",
+            "value": "R"
+          }
+        ],
+        "hint": null
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "anagram-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-race-anagram",
+      "type": "anagram",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Deporte",
+        "tags": {},
+        "question": "Forma una palabra relacionada con el desafío.",
+        "tiles": [
+          {
+            "id": "a",
+            "value": "A"
+          },
+          {
+            "id": "c",
+            "value": "C"
+          },
+          {
+            "id": "r-1",
+            "value": "R"
+          },
+          {
+            "id": "r-2",
+            "value": "R"
+          },
+          {
+            "id": "a-2",
+            "value": "A"
+          },
+          {
+            "id": "e",
+            "value": "E"
+          },
+          {
+            "id": "r-3",
+            "value": "R"
+          }
+        ],
+        "hint": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "CARRERA",
+        "explanation": "La palabra es carrera."
+      }
+    }
+  },
+  {
+    "id": "classification-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-1890-gear-classification",
+      "type": "classification",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Tecnología",
+        "tags": {},
+        "question": "Clasifica cada objeto.",
+        "items": [
+          {
+            "label": "Brújula"
+          },
+          {
+            "label": "Navegador GPS"
+          }
+        ],
+        "categories": ["útil en 1890", "anacrónico"]
+      },
+      "solutionPayload": {
+        "categoriesByItem": {
+          "Brújula": "útil en 1890",
+          "Navegador GPS": "anacrónico"
+        },
+        "explanation": "Clasificación histórica."
+      }
+    }
+  },
+  {
+    "id": "classification-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-1890-gear-classification",
+      "type": "classification",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "categoriesByItem": {
+          "Brújula": "útil en 1890",
+          "Navegador GPS": "anacrónico"
+        },
+        "explanation": "Clasificación histórica."
+      }
+    }
+  },
+  {
+    "id": "classification-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-1890-gear-classification",
+      "type": "classification",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Tecnología",
+        "tags": {},
+        "question": "Clasifica cada objeto.",
+        "items": [
+          {
+            "label": "Brújula"
+          },
+          {
+            "label": "Navegador GPS"
+          }
+        ],
+        "categories": ["útil en 1890", "anacrónico"]
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "classification-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-1890-gear-classification",
+      "type": "classification",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Tecnología",
+        "tags": {},
+        "question": "Clasifica cada objeto.",
+        "items": [
+          {
+            "label": "Brújula"
+          },
+          {
+            "label": "Navegador GPS"
+          }
+        ],
+        "categories": ["útil en 1890", "anacrónico"]
+      },
+      "solutionPayload": {
+        "categoriesByItem": {
+          "Brújula": "útil en 1890",
+          "Navegador GPS": "anacrónico"
+        },
+        "explanation": "Clasificación histórica."
+      }
+    }
+  },
+  {
+    "id": "logic-matrix-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-matrix-private",
+      "type": "logic-matrix",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "Completa la matriz",
+        "pieces": [
+          {
+            "id": "a",
+            "symbol": "A",
+            "label": "A"
+          },
+          {
+            "id": "b",
+            "symbol": "B",
+            "label": "B"
+          },
+          {
+            "id": "c",
+            "symbol": "C",
+            "label": "C"
+          },
+          {
+            "id": "d",
+            "symbol": "D",
+            "label": "D"
+          }
+        ],
+        "cells": ["a", "b", "c", "b", "c", "a", "c", "a", null],
+        "optionIds": ["d", "a", "b", "c"]
+      },
+      "solutionPayload": {
+        "correctOptionId": "d"
+      }
+    }
+  },
+  {
+    "id": "logic-matrix-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-matrix-private",
+      "type": "logic-matrix",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctOptionId": "d"
+      }
+    }
+  },
+  {
+    "id": "logic-matrix-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-matrix-private",
+      "type": "logic-matrix",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "Completa la matriz",
+        "pieces": [
+          {
+            "id": "a",
+            "symbol": "A",
+            "label": "A"
+          },
+          {
+            "id": "b",
+            "symbol": "B",
+            "label": "B"
+          },
+          {
+            "id": "c",
+            "symbol": "C",
+            "label": "C"
+          },
+          {
+            "id": "d",
+            "symbol": "D",
+            "label": "D"
+          }
+        ],
+        "cells": ["a", "b", "c", "b", "c", "a", "c", "a", null],
+        "optionIds": ["d", "a", "b", "c"]
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "logic-matrix-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-matrix-private",
+      "type": "logic-matrix",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "Completa la matriz",
+        "pieces": [
+          {
+            "id": "a",
+            "symbol": "A",
+            "label": "A"
+          },
+          {
+            "id": "b",
+            "symbol": "B",
+            "label": "B"
+          },
+          {
+            "id": "c",
+            "symbol": "C",
+            "label": "C"
+          },
+          {
+            "id": "d",
+            "symbol": "D",
+            "label": "D"
+          }
+        ],
+        "cells": ["a", "b", "c", "b", "c", "a", "c", "a", null],
+        "optionIds": ["d", "a", "b", "c"]
+      },
+      "solutionPayload": {
+        "correctOptionId": "d"
+      }
+    }
+  },
+  {
+    "id": "zip-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "zip-final-answer",
+      "type": "zip",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 35000,
+      "publicPayload": {
+        "category": "Lógica espacial",
+        "tags": {},
+        "question": "Une los números y cubre todas las celdas.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "checkpoints": [
+          {
+            "value": 1,
+            "cell": 0
+          },
+          {
+            "value": 2,
+            "cell": 4
+          },
+          {
+            "value": 3,
+            "cell": 5
+          },
+          {
+            "value": 4,
+            "cell": 14
+          },
+          {
+            "value": 5,
+            "cell": 15
+          },
+          {
+            "value": 6,
+            "cell": 24
+          }
+        ],
+        "boardLabel": "Tablero Zip"
+      },
+      "solutionPayload": {
+        "solution": [
+          0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24
+        ],
+        "explanation": "Recorrido serpenteante."
+      }
+    }
+  },
+  {
+    "id": "zip-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "zip-final-answer",
+      "type": "zip",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 35000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "solution": [
+          0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24
+        ],
+        "explanation": "Recorrido serpenteante."
+      }
+    }
+  },
+  {
+    "id": "zip-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "zip-final-answer",
+      "type": "zip",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 35000,
+      "publicPayload": {
+        "category": "Lógica espacial",
+        "tags": {},
+        "question": "Une los números y cubre todas las celdas.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "checkpoints": [
+          {
+            "value": 1,
+            "cell": 0
+          },
+          {
+            "value": 2,
+            "cell": 4
+          },
+          {
+            "value": 3,
+            "cell": 5
+          },
+          {
+            "value": 4,
+            "cell": 14
+          },
+          {
+            "value": 5,
+            "cell": 15
+          },
+          {
+            "value": 6,
+            "cell": 24
+          }
+        ],
+        "boardLabel": "Tablero Zip"
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "zip-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "zip-final-answer",
+      "type": "zip",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 35000,
+      "publicPayload": {
+        "category": "Lógica espacial",
+        "tags": {},
+        "question": "Une los números y cubre todas las celdas.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "checkpoints": [
+          {
+            "value": 1,
+            "cell": 0
+          },
+          {
+            "value": 2,
+            "cell": 4
+          },
+          {
+            "value": 3,
+            "cell": 5
+          },
+          {
+            "value": 4,
+            "cell": 14
+          },
+          {
+            "value": 5,
+            "cell": 15
+          },
+          {
+            "value": 6,
+            "cell": 24
+          }
+        ],
+        "boardLabel": "Tablero Zip"
+      },
+      "solutionPayload": {
+        "solution": [
+          0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24
+        ],
+        "explanation": "Recorrido serpenteante."
+      }
+    }
+  },
+  {
+    "id": "escape-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "escape-private",
+      "type": "escape",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Libera el bloque amarillo.",
+        "grid": {
+          "rows": 6,
+          "columns": 6,
+          "exit": {
+            "side": "right",
+            "row": 2
+          }
+        },
+        "initialBlocks": [
+          {
+            "id": "target",
+            "kind": "target",
+            "orientation": "horizontal",
+            "row": 2,
+            "column": 0,
+            "length": 2
+          },
+          {
+            "id": "a",
+            "kind": "obstacle",
+            "orientation": "vertical",
+            "row": 1,
+            "column": 2,
+            "length": 2
+          },
+          {
+            "id": "b",
+            "kind": "obstacle",
+            "orientation": "vertical",
+            "row": 0,
+            "column": 4,
+            "length": 3
+          },
+          {
+            "id": "c",
+            "kind": "obstacle",
+            "orientation": "horizontal",
+            "row": 0,
+            "column": 1,
+            "length": 2
+          },
+          {
+            "id": "d",
+            "kind": "obstacle",
+            "orientation": "horizontal",
+            "row": 4,
+            "column": 1,
+            "length": 2
+          }
+        ]
+      },
+      "solutionPayload": {
+        "referenceSolution": [
+          {
+            "blockId": "c",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "a",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "b",
+            "from": 0,
+            "to": 3
+          },
+          {
+            "blockId": "target",
+            "from": 0,
+            "to": 4
+          }
+        ],
+        "optimalMoves": 4
+      }
+    }
+  },
+  {
+    "id": "escape-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "escape-private",
+      "type": "escape",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "referenceSolution": [
+          {
+            "blockId": "c",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "a",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "b",
+            "from": 0,
+            "to": 3
+          },
+          {
+            "blockId": "target",
+            "from": 0,
+            "to": 4
+          }
+        ],
+        "optimalMoves": 4
+      }
+    }
+  },
+  {
+    "id": "escape-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "escape-private",
+      "type": "escape",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Libera el bloque amarillo.",
+        "grid": {
+          "rows": 6,
+          "columns": 6,
+          "exit": {
+            "side": "right",
+            "row": 2
+          }
+        },
+        "initialBlocks": [
+          {
+            "id": "target",
+            "kind": "target",
+            "orientation": "horizontal",
+            "row": 2,
+            "column": 0,
+            "length": 2
+          },
+          {
+            "id": "a",
+            "kind": "obstacle",
+            "orientation": "vertical",
+            "row": 1,
+            "column": 2,
+            "length": 2
+          },
+          {
+            "id": "b",
+            "kind": "obstacle",
+            "orientation": "vertical",
+            "row": 0,
+            "column": 4,
+            "length": 3
+          },
+          {
+            "id": "c",
+            "kind": "obstacle",
+            "orientation": "horizontal",
+            "row": 0,
+            "column": 1,
+            "length": 2
+          },
+          {
+            "id": "d",
+            "kind": "obstacle",
+            "orientation": "horizontal",
+            "row": 4,
+            "column": 1,
+            "length": 2
+          }
+        ]
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "escape-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "escape-private",
+      "type": "escape",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Libera el bloque amarillo.",
+        "grid": {
+          "rows": 6,
+          "columns": 6,
+          "exit": {
+            "side": "right",
+            "row": 2
+          }
+        },
+        "initialBlocks": [
+          {
+            "id": "target",
+            "kind": "target",
+            "orientation": "horizontal",
+            "row": 2,
+            "column": 0,
+            "length": 2
+          },
+          {
+            "id": "a",
+            "kind": "obstacle",
+            "orientation": "vertical",
+            "row": 1,
+            "column": 2,
+            "length": 2
+          },
+          {
+            "id": "b",
+            "kind": "obstacle",
+            "orientation": "vertical",
+            "row": 0,
+            "column": 4,
+            "length": 3
+          },
+          {
+            "id": "c",
+            "kind": "obstacle",
+            "orientation": "horizontal",
+            "row": 0,
+            "column": 1,
+            "length": 2
+          },
+          {
+            "id": "d",
+            "kind": "obstacle",
+            "orientation": "horizontal",
+            "row": 4,
+            "column": 1,
+            "length": 2
+          }
+        ]
+      },
+      "solutionPayload": {
+        "referenceSolution": [
+          {
+            "blockId": "c",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "a",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "b",
+            "from": 0,
+            "to": 3
+          },
+          {
+            "blockId": "target",
+            "from": 0,
+            "to": 4
+          }
+        ],
+        "optimalMoves": 4
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v2",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "multiple-choice-private",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "question": "¿Qué edificio aparece?",
+        "options": ["A", "B"],
+        "media": {
+          "type": "image",
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Edificio histórico",
+          "width": 1200,
+          "height": 800,
+          "fit": "contain",
+          "position": "center"
+        },
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "A"
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v2-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "multiple-choice-private",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 15000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "A"
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v2-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "multiple-choice-private",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "question": "¿Qué edificio aparece?",
+        "options": ["A", "B"],
+        "media": {
+          "type": "image",
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Edificio histórico",
+          "width": 1200,
+          "height": 800,
+          "fit": "contain",
+          "position": "center"
+        },
+        "promptVisual": null
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "multiple-choice-v2-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "multiple-choice-private",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "question": "¿Qué edificio aparece?",
+        "options": ["A", "B"],
+        "media": {
+          "type": "image",
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Edificio histórico",
+          "width": 1200,
+          "height": 800,
+          "fit": "contain",
+          "position": "center"
+        },
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "A"
+      }
+    }
+  },
+  {
+    "id": "mini-wordle-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "mini-wordle-2",
+      "type": "mini-wordle",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {},
+        "question": "Descubre el personaje bíblico",
+        "hint": "Una figura central del cristianismo",
+        "wordLength": 5,
+        "maxAttempts": 2
+      },
+      "solutionPayload": {
+        "correctAnswer": "Jesús",
+        "additionalGuesses": ["Josué", "Jacob", "David"],
+        "dictionaryId": "es-general-5.v1",
+        "explanation": "Una figura central del cristianismo."
+      }
+    }
+  },
+  {
+    "id": "mini-wordle-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "mini-wordle-2",
+      "type": "mini-wordle",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "Jesús",
+        "additionalGuesses": ["Josué", "Jacob", "David"],
+        "dictionaryId": "es-general-5.v1",
+        "explanation": "Una figura central del cristianismo."
+      }
+    }
+  },
+  {
+    "id": "mini-wordle-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "mini-wordle-2",
+      "type": "mini-wordle",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {},
+        "question": "Descubre el personaje bíblico",
+        "hint": "Una figura central del cristianismo",
+        "wordLength": 5,
+        "maxAttempts": 2
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "mini-wordle-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "mini-wordle-2",
+      "type": "mini-wordle",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {},
+        "question": "Descubre el personaje bíblico",
+        "hint": "Una figura central del cristianismo",
+        "wordLength": 5,
+        "maxAttempts": 2
+      },
+      "solutionPayload": {
+        "correctAnswer": "Jesús",
+        "additionalGuesses": ["Josué", "Jacob", "David"],
+        "dictionaryId": "es-general-5.v1",
+        "explanation": "Una figura central del cristianismo."
+      }
+    }
+  },
+  {
+    "id": "matching-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "matching-2",
+      "type": "matching",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Relaciona los conceptos",
+        "leftItems": [
+          {
+            "id": "l1",
+            "label": "Uno"
+          },
+          {
+            "id": "l2",
+            "label": "Dos"
+          },
+          {
+            "id": "l3",
+            "label": "Tres"
+          }
+        ],
+        "rightItems": [
+          {
+            "id": "r1",
+            "label": "Primero"
+          },
+          {
+            "id": "r2",
+            "label": "Segundo"
+          },
+          {
+            "id": "r3",
+            "label": "Tercero"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "matches": {
+          "l1": "r1",
+          "l2": "r2",
+          "l3": "r3"
+        }
+      }
+    }
+  },
+  {
+    "id": "matching-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "matching-2",
+      "type": "matching",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "matches": {
+          "l1": "r1",
+          "l2": "r2",
+          "l3": "r3"
+        }
+      }
+    }
+  },
+  {
+    "id": "matching-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "matching-2",
+      "type": "matching",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Relaciona los conceptos",
+        "leftItems": [
+          {
+            "id": "l1",
+            "label": "Uno"
+          },
+          {
+            "id": "l2",
+            "label": "Dos"
+          },
+          {
+            "id": "l3",
+            "label": "Tres"
+          }
+        ],
+        "rightItems": [
+          {
+            "id": "r1",
+            "label": "Primero"
+          },
+          {
+            "id": "r2",
+            "label": "Segundo"
+          },
+          {
+            "id": "r3",
+            "label": "Tercero"
+          }
+        ]
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "matching-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "matching-2",
+      "type": "matching",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Relaciona los conceptos",
+        "leftItems": [
+          {
+            "id": "l1",
+            "label": "Uno"
+          },
+          {
+            "id": "l2",
+            "label": "Dos"
+          },
+          {
+            "id": "l3",
+            "label": "Tres"
+          }
+        ],
+        "rightItems": [
+          {
+            "id": "r1",
+            "label": "Primero"
+          },
+          {
+            "id": "r2",
+            "label": "Segundo"
+          },
+          {
+            "id": "r3",
+            "label": "Tercero"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "matches": {
+          "l1": "r1",
+          "l2": "r2",
+          "l3": "r3"
+        }
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-2",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "src": "/visuals/connections/eiffel-tower.png",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 1024,
+          "height": 1024,
+          "fit": "contain"
+        },
+        "revealDurationMs": 12000,
+        "answerLabel": "¿Qué aparece?",
+        "answerPlaceholder": "Tu respuesta…"
+      },
+      "solutionPayload": {
+        "correctAnswer": "Torre Eiffel",
+        "acceptedAnswers": ["torre eiffel", "eiffel tower"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-2",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "Torre Eiffel",
+        "acceptedAnswers": ["torre eiffel", "eiffel tower"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-2",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "src": "/visuals/connections/eiffel-tower.png",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 1024,
+          "height": 1024,
+          "fit": "contain"
+        },
+        "revealDurationMs": 12000,
+        "answerLabel": "¿Qué aparece?",
+        "answerPlaceholder": "Tu respuesta…"
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "progressive-image-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-2",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "src": "/visuals/connections/eiffel-tower.png",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 1024,
+          "height": 1024,
+          "fit": "contain"
+        },
+        "revealDurationMs": 12000,
+        "answerLabel": "¿Qué aparece?",
+        "answerPlaceholder": "Tu respuesta…"
+      },
+      "solutionPayload": {
+        "correctAnswer": "Torre Eiffel",
+        "acceptedAnswers": ["torre eiffel", "eiffel tower"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v2",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-private",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 847,
+          "height": 566,
+          "fit": "contain"
+        },
+        "revealDurationMs": 12000
+      },
+      "solutionPayload": {
+        "correctAnswer": "Torre Eiffel",
+        "acceptedAnswers": ["torre eiffel"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v2-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-private",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 20000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "Torre Eiffel",
+        "acceptedAnswers": ["torre eiffel"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v2-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-private",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 847,
+          "height": 566,
+          "fit": "contain"
+        },
+        "revealDurationMs": 12000
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "progressive-image-v2-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-private",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 847,
+          "height": 566,
+          "fit": "contain"
+        },
+        "revealDurationMs": 12000
+      },
+      "solutionPayload": {
+        "correctAnswer": "Torre Eiffel",
+        "acceptedAnswers": ["torre eiffel"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "logic-code-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-code-2",
+      "type": "logic-code",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": "Descubre el código",
+        "codeLength": 4,
+        "clues": [
+          {
+            "code": "1203",
+            "hint": "El segundo dígito es el doble del primero."
+          },
+          {
+            "code": "0312",
+            "hint": "El último dígito coincide con el tercero."
+          }
+        ]
+      },
+      "solutionPayload": {
+        "correctAnswer": "0420",
+        "explanation": "La secuencia satisface ambas pistas."
+      }
+    }
+  },
+  {
+    "id": "logic-code-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-code-2",
+      "type": "logic-code",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "0420",
+        "explanation": "La secuencia satisface ambas pistas."
+      }
+    }
+  },
+  {
+    "id": "logic-code-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-code-2",
+      "type": "logic-code",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": "Descubre el código",
+        "codeLength": 4,
+        "clues": [
+          {
+            "code": "1203",
+            "hint": "El segundo dígito es el doble del primero."
+          },
+          {
+            "code": "0312",
+            "hint": "El último dígito coincide con el tercero."
+          }
+        ]
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "logic-code-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-code-2",
+      "type": "logic-code",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": "Descubre el código",
+        "codeLength": 4,
+        "clues": [
+          {
+            "code": "1203",
+            "hint": "El segundo dígito es el doble del primero."
+          },
+          {
+            "code": "0312",
+            "hint": "El último dígito coincide con el tercero."
+          }
+        ]
+      },
+      "solutionPayload": {
+        "correctAnswer": "0420",
+        "explanation": "La secuencia satisface ambas pistas."
+      }
+    }
+  },
+  {
+    "id": "progressive-clues-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-clues-2",
+      "type": "progressive-clues",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Historia",
+        "tags": {},
+        "question": "Identifica el acontecimiento",
+        "clues": ["Ocurrió en Europa.", "Sucedió en 1989."],
+        "cluePenalty": 25
+      },
+      "solutionPayload": {
+        "correctAnswer": "Caída del muro de Berlín",
+        "acceptedAnswers": ["caida del muro de berlin", "Berlín"],
+        "explanation": "La respuesta identifica el acontecimiento."
+      }
+    }
+  },
+  {
+    "id": "progressive-clues-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-clues-2",
+      "type": "progressive-clues",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "Caída del muro de Berlín",
+        "acceptedAnswers": ["caida del muro de berlin", "Berlín"],
+        "explanation": "La respuesta identifica el acontecimiento."
+      }
+    }
+  },
+  {
+    "id": "progressive-clues-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-clues-2",
+      "type": "progressive-clues",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Historia",
+        "tags": {},
+        "question": "Identifica el acontecimiento",
+        "clues": ["Ocurrió en Europa.", "Sucedió en 1989."],
+        "cluePenalty": 25
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "progressive-clues-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-clues-2",
+      "type": "progressive-clues",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Historia",
+        "tags": {},
+        "question": "Identifica el acontecimiento",
+        "clues": ["Ocurrió en Europa.", "Sucedió en 1989."],
+        "cluePenalty": 25
+      },
+      "solutionPayload": {
+        "correctAnswer": "Caída del muro de Berlín",
+        "acceptedAnswers": ["caida del muro de berlin", "Berlín"],
+        "explanation": "La respuesta identifica el acontecimiento."
+      }
+    }
+  },
+  {
+    "id": "word-search-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-search",
+      "type": "word-search",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {
+          "domains": ["language"],
+          "topics": ["vocabulary"]
+        },
+        "question": "Encuentra CASA y ÑANDÚ",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "letters": [
+          "C",
+          "A",
+          "S",
+          "A",
+          "X",
+          "X",
+          "Ñ",
+          "A",
+          "N",
+          "D",
+          "Ú",
+          "Z",
+          "B",
+          "Q",
+          "E",
+          "R",
+          "T",
+          "Y",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "O",
+          "P",
+          "V",
+          "W",
+          "F",
+          "Á",
+          "É",
+          "Í",
+          "Ó",
+          "Ú",
+          "Ü"
+        ],
+        "targets": [
+          {
+            "id": "casa",
+            "word": "CASA"
+          },
+          {
+            "id": "nandu",
+            "word": "ÑANDÚ"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "positionsByTargetId": {
+          "casa": {
+            "startCell": 0,
+            "endCell": 3
+          },
+          "nandu": {
+            "startCell": 6,
+            "endCell": 10
+          }
+        },
+        "explanation": "Las palabras se encuentran en la primera y segunda fila."
+      }
+    }
+  },
+  {
+    "id": "word-search-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-search",
+      "type": "word-search",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "positionsByTargetId": {
+          "casa": {
+            "startCell": 0,
+            "endCell": 3
+          },
+          "nandu": {
+            "startCell": 6,
+            "endCell": 10
+          }
+        },
+        "explanation": "Las palabras se encuentran en la primera y segunda fila."
+      }
+    }
+  },
+  {
+    "id": "word-search-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-search",
+      "type": "word-search",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {
+          "domains": ["language"],
+          "topics": ["vocabulary"]
+        },
+        "question": "Encuentra CASA y ÑANDÚ",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "letters": [
+          "C",
+          "A",
+          "S",
+          "A",
+          "X",
+          "X",
+          "Ñ",
+          "A",
+          "N",
+          "D",
+          "Ú",
+          "Z",
+          "B",
+          "Q",
+          "E",
+          "R",
+          "T",
+          "Y",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "O",
+          "P",
+          "V",
+          "W",
+          "F",
+          "Á",
+          "É",
+          "Í",
+          "Ó",
+          "Ú",
+          "Ü"
+        ],
+        "targets": [
+          {
+            "id": "casa",
+            "word": "CASA"
+          },
+          {
+            "id": "nandu",
+            "word": "ÑANDÚ"
+          }
+        ]
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "word-search-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-search",
+      "type": "word-search",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {
+          "domains": ["language"],
+          "topics": ["vocabulary"]
+        },
+        "question": "Encuentra CASA y ÑANDÚ",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "letters": [
+          "C",
+          "A",
+          "S",
+          "A",
+          "X",
+          "X",
+          "Ñ",
+          "A",
+          "N",
+          "D",
+          "Ú",
+          "Z",
+          "B",
+          "Q",
+          "E",
+          "R",
+          "T",
+          "Y",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "O",
+          "P",
+          "V",
+          "W",
+          "F",
+          "Á",
+          "É",
+          "Í",
+          "Ó",
+          "Ú",
+          "Ü"
+        ],
+        "targets": [
+          {
+            "id": "casa",
+            "word": "CASA"
+          },
+          {
+            "id": "nandu",
+            "word": "ÑANDÚ"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "positionsByTargetId": {
+          "casa": {
+            "startCell": 0,
+            "endCell": 3
+          },
+          "nandu": {
+            "startCell": 6,
+            "endCell": 10
+          }
+        },
+        "explanation": "Las palabras se encuentran en la primera y segunda fila."
+      }
+    }
+  },
+  {
+    "id": "word-hashtag-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-hashtag",
+      "type": "word-hashtag",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "question": "Intercambia las letras amarillas para completar las cuatro palabras.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "initialLetters": [
+          null,
+          "G",
+          null,
+          "Q",
+          null,
+          "E",
+          "O",
+          "P",
+          "U",
+          "I",
+          null,
+          "N",
+          null,
+          "Y",
+          null,
+          "R",
+          "A",
+          "U",
+          "M",
+          "E",
+          null,
+          "R",
+          null,
+          "A",
+          null
+        ],
+        "maxMoves": 7
+      },
+      "solutionPayload": {
+        "words": {
+          "top": "YOGUI",
+          "bottom": "REUMA",
+          "left": "PONER",
+          "right": "QUEMA"
+        },
+        "explanation": "Las cuatro palabras se cruzan en una cuadrícula con forma de hashtag."
+      }
+    }
+  },
+  {
+    "id": "word-hashtag-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-hashtag",
+      "type": "word-hashtag",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "words": {
+          "top": "YOGUI",
+          "bottom": "REUMA",
+          "left": "PONER",
+          "right": "QUEMA"
+        },
+        "explanation": "Las cuatro palabras se cruzan en una cuadrícula con forma de hashtag."
+      }
+    }
+  },
+  {
+    "id": "word-hashtag-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-hashtag",
+      "type": "word-hashtag",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "question": "Intercambia las letras amarillas para completar las cuatro palabras.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "initialLetters": [
+          null,
+          "G",
+          null,
+          "Q",
+          null,
+          "E",
+          "O",
+          "P",
+          "U",
+          "I",
+          null,
+          "N",
+          null,
+          "Y",
+          null,
+          "R",
+          "A",
+          "U",
+          "M",
+          "E",
+          null,
+          "R",
+          null,
+          "A",
+          null
+        ],
+        "maxMoves": 7
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "word-hashtag-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-hashtag",
+      "type": "word-hashtag",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "question": "Intercambia las letras amarillas para completar las cuatro palabras.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "initialLetters": [
+          null,
+          "G",
+          null,
+          "Q",
+          null,
+          "E",
+          "O",
+          "P",
+          "U",
+          "I",
+          null,
+          "N",
+          null,
+          "Y",
+          null,
+          "R",
+          "A",
+          "U",
+          "M",
+          "E",
+          null,
+          "R",
+          null,
+          "A",
+          null
+        ],
+        "maxMoves": 7
+      },
+      "solutionPayload": {
+        "words": {
+          "top": "YOGUI",
+          "bottom": "REUMA",
+          "left": "PONER",
+          "right": "QUEMA"
+        },
+        "explanation": "Las cuatro palabras se cruzan en una cuadrícula con forma de hashtag."
+      }
+    }
+  },
+  {
+    "id": "queens-v1",
+    "valid": true,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lógica",
+        "question": "Coloca las seis coronas.",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "regions": [
+          0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 5, 2, 2, 1, 1, 3, 5, 5, 5, 4, 1, 5, 5,
+          5, 5, 5, 5, 5, 5
+        ],
+        "prefilledQueens": [0]
+      },
+      "solutionPayload": {
+        "solution": [0, 9, 13, 22, 26, 35],
+        "explanation": "Una corona por fila, columna y región."
+      }
+    }
+  },
+  {
+    "id": "queens-v1-public-null",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "solution": [0, 9, 13, 22, 26, 35],
+        "explanation": "Una corona por fila, columna y región."
+      }
+    }
+  },
+  {
+    "id": "queens-v1-solution-null",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lógica",
+        "question": "Coloca las seis coronas.",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "regions": [
+          0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 5, 2, 2, 1, 1, 3, 5, 5, 5, 4, 1, 5, 5,
+          5, 5, 5, 5, 5, 5
+        ],
+        "prefilledQueens": [0]
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "queens-v1-version",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lógica",
+        "question": "Coloca las seis coronas.",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "regions": [
+          0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 5, 2, 2, 1, 1, 3, 5, 5, 5, 4, 1, 5, 5,
+          5, 5, 5, 5, 5, 5
+        ],
+        "prefilledQueens": [0]
+      },
+      "solutionPayload": {
+        "solution": [0, 9, 13, 22, 26, 35],
+        "explanation": "Una corona por fila, columna y región."
+      }
+    }
+  },
+  {
+    "id": "short-text-v1",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "pyramid", "alphabet"],
+    "document": {
+      "slug": "conformance-short-text",
+      "type": "short-text",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "¿Capital de Portugal?",
+        "answerPlaceholder": "Una ciudad"
+      },
+      "solutionPayload": {
+        "correctAnswer": "Lisboa",
+        "acceptedAnswers": ["Lisboa"]
+      }
+    }
+  },
+  {
+    "id": "short-text-v1-public-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "pyramid", "alphabet"],
+    "document": {
+      "slug": "conformance-short-text",
+      "type": "short-text",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": "Lisboa",
+        "acceptedAnswers": ["Lisboa"]
+      }
+    }
+  },
+  {
+    "id": "short-text-v1-solution-null",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "pyramid", "alphabet"],
+    "document": {
+      "slug": "conformance-short-text",
+      "type": "short-text",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "¿Capital de Portugal?",
+        "answerPlaceholder": "Una ciudad"
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "short-text-v1-version",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "pyramid", "alphabet"],
+    "document": {
+      "slug": "conformance-short-text",
+      "type": "short-text",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "¿Capital de Portugal?",
+        "answerPlaceholder": "Una ciudad"
+      },
+      "solutionPayload": {
+        "correctAnswer": "Lisboa",
+        "acceptedAnswers": ["Lisboa"]
+      }
+    }
+  },
+  {
+    "id": "connect-pairs-v1",
+    "valid": true,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-connect-pairs",
+      "type": "connect-pairs",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 45000,
+      "publicPayload": {
+        "question": "Conecta cada pareja de símbolos y cubre toda la cuadrícula.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "pairs": [
+          {
+            "id": "a",
+            "label": "Pareja A",
+            "symbol": "A",
+            "endpoints": [0, 4],
+            "color": "#35e8ff"
+          },
+          {
+            "id": "b",
+            "label": "Pareja B",
+            "symbol": "B",
+            "endpoints": [5, 24],
+            "color": "#d7ff18"
+          },
+          {
+            "id": "c",
+            "label": "Pareja C",
+            "symbol": "C",
+            "endpoints": [6, 19],
+            "color": "#ff6d73"
+          }
+        ],
+        "requireFullCoverage": true
+      },
+      "solutionPayload": {
+        "paths": {
+          "a": [0, 1, 2, 3, 4],
+          "b": [5, 10, 15, 20, 21, 22, 23, 24],
+          "c": [6, 7, 8, 9, 14, 13, 12, 11, 16, 17, 18, 19]
+        }
+      }
+    }
+  },
+  {
+    "id": "connect-pairs-v1-public-null",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-connect-pairs",
+      "type": "connect-pairs",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 45000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "paths": {
+          "a": [0, 1, 2, 3, 4],
+          "b": [5, 10, 15, 20, 21, 22, 23, 24],
+          "c": [6, 7, 8, 9, 14, 13, 12, 11, 16, 17, 18, 19]
+        }
+      }
+    }
+  },
+  {
+    "id": "connect-pairs-v1-solution-null",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-connect-pairs",
+      "type": "connect-pairs",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 45000,
+      "publicPayload": {
+        "question": "Conecta cada pareja de símbolos y cubre toda la cuadrícula.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "pairs": [
+          {
+            "id": "a",
+            "label": "Pareja A",
+            "symbol": "A",
+            "endpoints": [0, 4],
+            "color": "#35e8ff"
+          },
+          {
+            "id": "b",
+            "label": "Pareja B",
+            "symbol": "B",
+            "endpoints": [5, 24],
+            "color": "#d7ff18"
+          },
+          {
+            "id": "c",
+            "label": "Pareja C",
+            "symbol": "C",
+            "endpoints": [6, 19],
+            "color": "#ff6d73"
+          }
+        ],
+        "requireFullCoverage": true
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "connect-pairs-v1-version",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-connect-pairs",
+      "type": "connect-pairs",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 45000,
+      "publicPayload": {
+        "question": "Conecta cada pareja de símbolos y cubre toda la cuadrícula.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "pairs": [
+          {
+            "id": "a",
+            "label": "Pareja A",
+            "symbol": "A",
+            "endpoints": [0, 4],
+            "color": "#35e8ff"
+          },
+          {
+            "id": "b",
+            "label": "Pareja B",
+            "symbol": "B",
+            "endpoints": [5, 24],
+            "color": "#d7ff18"
+          },
+          {
+            "id": "c",
+            "label": "Pareja C",
+            "symbol": "C",
+            "endpoints": [6, 19],
+            "color": "#ff6d73"
+          }
+        ],
+        "requireFullCoverage": true
+      },
+      "solutionPayload": {
+        "paths": {
+          "a": [0, 1, 2, 3, 4],
+          "b": [5, 10, 15, 20, 21, 22, 23, 24],
+          "c": [6, 7, 8, 9, 14, 13, 12, 11, 16, 17, 18, 19]
+        }
+      }
+    }
+  },
+  {
+    "id": "estimation-v1",
+    "valid": true,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "initialValue": 30,
+        "unit": "km/h"
+      },
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": 18,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "estimation-v1-public-null",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": 18,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "estimation-v1-solution-null",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "initialValue": 30,
+        "unit": "km/h"
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "estimation-v1-version",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "initialValue": 30,
+        "unit": "km/h"
+      },
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": 18,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v1",
+    "valid": true,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "src": "/visuals/format-contract-map.svg",
+          "alt": "Mapa de prueba",
+          "width": 1200,
+          "height": 800
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": {
+        "target": {
+          "x": 0.38,
+          "y": 0.58
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v1-public-null",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 18000,
+      "publicPayload": null,
+      "solutionPayload": {
+        "target": {
+          "x": 0.38,
+          "y": 0.58
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v1-solution-null",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "src": "/visuals/format-contract-map.svg",
+          "alt": "Mapa de prueba",
+          "width": 1200,
+          "height": 800
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": null
+    }
+  },
+  {
+    "id": "heat-map-v1-version",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 999,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "src": "/visuals/format-contract-map.svg",
+          "alt": "Mapa de prueba",
+          "width": 1200,
+          "height": 800
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": {
+        "target": {
+          "x": 0.38,
+          "y": 0.58
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "question-1",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "category": "Test",
+        "tags": {},
+        "question": "¿Pregunta 1?",
+        "options": [1],
+        "media": null,
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "A",
+        "explanation": "A"
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "question-1",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "category": "Test",
+        "tags": {},
+        "question": "¿Pregunta 1?",
+        "options": ["A", "B"],
+        "media": null,
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "missing",
+        "explanation": "A"
+      }
+    }
+  },
+  {
+    "id": "true-false-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "true-false-question",
+      "type": "true-false",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 12000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": 4
+      },
+      "solutionPayload": {
+        "correctAnswer": false,
+        "explanation": "No es correcto."
+      }
+    }
+  },
+  {
+    "id": "true-false-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "true-false-question",
+      "type": "true-false",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 12000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": "¿Es correcto?"
+      },
+      "solutionPayload": {
+        "correctAnswer": "true",
+        "explanation": "No es correcto."
+      }
+    }
+  },
+  {
+    "id": "odd-one-out-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "odd-one-out-question",
+      "type": "odd-one-out",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 14000,
+      "publicPayload": {
+        "category": "Ciencias",
+        "tags": {},
+        "question": "¿Cuál no pertenece?",
+        "items": []
+      },
+      "solutionPayload": {
+        "correctAnswer": "bison",
+        "explanation": "El bisonte es un bóvido."
+      }
+    }
+  },
+  {
+    "id": "odd-one-out-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "odd-one-out-question",
+      "type": "odd-one-out",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 14000,
+      "publicPayload": {
+        "category": "Ciencias",
+        "tags": {},
+        "question": "¿Cuál no pertenece?",
+        "items": [
+          {
+            "id": "horse",
+            "label": "Caballo"
+          },
+          {
+            "id": "zebra",
+            "label": "Cebra"
+          },
+          {
+            "id": "bison",
+            "label": "Bisonte"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "correctAnswer": "missing",
+        "explanation": "El bisonte es un bóvido."
+      }
+    }
+  },
+  {
+    "id": "ordering-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "ordering-question",
+      "type": "ordering",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Ordena de oeste a este.",
+        "items": [],
+        "directionLabels": {
+          "start": "Más al oeste",
+          "end": "Más al este"
+        }
+      },
+      "solutionPayload": {
+        "correctOrder": ["San Diego", "Denver", "Nueva York"],
+        "explanation": "Orden geográfico."
+      }
+    }
+  },
+  {
+    "id": "ordering-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "ordering-question",
+      "type": "ordering",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Ordena de oeste a este.",
+        "items": ["Nueva York", "Denver", "San Diego"],
+        "directionLabels": {
+          "start": "Más al oeste",
+          "end": "Más al este"
+        }
+      },
+      "solutionPayload": {
+        "correctOrder": ["missing"],
+        "explanation": "Orden geográfico."
+      }
+    }
+  },
+  {
+    "id": "estimation-v2-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": -1,
+        "initialValue": 30,
+        "unit": "km/h",
+        "media": null
+      },
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": 18,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "estimation-v2-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "initialValue": 30,
+        "unit": "km/h",
+        "media": null
+      },
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": -1,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v2-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "assetId": "11111111-1111-4111-8111-111111111111",
+          "alt": "Mapa sin etiquetas de Estados Unidos",
+          "width": -1,
+          "height": 968,
+          "fit": "contain"
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": {
+        "target": {
+          "x": 0.38,
+          "y": 0.58
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v2-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "assetId": "11111111-1111-4111-8111-111111111111",
+          "alt": "Mapa sin etiquetas de Estados Unidos",
+          "width": 1859,
+          "height": 968,
+          "fit": "contain"
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": {
+        "target": {
+          "x": 2,
+          "y": 0
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "anagram-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-race-anagram",
+      "type": "anagram",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Deporte",
+        "tags": {},
+        "question": "Forma una palabra relacionada con el desafío.",
+        "tiles": [],
+        "hint": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "CARRERA",
+        "explanation": "La palabra es carrera."
+      }
+    }
+  },
+  {
+    "id": "anagram-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-race-anagram",
+      "type": "anagram",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Deporte",
+        "tags": {},
+        "question": "Forma una palabra relacionada con el desafío.",
+        "tiles": [
+          {
+            "id": "a",
+            "value": "A"
+          },
+          {
+            "id": "c",
+            "value": "C"
+          },
+          {
+            "id": "r-1",
+            "value": "R"
+          },
+          {
+            "id": "r-2",
+            "value": "R"
+          },
+          {
+            "id": "a-2",
+            "value": "A"
+          },
+          {
+            "id": "e",
+            "value": "E"
+          },
+          {
+            "id": "r-3",
+            "value": "R"
+          }
+        ],
+        "hint": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "INVALID",
+        "explanation": "La palabra es carrera."
+      }
+    }
+  },
+  {
+    "id": "classification-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-1890-gear-classification",
+      "type": "classification",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Tecnología",
+        "tags": {},
+        "question": "Clasifica cada objeto.",
+        "items": [
+          {
+            "label": "Brújula"
+          },
+          {
+            "label": "Navegador GPS"
+          }
+        ],
+        "categories": []
+      },
+      "solutionPayload": {
+        "categoriesByItem": {
+          "Brújula": "útil en 1890",
+          "Navegador GPS": "anacrónico"
+        },
+        "explanation": "Clasificación histórica."
+      }
+    }
+  },
+  {
+    "id": "classification-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-1890-gear-classification",
+      "type": "classification",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Tecnología",
+        "tags": {},
+        "question": "Clasifica cada objeto.",
+        "items": [
+          {
+            "label": "Brújula"
+          },
+          {
+            "label": "Navegador GPS"
+          }
+        ],
+        "categories": ["útil en 1890", "anacrónico"]
+      },
+      "solutionPayload": {
+        "categoriesByItem": {},
+        "explanation": "Clasificación histórica."
+      }
+    }
+  },
+  {
+    "id": "logic-matrix-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-matrix-private",
+      "type": "logic-matrix",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "Completa la matriz",
+        "pieces": [
+          {
+            "id": "a",
+            "symbol": "A",
+            "label": "A"
+          },
+          {
+            "id": "b",
+            "symbol": "B",
+            "label": "B"
+          },
+          {
+            "id": "c",
+            "symbol": "C",
+            "label": "C"
+          },
+          {
+            "id": "d",
+            "symbol": "D",
+            "label": "D"
+          }
+        ],
+        "cells": ["a", "b", "c", "b", "c", "a", "c", "a", null],
+        "optionIds": []
+      },
+      "solutionPayload": {
+        "correctOptionId": "d"
+      }
+    }
+  },
+  {
+    "id": "logic-matrix-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-matrix-private",
+      "type": "logic-matrix",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "Completa la matriz",
+        "pieces": [
+          {
+            "id": "a",
+            "symbol": "A",
+            "label": "A"
+          },
+          {
+            "id": "b",
+            "symbol": "B",
+            "label": "B"
+          },
+          {
+            "id": "c",
+            "symbol": "C",
+            "label": "C"
+          },
+          {
+            "id": "d",
+            "symbol": "D",
+            "label": "D"
+          }
+        ],
+        "cells": ["a", "b", "c", "b", "c", "a", "c", "a", null],
+        "optionIds": ["d", "a", "b", "c"]
+      },
+      "solutionPayload": {
+        "correctOptionId": "missing"
+      }
+    }
+  },
+  {
+    "id": "zip-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "zip-final-answer",
+      "type": "zip",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 35000,
+      "publicPayload": {
+        "category": "Lógica espacial",
+        "tags": {},
+        "question": "Une los números y cubre todas las celdas.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "checkpoints": [],
+        "boardLabel": "Tablero Zip"
+      },
+      "solutionPayload": {
+        "solution": [
+          0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24
+        ],
+        "explanation": "Recorrido serpenteante."
+      }
+    }
+  },
+  {
+    "id": "zip-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "zip-final-answer",
+      "type": "zip",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 35000,
+      "publicPayload": {
+        "category": "Lógica espacial",
+        "tags": {},
+        "question": "Une los números y cubre todas las celdas.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "checkpoints": [
+          {
+            "value": 1,
+            "cell": 0
+          },
+          {
+            "value": 2,
+            "cell": 4
+          },
+          {
+            "value": 3,
+            "cell": 5
+          },
+          {
+            "value": 4,
+            "cell": 14
+          },
+          {
+            "value": 5,
+            "cell": 15
+          },
+          {
+            "value": 6,
+            "cell": 24
+          }
+        ],
+        "boardLabel": "Tablero Zip"
+      },
+      "solutionPayload": {
+        "solution": [],
+        "explanation": "Recorrido serpenteante."
+      }
+    }
+  },
+  {
+    "id": "escape-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "escape-private",
+      "type": "escape",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Libera el bloque amarillo.",
+        "grid": {
+          "rows": 6,
+          "columns": 6,
+          "exit": {
+            "side": "right",
+            "row": 2
+          }
+        },
+        "initialBlocks": []
+      },
+      "solutionPayload": {
+        "referenceSolution": [
+          {
+            "blockId": "c",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "a",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "b",
+            "from": 0,
+            "to": 3
+          },
+          {
+            "blockId": "target",
+            "from": 0,
+            "to": 4
+          }
+        ],
+        "optimalMoves": 4
+      }
+    }
+  },
+  {
+    "id": "escape-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "escape-private",
+      "type": "escape",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Libera el bloque amarillo.",
+        "grid": {
+          "rows": 6,
+          "columns": 6,
+          "exit": {
+            "side": "right",
+            "row": 2
+          }
+        },
+        "initialBlocks": [
+          {
+            "id": "target",
+            "kind": "target",
+            "orientation": "horizontal",
+            "row": 2,
+            "column": 0,
+            "length": 2
+          },
+          {
+            "id": "a",
+            "kind": "obstacle",
+            "orientation": "vertical",
+            "row": 1,
+            "column": 2,
+            "length": 2
+          },
+          {
+            "id": "b",
+            "kind": "obstacle",
+            "orientation": "vertical",
+            "row": 0,
+            "column": 4,
+            "length": 3
+          },
+          {
+            "id": "c",
+            "kind": "obstacle",
+            "orientation": "horizontal",
+            "row": 0,
+            "column": 1,
+            "length": 2
+          },
+          {
+            "id": "d",
+            "kind": "obstacle",
+            "orientation": "horizontal",
+            "row": 4,
+            "column": 1,
+            "length": 2
+          }
+        ]
+      },
+      "solutionPayload": {
+        "referenceSolution": [
+          {
+            "blockId": "c",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "a",
+            "from": 1,
+            "to": 0
+          },
+          {
+            "blockId": "b",
+            "from": 0,
+            "to": 3
+          },
+          {
+            "blockId": "target",
+            "from": 0,
+            "to": 4
+          }
+        ],
+        "optimalMoves": "invalid"
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v2-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "multiple-choice-private",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "question": "¿Qué edificio aparece?",
+        "options": [1],
+        "media": {
+          "type": "image",
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Edificio histórico",
+          "width": 1200,
+          "height": 800,
+          "fit": "contain",
+          "position": "center"
+        },
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "A"
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v2-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "multiple-choice-private",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "question": "¿Qué edificio aparece?",
+        "options": ["A", "B"],
+        "media": {
+          "type": "image",
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Edificio histórico",
+          "width": 1200,
+          "height": 800,
+          "fit": "contain",
+          "position": "center"
+        },
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "missing"
+      }
+    }
+  },
+  {
+    "id": "mini-wordle-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "mini-wordle-2",
+      "type": "mini-wordle",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {},
+        "question": "Descubre el personaje bíblico",
+        "hint": "Una figura central del cristianismo",
+        "wordLength": 6,
+        "maxAttempts": 2
+      },
+      "solutionPayload": {
+        "correctAnswer": "Jesús",
+        "additionalGuesses": ["Josué", "Jacob", "David"],
+        "dictionaryId": "es-general-5.v1",
+        "explanation": "Una figura central del cristianismo."
+      }
+    }
+  },
+  {
+    "id": "mini-wordle-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "mini-wordle-2",
+      "type": "mini-wordle",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {},
+        "question": "Descubre el personaje bíblico",
+        "hint": "Una figura central del cristianismo",
+        "wordLength": 5,
+        "maxAttempts": 2
+      },
+      "solutionPayload": {
+        "correctAnswer": "A",
+        "additionalGuesses": ["Josué", "Jacob", "David"],
+        "dictionaryId": "es-general-5.v1",
+        "explanation": "Una figura central del cristianismo."
+      }
+    }
+  },
+  {
+    "id": "matching-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "matching-2",
+      "type": "matching",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Relaciona los conceptos",
+        "leftItems": [],
+        "rightItems": [
+          {
+            "id": "r1",
+            "label": "Primero"
+          },
+          {
+            "id": "r2",
+            "label": "Segundo"
+          },
+          {
+            "id": "r3",
+            "label": "Tercero"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "matches": {
+          "l1": "r1",
+          "l2": "r2",
+          "l3": "r3"
+        }
+      }
+    }
+  },
+  {
+    "id": "matching-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "matching-2",
+      "type": "matching",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "Relaciona los conceptos",
+        "leftItems": [
+          {
+            "id": "l1",
+            "label": "Uno"
+          },
+          {
+            "id": "l2",
+            "label": "Dos"
+          },
+          {
+            "id": "l3",
+            "label": "Tres"
+          }
+        ],
+        "rightItems": [
+          {
+            "id": "r1",
+            "label": "Primero"
+          },
+          {
+            "id": "r2",
+            "label": "Segundo"
+          },
+          {
+            "id": "r3",
+            "label": "Tercero"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "matches": {}
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-2",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "src": "/visuals/connections/eiffel-tower.png",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 1024,
+          "height": 1024,
+          "fit": "contain"
+        },
+        "revealDurationMs": -1,
+        "answerLabel": "¿Qué aparece?",
+        "answerPlaceholder": "Tu respuesta…"
+      },
+      "solutionPayload": {
+        "correctAnswer": "Torre Eiffel",
+        "acceptedAnswers": ["torre eiffel", "eiffel tower"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-2",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "src": "/visuals/connections/eiffel-tower.png",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 1024,
+          "height": 1024,
+          "fit": "contain"
+        },
+        "revealDurationMs": 12000,
+        "answerLabel": "¿Qué aparece?",
+        "answerPlaceholder": "Tu respuesta…"
+      },
+      "solutionPayload": {
+        "correctAnswer": false,
+        "acceptedAnswers": ["torre eiffel", "eiffel tower"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v2-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-private",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 847,
+          "height": 566,
+          "fit": "contain"
+        },
+        "revealDurationMs": -1
+      },
+      "solutionPayload": {
+        "correctAnswer": "Torre Eiffel",
+        "acceptedAnswers": ["torre eiffel"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "progressive-image-v2-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-image-private",
+      "type": "progressive-image",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 20000,
+      "publicPayload": {
+        "question": "¿Qué monumento aparece?",
+        "surface": {
+          "assetId": "00000000-0000-4000-8000-000000000099",
+          "alt": "Imagen progresivamente revelada de un monumento europeo",
+          "width": 847,
+          "height": 566,
+          "fit": "contain"
+        },
+        "revealDurationMs": 12000
+      },
+      "solutionPayload": {
+        "correctAnswer": false,
+        "acceptedAnswers": ["torre eiffel"],
+        "solutionAlt": "La Torre Eiffel en París",
+        "explanation": "La imagen muestra la Torre Eiffel."
+      }
+    }
+  },
+  {
+    "id": "logic-code-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-code-2",
+      "type": "logic-code",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": "Descubre el código",
+        "codeLength": 0,
+        "clues": [
+          {
+            "code": "1203",
+            "hint": "El segundo dígito es el doble del primero."
+          },
+          {
+            "code": "0312",
+            "hint": "El último dígito coincide con el tercero."
+          }
+        ]
+      },
+      "solutionPayload": {
+        "correctAnswer": "0420",
+        "explanation": "La secuencia satisface ambas pistas."
+      }
+    }
+  },
+  {
+    "id": "logic-code-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "logic-code-2",
+      "type": "logic-code",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Lógica",
+        "tags": {},
+        "question": "Descubre el código",
+        "codeLength": 4,
+        "clues": [
+          {
+            "code": "1203",
+            "hint": "El segundo dígito es el doble del primero."
+          },
+          {
+            "code": "0312",
+            "hint": "El último dígito coincide con el tercero."
+          }
+        ]
+      },
+      "solutionPayload": {
+        "correctAnswer": "invalid",
+        "explanation": "La secuencia satisface ambas pistas."
+      }
+    }
+  },
+  {
+    "id": "progressive-clues-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-clues-2",
+      "type": "progressive-clues",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Historia",
+        "tags": {},
+        "question": "Identifica el acontecimiento",
+        "clues": [],
+        "cluePenalty": 25
+      },
+      "solutionPayload": {
+        "correctAnswer": "Caída del muro de Berlín",
+        "acceptedAnswers": ["caida del muro de berlin", "Berlín"],
+        "explanation": "La respuesta identifica el acontecimiento."
+      }
+    }
+  },
+  {
+    "id": "progressive-clues-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "progressive-clues-2",
+      "type": "progressive-clues",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "category": "Historia",
+        "tags": {},
+        "question": "Identifica el acontecimiento",
+        "clues": ["Ocurrió en Europa.", "Sucedió en 1989."],
+        "cluePenalty": 25
+      },
+      "solutionPayload": {
+        "correctAnswer": false,
+        "acceptedAnswers": ["caida del muro de berlin", "Berlín"],
+        "explanation": "La respuesta identifica el acontecimiento."
+      }
+    }
+  },
+  {
+    "id": "word-search-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-search",
+      "type": "word-search",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {
+          "domains": ["language"],
+          "topics": ["vocabulary"]
+        },
+        "question": "Encuentra CASA y ÑANDÚ",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "letters": [],
+        "targets": [
+          {
+            "id": "casa",
+            "word": "CASA"
+          },
+          {
+            "id": "nandu",
+            "word": "ÑANDÚ"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "positionsByTargetId": {
+          "casa": {
+            "startCell": 0,
+            "endCell": 3
+          },
+          "nandu": {
+            "startCell": 6,
+            "endCell": 10
+          }
+        },
+        "explanation": "Las palabras se encuentran en la primera y segunda fila."
+      }
+    }
+  },
+  {
+    "id": "word-search-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-search",
+      "type": "word-search",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "tags": {
+          "domains": ["language"],
+          "topics": ["vocabulary"]
+        },
+        "question": "Encuentra CASA y ÑANDÚ",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "letters": [
+          "C",
+          "A",
+          "S",
+          "A",
+          "X",
+          "X",
+          "Ñ",
+          "A",
+          "N",
+          "D",
+          "Ú",
+          "Z",
+          "B",
+          "Q",
+          "E",
+          "R",
+          "T",
+          "Y",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "O",
+          "P",
+          "V",
+          "W",
+          "F",
+          "Á",
+          "É",
+          "Í",
+          "Ó",
+          "Ú",
+          "Ü"
+        ],
+        "targets": [
+          {
+            "id": "casa",
+            "word": "CASA"
+          },
+          {
+            "id": "nandu",
+            "word": "ÑANDÚ"
+          }
+        ]
+      },
+      "solutionPayload": {
+        "positionsByTargetId": {},
+        "explanation": "Las palabras se encuentran en la primera y segunda fila."
+      }
+    }
+  },
+  {
+    "id": "word-hashtag-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-hashtag",
+      "type": "word-hashtag",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "question": "Intercambia las letras amarillas para completar las cuatro palabras.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "initialLetters": [],
+        "maxMoves": 7
+      },
+      "solutionPayload": {
+        "words": {
+          "top": "YOGUI",
+          "bottom": "REUMA",
+          "left": "PONER",
+          "right": "QUEMA"
+        },
+        "explanation": "Las cuatro palabras se cruzan en una cuadrícula con forma de hashtag."
+      }
+    }
+  },
+  {
+    "id": "word-hashtag-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-word-hashtag",
+      "type": "word-hashtag",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lengua",
+        "question": "Intercambia las letras amarillas para completar las cuatro palabras.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "initialLetters": [
+          null,
+          "G",
+          null,
+          "Q",
+          null,
+          "E",
+          "O",
+          "P",
+          "U",
+          "I",
+          null,
+          "N",
+          null,
+          "Y",
+          null,
+          "R",
+          "A",
+          "U",
+          "M",
+          "E",
+          null,
+          "R",
+          null,
+          "A",
+          null
+        ],
+        "maxMoves": 7
+      },
+      "solutionPayload": {
+        "words": {},
+        "explanation": "Las cuatro palabras se cruzan en una cuadrícula con forma de hashtag."
+      }
+    }
+  },
+  {
+    "id": "queens-v1-invalid-public",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lógica",
+        "question": "Coloca las seis coronas.",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "regions": [],
+        "prefilledQueens": [0]
+      },
+      "solutionPayload": {
+        "solution": [0, 9, 13, 22, 26, 35],
+        "explanation": "Una corona por fila, columna y región."
+      }
+    }
+  },
+  {
+    "id": "queens-v1-invalid-solution",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lógica",
+        "question": "Coloca las seis coronas.",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "regions": [
+          0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 5, 2, 2, 1, 1, 3, 5, 5, 5, 4, 1, 5, 5,
+          5, 5, 5, 5, 5, 5
+        ],
+        "prefilledQueens": [0]
+      },
+      "solutionPayload": {
+        "solution": [-1],
+        "explanation": "Una corona por fila, columna y región."
+      }
+    }
+  },
+  {
+    "id": "short-text-v1-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "pyramid", "alphabet"],
+    "document": {
+      "slug": "conformance-short-text",
+      "type": "short-text",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "¿Capital de Portugal?",
+        "answerPlaceholder": 4
+      },
+      "solutionPayload": {
+        "correctAnswer": "Lisboa",
+        "acceptedAnswers": ["Lisboa"]
+      }
+    }
+  },
+  {
+    "id": "short-text-v1-invalid-solution",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "pyramid", "alphabet"],
+    "document": {
+      "slug": "conformance-short-text",
+      "type": "short-text",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "¿Capital de Portugal?",
+        "answerPlaceholder": "Una ciudad"
+      },
+      "solutionPayload": {
+        "correctAnswer": false,
+        "acceptedAnswers": ["Lisboa"]
+      }
+    }
+  },
+  {
+    "id": "connect-pairs-v1-invalid-public",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-connect-pairs",
+      "type": "connect-pairs",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 45000,
+      "publicPayload": {
+        "question": "Conecta cada pareja de símbolos y cubre toda la cuadrícula.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "pairs": [],
+        "requireFullCoverage": true
+      },
+      "solutionPayload": {
+        "paths": {
+          "a": [0, 1, 2, 3, 4],
+          "b": [5, 10, 15, 20, 21, 22, 23, 24],
+          "c": [6, 7, 8, 9, 14, 13, 12, 11, 16, 17, 18, 19]
+        }
+      }
+    }
+  },
+  {
+    "id": "connect-pairs-v1-invalid-solution",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-connect-pairs",
+      "type": "connect-pairs",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 45000,
+      "publicPayload": {
+        "question": "Conecta cada pareja de símbolos y cubre toda la cuadrícula.",
+        "grid": {
+          "rows": 5,
+          "columns": 5
+        },
+        "pairs": [
+          {
+            "id": "a",
+            "label": "Pareja A",
+            "symbol": "A",
+            "endpoints": [0, 4],
+            "color": "#35e8ff"
+          },
+          {
+            "id": "b",
+            "label": "Pareja B",
+            "symbol": "B",
+            "endpoints": [5, 24],
+            "color": "#d7ff18"
+          },
+          {
+            "id": "c",
+            "label": "Pareja C",
+            "symbol": "C",
+            "endpoints": [6, 19],
+            "color": "#ff6d73"
+          }
+        ],
+        "requireFullCoverage": true
+      },
+      "solutionPayload": {
+        "paths": {}
+      }
+    }
+  },
+  {
+    "id": "estimation-v1-invalid-public",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": -1,
+        "initialValue": 30,
+        "unit": "km/h"
+      },
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": 18,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "estimation-v1-invalid-solution",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-average-speed",
+      "type": "estimation",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 22000,
+      "publicPayload": {
+        "category": "Matemáticas",
+        "tags": {},
+        "question": "¿Cuál es la velocidad media?",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "initialValue": 30,
+        "unit": "km/h"
+      },
+      "solutionPayload": {
+        "correctAnswer": 36,
+        "tolerance": -1,
+        "explanation": "Cálculo."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v1-invalid-public",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "src": "/visuals/format-contract-map.svg",
+          "alt": "Mapa de prueba",
+          "width": -1,
+          "height": 800
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": {
+        "target": {
+          "x": 0.38,
+          "y": 0.58
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "heat-map-v1-invalid-solution",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "sbr-grand-canyon-heat-map",
+      "type": "heat-map",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 18000,
+      "publicPayload": {
+        "category": "Geografía",
+        "tags": {},
+        "question": "Marca aproximadamente dónde se encuentra el Gran Cañón.",
+        "surface": {
+          "src": "/visuals/format-contract-map.svg",
+          "alt": "Mapa de prueba",
+          "width": 1200,
+          "height": 800
+        },
+        "targetLabel": "Norte de Arizona"
+      },
+      "solutionPayload": {
+        "target": {
+          "x": 2,
+          "y": 0
+        },
+        "fullCreditRadius": 0.055,
+        "toleranceRadius": 0.18,
+        "explanation": "El Gran Cañón está en el norte de Arizona."
+      }
+    }
+  },
+  {
+    "id": "short-text-v1-normalized-alias",
+    "valid": true,
+    "inline": true,
+    "modes": ["flash", "pyramid", "alphabet"],
+    "document": {
+      "slug": "conformance-short-text",
+      "type": "short-text",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 30000,
+      "publicPayload": {
+        "question": "¿Capital de Portugal?",
+        "answerPlaceholder": "Una ciudad"
+      },
+      "solutionPayload": {
+        "correctAnswer": "Lisboa",
+        "acceptedAnswers": ["lisboa"]
+      }
+    }
+  },
+  {
+    "id": "queens-v1-conflicting-solution",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lógica",
+        "question": "Coloca las seis coronas.",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "regions": [
+          0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 5, 2, 2, 1, 1, 3, 5, 5, 5, 4, 1, 5, 5,
+          5, 5, 5, 5, 5, 5
+        ],
+        "prefilledQueens": [0]
+      },
+      "solutionPayload": {
+        "solution": [0, 1, 2, 3, 4, 5],
+        "explanation": "Una corona por fila, columna y región."
+      }
+    }
+  },
+  {
+    "id": "queens-v1-extra-public",
+    "valid": true,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lógica",
+        "question": "Coloca las seis coronas.",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "regions": [
+          0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 5, 2, 2, 1, 1, 3, 5, 5, 5, 4, 1, 5, 5,
+          5, 5, 5, 5, 5, 5
+        ],
+        "prefilledQueens": [0],
+        "unknownField": true
+      },
+      "solutionPayload": {
+        "solution": [0, 9, 13, 22, 26, 35],
+        "explanation": "Una corona por fila, columna y región."
+      }
+    }
+  },
+  {
+    "id": "queens-v1-extra-solution",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lógica",
+        "question": "Coloca las seis coronas.",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "regions": [
+          0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 5, 2, 2, 1, 1, 3, 5, 5, 5, 4, 1, 5, 5,
+          5, 5, 5, 5, 5, 5
+        ],
+        "prefilledQueens": [0]
+      },
+      "solutionPayload": {
+        "solution": [0, 9, 13, 22, 26, 35],
+        "explanation": "Una corona por fila, columna y región.",
+        "unknownField": true
+      }
+    }
+  },
+  {
+    "id": "queens-v1-prefilled-mismatch",
+    "valid": false,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "conformance-queens",
+      "type": "queens",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 90000,
+      "publicPayload": {
+        "category": "Lógica",
+        "question": "Coloca las seis coronas.",
+        "grid": {
+          "rows": 6,
+          "columns": 6
+        },
+        "regions": [
+          0, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 5, 2, 2, 1, 1, 3, 5, 5, 5, 4, 1, 5, 5,
+          5, 5, 5, 5, 5, 5
+        ],
+        "prefilledQueens": [1]
+      },
+      "solutionPayload": {
+        "solution": [0, 9, 13, 22, 26, 35],
+        "explanation": "Una corona por fila, columna y región."
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v1-legacy-envelope",
+    "valid": true,
+    "inline": false,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "question-1",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "category": "Test",
+        "tags": {},
+        "question": "¿Pregunta 1?",
+        "options": ["A", "B"],
+        "media": null,
+        "promptVisual": null,
+        "id": "legacy-question-one",
+        "context": "Contexto histórico",
+        "timeLimitMs": 15000
+      },
+      "solutionPayload": {
+        "correctAnswer": "A",
+        "explanation": "A"
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v1-duplicates-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "question-1",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 1,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "category": "Test",
+        "tags": {},
+        "question": "¿Pregunta 1?",
+        "options": ["Lisboa", "Lisboa"],
+        "media": null,
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "A",
+        "explanation": "A"
+      }
+    }
+  },
+  {
+    "id": "multiple-choice-v2-missing-image-invalid-public",
+    "valid": false,
+    "inline": true,
+    "modes": ["flash", "survival", "pyramid", "narrative"],
+    "document": {
+      "slug": "multiple-choice-private",
+      "type": "multiple-choice",
+      "payloadSchemaVersion": 2,
+      "timeLimitMs": 15000,
+      "publicPayload": {
+        "question": "¿Qué edificio aparece?",
+        "options": ["A", "B"],
+        "media": null,
+        "promptVisual": null
+      },
+      "solutionPayload": {
+        "correctAnswer": "A"
+      }
+    }
+  }
+]

@@ -140,6 +140,64 @@ begin
   ) then
     return private.is_supported_competitive_question_extension(target_question);
   end if;
+  -- Versions already declared by the competitive capability contract. Publication
+  -- continues to require v2; these branches only read existing published v1 content.
+  if question.type = 'estimation' and question.payload_schema_version = 1 then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(question.public_payload->'min') = 'number'
+      and jsonb_typeof(question.public_payload->'max') = 'number'
+      and (question.public_payload->>'min')::numeric < (question.public_payload->>'max')::numeric
+      and jsonb_typeof(question.public_payload->'step') = 'number'
+      and (question.public_payload->>'step')::numeric > 0
+      and jsonb_typeof(question.public_payload->'initialValue') = 'number'
+      and (question.public_payload->>'initialValue')::numeric between
+        (question.public_payload->>'min')::numeric and (question.public_payload->>'max')::numeric
+      and jsonb_typeof(question.public_payload->'unit') = 'string'
+      and char_length(btrim(question.public_payload->>'unit')) between 1 and 100
+      and (not question.public_payload ? 'media' or question.public_payload->'media' = 'null'::jsonb
+        or (jsonb_typeof(question.public_payload->'media') = 'object'
+          and question.public_payload->'media'->>'type' = 'image'
+          and jsonb_typeof(question.public_payload->'media'->'src') = 'string'
+          and jsonb_typeof(question.public_payload->'media'->'alt') = 'string'))
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'number'
+      and (solution->>'correctAnswer')::numeric between
+        (question.public_payload->>'min')::numeric and (question.public_payload->>'max')::numeric
+      and jsonb_typeof(solution->'tolerance') = 'number'
+      and (solution->>'tolerance')::numeric >= 0;
+  end if;
+  if question.type = 'heat-map' and question.payload_schema_version = 1 then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(question.public_payload->'targetLabel') = 'string'
+      and char_length(btrim(question.public_payload->>'targetLabel')) between 1 and 500
+      and jsonb_typeof(question.public_payload->'surface') = 'object'
+      and jsonb_typeof(question.public_payload->'surface'->'src') = 'string'
+      and char_length(btrim(question.public_payload->'surface'->>'src')) > 0
+      and jsonb_typeof(question.public_payload->'surface'->'alt') = 'string'
+      and (question.public_payload->'surface'->>'width')::numeric = trunc((question.public_payload->'surface'->>'width')::numeric)
+      and (question.public_payload->'surface'->>'width')::integer between 1 and 8192
+      and (question.public_payload->'surface'->>'height')::numeric = trunc((question.public_payload->'surface'->>'height')::numeric)
+      and (question.public_payload->'surface'->>'height')::integer between 1 and 8192
+      and (question.public_payload->'surface'->>'fit' is null or question.public_payload->'surface'->>'fit' in ('cover','contain'))
+      and (not question.public_payload->'surface' ? 'position' or jsonb_typeof(question.public_payload->'surface'->'position') = 'string')
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'target'->'x') = 'number'
+      and (solution->'target'->>'x')::numeric between 0 and 1
+      and jsonb_typeof(solution->'target'->'y') = 'number'
+      and (solution->'target'->>'y')::numeric between 0 and 1
+      and jsonb_typeof(solution->'fullCreditRadius') = 'number'
+      and (solution->>'fullCreditRadius')::numeric >= 0
+      and jsonb_typeof(solution->'toleranceRadius') = 'number'
+      and (solution->>'toleranceRadius')::numeric > (solution->>'fullCreditRadius')::numeric;
+  end if;
+  if question.type = 'anagram' and question.payload_schema_version = 1 then
+    perform private.validate_flash_question_document(private.question_version_document(target_question));
+    return true;
+  end if;
   if question.payload_schema_version <> 1 then return false; end if;
   if question.type = 'multiple-choice' then
     return jsonb_typeof(question.public_payload) = 'object'
@@ -325,6 +383,8 @@ begin
         or (select count(*) from jsonb_array_elements_text(solution->'additionalGuesses') values(value)
             where private.mini_wordle_normalize(value) = private.mini_wordle_normalize(extra #>> '{}')) > 1)
     and not private.editorial_has_secret_key(question.public_payload);
+exception when others then
+  return false;
 end;
 $$;
 

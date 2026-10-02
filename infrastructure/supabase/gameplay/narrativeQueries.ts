@@ -5,7 +5,7 @@ import {
 } from "@/infrastructure/observability/competitivePerformance";
 import "server-only";
 
-import { competitiveQuestionTypesFor } from "@/features/question-formats/capabilities";
+import { competitiveQuestionTypesFor } from "@/lib/question-formats/definitions";
 import type {
   PublicFunctionArgs,
   PublicFunctionRow,

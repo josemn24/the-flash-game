@@ -38,6 +38,8 @@ const requested = process.argv.slice(2);
 const specs = requested.length
   ? requested
   : [
+      "format-contracts",
+      "format-contracts-pyramid",
       "s03",
       "s04",
       "s05",
@@ -58,6 +60,8 @@ const specs = requested.length
       "s07",
       "s14",
       "s15",
+      "s11",
+      "s17",
     ].flatMap((scenario) => E2E_BY_SCENARIO[scenario]);
 const savedFixtures = new Map();
 for (const scenario of new Set(specs.map(scenarioForSpec).filter(Boolean))) {

@@ -1,5 +1,4 @@
-import { competitiveCapabilityFor, type CompetitiveFormatCapability } from "./capabilities";
-import { COMPETITIVE_ADAPTERS } from "./formatRegistries";
+import { competitiveCapabilityFor } from "./capabilities";
 import type { FlashEditorialDocument } from "@/types/view-models/editorial";
 
 export type CapabilityPreflightCode = "unsupported_question_type" | "unsupported_schema_version";
@@ -16,10 +15,6 @@ function issue(
   message: string,
 ): CapabilityPreflightIssue {
   return { code, questionIndex, message };
-}
-
-function hasRegisteredAdapter(capability: CompetitiveFormatCapability) {
-  return COMPETITIVE_ADAPTERS[capability.adapterKey] === true;
 }
 
 /**
@@ -47,13 +42,6 @@ export function findEditorialCapabilityIssue(
         "unsupported_schema_version",
         questionIndex,
         `questions[${questionIndex}] usa una versión de payload no soportada para ${question.type}.`,
-      );
-    }
-    if (!hasRegisteredAdapter(capability)) {
-      return issue(
-        "unsupported_question_type",
-        questionIndex,
-        `questions[${questionIndex}] no tiene un adaptador competitivo registrado.`,
       );
     }
   }

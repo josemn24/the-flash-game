@@ -3,8 +3,8 @@ import { readFile } from "node:fs/promises";
 
 type FixtureAccount = { email: string; password: string };
 type Fixture = {
-  users: { alice: FixtureAccount; bob: FixtureAccount };
-  data: { room: { slug: string }; publicationId: string };
+  users: { alice: FixtureAccount; bob: FixtureAccount; superadmin: FixtureAccount };
+  data: { room: { slug: string }; publicationId: string; questionAssetId: string };
 };
 
 async function fixture() {
@@ -28,6 +28,71 @@ async function openFlash(page: Page, account: FixtureAccount) {
 }
 
 test.describe("E10 — Progressive-image competitivo", () => {
+  test("publica short-text y multiple-choice v2 con una imagen privada desde el editor", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const data = await fixture();
+    await signIn(page, data.users.superadmin);
+    const suffix = Date.now().toString(36);
+    const documents = [
+      {
+        slug: `text-contract-${suffix}`,
+        type: "short-text",
+        payloadSchemaVersion: 1,
+        timeLimitMs: 15000,
+        publicPayload: { question: "Capital de Portugal", answerPlaceholder: "Una ciudad" },
+        solutionPayload: {
+          correctAnswer: "Lisboa",
+          acceptedAnswers: ["lisboa"],
+          explanation: "La capital es Lisboa.",
+        },
+      },
+      {
+        slug: `image-contract-${suffix}`,
+        type: "multiple-choice",
+        payloadSchemaVersion: 2,
+        timeLimitMs: 15000,
+        publicPayload: {
+          question: "Capital de Portugal",
+          options: ["Lisboa", "Oporto"],
+          media: {
+            type: "image",
+            assetId: data.data.questionAssetId,
+            alt: "Contexto visual privado",
+            width: 847,
+            height: 566,
+            fit: "contain",
+          },
+        },
+        solutionPayload: { correctAnswer: "Lisboa", explanation: "La capital es Lisboa." },
+      },
+    ];
+    for (const document of documents) {
+      await page.goto("/admin/questions/new");
+      await page
+        .getByLabel("Documento standalone (sin points)")
+        .fill(JSON.stringify(document, null, 2));
+      await page.getByLabel("Motivo de auditoría").first().fill("Verificar contrato competitivo");
+      await page.getByRole("button", { name: "Crear borrador", exact: true }).click();
+      await expect(page).toHaveURL(/\/admin\/questions\/[0-9a-f-]{36}$/);
+      await expect(page.getByLabel("Documento standalone (sin points)")).toHaveValue(
+        new RegExp(document.slug),
+      );
+      const publish = page
+        .locator("form")
+        .filter({ has: page.getByRole("button", { name: "Publicar versión", exact: true }) });
+      await publish.getByLabel("Motivo de auditoría").fill("Publicar contrato verificado");
+      await publish.getByRole("button", { name: "Publicar versión", exact: true }).click();
+      await expect(page.getByText("published", { exact: true }).first()).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Crear nueva versión", exact: true }),
+      ).toBeVisible();
+      await expect(page.getByRole("button", { name: "Publicar versión", exact: true })).toHaveCount(
+        0,
+      );
+    }
+  });
   test("revela desde el timestamp del servidor y conserva el estado al reintentar", async ({
     page,
   }) => {
@@ -36,6 +101,7 @@ test.describe("E10 — Progressive-image competitivo", () => {
     await openFlash(page, data.users.alice);
 
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.locator('img[alt="Contexto visual de elección múltiple"]')).toBeVisible();
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: /monumento aparece/ })).toBeVisible();
     await expect(page.getByRole("progressbar", { name: "Progreso de revelado" })).toBeVisible();

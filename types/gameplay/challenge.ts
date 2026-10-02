@@ -187,27 +187,7 @@ export type ServerFlashChallenge = ChallengeBase & {
   slots: readonly {
     id: string;
     position: number;
-    questionType:
-      | "multiple-choice"
-      | "mini-wordle"
-      | "logic-code"
-      | "logic-matrix"
-      | "connect-pairs"
-      | "progressive-clues"
-      | "matching"
-      | "progressive-image"
-      | "queens"
-      | "true-false"
-      | "odd-one-out"
-      | "ordering"
-      | "anagram"
-      | "classification"
-      | "estimation"
-      | "heat-map"
-      | "word-search"
-      | "word-hashtag"
-      | "zip"
-      | "escape";
+    questionType: ServerFlashQuestion["type"];
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
@@ -263,11 +243,12 @@ export type ServerAlphabetProgress = {
   readonly letters: readonly ServerAlphabetLetter[];
 };
 
-export type ServerAlphabetQuestion = ServerFlashQuestionBase & {
+export type ServerShortTextQuestion = ServerFlashQuestionBase & {
   readonly type: "short-text";
-  readonly letter: string;
   readonly answerPlaceholder: string | null;
 };
+
+export type ServerAlphabetQuestion = ServerShortTextQuestion & { readonly letter: string };
 
 export type ServerAlphabetChallenge = ChallengeBase & {
   mode: "alphabet";
@@ -540,6 +521,7 @@ export type ServerQueensQuestion = ServerFlashQuestionBase & {
 };
 
 export type ServerFlashQuestion =
+  | ServerShortTextQuestion
   | ServerMultipleChoiceQuestion
   | ServerMiniWordleQuestion
   | ServerLogicCodeQuestion

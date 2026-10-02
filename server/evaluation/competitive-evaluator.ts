@@ -1,11 +1,11 @@
 import "server-only";
 
-import type { CompetitiveEvaluator } from "@/application/ports/competitive-evaluator";
 import type { EvaluationContext } from "@/application/ports/attempt-commands";
-import type { AnswerValue } from "@/types/contracts";
+import type { CompetitiveEvaluator } from "@/application/ports/competitive-evaluator";
+import { normalizeCompetitiveEvaluationContext } from "@/infrastructure/supabase/attempts/normalize-competitive-context";
 import { evaluateCompetitiveReceipt } from "@/server/evaluation/evaluate-receipt";
 import { resolveCompetitiveQuestion } from "@/server/evaluation/resolve-competitive-question";
-import { normalizeCompetitiveEvaluationContext } from "@/infrastructure/supabase/attempts/normalize-competitive-context";
+import type { AnswerValue } from "@/types/contracts";
 
 export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
   evaluate(context: EvaluationContext) {
@@ -18,7 +18,9 @@ export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
         timeUsedMs: context.timeUsedMs,
         timedOut: context.timedOut,
       },
-      question: resolveCompetitiveQuestion(normalizeCompetitiveEvaluationContext(context)),
+      question: resolveCompetitiveQuestion(
+        normalizeCompetitiveEvaluationContext(context, "authorized-runtime"),
+      ),
       answer: (context.answer as AnswerValue | null) ?? null,
       progressiveCluesRevealed: context.progressiveCluesRevealed ?? 1,
       progressiveClueAvailablePoints: context.progressiveClueAvailablePoints,

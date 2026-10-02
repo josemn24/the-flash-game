@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { checkInventory } from "./supabase-security-inventory.mjs";
 import { testConcurrentCommands } from "./test-supabase-concurrency.mjs";
+import { testFormatContracts } from "./test-format-contracts.mjs";
 
 const container = process.env.SUPABASE_DB_CONTAINER ?? "supabase_db_the-flash-game";
 const database = `flash_schema_check_${randomUUID().replaceAll("-", "")}`;
@@ -59,6 +60,7 @@ try {
       throw new Error(`${file}:\n${result}`);
     console.log(`${file}: ${result.match(/^1\.\.(\d+)/m)?.[1]} checks passed.`);
   }
+  await testFormatContracts(sql);
   await testConcurrentCommands(sql);
   console.log("Concurrent command tests passed (independent PostgreSQL connections).");
 } finally {

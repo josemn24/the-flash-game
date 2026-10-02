@@ -1,22 +1,27 @@
-import { validateCompetitiveRows } from "./competitiveReadProjection";
 import {
   competitivePerformanceObserver,
   countCompetitiveDatabaseCall,
 } from "@/infrastructure/observability/competitivePerformance";
+import {
+  competitivePayloadSchemaVersionsFor,
+  isCompetitiveQuestionType,
+  type CompetitiveQuestionType,
+} from "@/lib/question-formats/definitions";
+import type { GameMode } from "@/types/domain/content";
 import "server-only";
+import { validateCompetitiveRows } from "./competitiveReadProjection";
 
+import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
+import { FLASH_MAX_QUESTIONS, FLASH_MIN_QUESTIONS } from "@/lib/editorial/flashDocument";
 import type {
   PublicFunctionArgs,
   PublicFunctionRow,
   RawRpcResponse,
 } from "@/lib/supabase/rpcTypes";
 import { createClient } from "@/lib/supabase/server";
-import { FLASH_MAX_QUESTIONS, FLASH_MIN_QUESTIONS } from "@/lib/editorial/flashDocument";
 import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
-import type { GameRoomContext } from "@/types/view-models";
-import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
-import type { QueryContext } from "@/types/view-models";
+import type { GameRoomContext, QueryContext } from "@/types/view-models";
 
 type FlashReadOverrides = {
   publication_status: "scheduled" | "open" | "closed" | "cancelled";
@@ -29,27 +34,7 @@ type FlashReadOverrides = {
   own_attempt_completed_at: string | null;
   own_attempt_deadline_at: string | null;
   own_attempt_lock_version: number | null;
-  question_type:
-    | "multiple-choice"
-    | "mini-wordle"
-    | "logic-code"
-    | "logic-matrix"
-    | "connect-pairs"
-    | "progressive-clues"
-    | "matching"
-    | "progressive-image"
-    | "queens"
-    | "true-false"
-    | "odd-one-out"
-    | "ordering"
-    | "anagram"
-    | "classification"
-    | "estimation"
-    | "heat-map"
-    | "word-search"
-    | "word-hashtag"
-    | "zip"
-    | "escape";
+  question_type: CompetitiveQuestionType;
 };
 
 type CompetitiveReadFunctionName =
@@ -64,27 +49,7 @@ export type GeneratedCompetitiveReadRow<Name extends CompetitiveReadFunctionName
 export type FlashReadRow = GeneratedCompetitiveReadRow<"get_my_flash_challenge">;
 
 type FlashResultOverrides = {
-  question_type:
-    | "multiple-choice"
-    | "mini-wordle"
-    | "logic-code"
-    | "logic-matrix"
-    | "connect-pairs"
-    | "progressive-clues"
-    | "matching"
-    | "progressive-image"
-    | "queens"
-    | "true-false"
-    | "odd-one-out"
-    | "ordering"
-    | "anagram"
-    | "classification"
-    | "estimation"
-    | "heat-map"
-    | "word-search"
-    | "word-hashtag"
-    | "zip"
-    | "escape";
+  question_type: CompetitiveQuestionType;
   public_payload: unknown;
   solution_payload: unknown;
   answer: unknown;
@@ -150,30 +115,13 @@ export function isFlashReadRow<Name extends CompetitiveReadFunctionName = "get_m
     typeof value.challenge_item_id === "string" &&
     typeof value.item_position === "number" &&
     typeof value.question_version_id === "string" &&
-    (value.question_type === "multiple-choice" ||
-      value.question_type === "mini-wordle" ||
-      value.question_type === "logic-code" ||
-      value.question_type === "logic-matrix" ||
-      value.question_type === "connect-pairs" ||
-      value.question_type === "progressive-clues" ||
-      value.question_type === "matching" ||
-      value.question_type === "progressive-image" ||
-      value.question_type === "queens" ||
-      value.question_type === "true-false" ||
-      value.question_type === "odd-one-out" ||
-      value.question_type === "ordering" ||
-      value.question_type === "anagram" ||
-      value.question_type === "classification" ||
-      value.question_type === "estimation" ||
-      value.question_type === "heat-map" ||
-      value.question_type === "word-search" ||
-      value.question_type === "word-hashtag" ||
-      value.question_type === "zip" ||
-      value.question_type === "escape") &&
-    (value.payload_schema_version === 1 ||
-      (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
-      (value.question_type === "estimation" && value.payload_schema_version === 2) ||
-      (value.question_type === "heat-map" && value.payload_schema_version === 2)) &&
+    typeof value.question_type === "string" &&
+    isCompetitiveQuestionType(value.question_type, value.challenge_mode as GameMode) &&
+    typeof value.payload_schema_version === "number" &&
+    competitivePayloadSchemaVersionsFor(
+      value.question_type as CompetitiveQuestionType,
+      value.challenge_mode as GameMode | undefined,
+    ).includes(Number(value.payload_schema_version)) &&
     typeof value.time_limit_ms === "number" &&
     value.time_limit_ms > 0 &&
     typeof value.item_points === "number" &&
@@ -192,30 +140,13 @@ export function isFlashResultRow<
     typeof value.scheduled_challenge_id === "string" &&
     typeof value.challenge_item_id === "string" &&
     typeof value.item_position === "number" &&
-    (value.question_type === "multiple-choice" ||
-      value.question_type === "mini-wordle" ||
-      value.question_type === "logic-code" ||
-      value.question_type === "logic-matrix" ||
-      value.question_type === "connect-pairs" ||
-      value.question_type === "progressive-clues" ||
-      value.question_type === "matching" ||
-      value.question_type === "progressive-image" ||
-      value.question_type === "queens" ||
-      value.question_type === "true-false" ||
-      value.question_type === "odd-one-out" ||
-      value.question_type === "ordering" ||
-      value.question_type === "anagram" ||
-      value.question_type === "classification" ||
-      value.question_type === "estimation" ||
-      value.question_type === "heat-map" ||
-      value.question_type === "word-search" ||
-      value.question_type === "word-hashtag" ||
-      value.question_type === "zip" ||
-      value.question_type === "escape") &&
-    (value.payload_schema_version === 1 ||
-      (value.question_type === "progressive-image" && value.payload_schema_version === 2) ||
-      (value.question_type === "estimation" && value.payload_schema_version === 2) ||
-      (value.question_type === "heat-map" && value.payload_schema_version === 2)) &&
+    typeof value.question_type === "string" &&
+    isCompetitiveQuestionType(value.question_type, value.challenge_mode as GameMode) &&
+    typeof value.payload_schema_version === "number" &&
+    competitivePayloadSchemaVersionsFor(
+      value.question_type as CompetitiveQuestionType,
+      value.challenge_mode as GameMode | undefined,
+    ).includes(Number(value.payload_schema_version)) &&
     isRecord(value.public_payload) &&
     isRecord(value.solution_payload) &&
     (typeof value.answer === "string" ||

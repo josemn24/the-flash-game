@@ -46,8 +46,6 @@ export function preparedEvent(
   if (!slot || !attempt) throw new Error("competitive_question_not_found");
   const deadlineAt = timestamp(response.deadlineAt);
   const isAlphabet = challenge.mode === "alphabet";
-  if (!isAlphabet && slot.questionType === "short-text")
-    throw new Error("unsupported_competitive_format");
   const question = isAlphabet
     ? questionFromAlphabetPayload(
         itemId,

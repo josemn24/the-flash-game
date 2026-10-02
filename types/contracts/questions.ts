@@ -134,7 +134,7 @@ export type QuestionContractMap = {
   };
   readonly "progressive-image": {
     readonly public: {
-      readonly surface: ContractShapes.ImageSurface;
+      readonly surface: ContractShapes.ImageSurface | Omit<PrivateQuestionImageReference, "type">;
       readonly revealDurationMs: DurationMs;
       readonly answerLabel: string | null;
       readonly answerPlaceholder: string | null;

@@ -32,7 +32,12 @@ type SolutionOwnsCorrectAnswer = Assert<
   "correctAnswer" extends keyof QuestionSolutionOfType<"multiple-choice">["payload"] ? true : false
 >;
 type ProgressiveImageExposesPublicSource = Assert<
-  "src" extends keyof PublicQuestionOfType<"progressive-image">["payload"]["surface"] ? true : false
+  "src" extends keyof Extract<
+    PublicQuestionOfType<"progressive-image">["payload"]["surface"],
+    { src: string }
+  >
+    ? true
+    : false
 >;
 
 type QueensAnswerDoesNotFitSelection = Assert<

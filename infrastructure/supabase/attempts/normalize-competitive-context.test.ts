@@ -40,6 +40,31 @@ function context(overrides: Partial<EvaluationContext>): EvaluationContext {
 }
 
 describe("normalizeCompetitiveEvaluationContext", () => {
+  it.each(["flash", "survival", "pyramid", "narrative"] as const)(
+    "accepts the published multiple-choice v2 contract in %s",
+    (mode) => {
+      const normalized = normalizeCompetitiveEvaluationContext(
+        context({
+          mode,
+          payloadSchemaVersion: 2,
+          publicPayload: {
+            question: "Identify the image",
+            options: ["A", "B"],
+            media: {
+              type: "image",
+              assetId: "00000000-0000-4000-8000-000000000003",
+              alt: "An image",
+              width: 320,
+              height: 240,
+            },
+          },
+        }),
+      );
+      expect(normalized.publicQuestion.payload).toMatchObject({
+        media: { assetId: "00000000-0000-4000-8000-000000000003" },
+      });
+    },
+  );
   it("converts a flat multiple-choice payload to canonical contracts", () => {
     const normalized = normalizeCompetitiveEvaluationContext(context({}));
     const resolved = resolveCompetitiveQuestion(normalized);

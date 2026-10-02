@@ -1,5 +1,12 @@
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
-import type { ProgressiveImageQuestion } from "@/types/gameplay";
+type ProgressiveImageConfiguration = {
+  surface: { alt: string; width: number; height: number } & ({ src: string } | { assetId: string });
+  solutionAlt: string;
+  revealDuration: number;
+  timeLimit: number;
+  correctAnswer: string;
+  acceptedAnswers?: readonly string[];
+};
 
 export const PROGRESSIVE_IMAGE_INITIAL_BLUR = 32;
 export const PROGRESSIVE_IMAGE_INITIAL_SCALE = 1.08;
@@ -11,13 +18,19 @@ export function calculateProgressiveImageReveal(timeUsed: number, revealDuration
   return Math.min(1, Math.max(0, timeUsed / revealDuration));
 }
 
-export function isValidProgressiveImageConfiguration(question: ProgressiveImageQuestion): boolean {
+export function isValidProgressiveImageConfiguration(
+  question: ProgressiveImageConfiguration,
+): boolean {
   const acceptedAnswers = question.acceptedAnswers ?? [question.correctAnswer];
   const normalizedCorrectAnswer = normalizeAnswer(question.correctAnswer);
   const normalizedAnswers = acceptedAnswers.map(normalizeAnswer);
 
   return (
-    question.surface.src.trim().length > 0 &&
+    ("src" in question.surface
+      ? question.surface.src.trim().length > 0
+      : /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          question.surface.assetId,
+        )) &&
     question.surface.alt.trim().length > 0 &&
     Number.isFinite(question.surface.width) &&
     question.surface.width > 0 &&

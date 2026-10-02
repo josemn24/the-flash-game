@@ -565,6 +565,14 @@ reales en sus recorridos; esas piezas mock son puntos de sustitución, no el con
 
 ### Contenido y seguridad
 
+Los 21 formatos competitivos comparten definiciones y validadores puros en
+`lib/question-formats`. Cada formato tiene entradas separadas de cliente y servidor: los
+renderizadores y la revisión autorizada están en `features/question-formats`; la composición
+privada está protegida con `server-only` en `server/evaluation/formats`. Los registros tipados
+enlazan implementaciones reales y se verifican con un corpus común para TypeScript y SQL.
+Las representaciones y el recorrido completo se describen en
+[contratos de formatos competitivos](competitive-format-contracts.md).
+
 - La publicación referencia versiones inmutables de desafío y pregunta.
 - El editor S11/S14 conserva un documento editorial común para Flash y Supervivencia. Narrative
   reutiliza la proyección de contenido para lectura y ejecución, pero su edición avanzada queda fuera
