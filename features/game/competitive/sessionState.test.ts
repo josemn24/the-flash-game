@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { initialServerFlashSessionState, serverFlashSessionReducer } from "./sessionState";
+import { initialSessionState, sessionReducer } from "./core/sessionReducer";
 
 describe("server flash session reducer", () => {
   it("handles start, answer, transition and terminal result events", () => {
@@ -12,16 +12,15 @@ describe("server flash session reducer", () => {
       points: 10,
       timeUsed: 1.2,
     };
-    let state = initialServerFlashSessionState("intro");
+    let state = initialSessionState("intro");
 
-    state = serverFlashSessionReducer(state, {
-      type: "start_succeeded",
+    state = sessionReducer(state, {
+      type: "command_succeeded",
       attempt,
-      phase: "countdown",
     });
-    state = serverFlashSessionReducer(state, {
-      type: "answer_received",
-      attempt,
+    state = sessionReducer(state, {
+      type: "answer_accepted",
+      phase: "transition",
       result,
     });
     expect(state).toMatchObject({
@@ -31,8 +30,8 @@ describe("server flash session reducer", () => {
       lastResult: result,
     });
 
-    state = serverFlashSessionReducer(state, {
-      type: "transition_to_results",
+    state = sessionReducer(state, {
+      type: "completed",
       score: 10,
       reviewChallenge: null,
     });
@@ -40,9 +39,9 @@ describe("server flash session reducer", () => {
   });
 
   it("keeps invalid or duplicated lifecycle events harmless and expires once", () => {
-    const state = initialServerFlashSessionState("intro");
-    const expired = serverFlashSessionReducer(state, { type: "expire_attempt" });
-    const expiredAgain = serverFlashSessionReducer(expired, { type: "expire_attempt" });
+    const state = initialSessionState("intro");
+    const expired = sessionReducer(state, { type: "expired" });
+    const expiredAgain = sessionReducer(expired, { type: "expired" });
     expect(expired).toEqual(expiredAgain);
     expect(expired).toMatchObject({
       phase: "results",
@@ -52,8 +51,8 @@ describe("server flash session reducer", () => {
       locked: true,
     });
 
-    const stillIntro = serverFlashSessionReducer(state, {
-      type: "set_start_notice",
+    const stillIntro = sessionReducer(state, {
+      type: "command_failed",
       notice: "retry",
     });
     expect(stillIntro.phase).toBe("intro");

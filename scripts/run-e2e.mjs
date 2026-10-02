@@ -47,7 +47,11 @@ function run(command, args, options = {}) {
     const child = spawn(command, args, {
       cwd: process.cwd(),
       env,
-      stdio: "inherit",
+      // CLI start prints local credentials; keep them out of test logs.
+      stdio:
+        command === "npx" && args[0] === "supabase" && args[1] === "start"
+          ? ["inherit", "ignore", "inherit"]
+          : "inherit",
     });
     child.on("error", reject);
     child.on("close", (code, signal) => {
@@ -66,7 +70,13 @@ function run(command, args, options = {}) {
 
 async function prepareScenario(scenario) {
   await run("npm", ["run", "supabase:fixture", "--", "--scenario", scenario, "--clean"]);
-  await run("npm", ["run", "supabase:db:reset"]);
+  await run("npx", [
+    "supabase",
+    "db",
+    "reset",
+    "--local",
+    ...(process.env.SUPABASE_TEST_WORKDIR ? ["--workdir", process.env.SUPABASE_TEST_WORKDIR] : []),
+  ]);
   if (scenario === "e01") {
     await run("npm", ["run", "supabase:dictionary:load"]);
   }
@@ -94,16 +104,34 @@ export async function runSelectedE2E(args) {
     BROWSER_FIXTURE_SPECS.includes(normalizeSpecPath(spec)),
   );
   if (groups.size > 0 || browserSpecs.length > 0) {
-    await run("npx", ["supabase", "start"]);
+    await run("npx", [
+      "supabase",
+      "start",
+      ...(process.env.SUPABASE_TEST_WORKDIR
+        ? ["--workdir", process.env.SUPABASE_TEST_WORKDIR]
+        : []),
+    ]);
   }
 
+  const failedScenarios = [];
   for (const [scenario, specs] of groups) {
     await prepareScenario(scenario);
     try {
-      const scenarioEnv = scenario === "e01" ? { FLASH_RATE_LIMIT_BURST: "30" } : {};
-      await run("npm", ["run", "test:e2e:raw", "--", ...controlArgs, ...specs], {
-        env: scenarioEnv,
-      });
+      const scenarioEnv = {
+        ...(scenario === "e01" ? { FLASH_RATE_LIMIT_BURST: "30" } : {}),
+        PLAYWRIGHT_JSON_OUTPUT_FILE: `output/playwright/competitive-${scenario}.json`,
+      };
+      await run(
+        "npm",
+        ["run", "test:e2e:raw", "--", "--reporter=line,json", ...controlArgs, ...specs],
+        {
+          env: scenarioEnv,
+        },
+      );
+    } catch (error) {
+      if (process.env.E2E_CONTINUE_ON_FAILURE !== "1") throw error;
+      failedScenarios.push(scenario);
+      console.error(error.message);
     } finally {
       await cleanScenario(scenario);
     }
@@ -116,6 +144,8 @@ export async function runSelectedE2E(args) {
   if (unprepared.length > 0) {
     await run("npm", ["run", "test:e2e:raw", "--", ...controlArgs, ...unprepared]);
   }
+  if (failedScenarios.length)
+    throw new Error(`Escenarios E2E fallidos: ${failedScenarios.join(", ")}`);
 }
 
 async function main() {

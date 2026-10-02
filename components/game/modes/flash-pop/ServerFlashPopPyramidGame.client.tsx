@@ -1,5 +1,7 @@
 "use client";
 
+import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
+
 import { motion } from "motion/react";
 import { ArrowIcon, Button, Card, CheckIcon } from "@/components/ui";
 import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
@@ -185,7 +187,17 @@ export function ServerFlashPopPyramidGame({
   };
 
   return (
-    <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"} presentation="pyramid">
+    <FlashPopGameShell
+      notice={
+        <CompetitiveLifecycleNotice
+          error={session.lifecycleError}
+          busy={session.busy}
+          onRetry={session.retryLifecycle}
+        />
+      }
+      layout={session.phase === "intro" ? "intro" : "game"}
+      presentation="pyramid"
+    >
       {session.phase === "intro" ? (
         <ChallengeIntro
           introduction={{

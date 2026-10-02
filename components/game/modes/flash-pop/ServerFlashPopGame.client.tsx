@@ -1,5 +1,7 @@
 "use client";
 
+import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
+
 import { motion } from "motion/react";
 import {
   buildResultModel,
@@ -32,7 +34,16 @@ export function ServerFlashPopGame({
   const session = useServerFlashSession({ challenge, roomContext, terminalReview });
 
   return (
-    <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"}>
+    <FlashPopGameShell
+      notice={
+        <CompetitiveLifecycleNotice
+          error={session.lifecycleError}
+          busy={session.busy}
+          onRetry={session.retryLifecycle}
+        />
+      }
+      layout={session.phase === "intro" ? "intro" : "game"}
+    >
       {session.phase === "intro" ? (
         <motion.div
           key="intro"

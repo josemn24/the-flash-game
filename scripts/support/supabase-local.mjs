@@ -125,9 +125,21 @@ function parseEnvOutput(value) {
 
 async function localStatusEnv() {
   try {
-    const { stdout } = await execFileAsync("npx", ["supabase", "status", "-o", "env"], {
-      env: { ...process.env, SUPABASE_TELEMETRY: "false" },
-    });
+    const { stdout } = await execFileAsync(
+      "npx",
+      [
+        "supabase",
+        "status",
+        "-o",
+        "env",
+        ...(process.env.SUPABASE_TEST_WORKDIR
+          ? ["--workdir", process.env.SUPABASE_TEST_WORKDIR]
+          : []),
+      ],
+      {
+        env: { ...process.env, SUPABASE_TELEMETRY: "false" },
+      },
+    );
     return parseEnvOutput(stdout);
   } catch (error) {
     throw new Error(
@@ -209,9 +221,21 @@ export function dockerSql(sql, container = dbContainer) {
 }
 
 export async function resetLocalDatabase() {
-  await execFileAsync("npx", ["supabase", "db", "reset", "--local"], {
-    env: { ...process.env, SUPABASE_TELEMETRY: "false" },
-  });
+  await execFileAsync(
+    "npx",
+    [
+      "supabase",
+      "db",
+      "reset",
+      "--local",
+      ...(process.env.SUPABASE_TEST_WORKDIR
+        ? ["--workdir", process.env.SUPABASE_TEST_WORKDIR]
+        : []),
+    ],
+    {
+      env: { ...process.env, SUPABASE_TELEMETRY: "false" },
+    },
+  );
 }
 
 export async function createAuthAccounts(scenario, config) {

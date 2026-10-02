@@ -115,6 +115,61 @@ Los componentes de juego pueden tener una frontera cliente amplia porque compart
 feedback. Los componentes editoriales, de navegación y de consulta deben permanecer en servidor
 si no necesitan interacción.
 
+### Sesiones competitivas en el navegador
+
+Las fachadas `useServerFlashSession`, `useServerNarrativeSession` y
+`useServerAlphabetSession` conservan los contratos de las pantallas y se suscriben al mismo
+núcleo en `features/game/competitive/`. Flash, Supervivencia, Pirámide, Narrative y Alfabeto
+comparten este flujo; práctica y mock mantienen sus controladores actuales.
+
+```text
+Pantalla → fachada del modo → useCompetitiveSession
+                              → CompetitiveSessionEngine
+                                  ├── core/sessionReducer: snapshot único y commit(event)
+                                  ├── core/commandExecutor: cola y comando pendiente original
+                                  ├── core/attemptLifecycle: inicio, recuperación, preparación, activación, cierre
+                                  ├── core/advance: feedback y siguiente paso
+                                  ├── modes: secuencia, presentación y cursor recuperado
+                                  └── formats: comando, progreso y resultado normalizado
+                                          → attemptClient → Route Handler existente
+```
+
+El motor actualiza el snapshot utilizado por las operaciones asíncronas y notifica a React
+mediante un único `commit(event)` y `useSyncExternalStore`. No hay una copia de `lockVersion`
+en cada modo o formato. El reducer deduplica resultados por interacción y guarda intento,
+interacción, deadlines recibidos, resultados, comando pendiente y error de lifecycle.
+
+La cola resuelve la versión al enviar un comando nuevo. Desde ese momento conserva operación,
+intento/interacción, payload, versión y clave idempotente; un reintento reutiliza el comando
+completo. Los borradores Queens pasan por esa misma cola antes de validar o expirar. Los
+adaptadores se seleccionan mediante el catálogo de capacidades por modo/formato y producen
+progreso intermedio o una respuesta evaluada, sin gestionar recuperación ni cierre.
+
+Una respuesta aceptada inicia una espera de feedback; después, la política determina escena,
+briefing, preparación o cierre. Si ese paso falla, `lifecycleError` y `retryLifecycle` permiten
+reintentar solamente el comando pendiente. Los reintentos existentes de cada formato siguen
+funcionando. Una respuesta incierta bloquea nuevas escrituras; una versión obsoleta inicia
+recuperación autorizada mediante `start` y `recover`, sin reenviar ni cambiar la versión del
+comando rechazado. `429` conserva el comando y bloquea reintentos hasta `Retry-After`, sin polling.
+Alfabeto conserva su única recuperación automática de timeout y ofrece recuperación manual si
+esta falla. Si el cierre perdió su respuesta y la cookie ya se eliminó, se recarga la proyección
+server-side del resultado, que comprueba los hechos persistidos.
+
+Los cronómetros visuales existentes consumen deadlines del servidor. Las esperas de feedback
+no modifican esos deadlines. Pirámide prepara la pregunta y la activa después de montar su
+presentación; solo la activación inicia el reloj. Narrative conserva los deadlines de sus
+preguntas, mientras escenas y reacciones no consumen tiempo competitivo. Alfabeto conserva
+el deadline global y procesa secuencialmente las letras pendientes al expirar. Desmontar o
+cambiar el desafío cancela las esperas e invalida las respuestas tardías; la repetición de
+efectos de StrictMode conserva una única recuperación.
+
+La validación incluye pruebas del reducer, coordinación con cliente simulado y reloj controlado,
+y recorridos persistidos con pérdidas de respuesta. `npm run test:e2e:isolated` ejecuta los
+escenarios competitivos en un Supabase temporal, con identificador propio, puertos 55320–55329 y
+aplicación en 3300; limpia ese stack al terminar. El fixture S05 cubre Alfabeto y
+`narrative-interactive` cubre Queens y pistas dentro de Narrative. El stack local habitual del
+proyecto no se reinicia.
+
 ### 2.2 Entrada al backend
 
 Es la capa adaptadora entre Next.js y la aplicación. Puede usar `app/actions/` para Server Actions

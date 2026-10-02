@@ -30,6 +30,9 @@ export type CompetitiveAttemptClient = {
       idempotencyKey: string;
     },
   ) => Promise<CompetitiveJsonObject>;
+  alphabetPass: (
+    input: AttemptCommandContext & { challengeItemId: string; idempotencyKey: string },
+  ) => Promise<CompetitiveJsonObject>;
   complete: (
     input: AttemptCommandContext & { idempotencyKey: string },
   ) => Promise<CompetitiveJsonObject>;
@@ -107,6 +110,12 @@ export function createCompetitiveAttemptClient(): CompetitiveAttemptClient {
         idempotencyKey,
         challengeItemId,
         answer,
+      }),
+    alphabetPass: ({ attemptId, lockVersion, challengeItemId, idempotencyKey }) =>
+      post(`/api/competitive/attempts/${attemptId}/alphabet/pass`, {
+        lockVersion,
+        challengeItemId,
+        idempotencyKey,
       }),
     complete: ({ attemptId, lockVersion, idempotencyKey }) =>
       post(`/api/competitive/attempts/${attemptId}/complete`, { lockVersion, idempotencyKey }),

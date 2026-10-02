@@ -1,5 +1,7 @@
 "use client";
 
+import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
+
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Image from "next/image";
 import {
@@ -294,6 +296,11 @@ export function ServerNarrativeGame({
           contentClassName={styles.flashPopCanvasContent}
         >
           <div className={styles.gameContent}>
+            <CompetitiveLifecycleNotice
+              error={session.lifecycleError}
+              busy={session.busy}
+              onRetry={session.retryLifecycle}
+            />
             <AnimatePresence mode="wait">
               {session.phase === "intro" ? (
                 <motion.div key="narrative-intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -403,8 +410,17 @@ export function ServerNarrativeGame({
               {session.phase === "checking" ? (
                 <AnswerFeedbackStage
                   key="narrative-checking"
-                  state="checking"
-                  indicatorVisible={session.submissionStatusVisible}
+                  {...(session.submissionState === "error"
+                    ? {
+                        state: "error" as const,
+                        errorMessage:
+                          session.submissionError ?? "No hemos podido confirmar tu respuesta.",
+                        onRetry: session.retrySubmit,
+                      }
+                    : {
+                        state: "checking" as const,
+                        indicatorVisible: session.submissionStatusVisible,
+                      })}
                 />
               ) : null}
               {session.phase === "transition" ? (

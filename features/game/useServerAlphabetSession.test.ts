@@ -14,7 +14,16 @@ const hookHarness = vi.hoisted(() => ({
   pendingEffects: [] as Array<() => void>,
 }));
 
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("react", () => ({
+  useSyncExternalStore(_subscribe: unknown, snapshot: () => unknown) {
+    return snapshot();
+  },
+  useMemo(factory: () => unknown) {
+    const index = hookHarness.cursor++;
+    if (!hookHarness.slots[index]) hookHarness.slots[index] = { kind: "memo", value: factory() };
+    return hookHarness.slots[index].value;
+  },
   useState(initial: unknown) {
     const index = hookHarness.cursor++;
     let slot = hookHarness.slots[index];
@@ -126,7 +135,24 @@ describe("useServerAlphabetSession timeout finalization", () => {
 
           if (path.endsWith("/start"))
             return jsonResponse({ attemptId: "attempt-1", lockVersion: 1 });
-          if (path.endsWith("/recover")) return jsonResponse({ phase: "prepare", lockVersion: 2 });
+          if (path.endsWith("/recover"))
+            return jsonResponse({
+              phase: "prepare",
+              lockVersion: 2,
+              answers: calls.some(
+                (call) => call.path.endsWith("/answer") && call.body.challengeItemId === "item-A",
+              )
+                ? [
+                    {
+                      challengeItemId: "item-A",
+                      answer: "armadillo",
+                      status: "correct",
+                      points: 6,
+                      timeUsedMs: 1000,
+                    },
+                  ]
+                : [],
+            });
           if (path.endsWith("/prepare")) {
             const prepareCount = calls.filter((call) => call.path.endsWith("/prepare")).length;
             if (prepareCount <= 2) {
@@ -237,7 +263,7 @@ describe("useServerAlphabetSession timeout finalization", () => {
     expect(session.error).toBe(
       "Demasiadas solicitudes. Espera 4 segundos antes de volver a intentarlo.",
     );
-    expect(session.locked).toBe(false);
+    expect(session.locked).toBe(true);
     expect(calls.filter((path) => path.endsWith("/alphabet/pass"))).toHaveLength(1);
   });
 
@@ -296,7 +322,7 @@ describe("useServerAlphabetSession timeout finalization", () => {
     session = renderSessionHook();
 
     expect(session.phase).toBe("recovering");
-    expect(session.startNotice).toMatch(/Puedes reintentarlo/);
+    expect(session.startNotice).toMatch(/Puedes reintentarlo/i);
     expect(session.locked).toBe(true);
 
     session.retryRecovery();

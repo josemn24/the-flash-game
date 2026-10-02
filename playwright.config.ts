@@ -3,10 +3,22 @@ import { defineConfig, devices } from "@playwright/test";
 
 function parseLocalStatus() {
   try {
-    const output = execFileSync("npx", ["supabase", "status", "-o", "env"], {
-      encoding: "utf8",
-      env: { ...process.env, SUPABASE_TELEMETRY: "false" },
-    });
+    const output = execFileSync(
+      "npx",
+      [
+        "supabase",
+        "status",
+        "-o",
+        "env",
+        ...(process.env.SUPABASE_TEST_WORKDIR
+          ? ["--workdir", process.env.SUPABASE_TEST_WORKDIR]
+          : []),
+      ],
+      {
+        encoding: "utf8",
+        env: { ...process.env, SUPABASE_TELEMETRY: "false" },
+      },
+    );
     return Object.fromEntries(
       output.split("\n").flatMap((line) => {
         const match = line.match(/^([A-Z][A-Z0-9_]*)=(.*)$/);
