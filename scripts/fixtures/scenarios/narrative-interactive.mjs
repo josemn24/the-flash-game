@@ -48,7 +48,7 @@ export default sessionFixture({
       },
       solution: {
         correctAnswer: "Caída del muro de Berlín",
-        acceptedAnswers: ["muro de berlin"],
+        acceptedAnswers: ["Caída del muro de Berlín", "muro de berlin"],
         explanation: "El muro de Berlín.",
       },
     },
