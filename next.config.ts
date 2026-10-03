@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       {
-        source: "/flash-pop/:path*",
+        source: "/flash-pop/:path((?!concepts(?:/|$)).*)",
         destination: "/demo/flash-pop/:path*",
         permanent: true,
       },
