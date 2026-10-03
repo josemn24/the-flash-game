@@ -146,6 +146,91 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain("'sbr-creator'");
   });
 
+  it("generates four contiguous five-minute publications for the fast schedule", () => {
+    const sql = buildTabarniaDomainSql({
+      accounts: accounts(),
+      sbrAssetMetadata: {
+        byteSize: 10,
+        width: 1859,
+        height: 968,
+        sha256: "a".repeat(64),
+        mimeType: "image/png",
+      },
+      spainAssets: spainAssets(),
+      avatarMetadata: avatarMetadata(),
+      schedule: "fast",
+    });
+
+    expect(sql).toContain("'open', now(), now() + interval '5 minutes'");
+    expect(sql).toContain(
+      "'scheduled', now() + interval '5 minutes', now() + interval '10 minutes'",
+    );
+    expect(sql).toContain(
+      "'scheduled', now() + interval '10 minutes', now() + interval '15 minutes'",
+    );
+    expect(sql).toContain(
+      "'scheduled', now() + interval '15 minutes', now() + interval '20 minutes'",
+    );
+    expect(sql).toContain("'active', now(), now() + interval '20 minutes'");
+  });
+
+  it("includes the selected schedule in the Tabarnia manifest", async () => {
+    const output = await setupTabarniaDataset({
+      schedule: "fast",
+      dependencies: {
+        localSupabaseConfig: vi.fn(async () => ({
+          url: "http://127.0.0.1:54321",
+          dbContainer: "supabase_db_test",
+        })),
+        resetLocalDatabase: vi.fn(),
+        removeFixture: vi.fn(),
+        loadMiniWordleDictionary: vi.fn(),
+        createFixedAuthAccounts: vi.fn(async () => accounts()),
+        getMapMetadata: vi.fn(async () => ({
+          byteSize: 10,
+          width: 1859,
+          height: 968,
+          sha256: "a".repeat(64),
+        })),
+        getAvatarMetadata: vi.fn(async (user) => avatarMetadata()[user.label]),
+        prepareSpainAssets: vi.fn(async () => ({
+          assets: spainAssets(),
+          cleanup: vi.fn(),
+        })),
+        uploadStorageObject: vi.fn(),
+        dockerSql: vi.fn(),
+        writeFixture: vi.fn(),
+      },
+    });
+
+    expect(output).toMatchObject({
+      scheduleProfile: "fast",
+      scheduleWindowMinutes: 5,
+      seasonDurationMinutes: 20,
+    });
+    expect(
+      output.publications.map((publication) => [
+        publication.opensAfterMinutes,
+        publication.durationMinutes,
+      ]),
+    ).toEqual([
+      [0, 5],
+      [5, 5],
+      [10, 5],
+      [15, 5],
+    ]);
+  });
+
+  it("rejects an unknown schedule profile before building SQL", () => {
+    expect(() =>
+      buildTabarniaDomainSql({
+        accounts: accounts(),
+        sbrAssetMetadata: {},
+        schedule: "hourly",
+      }),
+    ).toThrow("Perfil de calendario no válido");
+  });
+
   it("resets, uploads the asset, executes SQL and writes the manifest", async () => {
     const runSql = vi.fn();
     const saveFixture = vi.fn();

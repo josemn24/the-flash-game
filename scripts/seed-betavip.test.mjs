@@ -278,6 +278,40 @@ describe("BetaVIP seed", () => {
     expect(sql).not.toContain("insert into public.attempts");
   });
 
+  it("publishes the three BetaVIP windows every five minutes in the fast schedule", () => {
+    const data = betaVipManifest(tabarniaFixture, "fast");
+    const sql = buildBetaVipDomainSql({
+      tabarniaFixture,
+      accounts: newAccounts,
+      cassetteAssetMetadata,
+      schedule: "fast",
+    });
+
+    expect(data).toMatchObject({
+      scheduleProfile: "fast",
+      scheduleWindowMinutes: 5,
+      seasonDurationMinutes: 15,
+    });
+    expect(
+      data.publications.map((publication) => [
+        publication.opensAfterMinutes,
+        publication.durationMinutes,
+      ]),
+    ).toEqual([
+      [0, 5],
+      [5, 5],
+      [10, 5],
+    ]);
+    expect(sql).toContain("'active', now(), now() + interval '15 minutes'");
+    expect(sql).toContain("'open', now(), now() + interval '5 minutes'");
+    expect(sql).toContain(
+      "'scheduled', now() + interval '5 minutes', now() + interval '10 minutes'",
+    );
+    expect(sql).toContain(
+      "'scheduled', now() + interval '10 minutes', now() + interval '15 minutes'",
+    );
+  });
+
   it("creates both rooms and writes BetaVIP only after its SQL succeeds", async () => {
     const setupTabarniaDataset = vi.fn();
     const readFixture = vi.fn(async () => tabarniaFixture);
@@ -287,6 +321,7 @@ describe("BetaVIP seed", () => {
     const uploadStorageObject = vi.fn();
 
     await setupBetaVipDataset({
+      schedule: "fast",
       dependencies: {
         setupTabarniaDataset,
         readFixture,
@@ -300,7 +335,7 @@ describe("BetaVIP seed", () => {
       },
     });
 
-    expect(setupTabarniaDataset).toHaveBeenCalledOnce();
+    expect(setupTabarniaDataset).toHaveBeenCalledWith({ schedule: "fast" });
     expect(readFixture).toHaveBeenCalledWith("tabarnia");
     expect(createAuthAccounts.mock.calls[0][0]).toMatchObject({
       id: "betavip",
@@ -310,12 +345,14 @@ describe("BetaVIP seed", () => {
       ],
     });
     expect(dockerSql).toHaveBeenCalledOnce();
+    expect(dockerSql.mock.calls[0][0]).toContain("now() + interval '5 minutes'");
     expect(uploadStorageObject).toHaveBeenCalledOnce();
     expect(uploadStorageObject.mock.calls[0][1].upsert).toBe(false);
     expect(writeFixture).toHaveBeenCalledWith(
       "betavip",
       expect.objectContaining({
         scenario: "betavip",
+        data: expect.objectContaining({ scheduleProfile: "fast" }),
         users: expect.objectContaining({
           xesmona: tabarniaFixture.users.xesmona,
           ches: tabarniaFixture.users.ches,

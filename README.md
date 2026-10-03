@@ -109,6 +109,33 @@ Supervivencia, mientras `data.survivalPublicationId`, `data.alphabetPublicationI
 `data.pyramidPublicationId` identifican explícitamente cada publicación. `data.questionAssets`
 contiene el recurso propio del casete.
 
+Para recorrer las temporadas locales sin esperar un día entre publicaciones, ambos seeds admiten un
+perfil rápido opcional:
+
+```bash
+npm run supabase:tabarnia:setup -- --schedule fast
+npm run supabase:betavip:setup -- --schedule fast
+```
+
+El perfil predeterminado `production` conserva las ventanas de 24 horas. `fast` usa ventanas reales
+de cinco minutos: Tabarnia recorre sus cuatro desafíos en 20 minutos y BetaVIP sus tres desafíos en
+15 minutos. Se acorta únicamente la ventana de publicación; los límites internos de preguntas,
+vidas, puntuación y deadlines no cambian. El manifiesto generado incluye `scheduleProfile` y la
+duración de la ventana para identificar el perfil utilizado.
+
+| Dataset             | `production` | `fast`    |
+| ------------------- | ------------ | --------- |
+| Tabarnia, desafío 1 | 0–24 h       | 0–5 min   |
+| Tabarnia, desafío 2 | 24–48 h      | 5–10 min  |
+| Tabarnia, desafío 3 | 48–72 h      | 10–15 min |
+| Tabarnia, desafío 4 | 72–96 h      | 15–20 min |
+| BetaVIP, desafío 1  | 0–24 h       | 0–5 min   |
+| BetaVIP, desafío 2  | 24–48 h      | 5–10 min  |
+| BetaVIP, desafío 3  | 48–72 h      | 10–15 min |
+
+El seed no ejecuta automáticamente el calendario. Tras alcanzar cada límite temporal, ejecuta el
+tick local con `npm run calendar:tick` mientras la aplicación y Supabase estén activos.
+
 Para preparar el staging remoto, aplica antes las migraciones con `supabase db push` y proporciona
 las variables de bootstrap indicadas en `.env.example`. Comprueba el destino sin escribir nada y,
 solo después, ejecuta:

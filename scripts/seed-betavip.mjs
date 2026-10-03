@@ -24,6 +24,12 @@ import {
   uploadStorageObject,
   writeFixture,
 } from "./support/supabase-local.mjs";
+import {
+  parseScheduleArgs,
+  resolveScheduleProfile,
+  scheduleInterval,
+  scheduleManifest,
+} from "./schedule-profile.mjs";
 import { setupTabarniaDataset } from "./seed-tabarnia.mjs";
 
 const namespace = "the-flash-game:betavip";
@@ -109,8 +115,10 @@ function steelBallRun(tabarniaFixture) {
   return publication;
 }
 
-export function betaVipManifest(tabarniaFixture) {
+export function betaVipManifest(tabarniaFixture, schedule = "production") {
+  const profile = resolveScheduleProfile(schedule);
   const steel = steelBallRun(tabarniaFixture);
+  const scheduleData = scheduleManifest(profile, 3, profile.name === "fast" ? 15 : 72 * 60);
   const pyramid = {
     id: stableId("publication:beta-vip-cumbre-logica-ii"),
     number: 3,
@@ -121,8 +129,7 @@ export function betaVipManifest(tabarniaFixture) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_PYRAMID.slug}-v1`),
     questionCount: pyramidItems.length,
     pointsTotal: pyramidItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 48,
-    durationHours: 24,
+    ...scheduleData.publications[2],
     status: "scheduled",
   };
   const alphabet = {
@@ -135,8 +142,7 @@ export function betaVipManifest(tabarniaFixture) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_ALPHABET.definitionSlug}-v1`),
     questionCount: alphabetItems.length,
     pointsTotal: alphabetItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 24,
-    durationHours: 24,
+    ...scheduleData.publications[1],
     status: "scheduled",
   };
   const survivalPublication = {
@@ -149,12 +155,14 @@ export function betaVipManifest(tabarniaFixture) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
     questionCount: survivalItems.length,
     pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 0,
-    durationHours: 24,
+    ...scheduleData.publications[0],
     status: "open",
   };
   return {
     room: { id: stableId("room:beta-vip"), slug: "beta-vip" },
+    scheduleProfile: scheduleData.scheduleProfile,
+    scheduleWindowMinutes: scheduleData.scheduleWindowMinutes,
+    seasonDurationMinutes: scheduleData.seasonDurationMinutes,
     seasonId: stableId("season:beta-vip"),
     publicationId: survivalPublication.id,
     challengeId: survivalPublication.challengeId,
@@ -181,8 +189,14 @@ export function betaVipManifest(tabarniaFixture) {
   };
 }
 
-export function buildBetaVipDomainSql({ tabarniaFixture, accounts, cassetteAssetMetadata }) {
-  const data = betaVipManifest(tabarniaFixture);
+export function buildBetaVipDomainSql({
+  tabarniaFixture,
+  accounts,
+  cassetteAssetMetadata,
+  schedule = "production",
+}) {
+  const profile = resolveScheduleProfile(schedule);
+  const data = betaVipManifest(tabarniaFixture, profile.name);
   const players = {
     ches: tabarniaFixture.users.ches?.playerId,
     dark: tabarniaFixture.users.dark?.playerId,
@@ -291,7 +305,7 @@ values
   (${sqlString(data.room.id)}, ${sqlString(players.dark)}, 'member', 'active', now());
 
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
-values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', now(), now() + interval '72 hours');
+values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', now(), now() + interval '${profile.betaVipSeasonEnd}');
 
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
@@ -361,11 +375,11 @@ insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
   (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 1,
-   'open', now(), now() + interval '24 hours'),
+   'open', now(), ${scheduleInterval(profile, 1)}),
   (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 2,
-   'scheduled', now() + interval '24 hours', now() + interval '48 hours'),
+   'scheduled', ${scheduleInterval(profile, 1)}, ${scheduleInterval(profile, 2)}),
   (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 3,
-   'scheduled', now() + interval '48 hours', now() + interval '72 hours');
+   'scheduled', ${scheduleInterval(profile, 2)}, ${scheduleInterval(profile, 3)});
 set constraints all immediate;
 commit;
 `;
@@ -625,7 +639,8 @@ on conflict (id) do nothing;
 `;
 }
 
-export async function setupBetaVipDataset({ dependencies = {} } = {}) {
+export async function setupBetaVipDataset({ schedule = "production", dependencies = {} } = {}) {
+  const profile = resolveScheduleProfile(schedule);
   const seedTabarnia = dependencies.setupTabarniaDataset ?? setupTabarniaDataset;
   const loadConfig = dependencies.localSupabaseConfig ?? localSupabaseConfig;
   const loadFixture = dependencies.readFixture ?? readFixture;
@@ -636,7 +651,7 @@ export async function setupBetaVipDataset({ dependencies = {} } = {}) {
   const uploadAsset = dependencies.uploadStorageObject ?? uploadStorageObject;
   const removeAsset = dependencies.removeStorageObject ?? removeStorageObject;
 
-  await seedTabarnia();
+  await seedTabarnia({ schedule: profile.name });
   const tabarniaFixture = await loadFixture("tabarnia");
   const config = await loadConfig({ requireServiceRole: true });
   const accounts = await createAccounts({ id: "betavip", users: newUsers }, config);
@@ -654,6 +669,7 @@ export async function setupBetaVipDataset({ dependencies = {} } = {}) {
         tabarniaFixture,
         accounts,
         cassetteAssetMetadata: preparedAsset.metadata,
+        schedule: profile.name,
       }),
       config.dbContainer,
     );
@@ -668,7 +684,7 @@ export async function setupBetaVipDataset({ dependencies = {} } = {}) {
     await preparedAsset.cleanup();
   }
 
-  const data = betaVipManifest(tabarniaFixture);
+  const data = betaVipManifest(tabarniaFixture, profile.name);
   const users = {
     xesmona: tabarniaFixture.users.xesmona,
     ches: tabarniaFixture.users.ches,
@@ -687,8 +703,13 @@ export async function setupBetaVipDataset({ dependencies = {} } = {}) {
 }
 
 async function main() {
-  const data = await setupBetaVipDataset();
+  const { schedule } = parseScheduleArgs(
+    process.argv.slice(2),
+    "Uso: npm run supabase:betavip:setup -- --schedule <production|fast>",
+  );
+  const data = await setupBetaVipDataset({ schedule });
   console.log("Datasets Tabarnia y BetaVIP creados en output/fixtures/.");
+  console.log(`Perfil de calendario: ${data.scheduleProfile}.`);
   console.log(`Salas: /salas/tabarnia y /salas/${data.room.slug}`);
   console.log(`/desafios/${data.publicationId}?roomId=${data.room.slug}`);
 }
