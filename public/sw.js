@@ -1,15 +1,15 @@
 const ASSET_CACHE = "the-flash-assets-v1";
-const PAGE_CACHE = "the-flash-pages-v1";
+const PAGE_CACHE = "the-flash-pages-v2";
 
 const CACHE_NAMES = new Set([ASSET_CACHE, PAGE_CACHE]);
 const STATIC_PREFIXES = ["/_next/static/", "/icons/", "/dictionaries/", "/visuals/"];
 const PUBLIC_PAGE_PREFIXES = [
   "/formatos",
-  "/flash-pop",
-  "/flash-pop-concepts",
-  "/flash-pop-typography",
+  "/demo/flash-pop",
+  "/demo/flash-pop-concepts",
+  "/demo/flash-pop-typography",
 ];
-const EXCLUDED_PREFIXES = ["/admin", "/api", "/desafios", "/salas"];
+const EXCLUDED_PREFIXES = ["/admin", "/api", "/desafios", "/salas", "/demo/flash-pop/desafios"];
 const STATIC_FILE_PATTERN = /\.(?:avif|css|gif|ico|jpeg|jpg|js|json|mjs|png|svg|webp|woff2?)$/i;
 
 function matchesPath(pathname, prefix) {
