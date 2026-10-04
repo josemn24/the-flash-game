@@ -354,6 +354,18 @@ segunda fuente de verdad ni en un comportamiento especial de producción.
 La autenticación responde a “quién es la persona”. La autorización responde a “qué puede hacer en
 este contexto”. Son comprobaciones distintas.
 
+El login y el logout siguen el recorrido `components/auth` → `app/actions/authentication` →
+`server/authentication` → `application/use-cases/authentication` → puerto `AuthenticationGateway`.
+El adaptador `infrastructure/supabase/identity/authentication` gestiona el cliente por petición,
+las cookies de sesión y la traducción de errores del SDK a códigos propios de
+`types/contracts/authentication`. La UI no recibe clientes, tokens ni errores del proveedor.
+Los estados de espera y los mensajes pertenecen al componente; la validación del payload se repite
+en el caso de uso porque la acción es una entrada pública.
+
+Las subidas de avatar y de imágenes editoriales usan `lib/media/uploadFile` para enviar los bytes
+por HTTP a la URL firmada preparada por el servidor. El componente trata esa URL como opaca; la
+selección del proveedor, la autorización y la confirmación del archivo quedan en el servidor.
+
 Propuesta:
 
 - `server/auth` obtiene la sesión del proveedor —previsto: Supabase Auth— y resuelve el `Player`;
@@ -441,6 +453,9 @@ Reglas concretas:
 4. `server` puede componer infraestructura y aplicación, pero no debe contener reglas de scoring.
 5. `app` usa la fachada server-only o entradas de backend; no lee `data/mock` directamente.
 6. `components` y `features` cliente no importan `server`, `infrastructure` ni `data`.
+   `type-architecture` rechaza además imports de `@supabase/*` y de `lib/supabase` desde
+   `components`, `features` y `app`, incluidos imports de tipos,
+   reexports e imports dinámicos literales. La UI invoca Server Actions y consume contratos propios.
 7. `infrastructure` implementa puertos; no es importada desde el dominio.
    En concreto, los adaptadores Supabase de sala (sus capacidades, RPCs,
    contratos, guards y mappers) solo consumen tipos/puertos de `application`, módulos puros de

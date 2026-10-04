@@ -14,7 +14,7 @@ import {
   updateQuestionDraft,
   type QuestionActionState,
 } from "@/app/admin/question-actions";
-import { createClient } from "@/lib/supabase/client";
+import { uploadFile } from "@/lib/media/uploadFile";
 import styles from "./QuestionVersionEditor.module.css";
 
 const initialState: QuestionActionState = {};
@@ -125,13 +125,8 @@ function QuestionAssetUploader({
         setMessage(prepared.message);
         return;
       }
-      const { error } = await createClient()
-        .storage.from("question-assets")
-        .uploadToSignedUrl(prepared.objectPath, prepared.uploadToken, file, {
-          contentType: file.type,
-          upsert: false,
-        });
-      if (error) {
+      const uploaded = await uploadFile(prepared.signedUploadUrl, file);
+      if (!uploaded) {
         await abortQuestionAsset(prepared.assetId);
         setMessage("No se ha podido subir el asset.");
         return;

@@ -21,7 +21,7 @@ import {
   prepareProfileAvatar,
   updateProfileName,
 } from "@/app/actions/profile";
-import { createClient } from "@/lib/supabase/client";
+import { uploadFile } from "@/lib/media/uploadFile";
 import { ROOM_ART_FALLBACK } from "@/lib/roomPresentation";
 import { getProfileInitials } from "@/lib/userProfile";
 import type { RoomCardModel } from "@/types/view-models/room";
@@ -89,14 +89,8 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
       });
       if (!prepared.ok) return prepared;
 
-      const uploadClient = createClient();
-      const { error: uploadError } = await uploadClient.storage
-        .from("avatars")
-        .uploadToSignedUrl(prepared.objectPath, prepared.uploadToken, file, {
-          contentType: file.type,
-          upsert: false,
-        });
-      if (uploadError) {
+      const uploaded = await uploadFile(prepared.signedUploadUrl, file);
+      if (!uploaded) {
         await abortProfileAvatar(prepared.assetId);
         return {
           ok: false as const,

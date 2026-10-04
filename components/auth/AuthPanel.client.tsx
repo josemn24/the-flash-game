@@ -2,36 +2,24 @@
 
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { isAuthError, isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { Button, BoltIcon, Card, Canvas } from "@/components/ui";
-import { createClient } from "@/lib/supabase/client";
+import { signIn } from "@/app/actions/authentication";
+import type { AuthenticationFailureCode } from "@/types/contracts/authentication";
 import styles from "./AuthPanel.module.css";
 
 type LoginState =
   | { status: "idle" | "authenticating" | "authenticated" }
   | { status: "error"; message: string; invalidCredentials: boolean };
 
-function loginErrorState(error: unknown): LoginState {
-  let message = "No se ha podido iniciar sesión. Inténtalo de nuevo.";
-  let invalidCredentials = false;
-
-  if (isAuthError(error)) {
-    if (error.code === "invalid_credentials") {
-      message = "Correo o contraseña incorrectos. Revisa tus datos.";
-      invalidCredentials = true;
-    } else if (error.status === 429 || error.code === "over_request_rate_limit") {
-      message = "Demasiados intentos. Espera un momento y vuelve a intentarlo.";
-    } else if (
-      (error.status !== undefined && error.status >= 500 && error.status < 600) ||
-      error.code === "request_timeout"
-    ) {
-      message = "El servicio no está disponible ahora. Inténtalo de nuevo.";
-    } else if (isAuthRetryableFetchError(error)) {
-      message = "No hemos podido conectar. Comprueba tu conexión y vuelve a intentarlo.";
-    }
-  }
-
-  return { status: "error", message, invalidCredentials };
+function loginErrorState(code: AuthenticationFailureCode): LoginState {
+  const messages: Record<AuthenticationFailureCode, string> = {
+    credentials: "Correo o contraseña incorrectos. Revisa tus datos.",
+    rate_limit: "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
+    service: "El servicio no está disponible ahora. Inténtalo de nuevo.",
+    connection: "No hemos podido conectar. Comprueba tu conexión y vuelve a intentarlo.",
+    unexpected: "No se ha podido iniciar sesión. Inténtalo de nuevo.",
+  };
+  return { status: "error", message: messages[code], invalidCredentials: code === "credentials" };
 }
 
 export function AuthPanel() {
@@ -75,18 +63,17 @@ export function AuthPanel() {
     setState({ status: "authenticating" });
     startTransition(async () => {
       try {
-        const supabase = createClient();
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const result = await signIn({ email, password });
 
-        if (error) {
-          setState(loginErrorState(error));
+        if (!result.ok) {
+          setState(loginErrorState(result.code));
           return;
         }
 
         setState({ status: "authenticated" });
         startTransition(() => router.refresh());
-      } catch (error) {
-        setState(loginErrorState(error));
+      } catch {
+        setState(loginErrorState("unexpected"));
       }
     });
   }

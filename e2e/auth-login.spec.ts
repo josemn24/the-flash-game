@@ -20,7 +20,7 @@ async function fillLogin(page: Page) {
   await page.getByLabel("Contraseña").fill(fixture.users.member.password);
 }
 
-const tokenRoute = /\/auth\/v1\/token\?grant_type=password$/;
+const homeRoute = (url: URL) => url.pathname === "/";
 
 for (const viewport of [
   { name: "desktop", width: 1280, height: 900 },
@@ -29,31 +29,33 @@ for (const viewport of [
   test.describe(`Estados del login — ${viewport.name}`, () => {
     test.use({ viewport: { width: viewport.width, height: viewport.height } });
 
-    test("mantiene el bloqueo durante la autenticación y la entrada a la portada", async ({
+    test("mantiene el bloqueo mientras la acción autentica y prepara la portada", async ({
       page,
     }) => {
       const authentication = gate();
       const home = gate();
       let tokenRequests = 0;
-      let refreshRequests = 0;
+      let actionRequests = 0;
+      let preparedHome = false;
       const pageErrors: Error[] = [];
       page.on("pageerror", (error) => pageErrors.push(error));
 
-      await page.route(tokenRoute, async (route) => {
-        tokenRequests++;
-        await authentication.promise;
-        await route.continue();
+      page.on("request", (request) => {
+        if (new URL(request.url()).pathname === "/auth/v1/token") tokenRequests++;
       });
-      await page.route(
-        (url) => url.pathname === "/",
-        async (route) => {
-          if (route.request().headers().rsc === "1") {
-            refreshRequests++;
-            await home.promise;
-          }
+      await page.route(homeRoute, async (route) => {
+        if (!route.request().headers()["next-action"]) {
           await route.continue();
-        },
-      );
+          return;
+        }
+        actionRequests++;
+        await authentication.promise;
+        // Cookie mutations carry the authenticated page in the same action response.
+        const response = await route.fetch();
+        preparedHome = true;
+        await home.promise;
+        await route.fulfill({ response });
+      });
 
       try {
         await fillLogin(page);
@@ -65,7 +67,7 @@ for (const viewport of [
         await expect(page.getByLabel("Contraseña")).toBeDisabled();
         await expect(page.locator("form")).toHaveAttribute("aria-busy", "true");
         await expect(page.getByRole("status")).toHaveText("Iniciando sesión…");
-        await expect.poll(() => tokenRequests).toBe(1);
+        await expect.poll(() => actionRequests).toBe(1);
 
         const spinner = loading.locator('span[aria-hidden="true"]');
         await expect(spinner).toHaveCSS("width", "18px");
@@ -84,12 +86,11 @@ for (const viewport of [
         await page.locator("form").evaluate((form) => {
           form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
         });
-        expect(tokenRequests).toBe(1);
+        expect(actionRequests).toBe(1);
 
         authentication.release();
-        await expect(page.getByRole("status")).toHaveText("Entrando…");
-        await expect.poll(() => refreshRequests).toBe(1);
-        await expect(page.getByRole("button", { name: "Entrando…" })).toBeDisabled();
+        await expect.poll(() => preparedHome).toBe(true);
+        await expect(loading).toBeDisabled();
         await expect(page.getByLabel("Correo electrónico")).toBeDisabled();
         await expect(page.getByLabel("Contraseña")).toBeDisabled();
         await expect(page.getByRole("main").getByRole("alert")).toBeEmpty();
@@ -97,7 +98,8 @@ for (const viewport of [
         home.release();
         await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
         await expect(page.getByLabel("Correo electrónico")).toHaveCount(0);
-        expect(tokenRequests).toBe(1);
+        expect(actionRequests).toBe(1);
+        expect(tokenRequests).toBe(0);
         expect(pageErrors).toEqual([]);
       } finally {
         authentication.release();
@@ -111,25 +113,35 @@ for (const viewport of [
       let attempts = 0;
       const pageErrors: Error[] = [];
       page.on("pageerror", (error) => pageErrors.push(error));
-      await page.route(tokenRoute, async (route) => {
+      await page.route(homeRoute, async (route) => {
+        if (!route.request().headers()["next-action"]) {
+          await route.continue();
+          return;
+        }
         attempts++;
         if (attempts === 1) {
+          // Exercise the real server adapter with an incorrect password.
+          const response = await route.fetch();
+          const failureBody = await response.text();
+          expect(failureBody).toContain('"ok":false,"code":"credentials"');
+          await route.fulfill({ response });
+        } else if (attempts === 2 || attempts === 3) {
+          // A fresh request also completes Next's development debug channel.
+          const response = await route.fetch();
+          const failureBody = await response.text();
+          expect(failureBody).toContain('"ok":false,"code":"credentials"');
+          const headers = response.headers();
+          delete headers["content-encoding"];
+          delete headers["content-length"];
+          // The UI consumes application codes, independently of the provider response.
           await route.fulfill({
-            status: 400,
-            contentType: "application/json",
-            body: JSON.stringify({
-              error_code: "invalid_credentials",
-              msg: "internal-provider-detail",
-            }),
+            status: response.status(),
+            headers,
+            body: failureBody.replace(
+              '"ok":false,"code":"credentials"',
+              `"ok":false,"code":"${attempts === 2 ? "service" : "connection"}"`,
+            ),
           });
-        } else if (attempts === 2) {
-          await route.fulfill({
-            status: 503,
-            contentType: "application/json",
-            body: JSON.stringify({ msg: "internal-provider-detail" }),
-          });
-        } else if (attempts === 3) {
-          await route.abort("internetdisconnected");
         } else {
           await route.continue();
         }
@@ -140,6 +152,7 @@ for (const viewport of [
       const password = page.getByLabel("Contraseña");
       const originalEmail = await email.inputValue();
       const originalPassword = await password.inputValue();
+      await password.fill(`${originalPassword}-incorrect`);
       const submit = page.getByRole("button", { name: "Iniciar sesión", exact: true });
       const alert = page.getByRole("main").getByRole("alert");
 
@@ -159,7 +172,7 @@ for (const viewport of [
           return color;
         }),
       );
-      expect(await page.locator("body").innerText()).not.toContain("internal-provider-detail");
+      expect(await page.locator("body").innerText()).not.toContain("invalid_credentials");
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
       ).toBe(true);
@@ -178,7 +191,7 @@ for (const viewport of [
       await expect(email).not.toHaveAttribute("aria-invalid");
       await expect(password).not.toHaveAttribute("aria-describedby");
       await expect(email).toHaveValue(originalEmail);
-      await expect(password).toHaveValue(originalPassword);
+      await expect(password).toHaveValue(`${originalPassword}-incorrect`);
 
       await submit.click();
       await expect(alert).toHaveText(
@@ -186,6 +199,7 @@ for (const viewport of [
       );
       await expect(submit).toBeEnabled();
       await expect(page.getByRole("status")).toBeEmpty();
+      await password.fill(originalPassword);
       await submit.click();
       await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
       expect(attempts).toBe(4);

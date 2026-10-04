@@ -76,7 +76,7 @@ function layerFor(file) {
   return path.relative(TYPES_ROOT, file).split(path.sep)[0];
 }
 
-function importsIn(source) {
+function importsIn(source, includeDynamic = false) {
   const matches = source.matchAll(
     /(?:import|export)\s+(type\s+)?(?:[^"']*?\s+from\s+)?["']([^"']+)["']/g,
   );
@@ -84,7 +84,18 @@ function importsIn(source) {
     statement,
     typeOnly: Boolean(typeOnly),
     specifier,
-  }));
+  })).concat(
+    includeDynamic
+      ? Array.from(
+          source.matchAll(/import\s*\(\s*["']([^"']+)["']\s*\)/g),
+          ([statement, specifier]) => ({
+            statement,
+            typeOnly: false,
+            specifier,
+          }),
+        )
+      : [],
+  );
 }
 
 function isLegacyTypeSpecifier(specifier) {
@@ -224,6 +235,19 @@ function isSupabaseGeneratedType(specifier) {
   return specifier === "@/lib/supabase/database.types";
 }
 
+function isSupabaseDependency(specifier, importingFile) {
+  if (specifier.startsWith("@supabase/")) return true;
+  const resolved = specifier.startsWith("@/")
+    ? path.resolve(process.cwd(), specifier.slice(2))
+    : specifier.startsWith(".")
+      ? path.resolve(path.dirname(importingFile), specifier)
+      : null;
+  const boundary = path.join(process.cwd(), "lib", "supabase");
+  return (
+    resolved !== null && (resolved === boundary || resolved.startsWith(`${boundary}${path.sep}`))
+  );
+}
+
 function isApplicationForbiddenImport(specifier) {
   return (
     specifier === "server-only" ||
@@ -250,7 +274,14 @@ for (const file of productionFiles) {
   const isMockAdapter = isMockInfrastructure(relative);
   const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
 
-  for (const imported of importsIn(source)) {
+  for (const imported of importsIn(source, true)) {
+    if (
+      ["app", "components", "features"].includes(layer) &&
+      isSupabaseDependency(imported.specifier, file)
+    ) {
+      violations.push(`${relative} exposes Supabase to UI via ${imported.specifier}`);
+    }
+
     if (isLegacyTypeSpecifier(imported.specifier) && !isLocalCompatibility) {
       violations.push(`${relative} imports legacy type barrel ${imported.specifier}`);
     }

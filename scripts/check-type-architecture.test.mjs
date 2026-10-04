@@ -27,6 +27,45 @@ async function expectCheckerFailure(relativePath, source, message) {
 }
 
 describe("type architecture boundary checker", () => {
+  it.each([
+    ["components", 'import { isAuthError } from "@supabase/supabase-js";', "@supabase/supabase-js"],
+    ["features", 'import { createBrowserClient } from "@supabase/ssr";', "@supabase/ssr"],
+    [
+      "components",
+      'import { createClient } from "@/lib/supabase/client";',
+      "@/lib/supabase/client",
+    ],
+    [
+      "components",
+      'import { createClient } from "../lib/supabase/client";',
+      "../lib/supabase/client",
+    ],
+    [
+      "components",
+      'export { createClient } from "@/lib/supabase/client";',
+      "@/lib/supabase/client",
+    ],
+    ["features", 'const sdk = import("@supabase/supabase-js");', "@supabase/supabase-js"],
+    [
+      "app",
+      '"use client";\nimport { createClient } from "@/lib/supabase/client";',
+      "@/lib/supabase/client",
+    ],
+    [
+      "app",
+      '"use server";\nimport { createClient } from "@/lib/supabase/server";',
+      "@/lib/supabase/server",
+    ],
+    [
+      "components",
+      'import type { AuthError } from "@supabase/supabase-js";',
+      "@supabase/supabase-js",
+    ],
+  ])("rejects provider dependencies in %s: %s", async (layer, source, specifier) => {
+    const file = `${layer}/__architecture-authentication-test__.ts`;
+    await expectCheckerFailure(file, source, `${file} exposes Supabase to UI via ${specifier}`);
+  });
+
   it("fails when a production route imports the demo facade", async () => {
     await expectCheckerFailure(
       "app/__architecture-boundary-test__.ts",

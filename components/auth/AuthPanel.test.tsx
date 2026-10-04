@@ -3,13 +3,15 @@
 import { Suspense, use, useEffect, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { AuthApiError, AuthRetryableFetchError } from "@supabase/supabase-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type {
+  AuthenticationFailureCode,
+  AuthenticationResult,
+} from "@/types/contracts/authentication";
 import { AuthPanel } from "./AuthPanel.client";
 
-const { createClientMock, signInWithPassword, refresh } = vi.hoisted(() => ({
-  createClientMock: vi.fn(),
-  signInWithPassword: vi.fn(),
+const { signIn, refresh } = vi.hoisted(() => ({
+  signIn: vi.fn(),
   refresh: vi.fn(),
 }));
 
@@ -17,8 +19,8 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ refresh }),
 }));
 
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: createClientMock,
+vi.mock("@/app/actions/authentication", () => ({
+  signIn,
 }));
 
 function deferred<T>() {
@@ -50,8 +52,7 @@ function RouterHarness({ response }: { response: Promise<boolean> }) {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  createClientMock.mockReturnValue({ auth: { signInWithPassword } });
-  signInWithPassword.mockResolvedValue({ error: null });
+  signIn.mockResolvedValue({ ok: true });
 });
 
 afterEach(cleanup);
@@ -70,8 +71,8 @@ describe("AuthPanel", () => {
   });
 
   it("locks the form for the entire request and ignores simultaneous submissions", async () => {
-    const request = deferred<{ error: AuthApiError }>();
-    signInWithPassword.mockReturnValue(request.promise);
+    const request = deferred<AuthenticationResult>();
+    signIn.mockReturnValue(request.promise);
     render(<AuthPanel />);
     const { email, password, form } = fillForm();
 
@@ -90,13 +91,13 @@ describe("AuthPanel", () => {
     expect(form.contains(screen.getByRole("status"))).toBe(false);
     expect(form.contains(screen.getByRole("alert"))).toBe(false);
     fireEvent.submit(form);
-    expect(signInWithPassword).toHaveBeenCalledTimes(1);
-    expect(signInWithPassword).toHaveBeenCalledWith({
+    expect(signIn).toHaveBeenCalledTimes(1);
+    expect(signIn).toHaveBeenCalledWith({
       email: "player@example.com",
       password: "test-password",
     });
 
-    await act(async () => request.resolve({ error: new AuthApiError("private", 400, undefined) }));
+    await act(async () => request.resolve({ ok: false, code: "unexpected" }));
     await waitFor(() => expect(email.disabled).toBe(false));
     expect(password.disabled).toBe(false);
     expect(form.getAttribute("aria-busy")).toBe("false");
@@ -104,48 +105,13 @@ describe("AuthPanel", () => {
   });
 
   it.each([
-    [
-      new AuthApiError("private", 400, "invalid_credentials"),
-      "Correo o contraseña incorrectos. Revisa tus datos.",
-      true,
-    ],
-    [
-      new AuthApiError("private", 429, undefined),
-      "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
-      false,
-    ],
-    [
-      new AuthApiError("private", 400, "over_request_rate_limit"),
-      "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
-      false,
-    ],
-    [
-      new AuthRetryableFetchError("private", 503),
-      "El servicio no está disponible ahora. Inténtalo de nuevo.",
-      false,
-    ],
-    [
-      new AuthApiError("private", 504, "request_timeout"),
-      "El servicio no está disponible ahora. Inténtalo de nuevo.",
-      false,
-    ],
-    [
-      new AuthApiError("private", 408, "request_timeout"),
-      "El servicio no está disponible ahora. Inténtalo de nuevo.",
-      false,
-    ],
-    [
-      new AuthRetryableFetchError("private", 0),
-      "No hemos podido conectar. Comprueba tu conexión y vuelve a intentarlo.",
-      false,
-    ],
-    [
-      new AuthApiError("private", 400, undefined),
-      "No se ha podido iniciar sesión. Inténtalo de nuevo.",
-      false,
-    ],
-  ])("shows actionable feedback for %s", async (error, message, invalidCredentials) => {
-    signInWithPassword.mockResolvedValue({ error });
+    ["credentials", "Correo o contraseña incorrectos. Revisa tus datos.", true],
+    ["rate_limit", "Demasiados intentos. Espera un momento y vuelve a intentarlo.", false],
+    ["service", "El servicio no está disponible ahora. Inténtalo de nuevo.", false],
+    ["connection", "No hemos podido conectar. Comprueba tu conexión y vuelve a intentarlo.", false],
+    ["unexpected", "No se ha podido iniciar sesión. Inténtalo de nuevo.", false],
+  ])("shows actionable feedback for %s", async (code, message, invalidCredentials) => {
+    signIn.mockResolvedValue({ ok: false, code: code as AuthenticationFailureCode });
     render(<AuthPanel />);
     const { email, password, form } = fillForm();
     fireEvent.submit(form);
@@ -165,35 +131,24 @@ describe("AuthPanel", () => {
     expect(refresh).not.toHaveBeenCalled();
   });
 
-  it.each(["client creation", "rejected request"])(
-    "recovers from %s exceptions",
-    async (source) => {
-      if (source === "client creation") {
-        createClientMock.mockImplementationOnce(() => {
-          throw new Error("private configuration");
-        });
-      } else {
-        signInWithPassword.mockRejectedValueOnce(new Error("private configuration"));
-      }
-      render(<AuthPanel />);
-      const { email, form } = fillForm();
-      fireEvent.submit(form);
-      await waitFor(() => {
-        expect(email.disabled).toBe(false);
-        expect(screen.getByRole("alert").textContent).toBe(
-          "No se ha podido iniciar sesión. Inténtalo de nuevo.",
-        );
-      });
+  it("recovers from a rejected server action", async () => {
+    signIn.mockRejectedValueOnce(new Error("private configuration"));
+    render(<AuthPanel />);
+    const { email, form } = fillForm();
+    fireEvent.submit(form);
+    await waitFor(() => {
+      expect(email.disabled).toBe(false);
+      expect(screen.getByRole("alert").textContent).toBe(
+        "No se ha podido iniciar sesión. Inténtalo de nuevo.",
+      );
+    });
 
-      fireEvent.submit(form);
-      await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
-    },
-  );
+    fireEvent.submit(form);
+    await waitFor(() => expect(refresh).toHaveBeenCalledTimes(1));
+  });
 
   it("clears credential feedback when either field changes and when retrying", async () => {
-    signInWithPassword.mockResolvedValue({
-      error: new AuthApiError("private", 400, "invalid_credentials"),
-    });
+    signIn.mockResolvedValue({ ok: false, code: "credentials" });
     render(<AuthPanel />);
     const { email, password, form } = fillForm();
     for (const field of [email, password]) {
@@ -210,11 +165,11 @@ describe("AuthPanel", () => {
 
     fireEvent.submit(form);
     await waitFor(() => expect(email.disabled).toBe(false));
-    const request = deferred<{ error: AuthApiError }>();
-    signInWithPassword.mockReturnValueOnce(request.promise);
+    const request = deferred<AuthenticationResult>();
+    signIn.mockReturnValueOnce(request.promise);
     fireEvent.submit(form);
     expect(screen.getByRole("alert").textContent).toBe("");
-    await act(async () => request.resolve({ error: new AuthApiError("private", 400, undefined) }));
+    await act(async () => request.resolve({ ok: false, code: "unexpected" }));
   });
 
   it("keeps the entry transition busy until the authenticated home replaces the login", async () => {
@@ -236,7 +191,7 @@ describe("AuthPanel", () => {
     expect(screen.queryByRole("button", { name: "Reintentar entrada" })).toBeNull();
     expect(screen.getByRole("alert").textContent).toBe("");
     fireEvent.submit(form);
-    expect(signInWithPassword).toHaveBeenCalledTimes(1);
+    expect(signIn).toHaveBeenCalledTimes(1);
     expect(refresh).toHaveBeenCalledTimes(1);
 
     await act(async () => response.resolve(true));
@@ -257,7 +212,7 @@ describe("AuthPanel", () => {
       fireEvent.click(retry);
     });
     await waitFor(() => expect(refresh).toHaveBeenCalledTimes(2));
-    expect(signInWithPassword).toHaveBeenCalledTimes(1);
+    expect(signIn).toHaveBeenCalledTimes(1);
     await waitFor(() => expect((retry as HTMLButtonElement).disabled).toBe(false));
     fireEvent.click(retry);
     await waitFor(() => expect(refresh).toHaveBeenCalledTimes(3));
