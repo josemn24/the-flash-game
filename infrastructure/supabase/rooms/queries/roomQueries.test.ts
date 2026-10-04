@@ -15,6 +15,7 @@ import { SupabaseRoomLobbyQueries } from "./roomLobbyQueries";
 import { SupabaseRoomMemberDetailQueries } from "./roomMemberDetailQueries";
 import { SupabaseRoomRankingQueries } from "./roomRankingQueries";
 import { SupabaseRoomSettingsQueries } from "./roomSettingsQueries";
+import { isRoomMemberReviewReadRow } from "./roomReadGuards";
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
@@ -764,6 +765,34 @@ const reviewRows = [
   },
 ];
 
+const survivalEstimationRow = {
+  ...reviewRows[0],
+  challenge_mode: "survival",
+  question_count: 20,
+  initial_lives: 3,
+  item_position: 12,
+  question_type: "estimation",
+  payload_schema_version: 2,
+  time_limit_ms: 14000,
+  public_payload: {
+    category: "Matemáticas y geografía",
+    tags: reviewRows[0].public_payload.tags,
+    question: "¿Cuál es aproximadamente la superficie de España?",
+    min: 300000,
+    max: 700000,
+    step: 10000,
+    initialValue: 450000,
+    unit: "km²",
+    media: null,
+  },
+  solution_payload: {
+    correctAnswer: 506000,
+    tolerance: 50000,
+    explanation: "España tiene una superficie aproximada de 505.990 km².",
+  },
+  answer: 490000,
+};
+
 describe("Supabase history and review capabilities S07", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -826,6 +855,58 @@ describe("Supabase history and review capabilities S07", () => {
     ).toHaveLength(2);
     expect(model?.result?.attempt?.answers[1]?.status).toBe("unanswered");
     expect(model?.returnHref).toBe(`/salas/s06-main/historial/${historyRows[0].publication_id}`);
+  });
+
+  it.each(["current", "historical"])(
+    "loads %s Survival results with a persisted numeric estimation answer",
+    async (view) => {
+      const publicationId =
+        view === "current" ? roomRow.publication_id : historyRows[0].publication_id;
+      const survivalRows = Array.from({ length: 13 }, (_, index) => ({
+        ...(index === 11 ? survivalEstimationRow : reviewRows[0]),
+        challenge_mode: "survival",
+        question_count: 20,
+        initial_lives: 3,
+        publication_id: publicationId,
+        item_position: index + 1,
+        challenge_item_id: `survival-item-${index + 1}`,
+      }));
+      mocks.createClient.mockResolvedValue({
+        rpc: vi.fn(async (name: string) => ({
+          data:
+            name === "get_room_member_review"
+              ? survivalRows
+              : name === "get_room_detail"
+                ? [{ ...roomRow, challenge_mode: "survival" }]
+                : name === "get_room_history"
+                  ? [{ ...historyRows[0], challenge_mode: "survival" }]
+                  : name === "get_season_ranking"
+                    ? seasonRows
+                    : challengeRows,
+          error: null,
+        })),
+      });
+
+      const model = await createRoomReadCapabilities().getMemberDetail(
+        "s06-main",
+        viewer.id,
+        queryContext,
+        view === "historical" ? publicationId : undefined,
+      );
+
+      expect(model?.challenge).toMatchObject({ mode: "survival", lives: 3 });
+      expect(model?.reviewItems).toHaveLength(13);
+      expect(model?.reviewItems[11]).toMatchObject({
+        question: { type: "estimation", correctAnswer: 506000 },
+        result: { answer: 490000, status: "correct" },
+      });
+      expect(model?.result).toMatchObject({ completed: true, flashPoints: 80 });
+      expect(model?.result?.attempt?.answers[11]?.answer).toBe(490000);
+    },
+  );
+
+  it.each([NaN, Infinity, -Infinity])("rejects a non-finite estimation answer: %s", (answer) => {
+    expect(isRoomMemberReviewReadRow({ ...survivalEstimationRow, answer })).toBe(false);
   });
 
   it("keeps historical ranking visible and enables non-Flash review", async () => {

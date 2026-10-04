@@ -273,6 +273,7 @@ export function isRoomMemberReviewReadRow(value: unknown): value is RoomMemberRe
     (row.answer === null ||
       typeof row.answer === "string" ||
       typeof row.answer === "boolean" ||
+      (typeof row.answer === "number" && Number.isFinite(row.answer)) ||
       Array.isArray(row.answer) ||
       isRecord(row.answer)) &&
     (row.answer_status === null ||
