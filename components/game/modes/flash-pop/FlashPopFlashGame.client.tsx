@@ -175,6 +175,7 @@ export function FlashPopFlashGame({
             onReplay={roomContext ? undefined : session.replay}
             returnTo={roomContext?.returnTo ?? "/demo/flash-pop"}
             roomContext={roomContext}
+            presentation="flash"
           />
         </motion.div>
       ) : null}

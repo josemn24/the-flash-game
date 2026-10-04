@@ -56,7 +56,7 @@ describe("ReviewStage", () => {
     expect(markup).not.toContain("Tabarnia");
   });
 
-  it("preserves the standard Flash header and response count", () => {
+  it("renders Flash response progress and puts result navigation above the title", () => {
     const markup = renderToStaticMarkup(
       <ReviewStage
         challenge={challenge}
@@ -64,13 +64,20 @@ describe("ReviewStage", () => {
         onBack={() => {}}
         returnTo={roomContext.returnTo}
         roomContext={roomContext}
+        presentation="flash"
       />,
     );
 
-    expect(markup).toContain("Revisión");
-    expect(markup).toContain("Tabarnia");
-    expect(markup).toContain("1 respuestas");
-    expect(markup).not.toContain('role="progressbar"');
+    expect(markup).toContain("1 respuesta");
+    expect(markup).toContain('role="progressbar"');
+    expect(markup).toContain('aria-label="Respuestas registradas"');
+    expect(markup).toContain('aria-valuenow="1"');
+    expect(markup).toContain('aria-valuemax="16"');
+    expect(markup.indexOf('aria-label="Volver al resultado"')).toBeLessThan(
+      markup.indexOf("Historial de respuestas"),
+    );
+    expect(markup).not.toContain("Revisión");
+    expect(markup).not.toContain("Tabarnia");
     expect(markup).not.toContain("superados");
   });
 });

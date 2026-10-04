@@ -185,6 +185,7 @@ export function ServerFlashPopGame({
             onBack={session.showResults}
             returnTo={roomContext.returnTo}
             roomContext={roomContext}
+            presentation="flash"
           />
         </motion.div>
       ) : null}
