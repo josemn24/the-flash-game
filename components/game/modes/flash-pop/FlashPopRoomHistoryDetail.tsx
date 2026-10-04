@@ -1,4 +1,4 @@
-import { BackLink, Card, Canvas, Chip } from "@/components/ui";
+import { BackLink, Card, Canvas } from "@/components/ui";
 import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/view-models/room";
 import { RoomLeaderboard } from "./RoomLeaderboard";
 import styles from "./FlashPopRoomSecondary.module.css";
@@ -28,26 +28,35 @@ export function FlashPopRoomHistoryDetail({
 }) {
   return (
     <Canvas contentClassName={styles.content}>
-      <header className={styles.toolbar}>
-        <BackLink href={`/salas/${roomId}/historial`} label="Volver al historial de la sala" />
+      <header className={styles.historyDetailToolbar}>
+        <BackLink
+          href={`/salas/${roomId}/historial`}
+          label="Volver al historial de la sala"
+          className={styles.historyDetailBack}
+        />
+        <p className={styles.historyDetailContext}>
+          <span>Historial</span>
+          <span aria-hidden="true">·</span>
+          <span>{roomTitle}</span>
+        </p>
       </header>
 
-      <div className={styles.pageIntro}>
-        <p className={styles.eyebrow}>{roomTitle.toUpperCase()}</p>
-        <p className={styles.historyMeta}>
-          {entry.formatLabel} · {entry.subtitle}
-        </p>
+      <div className={styles.historyDetailIntro}>
+        <p className={styles.historyMeta}>{entry.formatLabel}</p>
         <h1>{entry.title}</h1>
-        <div className={styles.detailBadges}>
-          <Chip variant="data">{formatHistoryDate(entry.playedAt)}</Chip>
-          <Chip variant="data">{entry.playerCount} jugadores</Chip>
-        </div>
+        <p className={styles.historyDetailMeta}>
+          <span>{formatHistoryDate(entry.playedAt)}</span>
+          <span aria-hidden="true">·</span>
+          <span>
+            {entry.playerCount} {entry.playerCount === 1 ? "jugador" : "jugadores"}
+          </span>
+        </p>
       </div>
 
       <section className={styles.detailRanking} aria-label="Ranking del desafío">
         {ranking.length > 0 ? (
           <RoomLeaderboard
-            title="Ranking del desafío"
+            title="Ranking"
             entries={ranking}
             currentUserId={currentUserId}
             daily

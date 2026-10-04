@@ -38,7 +38,7 @@ describe("room history detail route", () => {
     const markup = renderToStaticMarkup(<FlashPopRoomHistoryDetail {...model} />);
 
     expect(markup).toContain("La Pirámide: Cumbre lógica");
-    expect(markup).toContain("Ranking del desafío");
+    expect(markup).toContain('id="daily-leaderboard-title">Ranking</h2>');
     expect(markup).toContain("Dark");
     expect(markup).toContain("52");
     expect(markup).toContain("Jackobo");

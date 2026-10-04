@@ -198,16 +198,18 @@ export function RoomHistoryDetailSkeleton() {
   return (
     <LoadingShell contentClassName={styles.secondaryContent}>
       <div className={styles.secondaryLayout} aria-hidden="true">
-        <RoomToolbarSkeleton />
-        <div className={styles.pageIntro}>
-          <SkeletonBlock className={styles.pageEyebrow} />
-          <SkeletonBlock className={styles.detailPageTitle} />
-          <div className={styles.badges}>
-            <SkeletonBlock className={styles.badge} />
-            <SkeletonBlock className={styles.badge} />
-          </div>
+        <div className={styles.historyDetailToolbar}>
+          <SkeletonBlock className={styles.toolbarIcon} />
+          <SkeletonBlock className={styles.historyDetailContext} />
         </div>
-        <LeaderboardSkeleton rows={6} />
+        <div className={styles.historyDetailIntro}>
+          <SkeletonBlock className={styles.pageEyebrow} />
+          <SkeletonBlock className={styles.historyDetailTitle} />
+          <SkeletonBlock className={styles.historyDetailMeta} />
+        </div>
+        <div className={styles.historyDetailRanking}>
+          <LeaderboardSkeleton rows={6} />
+        </div>
       </div>
     </LoadingShell>
   );

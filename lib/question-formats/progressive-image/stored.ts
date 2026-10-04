@@ -16,9 +16,11 @@ export function parseStored(
   input: unknown,
   index = 0,
   publicRepresentation?: StoredPublicContext["publicRepresentation"],
+  profile: StoredPublicContext["profile"] = "publication",
 ): Extract<FlashEditorialQuestion, { type: "progressive-image" }> {
   const { value, publicPayload: rawPublicPayload, solutionPayload } = storedEnvelope(input, index);
   const publicResult = validateStoredPublic(rawPublicPayload, {
+    profile,
     publicRepresentation,
     payloadSchemaVersion: Number(value.payloadSchemaVersion),
     timeLimitMs: Number(value.timeLimitMs),
@@ -49,9 +51,10 @@ export function parseStored(
     !acceptedAnswers.every((answer) => nonEmptyString(answer, 500)) ||
     new Set(normalizedAcceptedAnswers).size !== normalizedAcceptedAnswers.length ||
     !normalizedAcceptedAnswers.includes(normalizeAnswer(correctAnswer)) ||
-    normalizeAnswer((publicPayload.surface as Record<string, unknown>).alt as string).includes(
-      normalizeAnswer(correctAnswer),
-    ) ||
+    (profile === "publication" &&
+      normalizeAnswer((publicPayload.surface as Record<string, unknown>).alt as string).includes(
+        normalizeAnswer(correctAnswer),
+      )) ||
     !nonEmptyString(solutionPayload.solutionAlt, 500)
   ) {
     throw new FlashEditorialValidationError([

@@ -438,7 +438,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       payload: {
         surface: {
           src: "/visuals/spain-survival/sagrada-familia.jpg",
-          alt: "Fotografía de la Sagrada Familia vista desde el Parc Güell",
+          alt: "Fotografía de un monumento vista desde un parque",
           width: 1920,
           height: 1271,
           fit: "contain",
@@ -705,7 +705,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       payload: {
         surface: {
           src: "/visuals/spain-survival/las-meninas-velazquez.jpg",
-          alt: "Las Meninas de Diego Velázquez",
+          alt: "Pintura de una escena cortesana",
           width: 960,
           height: 1105,
           fit: "contain",

@@ -54,9 +54,7 @@ export function FlashPopRoomHistory({
                   </div>
                 </div>
                 <div className={styles.historyBody}>
-                  <p className={styles.historyMeta}>
-                    {entry.formatLabel} · {entry.subtitle}
-                  </p>
+                  <p className={styles.historyMeta}>{entry.formatLabel}</p>
                   <h2>{entry.title}</h2>
                   {winner ? (
                     <p className={styles.winner}>

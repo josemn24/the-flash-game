@@ -114,8 +114,61 @@
     margin-top: var(--space-4);
   }
 
+  .historyDetailToolbar {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .historyDetailBack {
+    flex: 0 0 auto;
+  }
+
+  .historyDetailContext {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .historyDetailIntro {
+    margin-top: var(--space-6);
+  }
+
+  .historyDetailIntro h1 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(30px, 4vw, 38px);
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  .historyDetailMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
   .detailRanking {
-    margin-top: var(--space-8);
+    margin-top: var(--space-6);
+  }
+
+  .detailRanking h2 {
+    font-size: 24px;
+    line-height: 1.08;
   }
 
   .emptyState h2 {

@@ -83,15 +83,15 @@ test.describe("S07 — historial y revisión competitiva", () => {
     await expect(page.getByText("Sin responder", { exact: true })).toHaveCount(4);
 
     await page.goto(`${historyPath}/${data.data.publicationIds.survival}`);
-    await expect(page.getByRole("heading", { name: "Ranking del desafío" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ranking", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Supervivencia histórica S07" })).toBeVisible();
 
     await page.goto(`${historyPath}/${data.data.publicationIds.pyramid}`);
-    await expect(page.getByRole("heading", { name: "Ranking del desafío" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ranking", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Pirámide histórica S07" })).toBeVisible();
 
     await page.goto(completedPath);
-    await expect(page.getByRole("heading", { name: "Ranking del desafío" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ranking", exact: true })).toBeVisible();
     await expect(page.getByText("Alice")).toBeVisible();
     await expect(page.getByText("Carol")).toBeVisible();
     await expect(page.getByText("Dave")).toBeVisible();

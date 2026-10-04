@@ -60,7 +60,7 @@ test("BetaVIP muestra Supervivencia como primer desafío", async ({ page }) => {
   ).toBe(0);
 });
 
-test("Ches juega Supervivencia y carga la imagen progresiva", async ({ page }) => {
+test("Ches responde la imagen progresiva y continúa Supervivencia", async ({ page }) => {
   test.setTimeout(90_000);
   const data = await fixture();
   const [survival, alphabet, pyramid] = data.data.publications;
@@ -90,24 +90,38 @@ commit;
   await page.getByRole("link", { name: "Jugar" }).click();
   await expect(page.getByRole("heading", { name: "Cultura pop", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Empezar desafío" }).click();
-  await expect(page.getByLabel("3 de 3 vidas")).toBeVisible();
   await expect(
     page.getByRole("heading", { name: /DeLorean es la máquina del tiempo/ }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByLabel("3 de 3 vidas")).toBeVisible();
   await page.getByRole("button", { name: "Verdadero" }).click();
   await expect(page.getByRole("heading", { name: /cafetería donde se reúnen/ })).toBeVisible();
   await page.getByRole("button", { name: "Central Perk" }).click();
   await expect(page.getByRole("heading", { name: /soporte de audio aparece/ })).toBeVisible();
-  const picture = page.getByRole("img", { name: /Fotografía de tres casetes de audio/ });
+  const picture = page.getByRole("img", { name: /Fotografía de tres soportes de audio/ });
   await expect(picture).toBeVisible();
   await expect
     .poll(() =>
       picture.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth === 1200),
     )
     .toBe(true);
+  await page.getByLabel("¿Qué aparece en la imagen?").fill("cassette");
+  const answerResponse = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" && /\/attempts\/[^/]+\/answer$/.test(response.url()),
+  );
+  await page.getByRole("button", { name: "Enviar respuesta", exact: true }).click();
+  expect((await answerResponse).status()).toBe(200);
+  await expect(page.getByRole("heading", { name: /En Tetris se completan líneas/ })).toBeVisible();
+  await expect(page.getByLabel("3 de 3 vidas")).toBeVisible();
   expect(
     await sqlCount(
       `select count(*) from public.attempts where player_id = '${data.users.ches.playerId}' and scheduled_challenge_id = '${survival.id}' and challenge_version_id = '${survival.challengeVersionId}';`,
+    ),
+  ).toBe(1);
+  expect(
+    await sqlCount(
+      `select count(*) from private.attempt_answers answer join public.attempts attempt on attempt.id = answer.attempt_id join private.challenge_items item on item.id = answer.challenge_item_id where attempt.player_id = '${data.users.ches.playerId}' and attempt.scheduled_challenge_id = '${survival.id}' and item.position = 3 and answer.status = 'correct';`,
     ),
   ).toBe(1);
   expect(

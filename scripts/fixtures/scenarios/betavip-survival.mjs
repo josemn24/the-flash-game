@@ -135,7 +135,7 @@ export function betaVipSurvivalQuestions(cassetteAssetId) {
       {
         surface: {
           assetId: cassetteAssetId,
-          alt: "Fotografía de tres casetes de audio",
+          alt: "Fotografía de tres soportes de audio",
           width: 1200,
           height: 800,
           fit: "contain",

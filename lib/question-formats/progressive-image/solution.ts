@@ -64,5 +64,14 @@ export function validateSolution(
   publicPayload: Record<string, unknown>,
   solution: unknown,
 ) {
-  return validatePrivateSolution(context, publicPayload, solution, readStoredSolution, parseStored);
+  return validatePrivateSolution(
+    context,
+    publicPayload,
+    solution,
+    readStoredSolution,
+    // Frozen versions may contain old editorial captions. Their metadata must
+    // not prevent an already received answer (or a timeout) from being scored.
+    (input, index, publicRepresentation) =>
+      parseStored(input, index, publicRepresentation, "published"),
+  );
 }

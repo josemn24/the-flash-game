@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { validateQuestionTags } from "../lib/questionTags.ts";
+import { parseFlashEditorialQuestionDocument } from "../lib/editorial/flashDocument.ts";
 import { BETA_VIP_ALPHABET } from "./fixtures/scenarios/betavip-alphabet.mjs";
 import {
   BETA_VIP_SURVIVAL,
@@ -112,6 +113,18 @@ describe("BetaVIP seed", () => {
         acceptedAnswers: ["casete", "caset", "cassette", "cinta de casete"],
       },
     });
+    const image = questions.find((item) => item.type === "progressive-image");
+    const { slug, type, payloadSchemaVersion, timeLimitMs, publicPayload, solutionPayload } = image;
+    expect(() =>
+      parseFlashEditorialQuestionDocument({
+        slug,
+        type,
+        payloadSchemaVersion,
+        timeLimitMs,
+        publicPayload,
+        solutionPayload,
+      }),
+    ).not.toThrow();
     expect(
       questions
         .filter((item) => item.type === "progressive-clues")

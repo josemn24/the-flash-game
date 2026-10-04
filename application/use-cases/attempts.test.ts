@@ -7,6 +7,7 @@ import {
   type AttemptUseCaseDependencies,
 } from "@/application/use-cases/attempts";
 import type { AttemptRecoverySnapshot, SubmitAnswerInput } from "@/types/contracts/attempts";
+import { supabaseCompetitiveEvaluator } from "@/server/evaluation/competitive-evaluator";
 
 const attemptId = "11111111-1111-4111-8111-111111111111" as SubmitAnswerInput["attemptId"];
 const challengeItemId =
@@ -282,6 +283,65 @@ describe("ApplicationAttemptUseCases", () => {
         idempotencyKey: `recovery:complete:${attemptId}`,
       }),
     );
+  });
+
+  it("recovers and scores a frozen survival image receipt with an old caption", async () => {
+    const { commands, useCases } = createUseCases({ evaluator: supabaseCompetitiveEvaluator });
+    vi.mocked(commands.recover).mockResolvedValue({
+      attemptId,
+      lockVersion: 6,
+      receiptId,
+      recovered: true,
+    });
+    vi.mocked(commands.readEvaluationContext).mockResolvedValue({
+      ...evaluationContext(),
+      questionType: "progressive-image",
+      payloadSchemaVersion: 2,
+      mode: "survival",
+      modeConfig: { lives: 3 },
+      answer: "Sagrada Familia",
+      publicPayload: {
+        question: "Identifica el monumento que aparece.",
+        surface: {
+          src: "https://example.supabase.co/signed/image.jpg?token=test",
+          alt: "Fotografía de la Sagrada Familia vista desde el Parc Güell",
+          width: 1920,
+          height: 1271,
+        },
+        revealDurationMs: 7_000,
+      },
+      solutionPayload: {
+        correctAnswer: "Sagrada Familia",
+        acceptedAnswers: ["sagrada familia"],
+        solutionAlt: "La Sagrada Familia de Barcelona",
+      },
+    });
+    vi.mocked(commands.recordEvaluation).mockResolvedValue({
+      attemptId,
+      lockVersion: 7,
+      receiptId,
+      status: "correct",
+      points: 10,
+    });
+    vi.mocked(commands.readRecovery).mockResolvedValue(
+      snapshot({ challengeMode: "survival", lockVersion: 7 }),
+    );
+
+    const result = await useCases.recover({ ...answerInput, idempotencyKey: "recover-image" });
+
+    expect(result.evaluated?.status).toBe("correct");
+    expect(commands.recordEvaluation).toHaveBeenCalledWith({
+      attemptId,
+      sessionToken: answerInput.sessionToken,
+      lockVersion: 6,
+      idempotencyKey: `recovery:evaluation:${receiptId}`,
+      receiptId,
+      status: "correct",
+      points: 10,
+    });
+    expect(commands.receiveAnswer).not.toHaveBeenCalled();
+    expect(commands.completeFromPersistedAnswers).not.toHaveBeenCalled();
+    expect(result.snapshot.lockVersion).toBe(7);
   });
 
   it("returns a non-terminal recovery without attempting completion", async () => {

@@ -369,10 +369,45 @@
     border-radius: var(--radius-control);
   }
 
-  .detailPageTitle {
-    width: min(80%, 420px);
-    height: 58px;
+  .historyDetailToolbar {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .historyDetailContext {
+    width: min(60%, 160px);
+    height: 12px;
+    border-radius: var(--radius-pill);
+  }
+
+  .historyDetailIntro {
+    display: grid;
+    gap: var(--space-2);
+    margin-top: var(--space-6);
+  }
+
+  .historyDetailTitle {
+    width: min(90%, 420px);
+    height: 64px;
     border-radius: var(--radius-control);
+  }
+
+  .historyDetailMeta {
+    width: 136px;
+    height: 12px;
+    margin-top: var(--space-1);
+    border-radius: var(--radius-pill);
+  }
+
+  .historyDetailRanking {
+    margin-top: var(--space-6);
+  }
+
+  .historyDetailRanking .leaderboardTitle {
+    width: 90px;
+    height: 24px;
   }
 
   .badges {
