@@ -7,6 +7,7 @@ import {
   type ScheduledChallengeRouteKey,
 } from "@/data/mock/constants";
 import { mockDomainStore, type MockDomainStore } from "@/data/mock/store";
+import { getPublicationEffectiveStatus } from "@/lib/rooms/publicationStatus";
 import {
   compareChallengeRankingMetrics,
   rankChallengeEntries,
@@ -232,12 +233,28 @@ export type MockHistoryEntry = {
 export function selectRoomHistory(
   roomId: RoomId,
   store: MockDomainStore = mockDomainStore,
+  now: Date = new Date(),
 ): readonly MockHistoryEntry[] {
-  const seasonIds = new Set(
-    store.seasons.filter((season) => season.roomId === roomId).map((season) => season.id),
+  const seasons = new Map(
+    store.seasons
+      .filter(
+        (season) =>
+          season.roomId === roomId && (season.status === "active" || season.status === "finished"),
+      )
+      .map((season) => [season.id, season]),
   );
   return store.scheduledChallenges
-    .filter((schedule) => seasonIds.has(schedule.seasonId) && schedule.status === "closed")
+    .filter((schedule) => {
+      const season = seasons.get(schedule.seasonId);
+      return (
+        season &&
+        getPublicationEffectiveStatus(schedule, season, now) === "closed" &&
+        !store.attempts.some(
+          (attempt) =>
+            attempt.scheduledChallengeId === schedule.id && attempt.status === "in_progress",
+        )
+      );
+    })
     .map((scheduledChallenge) => {
       const ranking = selectChallengeRanking(scheduledChallenge.id, store);
       const participantIds = new Set(
@@ -246,6 +263,7 @@ export function selectRoomHistory(
             (attempt) =>
               attempt.scheduledChallengeId === scheduledChallenge.id &&
               attempt.kind === "competitive" &&
+              (attempt.status === "completed" || attempt.status === "abandoned") &&
               isCompetitiveParticipant(attempt.playerId, roomId, store, attempt.startedAt),
           )
           .map(({ playerId }) => playerId),
@@ -253,7 +271,10 @@ export function selectRoomHistory(
       const completedAt = store.attempts
         .filter(
           (attempt) =>
-            attempt.scheduledChallengeId === scheduledChallenge.id && attempt.completedAt !== null,
+            attempt.scheduledChallengeId === scheduledChallenge.id &&
+            attempt.kind === "competitive" &&
+            (attempt.status === "completed" || attempt.status === "abandoned") &&
+            attempt.completedAt !== null,
         )
         .map((attempt) => attempt.completedAt as string)
         .sort()

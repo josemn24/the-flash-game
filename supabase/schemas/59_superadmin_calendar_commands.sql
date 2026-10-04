@@ -568,7 +568,10 @@ begin
     where attempt.kind = 'competitive'
       and attempt.status = 'in_progress'
       and coalesce(attempt.last_activity_at, attempt.started_at) <= now_value - interval '15 minutes'
-      and (schedule.status = 'closed' or attempt.deadline_at <= now_value)
+      and (private.publication_effective_status(
+        schedule.status, season.status, season.starts_at, season.ends_at,
+        schedule.opens_at, schedule.closes_at, now_value
+      ) = 'closed' or attempt.deadline_at <= now_value)
       and (attempt_id_value is null or attempt.id = attempt_id_value)
       and (room_slug_value is null or room.slug = room_slug_value)
     order by attempt.id

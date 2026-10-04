@@ -11,10 +11,7 @@ export type CompetitiveAttemptStatus = "available" | "inProgress" | "completed" 
 export type RoomMembershipRole = "owner" | "admin" | "member" | "spectator";
 export type RoomDataSource = "mock" | "supabase";
 export type GameplayPersistence = "mock" | "server";
-export type CompetitiveHistoryMode = Extract<
-  GameMode,
-  "flash" | "survival" | "narrative" | "pyramid"
->;
+export type CompetitiveHistoryMode = GameMode;
 
 export type RoomMemberReviewItemStatus =
   "correct" | "partial" | "incorrect" | "unanswered" | "locked";
@@ -27,6 +24,7 @@ export type RoomMemberReviewItem = {
   result: AnswerReview | null;
   status: RoomMemberReviewItemStatus;
   metadata?: {
+    alphabetLetter?: string;
     levelId?: string;
     label?: string;
     briefing?: {
@@ -38,6 +36,12 @@ export type RoomMemberReviewItem = {
 };
 
 export type RoomMemberReviewProgress =
+  | {
+      mode: "alphabet";
+      answeredCount: number;
+      correctCount: number;
+      totalLetterCount: number;
+    }
   | {
       mode: "flash";
       answeredCount: number;

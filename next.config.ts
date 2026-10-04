@@ -4,6 +4,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseImageOrigin = supabaseUrl ? new URL(supabaseUrl) : null;
 
 const nextConfig: NextConfig = {
+  distDir: process.env.FLASH_NEXT_DIST_DIR || ".next",
   allowedDevOrigins: ["127.0.0.1"],
   images: {
     remotePatterns: supabaseImageOrigin

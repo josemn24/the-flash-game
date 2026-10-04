@@ -6,9 +6,9 @@ import {
 
 describe("room history mock", () => {
   it("provides previous games for Tabarnia", () => {
-    const entries = getRoomHistory("tabarnia-room");
+    const entries = getRoomHistory("tabarnia-room", new Date("2026-09-12T12:00:00Z"));
 
-    expect(entries).toHaveLength(3);
+    expect(entries).toHaveLength(5);
     expect(entries[0]).toMatchObject({
       challengeId: "tabarnia-challenge-05",
       mode: "pyramid",
@@ -24,7 +24,12 @@ describe("room history mock", () => {
   });
 
   it("finds a historical challenge by its challenge id", () => {
-    expect(getRoomHistoryEntry("tabarnia-room", "tabarnia-challenge-04")).toBeUndefined();
+    expect(getRoomHistoryEntry("tabarnia-room", "tabarnia-challenge-04")).toMatchObject({
+      mode: "narrative",
+    });
+    expect(getRoomHistoryEntry("tabarnia-room", "tabarnia-challenge-02")).toMatchObject({
+      mode: "alphabet",
+    });
     expect(getRoomHistoryEntry("tabarnia-room", "unknown-challenge")).toBeUndefined();
   });
 

@@ -34,7 +34,9 @@ async function openFlash(page: Page, account: FixtureAccount) {
   await page.getByRole("link", { name: "Jugar" }).click();
   await expect(page.getByRole("heading", { name: "Flash competitivo" })).toBeVisible();
   await page.getByRole("button", { name: "Empezar desafío" }).click();
-  await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+    timeout: 15_000,
+  });
 }
 
 async function completeFlash(page: Page, account: FixtureAccount, perfect: boolean) {

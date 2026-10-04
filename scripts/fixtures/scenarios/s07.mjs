@@ -1,3 +1,5 @@
+import { additionalHistorySql } from "./s07-history-modes.mjs";
+
 const namespace = "the-flash-game:s07";
 
 const ids = {
@@ -121,7 +123,7 @@ export const scenario = {
         values (gen_random_uuid(), ${attemptId}, ${itemId}, ${answerVersion}, ${sqlString(
           JSON.stringify(value),
         )}::jsonb, ${sqlString(presentedAt)}, ${sqlString(presentedAt)},
-          ${sqlString(presentedAt)}, ${points === 50 ? 900 : 1100}, false)
+          ${sqlString(presentedAt)}, ${points === 50 ? 900 : 1100}, ${status === "timeout"})
         returning id
       )
       insert into private.attempt_answers
@@ -291,11 +293,11 @@ values
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-  (${pub(ids.publicationCompleted)}, ${sqlUuid(ids.season)}, ${version}, 1, 'closed',
+  (${pub(ids.publicationCompleted)}, ${sqlUuid(ids.season)}, ${version}, 1, 'open',
     ${sqlString("2026-01-01T00:00:00Z")}, ${sqlString("2026-01-02T00:00:00Z")}),
   (${pub(ids.publicationAbandoned)}, ${sqlUuid(ids.season)}, ${version}, 2, 'closed',
     ${sqlString("2026-01-03T00:00:00Z")}, ${sqlString("2026-01-04T00:00:00Z")}),
-  (${pub(ids.publicationEmpty)}, ${sqlUuid(ids.season)}, ${version}, 3, 'closed',
+  (${pub(ids.publicationEmpty)}, ${sqlUuid(ids.season)}, ${version}, 3, 'scheduled',
     ${sqlString("2026-01-05T00:00:00Z")}, ${sqlString("2026-01-06T00:00:00Z")}),
   (${pub(ids.publicationInProgress)}, ${sqlUuid(ids.season)}, ${version}, 4, 'closed',
     ${sqlString("2026-01-07T00:00:00Z")}, ${sqlString("2026-01-08T00:00:00Z")});
@@ -414,6 +416,7 @@ values
    'accreditation', 50, ${sqlString("s07-ledger-survival")}),
   (${sqlUuid(ids.season)}, ${sqlString(carol)}, ${pub(ids.publicationPyramid)}, ${attempt(ids.attemptPyramid)},
    'accreditation', 15, ${sqlString("s07-ledger-pyramid")});
+${additionalHistorySql({ sqlString, sqlUuid, alice, carol, answer })}
 update private.question_versions set status = 'archived' where id in
   (${sqlUuid(ids.questionVersionOne)}, ${sqlUuid(ids.questionVersionTwo)}, ${pyramidQuestionVersions.join(", ")});
 update private.challenge_versions set status = 'archived' where id in (${version}, ${survivalVersion}, ${pyramidVersion});
@@ -435,6 +438,8 @@ commit;
         archived: stableId(ids.publicationArchived),
         survival: stableId(ids.publicationSurvival),
         pyramid: stableId(ids.publicationPyramid),
+        alphabet: stableId("s07-publication-alphabet"),
+        narrative: stableId("s07-publication-narrative"),
       },
       challengeVersionId: stableId(ids.challengeVersion),
       challengeItemIds: [stableId(ids.challengeItemOne), stableId(ids.challengeItemTwo)],

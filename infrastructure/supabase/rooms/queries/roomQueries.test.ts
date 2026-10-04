@@ -170,6 +170,30 @@ const challengeRows = [
   },
 ];
 
+const calendarRow = {
+  room_id: roomRow.room_id,
+  room_slug: roomRow.room_slug,
+  room_title: roomRow.room_title,
+  time_zone: "Europe/Madrid",
+  membership_role: "member",
+  season_id: roomRow.season_id,
+  season_title: roomRow.season_title,
+  season_status: "active",
+  publication_id: roomRow.publication_id,
+  publication_number: 1,
+  publication_status: "open",
+  availability_status: "available",
+  opens_at: roomRow.opens_at,
+  closes_at: roomRow.closes_at,
+  challenge_title: roomRow.challenge_title,
+  challenge_subtitle: roomRow.challenge_subtitle,
+  challenge_mode: "flash",
+  question_count: roomRow.question_count,
+  own_attempt_status: null,
+  can_start: true,
+  can_continue: false,
+};
+
 describe("Supabase room read capabilities S06 rankings", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -257,6 +281,53 @@ describe("Supabase room read capabilities S06 rankings", () => {
       expect.objectContaining({ memberId: seasonRows[0].player_id, rank: 2 }),
     ]);
   });
+
+  it.each([
+    ["completed", "completed"],
+    ["in_progress", "inProgress"],
+    ["abandoned", "notCompleted"],
+    ["invalidated", "notCompleted"],
+  ] as const)(
+    "uses the effective publication window and maps %s attempts",
+    async (ownAttemptStatus, expectedStatus) => {
+      mocks.createClient.mockResolvedValue({
+        rpc: vi.fn(async (functionName: string) => {
+          if (functionName === "get_room_detail") {
+            return { data: [{ ...roomRow, publication_status: "scheduled" }], error: null };
+          }
+          if (functionName === "get_season_ranking") return { data: seasonRows, error: null };
+          if (functionName === "get_challenge_ranking") {
+            return { data: challengeRows, error: null };
+          }
+          if (functionName === "get_room_calendar") {
+            return {
+              data: [
+                {
+                  ...calendarRow,
+                  publication_status: "scheduled",
+                  availability_status: "available",
+                  own_attempt_status: ownAttemptStatus,
+                },
+              ],
+              error: null,
+            };
+          }
+          return { data: [], error: null };
+        }),
+      });
+
+      const detail = await createRoomReadCapabilities().getDetail("s06-main", queryContext);
+
+      expect(detail?.currentUser).toMatchObject({
+        dailyAttemptStatus: expectedStatus,
+        dailyFlashPoints: 80,
+        dailyCompleted: true,
+      });
+      expect(detail?.dailyLeaderboard).toEqual(
+        expect.arrayContaining([expect.objectContaining({ memberId: viewer.id, flashPoints: 80 })]),
+      );
+    },
+  );
 
   it("maps room settings from member previews and season points", async () => {
     const model = await createRoomReadCapabilities().getSettings("s06-main", queryContext);
@@ -396,6 +467,11 @@ describe("Supabase room read capabilities S06 rankings", () => {
       roomLeaderboard: [],
       dailyLeaderboard: [],
     });
+    expect(
+      client.rpc.mock.calls.some(
+        ([functionName]: [string]) => functionName === "get_challenge_ranking",
+      ),
+    ).toBe(false);
   });
 
   it("propagates an RPC error instead of falling back to mock data", async () => {
@@ -615,6 +691,8 @@ const reviewRows = [
     briefing_title: null,
     briefing_format: null,
     briefing_description: null,
+    global_time_limit_ms: null,
+    alphabet_letter: null,
   },
   {
     ...historyRows[0],
@@ -672,6 +750,8 @@ const reviewRows = [
     briefing_title: null,
     briefing_format: null,
     briefing_description: null,
+    global_time_limit_ms: null,
+    alphabet_letter: null,
   },
 ];
 
@@ -762,6 +842,118 @@ describe("Supabase history and review capabilities S07", () => {
         historyRows[1].publication_id,
       ),
     ).resolves.toBeNull();
+  });
+
+  it.each(["completed", "abandoned"])(
+    "reconstructs all Alphabet letters for a %s attempt",
+    async (status) => {
+      const alphabetHistory = { ...historyRows[0], challenge_mode: "alphabet" };
+      const alphabetRows = Array.from({ length: 4 }, (_, index) => ({
+        ...reviewRows[index === 0 ? 0 : 1],
+        challenge_mode: "alphabet",
+        question_count: 4,
+        attempt_status: status,
+        attempt_score: status === "completed" ? 25 : null,
+        question_type: "short-text",
+        challenge_item_id: `alphabet-item-${index}`,
+        item_position: index + 1,
+        time_limit_ms: 30000,
+        global_time_limit_ms: 90000,
+        alphabet_letter: ["B", "A", "Ñ", "Z"][index],
+        item_points: 25,
+        public_payload: { question: `Pregunta ${index}` },
+        solution_payload: {
+          correctAnswer: "Lovelace",
+          acceptedAnswers: ["Lovelace"],
+          explanation: "Solución de Alfabeto",
+        },
+        answer: index === 0 ? "Lovelace" : index === 1 ? "Otro" : null,
+        answer_status: ["correct", "incorrect", "timeout", null][index],
+        points: index === 0 ? 25 : index < 3 ? 0 : null,
+        has_persisted_answer: index < 3,
+      }));
+      mocks.createClient.mockResolvedValue({
+        rpc: vi.fn(async (name: string) => ({
+          data:
+            name === "get_room_member_review"
+              ? alphabetRows
+              : name === "get_room_history"
+                ? [alphabetHistory]
+                : seasonRows,
+          error: null,
+        })),
+      });
+      const model = await createRoomReadCapabilities().getMemberDetail(
+        "s06-main",
+        viewer.id,
+        queryContext,
+        alphabetHistory.publication_id,
+      );
+      expect(model?.challenge).toMatchObject({
+        mode: "alphabet",
+        timeLimit: 90,
+        entries: [{ letter: "B" }, { letter: "A" }, { letter: "Ñ" }, { letter: "Z" }],
+      });
+      expect(model?.reviewProgress).toEqual({
+        mode: "alphabet",
+        answeredCount: 3,
+        correctCount: 1,
+        totalLetterCount: 4,
+      });
+      expect(model?.reviewItems.map((item) => item.metadata?.alphabetLetter)).toEqual([
+        "B",
+        "A",
+        "Ñ",
+        "Z",
+      ]);
+      expect(model?.reviewItems.map((item) => item.result?.status)).toEqual([
+        "correct",
+        "incorrect",
+        "unanswered",
+        "unanswered",
+      ]);
+      expect(model?.result?.completed).toBe(status === "completed");
+    },
+  );
+
+  it.each([
+    { global_time_limit_ms: 0 },
+    { alphabet_letter: "AB" },
+    { question_type: "multiple-choice" },
+    { public_payload: { question: 123 } },
+    { solution_payload: { acceptedAnswers: [] } },
+  ])("rejects invalid Alphabet configuration or payloads: %j", async (invalid) => {
+    const row = {
+      ...reviewRows[0],
+      challenge_mode: "alphabet",
+      question_count: 1,
+      question_type: "short-text",
+      time_limit_ms: 30000,
+      global_time_limit_ms: 90000,
+      alphabet_letter: "Ñ",
+      public_payload: { question: "Pregunta" },
+      solution_payload: { correctAnswer: "Respuesta", acceptedAnswers: ["Respuesta"] },
+      ...invalid,
+    };
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (name: string) => ({
+        data:
+          name === "get_room_member_review"
+            ? [row]
+            : name === "get_room_history"
+              ? [{ ...historyRows[0], challenge_mode: "alphabet" }]
+              : seasonRows,
+        error: null,
+      })),
+    });
+    await expect(
+      createRoomReadCapabilities().getMemberDetail(
+        "s06-main",
+        viewer.id,
+        queryContext,
+        historyRows[0].publication_id,
+      ),
+    ).rejects.toThrow();
   });
 
   it("propagates malformed history rows and RPC errors", async () => {

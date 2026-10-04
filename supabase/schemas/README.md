@@ -287,11 +287,21 @@ S06 consume el orden y los campos expuestos sin inventar esa fecha. S07 añade
 `get_room_history(text, uuid)` y `get_room_member_review(text, uuid, uuid)` son
 `SECURITY DEFINER`, fijan `search_path = ''`, no exponen tablas `private` directamente y solo tienen
 `EXECUTE` para `authenticated`. El historial no contiene payloads de pregunta ni soluciones; la
-proyección histórica cubre `flash`, `survival` y `pyramid`. La revisión común entrega solo preguntas
+proyección histórica cubre `flash`, `alphabet`, `survival`, `narrative` y `pyramid`.
+La elegibilidad usa `private.publication_effective_status` y el reloj PostgreSQL: una ventana
+vencida se devuelve como `closed` aunque el estado persistido siga en `open` o `scheduled`.
+Se excluyen cancelaciones, temporadas borrador/futuras/canceladas e intentos en progreso.
+El reto completado continúa fuera del historial mientras su ventana siga abierta. La revisión común entrega solo preguntas
 alcanzadas en `survival`, mantiene los huecos de Flash y devuelve los siete niveles de Pirámide con
 payload y solución nulos para los niveles no alcanzados. Solo `owner`, `admin` y `member` pueden
 revisar; `spectator` conserva historial/ranking pero nunca recibe respuestas ni soluciones, tampoco
-por URL directa. Las RPC históricas se exponen únicamente mediante estas proyecciones comunes.
+por URL directa. La revisión propia terminal está disponible durante la ventana efectiva abierta;
+la ajena exige cierre efectivo y ausencia de intentos en progreso. `get_room_member_review`
+normaliza el estado a `open`/`closed` y añade `global_time_limit_ms` y `alphabet_letter`: ambos
+son nulos fuera de Alfabeto. Alfabeto devuelve todas las letras, incluso las ausentes o agotadas,
+y sus soluciones de la versión original. La expiración conserva los 15 minutos de inactividad
+y reconoce el cierre efectivo o un deadline vencido, con revocación de sesión y auditoría.
+Las RPC históricas se exponen únicamente mediante estas proyecciones comunes.
 
 ## Denegación futura e inventario
 
@@ -328,6 +338,7 @@ mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; 
 | `commands.test.sql`                          | Defaults futuros, ACL sin DML, idempotencia, manipulación temporal, bloqueo de segunda sesión, Alfabeto, timeout, evaluación lenta e invitación atómica.                     |
 | `command_boundaries.test.sql`                | Identidad/actor, acceso privado al evaluador, rollback de inicio/cierre/invalidación, reloj por nivel/pregunta, reanudación y continuidad tras cierre.                       |
 | `s07_flash_history.test.sql`                 | Historial común cerrado, publicaciones vacías/en curso/canceladas, ranking histórico, abandonos parciales y revisión autorizada mixta de Flash/Supervivencia/Pirámide.       |
+| `room_history_effective_alphabet.test.sql`   | Cierre efectivo sin tick, límites temporales, metadatos y respuestas de Alfabeto, expiración, aislamiento y permisos de revisión.                                            |
 | `admin_portal_reads.test.sql`                | Contexto global del superadmin, salas activas, ACL del RPC, claims falsos y ausencia de acceso privado directo.                                                              |
 | `s08_superadmin_room_commands.test.sql`      | Creación transaccional de sala, owner y grupo inicial; validaciones, slug, colisiones, ACL, rollback, idempotencia y auditoría agregada.                                     |
 | `s13_flash_variable_questions.test.sql`      | Flash de 2, 5 y 20 preguntas, puntos por item, suma de 100, publicación, crecimiento y reducción del grafo editorial.                                                        |

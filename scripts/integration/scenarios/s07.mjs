@@ -11,12 +11,20 @@ export const scenario = {
     });
     const publicationIds = [...new Set(history.map((row) => row.publication_id))];
     assert(
-      publicationIds.length === 6,
+      publicationIds.length === 8,
       "El historial mixto incluye publicaciones cerradas elegibles",
     );
     assert(
-      new Set(history.map((row) => row.challenge_mode)).size === 3,
-      "El historial mixto incluye Flash, Supervivencia y Pirámide",
+      new Set(history.map((row) => row.challenge_mode)).size === 5,
+      "El historial mixto incluye los cinco modos",
+    );
+    assert(
+      history.every((row) => row.publication_status === "closed"),
+      "La proyección normaliza el cierre efectivo sin ejecutar el tick",
+    );
+    assert(
+      !JSON.stringify(history).includes("S07_ALPHABET_EXPLANATION"),
+      "El historial no expone soluciones",
     );
     assert(
       !publicationIds.includes(publications.inProgress) &&
@@ -65,6 +73,55 @@ export const scenario = {
       "La revisión autorizada recibe las soluciones versionadas",
     );
 
+    const alphabetReview = await rpc(clients.alice, "get_room_member_review", {
+      target_room_slug: room,
+      target_publication_id: publications.alphabet,
+      target_player_id: fixture.users.carol.playerId,
+    });
+    assert(
+      alphabetReview.map((row) => row.alphabet_letter).join(",") === "B,A,Ñ,Z",
+      "Alfabeto conserva todas las letras y su orden original",
+    );
+    assert(
+      alphabetReview.every(
+        (row) =>
+          row.global_time_limit_ms === 90000 &&
+          row.question_type === "short-text" &&
+          row.publication_status === "closed",
+      ),
+      "La revisión de Alfabeto conserva el tiempo global y normaliza scheduled a closed",
+    );
+    assert(
+      alphabetReview.map((row) => row.answer_status ?? "absent").join(",") ===
+        "correct,incorrect,timeout,absent",
+      "La revisión incluye aciertos, errores, agotados y letras ausentes",
+    );
+    const alphabetAbandoned = await rpc(clients.alice, "get_room_member_review", {
+      target_room_slug: room,
+      target_publication_id: publications.alphabet,
+      target_player_id: fixture.users.alice.playerId,
+    });
+    assert(
+      alphabetAbandoned.length === 4 &&
+        alphabetAbandoned.every(
+          (row) => row.attempt_status === "abandoned" && !row.has_persisted_answer,
+        ),
+      "Un abandono de Alfabeto conserva todas las letras sin responder",
+    );
+    const alphabetRanking = history.filter((row) => row.publication_id === publications.alphabet);
+    assert(
+      alphabetRanking.length === 1 &&
+        alphabetRanking[0].flash_points === 25 &&
+        alphabetRanking[0].player_count === 2,
+      "Alfabeto reutiliza puntos efectivos y cuenta los abandonos",
+    );
+    const narrativeReview = await rpc(clients.alice, "get_room_member_review", {
+      target_room_slug: room,
+      target_publication_id: publications.narrative,
+      target_player_id: fixture.users.carol.playerId,
+    });
+    assert(narrativeReview.length === 2, "Narrativa conserva su revisión común");
+
     const survivalReview = await rpc(clients.alice, "get_room_member_review", {
       target_room_slug: room,
       target_publication_id: publications.survival,
@@ -110,6 +167,15 @@ export const scenario = {
       target_player_id: fixture.users.alice.playerId,
     });
     assert(spectatorPeer.length === 0, "El spectator no puede revisar respuestas ajenas");
+    const spectatorAlphabet = await rpc(clients.bob, "get_room_member_review", {
+      target_room_slug: room,
+      target_publication_id: publications.alphabet,
+      target_player_id: fixture.users.carol.playerId,
+    });
+    assert(
+      spectatorAlphabet.length === 0,
+      "El spectator tampoco puede revisar Alfabeto por URL directa",
+    );
     const spectatorPyramid = await rpc(clients.bob, "get_room_member_review", {
       target_room_slug: room,
       target_publication_id: publications.pyramid,

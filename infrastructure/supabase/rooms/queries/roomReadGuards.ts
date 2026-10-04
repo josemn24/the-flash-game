@@ -176,6 +176,7 @@ export function isRoomHistoryReadRow(value: unknown): value is RoomHistoryReadRo
     typeof row.challenge_subtitle === "string" &&
     typeof row.challenge_description === "string" &&
     (row.challenge_mode === "flash" ||
+      row.challenge_mode === "alphabet" ||
       row.challenge_mode === "survival" ||
       row.challenge_mode === "narrative" ||
       row.challenge_mode === "pyramid") &&
@@ -221,6 +222,7 @@ export function isRoomMemberReviewReadRow(value: unknown): value is RoomMemberRe
     typeof row.challenge_subtitle === "string" &&
     typeof row.challenge_description === "string" &&
     (row.challenge_mode === "flash" ||
+      row.challenge_mode === "alphabet" ||
       row.challenge_mode === "survival" ||
       row.challenge_mode === "narrative" ||
       row.challenge_mode === "pyramid") &&
@@ -241,6 +243,7 @@ export function isRoomMemberReviewReadRow(value: unknown): value is RoomMemberRe
     Number.isInteger(row.item_position) &&
     typeof row.question_version_id === "string" &&
     (row.question_type === "multiple-choice" ||
+      row.question_type === "short-text" ||
       row.question_type === "mini-wordle" ||
       row.question_type === "logic-code" ||
       row.question_type === "logic-matrix" ||
@@ -286,6 +289,17 @@ export function isRoomMemberReviewReadRow(value: unknown): value is RoomMemberRe
     row.item_points >= 0 &&
     (row.initial_lives === null ||
       (typeof row.initial_lives === "number" && Number.isInteger(row.initial_lives))) &&
+    (row.challenge_mode === "alphabet"
+      ? row.question_type === "short-text" &&
+        typeof row.global_time_limit_ms === "number" &&
+        Number.isSafeInteger(row.global_time_limit_ms) &&
+        row.global_time_limit_ms > 0 &&
+        typeof row.alphabet_letter === "string" &&
+        /^[A-ZÑ]$/u.test(row.alphabet_letter) &&
+        typeof row.time_limit_ms === "number" &&
+        isRecord(row.public_payload) &&
+        isRecord(row.solution_payload)
+      : row.global_time_limit_ms === null && row.alphabet_letter === null) &&
     typeof row.has_persisted_answer === "boolean" &&
     isNullableString(row.level_id) &&
     isNullableString(row.level_label) &&

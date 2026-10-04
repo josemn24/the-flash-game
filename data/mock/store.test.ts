@@ -158,7 +158,11 @@ describe("normalized mock domain store", () => {
       ["Rielbe", 158],
       ["Palmera", 98],
     ]);
-    const history = selectRoomHistory(mockRoomKeys["tabarnia-room"]);
+    const history = selectRoomHistory(
+      mockRoomKeys["tabarnia-room"],
+      mockDomainStore,
+      new Date("2026-09-12T12:00:00Z"),
+    );
     expect(history).toHaveLength(5);
     expect(history.every(({ scheduledChallenge }) => scheduledChallenge.status === "closed")).toBe(
       true,

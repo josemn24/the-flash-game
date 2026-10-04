@@ -6,6 +6,8 @@ import type {
   RoomSettingsQueries,
 } from "@/application/queries";
 import { getCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
+import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
+import { getPublicationEffectiveStatus } from "@/lib/rooms/publicationStatus";
 import { projectLegacyAttempt } from "@/data/mock/compat/legacyAdapters";
 import {
   getPlayerRouteKey,
@@ -130,6 +132,16 @@ function historicalReviewProjection(
     challenge.questions.forEach((question, index) =>
       questionByItem.set(items[index]!.id, question),
     );
+  } else if (challenge.mode === "alphabet") {
+    challenge.entries.forEach((entry, index) =>
+      questionByItem.set(items[index]!.id, entry.question),
+    );
+  } else if (challenge.mode === "narrative") {
+    challenge.beats
+      .flatMap((beat) =>
+        beat.steps.flatMap((step) => (step.type === "question" ? [step.question] : [])),
+      )
+      .forEach((question, index) => questionByItem.set(items[index]!.id, question));
   }
 
   const resultFor = (item: (typeof items)[number]) => {
@@ -162,17 +174,21 @@ function historicalReviewProjection(
     }
     const result = resultFor(item);
     const level = challenge.mode === "pyramid" ? challenge.levels[index] : undefined;
+    const alphabetLetter =
+      challenge.mode === "alphabet" ? challenge.entries[index]?.letter : undefined;
     return [
       {
         id: item.id,
-        title: level?.label ?? question.type,
+        title: level?.label ?? QUESTION_FORMAT_LABELS[question.type],
         subtitle: level?.briefing.title ?? question.category,
         question,
         result,
         status: result.status,
         metadata: level
           ? { levelId: level.id, label: level.label, briefing: level.briefing }
-          : undefined,
+          : alphabetLetter
+            ? { alphabetLetter }
+            : undefined,
       },
     ];
   });
@@ -226,11 +242,18 @@ function historicalReviewProjection(
               ),
             };
           })()
-        : {
-            mode: "flash" as const,
-            answeredCount: reachedItems.length,
-            totalQuestionCount: items.length,
-          };
+        : challenge.mode === "alphabet"
+          ? {
+              mode: "alphabet" as const,
+              answeredCount: reachedItems.length,
+              correctCount: answers.filter((answer) => answer.status === "correct").length,
+              totalLetterCount: items.length,
+            }
+          : {
+              mode: challenge.mode === "narrative" ? ("narrative" as const) : ("flash" as const),
+              answeredCount: reachedItems.length,
+              totalQuestionCount: items.length,
+            };
   const reviewChallenge =
     challenge.mode === "survival"
       ? {
@@ -686,8 +709,20 @@ export class MockRoomReadProjection
             ),
           )[0]
       : undefined;
+    const availability = activeSchedule
+      ? getPublicationEffectiveStatus(activeSchedule, season, new Date(context.now))
+      : null;
+    const canReadAttempt =
+      memberId === context.viewer.playerId
+        ? availability === "available" || availability === "closed"
+        : availability === "closed" &&
+          !this.store.attempts.some(
+            (candidate) =>
+              candidate.scheduledChallengeId === activeSchedule?.id &&
+              candidate.status === "in_progress",
+          );
     const projection = activeSchedule
-      ? historicalReviewProjection(activeSchedule, attempt, this.store)
+      ? historicalReviewProjection(activeSchedule, canReadAttempt ? attempt : undefined, this.store)
       : { challenge: null, result: null, reviewItems: [], reviewProgress: null };
     const entry = historicalEntry
       ? historicalEntry
@@ -748,15 +783,12 @@ export class MockRoomReadProjection
   async listHistory(roomKey: string, context: QueryContext) {
     const access = this.roomAccess(roomKey, context.viewer.playerId);
     if (!access) return null;
-    const history = selectRoomHistory(access.room.id, this.store);
+    const history = selectRoomHistory(access.room.id, this.store, new Date(context.now));
     const entries = history.flatMap(({ scheduledChallenge, playedAt, participantCount }) => {
       const challengeKey = getScheduledChallengeRouteKey(scheduledChallenge.id);
       if (!challengeKey)
         throw new Error(`Missing route alias for schedule "${scheduledChallenge.id}".`);
       const version = this.challengeVersion(scheduledChallenge);
-      if (version.mode !== "flash" && version.mode !== "survival" && version.mode !== "pyramid") {
-        return [];
-      }
       return [
         {
           id: `tabarnia-history-${String(scheduledChallenge.number).padStart(2, "0")}`,

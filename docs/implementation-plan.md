@@ -421,17 +421,17 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 
 > Estado: implementada y verificada en local (2026-09-15).
 
-- **Objetivo / CU:** reconstruir la competición Flash desde hechos persistidos; CU-20 y CU-24.
+- **Objetivo / CU:** reconstruir los cinco modos competitivos desde hechos persistidos; CU-20 y CU-24.
 - **UI:** historial, detalle histórico, detalle de miembro y revisión de resultado; maneja ausencia
   de resultado propio y abandono. Las rutas reales usan UUIDs:
   `/salas/[roomId]/historial/[challengeId]` y
   `/salas/[roomId]/historial/[challengeId]/[memberId]`.
 - **Mocks retirados:** las capacidades mock de historial y revisión (`listHistory/getHistoryDetail/getMemberDetail`), historial de
   fixtures y mezcla local de resultados para esos recorridos. La competición de Supervivencia y
-  Pirámide usa persistencia S14/S15; Narrativa continúa mock.
+  Pirámide usa persistencia S14/S15; Narrativa y Alfabeto tienen también revisión persistida.
 - **Backend/dominio:** `RoomHistoryQueries` y `RoomMemberDetailQueries` delegan en
   `get_room_history` y `get_room_member_review`. El historial consolida
-  publicaciones `closed` de Flash, Supervivencia y Pirámide sin intentos `in_progress`; conserva
+  publicaciones con cierre efectivo de los cinco modos sin intentos `in_progress`; conserva
   publicaciones sin participantes y excluye `test`, `invalidated` y `cancelled`. La revisión usa
   puntos y respuestas persistidos, sin recalcular resultados con el algoritmo actual.
 - **Autorización:** el lector debe ser miembro activo, incluido `spectator`, para historial y
@@ -439,6 +439,9 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
   respuestas ni soluciones, tampoco por URL directa. Los intentos solo pueden ser `completed` o
   `abandoned`; los abandonos proyectan items sin respuesta como `unanswered`. Supervivencia solo
   proyecta preguntas alcanzadas y Pirámide conserva siete niveles bloqueados sin payload.
+  Alfabeto muestra todas las letras en su orden original, con límite global y contador de aciertos.
+  Los timestamps de publicación y temporada autorizan el cierre aunque el tick no haya persistido
+  `closed`; la revisión propia terminal sigue disponible durante la ventana abierta.
 - **Persistencia:** reutiliza versiones enlazadas, intentos, respuestas, `effective_results` y los
   rankings existentes. No añade tablas de historial, rankings ni saldos materializados. Las nuevas
   funciones son `SECURITY DEFINER`, con `search_path = ''`, propiedad `postgres` y `EXECUTE` solo

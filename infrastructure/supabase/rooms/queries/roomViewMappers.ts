@@ -154,6 +154,8 @@ export function toDetail(
   calendar: readonly RoomCalendarEntry[],
 ) {
   const dailyEntry = dailyLeaderboard.find(({ memberId }) => memberId === viewer.id);
+  const currentCalendarEntry = calendar.find(({ id }) => id === row.publication_id);
+  const dailyAttemptStatus = toCompetitiveAttemptStatus(currentCalendarEntry?.ownAttemptStatus);
   const dailyChallenge = toChallengeSummary(
     row,
     playableChallengeHref(row.room_slug, row.publication_id ?? ""),
@@ -173,7 +175,7 @@ export function toDetail(
       roomRank: row.current_position,
       dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
       dailyCompleted: Boolean(dailyEntry),
-      dailyAttemptStatus: "available",
+      dailyAttemptStatus,
       role: row.membership_role,
     },
     dailyChallenge: dailyChallenge
@@ -188,6 +190,22 @@ export function toDetail(
     source: "supabase",
   };
   return detail;
+}
+
+function toCompetitiveAttemptStatus(
+  status: RoomCalendarEntry["ownAttemptStatus"] | undefined,
+): RoomDetailModel["currentUser"]["dailyAttemptStatus"] {
+  switch (status) {
+    case "in_progress":
+      return "inProgress";
+    case "completed":
+      return "completed";
+    case "abandoned":
+    case "invalidated":
+      return "notCompleted";
+    default:
+      return "available";
+  }
 }
 
 export function toIntroduction(row: RoomIntroductionReadRow): RoomIntroductionModel {
@@ -219,6 +237,7 @@ export function toCalendarEntry(row: RoomCalendarReadRow): RoomCalendarEntry {
     timeZone: row.time_zone,
     status: row.publication_status,
     availabilityStatus: row.availability_status,
+    ownAttemptStatus: row.own_attempt_status,
     opensAt: row.opens_at,
     closesAt: row.closes_at,
     title: getChallengeDisplayTitle(row.challenge_title, row.challenge_mode),

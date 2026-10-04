@@ -1,18 +1,26 @@
-const baseUrl = process.env.CALENDAR_TICK_URL ?? "http://localhost:3000/api/internal/calendar/tick";
-const secret = process.env.CALENDAR_TICK_SECRET;
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  getCalendarTickConfig,
+  loadLocalEnvironment,
+  requestCalendarTick,
+} from "./calendar-tick-client.mjs";
 
-if (!secret) {
-  console.error("CALENDAR_TICK_SECRET is required.");
-  process.exit(1);
+export async function runCalendarTick({ env = process.env, fetchImpl = fetch } = {}) {
+  const config = getCalendarTickConfig(env);
+  return requestCalendarTick({ ...config, fetchImpl });
 }
 
-const response = await fetch(baseUrl, {
-  method: "POST",
-  headers: { authorization: `Bearer ${secret}` },
-});
-const body = await response.text();
-if (!response.ok) {
-  console.error(`Calendar tick failed (${response.status}): ${body}`);
-  process.exit(1);
+export async function main({ env, fetchImpl = fetch } = {}) {
+  try {
+    console.log(await runCalendarTick({ env: env ?? loadLocalEnvironment(), fetchImpl }));
+    return 0;
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    return 1;
+  }
 }
-console.log(body);
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  process.exitCode = await main();
+}

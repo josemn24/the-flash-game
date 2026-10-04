@@ -15,7 +15,10 @@ describe("room history route", () => {
   it("exposes Tabarnia and renders previous games", async () => {
     expect(dynamic).toBe("force-dynamic");
     mocks.getRoomHistoryPageModel.mockResolvedValue(
-      await mockRoomReadCapabilities.listHistory("tabarnia-room", mockQueryContext()),
+      await mockRoomReadCapabilities.listHistory(
+        "tabarnia-room",
+        mockQueryContext(new Date("2026-09-12T12:00:00Z")),
+      ),
     );
     await expect(
       generateMetadata({ params: Promise.resolve({ roomId: "tabarnia-room" }) }),
@@ -23,7 +26,10 @@ describe("room history route", () => {
       title: "Historial de Tabarnia — The Flash",
     });
 
-    const model = await mockRoomReadCapabilities.listHistory("tabarnia-room", mockQueryContext());
+    const model = await mockRoomReadCapabilities.listHistory(
+      "tabarnia-room",
+      mockQueryContext(new Date("2026-09-12T12:00:00Z")),
+    );
     if (!model) throw new Error("Expected history model");
     const markup = renderToStaticMarkup(<FlashPopRoomHistory {...model} />);
 
@@ -34,6 +40,6 @@ describe("room history route", () => {
     expect(markup).toContain("Dark");
     expect(markup).toContain('href="/salas/tabarnia-room"');
     expect(markup).toContain('href="/salas/tabarnia-room/historial/tabarnia-challenge-05"');
-    expect(markup.match(/Ver ranking/g)).toHaveLength(3);
+    expect(markup.match(/Ver ranking/g)).toHaveLength(5);
   });
 });

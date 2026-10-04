@@ -170,18 +170,14 @@ export function toLegacyRoomSnapshot(
 export function toLegacyRoomHistory(
   roomId: RoomId,
   store: MockDomainStore = mockDomainStore,
+  now = new Date(),
 ): RoomHistoryEntry[] {
-  return selectRoomHistory(roomId, store).flatMap((entry) => {
+  return selectRoomHistory(roomId, store, now).flatMap((entry) => {
     const challengeId = getScheduledChallengeRouteKey(entry.scheduledChallenge.id);
     const version = store.challengeVersions.find(
       ({ id }) => id === entry.scheduledChallenge.challengeVersionId,
     );
-    if (
-      !challengeId ||
-      !version ||
-      (version.mode !== "flash" && version.mode !== "survival" && version.mode !== "pyramid")
-    )
-      return [];
+    if (!challengeId || !version) return [];
     return [
       {
         id: `tabarnia-history-${String(entry.scheduledChallenge.number).padStart(2, "0")}`,

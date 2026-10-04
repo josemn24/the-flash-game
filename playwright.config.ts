@@ -37,6 +37,8 @@ const e2ePort = isPwaE2e ? process.env.PWA_E2E_PORT || "3001" : process.env.E2E_
 const e2eBaseURL = `http://127.0.0.1:${e2ePort}`;
 const localEnv = {
   ...process.env,
+  FLASH_NEXT_DIST_DIR:
+    process.env.FLASH_NEXT_DIST_DIR || (process.env.SUPABASE_TEST_WORKDIR ? ".next/e2e" : ".next"),
   SUPABASE_DB_URL: process.env.SUPABASE_DB_URL || localStatus.DB_URL || "",
   NEXT_PUBLIC_SUPABASE_URL:
     process.env.NEXT_PUBLIC_SUPABASE_URL || localStatus.API_URL || "http://127.0.0.1:54321",
@@ -58,7 +60,7 @@ const localEnv = {
   // Keep production's smaller admin burst while allowing the local browser run to complete.
   FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261002181128_format_contract_equivalence",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261003222852_room_history_effective_alphabet",
 };
 
 export default defineConfig({

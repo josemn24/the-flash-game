@@ -102,6 +102,8 @@ type RoomMemberReviewOverrides = {
   publication_status: "open" | "closed";
   challenge_mode: CompetitiveHistoryMode;
   initial_lives: number | null;
+  global_time_limit_ms: number | null;
+  alphabet_letter: string | null;
   avatar_path: string | null;
   attempt_status: "completed" | "abandoned";
   attempt_score: number | null;
@@ -109,6 +111,7 @@ type RoomMemberReviewOverrides = {
   attempt_completed_at: string | null;
   question_type:
     | "multiple-choice"
+    | "short-text"
     | "mini-wordle"
     | "logic-code"
     | "logic-matrix"

@@ -169,6 +169,9 @@ escenarios competitivos en un Supabase temporal, con identificador propio, puert
 aplicación en 3300; limpia ese stack al terminar. El fixture S05 cubre Alfabeto y
 `narrative-interactive` cubre Queens y pistas dentro de Narrative. El stack local habitual del
 proyecto no se reinicia.
+El servidor de pruebas usa un `distDir` propio para convivir con `next dev`; elimina su salida y
+los paths de tipos generados al terminar. `E2E_INTEGRATION_SCENARIOS=s05,s07,s12` ejecuta también
+las integraciones de esos escenarios sobre el mismo stack antes de sus pruebas de navegador.
 
 ### 2.2 Entrada al backend
 
@@ -666,12 +669,16 @@ deben vivir en el servidor.
   estrategia para reintentos de red.
 - Finalización/acreditación atómica y lecturas de los dos rankings están implementadas y probadas en
   SQL/adapter; S06 lee rankings bajo demanda y no materializa tablas adicionales.
-- S07 implementa el historial común de Flash, Supervivencia, Narrative y Pirámide de publicaciones cerradas sin intentos `in_progress`, el ranking
+- S07 implementa el historial común de los cinco modos (Flash, Alfabeto, Supervivencia, Narrativa y Pirámide),
+  con cierre efectivo por timestamps de publicación/temporada y sin intentos `in_progress`, el ranking
   histórico y la revisión propia/ajena autorizada sin tablas materializadas ni recalcular puntos.
 - La revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` conserva el acceso a
-  historial/rankings, pero no recibe respuestas ni soluciones ajenas.
+  historial/rankings, pero no recibe respuestas ni soluciones. La revisión propia terminal se permite
+  durante la ventana abierta; la ajena exige cierre efectivo. Alfabeto conserva el reloj global, el
+  orden original de las letras y todos los huecos sin responder.
 - `results_locked_at`, el takeover y la revisión administrativa de invalidados quedan fuera de S07.
-  La expiración por inactividad se implementa en la reconciliación del calendario y bajo demanda.
+  La expiración por inactividad se implementa en la reconciliación del calendario y bajo demanda,
+  con cierre efectivo sin depender de que el tick haya persistido `closed`.
 - Invalidación y corrección exigen superadmin, motivo y auditoría. La revisión de intentos
   `invalidated`, inspección global y moderación siguen pendientes de política administrativa.
 - La anonimización debe coordinar identidad, avatar, actividad social y retención histórica.

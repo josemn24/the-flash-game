@@ -117,6 +117,12 @@ export async function runSelectedE2E(args) {
   for (const [scenario, specs] of groups) {
     await prepareScenario(scenario);
     try {
+      if ((process.env.E2E_INTEGRATION_SCENARIOS ?? "").split(",").includes(scenario)) {
+        await run("npm", ["run", "test:integration:supabase", "--", "--scenario", scenario]);
+        // Command integrations can create publications or attempts. Browser tests
+        // need a fresh fixture rather than inheriting those mutations.
+        await prepareScenario(scenario);
+      }
       const scenarioEnv = {
         ...(scenario === "e01" ? { FLASH_RATE_LIMIT_BURST: "30" } : {}),
         PLAYWRIGHT_JSON_OUTPUT_FILE: `output/playwright/competitive-${scenario}.json`,

@@ -97,7 +97,7 @@ function roomContract(queries: RoomReadCapabilities) {
     expect(settings?.currentUserId).toBe("player");
     expect(ranking?.entries[0]?.name).toBe("Dark");
     expect(member?.member.name).toBe("Dark");
-    expect(history?.entries).toHaveLength(3);
+    expect(history?.entries).toHaveLength(5);
   });
 
   it("serializes room DTOs without authentication or canonical private payloads", async () => {
@@ -249,7 +249,7 @@ describe("Mock room read capabilities contract", () => {
     expect(ranking?.entries.some(({ memberId }) => memberId === "player")).toBe(true);
   });
 
-  it("counts started attempts even when they did not finish", async () => {
+  it("excludes history while a started attempt remains in progress", async () => {
     const scheduleId = scheduledChallengeRouteAliases["tabarnia-challenge-05"];
     const target = mockDomainStore.attempts.find(
       (attempt) => attempt.scheduledChallengeId === scheduleId,
@@ -274,8 +274,8 @@ describe("Mock room read capabilities contract", () => {
       ({ challengeId }) => challengeId === "tabarnia-challenge-05",
     );
 
-    expect(entry?.playerCount).toBe(4);
-    expect(history?.rankings["tabarnia-challenge-05"]).toHaveLength(3);
+    expect(entry).toBeUndefined();
+    expect(history?.rankings["tabarnia-challenge-05"]).toBeUndefined();
   });
 
   it("supports an empty history and closed publications without participants", async () => {

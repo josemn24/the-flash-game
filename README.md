@@ -136,6 +136,24 @@ duración de la ventana para identificar el perfil utilizado.
 El seed no ejecuta automáticamente el calendario. Tras alcanzar cada límite temporal, ejecuta el
 tick local con `npm run calendar:tick` mientras la aplicación y Supabase estén activos.
 
+Los comandos independientes de tick cargan automáticamente `.env.local` cuando existe, incluida
+la variable `CALENDAR_TICK_SECRET` del entorno local.
+
+También puedes dejar un watcher local opcional ejecutando el tick automáticamente cada minuto:
+
+```bash
+npm run dev
+npm run calendar:tick:watch
+```
+
+La frecuencia se puede cambiar, por ejemplo, a cinco minutos con
+`npm run calendar:tick:watch -- --interval-seconds=300`. El watcher ejecuta un tick inmediatamente
+al arrancar, espera el intervalo después de cada ejecución y no permite ticks solapados. Solo actúa
+en el entorno local y se detiene con `Ctrl+C`; `npm run calendar:tick` sigue disponible para una
+ejecución única. El ranking puede leerse sin tick cuando la ventana temporal está disponible, pero
+el tick sigue siendo necesario para persistir aperturas, cierres, finalización de temporada y
+expiración de intentos.
+
 Para preparar el staging remoto, aplica antes las migraciones con `supabase db push` y proporciona
 las variables de bootstrap indicadas en `.env.example`. Comprueba el destino sin escribir nada y,
 solo después, ejecuta:

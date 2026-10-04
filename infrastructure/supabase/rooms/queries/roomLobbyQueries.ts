@@ -38,7 +38,7 @@ export class SupabaseRoomLobbyQueries implements RoomLobbyQueries {
             isSeasonRankingReadRow,
           )
         : Promise.resolve([]),
-      row.publication_id && row.publication_status === "open"
+      row.publication_id
         ? callRankingRead(
             "get_challenge_ranking",
             { target_publication_id: row.publication_id },

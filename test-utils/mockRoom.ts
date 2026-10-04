@@ -77,9 +77,9 @@ export function mockQueryContext(
   };
 }
 
-export function getMockRoomHistory(roomId: string) {
+export function getMockRoomHistory(roomId: string, now = new Date()) {
   const roomIdValue = mockRoomKeys[roomId as keyof typeof mockRoomKeys];
-  return roomIdValue ? toLegacyRoomHistory(roomIdValue) : [];
+  return roomIdValue ? toLegacyRoomHistory(roomIdValue, mockDomainStore, now) : [];
 }
 
 export function getMockRoomHistoryEntry(roomId: string, challengeId: string) {

@@ -55,7 +55,7 @@ function AnswerHistory({
     id: item.id,
     question: item.question ?? undefined,
     result: item.result ? toAnswerResult(item.result) : undefined,
-    marker: String(index + 1).padStart(2, "0"),
+    marker: item.metadata?.alphabetLetter ?? String(index + 1).padStart(2, "0"),
     title: item.title,
     subtitle: item.subtitle,
     status: item.status,
@@ -65,11 +65,13 @@ function AnswerHistory({
         : undefined,
   }));
   const countLabel =
-    progress?.mode === "pyramid"
-      ? `${progress.levelsCleared} de ${progress.totalLevelCount} niveles superados`
-      : progress?.mode === "survival"
-        ? `${progress.reachedQuestionCount} preguntas alcanzadas`
-        : `${progress?.answeredCount ?? items.length} respuestas`;
+    progress?.mode === "alphabet"
+      ? `${progress.correctCount} de ${progress.totalLetterCount} letras acertadas`
+      : progress?.mode === "pyramid"
+        ? `${progress.levelsCleared} de ${progress.totalLevelCount} niveles superados`
+        : progress?.mode === "survival"
+          ? `${progress.reachedQuestionCount} preguntas alcanzadas`
+          : `${progress?.answeredCount ?? items.length} respuestas`;
 
   return (
     <section className={styles.history} aria-labelledby="answer-history-title">
@@ -110,13 +112,15 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
   const mode =
     resolvedModel.challengeSummary?.mode ?? resolvedModel.reviewProgress?.mode ?? "flash";
   const modeLabel =
-    mode === "survival"
-      ? "Supervivencia"
-      : mode === "pyramid"
-        ? "Pirámide"
-        : mode === "narrative"
-          ? "Narrativa"
-          : "Flash";
+    mode === "alphabet"
+      ? "Alfabeto"
+      : mode === "survival"
+        ? "Supervivencia"
+        : mode === "pyramid"
+          ? "Pirámide"
+          : mode === "narrative"
+            ? "Narrativa"
+            : "Flash";
   const outcomeLabel =
     resolvedModel.reviewProgress?.mode === "survival"
       ? resolvedModel.reviewProgress.outcome === "survived"
@@ -159,7 +163,9 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
           <div className={styles.summaryHeader}>
             <div>
               <p className={styles.eyebrow}>
-                {model.source === "supabase" ? `Resultado ${modeLabel}` : "Reto de hoy"}
+                {model.source === "supabase" || resolvedModel.challengeSummary?.mode === "alphabet"
+                  ? `Resultado ${modeLabel}`
+                  : "Reto de hoy"}
               </p>
               <h2 id="attempt-summary-title">
                 {resolvedModel.challengeSummary?.title ?? "Sin reto disponible"}

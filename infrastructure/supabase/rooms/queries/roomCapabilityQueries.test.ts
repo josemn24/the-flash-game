@@ -112,6 +112,29 @@ describe("room capability queries", () => {
     await expect(pending).resolves.toEqual({ source: "supabase" });
   });
 
+  it("allows the current member detail before the calendar tick promotes the publication", async () => {
+    const memberKey = viewer.id;
+    mocks.callRoomRead.mockResolvedValue([{ ...roomRow, publication_status: "scheduled" }]);
+    mocks.callHistoryRead.mockResolvedValue([]);
+    mocks.callRankingRead.mockResolvedValue([
+      {
+        player_id: memberKey,
+        display_name: viewer.name,
+        avatar_path: null,
+        flash_points: 80,
+        is_former_member: false,
+        position: 1,
+      },
+    ]);
+
+    const model = await new SupabaseRoomMemberDetailQueries(
+      { expireStaleAttemptsForRoom: vi.fn() },
+      { resolve: mocks.privateAssetResolve },
+    ).getMemberDetail("room-key", memberKey, queryContext);
+
+    expect(model).not.toBeNull();
+  });
+
   it("passes the injected expiration dependency through history reads", async () => {
     const expiration = {
       expireStaleAttemptsForRoom: vi.fn(),

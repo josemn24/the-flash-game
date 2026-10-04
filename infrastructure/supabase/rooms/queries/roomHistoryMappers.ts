@@ -21,6 +21,9 @@ import type {
 } from "@/types/gameplay/practice";
 import { assertSupportedQuestionPayloadSchemaVersion } from "@/types/contracts";
 import { normalizeAnswer } from "@/lib/normalizeAnswer";
+import { alphabetChallengeWithReview } from "@/lib/gameplay/alphabetReview";
+import { readPublic as readShortText } from "@/lib/question-formats/short-text/public";
+import { questionWithSolution as shortTextWithSolution } from "@/lib/question-formats/short-text/review";
 import {
   isValidEstimationAnswer,
   isValidEstimationConfiguration,
@@ -139,6 +142,23 @@ export function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Practic
   }
   const publicPayload = row.public_payload as Record<string, unknown>;
   const solutionPayload = row.solution_payload as Record<string, unknown>;
+  if (row.question_type === "short-text") {
+    return shortTextWithSolution(
+      readShortText({
+        id: row.challenge_item_id,
+        payload: publicPayload,
+        timeLimitMs: row.time_limit_ms ?? 0,
+        points: row.item_points,
+        payloadSchemaVersion: row.payload_schema_version,
+        mode: row.challenge_mode,
+      }),
+      {
+        challengeItemId: row.challenge_item_id,
+        publicPayload,
+        solutionPayload,
+      },
+    );
+  }
   if (row.question_type === "mini-wordle") {
     const publicData = isRecord(publicPayload.payload) ? publicPayload.payload : publicPayload;
     const solution = isRecord(solutionPayload.solution)
@@ -1007,6 +1027,44 @@ export function toHistoricalFlashQuestion(row: RoomMemberReviewReadRow): Practic
 export function toHistoricalChallenge(rows: RoomMemberReviewReadRow[]): PracticeChallenge {
   const first = rows[0];
   if (!first) throw new Error("Cannot build a historical Flash without rows");
+  if (first.challenge_mode === "alphabet") {
+    const ordered = rows.slice().sort((left, right) => left.item_position - right.item_position);
+    if (
+      !first.global_time_limit_ms ||
+      ordered.length !== first.question_count ||
+      new Set(ordered.map((row) => row.alphabet_letter)).size !== ordered.length ||
+      ordered.some((row) => row.question_type !== "short-text" || !row.alphabet_letter)
+    ) {
+      throw new Error("Invalid historical Alphabet configuration");
+    }
+    return alphabetChallengeWithReview(
+      {
+        id: first.publication_id,
+        definitionId: first.challenge_slug,
+        number: 1,
+        title: first.challenge_title,
+        subtitle: first.challenge_subtitle,
+        description: first.challenge_description,
+        mode: "alphabet",
+        timeLimitMs: first.global_time_limit_ms,
+        maxScore: first.challenge_max_score,
+        entries: ordered.map((row) => ({
+          id: row.challenge_item_id,
+          position: row.item_position,
+          letter: row.alphabet_letter!,
+          questionType: "short-text",
+          payloadSchemaVersion: row.payload_schema_version,
+          timeLimitMs: row.time_limit_ms ?? 0,
+          points: row.item_points,
+        })),
+      },
+      ordered.map((row) => ({
+        challengeItemId: row.challenge_item_id,
+        publicPayload: row.public_payload,
+        solutionPayload: row.solution_payload,
+      })),
+    );
+  }
   const questions = rows
     .slice()
     .sort((left, right) => left.item_position - right.item_position)
@@ -1140,7 +1198,9 @@ export function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMe
                     }
                   : undefined,
             }
-          : undefined;
+          : row.challenge_mode === "alphabet"
+            ? { alphabetLetter: row.alphabet_letter ?? undefined }
+            : undefined;
       return {
         id: row.challenge_item_id,
         title:
@@ -1167,6 +1227,14 @@ export function toRoomMemberReviewProgress(
   const first = rows[0];
   if (!first) return null;
   const orderedRows = rows.slice().sort((left, right) => left.item_position - right.item_position);
+  if (first.challenge_mode === "alphabet") {
+    return {
+      mode: "alphabet",
+      answeredCount: orderedRows.filter((row) => row.has_persisted_answer).length,
+      correctCount: orderedRows.filter((row) => row.answer_status === "correct").length,
+      totalLetterCount: first.question_count,
+    };
+  }
   const reviews = orderedRows
     .filter((row) => row.has_persisted_answer || row.challenge_mode === "flash")
     .map(toHistoricalAnswerReview)

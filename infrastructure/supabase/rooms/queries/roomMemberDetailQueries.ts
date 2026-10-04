@@ -73,7 +73,7 @@ export class SupabaseRoomMemberDetailQueries implements RoomMemberDetailQueries 
       resolvedPublicationId = currentRoomRow.publication_id;
       seasonId = currentRoomRow.season_id;
       challengeSummary = currentMemberChallengeSummary(currentRoomRow);
-      if (!challengeSummary || currentRoomRow.publication_status !== "open") return null;
+      if (!challengeSummary) return null;
     }
 
     if (!resolvedPublicationId || !seasonId) return null;

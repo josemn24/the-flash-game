@@ -13,6 +13,7 @@ const env = {
   SUPABASE_TEST_WORKDIR: workdir,
   SUPABASE_DB_CONTAINER: `supabase_db_${projectId}`,
   E2E_PORT: "3300",
+  FLASH_NEXT_DIST_DIR: `.next/e2e-${projectId}`,
   E2E_CONTINUE_ON_FAILURE: "1",
   APP_ORIGIN: "http://127.0.0.1:3300",
   FLASH_RUNTIME_SCOPE: "pilot",
@@ -64,6 +65,8 @@ const specs = requested.length
       "s17",
     ].flatMap((scenario) => E2E_BY_SCENARIO[scenario]);
 const savedFixtures = new Map();
+const savedTypeConfig = await readFile("tsconfig.json", "utf8");
+const savedNextEnv = await readFile("next-env.d.ts", "utf8");
 for (const scenario of new Set(specs.map(scenarioForSpec).filter(Boolean))) {
   const fixturePath = path.join("output", "fixtures", `${scenario}.json`);
   try {
@@ -95,6 +98,27 @@ try {
   try {
     await run("npx", ["supabase", "stop", "--no-backup", "--workdir", workdir]);
     await rm(workdir, { recursive: true, force: true });
+    await rm(env.FLASH_NEXT_DIST_DIR, { recursive: true, force: true });
+    // Next adds its generated route paths to these files when distDir changes.
+    // Remove only this run's additions and preserve concurrent workspace edits.
+    const currentTypeConfig = JSON.parse(await readFile("tsconfig.json", "utf8"));
+    currentTypeConfig.include = currentTypeConfig.include.filter(
+      (entry) => !entry.startsWith(`${env.FLASH_NEXT_DIST_DIR}/`),
+    );
+    await writeFile(
+      "tsconfig.json",
+      JSON.stringify(currentTypeConfig) === JSON.stringify(JSON.parse(savedTypeConfig))
+        ? savedTypeConfig
+        : `${JSON.stringify(currentTypeConfig, null, 2)}\n`,
+    );
+    const currentNextEnv = await readFile("next-env.d.ts", "utf8");
+    const originalRouteImport = savedNextEnv.match(/^import .*routes\.d\.ts.*;$/m)?.[0];
+    if (originalRouteImport && currentNextEnv.includes(`./${env.FLASH_NEXT_DIST_DIR}/`)) {
+      await writeFile(
+        "next-env.d.ts",
+        currentNextEnv.replace(/^import .*routes\.d\.ts.*;$/m, originalRouteImport),
+      );
+    }
   } catch (error) {
     console.error(
       `No se pudo cerrar el stack ${projectId}: ${error.message}. Directorio: ${workdir}`,
