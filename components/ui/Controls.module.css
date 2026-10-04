@@ -107,8 +107,7 @@
     width: 100%;
   }
 
-  .spinner,
-  .uiButtonSpinner {
+  .spinner {
     width: 18px;
     height: 18px;
     border: 2px solid currentColor;

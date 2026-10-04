@@ -99,11 +99,23 @@
     border-color: var(--color-danger);
   }
 
-  .message {
-    min-height: 18px;
+  .feedback {
+    min-height: 72px;
+    margin-top: var(--space-4);
+  }
+
+  .error {
+    margin: 0;
     font-size: 12px;
     font-weight: 800;
-    color: var(--color-ink-muted);
+    line-height: 1.5;
     text-align: center;
+    color: var(--color-text-on-danger);
+  }
+
+  .error:not(:empty) {
+    border-radius: var(--radius-sm);
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-danger);
   }
 }

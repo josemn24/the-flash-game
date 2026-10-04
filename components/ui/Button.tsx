@@ -3,6 +3,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { LinkPendingIndicator } from "./LinkPendingIndicator.client";
 import { buttonClassName, type ButtonStyleProps } from "@/components/ui/buttonStyles";
 import pendingStyles from "./LinkPendingIndicator.module.css";
+import styles from "./Controls.module.css";
 
 type ButtonContentProps = {
   leadingIcon?: ReactNode;
@@ -49,7 +50,7 @@ export function Button({
         className,
       })}
     >
-      {loading ? <span className="uiButtonSpinner" aria-hidden="true" /> : leadingIcon}
+      {loading ? <span className={styles.spinner} aria-hidden="true" /> : leadingIcon}
       <span>{children}</span>
       {!loading && trailingIcon}
     </button>
