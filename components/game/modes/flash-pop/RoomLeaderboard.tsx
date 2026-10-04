@@ -9,6 +9,8 @@ import styles from "./RoomLeaderboard.module.css";
 export type RoomLeaderboardProps = {
   title: string;
   eyebrow?: string;
+  description?: string;
+  emptyMessage?: string;
   entries: Array<RoomLeaderboardEntry | RoomDailyLeaderboardEntry>;
   currentUserId: string;
   daily?: boolean;
@@ -25,6 +27,8 @@ export type RoomLeaderboardProps = {
 export function RoomLeaderboard({
   title,
   eyebrow,
+  description,
+  emptyMessage,
   entries,
   currentUserId,
   daily = false,
@@ -50,6 +54,8 @@ export function RoomLeaderboard({
         </div>
         <TrophyIcon className={styles.headingIcon} />
       </div>
+
+      {description ? <p className={styles.description}>{description}</p> : null}
 
       {entries.length > 0 ? (
         <>
@@ -137,7 +143,10 @@ export function RoomLeaderboard({
       ) : (
         <>
           <p className={styles.empty}>
-            {daily && dailyAvailable ? "Todavía no ha jugado nadie." : "Sin reto disponible hoy."}
+            {emptyMessage ??
+              (daily && dailyAvailable
+                ? "Todavía no ha jugado nadie."
+                : "Sin reto disponible hoy.")}
           </p>
           {isCards && pendingCount > 0 ? (
             <p className={styles.pendingSummary}>{formatPendingCount(pendingCount)}</p>

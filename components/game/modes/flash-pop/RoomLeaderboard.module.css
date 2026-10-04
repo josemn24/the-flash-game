@@ -35,6 +35,14 @@
     color: var(--color-social);
   }
 
+  .description {
+    margin: var(--space-3) 0 0;
+    color: var(--color-ink-muted);
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
   .list {
     display: grid;
     gap: 6px;

@@ -171,6 +171,25 @@
     line-height: 1.08;
   }
 
+  .seasonRanking,
+  .rankingFailure {
+    margin-top: var(--space-6);
+  }
+
+  .seasonRanking h1,
+  .rankingFailure h1 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(28px, 4vw, 38px);
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+  }
+
+  .rankingFailure button {
+    margin-top: var(--space-6);
+  }
+
   .emptyState h2 {
     margin: 0;
     font-family: var(--type-display);

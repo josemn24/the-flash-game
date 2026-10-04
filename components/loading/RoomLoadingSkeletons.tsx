@@ -79,10 +79,12 @@ function LeaderboardSkeleton({
   cards = false,
   rows = 5,
   surface = false,
+  description = false,
 }: {
   cards?: boolean;
   rows?: number;
   surface?: boolean;
+  description?: boolean;
 }) {
   const content = (
     <>
@@ -90,6 +92,7 @@ function LeaderboardSkeleton({
         <SkeletonBlock className={styles.leaderboardTitle} />
         <SkeletonBlock className={styles.leaderboardIcon} />
       </div>
+      {description ? <SkeletonBlock className={styles.rankingSeason} /> : null}
       <LeaderboardRows cards={cards} rows={rows} />
     </>
   );
@@ -157,12 +160,13 @@ export function RoomRankingSkeleton() {
   return (
     <LoadingShell contentClassName={styles.secondaryContent}>
       <div className={styles.secondaryLayout} aria-hidden="true">
-        <RoomToolbarSkeleton />
-        <div className={styles.pageIntro}>
-          <SkeletonBlock className={styles.pageEyebrow} />
-          <SkeletonBlock className={styles.pageTitle} />
+        <div className={styles.historyDetailToolbar}>
+          <SkeletonBlock className={styles.toolbarIcon} />
+          <SkeletonBlock className={styles.historyDetailContext} />
         </div>
-        <LeaderboardSkeleton rows={7} />
+        <div className={styles.historyDetailRanking}>
+          <LeaderboardSkeleton rows={7} description />
+        </div>
       </div>
     </LoadingShell>
   );

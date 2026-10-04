@@ -16,6 +16,7 @@ import type {
   RoomHistoryEntry,
   RoomLeaderboardEntry,
   RoomMemberDetailModel,
+  RoomSeasonStatus,
   RoomSettingsModel,
 } from "@/types/view-models/room";
 import type { UserProfile } from "@/types/view-models/user";
@@ -38,6 +39,11 @@ export type RoomRankingModel = {
   readonly roomId: string;
   readonly roomTitle: string;
   readonly currentUserId: string;
+  readonly season: {
+    readonly id: string;
+    readonly title: string;
+    readonly status: RoomSeasonStatus;
+  } | null;
   readonly entries: RoomLeaderboardEntry[];
 };
 

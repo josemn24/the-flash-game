@@ -395,6 +395,7 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Entrada relevante:** sala, temporada y puntos acreditados.
 - **Flujo principal:** sumar puntos acreditados por jugador en la temporada; excluir pruebas, inválidos y cancelaciones; ordenar y mostrar miembros elegibles.
 - **Reglas de negocio:** solo se ordena por Flash Points acumulados; un miembro activo sin puntos puede aparecer con cero; no existe ranking global ni niveles de temporada.
+- **Selección y cierre:** se muestra la temporada activa o, si no existe, la última finalizada. Al terminar su ventana, la vista pasa a «Clasificación final» y mantiene los puntos acreditados; si no hay temporada o resultados, muestra un estado vacío explícito. Un fallo de lectura ofrece «Reintentar».
 - **Resultado:** ranking de temporada y total del jugador.
 - **Efectos secundarios:** ninguno funcional.
 - **Errores o impedimentos:** duplicar puntos, usar duración como criterio, incluir otra temporada o mostrar una moneda paralela.

@@ -42,7 +42,7 @@ test.describe("S02 — salas e introducción autorizada", () => {
 
     await expect(page.locator('[data-pending="true"]')).toBeVisible();
     await navigation;
-    await expect(page.getByRole("heading", { name: "Ranking global" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Ranking de temporada" })).toBeVisible();
   });
 
   test("Alice solo ve sus salas y recibe una introducción segura", async ({ page }) => {

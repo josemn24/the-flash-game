@@ -41,6 +41,7 @@ import type {
   RoomLeaderboardEntry,
   RoomMemberViewModel,
   RoomIntroductionModel,
+  RoomRankingModel,
 } from "@/types/view-models";
 import type { AnswerReview, AnswerResult } from "@/types/gameplay";
 import type { PracticeChallenge, PracticeQuestion } from "@/types/gameplay/practice";
@@ -638,16 +639,37 @@ export class MockRoomReadProjection
     };
   }
 
-  async getRanking(roomKey: string, context: QueryContext) {
+  async getRanking(roomKey: string, context: QueryContext): Promise<RoomRankingModel | null> {
     const access = this.roomAccess(roomKey, context.viewer.playerId);
-    const season = access ? this.activeSeason(access.room.id) : null;
     const currentUserId = getPlayerRouteKey(context.viewer.playerId);
-    if (!access || !season || !currentUserId) return null;
+    if (!access || !currentUserId) return null;
+    const season =
+      this.activeSeason(access.room.id) ??
+      this.store.seasons
+        .filter(
+          (candidate) => candidate.roomId === access.room.id && candidate.status === "finished",
+        )
+        .sort(
+          (left, right) =>
+            Date.parse(right.endsAt) - Date.parse(left.endsAt) ||
+            Date.parse(right.startsAt) - Date.parse(left.startsAt) ||
+            left.id.localeCompare(right.id),
+        )[0];
     return {
       roomId: roomKey,
       roomTitle: access.room.title,
       currentUserId,
-      entries: this.seasonLeaderboard(access.room.id, season),
+      season: season
+        ? {
+            id: season.id,
+            title: season.title,
+            status:
+              season.status === "finished" || Date.parse(season.endsAt) <= Date.parse(context.now)
+                ? "finished"
+                : "active",
+          }
+        : null,
+      entries: season ? this.seasonLeaderboard(access.room.id, season) : [],
     };
   }
 

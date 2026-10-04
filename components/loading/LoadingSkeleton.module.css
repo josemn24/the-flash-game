@@ -249,6 +249,13 @@
     border-radius: 50%;
   }
 
+  .rankingSeason {
+    width: min(80%, 260px);
+    height: 12px;
+    margin-top: var(--space-3);
+    border-radius: var(--radius-pill);
+  }
+
   .leaderboardRows {
     display: grid;
     gap: 6px;

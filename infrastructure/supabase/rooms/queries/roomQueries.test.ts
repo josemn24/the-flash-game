@@ -447,7 +447,7 @@ describe("Supabase room read capabilities S06 rankings", () => {
     ).rejects.toThrow("Supabase room read failed (get_room_detail): permission denied");
   });
 
-  it("returns null without a season and does not leak ranking data", async () => {
+  it("returns an empty ranking without a season and does not leak ranking data", async () => {
     const client = await mocks.createClient();
     client.rpc = vi.fn(async (functionName: string) => {
       if (functionName === "get_room_detail") {
@@ -456,11 +456,20 @@ describe("Supabase room read capabilities S06 rankings", () => {
       if (functionName === "get_room_calendar") return { data: [], error: null };
       throw new Error(`Unexpected ranking RPC: ${functionName}`);
     });
+    const seasonQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockReturnThis(),
+      abortSignal: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+    };
+    client.from = vi.fn(() => seasonQuery);
     mocks.createClient.mockResolvedValue(client);
 
     await expect(
       createRoomReadCapabilities().getRanking("s06-no-season", queryContext),
-    ).resolves.toBeNull();
+    ).resolves.toMatchObject({ season: null, entries: [] });
     await expect(
       createRoomReadCapabilities().getDetail("s06-no-season", queryContext),
     ).resolves.toMatchObject({
