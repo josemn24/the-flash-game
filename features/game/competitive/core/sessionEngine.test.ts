@@ -307,17 +307,40 @@ describe("mode policies", () => {
       ],
     };
     const { engine, calls } = setup(challenge);
-    calls.prepare.mockResolvedValue({ ...prepared(), presentedAt: null, deadlineAt: null });
+    const preparedQuestion = { ...prepared(), presentedAt: null, deadlineAt: null };
+    let resolvePreparation!: (response: typeof preparedQuestion) => void;
+    calls.prepare.mockImplementation(
+      () => new Promise((resolve) => (resolvePreparation = resolve)),
+    );
     calls.activate
       .mockRejectedValueOnce(new TypeError("lost activation"))
       .mockResolvedValue(prepared("a", 3));
-    await play(engine);
+    await engine.lifecycle.begin();
+    expect(engine.getSnapshot().phase).toBe("briefing");
+    const preparing = engine.startQuestions();
+    expect(engine.getSnapshot().phase).toBe("preparing");
+    await drain();
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "preparing",
+      busy: true,
+      locked: true,
+      question: null,
+      questionDeadlineAt: null,
+    });
+    resolvePreparation(preparedQuestion);
+    await preparing;
     expect(engine.getSnapshot()).toMatchObject({
       phase: "preparing",
       locked: true,
       questionDeadlineAt: null,
     });
     await engine.lifecycle.activate();
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "preparing",
+      locked: true,
+      questionDeadlineAt: null,
+      lifecycleError: { operation: "activate" },
+    });
     const original = calls.activate.mock.calls[0][0];
     await engine.retry();
     expect(calls.activate.mock.calls[1][0]).toEqual(original);

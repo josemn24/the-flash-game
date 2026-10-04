@@ -283,6 +283,8 @@ export class CompetitiveSessionEngine {
       return;
     }
     if (this.snapshot.busy) return;
+    if (this.options.challenge.mode === "pyramid")
+      this.commit({ type: "phase", phase: "preparing", clearQuestion: true });
     await this.lifecycle.prepare();
   };
   continueScene = async () => {

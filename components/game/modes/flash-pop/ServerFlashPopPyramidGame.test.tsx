@@ -1,7 +1,13 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
-import { PyramidPreparingStage } from "./ServerFlashPopPyramidGame.client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ServerFlashPopPyramidGame } from "./ServerFlashPopPyramidGame.client";
+import { initialSessionState } from "@/features/game/competitive/core/sessionReducer";
+import { questionFromPayload } from "@/features/game/serverFlashQuestionAdapter";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerPyramidChallenge } from "@/types/gameplay/challenge";
+
+const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }));
+vi.mock("@/features/game/useServerFlashSession", () => ({ useServerFlashSession: useSession }));
 
 const challenge: ServerPyramidChallenge = {
   id: "challenge-1",
@@ -32,16 +38,70 @@ const challenge: ServerPyramidChallenge = {
   })),
 };
 
-describe("PyramidPreparingStage", () => {
-  it("communicates preparation accessibly without exposing a timer", () => {
-    const markup = renderToStaticMarkup(
-      <PyramidPreparingStage challenge={challenge} currentIndex={0} />,
-    );
+const roomContext = { returnTo: "/salas/sala" } as GameRoomContext;
+const question = questionFromPayload(
+  "level-1",
+  { question: "Pregunta que debe permanecer oculta", options: ["Opción A", "Opción B"] },
+  30_000,
+  10,
+  "multiple-choice",
+);
+const renderGame = () =>
+  renderToStaticMarkup(
+    <ServerFlashPopPyramidGame challenge={challenge} roomContext={roomContext} />,
+  );
+
+beforeEach(() => {
+  useSession.mockReturnValue({ ...initialSessionState("preparing"), retryLifecycle: vi.fn() });
+});
+
+describe("Pyramid question loading", () => {
+  it.each([null, question])("keeps the question hidden until activation: %s", (pendingQuestion) => {
+    useSession.mockReturnValue({
+      ...initialSessionState("preparing"),
+      question: pendingQuestion,
+      retryLifecycle: vi.fn(),
+    });
+    const markup = renderGame();
 
     expect(markup).toContain('role="status"');
     expect(markup).toContain('aria-busy="true"');
-    expect(markup).toContain("Preparando el nivel 1");
-    expect(markup).toContain("Cargando tu prueba");
+    expect(markup).toContain("Cargando pregunta…");
+    expect(markup).toContain("Espera un momento…");
+    expect(markup).not.toContain(question.question);
+    expect(markup).not.toContain("Opción A");
+    expect(markup).not.toContain("Preparando el nivel");
+    expect(markup).not.toContain('role="timer"');
+  });
+
+  it("shows the question and timer once the level is activated", () => {
+    useSession.mockReturnValue({
+      ...initialSessionState("playing"),
+      question,
+      questionPresentedAt: Date.now(),
+      questionDeadlineAt: Date.now() + 30_000,
+      retryLifecycle: vi.fn(),
+    });
+    const markup = renderGame();
+
+    expect(markup).toContain(question.question);
+    expect(markup).toContain("Opción A");
+    expect(markup).toContain('role="timer"');
+    expect(markup).not.toContain("Cargando pregunta…");
+  });
+
+  it("offers a retry without revealing the question when activation fails", () => {
+    useSession.mockReturnValue({
+      ...initialSessionState("preparing"),
+      question,
+      lifecycleError: { operation: "activate", message: "No hemos podido activar el nivel." },
+      retryLifecycle: vi.fn(),
+    });
+    const markup = renderGame();
+
+    expect(markup).toContain("No hemos podido activar el nivel.");
+    expect(markup).toContain("Reintentar partida");
+    expect(markup).not.toContain(question.question);
     expect(markup).not.toContain('role="timer"');
   });
 });
