@@ -13,134 +13,42 @@ import {
   type SeasonRankingReadRow,
 } from "./roomReadContracts";
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
+type ReadRow = Record<string, unknown>;
+type ReviewQuestionType = RoomMemberReviewReadRow["question_type"];
+
+const publicationStatuses = ["scheduled", "open", "closed", "cancelled"];
+const availabilityStatuses = ["upcoming", "available", "closed", "cancelled"];
+const answerStatuses = ["correct", "partial", "incorrect", "unanswered", "timeout"];
+const reviewQuestionTypes = new Set<ReviewQuestionType>([
+  "multiple-choice",
+  "short-text",
+  "mini-wordle",
+  "logic-code",
+  "logic-matrix",
+  "progressive-clues",
+  "matching",
+  "progressive-image",
+  "queens",
+  "true-false",
+  "odd-one-out",
+  "ordering",
+  "anagram",
+  "classification",
+  "estimation",
+  "heat-map",
+  "word-search",
+  "word-hashtag",
+  "zip",
+  "escape",
+]);
+const questionTypesWithSchemaV2 = new Set<ReviewQuestionType>([
+  "progressive-image",
+  "estimation",
+  "heat-map",
+]);
+
+export function isRecord(value: unknown): value is ReadRow {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-export function isRoomReadRow(value: unknown): value is RoomReadRow {
-  if (!value || typeof value !== "object") return false;
-  const row = value as Record<string, unknown>;
-  return (
-    typeof row.room_id === "string" &&
-    typeof row.room_slug === "string" &&
-    typeof row.room_title === "string" &&
-    (row.room_description === null || typeof row.room_description === "string") &&
-    typeof row.membership_role === "string" &&
-    roomRoles.has(row.membership_role as RoomMembershipRole) &&
-    (row.season_id === null || typeof row.season_id === "string") &&
-    (row.season_title === null || typeof row.season_title === "string") &&
-    (row.season_status === null || typeof row.season_status === "string") &&
-    (row.season_starts_at === null || typeof row.season_starts_at === "string") &&
-    (row.season_ends_at === null || typeof row.season_ends_at === "string") &&
-    (row.publication_id === null || typeof row.publication_id === "string") &&
-    (row.publication_status === null || typeof row.publication_status === "string") &&
-    (row.opens_at === null || typeof row.opens_at === "string") &&
-    (row.closes_at === null || typeof row.closes_at === "string") &&
-    (row.challenge_title === null || typeof row.challenge_title === "string") &&
-    (row.challenge_subtitle === null || typeof row.challenge_subtitle === "string") &&
-    (row.challenge_mode === null || gameModes.has(row.challenge_mode as GameMode)) &&
-    (row.challenge_max_score === null || typeof row.challenge_max_score === "number") &&
-    (row.question_count === null || typeof row.question_count === "number") &&
-    (row.competitive_playable === null || typeof row.competitive_playable === "boolean") &&
-    typeof row.current_flash_points === "number" &&
-    (row.current_position === null || typeof row.current_position === "number") &&
-    (row.member_previews === null || Array.isArray(row.member_previews)) &&
-    typeof row.member_count === "number"
-  );
-}
-
-export function isChallengeRankingReadRow(value: unknown): value is ChallengeRankingReadRow {
-  if (!value || typeof value !== "object") return false;
-  const row = value as Record<string, unknown>;
-  return (
-    typeof row.player_id === "string" &&
-    typeof row.display_name === "string" &&
-    (row.avatar_path === null || typeof row.avatar_path === "string") &&
-    typeof row.flash_points === "number" &&
-    Number.isFinite(row.flash_points) &&
-    row.flash_points >= 0 &&
-    typeof row.duration_ms === "number" &&
-    Number.isFinite(row.duration_ms) &&
-    row.duration_ms >= 0 &&
-    typeof row.position === "number" &&
-    Number.isInteger(row.position) &&
-    row.position > 0
-  );
-}
-
-export function isSeasonRankingReadRow(value: unknown): value is SeasonRankingReadRow {
-  if (!value || typeof value !== "object") return false;
-  const row = value as Record<string, unknown>;
-  return (
-    typeof row.player_id === "string" &&
-    typeof row.display_name === "string" &&
-    (row.avatar_path === null || typeof row.avatar_path === "string") &&
-    typeof row.flash_points === "number" &&
-    Number.isFinite(row.flash_points) &&
-    row.flash_points >= 0 &&
-    typeof row.is_former_member === "boolean" &&
-    typeof row.position === "number" &&
-    Number.isInteger(row.position) &&
-    row.position > 0
-  );
-}
-
-export function isRoomIntroductionReadRow(value: unknown): value is RoomIntroductionReadRow {
-  if (!value || typeof value !== "object") return false;
-  const row = value as Record<string, unknown>;
-  return (
-    typeof row.room_id === "string" &&
-    typeof row.room_slug === "string" &&
-    typeof row.room_title === "string" &&
-    typeof row.membership_role === "string" &&
-    roomRoles.has(row.membership_role as RoomMembershipRole) &&
-    typeof row.publication_id === "string" &&
-    typeof row.publication_status === "string" &&
-    typeof row.opens_at === "string" &&
-    typeof row.closes_at === "string" &&
-    typeof row.challenge_title === "string" &&
-    (row.challenge_subtitle === null || typeof row.challenge_subtitle === "string") &&
-    typeof row.challenge_mode === "string" &&
-    gameModes.has(row.challenge_mode as GameMode) &&
-    typeof row.challenge_max_score === "number" &&
-    typeof row.question_count === "number" &&
-    typeof row.competitive_playable === "boolean" &&
-    ["upcoming", "available", "closed", "cancelled"].includes(String(row.availability_status)) &&
-    typeof row.can_start === "boolean"
-  );
-}
-
-export function isRoomCalendarReadRow(value: unknown): value is RoomCalendarReadRow {
-  if (!isRecord(value)) return false;
-  return (
-    typeof value.room_id === "string" &&
-    typeof value.room_slug === "string" &&
-    typeof value.room_title === "string" &&
-    typeof value.time_zone === "string" &&
-    isValidTimeZone(value.time_zone) &&
-    roomRoles.has(value.membership_role as RoomMembershipRole) &&
-    typeof value.season_id === "string" &&
-    typeof value.season_title === "string" &&
-    (value.season_status === "active" || value.season_status === "finished") &&
-    typeof value.publication_id === "string" &&
-    typeof value.publication_number === "number" &&
-    Number.isInteger(value.publication_number) &&
-    value.publication_number > 0 &&
-    ["scheduled", "open", "closed", "cancelled"].includes(String(value.publication_status)) &&
-    ["upcoming", "available", "closed", "cancelled"].includes(String(value.availability_status)) &&
-    typeof value.opens_at === "string" &&
-    typeof value.closes_at === "string" &&
-    typeof value.challenge_title === "string" &&
-    (value.challenge_subtitle === null || typeof value.challenge_subtitle === "string") &&
-    typeof value.challenge_mode === "string" &&
-    gameModes.has(value.challenge_mode as GameMode) &&
-    typeof value.question_count === "number" &&
-    Number.isInteger(value.question_count) &&
-    value.question_count >= 0 &&
-    (value.own_attempt_status === null || typeof value.own_attempt_status === "string") &&
-    typeof value.can_start === "boolean" &&
-    typeof value.can_continue === "boolean"
-  );
 }
 
 export function isNullableString(value: unknown): value is string | null {
@@ -151,46 +59,276 @@ export function isNullableNumber(value: unknown): value is number | null {
   return value === null || (typeof value === "number" && Number.isFinite(value));
 }
 
+export function isRoomReadRow(value: unknown): value is RoomReadRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as ReadRow;
+  return (
+    hasRoomIdentity(row) &&
+    isNullableString(row.room_description) &&
+    isRoomRole(row.membership_role) &&
+    hasNullableSeasonFields(row) &&
+    hasNullablePublicationFields(row) &&
+    hasNullableChallengeFields(row) &&
+    hasRoomMemberSummary(row)
+  );
+}
+
+export function isChallengeRankingReadRow(value: unknown): value is ChallengeRankingReadRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as ReadRow;
+  return (
+    hasPlayerIdentity(row) && hasRankingResult(row) && isNonNegativeFiniteNumber(row.duration_ms)
+  );
+}
+
+export function isSeasonRankingReadRow(value: unknown): value is SeasonRankingReadRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as ReadRow;
+  return (
+    hasPlayerIdentity(row) && hasRankingResult(row) && typeof row.is_former_member === "boolean"
+  );
+}
+
+export function isRoomIntroductionReadRow(value: unknown): value is RoomIntroductionReadRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as ReadRow;
+  return (
+    hasRoomIdentity(row) &&
+    isRoomRole(row.membership_role) &&
+    hasIntroductionPublicationFields(row) &&
+    hasIntroductionChallengeFields(row) &&
+    availabilityStatuses.includes(String(row.availability_status)) &&
+    typeof row.can_start === "boolean"
+  );
+}
+
+export function isRoomCalendarReadRow(value: unknown): value is RoomCalendarReadRow {
+  if (!isRecord(value)) return false;
+  return (
+    hasRoomIdentity(value) &&
+    typeof value.time_zone === "string" &&
+    isValidTimeZone(value.time_zone) &&
+    isRoomRole(value.membership_role) &&
+    hasCalendarSeasonFields(value) &&
+    hasCalendarPublicationFields(value) &&
+    hasCalendarChallengeFields(value) &&
+    hasCalendarAttemptFields(value)
+  );
+}
+
 export function isRoomHistoryReadRow(value: unknown): value is RoomHistoryReadRow {
   if (!value || typeof value !== "object") return false;
-  const row = value as Record<string, unknown>;
+  const row = value as ReadRow;
+  return (
+    hasRoomSeasonContext(row) &&
+    hasHistoryPublicationFields(row) &&
+    hasReviewChallengeFields(row) &&
+    isNonNegativeInteger(row.question_count) &&
+    hasHistoryParticipationFields(row)
+  );
+}
+
+export function isRoomMemberReviewReadRow(value: unknown): value is RoomMemberReviewReadRow {
+  if (!value || typeof value !== "object") return false;
+  const row = value as ReadRow;
+  return (
+    hasRoomSeasonContext(row) &&
+    hasMemberReviewPublicationFields(row) &&
+    hasReviewChallengeFields(row) &&
+    hasPlayerIdentity(row) &&
+    hasReviewAttemptFields(row) &&
+    hasReviewQuestionFields(row) &&
+    hasReviewAnswerFields(row) &&
+    hasReviewModeConfiguration(row) &&
+    hasReviewLevelFields(row)
+  );
+}
+
+// Shared identities and scalar checks.
+function isRoomRole(value: unknown): value is RoomMembershipRole {
+  return typeof value === "string" && roomRoles.has(value as RoomMembershipRole);
+}
+
+function isGameMode(value: unknown): value is GameMode {
+  return typeof value === "string" && gameModes.has(value as GameMode);
+}
+
+function isInteger(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value);
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return isInteger(value) && value > 0;
+}
+
+function isNonNegativeInteger(value: unknown): value is number {
+  return isInteger(value) && value >= 0;
+}
+
+function isNonNegativeFiniteNumber(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function hasRoomIdentity(row: ReadRow) {
   return (
     typeof row.room_id === "string" &&
     typeof row.room_slug === "string" &&
-    typeof row.room_title === "string" &&
-    typeof row.viewer_role === "string" &&
-    roomRoles.has(row.viewer_role as RoomMembershipRole) &&
-    typeof row.season_id === "string" &&
-    typeof row.season_title === "string" &&
+    typeof row.room_title === "string"
+  );
+}
+
+function hasSeasonIdentity(row: ReadRow) {
+  return typeof row.season_id === "string" && typeof row.season_title === "string";
+}
+
+function hasPlayerIdentity(row: ReadRow) {
+  return (
+    typeof row.player_id === "string" &&
+    typeof row.display_name === "string" &&
+    isNullableString(row.avatar_path)
+  );
+}
+
+function hasRankingResult(row: ReadRow) {
+  return isNonNegativeFiniteNumber(row.flash_points) && isPositiveInteger(row.position);
+}
+
+function hasChallengeSummary(row: ReadRow) {
+  return (
+    typeof row.challenge_title === "string" &&
+    isNullableString(row.challenge_subtitle) &&
+    isGameMode(row.challenge_mode)
+  );
+}
+
+// Room cards and details allow missing seasons, publications and challenges.
+function hasNullableSeasonFields(row: ReadRow) {
+  return (
+    isNullableString(row.season_id) &&
+    isNullableString(row.season_title) &&
+    isNullableString(row.season_status) &&
+    isNullableString(row.season_starts_at) &&
+    isNullableString(row.season_ends_at)
+  );
+}
+
+function hasNullablePublicationFields(row: ReadRow) {
+  return (
+    isNullableString(row.publication_id) &&
+    isNullableString(row.publication_status) &&
+    isNullableString(row.opens_at) &&
+    isNullableString(row.closes_at)
+  );
+}
+
+function hasNullableChallengeFields(row: ReadRow) {
+  return (
+    isNullableString(row.challenge_title) &&
+    isNullableString(row.challenge_subtitle) &&
+    (row.challenge_mode === null || isGameMode(row.challenge_mode)) &&
+    (row.challenge_max_score === null || typeof row.challenge_max_score === "number") &&
+    (row.question_count === null || typeof row.question_count === "number") &&
+    (row.competitive_playable === null || typeof row.competitive_playable === "boolean")
+  );
+}
+
+function hasRoomMemberSummary(row: ReadRow) {
+  return (
+    typeof row.current_flash_points === "number" &&
+    (row.current_position === null || typeof row.current_position === "number") &&
+    (row.member_previews === null || Array.isArray(row.member_previews)) &&
+    typeof row.member_count === "number"
+  );
+}
+
+// Introduction and calendar rows have different publication and count rules.
+function hasIntroductionPublicationFields(row: ReadRow) {
+  return (
     typeof row.publication_id === "string" &&
-    typeof row.publication_number === "number" &&
-    Number.isInteger(row.publication_number) &&
-    row.publication_number > 0 &&
+    typeof row.publication_status === "string" &&
+    typeof row.opens_at === "string" &&
+    typeof row.closes_at === "string"
+  );
+}
+
+function hasIntroductionChallengeFields(row: ReadRow) {
+  return (
+    hasChallengeSummary(row) &&
+    typeof row.challenge_max_score === "number" &&
+    typeof row.question_count === "number" &&
+    typeof row.competitive_playable === "boolean"
+  );
+}
+
+function hasCalendarSeasonFields(row: ReadRow) {
+  return (
+    hasSeasonIdentity(row) && (row.season_status === "active" || row.season_status === "finished")
+  );
+}
+
+function hasCalendarPublicationFields(row: ReadRow) {
+  return (
+    typeof row.publication_id === "string" &&
+    isPositiveInteger(row.publication_number) &&
+    publicationStatuses.includes(String(row.publication_status)) &&
+    availabilityStatuses.includes(String(row.availability_status)) &&
+    typeof row.opens_at === "string" &&
+    typeof row.closes_at === "string"
+  );
+}
+
+function hasCalendarChallengeFields(row: ReadRow) {
+  return hasChallengeSummary(row) && isNonNegativeInteger(row.question_count);
+}
+
+function hasCalendarAttemptFields(row: ReadRow) {
+  return (
+    isNullableString(row.own_attempt_status) &&
+    typeof row.can_start === "boolean" &&
+    typeof row.can_continue === "boolean"
+  );
+}
+
+// History and member reviews share the room, season and challenge context.
+function hasRoomSeasonContext(row: ReadRow) {
+  return hasRoomIdentity(row) && isRoomRole(row.viewer_role) && hasSeasonIdentity(row);
+}
+
+function hasHistoryPublicationFields(row: ReadRow) {
+  return (
+    typeof row.publication_id === "string" &&
+    isPositiveInteger(row.publication_number) &&
     row.publication_status === "closed" &&
     typeof row.publication_opens_at === "string" &&
-    typeof row.publication_closes_at === "string" &&
+    typeof row.publication_closes_at === "string"
+  );
+}
+
+function hasMemberReviewPublicationFields(row: ReadRow) {
+  return (
+    typeof row.publication_id === "string" &&
+    (row.publication_status === "open" || row.publication_status === "closed") &&
+    typeof row.publication_closes_at === "string"
+  );
+}
+
+function hasReviewChallengeFields(row: ReadRow) {
+  return (
     typeof row.challenge_id === "string" &&
     typeof row.challenge_slug === "string" &&
     typeof row.challenge_version_id === "string" &&
     typeof row.challenge_title === "string" &&
     typeof row.challenge_subtitle === "string" &&
     typeof row.challenge_description === "string" &&
-    (row.challenge_mode === "flash" ||
-      row.challenge_mode === "alphabet" ||
-      row.challenge_mode === "survival" ||
-      row.challenge_mode === "narrative" ||
-      row.challenge_mode === "pyramid") &&
-    row.challenge_max_score === 100 &&
-    typeof row.question_count === "number" &&
-    Number.isInteger(row.question_count) &&
-    row.question_count >= 0 &&
-    typeof row.question_count === "number" &&
-    Number.isInteger(row.question_count) &&
-    row.question_count >= 0 &&
+    isGameMode(row.challenge_mode) &&
+    row.challenge_max_score === 100
+  );
+}
+
+function hasHistoryParticipationFields(row: ReadRow) {
+  return (
     typeof row.played_at === "string" &&
-    typeof row.player_count === "number" &&
-    Number.isInteger(row.player_count) &&
-    row.player_count >= 0 &&
+    isNonNegativeInteger(row.player_count) &&
     isNullableString(row.player_id) &&
     isNullableString(row.display_name) &&
     isNullableString(row.avatar_path) &&
@@ -201,35 +339,8 @@ export function isRoomHistoryReadRow(value: unknown): value is RoomHistoryReadRo
   );
 }
 
-export function isRoomMemberReviewReadRow(value: unknown): value is RoomMemberReviewReadRow {
-  if (!value || typeof value !== "object") return false;
-  const row = value as Record<string, unknown>;
+function hasReviewAttemptFields(row: ReadRow) {
   return (
-    typeof row.room_id === "string" &&
-    typeof row.room_slug === "string" &&
-    typeof row.room_title === "string" &&
-    typeof row.viewer_role === "string" &&
-    roomRoles.has(row.viewer_role as RoomMembershipRole) &&
-    typeof row.season_id === "string" &&
-    typeof row.season_title === "string" &&
-    typeof row.publication_id === "string" &&
-    (row.publication_status === "open" || row.publication_status === "closed") &&
-    typeof row.publication_closes_at === "string" &&
-    typeof row.challenge_id === "string" &&
-    typeof row.challenge_slug === "string" &&
-    typeof row.challenge_version_id === "string" &&
-    typeof row.challenge_title === "string" &&
-    typeof row.challenge_subtitle === "string" &&
-    typeof row.challenge_description === "string" &&
-    (row.challenge_mode === "flash" ||
-      row.challenge_mode === "alphabet" ||
-      row.challenge_mode === "survival" ||
-      row.challenge_mode === "narrative" ||
-      row.challenge_mode === "pyramid") &&
-    row.challenge_max_score === 100 &&
-    typeof row.player_id === "string" &&
-    typeof row.display_name === "string" &&
-    isNullableString(row.avatar_path) &&
     typeof row.attempt_id === "string" &&
     (row.attempt_status === "completed" || row.attempt_status === "abandoned") &&
     isNullableNumber(row.attempt_score) &&
@@ -237,71 +348,79 @@ export function isRoomMemberReviewReadRow(value: unknown): value is RoomMemberRe
     typeof row.attempt_started_at === "string" &&
     isNullableString(row.attempt_completed_at) &&
     typeof row.attempt_duration_ms === "number" &&
-    typeof row.attempt_lock_version === "number" &&
+    typeof row.attempt_lock_version === "number"
+  );
+}
+
+function hasSupportedPayloadSchema(row: ReadRow) {
+  return (
+    row.payload_schema_version === 1 ||
+    (row.payload_schema_version === 2 &&
+      questionTypesWithSchemaV2.has(row.question_type as ReviewQuestionType))
+  );
+}
+
+function hasReviewQuestionFields(row: ReadRow) {
+  return (
     typeof row.challenge_item_id === "string" &&
-    typeof row.item_position === "number" &&
-    Number.isInteger(row.item_position) &&
+    isInteger(row.item_position) &&
     typeof row.question_version_id === "string" &&
-    (row.question_type === "multiple-choice" ||
-      row.question_type === "short-text" ||
-      row.question_type === "mini-wordle" ||
-      row.question_type === "logic-code" ||
-      row.question_type === "logic-matrix" ||
-      row.question_type === "progressive-clues" ||
-      row.question_type === "matching" ||
-      row.question_type === "progressive-image" ||
-      row.question_type === "queens" ||
-      row.question_type === "true-false" ||
-      row.question_type === "odd-one-out" ||
-      row.question_type === "ordering" ||
-      row.question_type === "anagram" ||
-      row.question_type === "classification" ||
-      row.question_type === "estimation" ||
-      row.question_type === "heat-map" ||
-      row.question_type === "word-search" ||
-      row.question_type === "word-hashtag" ||
-      row.question_type === "zip" ||
-      row.question_type === "escape") &&
-    (row.payload_schema_version === 1 ||
-      (row.question_type === "progressive-image" && row.payload_schema_version === 2) ||
-      (row.question_type === "estimation" && row.payload_schema_version === 2) ||
-      (row.question_type === "heat-map" && row.payload_schema_version === 2)) &&
+    reviewQuestionTypes.has(row.question_type as ReviewQuestionType) &&
+    hasSupportedPayloadSchema(row) &&
     (row.time_limit_ms === undefined ||
       (typeof row.time_limit_ms === "number" && row.time_limit_ms > 0)) &&
     (row.public_payload === null || isRecord(row.public_payload)) &&
     (row.solution_payload === null || isRecord(row.solution_payload)) &&
-    (row.answer === null ||
-      typeof row.answer === "string" ||
-      typeof row.answer === "boolean" ||
-      (typeof row.answer === "number" && Number.isFinite(row.answer)) ||
-      Array.isArray(row.answer) ||
-      isRecord(row.answer)) &&
-    (row.answer_status === null ||
-      ["correct", "partial", "incorrect", "unanswered", "timeout"].includes(
-        String(row.answer_status),
-      )) &&
+    isNonNegativeFiniteNumber(row.item_points)
+  );
+}
+
+function isReviewAnswer(value: unknown) {
+  return (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "boolean" ||
+    (typeof value === "number" && Number.isFinite(value)) ||
+    Array.isArray(value) ||
+    isRecord(value)
+  );
+}
+
+function hasReviewAnswerFields(row: ReadRow) {
+  return (
+    isReviewAnswer(row.answer) &&
+    (row.answer_status === null || answerStatuses.includes(String(row.answer_status))) &&
     isNullableNumber(row.points) &&
     (row.result_details === null || isRecord(row.result_details)) &&
     isNullableString(row.presented_at) &&
     isNullableString(row.submitted_at) &&
     isNullableNumber(row.time_used_ms) &&
-    typeof row.item_points === "number" &&
-    Number.isFinite(row.item_points) &&
-    row.item_points >= 0 &&
-    (row.initial_lives === null ||
-      (typeof row.initial_lives === "number" && Number.isInteger(row.initial_lives))) &&
-    (row.challenge_mode === "alphabet"
-      ? row.question_type === "short-text" &&
-        typeof row.global_time_limit_ms === "number" &&
-        Number.isSafeInteger(row.global_time_limit_ms) &&
-        row.global_time_limit_ms > 0 &&
-        typeof row.alphabet_letter === "string" &&
-        /^[A-ZÑ]$/u.test(row.alphabet_letter) &&
-        typeof row.time_limit_ms === "number" &&
-        isRecord(row.public_payload) &&
-        isRecord(row.solution_payload)
-      : row.global_time_limit_ms === null && row.alphabet_letter === null) &&
-    typeof row.has_persisted_answer === "boolean" &&
+    typeof row.has_persisted_answer === "boolean"
+  );
+}
+
+function hasReviewModeConfiguration(row: ReadRow) {
+  if (row.initial_lives !== null && !isInteger(row.initial_lives)) return false;
+
+  if (row.challenge_mode !== "alphabet") {
+    return row.global_time_limit_ms === null && row.alphabet_letter === null;
+  }
+
+  return (
+    row.question_type === "short-text" &&
+    typeof row.global_time_limit_ms === "number" &&
+    Number.isSafeInteger(row.global_time_limit_ms) &&
+    row.global_time_limit_ms > 0 &&
+    typeof row.alphabet_letter === "string" &&
+    /^[A-ZÑ]$/u.test(row.alphabet_letter) &&
+    typeof row.time_limit_ms === "number" &&
+    isRecord(row.public_payload) &&
+    isRecord(row.solution_payload)
+  );
+}
+
+function hasReviewLevelFields(row: ReadRow) {
+  return (
     isNullableString(row.level_id) &&
     isNullableString(row.level_label) &&
     isNullableString(row.briefing_title) &&
