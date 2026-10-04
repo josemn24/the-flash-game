@@ -58,6 +58,11 @@ export type RecordEvaluationCommand = AttemptCommandInput & {
   readonly resultDetails?: JsonValue;
 };
 export type RecoverAttemptCommand = RecoverAttemptInput;
+/** Trusted evaluation prepared outside the final completion transaction. */
+export type PendingReceiptEvaluation = Pick<
+  RecordEvaluationCommand,
+  "receiptId" | "status" | "points" | "resultDetails"
+>;
 /** Minimal authorized metadata; no progress, answers or evaluation content. */
 export type AttemptContext = {
   readonly challengeMode: GameMode;
@@ -125,6 +130,7 @@ export interface AttemptCommands {
     readonly sessionToken: string;
     readonly lockVersion: number;
     readonly idempotencyKey: string;
+    readonly pendingEvaluation?: PendingReceiptEvaluation;
   }): Promise<FinishAttemptResult>;
   recover(input: RecoverAttemptCommand): Promise<RecoverAttemptResult>;
   readAttemptContext(attemptId: string, sessionToken: string): Promise<AttemptContext>;

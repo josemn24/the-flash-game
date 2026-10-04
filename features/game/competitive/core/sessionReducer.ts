@@ -19,6 +19,7 @@ export type SessionPhase =
   | "preparing"
   | "playing"
   | "checking"
+  | "finalizing"
   | "answer-reveal"
   | "transition"
   | "results"
@@ -63,6 +64,7 @@ export type SessionState = {
   reviewChallenge: SessionReview | null;
   locked: boolean;
   busy: boolean;
+  completionRetryScheduled: boolean;
   attemptExpired: boolean;
   pendingCommand: PendingCommand | null;
   lifecycleError?: LifecycleError;
@@ -119,7 +121,13 @@ export type SessionEvent =
       question?: SessionQuestion;
     }
   | { type: "recovered"; attempt: Attempt; results: AnswerResult[] }
-  | { type: "completed"; score: number; reviewChallenge: SessionReview | null }
+  | {
+      type: "completed";
+      score: number;
+      reviewChallenge: SessionReview | null;
+      results?: AnswerResult[];
+    }
+  | { type: "completion_retry"; scheduled: boolean }
   | { type: "expired" }
   | { type: "draft"; answer: AnswerValue | null };
 
@@ -144,6 +152,7 @@ export function initialSessionState(
     reviewChallenge,
     locked: phase === "results" || phase === "recovering",
     busy: false,
+    completionRetryScheduled: false,
     attemptExpired: false,
     pendingCommand: null,
     pendingAnswer: null,
@@ -173,6 +182,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
       return {
         ...state,
         pendingCommand: event.command,
+        completionRetryScheduled: false,
         busy: event.command.operation !== "queensDraft",
         locked: event.command.operation === "queensDraft" ? state.locked : true,
         lifecycleError: undefined,
@@ -272,6 +282,8 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
       return {
         ...state,
         phase: "results",
+        results: event.results ?? state.results,
+        completionRetryScheduled: false,
         score: event.score,
         reviewChallenge: event.reviewChallenge,
         question: null,
@@ -284,6 +296,8 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         locked: true,
         busy: false,
       };
+    case "completion_retry":
+      return { ...state, completionRetryScheduled: event.scheduled };
     case "expired":
       return {
         ...initialSessionState("results", state.results),

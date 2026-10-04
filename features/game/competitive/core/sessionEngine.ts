@@ -49,8 +49,7 @@ export class CompetitiveSessionEngine {
   private recoveryStarted = false;
   private reconciling = false;
   private retryAt = 0;
-  private timeoutRecoveryAttempted = false;
-  private lastFailure?: unknown;
+  private completionRetries = 0;
   private retrying = false;
   private refresh: () => void;
   readonly policy;
@@ -154,7 +153,6 @@ export class CompetitiveSessionEngine {
       return true;
     } catch (error) {
       if (!this.active || generation !== this.generation) return false;
-      this.lastFailure = error;
       this.failed(command, step, error);
       return false;
     } finally {
@@ -179,16 +177,15 @@ export class CompetitiveSessionEngine {
       await this.reconcile();
     if (
       !accepted &&
-      operation === "answer" &&
-      "answer" in data &&
-      data.answer === null &&
       this.options.challenge.mode === "alphabet" &&
-      !this.timeoutRecoveryAttempted &&
+      this.lifecycle.finalizationRequested() &&
+      (operation === "answer" || operation === "alphabetPass" || operation === "prepare") &&
       !this.reconciling &&
-      this.snapshot.pendingCommand &&
-      !(this.lastFailure instanceof CompetitiveCommandError && this.lastFailure.status === 429)
+      this.snapshot.pendingCommand
     ) {
-      this.timeoutRecoveryAttempted = true;
+      // Recovery preserves any receipt already accepted by the server. A rejected
+      // player action must not hold the timeout behind the interactive limiter.
+      this.retryAt = 0;
       await this.reconcile();
     }
     return accepted;
@@ -219,15 +216,18 @@ export class CompetitiveSessionEngine {
       return;
     }
     const seconds =
-      error instanceof CompetitiveCommandError && error.status === 429
-        ? (error.retryAfterSeconds ?? 1)
+      error instanceof CompetitiveCommandError &&
+      (error.status === 429 || code === "alphabet_deadline_not_reached")
+        ? Math.max(1, error.retryAfterSeconds ?? 1)
         : undefined;
     this.retryAt = seconds === undefined ? 0 : Date.now() + seconds * 1000;
     const failure = formatFailure(command.operation, code, step.channel);
     const message =
-      seconds !== undefined
-        ? `Demasiadas solicitudes. Espera ${seconds} ${seconds === 1 ? "segundo" : "segundos"} antes de volver a intentarlo.`
-        : failure.message;
+      code === "alphabet_deadline_not_reached"
+        ? "Esperando a que termine el tiempo de la partida."
+        : seconds !== undefined
+          ? `Demasiadas solicitudes. Espera ${seconds} ${seconds === 1 ? "segundo" : "segundos"} antes de volver a intentarlo.`
+          : failure.message;
     const lifecycle =
       lifecycleOperations.has(command.operation) ||
       code === "stale_version" ||
@@ -242,9 +242,35 @@ export class CompetitiveSessionEngine {
       notice: lifecycle ? message : undefined,
     });
     if (failure.definitive) this.pendingStep = undefined;
+    const retryable =
+      !(error instanceof CompetitiveCommandError) ||
+      error.status >= 500 ||
+      error.status === 429 ||
+      code === "alphabet_deadline_not_reached";
+    if (
+      this.options.challenge.mode === "alphabet" &&
+      this.lifecycle.finalizationRequested() &&
+      (command.operation === "complete" ||
+        command.operation === "recover" ||
+        command.operation === "start") &&
+      retryable &&
+      this.completionRetries < 3
+    ) {
+      const delay = seconds === undefined ? 1000 * 2 ** this.completionRetries : seconds * 1000;
+      this.completionRetries++;
+      this.commit({ type: "completion_retry", scheduled: true });
+      this.timers.schedule("completion-retry", delay, () => {
+        void this.retry(true);
+      });
+    }
   }
-  retry = async () => {
+  retry = async (automatic = false) => {
     if (!this.active || this.snapshot.busy || this.retrying || Date.now() < this.retryAt) return;
+    if (!automatic) {
+      this.completionRetries = 0;
+      this.timers.cancel("completion-retry");
+      this.commit({ type: "completion_retry", scheduled: false });
+    }
     if (this.snapshot.lifecycleError?.operation === "projection") {
       this.refresh();
       return;
@@ -258,10 +284,13 @@ export class CompetitiveSessionEngine {
     if (!command || !step) return;
     this.retrying = true;
     let accepted = false;
-    await this.executor.retry(command, async (original, invoke) => {
-      accepted = await this.send(original, invoke, step);
-    });
-    this.retrying = false;
+    try {
+      await this.executor.retry(command, async (original, invoke) => {
+        accepted = await this.send(original, invoke, step);
+      });
+    } finally {
+      this.retrying = false;
+    }
     if (accepted && this.active) await step.after?.();
     if (!accepted && this.snapshot.lifecycleError?.code === "stale_version") await this.reconcile();
   };

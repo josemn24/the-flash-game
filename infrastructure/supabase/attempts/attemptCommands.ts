@@ -109,6 +109,7 @@ function commandCode(error: unknown) {
     "no_evaluated_answers",
     "no_pending_item",
     "deadline_reached",
+    "alphabet_deadline_not_reached",
     "receipt_not_found",
     "already_evaluated",
     "takeover_disabled",
@@ -377,12 +378,9 @@ export class SupabaseAttemptCommands implements Pick<
     });
   }
 
-  completeFromPersistedAnswers(input: {
-    readonly attemptId: string;
-    readonly sessionToken: string;
-    readonly lockVersion: number;
-    readonly idempotencyKey: string;
-  }) {
+  completeFromPersistedAnswers(
+    input: Parameters<AttemptCommands["completeFromPersistedAnswers"]>[0],
+  ) {
     return transaction<FinishAttemptResult>(this.identity, async (client) => {
       await expireStaleAttempt(client, input.attemptId);
       const scoreResult = await client.query<{ score: number }>(

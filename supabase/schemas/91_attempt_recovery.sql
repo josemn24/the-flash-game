@@ -168,6 +168,12 @@ begin
   select jsonb_build_object(
     'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status,
     'lockVersion', a.lock_version,
+    'deadlineAt', a.deadline_at,
+    'deadlineReached', a.deadline_at is not null and clock_timestamp() >= a.deadline_at,
+    'pendingReceiptId', (select receipt.id from private.answer_receipts receipt
+      where receipt.attempt_id = a.id and not exists (
+        select 1 from private.attempt_answers answer where answer.receipt_id = receipt.id
+      ) order by receipt.received_at, receipt.id limit 1),
     'hasStartedInteraction', exists (select 1 from private.attempt_timing_units u where u.attempt_id = a.id),
     'hasOpenInteraction', exists (select 1 from private.interaction_intervals interval_row
       where interval_row.attempt_id = a.id and interval_row.ended_at is null),

@@ -22,3 +22,32 @@ export async function readTerminalFlashReview(attemptId: string) {
   if (pyramidReview.length) return pyramidReview;
   return supabaseNarrativeQueries.getTerminalReview(attemptId);
 }
+
+/** Authorized terminal projection also works after completion revokes the attempt session. */
+export async function readTerminalAlphabetResult(attemptId: string) {
+  const rows = await supabaseAlphabetQueries.getTerminalReview(attemptId);
+  const first = rows[0];
+  if (!first) return undefined;
+  return {
+    scheduledChallengeId: first.scheduled_challenge_id,
+    result: {
+      attemptId: first.attempt_id,
+      lockVersion: first.attempt_lock_version,
+      status: "completed" as const,
+      score: first.attempt_score,
+      answers: rows.map((row) => ({
+        challengeItemId: row.challenge_item_id,
+        answer: row.answer,
+        status: row.answer_status ?? "unanswered",
+        points: row.points,
+        timeUsedMs: row.time_used_ms,
+        resultDetails: row.result_details,
+      })),
+      review: rows.map((row) => ({
+        challengeItemId: row.challenge_item_id,
+        publicPayload: row.public_payload,
+        solutionPayload: row.solution_payload,
+      })),
+    },
+  };
+}

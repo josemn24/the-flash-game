@@ -272,6 +272,9 @@ export type AttemptRecoverySnapshot = {
     readonly nextChallengeItemId: ChallengeItemId | null;
   } | null;
   readonly allItemsResolved: boolean;
+  readonly deadlineAt?: UtcIsoDateTime | null;
+  readonly deadlineReached?: boolean;
+  readonly pendingReceiptId?: AnswerReceiptId | null;
   readonly challengeMode?: "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
   readonly initialLives?: number | null;
   readonly livesRemaining?: number | null;
@@ -283,6 +286,7 @@ export type FinishAttemptResult = AttemptCommandResult & {
   readonly score: number | null;
   readonly outcome?: string | null;
   readonly livesRemaining?: number | null;
+  readonly answers?: readonly AttemptRecoveryAnswer[];
 };
 export type AcceptInvitationInput = {
   readonly invitationToken: string;

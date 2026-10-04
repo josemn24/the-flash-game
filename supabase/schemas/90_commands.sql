@@ -35,7 +35,7 @@ begin
       allowed := required || array['resultDetails'];
     when 'complete' then
       required := array['idempotencyKey','attemptId','lockVersion','sessionToken','score'];
-      allowed := required || array['outcome'];
+      allowed := required || array['outcome','pendingEvaluation'];
     when 'abandon' then
       allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
     when 'accept_invitation' then
@@ -72,7 +72,7 @@ begin
   values(actor, op, outcome->>'entityType', (outcome->>'entityId')::uuid, input->>'reason', key,
     nullif(outcome->'beforePayload', 'null'::jsonb),
     -- Avoid persisting playable payloads or free-text answers into a second store.
-    result - 'publicPayload');
+    result - 'publicPayload' - 'answers');
   insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
     values(actor, key, op, safe_input, result);
   return result;

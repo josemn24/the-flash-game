@@ -159,6 +159,28 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
   }
 
   async recover(input: RecoverAttemptInput): Promise<RecoveryUseCaseResult> {
+    const initial = await this.commands.readRecovery(input.attemptId, input.sessionToken);
+    if (initial.challengeMode === "alphabet" && initial.deadlineReached) {
+      const { result: completed } = await this.complete(input);
+      return {
+        recovery: {
+          attemptId: input.attemptId,
+          lockVersion: completed.lockVersion,
+          receiptId: null,
+          recovered: true,
+        },
+        snapshot: {
+          ...initial,
+          status: completed.status,
+          lockVersion: completed.lockVersion,
+          allItemsResolved: true,
+          hasOpenInteraction: false,
+          pendingReceiptId: null,
+          answers: completed.answers ?? initial.answers,
+        },
+        completed,
+      };
+    }
     const recovery = await this.commands.recover(input);
     let evaluated: SubmitAnswerResult | undefined;
     if (recovery.receiptId) {
@@ -178,6 +200,7 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
     let completed: FinishAttemptResult | undefined;
     if (
       snapshot.allItemsResolved ||
+      (snapshot.challengeMode === "alphabet" && snapshot.deadlineReached) ||
       snapshot.terminalOutcome === "eliminated" ||
       snapshot.terminalOutcome === "failed"
     ) {
@@ -202,8 +225,28 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
       this.commands.readAttemptContext(input.attemptId, input.sessionToken),
     );
     this.performanceObserver?.setMode(context.challengeMode);
+    const snapshot =
+      context.challengeMode === "alphabet"
+        ? await this.commands.readRecovery(input.attemptId, input.sessionToken)
+        : undefined;
+    const pending = snapshot?.pendingReceiptId;
+    const evaluation = pending
+      ? await this.scoreReceipt({ ...input, receiptId: pending })
+      : undefined;
     const result = await observePerformance(this.performanceObserver, "attempt.finish", () =>
-      this.commands.completeFromPersistedAnswers(input),
+      this.commands.completeFromPersistedAnswers({
+        ...input,
+        ...(pending && evaluation
+          ? {
+              pendingEvaluation: {
+                receiptId: pending,
+                status: evaluation.status,
+                points: evaluation.points,
+                ...(evaluation.details ? { resultDetails: evaluation.details } : {}),
+              },
+            }
+          : {}),
+      }),
     );
     return { result, scheduledChallengeId: context.scheduledChallengeId };
   }
@@ -278,13 +321,11 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
     return this.commands.revealProgressiveClue(input);
   }
 
-  private async evaluateReceipt(input: {
+  private async scoreReceipt(input: {
     readonly attemptId: string;
     readonly sessionToken: string;
-    readonly lockVersion: number;
     readonly receiptId: AnswerReceiptId;
-    readonly idempotencyKey: string;
-  }): Promise<SubmitAnswerResult> {
+  }) {
     const context = await observePerformance(
       this.performanceObserver,
       "attempt.evaluation-context",
@@ -301,9 +342,19 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
         }),
       )) as EvaluationContext["publicPayload"],
     };
-    const result = await observePerformance(this.performanceObserver, "attempt.scoring", () =>
+    return observePerformance(this.performanceObserver, "attempt.scoring", () =>
       this.evaluator.evaluate(resolvedContext),
     );
+  }
+
+  private async evaluateReceipt(input: {
+    readonly attemptId: string;
+    readonly sessionToken: string;
+    readonly lockVersion: number;
+    readonly receiptId: AnswerReceiptId;
+    readonly idempotencyKey: string;
+  }): Promise<SubmitAnswerResult> {
+    const result = await this.scoreReceipt(input);
     const recorded = await observePerformance(this.performanceObserver, "attempt.record", () =>
       this.commands.recordEvaluation({
         attemptId: input.attemptId as SubmitAnswerResult["attemptId"],

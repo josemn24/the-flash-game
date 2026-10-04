@@ -404,4 +404,85 @@ export async function testConcurrentCommands(sql) {
     ).trim(),
     "2",
   );
+
+  const alphabetToken = "alphabet-race-token-".repeat(3);
+  const alphabetStart = await run("owner", "start_attempt", {
+    scheduledChallengeId: id("sc-alphabet-fast"),
+    sessionToken: alphabetToken,
+    idempotencyKey: "alphabet-race-start",
+  });
+  const alphabetPrepare = await run("owner", "prepare_interaction", {
+    attemptId: alphabetStart.attemptId,
+    sessionToken: alphabetToken,
+    lockVersion: alphabetStart.lockVersion,
+    idempotencyKey: "alphabet-race-prepare",
+  });
+  const receiving = await invoke(
+    "owner",
+    "receive_answer",
+    {
+      attemptId: alphabetStart.attemptId,
+      sessionToken: alphabetToken,
+      challengeItemId: alphabetPrepare.challengeItemId,
+      lockVersion: alphabetPrepare.lockVersion,
+      answer: true,
+      idempotencyKey: "alphabet-race-answer",
+    },
+    true,
+  );
+  const closing = await invoke("owner", "complete_attempt", {
+    attemptId: alphabetStart.attemptId,
+    sessionToken: alphabetToken,
+    lockVersion: alphabetPrepare.lockVersion,
+    score: 0,
+    idempotencyKey: "alphabet-race-stale-close",
+  });
+  const alphabetOutcomes = await Promise.allSettled([receiving.done, closing.done]);
+  requireOneConflict(
+    alphabetOutcomes,
+    "An in-flight Alphabet receipt invalidates the old completion version",
+  );
+  assert.match(alphabetOutcomes[1].reason.message, /stale_version/);
+  const alphabetReceipt = alphabetOutcomes[0].value;
+  const alphabetCompletion = {
+    attemptId: alphabetStart.attemptId,
+    sessionToken: alphabetToken,
+    lockVersion: alphabetReceipt.lockVersion,
+    score: 0,
+    idempotencyKey: "alphabet-race-final-close",
+    pendingEvaluation: {
+      receiptId: alphabetReceipt.receiptId,
+      status: alphabetReceipt.timedOut ? "unanswered" : "correct",
+      points: alphabetReceipt.timedOut ? 0 : 50,
+    },
+  };
+  const duplicateClosures = await race(
+    "owner",
+    "owner",
+    "complete_attempt",
+    alphabetCompletion,
+    alphabetCompletion,
+  );
+  assert.equal(
+    duplicateClosures.filter((outcome) => outcome.status === "fulfilled").length,
+    2,
+    "Duplicate Alphabet completion replays after session revocation",
+  );
+  assert.deepEqual(duplicateClosures[0].value, duplicateClosures[1].value);
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.attempt_answers where attempt_id=${quote(alphabetStart.attemptId)};`,
+      )
+    ).trim(),
+    "2",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.flash_point_entries where attempt_id=${quote(alphabetStart.attemptId)};`,
+      )
+    ).trim(),
+    "1",
+  );
 }

@@ -163,6 +163,16 @@ El reducer ya distingue vueltas, letras pasadas, aciertos, errores y respuestas 
 calcula `lastCorrectAt`. El componente independiente conserva replay; el shell competitivo debe
 seguir aplicando la política de `roomContext`.
 
+El cierre competitivo por tiempo utiliza una única petición `complete`. El servidor verifica el
+deadline con PostgreSQL, evalúa cualquier recepción pendiente antes de la transacción final y
+registra todas las letras restantes con respuesta nula, cero puntos y `unanswered`. Conserva las
+respuestas y tiempos persistidos y no crea visitas para letras nunca presentadas. La recuperación
+tras el deadline utiliza la misma operación y devuelve todas las respuestas finales.
+La fase «Finalizando partida…» espera las respuestas o pases en curso y bloquea acciones nuevas.
+El cierre tiene tres reintentos automáticos adicionales: 1, 2 y 4 segundos para red/5xx; para 429
+o un deadline aún no alcanzado respeta `Retry-After`, con un mínimo de un segundo. Un conflicto de
+versión reconcilia el intento antes de crear un nuevo comando de cierre.
+
 ## 3. Supervivencia (`survival`)
 
 ### Contrato recomendado

@@ -1,5 +1,5 @@
 import { sessionFixture } from "./competitive-session-fixture.mjs";
-export default sessionFixture({
+const regular = sessionFixture({
   id: "s05",
   mode: "alphabet",
   title: "Alfabeto competitivo S05",
@@ -33,3 +33,36 @@ export default sessionFixture({
     },
   ],
 });
+
+const timeout = sessionFixture({
+  id: "s05-timeout",
+  mode: "alphabet",
+  title: "Alphabet de 18 letras",
+  globalTimeLimitMs: 8000,
+  questions: Array.from({ length: 18 }, (_, index) => ({
+    letter: String.fromCharCode(65 + index),
+    type: "short-text",
+    publicPayload: { question: `Pregunta de la letra ${String.fromCharCode(65 + index)}` },
+    solution: { correctAnswer: "respuesta", acceptedAnswers: ["respuesta"] },
+  })),
+});
+const scenario = {
+  ...regular,
+  buildDomainSql(context) {
+    return (
+      regular.buildDomainSql(context) +
+      timeout.buildDomainSql({
+        ...context,
+        sqlUuid: (label) => context.sqlUuid(`bulk-${label}`),
+      })
+    );
+  },
+  manifest(context) {
+    return {
+      ...regular.manifest(context),
+      timeoutRoom: { id: context.stableId("bulk-room"), slug: "s05-timeout-main" },
+      timeoutPublicationId: context.stableId("bulk-publication"),
+    };
+  },
+};
+export default scenario;

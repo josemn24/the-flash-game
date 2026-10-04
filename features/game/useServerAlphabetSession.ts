@@ -8,7 +8,7 @@ import type {
 } from "@/types/gameplay/challenge";
 import { useCompetitiveSession } from "./competitive/core/useCompetitiveSession";
 export type ServerAlphabetPhase =
-  "intro" | "recovering" | "countdown" | "playing" | "results" | "review";
+  "intro" | "recovering" | "countdown" | "playing" | "finalizing" | "results" | "review";
 export function useServerAlphabetSession(options: {
   challenge: ServerAlphabetChallenge;
   roomContext: GameRoomContext;

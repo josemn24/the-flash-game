@@ -72,7 +72,12 @@ export function createInteractions(
           }
         },
         after: async () => {
-          if (runtime.state().phase === "transition" || runtime.state().phase === "answer-reveal")
+          if (runtime.challenge.mode === "alphabet" && lifecycle.finalizationRequested())
+            await lifecycle.finalizeAlphabet();
+          else if (
+            runtime.state().phase === "transition" ||
+            runtime.state().phase === "answer-reveal"
+          )
             await lifecycle.afterAnswer();
           else await resumeTimeout();
         },
@@ -166,6 +171,8 @@ export function createInteractions(
       return;
     if (runtime.challenge.mode === "alphabet") {
       if (!alphabetTimeout.claim()) return;
+      await lifecycle.finalizeAlphabet();
+      return;
     }
     if (reserved || runtime.state().pendingCommand) {
       timeoutItemId = runtime.state().question?.id ?? null;
@@ -239,7 +246,10 @@ export function createInteractions(
           {
             accept: () =>
               runtime.commit({ type: "phase", phase: "preparing", clearQuestion: true }),
-            after: lifecycle.prepare,
+            after: async () => {
+              if (lifecycle.finalizationRequested()) await lifecycle.finalizeAlphabet();
+              else await lifecycle.prepare();
+            },
           },
         );
       } finally {

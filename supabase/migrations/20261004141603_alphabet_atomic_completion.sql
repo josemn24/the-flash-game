@@ -1,135 +1,8 @@
--- Internal command handlers. The dispatcher owns idempotency and audit writes.
--- Keep this after 89_progressive_clues.sql for its prepare/reveal helpers.
+-- Alphabet: atomic deadline completion, final answers and recovery metadata.
+-- Existing function signatures and grants remain unchanged.
 set local check_function_bodies = off;
 
-create function private.next_attempt_item(target_attempt uuid) returns uuid
-language sql stable set search_path = '' as $$
-  select i.id from public.attempts a
-  join private.challenge_versions cv on cv.id = a.challenge_version_id
-  join private.challenge_items i on i.challenge_version_id = a.challenge_version_id
-  where a.id = target_attempt and not exists (
-    select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id
-  )
-  order by
-    case when cv.mode = 'alphabet' and exists (select 1 from private.interaction_intervals x
-      where x.attempt_id = a.id and x.challenge_item_id = i.id) then 1 else 0 end,
-    case when cv.mode = 'alphabet' and i.position <= coalesce((
-      select ci.position from private.interaction_intervals x
-      join private.challenge_items ci on ci.id = x.challenge_item_id
-      where x.attempt_id = a.id order by x.started_at desc, x.id desc limit 1
-    ), 0) then 1 else 0 end,
-    i.position limit 1
-$$;
-alter function private.next_attempt_item(uuid) owner to postgres;
-revoke all on function private.next_attempt_item(uuid) from public, anon, authenticated, service_role;
-
-
-create function private.handle_attempt_admin_command(
-  op text,
-  input jsonb,
-  actor uuid,
-  target_attempt public.attempts,
-  target_schedule public.scheduled_challenges,
-  instant timestamptz,
-  key text
-) returns jsonb
-language plpgsql set search_path = '' as $$
-declare
-  a public.attempts%rowtype := target_attempt;
-  sc public.scheduled_challenges%rowtype := target_schedule;
-  balance integer;
-  points integer;
-  result jsonb;
-begin
-        if nullif(btrim(input->>'reason'), '') is null then raise exception 'reason_required' using errcode = '22023'; end if;
-        if a.kind <> 'competitive' then raise exception 'not_competitive' using errcode = '55000'; end if;
-        select coalesce(sum(amount),0)::integer into balance from private.flash_point_entries where attempt_id = a.id;
-        if op = 'invalidate' then
-          if a.status not in ('completed','abandoned') then raise exception 'attempt_not_terminal' using errcode = '55000'; end if;
-          update public.attempts set status = 'invalidated', terminal_reason = input->>'reason', lock_version = lock_version + 1
-            where id = a.id returning * into a;
-          update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
-          if exists (select 1 from private.flash_point_entries where attempt_id = a.id and entry_type = 'accreditation') then
-            insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type,
-              amount, reason, created_by_player_id, idempotency_key)
-            values(sc.season_id, a.player_id, sc.id, a.id, 'reversal', -balance, input->>'reason', actor, 'invalidate:' || a.id);
-          end if;
-          result := jsonb_build_object('status', a.status, 'effectiveScore', 0);
-        else
-          if a.status not in ('completed','abandoned') then
-            raise exception 'attempt_not_terminal' using errcode = '55000';
-          end if;
-          points := (input->>'score')::integer;
-          if points not between 0 and 100 then raise exception 'invalid_score' using errcode = '22023'; end if;
-          insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type,
-            amount, reason, created_by_player_id, idempotency_key)
-          values(sc.season_id, a.player_id, sc.id, a.id, 'adjustment', points - balance, input->>'reason', actor, 'adjust:' || actor || ':' || key);
-          update public.attempts set lock_version = lock_version + 1 where id = a.id returning * into a;
-          -- Corrections preserve the immutable original score/status.
-          result := jsonb_build_object('status', a.status, 'effectiveScore', points);
-        end if;
-  return result;
-end;
-$$;
-alter function private.handle_attempt_admin_command(text, jsonb, uuid, public.attempts, public.scheduled_challenges, timestamptz, text) owner to postgres;
-revoke all on function private.handle_attempt_admin_command(text, jsonb, uuid, public.attempts, public.scheduled_challenges, timestamptz, text) from public, anon, authenticated, service_role;
-
-create function private.handle_invitation_command(
-  input jsonb,
-  safe_input jsonb,
-  actor uuid,
-  cached_result jsonb
-) returns jsonb
-language plpgsql set search_path = '' as $$
-declare
-  target uuid;
-  invitation private.room_invitations%rowtype;
-  member public.room_memberships%rowtype;
-  result jsonb;
-begin
-    -- Room before invitation/membership is the shared lock order for membership writers.
-    select room_id into target from private.room_invitations where token_hash = safe_input->>'invitationToken';
-    perform 1 from public.rooms where id = target and status = 'active' for update;
-    if not found then raise exception 'invitation_unavailable' using errcode = '42501'; end if;
-    select * into invitation from private.room_invitations where token_hash = safe_input->>'invitationToken' for update;
-    select * into member from public.room_memberships where room_id = target and player_id = actor for update;
-    if member.status = 'banned' then raise exception 'invitation_unavailable' using errcode = '42501'; end if;
-    if cached_result is not null then
-      return jsonb_build_object(
-        'result', cached_result,
-        'entityType', 'invitation',
-        'entityId', invitation.id,
-        'beforePayload', null,
-        'replayed', true
-      );
-    end if;
-    if invitation.revoked_at is not null or invitation.expires_at <= clock_timestamp()
-      or (invitation.max_uses is not null and invitation.use_count >= invitation.max_uses) then
-      raise exception 'invitation_unavailable' using errcode = '42501';
-    end if;
-    if member.status = 'active' then
-      result := jsonb_build_object('membershipId', member.id, 'joined', false);
-    else
-      insert into public.room_memberships(room_id, player_id, role) values(target, actor, invitation.role)
-      on conflict (room_id, player_id) do update set status = 'active', ended_at = null,
-        joined_at = clock_timestamp(), role = excluded.role returning * into member;
-      update private.room_invitations set use_count = use_count + 1 where id = invitation.id;
-      result := jsonb_build_object('membershipId', member.id, 'joined', true);
-    end if;
-    target := invitation.id;
-  return jsonb_build_object(
-    'result', result,
-    'entityType', 'invitation',
-    'entityId', target,
-    'beforePayload', null,
-    'replayed', false
-  );
-end;
-$$;
-alter function private.handle_invitation_command(jsonb, jsonb, uuid, jsonb) owner to postgres;
-revoke all on function private.handle_invitation_command(jsonb, jsonb, uuid, jsonb) from public, anon, authenticated, service_role;
-
-create function private.handle_attempt_command(
+create or replace function private.handle_attempt_command(
   op text,
   input jsonb,
   safe_input jsonb,
@@ -674,5 +547,160 @@ begin
   );
 end;
 $$;
-alter function private.handle_attempt_command(text, jsonb, jsonb, uuid, jsonb, timestamptz) owner to postgres;
-revoke all on function private.handle_attempt_command(text, jsonb, jsonb, uuid, jsonb, timestamptz) from public, anon, authenticated, service_role;
+
+create or replace function private.execute_command(op text, input jsonb) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare
+  actor uuid := private.command_actor();
+  received timestamptz := clock_timestamp();
+  key text := input->>'idempotencyKey';
+  safe_input jsonb := input;
+  cached private.command_requests%rowtype;
+  outcome jsonb;
+  result jsonb;
+  allowed text[];
+  required text[];
+begin
+  case op
+    when 'start' then
+      allowed := array['idempotencyKey','scheduledChallengeId','sessionToken']; required := allowed;
+    when 'takeover' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','newSessionToken']; required := allowed;
+    when 'prepare' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
+    when 'activate' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId'];
+      allowed := required;
+    when 'receive' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','answer'];
+      allowed := required || array['clientTimeUsedMs'];
+    when 'pass' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId']; required := allowed;
+    when 'evaluate' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','receiptId','status','points'];
+      allowed := required || array['resultDetails'];
+    when 'complete' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','score'];
+      allowed := required || array['outcome','pendingEvaluation'];
+    when 'abandon' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
+    when 'accept_invitation' then
+      allowed := array['idempotencyKey','invitationToken']; required := allowed;
+    when 'invalidate' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','reason']; required := allowed;
+    when 'adjust' then
+      allowed := array['idempotencyKey','attemptId','lockVersion','reason','score']; required := allowed;
+    else raise exception 'unknown_command' using errcode = '22023';
+  end case;
+  if jsonb_typeof(input) is distinct from 'object' or key is null or btrim(key) = ''
+    or not input ?& required or exists (select 1 from jsonb_object_keys(input) k where not k = any(allowed))
+    or exists (select 1 from unnest(required) k where k <> 'answer' and input->k = 'null'::jsonb) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+  -- Never persist reusable secrets, including in idempotency records or audit payloads.
+  if input ? 'sessionToken' then safe_input := jsonb_set(safe_input, '{sessionToken}', to_jsonb(private.secret_hash(input->>'sessionToken'))); end if;
+  if input ? 'newSessionToken' then safe_input := jsonb_set(safe_input, '{newSessionToken}', to_jsonb(private.secret_hash(input->>'newSessionToken'))); end if;
+  if input ? 'invitationToken' then safe_input := jsonb_set(safe_input, '{invitationToken}', to_jsonb(private.secret_hash(input->>'invitationToken'))); end if;
+  perform private.lock_command_key(actor, key);
+  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
+  if found and (cached.operation <> op or cached.input <> safe_input) then
+    raise exception 'idempotency_conflict' using errcode = '40001';
+  end if;
+  if op = 'accept_invitation' then
+    outcome := private.handle_invitation_command(input, safe_input, actor, cached.result);
+  else
+    outcome := private.handle_attempt_command(op, input, safe_input, actor, cached.result, received);
+  end if;
+  result := outcome->'result';
+  if coalesce((outcome->>'replayed')::boolean, false) then return result; end if;
+
+  insert into private.audit_log(actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload)
+  values(actor, op, outcome->>'entityType', (outcome->>'entityId')::uuid, input->>'reason', key,
+    nullif(outcome->'beforePayload', 'null'::jsonb),
+    -- Avoid persisting playable payloads or free-text answers into a second store.
+    result - 'publicPayload' - 'answers');
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+    values(actor, key, op, safe_input, result);
+  return result;
+end;
+$$;
+
+create or replace function private.read_attempt_recovery(target_attempt uuid, session_token text) returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+declare actor uuid := private.command_actor(); result jsonb;
+begin
+  select jsonb_build_object(
+    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status,
+    'lockVersion', a.lock_version,
+    'deadlineAt', a.deadline_at,
+    'deadlineReached', a.deadline_at is not null and clock_timestamp() >= a.deadline_at,
+    'pendingReceiptId', (select receipt.id from private.answer_receipts receipt
+      where receipt.attempt_id = a.id and not exists (
+        select 1 from private.attempt_answers answer where answer.receipt_id = receipt.id
+      ) order by receipt.received_at, receipt.id limit 1),
+    'hasStartedInteraction', exists (select 1 from private.attempt_timing_units u where u.attempt_id = a.id),
+    'hasOpenInteraction', exists (select 1 from private.interaction_intervals interval_row
+      where interval_row.attempt_id = a.id and interval_row.ended_at is null),
+    'narrativeCursor', case when cv.mode = 'narrative' then jsonb_build_object(
+      'currentChallengeItemId', (select interval_row.challenge_item_id
+        from private.interaction_intervals interval_row
+        where interval_row.attempt_id = a.id and interval_row.ended_at is null
+        order by interval_row.started_at desc limit 1),
+      'nextChallengeItemId', (select item.id
+        from private.challenge_items item
+        where item.challenge_version_id = a.challenge_version_id
+          and not exists (select 1 from private.attempt_answers answer
+            where answer.attempt_id = a.id and answer.challenge_item_id = item.id)
+        order by item.position limit 1)
+    ) else null end,
+    'allItemsResolved', not exists (select 1 from private.challenge_items i where i.challenge_version_id = a.challenge_version_id
+      and not exists (select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id)),
+    'challengeMode', cv.mode,
+    'initialLives', case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer else null end,
+    'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
+      select sum(case
+        when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
+        when question.type = 'queens'
+          and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
+        else 0 end)::integer
+      from private.attempt_answers answer
+      join private.challenge_items item on item.id = answer.challenge_item_id
+      join private.question_versions question on question.id = item.question_version_id
+      where answer.attempt_id = a.id
+    ), 0), 0) else null end,
+    'terminalOutcome', case when cv.mode = 'survival' and (
+      greatest((cv.mode_config->>'lives')::integer - coalesce((
+        select sum(case
+          when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
+          when question.type = 'queens'
+            and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
+          else 0 end)::integer
+        from private.attempt_answers answer
+        join private.challenge_items item on item.id = answer.challenge_item_id
+        join private.question_versions question on question.id = item.question_version_id
+        where answer.attempt_id = a.id
+      ), 0), 0) = 0
+    ) then 'eliminated' when cv.mode = 'survival' and not exists (
+      select 1 from private.challenge_items item where item.challenge_version_id = a.challenge_version_id
+        and not exists (select 1 from private.attempt_answers answer where answer.attempt_id = a.id and answer.challenge_item_id = item.id)
+    ) then 'survived'
+      when cv.mode = 'pyramid' and exists (select 1 from private.attempt_answers answer
+        where answer.attempt_id = a.id and answer.status <> 'correct') then 'failed'
+      when cv.mode = 'pyramid' and (
+        select count(*) from private.attempt_answers answer where answer.attempt_id = a.id
+      ) = 7 then 'summit'
+      else null end,
+    'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
+      'status', aa.status, 'answer', aa.answer, 'points', aa.points, 'timeUsedMs', aa.time_used_ms,
+      'resultDetails', aa.result_details) order by i.position)
+      from private.attempt_answers aa join private.challenge_items i on i.id = aa.challenge_item_id where aa.attempt_id = a.id), '[]'::jsonb)
+  ) into result
+  from public.attempts a join private.attempt_sessions s on s.attempt_id = a.id
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
+  where a.id = target_attempt and a.player_id = actor and a.kind = 'competitive'
+    and s.revoked_at is null and s.session_token_hash = private.secret_hash(session_token)
+    and not exists (select 1 from private.platform_role_assignments where player_id = actor);
+  if result is null then raise exception 'not_authorized' using errcode = '42501'; end if;
+  return result;
+end;
+$$;

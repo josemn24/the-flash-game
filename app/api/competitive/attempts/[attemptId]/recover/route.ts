@@ -10,9 +10,14 @@ import {
   responseFor,
   requestIdFor,
   verifiedIdentity,
+  mapAttemptError,
 } from "@/server/competitive/attempt-api";
-import { readTerminalFlashReview } from "@/server/competitive/flashResult";
+import {
+  readTerminalFlashReview,
+  readTerminalAlphabetResult,
+} from "@/server/competitive/flashResult";
 import type { AttemptId } from "@/types/domain/identifiers";
+import type { RecoveryUseCaseResult } from "@/application/ports/attempt-use-cases";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,14 +34,39 @@ export async function POST(
     const { attemptId: rawAttemptId } = await params;
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
-    const sessionToken = await readAttemptToken(attemptId);
-    const commands = commandsFor(identity, requestId);
-    const recovered = await commands.recover({
-      attemptId: attemptId as AttemptId,
-      sessionToken,
-      lockVersion: requireLockVersion(body),
-      idempotencyKey: `recovery:${attemptId}:${requireLockVersion(body)}`,
-    });
+    const lockVersion = requireLockVersion(body);
+    let recovered: RecoveryUseCaseResult;
+    try {
+      const sessionToken = await readAttemptToken(attemptId);
+      recovered = await commandsFor(identity, requestId).recover({
+        attemptId: attemptId as AttemptId,
+        sessionToken,
+        lockVersion,
+        idempotencyKey: `recovery:${attemptId}:${lockVersion}`,
+      });
+    } catch (error) {
+      if (
+        [
+          "attempt_session_missing",
+          "session_revoked",
+          "not_authorized",
+          "attempt_terminal",
+        ].includes(mapAttemptError(error).code)
+      ) {
+        const saved = await readTerminalAlphabetResult(attemptId);
+        if (saved) {
+          await clearAttemptToken(attemptId, identity.authUserId, saved.scheduledChallengeId);
+          return responseFor(
+            { ...saved.result, phase: "results" },
+            200,
+            requestId,
+            "competitive.attempt.recover",
+            startedAt,
+          );
+        }
+      }
+      throw error;
+    }
     const snapshot = recovered.snapshot;
     if (recovered.completed) {
       const review = await readTerminalFlashReview(attemptId);
@@ -45,7 +75,7 @@ export async function POST(
         {
           status: recovered.completed.status,
           lockVersion: recovered.completed.lockVersion,
-          answers: snapshot.answers,
+          answers: recovered.completed.answers ?? snapshot.answers,
           phase: "results",
           ...(recovered.evaluated ? { resolved: recovered.evaluated } : {}),
           ...(snapshot.challengeMode === "narrative" && snapshot.narrativeCursor

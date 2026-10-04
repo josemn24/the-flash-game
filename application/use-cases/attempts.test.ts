@@ -104,6 +104,66 @@ const answerInput: SubmitAnswerInput = {
 };
 
 describe("ApplicationAttemptUseCases", () => {
+  it("scores a pending Alphabet receipt outside the atomic completion command", async () => {
+    const { commands, evaluator, useCases } = createUseCases();
+    vi.mocked(commands.readRecovery).mockResolvedValue(
+      snapshot({ challengeMode: "alphabet", pendingReceiptId: receiptId }),
+    );
+    vi.mocked(commands.readEvaluationContext).mockResolvedValue({
+      ...evaluationContext(),
+      mode: "alphabet",
+    });
+    vi.mocked(commands.completeFromPersistedAnswers).mockResolvedValue({
+      attemptId,
+      lockVersion: 4,
+      status: "completed",
+      score: 7,
+      answers: [],
+    });
+    const input = {
+      attemptId,
+      sessionToken: "session-token",
+      lockVersion: 3,
+      idempotencyKey: "close",
+    };
+    await useCases.complete(input);
+    expect(commands.recordEvaluation).not.toHaveBeenCalled();
+    expect(commands.completeFromPersistedAnswers).toHaveBeenCalledWith({
+      ...input,
+      pendingEvaluation: { receiptId, status: "correct", points: 7 },
+    });
+    expect(vi.mocked(evaluator.evaluate).mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(commands.completeFromPersistedAnswers).mock.invocationCallOrder[0],
+    );
+  });
+
+  it("completes expired Alphabet recovery without preparing or closing individual letters", async () => {
+    const { commands, useCases } = createUseCases();
+    vi.mocked(commands.readRecovery).mockResolvedValue(
+      snapshot({ challengeMode: "alphabet", deadlineReached: true }),
+    );
+    const answers = [
+      {
+        challengeItemId,
+        answer: null,
+        status: "unanswered" as const,
+        points: 0,
+        timeUsedMs: 0 as never,
+      },
+    ];
+    vi.mocked(commands.completeFromPersistedAnswers).mockResolvedValue({
+      attemptId,
+      lockVersion: 4,
+      status: "completed",
+      score: 0,
+      answers,
+    });
+    const result = await useCases.recover(answerInput);
+    expect(commands.recover).not.toHaveBeenCalled();
+    expect(commands.receiveAnswer).not.toHaveBeenCalled();
+    expect(result.snapshot.answers).toEqual(answers);
+    expect(result.completed?.status).toBe("completed");
+  });
   it("generates a token for a new attempt and reuses the supplied token on retry", async () => {
     const { commands, useCases } = createUseCases();
     vi.mocked(commands.start).mockResolvedValue({
@@ -360,7 +420,7 @@ describe("ApplicationAttemptUseCases", () => {
 
     expect(result.completed).toBeUndefined();
     expect(result.snapshot.allItemsResolved).toBe(false);
-    expect(commands.readRecovery).toHaveBeenCalledOnce();
+    expect(commands.readRecovery).toHaveBeenCalledTimes(2);
     expect(commands.readAttemptContext).not.toHaveBeenCalled();
     expect(commands.completeFromPersistedAnswers).not.toHaveBeenCalled();
   });

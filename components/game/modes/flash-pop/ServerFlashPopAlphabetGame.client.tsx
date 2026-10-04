@@ -81,6 +81,15 @@ export function ServerFlashPopAlphabetGame({
         </Card>
       </motion.div>
     );
+  } else if (session.phase === "finalizing") {
+    content = (
+      <motion.div key="finalizing" className={styles.stage} role="status" aria-live="polite">
+        <Card>
+          <h1>Finalizando partida…</h1>
+          <p>Estamos guardando tu resultado.</p>
+        </Card>
+      </motion.div>
+    );
   } else if (session.phase === "countdown") {
     content = (
       <StartCountdown label="Alfabeto" key="countdown" onComplete={session.startQuestions} />
@@ -200,7 +209,7 @@ export function ServerFlashPopAlphabetGame({
         contentClassName={isIntro ? styles.introCanvasContent : styles.screen}
       >
         <CompetitiveLifecycleNotice
-          error={session.lifecycleError}
+          error={session.completionRetryScheduled ? undefined : session.lifecycleError}
           busy={session.busy}
           onRetry={session.retryLifecycle}
         />

@@ -107,12 +107,6 @@ function jsonResponse(value: Record<string, unknown>, status = 200, headers: Hea
   });
 }
 
-async function drainMicrotasks() {
-  for (let index = 0; index < 30; index += 1) await Promise.resolve();
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  for (let index = 0; index < 30; index += 1) await Promise.resolve();
-}
-
 afterEach(() => {
   vi.unstubAllGlobals();
   hookHarness.slots = [];
@@ -121,108 +115,51 @@ afterEach(() => {
 });
 
 describe("useServerAlphabetSession timeout finalization", () => {
-  it.each(["401", "network"] as const)(
-    "recovers once after a %s and finalizes the remaining letters without duplicate timeouts",
-    async (failure) => {
-      const calls: Array<{ path: string; body: Record<string, unknown> }> = [];
-      const answerFailures = new Set(["item-B"]);
-      vi.stubGlobal(
-        "fetch",
-        vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-          const path = String(input);
-          const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
-          calls.push({ path, body });
-
-          if (path.endsWith("/start"))
-            return jsonResponse({ attemptId: "attempt-1", lockVersion: 1 });
-          if (path.endsWith("/recover"))
-            return jsonResponse({
-              phase: "prepare",
-              lockVersion: 2,
-              answers: calls.some(
-                (call) => call.path.endsWith("/answer") && call.body.challengeItemId === "item-A",
-              )
-                ? [
-                    {
-                      challengeItemId: "item-A",
-                      answer: "armadillo",
-                      status: "correct",
-                      points: 6,
-                      timeUsedMs: 1000,
-                    },
-                  ]
-                : [],
-            });
-          if (path.endsWith("/prepare")) {
-            const prepareCount = calls.filter((call) => call.path.endsWith("/prepare")).length;
-            if (prepareCount <= 2) {
-              return jsonResponse({
-                challengeItemId: prepareCount === 1 ? "item-A" : "item-B",
-                lockVersion: prepareCount,
-                deadlineAt: new Date(Date.now() + 135_000).toISOString(),
-                publicPayload: { question: "Mamífero con placas óseas" },
-                timedOut: false,
-                progress: { kind: "alphabet", letters: [], round: 1, correctAnswers: 0 },
-              });
-            }
-            const itemId = prepareCount === 3 ? "item-B" : "item-C";
-            return jsonResponse({
-              challengeItemId: itemId,
-              lockVersion: prepareCount + 1,
-              deadlineAt: new Date(Date.now() - 1).toISOString(),
-              publicPayload: null,
-              timedOut: true,
-              progress: { kind: "alphabet", letters: [], round: 1, correctAnswers: 1 },
-            });
-          }
-          if (path.endsWith("/answer")) {
-            const itemId = String(body.challengeItemId);
-            if (itemId === "item-B" && answerFailures.delete(itemId)) {
-              if (failure === "network") throw new TypeError("Network failure");
-              return jsonResponse({ error: { code: "attempt_session_missing" } }, 401);
-            }
-            return jsonResponse({
-              status: itemId === "item-A" ? "correct" : "unanswered",
-              points: itemId === "item-A" ? 6 : 0,
-              timeUsedMs: itemId === "item-A" ? 1_000 : 135_000,
-              lockVersion: Number(body.lockVersion) + 1,
-            });
-          }
-          if (path.endsWith("/complete")) return jsonResponse({ score: 6, review: [] });
-          throw new Error(`Unexpected endpoint: ${path}`);
-        }),
-      );
-
-      let session = renderSessionHook();
-      await session.begin();
-      session = renderSessionHook();
-      await session.startQuestions();
-      session = renderSessionHook();
-      await session.submit("armadillo");
-      session = renderSessionHook();
-
-      session.onTimeUp();
-      session.onTimeUp();
-      await drainMicrotasks();
-      session = renderSessionHook();
-
-      expect(session.phase).toBe("results");
-      expect(session.score).toBe(6);
-      expect(session.results).toHaveLength(3);
-      expect(session.results.map((result) => result.questionId)).toEqual([
-        "item-A",
-        "item-B",
-        "item-C",
-      ]);
-      expect(calls.filter((call) => call.path.endsWith("/recover"))).toHaveLength(1);
-      expect(calls.filter((call) => call.path.endsWith("/complete"))).toHaveLength(1);
-      expect(
-        calls.filter(
-          (call) => call.path.endsWith("/answer") && call.body.challengeItemId === "item-B",
-        ),
-      ).toHaveLength(2);
-    },
-  );
+  it("finishes all remaining letters through complete and hydrates the full result", async () => {
+    const paths: string[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const path = String(input);
+        paths.push(path);
+        if (path.endsWith("/start"))
+          return jsonResponse({ attemptId: "attempt-1", lockVersion: 1 });
+        if (path.endsWith("/prepare"))
+          return jsonResponse({
+            challengeItemId: "item-A",
+            lockVersion: 2,
+            publicPayload: { question: "Animal" },
+            deadlineAt: new Date(Date.now() + 135000).toISOString(),
+            timedOut: false,
+            progress: { kind: "alphabet", letters: [], round: 1, correctAnswers: 0 },
+          });
+        if (path.endsWith("/complete"))
+          return jsonResponse({
+            lockVersion: 3,
+            score: 0,
+            review: [],
+            answers: challenge.entries.map((entry) => ({
+              challengeItemId: entry.id,
+              answer: null,
+              status: "unanswered",
+              points: 0,
+              timeUsedMs: 0,
+            })),
+          });
+        throw new Error(`Unexpected endpoint: ${path}`);
+      }),
+    );
+    let session = renderSessionHook();
+    await session.begin();
+    await session.startQuestions();
+    session = renderSessionHook();
+    await Promise.all([session.onTimeUp(), session.onTimeUp()]);
+    session = renderSessionHook();
+    expect(session.phase).toBe("results");
+    expect(session.results).toHaveLength(3);
+    expect(paths.filter((path) => path.endsWith("/complete"))).toHaveLength(1);
+    expect(paths.filter((path) => path.endsWith("/answer"))).toHaveLength(0);
+  });
 
   it("shows the server retry delay after a rate-limited pass", async () => {
     const calls: string[] = [];
@@ -265,68 +202,5 @@ describe("useServerAlphabetSession timeout finalization", () => {
     );
     expect(session.locked).toBe(true);
     expect(calls.filter((path) => path.endsWith("/alphabet/pass"))).toHaveLength(1);
-  });
-
-  it("leaves a manual recovery action after automatic recovery also fails", async () => {
-    let recoveryAttempts = 0;
-    let failTimeoutAnswer = true;
-    const calls: Array<{ path: string; body: Record<string, unknown> }> = [];
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-        const path = String(input);
-        const body = JSON.parse(String(init?.body ?? "{}")) as Record<string, unknown>;
-        calls.push({ path, body });
-        if (path.endsWith("/start")) {
-          recoveryAttempts += 1;
-          if (recoveryAttempts === 2) throw new TypeError("Network failure");
-          return jsonResponse({ attemptId: "attempt-1", lockVersion: 1 });
-        }
-        if (path.endsWith("/prepare")) {
-          const prepareCount = calls.filter((call) => call.path.endsWith("/prepare")).length;
-          const itemId = ["item-A", "item-A", "item-B", "item-C"][prepareCount - 1] ?? "item-C";
-          return jsonResponse({
-            challengeItemId: itemId,
-            lockVersion: prepareCount,
-            deadlineAt: new Date(Date.now() - 1).toISOString(),
-            publicPayload: prepareCount === 1 ? { question: "Mamífero" } : null,
-            timedOut: prepareCount > 1,
-            progress: { kind: "alphabet", letters: [], round: 1, correctAnswers: 0 },
-          });
-        }
-        if (path.endsWith("/answer")) {
-          if (body.challengeItemId === "item-A" && failTimeoutAnswer) {
-            failTimeoutAnswer = false;
-            return jsonResponse({ error: { code: "attempt_session_missing" } }, 401);
-          }
-          return jsonResponse({
-            status: "unanswered",
-            points: 0,
-            timeUsedMs: 135_000,
-            lockVersion: Number(body.lockVersion) + 1,
-          });
-        }
-        if (path.endsWith("/recover")) return jsonResponse({ phase: "prepare", lockVersion: 2 });
-        if (path.endsWith("/complete")) return jsonResponse({ score: 0, review: [] });
-        throw new Error(`Unexpected endpoint: ${path}`);
-      }),
-    );
-
-    let session = renderSessionHook();
-    await session.begin();
-    session = renderSessionHook();
-    await session.startQuestions();
-    session = renderSessionHook();
-    session.onTimeUp();
-    await drainMicrotasks();
-    session = renderSessionHook();
-
-    expect(session.phase).toBe("recovering");
-    expect(session.startNotice).toMatch(/Puedes reintentarlo/i);
-    expect(session.locked).toBe(true);
-
-    session.retryRecovery();
-    await drainMicrotasks();
-    expect(recoveryAttempts).toBe(3);
   });
 });

@@ -310,7 +310,7 @@ export function mapAttemptError(error: unknown): AttemptApiError {
               error.code === "command_failed"
             ? 503
             : 409;
-    return new AttemptApiError(error.code, status);
+    return new AttemptApiError(error.code, status, error.retryAfterSeconds);
   }
   if (error instanceof CompetitiveRateLimitError) {
     return new AttemptApiError(error.code, error.status, error.retryAfterSeconds);
@@ -365,7 +365,9 @@ export function errorResponse(
       headers: {
         "Cache-Control": "no-store",
         "X-Request-Id": requestId,
-        ...(mapped.status === 429 ? { "Retry-After": String(mapped.retryAfterSeconds ?? 1) } : {}),
+        ...(mapped.status === 429 || mapped.retryAfterSeconds !== undefined
+          ? { "Retry-After": String(mapped.retryAfterSeconds ?? 1) }
+          : {}),
       },
     },
   );

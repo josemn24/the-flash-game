@@ -467,7 +467,7 @@ describe("mode policies", () => {
       phase: "playing",
     });
   });
-  it("passes Alphabet letters and closes all remaining letters sequentially after global expiry", async () => {
+  it("passes Alphabet letters and closes all remaining letters in one command after global expiry", async () => {
     const { engine, calls } = setup(alphabet);
     let index = 0;
     calls.prepare.mockImplementation(async () => {
@@ -481,6 +481,18 @@ describe("mode policies", () => {
       };
     });
     calls.alphabetPass.mockResolvedValue({ lockVersion: 3 });
+    calls.complete.mockResolvedValue({
+      lockVersion: 6,
+      score: 0,
+      review: [],
+      answers: ["A", "B", "C"].map((challengeItemId) => ({
+        challengeItemId,
+        answer: null,
+        status: "unanswered",
+        points: 0,
+        timeUsedMs: 0,
+      })),
+    });
     calls.answer.mockImplementation(async (input) => accepted(input.lockVersion + 1, "unanswered"));
     await play(engine);
     await engine.interactions.pass();
@@ -488,11 +500,8 @@ describe("mode policies", () => {
     const one = engine.interactions.onTimeUp();
     const two = engine.interactions.onTimeUp();
     await Promise.all([one, two]);
-    expect(calls.answer.mock.calls.map(([input]) => input.challengeItemId)).toEqual([
-      "B",
-      "C",
-      "A",
-    ]);
+    expect(calls.answer).not.toHaveBeenCalled();
+    expect(calls.prepare).toHaveBeenCalledTimes(2);
     expect(calls.complete).toHaveBeenCalledTimes(1);
     expect(engine.getSnapshot().results).toHaveLength(3);
   });
@@ -838,5 +847,202 @@ describe("format coordination", () => {
     expect(calls.answer.mock.calls[0][0].answer).toBeNull();
     await vi.advanceTimersByTimeAsync(1100);
     expect(engine.getSnapshot().phase).toBe("results");
+  });
+});
+
+describe("Alphabet atomic finalization", () => {
+  it.each([1, 5, 18, 20])(
+    "closes %i pending letters with one complete and no null answers",
+    async (count) => {
+      const challenge = {
+        ...alphabet,
+        entries: Array.from({ length: count }, (_, i) => ({
+          ...alphabet.entries[0]!,
+          id: `letter-${i}`,
+          letter: String.fromCharCode(65 + i),
+          position: i + 1,
+        })),
+      };
+      const { engine, calls } = setup(challenge);
+      calls.prepare.mockResolvedValue({
+        ...prepared("letter-0", 2, { question: "Letra" }),
+        progress: { kind: "alphabet", letters: [], round: 1 },
+      });
+      const answers = challenge.entries.map((entry) => ({
+        challengeItemId: entry.id,
+        answer: null,
+        status: "unanswered",
+        points: 0,
+        timeUsedMs: 0,
+      }));
+      calls.complete.mockResolvedValue({ lockVersion: 3, score: 0, review: [], answers });
+      await play(engine);
+      await Promise.all([engine.interactions.onTimeUp(), engine.interactions.onTimeUp()]);
+      expect(calls.complete).toHaveBeenCalledTimes(1);
+      expect(calls.answer).not.toHaveBeenCalled();
+      expect(calls.prepare).toHaveBeenCalledTimes(1);
+      expect(engine.getSnapshot()).toMatchObject({ phase: "results", score: 0 });
+      expect(engine.getSnapshot().results).toHaveLength(count);
+    },
+  );
+
+  it("completes immediately when prepare reports an expired global deadline", async () => {
+    const { engine, calls } = setup(alphabet);
+    calls.prepare.mockResolvedValue({
+      ...prepared("A", 2),
+      publicPayload: null,
+      timedOut: true,
+      progress: { kind: "alphabet", letters: [], round: 1 },
+    });
+    await play(engine);
+    expect(calls.complete).toHaveBeenCalledOnce();
+    expect(calls.answer).not.toHaveBeenCalled();
+  });
+
+  it("automatically retries a lost recovery response after an expired Alphabet", async () => {
+    const { engine, calls } = setup(alphabet, { ...context, attemptStatus: "inProgress" });
+    calls.start.mockResolvedValue({
+      attemptId: "attempt",
+      lockVersion: 2,
+      deadlineAt: new Date(Date.now() - 1000).toISOString(),
+    });
+    calls.recover.mockRejectedValueOnce(new CompetitiveCommandError("command_failed", 503));
+    calls.recover.mockResolvedValue({
+      lockVersion: 3,
+      phase: "results",
+      score: 0,
+      answers: [],
+      review: [],
+    });
+    await engine.lifecycle.recover();
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "finalizing",
+      locked: true,
+      completionRetryScheduled: true,
+    });
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(calls.recover.mock.calls[1]).toEqual(calls.recover.mock.calls[0]);
+    expect(engine.getSnapshot().phase).toBe("results");
+    expect(calls.prepare).not.toHaveBeenCalled();
+    expect(calls.answer).not.toHaveBeenCalled();
+  });
+
+  it.each(["answer", "alphabetPass"] as const)(
+    "waits for an in-flight %s before finalizing",
+    async (operation) => {
+      const { engine, calls } = setup(alphabet);
+      calls.prepare.mockResolvedValue(prepared("A", 2, { question: "Letra" }));
+      let resolve!: (value: Record<string, unknown>) => void;
+      calls[operation].mockImplementation(
+        () =>
+          new Promise((done) => {
+            resolve = done;
+          }),
+      );
+      await play(engine);
+      const pending =
+        operation === "answer"
+          ? engine.interactions.submit("respuesta")
+          : engine.interactions.pass();
+      await drain();
+      await engine.interactions.onTimeUp();
+      expect(engine.getSnapshot()).toMatchObject({ phase: "finalizing", locked: true });
+      expect(calls.complete).not.toHaveBeenCalled();
+      resolve(accepted(3));
+      await pending;
+      expect(calls.complete).toHaveBeenCalledOnce();
+      expect(calls.prepare).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("reconciles an uncertain in-flight answer and preserves the closing intent", async () => {
+    const { engine, calls } = setup(alphabet);
+    calls.prepare.mockResolvedValue(prepared("A", 2, { question: "Letra" }));
+    let reject!: (reason: unknown) => void;
+    calls.answer.mockImplementation(
+      () =>
+        new Promise((_, failed) => {
+          reject = failed;
+        }),
+    );
+    calls.start.mockResolvedValue({ attemptId: "attempt", lockVersion: 8 });
+    calls.recover.mockResolvedValue({ lockVersion: 9, phase: "prepare", answers: [] });
+    await play(engine);
+    const pending = engine.interactions.submit("respuesta");
+    await drain();
+    await engine.interactions.onTimeUp();
+    reject(new TypeError("response lost"));
+    await pending;
+    expect(calls.recover).toHaveBeenCalledOnce();
+    expect(calls.complete).toHaveBeenCalledOnce();
+    expect(calls.prepare).toHaveBeenCalledOnce();
+    expect(engine.getSnapshot().phase).toBe("results");
+  });
+
+  it("retries network failures three times at 1, 2 and 4 seconds, then allows a new manual cycle", async () => {
+    const { engine, calls } = setup(alphabet);
+    calls.prepare.mockResolvedValue(prepared("A", 2, { question: "Letra" }));
+    calls.complete.mockRejectedValue(new TypeError("offline"));
+    await play(engine);
+    await engine.interactions.onTimeUp();
+    const original = structuredClone(calls.complete.mock.calls[0]);
+    expect(engine.getSnapshot().completionRetryScheduled).toBe(true);
+    for (const [index, delay] of [1000, 2000, 4000].entries()) {
+      await vi.advanceTimersByTimeAsync(delay - 1);
+      expect(calls.complete).toHaveBeenCalledTimes(index + 1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(calls.complete).toHaveBeenCalledTimes(index + 2);
+    }
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(calls.complete).toHaveBeenCalledTimes(4);
+    expect(engine.getSnapshot().completionRetryScheduled).toBe(false);
+    calls.complete.mockResolvedValue({ score: 0, lockVersion: 3, review: [] });
+    await engine.retry();
+    expect(
+      calls.complete.mock.calls.every((call) => JSON.stringify(call) === JSON.stringify(original)),
+    ).toBe(true);
+    expect(engine.getSnapshot().phase).toBe("results");
+  });
+
+  it.each([
+    new CompetitiveCommandError("rate_limited", 429, 4),
+    new CompetitiveCommandError("alphabet_deadline_not_reached", 409, 4),
+  ])("respects the server retry delay for %s", async (failure) => {
+    const { engine, calls } = setup(alphabet);
+    calls.prepare.mockResolvedValue(prepared("A", 2, { question: "Letra" }));
+    calls.complete.mockRejectedValueOnce(failure);
+    await play(engine);
+    await engine.interactions.onTimeUp();
+    await vi.advanceTimersByTimeAsync(3999);
+    expect(calls.complete).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(calls.complete.mock.calls[1]).toEqual(calls.complete.mock.calls[0]);
+    expect(engine.getSnapshot().phase).toBe("results");
+  });
+
+  it("reconciles stale completion and submits with the recovered version", async () => {
+    const { engine, calls } = setup(alphabet);
+    calls.prepare.mockResolvedValue(prepared("A", 2, { question: "Letra" }));
+    calls.complete.mockRejectedValueOnce(new CompetitiveCommandError("stale_version", 409));
+    calls.start.mockResolvedValue({ attemptId: "attempt", lockVersion: 8 });
+    calls.recover.mockResolvedValue({ lockVersion: 9, phase: "prepare", answers: [] });
+    await play(engine);
+    await engine.interactions.onTimeUp();
+    expect(calls.complete.mock.calls[1][0].lockVersion).toBe(9);
+    expect(calls.complete.mock.calls[1][0].idempotencyKey).not.toBe(
+      calls.complete.mock.calls[0][0].idempotencyKey,
+    );
+    expect(engine.getSnapshot().phase).toBe("results");
+  });
+
+  it("cancels pending completion retries on detach", async () => {
+    const { engine, calls } = setup(alphabet);
+    calls.prepare.mockResolvedValue(prepared("A", 2, { question: "Letra" }));
+    calls.complete.mockRejectedValue(new CompetitiveCommandError("database_unavailable", 503));
+    await play(engine);
+    await engine.interactions.onTimeUp();
+    engine.dispose();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(calls.complete).toHaveBeenCalledOnce();
   });
 });

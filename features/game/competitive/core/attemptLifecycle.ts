@@ -6,6 +6,7 @@ import type { SessionRuntime } from "./runtime";
 import type { CompetitiveJsonObject } from "../transport";
 
 export function createAttemptLifecycle(runtime: SessionRuntime) {
+  let finalizationRequested = false;
   const finish = (response: CompetitiveJsonObject) => {
     const review = reviewFor(runtime.challenge, terminalReviewFromResponse(response.review));
     runtime.cancelAll();
@@ -15,10 +16,26 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
         response.score ?? runtime.state().results.reduce((sum, result) => sum + result.points, 0),
       ),
       reviewChallenge: review,
+      ...(Array.isArray(response.answers) ? { results: recoveredResults(response.answers) } : {}),
     });
   };
   const complete = async () => {
+    if (runtime.challenge.mode === "alphabet") {
+      finalizationRequested = true;
+      runtime.commit({ type: "phase", phase: "finalizing" });
+    }
     await runtime.run("complete", {}, { accept: finish });
+  };
+  const finalizeAlphabet = async () => {
+    finalizationRequested = true;
+    const state = runtime.state();
+    // Keep the outstanding answer/pass until it is accepted or reconciled.
+    if (state.phase === "results" || state.phase === "review" || state.attemptExpired) return;
+    if (state.busy || state.pendingCommand) {
+      runtime.commit({ type: "phase", phase: "finalizing" });
+      return;
+    }
+    await complete();
   };
   let timeoutAnswer: () => Promise<void> = async () => {};
   const prepare = async () => {
@@ -34,7 +51,9 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
             (runtime.challenge.mode === "alphabet" || response.deadlineAt != null);
         },
         after: async () => {
-          if (timedOut) await timeoutAnswer();
+          if (runtime.challenge.mode === "alphabet" && (timedOut || finalizationRequested))
+            await finalizeAlphabet();
+          else if (timedOut) await timeoutAnswer();
         },
       },
     );
@@ -65,7 +84,17 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
       "start",
       { scheduledChallengeId: runtime.challenge.id },
       {
-        accept: () => {},
+        accept: (response) => {
+          const deadline = timestamp(response.deadlineAt);
+          if (
+            runtime.challenge.mode === "alphabet" &&
+            deadline !== null &&
+            deadline <= Date.now()
+          ) {
+            finalizationRequested = true;
+            runtime.commit({ type: "phase", phase: "finalizing" });
+          }
+        },
         after: async () => {
           await runtime.run(
             "recover",
@@ -83,6 +112,10 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
               },
               after: async () => {
                 if (!snapshot || snapshot.phase === "results") return;
+                if (runtime.challenge.mode === "alphabet" && finalizationRequested) {
+                  await finalizeAlphabet();
+                  return;
+                }
                 if (snapshot.resolved) {
                   const resolved = snapshot.resolved as CompetitiveJsonObject;
                   const position = runtime.policy.position(String(resolved.challengeItemId));
@@ -151,6 +184,8 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     begin,
     prepare,
     complete,
+    finalizeAlphabet,
+    finalizationRequested: () => finalizationRequested,
     recover,
     activate,
     ...advance,

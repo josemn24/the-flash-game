@@ -1,8 +1,8 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 54 archivos y su revisión canónica es
-`20261001104420_narrative-recovery-history`. La migración incremental activa se ha generado desde esos archivos
-mediante `pg-delta`; la rama de respaldo conserva el historial incremental anterior. La validación
+Estado: el esquema declarativo vigente se compone de 57 archivos y su revisión canónica es
+`20261004141603_alphabet_atomic_completion`. Las migraciones incrementales corresponden a esos archivos;
+la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
@@ -46,6 +46,20 @@ recuperación del tablero y resolución terminal server-side. E06 añade Word-se
 con soluciones privadas, selecciones server-side, errores persistidos, recuperación e idempotencia. S05 añade Alphabet
 con referencias publicadas `short-text`, reloj global, pases y lecturas terminales autorizadas. Las migraciones están versionadas;
 no hay seed global; la CLI local mantiene un enlace de staging sin que esta revisión se haya desplegado.
+
+La revisión `20261004141603_alphabet_atomic_completion` cierra Alphabet competitivo en una
+transacción al vencer el reloj de PostgreSQL. Conserva las respuestas recibidas, registra las
+letras pendientes como `unanswered` y acredita los puntos una sola vez. La recuperación agotada
+utiliza el mismo cierre y devuelve todas las respuestas, sin preparar letras adicionales.
+El cliente muestra «Finalizando partida…» y hace hasta tres reintentos automáticos del mismo
+comando: 1, 2 y 4 segundos para red/5xx, o el `Retry-After` del servidor para 429 y deadline adelantado.
+Después ofrece «Reintentar partida» para iniciar otro ciclo limitado.
+
+Para desplegar, aplicar primero la migración incremental y después la aplicación. Las firmas,
+permisos y petición pública de `complete` se conservan; `answers` es un campo adicional de su
+respuesta. Los clientes anteriores mantienen los comandos de responder y pasar y el cierre
+anticipado cuando todas las letras están resueltas. La aplicación nueva necesita esta revisión
+para cerrar letras pendientes. Esta implementación no aplica cambios remotos.
 
 ## Decisiones y supuestos
 
