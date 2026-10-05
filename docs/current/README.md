@@ -20,6 +20,7 @@ contenido Flash/Supervivencia y programa su calendario local.
 - [`architecture/server-client-architecture.md`](architecture/server-client-architecture.md): límites
   entre servidor y cliente.
 - [`design-tokens.md`](design-tokens.md): roles de color, estados, contrastes y equivalencias de migración.
+- [`design-system.md`](design-system.md): catálogo de desarrollo, componentes reales, demos y mantenimiento.
 - [`qa.md`](qa.md): estado vigente de las comprobaciones automatizadas y sus limitaciones.
 - [`competitive-read-performance.md`](competitive-read-performance.md): contratos de lectura,
   diagnóstico opcional y comparación local del camino competitivo.

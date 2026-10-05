@@ -8,7 +8,7 @@ import { runInNewContext } from "node:vm";
 const execFileAsync = promisify(execFile);
 const workerSource = await readFile(new URL("../public/sw.js", import.meta.url), "utf8");
 const origin = "https://the-flash.example";
-const pageCacheName = "the-flash-pages-v2";
+const pageCacheName = "the-flash-pages-v3";
 const assetCacheName = "the-flash-assets-v1";
 
 function request(path, { method = "GET", mode = "navigate", headers = {} } = {}) {
@@ -103,7 +103,6 @@ test("caches current public pages, including nested demo and practice routes", a
     "/formatos/eleccion-multiple",
     "/demo/flash-pop",
     "/demo/flash-pop/",
-    "/demo/flash-pop/ui-kit",
     "/demo/flash-pop/flash/tabarnia-flash-01",
     "/demo/flash-pop-concepts",
     "/demo/flash-pop-typography",
@@ -126,6 +125,12 @@ test("does not intercept historical pages, excluded paths, or lookalike prefixes
   for (const path of [
     "/flash-pop",
     "/flash-pop/ui-kit",
+    "/flash-pop/ui-kit/private.json",
+    "/demo/flash-pop/ui-kit",
+    "/demo/flash-pop/ui-kit/private.json",
+    "/design-system",
+    "/design-system/preview/feedback",
+    "/design-system/private.json",
     "/flash-pop-concepts",
     "/flash-pop-typography",
     "/",
@@ -185,7 +190,7 @@ test("refreshes cached pages from the network and falls back only when the netwo
   assert.equal(await (await worker.dispatchFetch(pageRequest)).text(), "updated page");
   assert.equal(worker.fetchRequests.length, 2);
   await assert.rejects(
-    worker.dispatchFetch(request("/demo/flash-pop/ui-kit")),
+    worker.dispatchFetch(request("/demo/flash-pop-typography")),
     /The requested public page is unavailable offline/,
   );
 });
@@ -231,7 +236,7 @@ test("does not cache failed asset responses", async () => {
   assert.equal(await cache.match(imageRequest), undefined);
 });
 
-test("activation removes pages v1 while preserving current assets, pages v2, and unrelated caches", async () => {
+test("activation removes old page caches, including the public UI kit, while preserving current caches", async () => {
   const worker = createWorker();
   const oldRequest = request("/flash-pop");
   const imageRequest = request("/flash-pop/concepts/pyramid-soft-diorama.webp");
@@ -241,6 +246,9 @@ test("activation removes pages v1 while preserving current assets, pages v2, and
   await (await worker.caches.open(pageCacheName)).put(pageRequest, response("current page"));
   await (await worker.caches.open("another-app-v1")).put(oldRequest, response("unrelated"));
 
+  await (
+    await worker.caches.open("the-flash-pages-v2")
+  ).put(request("/demo/flash-pop/ui-kit"), response("old public UI kit"));
   await worker.activate();
   assert.deepEqual(
     (await worker.caches.keys()).sort(),

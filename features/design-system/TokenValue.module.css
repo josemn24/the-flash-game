@@ -1,0 +1,10 @@
+@layer app-components {
+  .value {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-family: var(--type-mono);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+}

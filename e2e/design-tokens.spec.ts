@@ -6,9 +6,9 @@ const tokens = readColorTokens(readFileSync("app/globals.css", "utf8"));
 for (const width of [390, 1280]) {
   test.describe(`Design tokens at ${width}px`, () => {
     test.use({ viewport: { width, height: 900 } });
-    test("resolves the UI kit pairs after the cascade and CSS Modules", async ({ page }) => {
-      await page.goto("/demo/flash-pop/ui-kit");
-      await expect(page.getByRole("heading", { name: "The Flash UI Kit" })).toBeVisible();
+    test("resolves catalogue pairs after the cascade and CSS Modules", async ({ page }) => {
+      await page.goto("/design-system/fundamentos");
+      await expect(page.getByRole("heading", { name: "Fundamentos", exact: true })).toBeVisible();
       const pairs = await page.locator("[data-token-pair]").evaluateAll((elements) =>
         elements.map((element) => {
           const el = element as HTMLElement;
@@ -45,6 +45,19 @@ for (const width of [390, 1280]) {
           ).toBeGreaterThanOrEqual(3);
         }
       }
+      const field = page.getByLabel("Correo electrónico");
+      await field.focus();
+      await expect(field).toHaveCSS("outline-color", "rgb(77, 59, 209)");
+      await expect(field).toHaveCSS("outline-style", "solid");
+      await expect(field).toHaveCSS("border-top-color", "rgb(167, 25, 48)");
+      await page.goto("/design-system/componentes/botones");
+      await page.emulateMedia({ reducedMotion: "reduce" });
+      const button = page.getByRole("button", { name: "Guardar ejemplo", exact: true });
+      const duration = await button.evaluate(
+        (element) => getComputedStyle(element).transitionDuration,
+      );
+      expect(duration.split(",").every((part) => parseFloat(part) <= 0.00001)).toBe(true);
+      await page.goto("/design-system/componentes/avatares");
       // Exercise real primitives as well as token swatches: child styles can override a pair.
       for (const avatar of await page.locator('[role="img"][aria-label]').all()) {
         const colors = await avatar.evaluate((element) => {
@@ -54,6 +67,7 @@ for (const width of [390, 1280]) {
         const bg = resolveColor(colors.bg);
         if (bg[3] === 1) expect(contrast(resolveColor(colors.fg), bg)).toBeGreaterThanOrEqual(4.5);
       }
+      await page.goto("/design-system/componentes/temporizadores");
       const timers = await page.locator('[role="timer"]').evaluateAll((elements) =>
         elements.map((element) => {
           const style = getComputedStyle(element);
@@ -69,17 +83,6 @@ for (const width of [390, 1280]) {
           4.5,
         );
       }
-      const field = page.getByLabel("Correo electrónico");
-      await field.focus();
-      await expect(field).toHaveCSS("outline-color", "rgb(77, 59, 209)");
-      await expect(field).toHaveCSS("outline-style", "solid");
-      await expect(field).toHaveCSS("border-top-color", "rgb(167, 25, 48)");
-      await page.emulateMedia({ reducedMotion: "reduce" });
-      const button = page.getByRole("button", { name: "Jugar ahora" });
-      const duration = await button.evaluate(
-        (element) => getComputedStyle(element).transitionDuration,
-      );
-      expect(duration.split(",").every((part) => parseFloat(part) <= 0.00001)).toBe(true);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
       ).toBe(true);

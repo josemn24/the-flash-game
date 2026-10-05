@@ -1,5 +1,5 @@
 const ASSET_CACHE = "the-flash-assets-v1";
-const PAGE_CACHE = "the-flash-pages-v2";
+const PAGE_CACHE = "the-flash-pages-v3";
 
 const CACHE_NAMES = new Set([ASSET_CACHE, PAGE_CACHE]);
 const STATIC_PREFIXES = ["/_next/static/", "/icons/", "/dictionaries/", "/visuals/"];
@@ -9,7 +9,16 @@ const PUBLIC_PAGE_PREFIXES = [
   "/demo/flash-pop-concepts",
   "/demo/flash-pop-typography",
 ];
-const EXCLUDED_PREFIXES = ["/admin", "/api", "/desafios", "/salas", "/demo/flash-pop/desafios"];
+const EXCLUDED_PREFIXES = [
+  "/admin",
+  "/api",
+  "/desafios",
+  "/salas",
+  "/demo/flash-pop/desafios",
+  "/design-system",
+  "/demo/flash-pop/ui-kit",
+  "/flash-pop/ui-kit",
+];
 const STATIC_FILE_PATTERN = /\.(?:avif|css|gif|ico|jpeg|jpg|js|json|mjs|png|svg|webp|woff2?)$/i;
 
 function matchesPath(pathname, prefix) {
@@ -92,13 +101,18 @@ async function networkFirst(request) {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames
-          .filter((cacheName) => cacheName.startsWith("the-flash-") && !CACHE_NAMES.has(cacheName))
-          .map((cacheName) => caches.delete(cacheName)),
-      ),
-    ).then(() => self.clients.claim()),
+    caches
+      .keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames
+            .filter(
+              (cacheName) => cacheName.startsWith("the-flash-") && !CACHE_NAMES.has(cacheName),
+            )
+            .map((cacheName) => caches.delete(cacheName)),
+        ),
+      )
+      .then(() => self.clients.claim()),
   );
 });
 

@@ -3,8 +3,10 @@
 # Colores y estados
 
 La fuente de verdad es [`app/globals.css`](../../app/globals.css), en `app-tokens`.
-El [UI kit](../../app/demo/flash-pop/ui-kit/page.tsx), disponible en `/demo/flash-pop/ui-kit`,
-muestra los pares claros, sólidos e inverse, bordes y errores después de aplicar la cascada.
+Los [fundamentos del catálogo](../../features/design-system/Foundations.tsx), disponibles en
+`/design-system/fundamentos` únicamente en desarrollo, muestran los pares claros, sólidos e
+inverse, bordes y errores después de aplicar la cascada. La organización y mantenimiento están en
+[`design-system.md`](design-system.md).
 
 ## Elegir un rol
 
@@ -121,12 +123,12 @@ se debe atenuar ese foreground. Las excepciones disabled/decorative se identific
 - `npm run style-architecture` revisa CSS y TSX, aliases locales, referencias inexistentes,
   tokens retirados y ciclos. Un fallback no legitima una referencia inexistente. Excluye pruebas
   con fixtures y fuentes generadas. Los aliases heredados por componentes hijos se resuelven
-  estáticamente por sus definiciones; el navegador comprueba la cascada real en el UI kit.
+  estáticamente por sus definiciones; el navegador comprueba la cascada real en el catálogo.
 - `npm test -- components/game/modes/flash-pop/flashPopContrast.test.ts scripts/check-style-architecture.test.mjs`
   resuelve aliases, mezclas sRGB y transparencia. Los fixtures del comprobador viven en directorios temporales.
-- `npm run test:e2e:raw -- e2e/design-tokens.spec.ts` comprueba los colores computados, contraste,
+- `npm run test:e2e:design-system -- e2e/design-tokens.spec.ts` comprueba los colores computados, contraste,
   foco, movimiento reducido y anchura a 390 y 1280 px.
 
-Al añadir un color compartido, definir su rol aquí y en globals, mostrar sus pares en el UI kit
+Al añadir un color compartido, definir su rol aquí y en globals, mostrar sus pares en el catálogo
 y cubrir sus contrastes. La tipografía, el espaciado, los radios, las sombras y las mecánicas
 no forman parte de esta migración.

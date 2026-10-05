@@ -7,7 +7,6 @@ const publicPaths = [
   "/demo/flash-pop",
   "/demo/flash-pop-concepts",
   "/demo/flash-pop-typography",
-  "/demo/flash-pop/ui-kit",
   "/demo/flash-pop/flash/tabarnia-flash-01",
 ];
 const imagePath = "/flash-pop/concepts/pyramid-soft-diorama.webp";
@@ -80,7 +79,7 @@ test.describe("PWA service worker", () => {
 
     const snapshot = await cacheSnapshot(page);
     const assets = snapshot.find((cache) => cache.name === "the-flash-assets-v1");
-    const pages = snapshot.find((cache) => cache.name === "the-flash-pages-v2");
+    const pages = snapshot.find((cache) => cache.name === "the-flash-pages-v3");
     expect(assets?.urls).toEqual(expect.arrayContaining(assetPaths));
     expect(pages?.urls).toEqual(expect.arrayContaining(publicPaths));
     expect(snapshot.some((cache) => cache.name === "the-flash-pages-v1")).toBe(false);
@@ -99,7 +98,7 @@ test.describe("PWA service worker", () => {
 
   test("fails offline when a public page has not been visited", async ({ page, context }) => {
     await controlWorker(page);
-    const unvisitedPath = "/demo/flash-pop/ui-kit";
+    const unvisitedPath = "/demo/flash-pop-typography";
     const snapshot = await cacheSnapshot(page);
     expect(snapshot.flatMap((cache) => cache.urls)).not.toContain(unvisitedPath);
     await context.setOffline(true);
@@ -114,7 +113,6 @@ test.describe("PWA service worker", () => {
     await controlWorker(page);
     const redirects = [
       ["/flash-pop", "/demo/flash-pop"],
-      ["/flash-pop/ui-kit", "/demo/flash-pop/ui-kit"],
       ["/flash-pop/flash/tabarnia-flash-01", "/demo/flash-pop/flash/tabarnia-flash-01"],
       ["/flash-pop-concepts", "/demo/flash-pop-concepts"],
       ["/flash-pop-typography", "/demo/flash-pop-typography"],
@@ -131,6 +129,10 @@ test.describe("PWA service worker", () => {
     const excludedPaths = [
       "/",
       "/admin",
+      "/design-system",
+      "/design-system/preview/feedback",
+      "/demo/flash-pop/ui-kit",
+      "/flash-pop/ui-kit",
       "/salas/pwa-cache-check",
       "/desafios/tabarnia-challenge-05",
       "/demo/flash-pop/desafios/tabarnia-challenge-05",

@@ -44,7 +44,9 @@
     "schema:revision:check": "node scripts/check-schema-revision.mjs",
     "supabase:schema:test": "node scripts/check-supabase-schema.mjs",
     "verify:pilot": "node scripts/verify-pilot.mjs",
-    "test:e2e:isolated": "node scripts/run-isolated-e2e.mjs"
+    "test:e2e:isolated": "node scripts/run-isolated-e2e.mjs",
+    "test:e2e:design-system": "node scripts/run-design-system-e2e.mjs",
+    "test:e2e:design-system:production": "node scripts/run-design-system-e2e.mjs --production"
   },
   "dependencies": {
     "@next/env": "16.2.10",

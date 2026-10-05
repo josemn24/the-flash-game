@@ -149,31 +149,33 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 
 ## Rutas principales
 
-| Ruta                                                                               | Estado                                                                                                                               |
-| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `/`                                                                                | Perfil y tarjetas de salas reales cuando hay sesión; `AuthPanel` sin sesión.                                                         |
-| `/salas/[roomId]`                                                                  | Detalle de sala real con calendario temporal para salas persistidas; no acepta aliases mock ni cae silenciosamente al mock.          |
-| `/salas/[roomId]/ranking`                                                          | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                                           |
-| `/salas/[roomId]/historial`                                                        | Historial real de Flash, Supervivencia, Narrative y Pirámide para salas persistidas.                                                 |
-| `/salas/[roomId]/historial/[challengeId]`                                          | Ranking histórico por publicación; 404 si no es accesible o no está consolidada.                                                     |
-| `/salas/[roomId]/historial/[challengeId]/[memberId]`                               | Revisión histórica de Flash, Supervivencia, Narrative y Pirámide; sin acceso para spectators.                                        |
-| `/salas/[roomId]/ajustes`                                                          | Ajustes reales parciales: el owner puede conceder/quitar admin y eliminar lógicamente miembros; otras operaciones siguen pendientes. |
-| `/admin`                                                                           | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.                              |
-| `/admin/rooms`                                                                     | Gestión protegida de salas activas y creación de salas.                                                                              |
-| `/admin/rooms/[roomId]`                                                            | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.                                         |
-| `/admin/rooms/[roomId]/attempts`                                                   | Publicaciones competitivas de la sala para inspección administrativa.                                                                |
-| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]`                            | Intentos competitivos de una publicación, con paginación por cursor.                                                                 |
-| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]/[attemptId]`                | Detalle protegido del intento y acciones de ajuste/invalidación según estado.                                                        |
-| `/admin/challenges`                                                                | Catálogo protegido de desafíos Flash, Supervivencia, Narrative y Pirámide definidos.                                                 |
-| `/admin/challenges/new`                                                            | Preparación protegida de un nuevo desafío Flash, Supervivencia o Pirámide.                                                           |
-| `/admin/challenges/[challengeDefinitionId]`                                        | Detalle protegido, edición de borradores e historial de versiones Flash/Supervivencia/Pirámide.                                      |
-| `/admin/questions`                                                                 | Biblioteca de preguntas funcional con navegación común.                                                                              |
-| `/admin/questions/new`                                                             | Editor protegido para crear una versión de pregunta, dentro del shell común.                                                         |
-| `/admin/questions/[questionVersionId]`                                             | Editor protegido de una versión existente, dentro del shell común.                                                                   |
-| `/desafios/[challengeId]`                                                          | Desafío Flash, Supervivencia, Narrative o Pirámide competitivo. En `pilot`, sin sala o con alias devuelve 404.                       |
-| `/formatos`                                                                        | Biblioteca estática de formatos y práctica local.                                                                                    |
-| `/demo/flash-pop`                                                                  | Lobby/demo de Flash Pop. Las rutas antiguas `/flash-pop/**` redirigen permanentemente.                                               |
-| `/demo/flash-pop/ui-kit`, `/demo/flash-pop-concepts`, `/demo/flash-pop-typography` | Laboratorios y documentación visual de la superficie demo.                                                                           |
+| Ruta                                                                | Estado                                                                                                                               |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `/`                                                                 | Perfil y tarjetas de salas reales cuando hay sesión; `AuthPanel` sin sesión.                                                         |
+| `/salas/[roomId]`                                                   | Detalle de sala real con calendario temporal para salas persistidas; no acepta aliases mock ni cae silenciosamente al mock.          |
+| `/salas/[roomId]/ranking`                                           | Ranking de temporada real para salas persistidas; 404 si no hay temporada.                                                           |
+| `/salas/[roomId]/historial`                                         | Historial real de Flash, Supervivencia, Narrative y Pirámide para salas persistidas.                                                 |
+| `/salas/[roomId]/historial/[challengeId]`                           | Ranking histórico por publicación; 404 si no es accesible o no está consolidada.                                                     |
+| `/salas/[roomId]/historial/[challengeId]/[memberId]`                | Revisión histórica de Flash, Supervivencia, Narrative y Pirámide; sin acceso para spectators.                                        |
+| `/salas/[roomId]/ajustes`                                           | Ajustes reales parciales: el owner puede conceder/quitar admin y eliminar lógicamente miembros; otras operaciones siguen pendientes. |
+| `/admin`                                                            | Dashboard privado server-side: métricas, alertas, accesos rápidos, salas resumidas y próximos desafíos.                              |
+| `/admin/rooms`                                                      | Gestión protegida de salas activas y creación de salas.                                                                              |
+| `/admin/rooms/[roomId]`                                             | Detalle protegido de una sala activa con resumen, temporadas, usuarios activos y calendario.                                         |
+| `/admin/rooms/[roomId]/attempts`                                    | Publicaciones competitivas de la sala para inspección administrativa.                                                                |
+| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]`             | Intentos competitivos de una publicación, con paginación por cursor.                                                                 |
+| `/admin/rooms/[roomId]/attempts/[scheduledChallengeId]/[attemptId]` | Detalle protegido del intento y acciones de ajuste/invalidación según estado.                                                        |
+| `/admin/challenges`                                                 | Catálogo protegido de desafíos Flash, Supervivencia, Narrative y Pirámide definidos.                                                 |
+| `/admin/challenges/new`                                             | Preparación protegida de un nuevo desafío Flash, Supervivencia o Pirámide.                                                           |
+| `/admin/challenges/[challengeDefinitionId]`                         | Detalle protegido, edición de borradores e historial de versiones Flash/Supervivencia/Pirámide.                                      |
+| `/admin/questions`                                                  | Biblioteca de preguntas funcional con navegación común.                                                                              |
+| `/admin/questions/new`                                              | Editor protegido para crear una versión de pregunta, dentro del shell común.                                                         |
+| `/admin/questions/[questionVersionId]`                              | Editor protegido de una versión existente, dentro del shell común.                                                                   |
+| `/desafios/[challengeId]`                                           | Desafío Flash, Supervivencia, Narrative o Pirámide competitivo. En `pilot`, sin sala o con alias devuelve 404.                       |
+| `/formatos`                                                         | Biblioteca estática de formatos y práctica local.                                                                                    |
+| `/demo/flash-pop`                                                   | Lobby/demo de Flash Pop. Las rutas antiguas `/flash-pop/**` redirigen permanentemente.                                               |
+| `/design-system/**`                                                 | Catálogo navegable de fundamentos, componentes y patrones; disponible solo con NODE_ENV=development, sin backend.                    |
+| `/demo/flash-pop/ui-kit`                                            | Redirección temporal al catálogo en desarrollo; HTTP 404 sin caché en producción, también tras el alias histórico.                   |
+| `/demo/flash-pop-concepts`, `/demo/flash-pop-typography`            | Laboratorios visuales de la superficie demo.                                                                                         |
 
 ## Límites actuales
 
