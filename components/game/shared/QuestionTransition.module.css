@@ -6,19 +6,19 @@
     margin-inline: auto;
     place-items: center;
     border-radius: 1.5rem;
-    color: #080a05;
-    background: var(--color-brand);
-    box-shadow: 0 0 55px rgb(var(--color-brand-rgb) / 0.18);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
+    box-shadow: 0 0 55px color-mix(in srgb, var(--ds-color-bg-brand) 18%, transparent);
     transform: skewX(-4deg);
   }
   .iconTime {
-    color: white;
-    background: var(--color-danger);
+    color: var(--ds-color-fg-on-error);
+    background: var(--ds-color-bg-error);
     box-shadow: 0 0 55px rgba(255, 93, 100, 0.18);
   }
   .iconPartial {
-    color: #061018;
-    background: var(--color-social);
+    color: var(--ds-color-fg-on-selected);
+    background: var(--ds-color-bg-selected);
     box-shadow: 0 0 55px rgba(53, 232, 255, 0.16);
   }
 }

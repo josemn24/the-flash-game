@@ -4,8 +4,17 @@
     overflow-x: auto;
     padding: 64px 40px 88px;
     background:
-      radial-gradient(circle at 15% 0%, rgb(215 255 25 / 12%), transparent 28%),
-      radial-gradient(circle at 85% 5%, rgb(105 87 232 / 15%), transparent 24%), #111119;
+      radial-gradient(
+        circle at 15% 0%,
+        color-mix(in srgb, var(--ds-color-bg-brand) 12%, transparent),
+        transparent 28%
+      ),
+      radial-gradient(
+        circle at 85% 5%,
+        color-mix(in srgb, var(--ds-color-bg-selected) 15%, transparent),
+        transparent 24%
+      ),
+      #111119;
     color: #f7f5ed;
     color-scheme: light;
   }
@@ -34,7 +43,7 @@
 
   .kicker {
     margin: 0;
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand-inverse);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 800;
@@ -58,7 +67,7 @@
 
   .selectedConcept .phone {
     box-shadow:
-      0 0 0 3px var(--color-brand),
+      0 0 0 3px var(--ds-color-bg-brand),
       0 28px 90px rgb(0 0 0 / 42%);
   }
 
@@ -79,8 +88,8 @@
     margin-left: auto;
     padding: 6px 8px;
     border-radius: 999px;
-    background: var(--color-brand);
-    color: #171720;
+    background: var(--ds-color-bg-brand);
+    color: var(--ds-color-fg-on-brand);
     font-family: var(--type-mono);
     font-size: 9px;
     font-weight: 900;
@@ -108,22 +117,19 @@
     border: 1px solid rgb(247 245 237 / 18%);
     border-radius: 14px;
     background: rgb(255 255 255 / 6%);
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand-inverse);
     font-family: var(--type-mono);
     font-size: 16px;
     font-weight: 900;
   }
 
   .phone {
-    --canvas: #f7f5ed;
-    --surface: #fff;
-    --surface-soft: #efede5;
-    --color-ink: #171720;
-    --color-ink-muted: #686872;
-    --flash: var(--color-brand);
-    --social: #6957e8;
-    --gold: #ffd85a;
-    --border: rgb(23 23 32 / 14%);
+    --ds-color-bg-canvas: #f7f5ed;
+    --ds-color-bg-surface: #fff;
+    --ds-color-bg-surface-soft: #efede5;
+    --ds-color-fg-primary: #171720;
+    --ds-color-fg-secondary: #686872;
+    --ds-color-border-default: rgb(23 23 32 / 14%);
     --card-radius: 28px;
     --control-radius: 18px;
     --card-shadow: 0 10px 26px rgb(35 30 70 / 14%);
@@ -135,9 +141,9 @@
     overflow: hidden;
     border: 8px solid #292934;
     border-radius: 44px;
-    background: var(--canvas);
+    background: var(--ds-color-bg-canvas);
     box-shadow: 0 28px 90px rgb(0 0 0 / 42%);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--font-pop-ui, var(--type-ui));
     isolation: isolate;
   }
@@ -177,7 +183,7 @@
   .feedAvatar {
     display: grid;
     place-items: center;
-    border: 2px solid var(--surface);
+    border: 2px solid var(--ds-color-bg-surface);
     border-radius: 999px;
     font-size: 10px;
     font-weight: 900;
@@ -186,9 +192,9 @@
   .userAvatar {
     width: 44px;
     height: 44px;
-    border-color: var(--color-ink);
-    background: var(--social);
-    color: #fff;
+    border-color: var(--ds-color-border-ink);
+    background: var(--ds-color-bg-selected);
+    color: var(--ds-color-fg-on-inverse);
     box-shadow: 0 2px 0 rgb(23 23 32 / 18%);
   }
 
@@ -205,7 +211,7 @@
 
   .room {
     margin-top: 2px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 11px;
     font-weight: 650;
   }
@@ -220,9 +226,9 @@
     justify-content: center;
     height: 40px;
     width: 40px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 14px;
-    background: var(--surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: 0 3px 10px rgb(35 30 70 / 10%);
   }
 
@@ -234,8 +240,8 @@
   .seasonCard,
   .activityCard {
     position: relative;
-    border: 1px solid var(--border);
-    background: var(--surface);
+    border: 1px solid var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--card-shadow);
   }
 
@@ -249,7 +255,7 @@
     position: relative;
     height: 250px;
     overflow: hidden;
-    background: var(--surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .heroImage {
@@ -277,8 +283,8 @@
 
   .newBadge {
     padding: 7px 10px;
-    background: var(--social);
-    color: #fff;
+    background: var(--ds-color-bg-selected);
+    color: var(--ds-color-fg-on-inverse);
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -286,7 +292,7 @@
   .timeBadge {
     padding: 7px 10px;
     background: rgb(23 23 32 / 82%);
-    color: #fff;
+    color: var(--ds-color-fg-on-inverse);
     font-family: var(--font-pop-mono, var(--type-mono));
     backdrop-filter: blur(8px);
   }
@@ -300,7 +306,7 @@
     align-items: center;
     gap: 5px;
     margin-bottom: 3px;
-    color: var(--social);
+    color: var(--ds-color-fg-selected);
     font-size: 10px;
     font-weight: 900;
     letter-spacing: 0.1em;
@@ -326,7 +332,7 @@
 
   .challengeCopy {
     margin-top: 4px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 13px;
     font-weight: 650;
   }
@@ -346,7 +352,7 @@
     width: 30px;
     height: 30px;
     margin-left: -7px;
-    color: #fff;
+    color: var(--ds-color-fg-on-inverse);
   }
 
   .avatarStack > span:first-child {
@@ -366,12 +372,12 @@
   }
 
   .avatarMore {
-    background: var(--color-ink);
+    background: var(--ds-color-bg-inverse);
   }
 
   .played {
     margin-left: 8px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 10px;
     font-weight: 700;
   }
@@ -379,8 +385,8 @@
   .reward {
     margin-left: auto;
     padding: 7px 9px;
-    background: var(--gold);
-    color: var(--color-ink);
+    background: var(--ds-color-bg-reward);
+    color: var(--ds-color-fg-primary);
     font-family: var(--font-pop-mono, var(--type-mono));
   }
 
@@ -391,11 +397,11 @@
     gap: 8px;
     width: 100%;
     height: 52px;
-    border: 2px solid var(--color-ink);
+    border: 2px solid var(--ds-color-border-ink);
     border-radius: var(--control-radius);
-    background: var(--flash);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--control-shadow);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-size: 15px;
     font-weight: 900;
   }
@@ -424,7 +430,7 @@
   }
 
   .eyebrow {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--font-pop-mono, var(--type-mono));
     font-size: 9px;
     font-weight: 850;
@@ -439,7 +445,7 @@
   }
 
   .seasonFlashPoints {
-    color: var(--social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--font-pop-mono, var(--type-mono));
     font-size: 11px;
     font-weight: 850;
@@ -456,7 +462,7 @@
   }
 
   .viewLabel {
-    color: var(--social);
+    color: var(--ds-color-fg-selected);
     font-size: 10px;
     font-weight: 850;
   }
@@ -482,7 +488,7 @@
   .activityCard div > span {
     display: block;
     margin-top: 2px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 9px;
   }
 
@@ -493,7 +499,7 @@
     margin-left: auto;
     place-items: center;
     border-radius: 10px;
-    background: var(--surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .activityArrow svg {
@@ -504,13 +510,13 @@
     --card-radius: 24px;
     --control-radius: 12px;
     --card-shadow: 0 5px 0 rgb(23 23 32 / 12%);
-    --control-shadow: 0 4px 0 var(--color-ink);
+    --control-shadow: 0 4px 0 var(--ds-color-bg-inverse);
   }
 
   .graphic .heroCard,
   .graphic .seasonCard,
   .graphic .activityCard {
-    border: 2px solid var(--color-ink);
+    border: 2px solid var(--ds-color-border-ink);
   }
 
   .graphic .heroArt {
@@ -518,7 +524,7 @@
   }
 
   .graphic .heroBody {
-    border-top: 2px solid var(--color-ink);
+    border-top: 2px solid var(--ds-color-border-ink);
   }
 
   .graphic .primaryCta {
@@ -526,9 +532,8 @@
   }
 
   .soft {
-    --canvas: #f4f1ea;
-    --surface-soft: #eae7ff;
-    --social: #6957e8;
+    --ds-color-bg-canvas: #f4f1ea;
+    --ds-color-bg-surface-soft: #eae7ff;
     --card-radius: 32px;
     --control-radius: 20px;
     --card-shadow: 0 15px 34px rgb(83 67 170 / 17%);
@@ -537,8 +542,16 @@
 
   .soft .pattern {
     background-image:
-      radial-gradient(circle at 20% 10%, rgb(116 167 245 / 15%), transparent 24%),
-      radial-gradient(circle, rgb(105 87 232 / 6%) 1.4px, transparent 1.6px);
+      radial-gradient(
+        circle at 20% 10%,
+        color-mix(in srgb, var(--ds-color-bg-info) 15%, transparent),
+        transparent 24%
+      ),
+      radial-gradient(
+        circle,
+        color-mix(in srgb, var(--ds-color-bg-selected) 6%, transparent) 1.4px,
+        transparent 1.6px
+      );
   }
 
   .soft .heroArt {
@@ -554,9 +567,9 @@
   }
 
   .arena {
-    --canvas: #f5f1e8;
-    --surface-soft: #22232d;
-    --social: #5b49d8;
+    --ds-color-bg-canvas: #f5f1e8;
+    --ds-color-bg-surface-soft: #22232d;
+    --ds-color-bg-selected: #5b49d8;
     --card-radius: 20px;
     --control-radius: 10px;
     --card-shadow: 0 9px 0 rgb(23 23 32 / 16%);
@@ -565,7 +578,12 @@
 
   .arena .pattern {
     background-image:
-      linear-gradient(168deg, transparent 0 47%, rgb(215 255 25 / 9%) 47.2% 47.7%, transparent 48%),
+      linear-gradient(
+        168deg,
+        transparent 0 47%,
+        color-mix(in srgb, var(--ds-color-bg-brand) 9%, transparent) 47.2% 47.7%,
+        transparent 48%
+      ),
       radial-gradient(circle, rgb(23 23 32 / 7%) 1px, transparent 1.2px);
     background-size:
       100% 280px,
@@ -573,20 +591,20 @@
   }
 
   .arena .iconButton {
-    border-color: var(--color-ink);
-    background: var(--color-ink);
-    color: #fff;
+    border-color: var(--ds-color-border-ink);
+    background: var(--ds-color-bg-inverse);
+    color: var(--ds-color-fg-on-inverse);
   }
 
   .arena .heroCard,
   .arena .seasonCard,
   .arena .activityCard {
-    border: 2px solid var(--color-ink);
+    border: 2px solid var(--ds-color-border-ink);
   }
 
   .arena .heroArt {
     height: 250px;
-    border-bottom: 2px solid var(--color-ink);
+    border-bottom: 2px solid var(--ds-color-border-ink);
   }
 
   .arena .modeLabel {
@@ -598,7 +616,7 @@
   }
 
   .arena .progressTrack {
-    border: 1px solid var(--color-ink);
+    border: 1px solid var(--ds-color-border-ink);
     background: #fff;
   }
 

@@ -36,7 +36,7 @@
     place-items: center;
     border: var(--border-flash);
     border-radius: 14px;
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
   }
 
@@ -61,7 +61,7 @@
 
   .identityCopy small {
     margin-top: 2px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 10px;
     font-weight: 600;
   }
@@ -108,7 +108,7 @@
 
   .welcome > p {
     max-width: 390px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 15px;
     font-weight: 600;
     line-height: 1.5;
@@ -123,7 +123,7 @@
 
   .eyebrow,
   .modeLabel {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-size: 9px;
     letter-spacing: 0.11em;
     text-transform: uppercase;
@@ -147,7 +147,7 @@
     position: relative;
     min-height: 454px;
     overflow: hidden;
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .heroImage {
@@ -191,7 +191,7 @@
 
   .challengeCopy {
     margin-top: 10px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 14px;
     font-weight: 600;
     line-height: 1.45;
@@ -208,7 +208,7 @@
 
   .attemptNote {
     margin-top: 10px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 9px;
     font-weight: 600;
     line-height: 1.35;
@@ -221,9 +221,14 @@
   }
 
   .classicPreviewCard {
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     background:
-      linear-gradient(135deg, rgb(105 87 232 / 8%), transparent 58%), var(--color-surface);
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--ds-color-bg-selected) 8%, transparent),
+        transparent 58%
+      ),
+      var(--ds-color-bg-surface);
   }
 
   .classicPreviewCard h2 {
@@ -252,7 +257,7 @@
   }
 
   .seasonValue {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-size: 11px;
   }
 
@@ -265,7 +270,7 @@
 
   .progressCopy {
     margin-top: 10px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 11px;
     font-weight: 600;
   }
@@ -279,7 +284,7 @@
   .activityItem {
     gap: 10px;
     min-width: 0;
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .activityItem p {
@@ -300,7 +305,7 @@
   .activityItem small {
     margin-top: 3px;
     overflow: hidden;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 9px;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -314,8 +319,8 @@
     margin-left: auto;
     place-items: center;
     border-radius: 10px;
-    background: var(--color-surface-soft);
-    color: var(--color-social);
+    background: var(--ds-color-bg-surface-soft);
+    color: var(--ds-color-fg-selected);
   }
 
   .activityIcon svg {
@@ -334,7 +339,7 @@
     position: relative;
     min-height: 176px;
     overflow: hidden;
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .secondaryChallengeImage {

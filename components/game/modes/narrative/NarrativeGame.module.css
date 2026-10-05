@@ -161,7 +161,7 @@
   }
 
   .recordTransition span {
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     font-family: var(--type-mono);
     font-size: 0.78rem;
     font-weight: 900;
@@ -218,7 +218,7 @@
   .introPanel {
     border: var(--border-subtle);
     border-radius: var(--radius-card);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     padding: 1.25rem;
     box-shadow: var(--shadow-hero);
   }
@@ -227,9 +227,9 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 10px;
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .introStats div {
@@ -240,13 +240,13 @@
   }
 
   .introStats strong {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-size: 1.6rem;
     font-weight: 950;
   }
 
   .introStats span {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.58rem;
     font-weight: 800;
@@ -299,7 +299,7 @@
   }
 
   .sceneDialogue {
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     font-weight: 700;
   }
 
@@ -334,7 +334,7 @@
   }
 
   .epilogueTitle {
-    color: #fff;
+    color: var(--ds-color-fg-on-inverse);
     font-family: var(--type-display);
     font-size: clamp(2.8rem, 9vw, 7rem);
     font-weight: var(--type-display-strong-weight);
@@ -419,8 +419,8 @@
     min-height: 100dvh;
     overflow-x: hidden;
     isolation: isolate;
-    color: var(--color-ink);
-    background: var(--color-canvas);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-canvas);
   }
   .polarBackground {
     position: fixed;
@@ -431,24 +431,24 @@
     background:
       radial-gradient(
         circle at 72% 12%,
-        color-mix(in srgb, var(--color-social) 12%, transparent),
+        color-mix(in srgb, var(--ds-color-bg-selected) 12%, transparent),
         transparent 32%
       ),
       linear-gradient(
         180deg,
-        var(--color-canvas) 0%,
-        var(--color-surface-soft) 66%,
-        var(--color-canvas) 100%
+        var(--ds-color-bg-canvas) 0%,
+        var(--ds-color-bg-surface-soft) 66%,
+        var(--ds-color-bg-canvas) 100%
       );
   }
   .questionPhase .polarBackground {
     background:
       radial-gradient(
         circle at 72% 12%,
-        color-mix(in srgb, var(--color-social) 12%, transparent),
+        color-mix(in srgb, var(--ds-color-bg-selected) 12%, transparent),
         transparent 36%
       ),
-      var(--color-canvas);
+      var(--ds-color-bg-canvas);
   }
   .horizon {
     position: absolute;
@@ -458,7 +458,7 @@
     height: 18%;
     clip-path: polygon(0 100%, 19% 42%, 34% 74%, 53% 10%, 69% 62%, 84% 31%, 100% 100%);
     opacity: 0.12;
-    background: var(--color-social);
+    background: var(--ds-color-bg-selected);
   }
   .snow {
     position: absolute;
@@ -469,12 +469,12 @@
     animation: snowDrift 16s linear infinite;
     background-image: radial-gradient(
       circle,
-      color-mix(in srgb, var(--color-ink) 26%, transparent) 0 1px,
+      color-mix(in srgb, var(--ds-color-bg-inverse) 26%, transparent) 0 1px,
       transparent 1.5px
     );
   }
   .blackoutPhase {
-    background: var(--color-canvas);
+    background: var(--ds-color-bg-canvas);
   }
   .pageIdentity > span {
     max-width: 20rem;
@@ -486,28 +486,28 @@
     text-overflow: ellipsis;
     text-transform: uppercase;
     white-space: nowrap;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   .pageIdentity small,
   .questionContext,
   .recordTransition p,
   .description {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .storyFolio,
   .storyCaption,
   .untimedLabel {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
   }
   .storyPage,
   .storyPageText,
   .storyPageArtifact {
-    border-color: var(--color-border);
-    background: var(--color-surface);
+    border-color: var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-card);
   }
   .storyVisual {
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
     position: relative;
     min-height: 100%;
     overflow: hidden;
@@ -519,7 +519,7 @@
   .questionArticle h1,
   .introCopy h1,
   .epilogueTitle {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   .storyArticle .sceneReaction {
     margin-top: 1.2rem;
@@ -530,28 +530,28 @@
     border-radius: 0;
     padding: 0 0 0 1rem;
     color: inherit;
-    border-left-color: var(--color-social);
-    background: color-mix(in srgb, var(--color-social) 8%, transparent);
+    border-left-color: var(--ds-color-border-selected);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 8%, transparent);
   }
   .storyArticle .sceneReaction .sceneParagraph,
   .storyArticle .sceneReaction .sceneDialogue {
     font-size: clamp(0.9rem, 1.25vw, 1rem);
     font-style: italic;
     line-height: 1.65;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .storyArticle .sceneReaction::before,
   .sceneDialogue [aria-hidden="true"],
   .eyebrow,
   .subtitle,
   .recordTransition svg {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
   .tapeSignal,
   .backLink {
-    border-color: var(--color-border);
-    background: var(--color-surface-raised);
-    color: var(--color-ink);
+    border-color: var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface-raised);
+    color: var(--ds-color-fg-primary);
   }
   .tapeSignal span {
     margin-right: auto;
@@ -559,13 +559,13 @@
     font-size: 0.62rem;
     font-weight: 850;
     letter-spacing: 0.12em;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   .tapeSignal i {
     width: 2px;
     height: 0.7rem;
     animation: tapeWave 1.2s ease-in-out infinite alternate;
-    background: var(--color-social);
+    background: var(--ds-color-bg-selected);
   }
   .continueButton {
     margin-top: 2rem;
@@ -583,14 +583,14 @@
     padding: 0.7rem 1rem;
     font-size: 0.74rem;
     backdrop-filter: blur(14px);
-    border-color: var(--color-border-hover);
-    background: var(--color-surface);
-    color: var(--color-ink);
+    border-color: var(--ds-color-border-hover);
+    background: var(--ds-color-bg-surface);
+    color: var(--ds-color-fg-primary);
     box-shadow: var(--shadow-control);
   }
   .introStats div + div {
     border-left: 1px solid rgb(255 255 255 / 0.08);
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
   }
   .introRules {
     display: grid;
@@ -599,7 +599,7 @@
     font-size: 0.83rem;
     line-height: 1.5;
     list-style: none;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .introRules li::before {
     position: absolute;
@@ -609,7 +609,7 @@
     height: 0.38rem;
     border-radius: 50%;
     content: "";
-    background: var(--color-social);
+    background: var(--ds-color-bg-selected);
   }
   .epilogueScreen {
     display: grid;
@@ -617,7 +617,7 @@
     place-items: center;
     padding: 1.5rem;
     text-align: center;
-    background: var(--color-canvas);
+    background: var(--ds-color-bg-canvas);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -688,7 +688,7 @@
     padding: 0;
     border: var(--border-subtle);
     border-radius: 0;
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-hero);
   }
 
@@ -748,12 +748,12 @@
   }
 
   .storyArticle .sceneDialogue {
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
   }
 
   .sceneEmphasis {
     max-width: 28ch;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     font-family: var(--type-display);
     font-size: clamp(1.45rem, 3vw, 2.7rem);
     font-weight: var(--type-display-soft-weight);
@@ -771,8 +771,8 @@
   }
 
   .continueButton:hover {
-    border-color: var(--color-focus);
-    background: var(--color-surface-raised);
+    border-color: var(--ds-color-focus-ring);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .storyPageChapter,
@@ -1002,11 +1002,11 @@
 
   .storyPageText,
   .storyPageArtifact {
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .storyPage .storyVisual {
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .questionHud {
@@ -1023,7 +1023,7 @@
   }
 
   .questionIndicator {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-mono);
     font-size: 0.7rem;
     font-weight: 850;
@@ -1032,7 +1032,7 @@
   }
 
   .questionIndicator span {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
   }
 
   .feedbackStage {
@@ -1065,9 +1065,9 @@
     border-radius: 0.8rem;
     font-size: 0.82rem;
     font-weight: 850;
-    border-color: var(--color-border);
-    background: var(--color-surface-raised);
-    color: var(--color-ink);
+    border-color: var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface-raised);
+    color: var(--ds-color-fg-primary);
   }
 
   @media (max-width: 799px) {
@@ -1101,6 +1101,10 @@
     background: var(--narrative-dark-surface);
   }
 
+  .darkStoryPhase :is(button, a, input, select, textarea, summary):focus-visible {
+    outline-color: var(--ds-color-border-selected-inverse);
+  }
+
   /* Image-led scenes use a dark reading surface with tokenized narrative ink. */
   .storyPage.storyPageDark {
     border: 0;
@@ -1109,7 +1113,7 @@
     --story-ink: var(--narrative-dark-ink);
     --story-muted: var(--narrative-dark-muted);
     --story-faint: var(--narrative-dark-faint);
-    --story-accent: var(--color-brand);
+    --story-accent: var(--ds-color-fg-brand-inverse);
     color: var(--story-ink);
     background: var(--narrative-dark-surface);
   }
@@ -1176,24 +1180,24 @@
   .storyPage,
   .storyPageText,
   .storyPageArtifact {
-    color: var(--color-ink);
-    background: var(--color-surface);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
   }
   .storyArticle h1,
   .questionArticle h1,
   .storyArticle .sceneDialogue,
   .sceneEmphasis {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   .storyArticle .sceneParagraph,
   .storyArticle .sceneDialogue,
   .sceneParagraph {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .storyFolio,
   .storyCaption,
   .questionContext {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   /* The canvas remains transparent so each narrative surface owns its treatment. */
@@ -1227,7 +1231,7 @@
   .storyPageText,
   .storyPageArtifact,
   .storyPage .storyVisual {
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .questionHud .actions {
@@ -1243,8 +1247,8 @@
   }
 
   .backLink:hover {
-    border-color: var(--color-focus);
-    background: var(--color-surface);
+    border-color: var(--ds-color-focus-ring);
+    background: var(--ds-color-bg-surface);
   }
 
   @media (max-width: 799px) {

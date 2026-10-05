@@ -59,20 +59,20 @@
       border-color 160ms,
       color 160ms,
       background 160ms;
-    --format-ink: var(--color-ink);
-    --format-surface: var(--color-surface-raised);
-    --format-border: var(--color-border);
-    --format-hover-ink: var(--color-ink);
-    --format-hover-surface: var(--color-surface);
-    --format-hover-border: var(--color-social);
-    --format-selected-ink: var(--color-ink);
-    --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
-    --format-selected-border: var(--color-social);
-    --format-accent: var(--color-brand);
-    --format-key-ink: var(--color-ink-muted);
-    --format-key-surface: var(--color-surface);
-    --format-key-border: color-mix(in srgb, var(--color-ink) 18%, transparent);
-    --format-selected-key-ink: var(--color-ink);
+    --format-ink: var(--ds-color-fg-primary);
+    --format-surface: var(--ds-color-bg-surface-raised);
+    --format-border: var(--ds-color-border-default);
+    --format-hover-ink: var(--ds-color-fg-primary);
+    --format-hover-surface: var(--ds-color-bg-surface);
+    --format-hover-border: var(--ds-color-border-selected);
+    --format-selected-ink: var(--ds-color-fg-primary);
+    --format-selected-surface: color-mix(in srgb, var(--ds-color-bg-selected) 10%, transparent);
+    --format-selected-border: var(--ds-color-border-selected);
+    --format-accent: var(--ds-color-bg-brand);
+    --format-key-ink: var(--ds-color-fg-secondary);
+    --format-key-surface: var(--ds-color-bg-surface);
+    --format-key-border: color-mix(in srgb, var(--ds-color-border-ink) 18%, transparent);
+    --format-selected-key-ink: var(--ds-color-fg-primary);
     min-height: 72px;
     border-width: 1px;
     border-style: solid;

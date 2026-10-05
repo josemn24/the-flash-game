@@ -50,7 +50,7 @@ export default async function FormatDetailPage({ params }: Props) {
   const next = questionFormats[(index + 1) % questionFormats.length];
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)]">
+    <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ds-color-bg-canvas)] text-[var(--ds-color-fg-primary)]">
       <SpeedBackground />
       <div className={styles.page}>
         <SiteHeader />

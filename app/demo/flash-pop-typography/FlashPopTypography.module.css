@@ -7,8 +7,17 @@
     overflow-x: auto;
     padding: 64px 40px 88px;
     background:
-      radial-gradient(circle at 17% 0%, rgb(215 255 25 / 11%), transparent 29%),
-      radial-gradient(circle at 83% 4%, rgb(105 87 232 / 16%), transparent 26%), #111119;
+      radial-gradient(
+        circle at 17% 0%,
+        color-mix(in srgb, var(--ds-color-bg-brand) 11%, transparent),
+        transparent 29%
+      ),
+      radial-gradient(
+        circle at 83% 4%,
+        color-mix(in srgb, var(--ds-color-bg-selected) 16%, transparent),
+        transparent 26%
+      ),
+      #111119;
     color: #f7f5ed;
     color-scheme: light;
     font-family: var(--font-manrope);
@@ -38,7 +47,7 @@
 
   .kicker {
     margin: 0;
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
     font-family: var(--font-plex-mono);
     font-size: 12px;
     font-weight: 700;
@@ -84,7 +93,7 @@
   }
 
   .controlNote span {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
     font-family: var(--font-plex-mono);
     font-size: 10px;
     font-weight: 700;

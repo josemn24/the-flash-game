@@ -61,7 +61,7 @@ describe("Narrative Flash Pop migration", () => {
     );
     expect(sceneSource).not.toContain("GameHeader");
     expect(source).toContain("isBlackoutScene");
-    expect(styles).toContain("var(--color-surface)");
+    expect(styles).toContain("var(--ds-color-bg-surface)");
     expect(styles).toContain("var(--shadow-hero)");
     expect(styles).toContain("--story-muted");
     expect(styles).toContain(".storyPage.storyPageDark");

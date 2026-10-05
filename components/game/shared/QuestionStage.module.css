@@ -16,7 +16,7 @@
 
   .questionIndicator {
     margin: 0;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 800;
@@ -25,7 +25,7 @@
   }
 
   .questionIndicator span {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .questionCard {
@@ -61,11 +61,11 @@
     display: inline-block;
     max-width: 100%;
     margin: 0 0 16px;
-    border-left: 3px solid var(--color-social);
+    border-left: 3px solid var(--ds-color-border-selected);
     border-radius: 0 8px 8px 0;
     padding: 6px 10px;
-    color: var(--color-focus);
-    background: rgb(105 87 232 / 9%);
+    color: var(--ds-color-focus-ring);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 9%, transparent);
     font-family: var(--type-mono);
     font-size: clamp(0.64rem, 1.4vw, 0.75rem);
     font-weight: 900;
@@ -76,9 +76,9 @@
   .questionMedia {
     margin: 24px auto 4px;
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 18px;
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .questionCard > div:last-child {

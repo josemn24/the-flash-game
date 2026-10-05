@@ -19,48 +19,48 @@
   }
 
   .toleranceArea {
-    fill: color-mix(in srgb, var(--color-danger) 8%, transparent);
-    stroke: color-mix(in srgb, var(--color-danger) 35%, transparent);
+    fill: color-mix(in srgb, var(--ds-color-fg-error) 8%, transparent);
+    stroke: color-mix(in srgb, var(--ds-color-fg-error) 35%, transparent);
     stroke-width: 3;
     stroke-dasharray: 9 8;
   }
 
   .targetArea {
-    fill: color-mix(in srgb, var(--color-social) 11%, transparent);
-    stroke: color-mix(in srgb, var(--color-social) 72%, transparent);
+    fill: color-mix(in srgb, var(--ds-color-fg-selected) 11%, transparent);
+    stroke: color-mix(in srgb, var(--ds-color-fg-selected) 72%, transparent);
     stroke-width: 4;
   }
 
   .distanceLine {
-    stroke: var(--color-ink-muted);
+    stroke: var(--ds-color-fg-secondary);
     stroke-width: 4;
     stroke-dasharray: 8 7;
   }
 
   .targetMarker circle {
-    fill: var(--color-surface-raised);
-    stroke: var(--color-social);
+    fill: var(--ds-color-fg-on-inverse);
+    stroke: var(--ds-color-fg-selected);
     stroke-width: 5;
   }
 
   .targetMarker path {
-    stroke: var(--color-social);
+    stroke: var(--ds-color-fg-selected);
     stroke-width: 4;
     stroke-linecap: round;
   }
 
   .selectedMarker circle:first-child {
-    fill: color-mix(in srgb, var(--color-surface) 85%, transparent);
-    stroke: var(--color-ink);
+    fill: color-mix(in srgb, var(--ds-color-fg-on-inverse) 85%, transparent);
+    stroke: var(--ds-color-fg-primary);
     stroke-width: 5;
   }
 
   .selectedMarker circle:last-child {
-    fill: var(--color-ink);
+    fill: var(--ds-color-fg-primary);
   }
 
   .confirmButton:focus-visible {
-    outline: 3px solid var(--format-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 
@@ -83,13 +83,13 @@
   .challenge {
     display: grid;
     min-width: 0;
-    --format-ink: var(--color-ink);
-    --format-surface: var(--color-surface-raised);
-    --format-border: var(--color-border);
-    --format-accent: var(--color-social);
-    --format-focus: var(--color-focus);
-    --format-danger: var(--color-danger);
-    --format-line: var(--color-ink-muted);
+    --format-ink: var(--ds-color-fg-primary);
+    --format-surface: var(--ds-color-bg-surface-raised);
+    --format-border: var(--ds-color-border-default);
+    --format-accent: var(--ds-color-bg-selected);
+    --format-focus: var(--ds-color-focus-ring);
+    --format-danger: var(--ds-color-fg-error);
+    --format-line: var(--ds-color-fg-secondary);
     gap: var(--space-3);
     margin-top: var(--space-4);
   }
@@ -104,15 +104,15 @@
     padding: 0;
     border: var(--border-subtle);
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
   .surfaceInteractive:hover,
   .surfaceInteractive:focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--format-focus) 18%, transparent);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
   }
 
   .confirmButton {
@@ -126,12 +126,12 @@
     min-height: var(--control-height);
     border: var(--border-flash);
     border-radius: var(--radius-control);
-    color: var(--color-ink);
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
   }
 
   .confirmButton:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 88%, var(--ds-color-bg-surface));
   }
 }

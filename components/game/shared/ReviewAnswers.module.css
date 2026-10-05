@@ -48,10 +48,10 @@
     align-items: center;
     flex: 0 0 auto;
     padding: 0 var(--space-4);
-    border: 1px solid var(--color-border-hover);
+    border: 1px solid var(--ds-color-border-hover);
     border-radius: var(--radius-pill);
-    color: var(--color-text-on-social);
-    background: var(--color-overlay-ink);
+    color: var(--ds-color-fg-on-selected);
+    background: var(--ds-color-bg-overlay);
     box-shadow: var(--shadow-control);
     font-family: var(--type-mono);
     font-size: 13px;
@@ -62,7 +62,7 @@
     display: grid;
     width: min(100%, 240px);
     gap: var(--space-2);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 700;
@@ -72,21 +72,21 @@
     height: 7px;
     overflow: hidden;
     border-radius: var(--radius-pill);
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .reviewPanelProgressTrack span {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: var(--color-social);
+    background: var(--ds-color-bg-selected);
     transition: width 220ms ease;
   }
 
   .reviewPanelDescription {
     max-width: 42rem;
     margin: calc(var(--space-3) * -1) 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 17px;
     line-height: 1.55;
   }
@@ -100,7 +100,7 @@
     overflow: hidden;
     border: var(--border-subtle);
     border-radius: var(--radius-card);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-control);
   }
 
@@ -117,7 +117,7 @@
   }
 
   .reviewAnswerRow summary:focus-visible {
-    outline: 3px solid var(--color-social);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: -3px;
   }
 
@@ -126,7 +126,7 @@
   }
 
   .reviewAnswerRow summary::after {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     content: "+";
     font-family: var(--type-mono);
     font-size: 22px;
@@ -139,7 +139,7 @@
   }
 
   .reviewAnswerNumber {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-display);
     font-size: 28px;
     letter-spacing: -0.05em;
@@ -165,7 +165,7 @@
   }
 
   .reviewAnswerTitle small {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 14px;
     line-height: 1.35;
   }
@@ -188,20 +188,20 @@
   }
 
   .reviewAnswer_correct .reviewAnswerStatus {
-    color: var(--state-correct);
+    color: var(--ds-color-fg-success);
   }
 
   .reviewAnswer_partial .reviewAnswerStatus {
-    color: var(--state-selected);
+    color: var(--ds-color-fg-selected);
   }
 
   .reviewAnswer_incorrect .reviewAnswerStatus {
-    color: var(--state-error);
+    color: var(--ds-color-fg-error);
   }
 
   .reviewAnswer_unanswered .reviewAnswerStatus,
   .reviewAnswer_locked .reviewAnswerStatus {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .reviewAnswerBody {
@@ -211,28 +211,32 @@
   }
 
   .reviewAnswerBody .wordSearchReviewList li {
-    border-color: var(--color-border);
-    color: var(--color-ink-muted);
-    background: var(--color-surface-raised);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .reviewAnswerBody .wordSearchReviewList li > svg,
   .reviewAnswerBody .wordSearchReviewList li > span:first-child {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .reviewAnswerBody .wordSearchReviewList .wordSearchReviewFound {
-    border-color: color-mix(in srgb, var(--state-correct) 42%, var(--color-surface));
-    color: var(--state-correct);
-    background: color-mix(in srgb, var(--state-correct) 8%, var(--color-surface));
+    border-color: color-mix(
+      in srgb,
+      var(--ds-color-border-success) 42%,
+      var(--ds-color-border-on-inverse)
+    );
+    color: var(--ds-color-fg-success);
+    background: color-mix(in srgb, var(--ds-color-bg-success) 8%, var(--ds-color-bg-surface));
   }
 
   .reviewAnswerBody .wordSearchReviewList .wordSearchReviewFound > svg {
-    color: var(--state-correct);
+    color: var(--ds-color-fg-success);
   }
 
   .reviewAnswerMeta {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 800;
@@ -241,7 +245,7 @@
 
   .reviewAnswerExplanation {
     margin: 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 15px;
     line-height: 1.5;
   }
@@ -251,7 +255,7 @@
     align-items: center;
     gap: var(--space-2);
     padding: 0 var(--space-4) var(--space-5) 68px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 14px;
     line-height: 1.45;
   }
@@ -263,45 +267,45 @@
 
   .reviewAnswerBody .answerBox,
   .reviewAnswerBody .classificationReviewRow {
-    color: var(--color-ink);
-    border-color: var(--color-border);
-    background: var(--color-surface-raised);
+    color: var(--ds-color-fg-primary);
+    border-color: var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .reviewAnswerBody .answerBox span,
   .reviewAnswerBody .answerBox small,
   .reviewAnswerBody .classificationReviewRow small {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .reviewAnswerBody .answerBox strong,
   .reviewAnswerBody .answerBox b,
   .reviewAnswerBody .classificationReviewRow b {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
 
   .reviewAnswerBody .answerBoxCorrect strong,
   .reviewAnswerBody .classificationValueCorrect {
-    color: var(--state-correct);
+    color: var(--ds-color-fg-success);
   }
 
   .reviewAnswerBody .classificationValueWrong {
-    color: var(--state-error);
+    color: var(--ds-color-fg-error);
   }
 
   .reviewAnswerBody .memoryPairsRevealed {
-    color: var(--color-ink);
-    border-color: var(--state-selected);
-    background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+    color: var(--ds-color-fg-primary);
+    border-color: var(--ds-color-border-selected);
+    background: var(--ds-color-bg-selected-soft);
   }
 
   .reviewAnswerBody .memoryPairsMatched {
-    border-color: var(--state-correct);
-    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+    border-color: var(--ds-color-border-success);
+    background: var(--ds-color-bg-success-soft);
   }
 
   .reviewAnswerBody .wordle-absent {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   @media (max-width: 600px) {
@@ -389,13 +393,13 @@
     text-transform: uppercase;
   }
   .reviewCorrect {
-    border-left-color: var(--color-brand);
+    border-left-color: var(--ds-color-border-brand);
   }
   .reviewWrong {
-    border-left-color: var(--color-danger);
+    border-left-color: var(--ds-color-border-error);
   }
   .reviewPartial {
-    border-left-color: var(--color-social);
+    border-left-color: var(--ds-color-border-selected);
   }
   .reviewUnanswered {
     border-left-color: #6f7580;
@@ -430,7 +434,7 @@
     transform: rotate(90deg);
   }
   .answerBox span {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.62rem;
     font-weight: 700;
   }
@@ -439,13 +443,13 @@
     font-size: 0.84rem;
   }
   .answerBoxCorrect strong {
-    color: var(--color-success);
+    color: var(--ds-color-fg-success);
   }
   .mazeLegend {
     display: flex;
     flex-wrap: wrap;
     gap: 0.7rem 1rem;
-    color: rgba(255, 255, 255, 0.48);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.68rem;
     font-weight: 700;
   }
@@ -461,19 +465,19 @@
   }
   .mazePlayerLine {
     border-top-style: solid;
-    border-top-color: var(--color-brand);
+    border-top-color: var(--ds-color-border-brand);
   }
   .mazeOptimalLine {
     border-top-style: dashed;
-    border-top-color: var(--color-social);
+    border-top-color: var(--ds-color-border-selected);
   }
 
   .zipPlayerLine {
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
   }
 
   .zipSolutionLine {
-    border-top: 2px dashed var(--color-social);
+    border-top: 2px dashed var(--ds-color-border-selected);
     background: transparent;
   }
   .sudokuReviewGrid {
@@ -499,19 +503,19 @@
     border-bottom: 2px solid rgba(255, 255, 255, 0.55);
   }
   .sudokuReviewCell small {
-    color: rgba(255, 255, 255, 0.46);
+    color: var(--ds-color-fg-secondary);
     font-family: inherit;
     font-size: 0.58rem;
     font-weight: 700;
   }
   .sudokuGiven {
-    color: rgba(255, 255, 255, 0.52);
+    color: var(--ds-color-fg-secondary);
   }
   .sudokuCorrect {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
   .sudokuWrong {
-    color: #ff858a;
+    color: var(--ds-color-fg-error);
   }
   .logicReviewClues {
     display: grid;
@@ -529,12 +533,12 @@
   .logicReviewClues strong {
     font-family: var(--type-mono);
     letter-spacing: 0.12em;
-    color: var(--color-success);
+    color: var(--ds-color-fg-success);
   }
   .logicReviewClues span {
     font-size: 0.72rem;
     line-height: 1.15rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--ds-color-fg-secondary);
   }
   .logicReviewAttempts {
     display: flex;
@@ -548,11 +552,11 @@
     font-family: var(--type-mono);
     font-size: 0.8rem;
     letter-spacing: 0.1em;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--ds-color-fg-secondary);
   }
   .logicReviewAttempts .logicReviewLast {
-    outline: 1px solid rgb(var(--color-brand-rgb) / 0.5);
-    color: var(--color-success);
+    outline: 1px solid color-mix(in srgb, var(--ds-color-bg-brand) 50%, transparent);
+    color: var(--ds-color-fg-success);
   }
   .classificationReviewList {
     display: grid;
@@ -565,7 +569,7 @@
     gap: 0.65rem;
     border-radius: 0.8rem;
     padding: 0.75rem;
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
   .classificationReviewRow > strong {
     min-width: 0;
@@ -579,7 +583,7 @@
     gap: 0.2rem;
   }
   .classificationReviewRow small {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.55rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -602,10 +606,10 @@
     stroke-width: 2.5;
   }
   .classificationValueCorrect {
-    color: var(--color-success);
+    color: var(--ds-color-fg-success);
   }
   .classificationValueWrong {
-    color: #ff858a;
+    color: var(--ds-color-fg-error);
   }
   @media (max-width: 600px) {
     .classificationReviewRow {
@@ -634,7 +638,7 @@
   .memoryGridLabel {
     display: block;
     margin-bottom: 0.45rem;
-    color: rgba(255, 255, 255, 0.48);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.62rem;
     font-weight: 900;
@@ -654,7 +658,7 @@
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 0.75rem;
     padding: 0.45rem;
-    color: rgba(255, 255, 255, 0.82);
+    color: var(--ds-color-fg-secondary);
     background: rgba(255, 255, 255, 0.035);
     font-size: 0.72rem;
     text-align: center;
@@ -682,7 +686,7 @@
     border: 1px dashed rgba(255, 255, 255, 0.16);
     border-radius: 0.75rem;
     padding: 0.4rem;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--ds-color-fg-secondary);
     background: rgba(255, 255, 255, 0.025);
     text-align: center;
   }
@@ -704,7 +708,7 @@
     font-size: 0.72rem;
   }
   .memoryPairsCell small {
-    color: rgba(255, 255, 255, 0.38);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.52rem;
     font-weight: 800;
@@ -732,7 +736,7 @@
     line-height: 1;
   }
   .logicMatrixReviewCell small {
-    color: rgba(255, 255, 255, 0.56);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.55rem;
     font-weight: 800;
   }
@@ -753,22 +757,22 @@
     font-size: 1rem;
   }
   .nonogramCorrect {
-    color: var(--color-brand);
-    background: rgb(var(--color-brand-rgb) / 0.16);
+    color: var(--ds-color-fg-brand);
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 16%, transparent);
   }
   .nonogramWrong {
-    color: #ff858a;
+    color: var(--ds-color-fg-error);
     background: rgba(255, 93, 100, 0.18);
   }
   .nonogramMissing {
-    color: #ffcf66;
+    color: var(--ds-color-fg-reward);
     background: rgba(255, 207, 102, 0.12);
   }
   .nonogramEmpty {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--ds-color-fg-secondary);
   }
   .connectPairsReviewRoute {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     background: rgb(53 232 255 / 12%);
   }
   .puzzleReviewPair {
@@ -802,12 +806,12 @@
     font-weight: 900;
   }
   .puzzleTile {
-    color: var(--color-ink);
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
   .puzzleBlank {
     border: 1px dashed rgba(255, 255, 255, 0.28);
-    border-color: var(--color-border-hover);
+    border-color: var(--ds-color-border-hover);
   }
   .wordleReview {
     --mini-wordle-columns: 4;
@@ -889,8 +893,8 @@
     border-left-width: 3px;
     border-radius: 1rem;
     backdrop-filter: blur(16px);
-    border-color: var(--color-border);
-    background: var(--color-surface);
+    border-color: var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-card);
   }
   .textButton {
@@ -900,10 +904,10 @@
     font-size: 0.7rem;
     font-weight: 800;
     transition: color 160ms;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .textButton:hover {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   .reviewNumber {
     display: grid;
@@ -915,29 +919,29 @@
     font-family: var(--type-mono);
     font-size: 0.7rem;
     font-weight: 800;
-    color: var(--color-ink-muted);
-    background: var(--color-surface-soft);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-soft);
   }
   .statusCorrect {
-    color: var(--state-correct);
-    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+    color: var(--ds-color-fg-success);
+    background: var(--ds-color-bg-success-soft);
   }
   .statusWrong {
-    color: var(--state-error);
-    background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
+    color: var(--ds-color-fg-error);
+    background: var(--ds-color-bg-error-soft);
   }
   .statusPartial {
-    color: var(--state-selected);
-    background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+    color: var(--ds-color-fg-selected);
+    background: var(--ds-color-bg-selected-soft);
   }
   .statusUnanswered {
-    color: var(--color-ink-muted);
-    background: var(--color-surface-soft);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-soft);
   }
   .reviewContent {
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     padding: 1rem;
-    border-top-color: var(--color-border);
+    border-top-color: var(--ds-color-border-default);
   }
   .answerBox {
     display: flex;
@@ -947,14 +951,14 @@
     border-radius: 0.8rem;
     padding: 0.8rem;
     border: var(--border-subtle);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-control);
   }
   .answerBox span,
   .mazeLegend,
   .memoryGridLabel,
   .sudokuReviewCell small {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .sudokuReviewGrid,
   .sudokuReviewCell,
@@ -962,23 +966,23 @@
   .logicMatrixReviewCell,
   .nonogramReviewGrid,
   .nonogramReviewCell {
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
   }
   .sudokuGiven,
   .nonogramMissing,
   .nonogramEmpty {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .sudokuCorrect,
   .nonogramCorrect,
   .memoryPairsMatched,
   .wordle-correct {
-    color: var(--state-correct);
+    color: var(--ds-color-fg-success);
   }
   .sudokuWrong,
   .nonogramWrong,
   .wordle-present {
-    color: var(--state-error);
+    color: var(--ds-color-fg-error);
   }
   .logicReviewClues > div,
   .logicReviewAttempts b,
@@ -989,37 +993,37 @@
   .puzzleBlank,
   .wordleReviewTile,
   .wordHashtagReviewTile {
-    border-color: var(--color-border);
-    background: var(--color-surface-raised);
-    color: var(--color-ink);
+    border-color: var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface-raised);
+    color: var(--ds-color-fg-primary);
   }
   .logicReviewClues span,
   .logicReviewAttempts b,
   .memoryPairsSymbol,
   .wordle-absent {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .memoryPairsRevealed {
     border-style: solid;
-    color: rgba(255, 255, 255, 0.82);
-    border-color: var(--state-selected);
-    background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+    color: var(--ds-color-fg-selected);
+    border-color: var(--ds-color-border-selected);
+    background: var(--ds-color-bg-selected-soft);
   }
   .memoryPairsMatched {
-    border-color: var(--state-correct);
-    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+    border-color: var(--ds-color-border-success);
+    background: var(--ds-color-bg-success-soft);
   }
   .wordle-correct {
-    color: var(--color-text-on-success);
-    background: var(--state-correct);
+    color: var(--ds-color-fg-on-success);
+    background: var(--ds-color-bg-success);
   }
   .wordle-present {
-    color: var(--color-ink);
-    background: var(--state-movable);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
   .wordle-absent {
-    color: rgba(255, 255, 255, 0.68);
-    background: var(--state-neutral);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-soft);
   }
   /* Keep every specialized review renderer on the Pop palette. */
   .connectPairsReviewGrid {
@@ -1029,8 +1033,8 @@
     overflow: hidden;
     border: 1px solid rgb(255 255 255 / 14%);
     border-radius: 0.75rem;
-    border-color: var(--color-border);
-    background: var(--color-surface);
+    border-color: var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface);
   }
 
   .connectPairsReviewRouteOverlay {
@@ -1053,7 +1057,7 @@
   }
 
   .connectPairsReviewSubmittedLine {
-    stroke: color-mix(in srgb, var(--pair-color) 72%, var(--color-ink));
+    stroke: color-mix(in srgb, var(--pair-color) 72%, var(--ds-color-fg-primary));
     stroke-dasharray: 0.22 0.16;
     stroke-width: 0.12;
     filter: none;
@@ -1069,34 +1073,34 @@
     font-family: var(--type-mono);
     font-size: 0.9rem;
     font-weight: 900;
-    border-color: var(--color-border);
-    color: var(--color-ink-muted);
-    background: color-mix(in srgb, var(--color-surface-raised) 72%, transparent);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-secondary);
+    background: color-mix(in srgb, var(--ds-color-bg-surface-raised) 72%, transparent);
   }
 
   .connectPairsReviewEndpoint {
     z-index: 3;
-    border-color: color-mix(in srgb, var(--pair-color) 52%, var(--color-border));
-    color: var(--color-ink);
-    background: color-mix(in srgb, var(--pair-color) 78%, var(--color-surface-raised));
+    border-color: color-mix(in srgb, var(--pair-color) 52%, var(--ds-color-border-default));
+    color: var(--ds-color-fg-primary);
+    background: color-mix(in srgb, var(--pair-color) 78%, var(--ds-color-bg-surface-raised));
     box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--pair-color) 82%, transparent);
   }
 
   .connectPairsReviewEndpointMissing {
-    outline: 2px dashed var(--state-error);
+    outline: 2px dashed var(--ds-color-border-error);
     outline-offset: -0.25rem;
     box-shadow:
       inset 0 0 0 2px color-mix(in srgb, var(--pair-color) 72%, transparent),
-      0 0 0 2px color-mix(in srgb, var(--state-error) 42%, transparent);
-    color: var(--color-ink);
-    background: color-mix(in srgb, var(--pair-color) 58%, var(--color-surface-soft));
+      0 0 0 2px color-mix(in srgb, var(--ds-color-bg-error) 42%, transparent);
+    color: var(--ds-color-fg-primary);
+    background: color-mix(in srgb, var(--pair-color) 58%, var(--ds-color-bg-surface-soft));
   }
 
   .connectPairsReviewLegend {
     display: grid;
     gap: 0.75rem;
     width: min(100%, 18rem);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.7rem;
     font-weight: 750;
   }
@@ -1120,10 +1124,10 @@
     width: 1.35rem;
     height: 1.35rem;
     place-items: center;
-    border: 1px solid color-mix(in srgb, var(--pair-color) 85%, var(--color-border));
+    border: 1px solid color-mix(in srgb, var(--pair-color) 85%, var(--ds-color-border-default));
     border-radius: 999px;
-    color: var(--color-ink);
-    background: color-mix(in srgb, var(--pair-color) 76%, var(--color-surface-raised));
+    color: var(--ds-color-fg-primary);
+    background: color-mix(in srgb, var(--pair-color) 76%, var(--ds-color-bg-surface-raised));
     font-size: 0.65rem;
   }
 
@@ -1132,14 +1136,14 @@
     width: 1.7rem;
     height: 0.22rem;
     border-radius: 999px;
-    background: var(--color-social);
+    background: var(--ds-color-bg-selected);
   }
 
   .connectPairsReviewLegendLineSubmitted {
     height: 0.14rem;
     background: repeating-linear-gradient(
       to right,
-      var(--color-ink-muted) 0 0.35rem,
+      var(--ds-color-fg-secondary) 0 0.35rem,
       transparent 0.35rem 0.58rem
     );
   }
@@ -1152,15 +1156,15 @@
     place-items: center;
     border-radius: clamp(0.35rem, 1vw, 0.58rem);
     box-shadow: 0 0.18rem 0 rgb(0 0 0 / 28%);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
 
   .wordHashtagReviewCorrect {
-    color: var(--color-text-on-success);
-    background: var(--state-correct);
+    color: var(--ds-color-fg-on-success);
+    background: var(--ds-color-bg-success);
   }
 
   .wordHashtagReviewDisplaced {
-    background: var(--state-movable);
+    background: var(--ds-color-bg-brand);
   }
 }

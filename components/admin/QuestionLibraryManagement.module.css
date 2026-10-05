@@ -18,7 +18,7 @@
   }
   .eyebrow {
     margin: 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 900;
@@ -29,7 +29,7 @@
   .meta,
   .entry p,
   .empty p {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 13px;
     line-height: 1.55;
   }
@@ -37,10 +37,10 @@
     max-width: 680px;
   }
   .linkButton {
-    border: 1px solid var(--color-brand);
+    border: 1px solid var(--ds-color-border-brand);
     border-radius: var(--radius-control);
-    background: var(--color-brand);
-    color: var(--color-ink);
+    background: var(--ds-color-bg-brand);
+    color: var(--ds-color-fg-on-brand);
     padding: 0.75rem 1rem;
     font-size: 12px;
     font-weight: 800;
@@ -55,17 +55,17 @@
   .filters label {
     display: grid;
     gap: var(--space-2);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 12px;
     font-weight: 700;
   }
   .filters input,
   .filters select {
     width: 100%;
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--ds-color-border-strong);
     border-radius: var(--radius-control);
-    background: var(--color-surface);
-    color: var(--color-ink);
+    background: var(--ds-color-bg-surface);
+    color: var(--ds-color-fg-primary);
     font: inherit;
     padding: 0.7rem 0.8rem;
   }
@@ -101,7 +101,7 @@
     margin: 0;
   }
   .entryMeta {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 10px;
   }

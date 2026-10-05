@@ -74,15 +74,15 @@ describe("FlashPopAlphabetGame", () => {
 
   it("keeps the answer input bright against the Pop canvas", () => {
     expect(styles).toContain(".answerForm input {");
-    expect(styles).toContain("background: var(--color-surface);");
+    expect(styles).toContain("background: var(--ds-color-bg-surface);");
   });
 
   it("gives the countdown pill a high-contrast Pop treatment", () => {
     expect(source).toContain("StartCountdown");
     expect(countdownSource).toContain("className={styles.countdownChip}");
     expect(countdownStyles).toContain(".countdownChip {");
-    expect(countdownStyles).toContain("background: var(--color-focus);");
-    expect(countdownStyles).toContain("color: var(--color-text-on-social);");
+    expect(countdownStyles).toContain("background: var(--ds-color-focus-ring);");
+    expect(countdownStyles).toContain("color: var(--ds-color-fg-on-selected);");
   });
 
   it("keeps the countdown opaque while the number animates", () => {

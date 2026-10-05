@@ -24,7 +24,7 @@
   }
   .eyebrow {
     margin: 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 900;
@@ -47,17 +47,17 @@
   .reason {
     display: grid;
     gap: var(--space-2);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 12px;
     font-weight: 700;
   }
   .field textarea,
   .reason textarea {
     width: 100%;
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--ds-color-border-strong);
     border-radius: var(--radius-control);
-    background: var(--color-surface);
-    color: var(--color-ink);
+    background: var(--ds-color-bg-surface);
+    color: var(--ds-color-fg-primary);
     padding: 0.8rem;
     font: 11px/1.5 var(--type-mono);
   }
@@ -65,18 +65,18 @@
     display: grid;
     gap: 0.25rem;
     padding: var(--space-3) 0;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--ds-color-border-default);
     font-size: 12px;
   }
   .version span {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 10px;
     overflow-wrap: anywhere;
   }
   .error {
     margin: 0;
-    color: var(--color-danger);
+    color: var(--ds-color-fg-error);
     font-size: 12px;
     line-height: 1.4;
   }
@@ -84,9 +84,9 @@
     display: grid;
     gap: var(--space-2);
     padding: var(--space-3);
-    border: 1px dashed var(--color-border-strong);
+    border: 1px dashed var(--ds-color-border-strong);
     border-radius: var(--radius-control);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 12px;
   }
   .assetPanel > div {
@@ -100,17 +100,17 @@
   .assetFields label {
     display: grid;
     gap: 0.25rem;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 11px;
     font-weight: 700;
   }
   .assetFields input,
   .assetFields select {
     width: 100%;
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--ds-color-border-strong);
     border-radius: var(--radius-control);
-    background: var(--color-surface);
-    color: var(--color-ink);
+    background: var(--ds-color-bg-surface);
+    color: var(--ds-color-fg-primary);
     padding: 0.5rem;
     font: 11px var(--type-mono);
   }
@@ -122,7 +122,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-weight: 700;
   }
   .fileInput input {
@@ -130,7 +130,7 @@
     font: 11px var(--type-mono);
   }
   .assetMessage {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   @media (max-width: 760px) {
     .layout {

@@ -7,7 +7,7 @@
   .instructions {
     max-width: 28rem;
     margin: 0 auto;
-    color: rgb(255 255 255 / 0.55);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.9rem;
     line-height: 1.45;
     text-align: center;
@@ -50,10 +50,10 @@
   .lockedTile {
     cursor: not-allowed;
     background: rgb(255 255 255 / 0.22);
-    color: rgb(255 255 255 / 0.65);
+    color: var(--ds-color-fg-secondary);
   }
   .tile:focus-visible {
-    outline: 3px solid #facc15;
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
   .blank {
@@ -62,7 +62,7 @@
   }
   .moves {
     margin: 0;
-    color: rgb(255 255 255 / 0.72);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.82rem;
     font-weight: 800;
@@ -71,31 +71,31 @@
 
   .root .instructions,
   .root .moves {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .root .grid {
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
   .root .tile {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   .root .movable {
-    background: var(--state-selected);
+    background: var(--ds-color-bg-selected);
     box-shadow: var(--shadow-control);
   }
   .root .movable:hover:not(:disabled) {
-    background: var(--color-focus);
+    background: var(--ds-color-focus-ring);
   }
   .root .lockedTile {
-    color: var(--color-ink-muted);
-    background: var(--color-surface-soft);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-soft);
   }
   .root .tile:focus-visible {
-    outline-color: var(--state-focus);
+    outline-color: var(--ds-color-focus-ring);
   }
   .root .blank {
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
   }
 }

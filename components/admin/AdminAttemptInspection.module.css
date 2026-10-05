@@ -21,7 +21,7 @@
   .detailHeader h1,
   .card h3 {
     margin: 0;
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-display, sans-serif);
     letter-spacing: -0.04em;
   }
@@ -40,7 +40,7 @@
   .label,
   .muted {
     margin: 0;
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono, monospace);
     font-size: 0.76rem;
   }
@@ -73,7 +73,7 @@
 
   .card p {
     margin: 0;
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     line-height: 1.5;
   }
 
@@ -110,15 +110,15 @@
   }
 
   .summaryCard strong {
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-size: 1.4rem;
   }
 
   .tableWrap {
     overflow-x: auto;
-    border: 1px solid var(--color-line, #dddde5);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 16px;
-    background: var(--color-surface, #fff);
+    background: var(--ds-color-bg-surface);
   }
 
   .table {
@@ -130,13 +130,13 @@
   .table th,
   .table td {
     padding: 14px 16px;
-    border-bottom: 1px solid var(--color-line, #dddde5);
+    border-bottom: 1px solid var(--ds-color-border-default);
     text-align: left;
     vertical-align: middle;
   }
 
   .table th {
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono, monospace);
     font-size: 0.7rem;
     letter-spacing: 0.06em;
@@ -148,7 +148,7 @@
   }
 
   .attemptLink {
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-weight: 750;
     text-decoration: none;
   }
@@ -170,7 +170,7 @@
   }
 
   .identity span {
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.78rem;
   }
 
@@ -182,9 +182,9 @@
   .auditCard,
   .ledgerCard {
     padding: 16px;
-    border: 1px solid var(--color-line, #dddde5);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 14px;
-    background: var(--color-surface, #fff);
+    background: var(--ds-color-bg-surface);
   }
 
   .itemCard pre,
@@ -194,8 +194,8 @@
     margin: 0;
     padding: 12px;
     border-radius: 10px;
-    background: var(--color-surface-soft, #f7f7fa);
-    color: var(--color-ink, #17171f);
+    background: var(--ds-color-bg-surface-soft);
+    color: var(--ds-color-fg-primary);
     font-size: 0.75rem;
     white-space: pre-wrap;
     word-break: break-word;
@@ -213,21 +213,21 @@
     display: grid;
     gap: 12px;
     padding: 18px;
-    border: 1px solid var(--color-line, #dddde5);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 16px;
-    background: var(--color-surface-soft, #f7f7fa);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .actionForm h2 {
     margin: 0;
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-size: 1.1rem;
   }
 
   .field {
     display: grid;
     gap: 6px;
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-size: 0.85rem;
     font-weight: 700;
   }
@@ -235,11 +235,11 @@
   .field input,
   .field textarea {
     width: 100%;
-    border: 1px solid var(--color-line, #cfcfd9);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 10px;
     padding: 10px 12px;
-    background: var(--color-surface, #fff);
-    color: var(--color-ink, #17171f);
+    background: var(--ds-color-bg-surface);
+    color: var(--ds-color-fg-primary);
     font: inherit;
   }
 
@@ -250,7 +250,7 @@
 
   .error {
     margin: 0;
-    color: var(--color-danger, #b33a3a);
+    color: var(--ds-color-fg-error);
     font-size: 0.82rem;
   }
 

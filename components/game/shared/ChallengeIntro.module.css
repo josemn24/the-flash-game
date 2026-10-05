@@ -6,7 +6,7 @@
     flex-direction: column;
     gap: var(--space-6);
     padding: var(--space-5) var(--space-4) max(var(--space-10), env(safe-area-inset-bottom));
-    background-image: radial-gradient(var(--color-social) 0.7px, transparent 0.7px);
+    background-image: radial-gradient(var(--ds-color-bg-selected) 0.7px, transparent 0.7px);
     background-size: 18px 18px;
   }
 
@@ -22,7 +22,7 @@
     width: min(100%, 680px);
     border: var(--border-subtle);
     border-radius: calc(var(--radius-card) * 2);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-hero);
   }
 
@@ -46,7 +46,7 @@
   .note,
   .notice {
     margin: 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 800;
@@ -74,7 +74,7 @@
     padding: var(--space-3) var(--space-2);
     border: var(--border-subtle);
     border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     text-align: center;
   }
 
@@ -99,7 +99,7 @@
 
   .metric span,
   .note {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .rules {
@@ -115,7 +115,7 @@
     grid-template-columns: 32px minmax(0, 1fr);
     gap: var(--space-3);
     align-items: start;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 13px;
     line-height: 1.5;
   }
@@ -123,7 +123,7 @@
   .rules li strong {
     display: inline;
     margin-right: 0.35rem;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-weight: 850;
   }
 
@@ -133,8 +133,8 @@
     height: 32px;
     place-items: center;
     border-radius: var(--radius-pill);
-    color: var(--color-ink);
-    background: var(--color-surface-soft);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-soft);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 800;
@@ -142,11 +142,11 @@
   }
 
   .notice {
-    border-left: 3px solid var(--color-social);
+    border-left: 3px solid var(--ds-color-border-selected);
     border-radius: 0 var(--radius-control) var(--radius-control) 0;
     padding: var(--space-3) var(--space-4);
-    color: var(--color-ink);
-    background: rgb(105 87 232 / 9%);
+    color: var(--ds-color-fg-primary);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 9%, transparent);
     line-height: 1.5;
     text-transform: none;
   }

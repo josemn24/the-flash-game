@@ -7,9 +7,9 @@
     display: block;
     background: linear-gradient(
       100deg,
-      var(--color-surface-soft) 18%,
-      var(--color-surface-raised) 42%,
-      var(--color-surface-soft) 66%
+      var(--ds-color-bg-surface-soft) 18%,
+      var(--ds-color-bg-surface-raised) 42%,
+      var(--ds-color-bg-surface-soft) 66%
     );
     background-size: 220% 100%;
     animation: skeletonShimmer 1.4s ease-in-out infinite;
@@ -282,7 +282,7 @@
     padding: 12px 14px 12px 12px;
     border: var(--border-subtle);
     border-radius: var(--radius-card);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-control);
   }
 
@@ -530,7 +530,7 @@
     gap: 6px;
     padding: 10px;
     border-radius: var(--radius-control);
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .memberStatValue {
@@ -579,7 +579,7 @@
     overflow: hidden;
     border: var(--border-subtle);
     border-radius: 0 0 32px 32px;
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-hero);
   }
 
@@ -613,7 +613,7 @@
 
   .settingsAvatars .skeleton {
     margin-left: -16px;
-    border: 3px solid var(--color-surface);
+    border: 3px solid var(--ds-color-border-on-inverse);
     border-radius: 50%;
   }
 
@@ -673,7 +673,7 @@
     padding: 12px 14px 12px 12px;
     border: var(--border-subtle);
     border-radius: var(--radius-card);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-control);
   }
 

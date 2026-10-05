@@ -35,9 +35,9 @@ function TerminalCompetitiveChallenge({
   return (
     <Canvas maxWidth="content">
       <Card as="section" aria-labelledby="terminal-challenge-title" className="mx-auto mt-12">
-        <TrophyIcon className="mb-4 h-8 w-8 text-[var(--color-brand)]" />
+        <TrophyIcon className="mb-4 h-8 w-8 text-[var(--ds-color-fg-brand)]" />
         <h1 id="terminal-challenge-title">{title}</h1>
-        <p className="mt-3 text-[var(--color-ink-muted)]">{description}</p>
+        <p className="mt-3 text-[var(--ds-color-fg-secondary)]">{description}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <ButtonLink href={roomContext.returnTo} variant="secondary" trailingIcon={<ArrowIcon />}>
             Volver a la sala
@@ -65,7 +65,7 @@ function UnavailableCompetitiveChallenge({ roomContext }: { roomContext: GameRoo
         <h1 id="unavailable-challenge-title">
           {isExpired ? "Desafío cerrado" : "Desafío no disponible"}
         </h1>
-        <p className="mt-3 text-[var(--color-ink-muted)]">
+        <p className="mt-3 text-[var(--ds-color-fg-secondary)]">
           {isExpired
             ? "La publicación terminó antes de que iniciaras este desafío. No se creó ningún intento competitivo."
             : "Este desafío todavía no está disponible para jugar en la sala."}

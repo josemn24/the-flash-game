@@ -6,7 +6,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    color: rgb(255 255 255 / 48%);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.68rem;
     font-weight: 850;
@@ -16,7 +16,7 @@
 
   .header strong,
   .progress strong {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
 
   .board {
@@ -100,7 +100,7 @@
 
   .selected {
     z-index: 2;
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     box-shadow:
       0 0.28rem 0 rgb(0 0 0 / 32%),
       0 0 0 3px rgb(53 232 255 / 30%);
@@ -115,7 +115,7 @@
 
   .tile:focus-visible {
     z-index: 3;
-    outline: 3px solid var(--color-social);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 
@@ -131,7 +131,7 @@
   .instructions {
     max-width: 31rem;
     margin: 0;
-    color: rgb(255 255 255 / 48%);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.76rem;
     line-height: 1.55;
     text-align: center;
@@ -152,59 +152,59 @@
 
   .root .header,
   .root .progress {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .root .header strong,
   .root .progress strong {
-    color: var(--state-selected);
+    color: var(--ds-color-fg-selected);
   }
 
   .root .board {
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
   .root .tile {
-    border-color: var(--color-border);
-    color: var(--color-ink);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-primary);
     box-shadow: var(--shadow-control);
   }
 
   .root .correct {
-    border-color: var(--state-correct);
-    color: var(--color-surface);
-    background: var(--state-correct);
+    border-color: var(--ds-color-border-success);
+    color: var(--ds-color-fg-on-success);
+    background: var(--ds-color-bg-success);
   }
 
   .root .displaced {
-    border-color: var(--state-movable);
-    color: var(--color-ink);
-    background: var(--state-movable);
+    border-color: var(--ds-color-border-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
 
   .root .selected {
-    border-color: var(--state-selected);
+    border-color: var(--ds-color-border-selected);
     box-shadow:
       var(--shadow-control),
-      0 0 0 3px color-mix(in srgb, var(--state-selected) 22%, transparent);
+      0 0 0 3px color-mix(in srgb, var(--ds-color-bg-selected) 22%, transparent);
   }
 
   .root .dragTarget {
-    border-color: var(--state-selected);
+    border-color: var(--ds-color-border-selected);
   }
 
   .root .tile:focus-visible {
-    outline-color: var(--state-focus);
+    outline-color: var(--ds-color-focus-ring);
   }
 
   .root .tile small {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     background: rgb(255 255 255 / 78%);
   }
 
   .root .instructions {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 }

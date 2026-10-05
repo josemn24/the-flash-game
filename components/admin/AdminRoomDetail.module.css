@@ -11,7 +11,7 @@
   .meta,
   .cardLabel {
     margin: 0;
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono, monospace);
     font-size: 0.75rem;
   }
@@ -25,7 +25,7 @@
 
   .hero h1 {
     margin: var(--space-3, 12px) 0;
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-display, sans-serif);
     font-size: clamp(2.25rem, 4vw, 3.5rem);
     letter-spacing: -0.06em;
@@ -38,7 +38,7 @@
     margin-top: var(--space-5, 24px);
     overflow-x: auto;
     overflow-y: hidden;
-    border-bottom: 1px solid var(--color-line, #dddde5);
+    border-bottom: 1px solid var(--ds-color-border-default);
     scrollbar-width: none;
   }
 
@@ -50,7 +50,7 @@
     position: relative;
     flex: 0 0 auto;
     padding: 0 2px 13px;
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.9rem;
     font-weight: 750;
     text-decoration: none;
@@ -60,11 +60,11 @@
   .tab:hover,
   .tab:focus-visible,
   .tabActive {
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
   }
 
   .tab:focus-visible {
-    outline: 2px solid var(--color-social, #6556d9);
+    outline: 2px solid var(--ds-color-focus-ring);
     outline-offset: 4px;
   }
 
@@ -75,7 +75,7 @@
     left: 0;
     height: 3px;
     border-radius: 3px 3px 0 0;
-    background: var(--color-ink, #17171f);
+    background: var(--ds-color-bg-inverse);
     content: "";
   }
 
@@ -92,7 +92,7 @@
 
   .sectionHeading h2 {
     margin: var(--space-2, 8px) 0 0;
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-display, sans-serif);
     font-size: clamp(2rem, 5vw, 3.5rem);
     letter-spacing: -0.05em;
@@ -118,12 +118,12 @@
   }
 
   .summaryCard h3 {
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-size: 1.35rem;
   }
 
   .summaryCard p:not(.cardLabel) {
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     line-height: 1.5;
   }
 

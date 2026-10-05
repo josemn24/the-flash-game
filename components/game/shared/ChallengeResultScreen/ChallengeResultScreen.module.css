@@ -20,7 +20,7 @@
   .timeCard,
   .metricCard {
     border: var(--border-subtle);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
   }
 
   .resultCard {
@@ -39,7 +39,7 @@
 
   .eyebrow {
     margin: 0;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: 9px;
     font-weight: 800;
@@ -49,7 +49,7 @@
 
   .subtitle {
     margin: 12px 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 13px;
     font-weight: 600;
     line-height: 1.45;
@@ -71,7 +71,7 @@
   }
 
   .scoreDisplay span {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 800;
@@ -81,14 +81,14 @@
     height: 8px;
     overflow: hidden;
     border-radius: 999px;
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .scoreTrack span {
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
     transition: width 300ms ease;
   }
 
@@ -101,7 +101,7 @@
   .returnLink {
     justify-self: center;
     margin-top: 2px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 12px;
     font-weight: 700;
     text-decoration: underline;
@@ -144,7 +144,10 @@
     place-items: center;
     flex: 0 0 auto;
     border-radius: 50%;
-    background: conic-gradient(var(--color-social) var(--accuracy), var(--color-surface-soft) 0);
+    background: conic-gradient(
+      var(--ds-color-bg-selected) var(--accuracy),
+      var(--ds-color-bg-surface-soft) 0
+    );
   }
 
   .accuracyRing::before {
@@ -152,7 +155,7 @@
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     content: "";
   }
 
@@ -171,7 +174,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 10px;
     font-weight: 800;
   }
@@ -210,14 +213,14 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 10px;
     font-weight: 800;
   }
 
   .metricHeader svg {
     width: 19px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .metricCard strong {
@@ -229,11 +232,11 @@
   }
 
   .metricSuccess .metricHeader svg {
-    color: var(--color-success);
+    color: var(--ds-color-fg-success);
   }
 
   .metricSuccess strong {
-    color: var(--color-success);
+    color: var(--ds-color-fg-success);
   }
 
   .metricDanger .metricHeader svg {
@@ -246,7 +249,7 @@
 
   .metricSocial .metricHeader svg,
   .metricSocial strong {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   @media (max-width: 700px) {

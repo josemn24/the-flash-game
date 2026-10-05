@@ -311,7 +311,7 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)] selection:bg-[var(--color-brand)] selection:text-[var(--color-text-on-brand)]">
+      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ds-color-bg-canvas)] text-[var(--ds-color-fg-primary)] selection:bg-[var(--ds-color-bg-brand)] selection:text-[var(--ds-color-fg-on-brand)]">
         <SpeedBackground />
         <div className="relative z-10">
           <AnimatePresence mode="wait">

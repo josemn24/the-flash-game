@@ -46,7 +46,7 @@
     min-height: 2.1rem;
     align-items: center;
     padding-inline: 0.15rem;
-    color: color-mix(in srgb, var(--format-accent) 58%, var(--format-muted));
+    color: color-mix(in srgb, var(--ds-color-fg-selected) 58%, var(--format-muted));
     line-height: 1.05;
     text-align: center;
     text-wrap: balance;
@@ -74,21 +74,21 @@
   .choiceButton:hover:not(:disabled),
   .binaryChoice:hover:not(:disabled) {
     border-color: var(--format-hover-border);
-    color: var(--format-accent);
+    color: var(--ds-color-fg-selected);
     background: var(--format-hover-surface);
   }
 
   .choiceButton:focus-visible,
   .binaryChoice:focus-visible,
   .confirmButton:focus-visible {
-    outline: 3px solid var(--format-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 
   .choiceButtonSelected,
   .binaryChoiceSelected {
     border-color: var(--format-selected-border);
-    color: var(--format-accent);
+    color: var(--ds-color-fg-selected);
     background: var(--format-selected-surface);
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--format-accent) 8%, transparent);
   }
@@ -261,17 +261,17 @@
     flex: 1;
     min-width: 0;
     flex-direction: column;
-    --format-ink: var(--color-ink);
-    --format-muted: var(--color-ink-muted);
-    --format-surface: var(--color-surface);
-    --format-surface-raised: var(--color-surface-raised);
-    --format-border: var(--color-border);
-    --format-accent: var(--color-social);
-    --format-focus: var(--color-focus);
-    --format-hover-surface: var(--color-surface-raised);
-    --format-hover-border: var(--color-social);
-    --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
-    --format-selected-border: var(--color-social);
+    --format-ink: var(--ds-color-fg-primary);
+    --format-muted: var(--ds-color-fg-secondary);
+    --format-surface: var(--ds-color-bg-surface);
+    --format-surface-raised: var(--ds-color-bg-surface-raised);
+    --format-border: var(--ds-color-border-default);
+    --format-accent: var(--ds-color-bg-selected);
+    --format-focus: var(--ds-color-focus-ring);
+    --format-hover-surface: var(--ds-color-bg-surface-raised);
+    --format-hover-border: var(--ds-color-border-selected);
+    --format-selected-surface: color-mix(in srgb, var(--ds-color-bg-selected) 10%, transparent);
+    --format-selected-border: var(--ds-color-border-selected);
     gap: var(--space-3);
     margin-top: var(--space-4);
   }
@@ -287,7 +287,7 @@
     border: var(--border-subtle);
     border-radius: var(--radius-card);
     padding: var(--space-2);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-card);
   }
 
@@ -305,7 +305,7 @@
     font-weight: 900;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
   }
 
   .row,
@@ -314,7 +314,7 @@
     border-radius: 0.8rem;
     padding: 0.22rem 0.3rem 0.22rem 0.55rem;
     border: var(--border-subtle);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
   }
 
   .choiceButton,
@@ -333,7 +333,7 @@
       opacity 150ms;
     border: 1px solid rgb(23 23 32 / 17%);
     border-radius: var(--radius-sm);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: 0 1px 2px rgb(23 23 32 / 5%);
   }
 
@@ -341,18 +341,18 @@
   .binaryChoiceSelected,
   .choiceButtonSelected:hover:not(:disabled),
   .binaryChoiceSelected:hover:not(:disabled) {
-    border-color: var(--color-social);
-    color: var(--color-social);
-    background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-social) 14%, transparent);
+    border-color: var(--ds-color-border-selected);
+    color: var(--ds-color-fg-selected);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 15%, var(--ds-color-bg-surface));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--ds-color-bg-selected) 14%, transparent);
   }
 
   .choiceButtonSelected:focus-visible,
   .binaryChoiceSelected:focus-visible {
-    background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 15%, var(--ds-color-bg-surface));
     box-shadow:
-      0 0 0 2px color-mix(in srgb, var(--color-social) 14%, transparent),
-      0 0 0 5px color-mix(in srgb, var(--color-focus) 22%, transparent);
+      0 0 0 2px color-mix(in srgb, var(--ds-color-bg-selected) 14%, transparent),
+      0 0 0 5px color-mix(in srgb, var(--ds-color-focus-ring) 22%, transparent);
   }
 
   .confirmButton {
@@ -363,12 +363,12 @@
     min-height: var(--control-height);
     border: var(--border-flash);
     border-radius: var(--radius-control);
-    color: var(--color-ink);
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
   }
 
   .confirmButton:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--color-brand) 88%, var(--color-surface));
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 88%, var(--ds-color-bg-surface));
   }
 }

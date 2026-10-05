@@ -12,7 +12,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    color: rgb(255 255 255 / 48%);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.7rem;
     font-weight: 850;
@@ -21,7 +21,7 @@
   }
 
   .header strong {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     white-space: nowrap;
   }
 
@@ -60,46 +60,46 @@
 
   .reviewBoard {
     touch-action: auto;
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
     border-radius: var(--radius-card);
-    background-color: var(--color-surface-raised);
+    background-color: var(--ds-color-bg-surface-raised);
     background-image:
       linear-gradient(
         to right,
-        color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
+        color-mix(in srgb, var(--ds-color-bg-inverse) 8%, transparent) 1px,
         transparent 1px
       ),
       linear-gradient(
         to bottom,
-        color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
+        color-mix(in srgb, var(--ds-color-bg-inverse) 8%, transparent) 1px,
         transparent 1px
       ),
       radial-gradient(
         circle at 50% 50%,
-        color-mix(in srgb, var(--color-social) 8%, transparent),
+        color-mix(in srgb, var(--ds-color-bg-selected) 8%, transparent),
         transparent 68%
       );
   }
 
   .reviewBoard::after {
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .reviewBoard .block {
-    border-color: var(--color-border);
-    color: var(--color-ink);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-primary);
     box-shadow: var(--shadow-control);
   }
 
   .reviewBoard .target {
-    border-color: var(--state-movable);
-    color: var(--color-ink);
-    background: var(--color-brand);
+    border-color: var(--ds-color-border-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
 
   .reviewBoard .selected,
   .reviewBoard .block:focus-visible {
-    outline-color: var(--state-focus);
+    outline-color: var(--ds-color-focus-ring);
   }
 
   .exit {
@@ -110,11 +110,11 @@
     width: 1.7rem;
     height: calc(100% / 6);
     place-items: center;
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
     font-family: var(--type-mono);
     font-size: clamp(1.2rem, 6vw, 2rem);
     font-weight: 950;
-    filter: drop-shadow(0 0 0.35rem rgb(var(--color-brand-rgb) / 42%));
+    filter: drop-shadow(0 0 0.35rem color-mix(in srgb, var(--ds-color-bg-brand) 42%, transparent));
   }
 
   .block {
@@ -124,7 +124,7 @@
     place-items: center;
     border-radius: clamp(0.42rem, 1.8vw, 0.72rem);
     border: 2px solid rgb(255 255 255 / 34%);
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     font-family: var(--type-mono);
     font-size: clamp(0.78rem, 4vw, 1.25rem);
     font-weight: 950;
@@ -187,14 +187,14 @@
 
   .selected {
     z-index: 6;
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-border-brand);
     outline-offset: 2px;
     filter: brightness(1.12);
   }
 
   .block:focus-visible {
     z-index: 7;
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 
@@ -207,7 +207,7 @@
   .actions button {
     border: 1px solid rgb(255 255 255 / 14%);
     border-radius: 0.7rem;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     background: rgb(255 255 255 / 6%);
     font-size: 0.72rem;
     font-weight: 850;
@@ -223,12 +223,12 @@
   }
 
   .actions button:hover:not(:disabled) {
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     background: rgb(53 232 255 / 11%);
   }
 
   .actions button:focus-visible {
-    outline: 2px solid var(--color-brand);
+    outline: 2px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
 
@@ -239,7 +239,7 @@
   .instructions {
     max-width: 31rem;
     margin: 0;
-    color: rgb(255 255 255 / 44%);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.75rem;
     line-height: 1.5;
     text-align: center;
@@ -298,57 +298,57 @@
 
   .root .header,
   .root .instructions {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .root .board {
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
     border-radius: var(--radius-card);
-    background-color: var(--color-surface-raised);
+    background-color: var(--ds-color-bg-surface-raised);
     background-image:
       linear-gradient(
         to right,
-        color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
+        color-mix(in srgb, var(--ds-color-bg-inverse) 8%, transparent) 1px,
         transparent 1px
       ),
       linear-gradient(
         to bottom,
-        color-mix(in srgb, var(--color-ink) 8%, transparent) 1px,
+        color-mix(in srgb, var(--ds-color-bg-inverse) 8%, transparent) 1px,
         transparent 1px
       ),
       radial-gradient(
         circle at 50% 50%,
-        color-mix(in srgb, var(--color-social) 8%, transparent),
+        color-mix(in srgb, var(--ds-color-bg-selected) 8%, transparent),
         transparent 68%
       );
   }
   .root .board::after {
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
   .root .block {
-    border-color: var(--color-border);
-    color: var(--color-ink);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-primary);
     box-shadow: var(--shadow-control);
   }
   .root .target {
-    border-color: var(--state-movable);
-    color: var(--color-ink);
-    background: var(--color-brand);
+    border-color: var(--ds-color-border-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
   .root .selected,
   .root .block:focus-visible {
-    outline-color: var(--state-focus);
+    outline-color: var(--ds-color-focus-ring);
   }
   .root .actions button {
-    border-color: var(--color-border);
-    color: var(--color-ink);
-    background: var(--color-surface-raised);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-control);
   }
   .root .actions button:hover:not(:disabled) {
-    border-color: var(--state-focus);
-    background: var(--color-surface);
+    border-color: var(--ds-color-focus-ring);
+    background: var(--ds-color-bg-surface);
   }
   .root .actions button:focus-visible {
-    outline-color: var(--state-focus);
+    outline-color: var(--ds-color-focus-ring);
   }
 }

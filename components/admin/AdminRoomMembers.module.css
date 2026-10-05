@@ -28,9 +28,9 @@
     gap: var(--space-3, 12px);
     margin-top: var(--space-5, 24px);
     padding: var(--space-5, 24px);
-    border: 1px solid var(--color-border, #dedee4);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: var(--radius-card, 20px);
-    background: var(--color-surface, #fff);
+    background: var(--ds-color-bg-surface);
   }
 
   .addForm h3,
@@ -39,7 +39,7 @@
   }
 
   .addForm > p:not(.candidate, .formError, .formSuccess) {
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.86rem;
   }
 
@@ -54,7 +54,7 @@
     display: grid;
     flex: 1;
     gap: var(--space-2, 8px);
-    color: var(--color-ink-muted, #555560);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.82rem;
     font-weight: 700;
   }
@@ -63,10 +63,10 @@
   .addField select,
   .addField textarea {
     width: 100%;
-    border: 1px solid var(--color-border-strong, #b8b8c2);
+    border: 1px solid var(--ds-color-border-strong);
     border-radius: var(--radius-control, 12px);
-    background: var(--color-surface, #fff);
-    color: var(--color-ink, #17171f);
+    background: var(--ds-color-bg-surface);
+    color: var(--ds-color-fg-primary);
     padding: 0.7rem 0.8rem;
     font: inherit;
   }
@@ -76,8 +76,8 @@
     min-height: 40px;
     border: 0;
     border-radius: 999px;
-    background: var(--color-ink, #17171f);
-    color: #fff;
+    background: var(--ds-color-bg-inverse);
+    color: var(--ds-color-fg-on-inverse);
     padding: 0.55rem 1rem;
     font: inherit;
     font-size: 0.82rem;
@@ -87,17 +87,17 @@
 
   .addForm button:disabled {
     cursor: not-allowed;
-    opacity: 0.55;
+    opacity: var(--ds-opacity-disabled);
   }
 
   .candidate,
   .formSuccess {
-    color: var(--color-success, #176d3a);
+    color: var(--ds-color-fg-success);
     font-size: 0.85rem;
   }
 
   .formError {
-    color: var(--color-danger, #a02222);
+    color: var(--ds-color-fg-error);
     font-size: 0.85rem;
   }
 
@@ -107,13 +107,13 @@
   }
 
   .copy h3 {
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-size: 1rem;
   }
 
   .copy p,
   .meta span {
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.8rem;
   }
 

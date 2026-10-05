@@ -165,7 +165,7 @@ for (const viewport of [
         "background-color",
         await page.evaluate(() => {
           const element = document.createElement("span");
-          element.style.color = "var(--color-danger)";
+          element.style.color = "var(--ds-color-bg-error)";
           document.body.append(element);
           const color = getComputedStyle(element).color;
           element.remove();

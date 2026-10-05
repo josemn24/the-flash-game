@@ -86,9 +86,9 @@ export function StartScreen({
       <div className="flex flex-1 flex-col justify-center py-10 sm:py-12">
         <div className="relative z-10">
           <div
-            className={`${styles.eyebrowEntrance} mb-6 inline-flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-[var(--color-brand)] uppercase`}
+            className={`${styles.eyebrowEntrance} mb-6 inline-flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-[var(--ds-color-fg-brand)] uppercase`}
           >
-            <span className="h-px w-8 bg-[var(--color-brand)]" />
+            <span className="h-px w-8 bg-[var(--ds-color-bg-brand)]" />
             Tu próximo desafío
           </div>
 

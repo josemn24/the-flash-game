@@ -5,11 +5,11 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    border: 1px solid var(--color-border-hover);
+    border: 1px solid var(--ds-color-border-hover);
     border-radius: var(--radius-pill);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: 0 2px 0 rgb(23 23 32 / 12%);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-mono);
     font-variant-numeric: tabular-nums;
   }
@@ -20,28 +20,36 @@
   }
 
   .unit {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.7rem;
     font-weight: 800;
   }
 
   .normal {
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
   }
 
   .urgent {
-    border-color: var(--color-danger);
-    background: var(--color-danger);
+    border-color: var(--ds-color-border-error);
+    background: var(--ds-color-bg-error);
   }
 
   .finished {
-    border-color: var(--color-ink);
-    background: var(--color-ink);
-    color: var(--color-text-on-social);
+    border-color: var(--ds-color-border-ink);
+    background: var(--ds-color-bg-inverse);
+    color: var(--ds-color-fg-on-inverse);
+  }
+
+  .normal .unit {
+    color: var(--ds-color-fg-on-brand);
+  }
+
+  .urgent .unit {
+    color: var(--ds-color-fg-on-error);
   }
 
   .finished .unit {
-    color: var(--color-text-on-social);
+    color: var(--ds-color-fg-on-inverse);
   }
 
   .compact {

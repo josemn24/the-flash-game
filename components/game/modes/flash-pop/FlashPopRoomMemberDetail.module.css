@@ -30,13 +30,13 @@
   }
   .profileMeta {
     margin: 6px 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 12px;
   }
   .eyebrow {
     margin: 0;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 800;
@@ -71,7 +71,7 @@
     min-width: 0;
     padding: 10px;
     border-radius: var(--radius-control);
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
   .statValue {
     display: flex;
@@ -82,7 +82,7 @@
   .stats svg {
     flex: 0 0 auto;
     width: 18px;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
   .stats strong,
   .stats time {
@@ -101,15 +101,15 @@
     letter-spacing: -0.02em;
   }
   .stats span {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 11px;
   }
 
   .emptyState {
     padding: var(--space-5);
-    border: 1px dashed var(--color-line-strong);
+    border: 1px dashed var(--ds-color-border-strong);
     border-radius: var(--radius-control);
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
   .emptyState p {
     margin: 0;
@@ -119,7 +119,7 @@
   .emptyState span {
     display: block;
     margin-top: 4px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 13px;
   }
 

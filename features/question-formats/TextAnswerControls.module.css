@@ -7,14 +7,14 @@
   .label {
     display: block;
     margin-bottom: 0.625rem;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.875rem;
     font-weight: 700;
   }
 
   .hint {
     margin-top: 0.75rem;
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.75rem;
     line-height: 1.25rem;
   }
@@ -25,9 +25,9 @@
     border: var(--border-subtle);
     border-radius: var(--radius-control);
     padding: 0.95rem 1rem;
-    color: var(--color-ink);
-    background: var(--color-surface);
-    caret-color: var(--state-focus);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
+    caret-color: var(--ds-color-focus-ring);
     font-size: 1rem;
     font-weight: 700;
     transition:
@@ -36,13 +36,13 @@
   }
 
   .input::placeholder {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
   }
 
   .input:focus {
-    border-color: var(--state-focus);
-    background: var(--color-surface);
-    outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
+    border-color: var(--ds-color-focus-ring);
+    background: var(--ds-color-bg-surface);
+    outline: 3px solid var(--ds-color-focus-ring);
   }
 
   .submitButton {
@@ -51,8 +51,8 @@
     flex: 0 0 auto;
     place-items: center;
     border-radius: var(--radius-control);
-    color: var(--color-ink);
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
   }
 

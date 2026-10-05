@@ -11,7 +11,7 @@
     width: min(100%, 31rem);
     align-items: center;
     justify-content: space-between;
-    color: rgb(255 255 255 / 48%);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.72rem;
     font-weight: 800;
@@ -20,7 +20,7 @@
   }
 
   .header strong {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   .board {
@@ -35,7 +35,7 @@
   }
 
   .boardInteractive:focus-visible {
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     box-shadow: 0 0 0 3px rgb(53 232 255 / 22%);
   }
 
@@ -63,7 +63,7 @@
   }
 
   .exit {
-    background: rgb(var(--color-brand-rgb) / 12%);
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 12%, transparent);
   }
 
   .visited:not(.wall)::after {
@@ -72,7 +72,7 @@
     width: 0.28rem;
     height: 0.28rem;
     border-radius: 50%;
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
     content: "";
   }
 
@@ -81,7 +81,7 @@
     z-index: 4;
     top: 0.22rem;
     left: 0.28rem;
-    color: rgb(255 255 255 / 55%);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: clamp(0.48rem, 1.8vw, 0.65rem);
     font-weight: 900;
@@ -95,9 +95,9 @@
     height: clamp(1.35rem, 6vw, 2.2rem);
     place-items: center;
     border-radius: 50%;
-    color: #090b04;
-    background: var(--color-brand);
-    box-shadow: 0 0 1rem rgb(var(--color-brand-rgb) / 42%);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
+    box-shadow: 0 0 1rem color-mix(in srgb, var(--ds-color-bg-brand) 42%, transparent);
   }
 
   .routeOverlay {
@@ -118,12 +118,12 @@
   }
 
   .playerRoute {
-    stroke: var(--color-brand);
+    stroke: var(--ds-color-fg-brand);
     stroke-width: 3;
   }
 
   .optimalRoute {
-    stroke: var(--color-social);
+    stroke: var(--ds-color-fg-selected);
     stroke-width: 2;
     stroke-dasharray: 5 5;
   }
@@ -145,19 +145,19 @@
     place-items: center;
     border: 1px solid rgb(255 255 255 / 14%);
     border-radius: 0.9rem;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     background: rgb(255 255 255 / 6%);
     font-size: 1.5rem;
     font-weight: 900;
   }
 
   .controls button:hover:not(:disabled) {
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     background: rgb(53 232 255 / 10%);
   }
 
   .controls button:disabled {
-    color: rgb(255 255 255 / 16%);
+    color: var(--ds-color-fg-secondary);
     background: rgb(255 255 255 / 2%);
   }
 
@@ -180,7 +180,7 @@
   .instructions {
     max-width: 31rem;
     margin: 0;
-    color: rgb(255 255 255 / 38%);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.75rem;
     line-height: 1.5;
     text-align: center;
@@ -214,52 +214,52 @@
 
   .root .header,
   .root .instructions {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .root .board {
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
   .root .boardInteractive:focus-visible {
-    border-color: var(--state-focus);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--state-focus) 22%, transparent);
+    border-color: var(--ds-color-focus-ring);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-color-focus-ring) 22%, transparent);
   }
   .root .cell {
-    border-color: color-mix(in srgb, var(--color-ink) 10%, transparent);
-    background: var(--color-surface);
+    border-color: color-mix(in srgb, var(--ds-color-border-ink) 10%, transparent);
+    background: var(--ds-color-bg-surface);
   }
   .root .wall {
-    border-color: var(--color-border);
-    background: var(--color-surface-soft);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-ink) 8%, transparent);
+    border-color: var(--ds-color-border-default);
+    background: var(--ds-color-bg-surface-soft);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ds-color-bg-inverse) 8%, transparent);
   }
   .root .start {
-    background: color-mix(in srgb, var(--color-social) 12%, var(--color-surface));
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 12%, var(--ds-color-bg-surface));
   }
   .root .exit {
-    background: color-mix(in srgb, var(--color-brand) 16%, var(--color-surface));
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 16%, var(--ds-color-bg-surface));
   }
   .root .marker {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .root .player {
-    color: var(--color-ink);
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
   .root .controls button {
-    border-color: var(--color-border);
-    color: var(--color-ink);
-    background: var(--color-surface-raised);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-control);
   }
   .root .controls button:hover:not(:disabled) {
-    border-color: var(--state-focus);
-    background: var(--color-surface);
+    border-color: var(--ds-color-focus-ring);
+    background: var(--ds-color-bg-surface);
   }
   .root .controls button:disabled {
-    color: var(--color-ink-faint);
-    background: var(--color-surface-soft);
+    color: var(--ds-color-fg-disabled);
+    background: var(--ds-color-bg-surface-soft);
   }
 }

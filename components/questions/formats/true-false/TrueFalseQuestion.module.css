@@ -2,25 +2,31 @@
   .root {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    --format-ink: var(--color-ink);
-    --format-muted: var(--color-ink-muted);
-    --format-surface: var(--color-surface-raised);
-    --format-border: var(--color-border);
-    --format-focus: var(--color-focus);
-    --format-accent: var(--color-brand);
-    --format-danger: var(--color-danger);
+    --format-ink: var(--ds-color-fg-primary);
+    --format-muted: var(--ds-color-fg-secondary);
+    --format-surface: var(--ds-color-bg-surface-raised);
+    --format-border: var(--ds-color-border-default);
+    --format-focus: var(--ds-color-focus-ring);
+    --format-accent: var(--ds-color-bg-brand);
+    --format-danger: var(--ds-color-fg-error);
     gap: var(--space-3);
     margin-top: var(--space-5);
   }
 
   .trueButton {
-    --button-accent: var(--color-success);
-    --button-surface: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
+    --button-accent: var(--ds-color-fg-success);
+    --button-bg: var(--ds-color-bg-success);
+    --button-surface: color-mix(
+      in srgb,
+      var(--ds-color-bg-success) 12%,
+      var(--ds-color-bg-surface)
+    );
   }
 
   .falseButton {
     --button-accent: var(--format-danger);
-    --button-surface: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
+    --button-bg: var(--ds-color-bg-error);
+    --button-surface: color-mix(in srgb, var(--ds-color-bg-error) 10%, var(--ds-color-bg-surface));
   }
 
   .button svg,
@@ -30,11 +36,11 @@
 
   .button:hover:not(:disabled) {
     border-color: color-mix(in srgb, var(--button-accent) 52%, var(--format-border));
-    background: color-mix(in srgb, var(--button-accent) 8%, var(--format-surface));
+    background: color-mix(in srgb, var(--button-bg) 8%, var(--format-surface));
   }
 
   .button:focus-visible {
-    outline: 3px solid var(--format-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 

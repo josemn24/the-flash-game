@@ -18,7 +18,7 @@
     gap: 0.45rem;
     border: 1px solid transparent;
     border-radius: 0.7rem;
-    color: rgb(255 255 255 / 0.55);
+    color: var(--ds-color-fg-secondary);
     background: transparent;
     font-size: 0.78rem;
     font-weight: 850;
@@ -28,14 +28,14 @@
     height: 1.15rem;
   }
   .toolbar button kbd {
-    color: rgb(255 255 255 / 0.3);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.58rem;
   }
   .toolbar .toolActive {
-    border-color: rgb(var(--color-brand-rgb) / 0.4);
-    color: #111;
-    background: var(--color-brand);
+    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 40%, transparent);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
   .toolActive kbd {
     color: rgb(0 0 0 / 0.45);
@@ -43,7 +43,7 @@
   .toolbar button:focus-visible,
   .cell:focus-visible {
     z-index: 4;
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
   .board {
@@ -139,8 +139,8 @@
     left: 50%;
     padding: 0.08rem 0.28rem;
     border-radius: 999px;
-    color: #11151a;
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     font-family: var(--type-mono);
     font-size: clamp(0.42rem, 1.8vw, 0.56rem);
     font-weight: 900;
@@ -176,7 +176,7 @@
     right: 0.25rem;
     width: 0.9rem;
     height: 0.9rem;
-    color: #b40018;
+    color: var(--ds-color-fg-error);
     fill: #fff3b0;
     stroke-width: 2.5;
   }
@@ -186,7 +186,7 @@
     z-index: 1;
     width: clamp(2rem, 12vw, 3.35rem);
     height: clamp(2rem, 12vw, 3.35rem);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     filter: drop-shadow(0 3px 1px rgb(255 255 255 / 0.6)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.14));
   }
   .cell {
@@ -212,25 +212,25 @@
     border-radius: inherit;
     animation: conflict-in 180ms ease-out;
     box-shadow:
-      inset 0 0 0 4px var(--state-error),
+      inset 0 0 0 4px var(--ds-color-border-error),
       0 1px 2px rgb(23 23 32 / 16%);
   }
   .progress {
     display: flex;
     justify-content: center;
     gap: 0.7rem;
-    color: rgb(255 255 255 / 0.45);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.7rem;
     font-weight: 800;
     text-transform: uppercase;
   }
   .progress strong {
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
   }
   .instructions {
     margin: 0;
-    color: rgb(255 255 255 / 0.5);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.82rem;
     line-height: 1.5;
     text-align: center;
@@ -269,35 +269,39 @@
   .root .toolbar {
     border: 0;
     border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .root .toolbar button {
     min-height: 44px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
+  }
+
+  .root .toolbar .toolActive kbd {
+    color: var(--ds-color-fg-on-selected);
   }
 
   .root .toolbar .toolActive {
-    border-color: var(--state-selected);
-    color: var(--color-surface);
-    background: var(--state-selected);
+    border-color: var(--ds-color-border-selected);
+    color: var(--ds-color-fg-on-selected);
+    background: var(--ds-color-bg-selected);
   }
 
   .root .board {
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
   .root .progress {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .root .progress strong {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
 
   .root .instructions {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 }

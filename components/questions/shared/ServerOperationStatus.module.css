@@ -13,7 +13,7 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 14px;
     font-weight: 700;
     line-height: 1.4;
@@ -24,8 +24,8 @@
     width: 16px;
     height: 16px;
     flex: 0 0 auto;
-    border: 2px solid color-mix(in srgb, var(--color-social) 28%, transparent);
-    border-top-color: var(--color-social);
+    border: 2px solid color-mix(in srgb, var(--ds-color-border-selected) 28%, transparent);
+    border-top-color: var(--ds-color-border-selected);
     border-radius: var(--radius-pill);
     animation: server-operation-spin 650ms linear infinite;
   }
@@ -37,7 +37,7 @@
 
   .error {
     flex-wrap: wrap;
-    color: var(--color-danger);
+    color: var(--ds-color-fg-error);
   }
 
   @keyframes server-operation-spin {

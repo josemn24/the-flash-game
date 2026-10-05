@@ -79,7 +79,9 @@ export function SurvivalResultScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className={`${styles.eyebrow} text-[var(--color-brand)]`}>Supervivencia: España</p>
+          <p className={`${styles.eyebrow} text-[var(--ds-color-fg-brand)]`}>
+            Supervivencia: España
+          </p>
           <h1 className="mt-3 text-3xl font-black tracking-[-0.045em] text-white sm:text-4xl">
             {message}
           </h1>
@@ -105,7 +107,7 @@ export function SurvivalResultScreen({
             </div>
             <div className="h-2 overflow-hidden rounded-full bg-white/8">
               <motion.div
-                className="h-full rounded-full bg-[var(--color-brand)]"
+                className="h-full rounded-full bg-[var(--ds-color-bg-brand)]"
                 initial={{ width: 0 }}
                 animate={{ width: `${(score / CHALLENGE_MAX_SCORE) * 100}%` }}
                 transition={{ delay: 0.25, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -191,13 +193,13 @@ export function SurvivalResultScreen({
                 {reachedQuestionCount} / {challenge.questions.length}
               </p>
             </div>
-            <span className="ml-auto font-mono text-xs font-bold text-[var(--color-brand)]">
+            <span className="ml-auto font-mono text-xs font-bold text-[var(--ds-color-fg-brand)]">
               {formatTime(totalTime)}
             </span>
           </div>
 
           <div className={styles.tipCard}>
-            <span className="font-mono text-[10px] font-black tracking-widest text-[var(--color-brand)] uppercase">
+            <span className="font-mono text-[10px] font-black tracking-widest text-[var(--ds-color-fg-brand)] uppercase">
               Criterio de desempate
             </span>
             <p className="mt-2 text-sm leading-6 text-white/55">

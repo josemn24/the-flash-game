@@ -12,7 +12,7 @@
 
   .eyebrow {
     margin: 0 0 4px;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 700;
@@ -32,12 +32,12 @@
   .headingIcon {
     width: 24px;
     height: 24px;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   .description {
     margin: var(--space-3) 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 12px;
     line-height: 1.5;
     overflow-wrap: anywhere;
@@ -72,11 +72,11 @@
     align-items: center;
     gap: 12px;
     padding: 12px 14px 12px 12px;
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: var(--radius-card);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-control);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     cursor: pointer;
     text-align: left;
     transition:
@@ -90,32 +90,32 @@
   }
 
   .staticCard:hover {
-    border-color: var(--color-line);
+    border-color: var(--ds-color-border-default);
     transform: none;
   }
 
   .playerCard:hover {
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     transform: translateY(-2px);
   }
 
   .playerCard:focus-visible {
-    outline: 3px solid var(--color-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 
   .playerCard.selected {
-    border-color: var(--color-social);
-    background: var(--color-surface-soft);
+    border-color: var(--ds-color-border-selected);
+    background: var(--ds-color-bg-surface-soft);
     box-shadow:
-      0 0 0 2px var(--color-social),
+      0 0 0 2px var(--ds-color-bg-selected),
       var(--shadow-control);
   }
 
   .cardRank {
     width: 48px;
     flex: 0 0 auto;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-display);
     font-size: 25px;
     font-weight: var(--type-display-strong-weight);
@@ -125,15 +125,15 @@
   }
 
   .playerCard[data-rank="1"] .cardRank {
-    color: var(--color-reward);
+    color: var(--ds-color-fg-reward);
   }
 
   .playerCard[data-rank="2"] .cardRank {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .playerCard[data-rank="3"] .cardRank {
-    color: color-mix(in srgb, var(--color-reward) 55%, #a65a3a);
+    color: color-mix(in srgb, var(--ds-color-fg-reward) 55%, #a65a3a);
   }
 
   .cardName {
@@ -159,7 +159,7 @@
   }
 
   .cardName small {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 11px;
   }
 
@@ -172,14 +172,14 @@
     gap: 6px;
     padding: 7px 10px;
     border-radius: var(--radius-pill);
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
     font-family: var(--type-mono);
   }
 
   .cardPoints svg {
     width: 17px;
     height: 17px;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   .cardPoints strong {
@@ -191,7 +191,7 @@
     width: 18px;
     height: 18px;
     flex: 0 0 auto;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     transition:
       transform 160ms ease,
       color 160ms ease;
@@ -199,18 +199,18 @@
 
   .playerCard:hover .cardArrow,
   .playerCard.selected .cardArrow {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     transform: translateX(2px);
   }
 
   .row.current {
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .rank {
     width: 18px;
     flex: 0 0 auto;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 11px;
     font-weight: 700;
@@ -237,7 +237,7 @@
   }
 
   .name small {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 10px;
   }
 
@@ -248,7 +248,7 @@
     flex: 0 0 auto;
     padding: 6px 10px;
     border-radius: var(--radius-pill);
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
     font-family: var(--type-mono);
     font-size: 13px;
     font-weight: 700;
@@ -257,7 +257,7 @@
   .points svg {
     width: 15px;
     height: 15px;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   .points strong {
@@ -324,13 +324,13 @@
 
   .empty {
     margin: var(--space-5) 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 13px;
   }
 
   .pendingSummary {
     margin: var(--space-3) 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 11px;
     font-weight: 700;

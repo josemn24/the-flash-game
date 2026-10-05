@@ -15,7 +15,7 @@
   .timeCard,
   .tipCard {
     border: var(--border-subtle);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     backdrop-filter: blur(18px);
   }
   .scorePanel {
@@ -56,7 +56,7 @@
     width: 12rem;
     height: 7rem;
     border-radius: 999px;
-    background: rgb(var(--color-brand-rgb) / 0.1);
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 10%, transparent);
     filter: blur(45px);
   }
   .resultsStats {
@@ -82,7 +82,7 @@
     border-radius: 999px;
     background:
       radial-gradient(circle at center, #121418 61%, transparent 63%),
-      conic-gradient(var(--color-brand) var(--accuracy), rgba(255, 255, 255, 0.07) 0);
+      conic-gradient(var(--ds-color-bg-brand) var(--accuracy), rgba(255, 255, 255, 0.07) 0);
   }
   .accuracyRing span {
     font-family: var(--type-display);
@@ -102,7 +102,7 @@
   }
   .resultStatCard strong {
     margin-top: 0.4rem;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     font-family: var(--type-display);
     font-size: 1.7rem;
     font-weight: var(--type-display-strong-weight);
@@ -113,13 +113,13 @@
     font-weight: 700;
   }
   .resultStatCorrect {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
   .resultStatWrong {
-    color: var(--color-danger);
+    color: var(--ds-color-fg-error);
   }
   .resultStatPartial {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
   .approximationMark {
     font-family: var(--type-mono);

@@ -15,7 +15,7 @@
     gap: var(--space-2);
     padding: 0 var(--space-6);
     border-radius: var(--radius-control);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-size: 15px;
     font-weight: 800;
     line-height: 1;
@@ -38,14 +38,15 @@
   }
 
   .primary {
+    color: var(--ds-color-fg-on-brand);
     border: var(--border-flash);
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
   }
 
   .secondary {
     border: var(--border-subtle);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: 0 3px 10px rgb(35 30 70 / 10%);
   }
 
@@ -54,12 +55,12 @@
   }
 
   .primary:hover:not(:disabled):not([aria-disabled="true"]) {
-    background: var(--color-brand-hover);
+    background: var(--ds-color-bg-brand-hover);
     box-shadow: 0 5px 0 rgb(23 23 32 / 18%);
   }
 
   .secondary:hover:not(:disabled):not([aria-disabled="true"]) {
-    border-color: var(--color-border-hover);
+    border-color: var(--ds-color-border-hover);
     box-shadow: 0 5px 14px rgb(35 30 70 / 13%);
   }
 
@@ -71,7 +72,7 @@
 
   .button:focus-visible,
   .iconButton:focus-visible {
-    outline: 3px solid var(--color-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 
@@ -79,7 +80,7 @@
   .button[aria-disabled="true"],
   .iconButton:disabled {
     cursor: not-allowed;
-    opacity: var(--color-disabled-opacity);
+    opacity: var(--ds-opacity-disabled);
     box-shadow: none;
   }
 
@@ -137,14 +138,14 @@
 
   .iconSurface {
     border: var(--border-subtle);
-    background: var(--color-surface);
-    color: var(--color-ink);
+    background: var(--ds-color-bg-surface);
+    color: var(--ds-color-fg-primary);
   }
 
   .iconSocial {
-    border: 2px solid var(--color-social);
-    background: var(--color-social);
-    color: var(--color-text-on-social);
+    border: 2px solid var(--ds-color-border-selected);
+    background: var(--ds-color-bg-selected);
+    color: var(--ds-color-fg-on-selected);
   }
 
   .iconButton:hover:not(:disabled) {
@@ -166,7 +167,7 @@
     gap: 6px;
     padding: 6px 10px;
     border-radius: var(--radius-pill);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 700;
@@ -180,38 +181,41 @@
   }
 
   .data {
-    border: 1px solid var(--color-overlay-border);
-    background: var(--color-overlay-ink);
-    color: var(--color-text-on-social);
+    border: 1px solid var(--ds-color-border-overlay);
+    background: var(--ds-color-bg-overlay);
+    color: var(--ds-color-fg-on-inverse);
     backdrop-filter: blur(8px);
     font-variant-numeric: tabular-nums;
   }
 
   .flashPoints {
-    background: var(--color-reward);
+    color: var(--ds-color-fg-on-reward);
+    background: var(--ds-color-bg-reward);
   }
 
   .neutral {
     border: var(--border-subtle);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
   }
 
   .social {
-    background: var(--color-social);
-    color: var(--color-text-on-social);
+    background: var(--ds-color-bg-selected);
+    color: var(--ds-color-fg-on-selected);
   }
 
   .info {
-    background: var(--color-info);
+    color: var(--ds-color-fg-on-info);
+    background: var(--ds-color-bg-info);
   }
 
   .success {
-    background: var(--color-success);
-    color: var(--color-text-on-success);
+    background: var(--ds-color-bg-success);
+    color: var(--ds-color-fg-on-success);
   }
 
   .danger {
-    background: var(--color-danger);
+    color: var(--ds-color-fg-on-error);
+    background: var(--ds-color-bg-error);
   }
 }
 

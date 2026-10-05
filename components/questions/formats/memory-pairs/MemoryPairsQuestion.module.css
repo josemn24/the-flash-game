@@ -10,7 +10,7 @@
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 0.6rem 1rem;
-    color: rgba(255, 255, 255, 0.58);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.68rem;
     font-weight: var(--type-display-strong-weight);
@@ -18,11 +18,11 @@
     text-transform: uppercase;
   }
   .header strong {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
   .meta {
     justify-content: flex-start;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.62rem;
   }
   .grid {
@@ -38,21 +38,21 @@
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 0.95rem;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--ds-color-fg-secondary);
     background:
       linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015)),
-      var(--color-surface-soft);
+      var(--ds-color-bg-surface-soft);
     transition:
       border-color 150ms,
       background 150ms,
       transform 150ms;
   }
   .tile:hover:not(:disabled) {
-    border-color: rgb(var(--color-brand-rgb) / 0.55);
+    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 55%, transparent);
     transform: translateY(-1px);
   }
   .tile:focus-visible {
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
   .tileRevealed {
@@ -60,8 +60,8 @@
     background: rgba(53, 232, 255, 0.08);
   }
   .tileMatched {
-    border-color: rgb(var(--color-brand-rgb) / 0.78);
-    background: rgb(var(--color-brand-rgb) / 0.1);
+    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 78%, transparent);
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 10%, transparent);
   }
   .tileMismatched {
     border-color: rgba(255, 93, 100, 0.78);
@@ -96,7 +96,7 @@
     line-height: 1.15;
   }
   .tileBack {
-    color: rgba(255, 255, 255, 0.24);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-display);
     font-size: 1.8rem;
     font-weight: var(--type-display-strong-weight);
@@ -109,10 +109,10 @@
     height: 1rem;
   }
   .tileMatched .stateIcon {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
   .tileMismatched .stateIcon {
-    color: #ff858a;
+    color: var(--ds-color-fg-error);
   }
 
   @media (min-width: 640px) {
@@ -132,39 +132,39 @@
 
   .root .header,
   .root .meta {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .root .tile {
-    border-color: var(--color-border);
-    color: var(--color-ink);
-    background: var(--color-surface-raised);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-control);
   }
   .root .tile:hover:not(:disabled) {
-    border-color: var(--state-focus);
+    border-color: var(--ds-color-focus-ring);
   }
   .root .tile:focus-visible {
-    outline-color: var(--state-focus);
+    outline-color: var(--ds-color-focus-ring);
   }
   .root .tileRevealed {
-    border-color: var(--state-selected);
-    background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+    border-color: var(--ds-color-border-selected);
+    background: var(--ds-color-bg-selected-soft);
   }
   .root .tileMatched {
-    border-color: var(--state-correct);
-    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+    border-color: var(--ds-color-border-success);
+    background: var(--ds-color-bg-success-soft);
   }
   .root .tileMismatched {
-    border-color: var(--state-error);
-    background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
+    border-color: var(--ds-color-border-error);
+    background: var(--ds-color-bg-error-soft);
   }
   .root .tileBack {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
   }
   .root .tileMatched .stateIcon {
-    color: var(--state-correct);
+    color: var(--ds-color-fg-success);
   }
   .root .tileMismatched .stateIcon {
-    color: var(--state-error);
+    color: var(--ds-color-fg-error);
   }
 }

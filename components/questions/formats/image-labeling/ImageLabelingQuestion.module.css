@@ -54,7 +54,7 @@
     flex: 0 0 auto;
     place-items: center;
     border-radius: 999px;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     background: #111419;
     font-family: var(--type-mono);
     font-size: 0.55rem;
@@ -91,7 +91,7 @@
     height: 1.15rem;
     place-items: center;
     border-radius: 999px;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     background: #111419;
     font-family: var(--type-mono);
     font-size: 0.55rem;
@@ -122,8 +122,8 @@
     place-items: center;
     border: 0.25rem solid white;
     border-radius: 999px;
-    color: #111419;
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow:
       0 0 0 0.3rem rgba(13, 16, 20, 0.72),
       0 0.4rem 1.2rem rgba(0, 0, 0, 0.38);
@@ -140,12 +140,12 @@
   .anchor:hover:not(:disabled),
   .anchor:focus-visible,
   .anchorSelected {
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
 
   .anchorAssigned {
-    border-color: var(--color-brand);
+    border-color: var(--ds-color-border-brand);
     background: #f5ffc4;
   }
 
@@ -171,14 +171,14 @@
   .textForm > label {
     display: block;
     margin-bottom: 0.65rem;
-    color: rgba(255, 255, 255, 0.65);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.75rem;
     font-weight: 800;
   }
 
   .textForm > p {
     margin-top: 0.65rem;
-    color: rgba(255, 255, 255, 0.36);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.68rem;
   }
 
@@ -190,7 +190,7 @@
   }
 
   .labelHeading h3 {
-    color: rgba(255, 255, 255, 0.52);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.62rem;
     font-weight: 900;
@@ -203,7 +203,7 @@
     align-items: center;
     gap: 0.25rem;
     border: 0;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--ds-color-fg-secondary);
     background: transparent;
     font-size: 0.62rem;
     font-weight: 800;
@@ -230,7 +230,7 @@
     border: 1px solid rgba(255, 255, 255, 0.11);
     border-radius: 0.7rem;
     padding: 0.45rem 0.6rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--ds-color-fg-secondary);
     background: rgba(255, 255, 255, 0.045);
     font-size: 0.7rem;
     font-weight: 850;
@@ -238,13 +238,13 @@
 
   .labelBank button:hover:not(:disabled),
   .labelBank button:focus-visible {
-    border-color: var(--color-brand);
-    outline: 2px solid rgb(var(--color-brand-rgb) / 0.25);
+    border-color: var(--ds-color-border-brand);
+    outline: 2px solid var(--ds-color-focus-ring);
   }
 
   .labelBank .labelAssigned {
     border-color: rgba(67, 222, 183, 0.45);
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     background: rgba(67, 222, 183, 0.09);
   }
 
@@ -269,14 +269,14 @@
   }
 
   .assignmentList span {
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.54rem;
     font-weight: 800;
     text-transform: uppercase;
   }
 
   .assignmentList strong {
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.65rem;
   }
 
@@ -288,14 +288,14 @@
     gap: 0.55rem;
     border: 0;
     border-radius: 0.75rem;
-    color: var(--color-ink);
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     font-size: 0.78rem;
     font-weight: 900;
   }
 
   .confirmButton:focus-visible {
-    outline: 3px solid white;
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
 
@@ -310,36 +310,36 @@
   }
 
   .challenge .surface {
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
   .challenge .anchor,
   .challenge .reviewAnchor {
-    border-color: var(--color-border);
-    color: var(--color-ink);
-    background: var(--color-surface);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-control);
   }
   .challenge .anchor > span,
   .challenge .reviewAnchor > span {
-    color: var(--color-surface);
-    background: var(--color-social);
+    color: var(--ds-color-fg-on-selected);
+    background: var(--ds-color-bg-selected);
   }
   .challenge .reviewCorrect {
-    border-color: var(--state-correct);
-    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+    border-color: var(--ds-color-border-success);
+    background: color-mix(in srgb, var(--ds-color-bg-success) 12%, var(--ds-color-bg-surface));
   }
   .challenge .reviewWrong {
-    border-color: var(--state-error);
-    background: color-mix(in srgb, var(--state-error) 10%, var(--color-surface));
+    border-color: var(--ds-color-border-error);
+    background: var(--ds-color-bg-error-soft);
   }
   .challenge .singleTarget {
-    border-color: var(--color-surface);
-    color: var(--color-ink);
+    border-color: var(--ds-color-border-on-inverse);
+    color: var(--ds-color-fg-primary);
     box-shadow:
-      0 0 0 0.3rem color-mix(in srgb, var(--color-ink) 22%, transparent),
+      0 0 0 0.3rem color-mix(in srgb, var(--ds-color-bg-inverse) 22%, transparent),
       var(--shadow-card);
   }
   .challenge .textForm > label,
@@ -347,35 +347,35 @@
   .challenge .labelHeading button,
   .challenge .assignmentList span,
   .challenge .textForm > p {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .challenge .labelBank button {
-    border-color: var(--color-border);
-    color: var(--color-ink);
-    background: var(--color-surface-raised);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-control);
   }
   .challenge .labelBank button:hover:not(:disabled),
   .challenge .labelBank button:focus-visible {
-    border-color: var(--state-focus);
-    outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
+    border-color: var(--ds-color-focus-ring);
+    outline: 3px solid var(--ds-color-focus-ring);
   }
   .challenge .labelBank .labelAssigned {
-    border-color: var(--state-correct);
-    color: var(--color-ink);
-    background: color-mix(in srgb, var(--state-correct) 12%, var(--color-surface));
+    border-color: var(--ds-color-border-success);
+    color: var(--ds-color-fg-primary);
+    background: color-mix(in srgb, var(--ds-color-bg-success) 12%, var(--ds-color-bg-surface));
   }
   .challenge .assignmentList li {
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
   .challenge .assignmentList strong {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   .challenge .confirmButton {
     border-radius: var(--radius-control);
     box-shadow: var(--shadow-control);
   }
   .challenge .confirmButton:focus-visible {
-    outline-color: var(--state-focus);
+    outline-color: var(--ds-color-focus-ring);
   }
 }

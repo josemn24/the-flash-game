@@ -20,7 +20,7 @@
   }
 
   .eyebrow {
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     font-size: 10px;
     font-weight: 900;
     letter-spacing: 0.12em;
@@ -29,7 +29,7 @@
 
   .heading h2 {
     margin: var(--space-2, 8px) 0 0;
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-display, sans-serif);
     font-size: clamp(2.25rem, 5vw, 4rem);
     letter-spacing: -0.055em;
@@ -56,19 +56,19 @@
   .entryLink:hover .card,
   .entryLink:focus-visible .card {
     transform: translateY(-2px);
-    outline: 2px solid var(--color-social, #6556d9);
+    outline: 2px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 
   .index {
-    color: var(--color-social, #6556d9);
+    color: var(--ds-color-fg-selected);
     font-size: 12px;
     font-weight: 900;
   }
 
   .card h3 {
     margin: var(--space-8, 40px) 0 0;
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-display, sans-serif);
     font-size: clamp(1.8rem, 4vw, 3rem);
     letter-spacing: -0.055em;
@@ -77,7 +77,7 @@
 
   .slug,
   .meta {
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     font-size: 12px;
   }
 
@@ -96,12 +96,12 @@
 
   .empty h3 {
     margin: 0;
-    color: var(--color-ink, #17171f);
+    color: var(--ds-color-fg-primary);
   }
 
   .empty p {
     margin: var(--space-3, 12px) 0 0;
-    color: var(--color-ink-muted, #777783);
+    color: var(--ds-color-fg-secondary);
     line-height: 1.6;
   }
 

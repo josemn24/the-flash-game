@@ -9,11 +9,11 @@
     font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.42);
+    color: var(--ds-color-fg-secondary);
   }
 
   .scoreRow strong {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
 
   .clues {
@@ -38,14 +38,14 @@
     font-size: 0.7rem;
     font-weight: 900;
     letter-spacing: 0.08em;
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
 
   .clues p {
     font-size: 0.82rem;
     font-weight: 650;
     line-height: 1.35rem;
-    color: rgba(255, 255, 255, 0.76);
+    color: var(--ds-color-fg-secondary);
   }
 
   .actions {
@@ -55,24 +55,24 @@
 
   .revealButton {
     min-height: 3rem;
-    border: 1px solid rgb(var(--color-brand-rgb) / 0.22);
+    border: 1px solid color-mix(in srgb, var(--ds-color-bg-brand) 22%, transparent);
     border-radius: 0.75rem;
     padding: 0.65rem 0.9rem;
-    background: rgb(var(--color-brand-rgb) / 0.055);
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 5.5%, transparent);
     font-size: 0.76rem;
     font-weight: 850;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
   }
 
   .revealButton span {
     margin-left: 0.35rem;
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
 
   .revealButton:hover:not(:disabled),
   .revealButton:focus-visible {
-    border-color: rgb(var(--color-brand-rgb) / 0.55);
-    outline: 2px solid rgb(var(--color-brand-rgb) / 0.16);
+    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 55%, transparent);
+    outline: 2px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
 
@@ -89,7 +89,7 @@
     border-radius: 0.75rem;
     font-size: 0.72rem;
     font-weight: 750;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--ds-color-fg-secondary);
   }
 
   .answerPanel {
@@ -104,7 +104,7 @@
     margin-bottom: 0.55rem;
     font-size: 0.74rem;
     font-weight: 800;
-    color: rgba(255, 255, 255, 0.64);
+    color: var(--ds-color-fg-secondary);
   }
 
   .answerRow {
@@ -122,13 +122,13 @@
     background: rgba(255, 255, 255, 0.045);
     font-size: 0.9rem;
     font-weight: 700;
-    color: white;
-    caret-color: var(--color-brand);
+    color: var(--ds-color-fg-on-inverse);
+    caret-color: var(--ds-color-fg-brand);
   }
 
   .answerRow input:focus-visible {
-    border-color: rgb(var(--color-brand-rgb) / 0.6);
-    outline: 2px solid rgb(var(--color-brand-rgb) / 0.16);
+    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 60%, transparent);
+    outline: 2px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
 
@@ -138,12 +138,12 @@
     place-items: center;
     border: 0;
     border-radius: 0.72rem;
-    color: var(--color-ink);
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
 
   .answerRow button:focus-visible {
-    outline: 2px solid rgb(var(--color-brand-rgb) / 0.42);
+    outline: 2px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
 
@@ -157,7 +157,7 @@
     font-size: 0.64rem;
     font-weight: 650;
     line-height: 1rem;
-    color: rgba(255, 255, 255, 0.35);
+    color: var(--ds-color-fg-secondary);
   }
 
   @media (min-width: 640px) {
@@ -183,99 +183,103 @@
   }
 
   .challenge .scoreRow {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .challenge .scoreRow strong {
-    color: var(--state-selected);
+    color: var(--ds-color-fg-selected);
   }
 
   .challenge .clues li {
     border-color: var(--border-subtle);
     border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: none;
   }
 
   .challenge .clues li > span {
-    color: var(--state-focus);
+    color: var(--ds-color-focus-ring);
   }
 
   .challenge .clues p {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
 
   .challenge .revealButton {
-    border-color: color-mix(in srgb, var(--state-selected) 55%, var(--color-border));
+    border-color: color-mix(
+      in srgb,
+      var(--ds-color-border-selected) 55%,
+      var(--ds-color-border-default)
+    );
     border-radius: var(--radius-control);
-    color: var(--state-focus);
-    background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+    color: var(--ds-color-focus-ring);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 10%, var(--ds-color-bg-surface));
     box-shadow: var(--shadow-control);
   }
 
   .challenge .revealButton span {
-    color: var(--state-focus);
+    color: var(--ds-color-focus-ring);
   }
 
   .challenge .revealButton:hover:not(:disabled),
   .challenge .revealButton:focus-visible {
-    border-color: var(--state-selected);
-    background: color-mix(in srgb, var(--state-selected) 16%, var(--color-surface));
-    outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
+    border-color: var(--ds-color-border-selected);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 16%, var(--ds-color-bg-surface));
+    outline: 3px solid var(--ds-color-focus-ring);
   }
 
   .challenge .allRevealed {
     border-color: var(--border-subtle);
     border-radius: var(--radius-control);
-    color: var(--color-ink-muted);
-    background: var(--color-surface-raised);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .challenge .answerPanel {
-    border-color: color-mix(in srgb, var(--state-selected) 22%, transparent);
+    border-color: color-mix(in srgb, var(--ds-color-border-selected) 22%, transparent);
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .challenge .answerPanel label {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .challenge .answerRow input {
     border-color: var(--border-subtle);
-    color: var(--color-ink);
-    background: var(--color-surface);
-    caret-color: var(--state-focus);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
+    caret-color: var(--ds-color-focus-ring);
   }
 
   .challenge .answerRow input:focus-visible {
-    border-color: var(--state-focus);
-    outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
+    border-color: var(--ds-color-focus-ring);
+    outline: 3px solid var(--ds-color-focus-ring);
   }
 
   .challenge .answerRow button {
     border: 0;
-    color: var(--color-ink);
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
   }
 
   .challenge .answerRow button:hover:not(:disabled) {
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
   }
 
   .challenge .answerRow button:focus-visible {
-    outline: 3px solid color-mix(in srgb, var(--state-focus) 18%, transparent);
+    outline: 3px solid var(--ds-color-focus-ring);
   }
 
   .challenge .answerRow button:disabled {
-    color: var(--color-ink-muted);
-    background: var(--color-surface-soft);
+    color: var(--ds-color-fg-disabled);
+    background: var(--ds-color-bg-surface-soft);
     box-shadow: none;
     opacity: 1;
   }
 
   .challenge .answerPanel > p {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 }

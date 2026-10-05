@@ -76,8 +76,8 @@ export function ResultScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className={`${styles.eyebrow} text-[var(--color-brand)]`}>Desafío completado</p>
-          <h1 className="mt-3 text-3xl font-black tracking-[-0.045em] text-[var(--color-ink)] sm:text-4xl">
+          <p className={`${styles.eyebrow} text-[var(--ds-color-fg-brand)]`}>Desafío completado</p>
+          <h1 className="mt-3 text-3xl font-black tracking-[-0.045em] text-[var(--ds-color-fg-primary)] sm:text-4xl">
             {message}
           </h1>
 
@@ -94,15 +94,15 @@ export function ResultScreen({
           </div>
 
           <div className="mb-7">
-            <div className="mb-2 flex justify-between font-mono text-[10px] font-bold tracking-wider text-[var(--color-ink-faint)] uppercase">
+            <div className="mb-2 flex justify-between font-mono text-[10px] font-bold tracking-wider text-[var(--ds-color-fg-secondary)] uppercase">
               <span>Rendimiento</span>
               <span>
                 {score} / {maxScore}
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-[var(--color-surface-soft)]">
+            <div className="h-2 overflow-hidden rounded-full bg-[var(--ds-color-bg-surface-soft)]">
               <motion.div
-                className="h-full rounded-full bg-[var(--color-brand)]"
+                className="h-full rounded-full bg-[var(--ds-color-bg-brand)]"
                 initial={{ width: 0 }}
                 animate={{ width: `${(score / maxScore) * 100}%` }}
                 transition={{ delay: 0.25, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -136,8 +136,8 @@ export function ResultScreen({
         >
           <div className={styles.accuracyCard}>
             <div>
-              <p className={`${styles.eyebrow} text-[var(--color-ink-muted)]`}>Precisión</p>
-              <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
+              <p className={`${styles.eyebrow} text-[var(--ds-color-fg-secondary)]`}>Precisión</p>
+              <p className="mt-2 text-sm text-[var(--ds-color-fg-secondary)]">
                 {partial > 0
                   ? `${correct} correctas · ${partial} aproximada${partial === 1 ? "" : "s"}`
                   : `Has acertado ${correct} de ${challenge.questions.length}`}
@@ -178,26 +178,26 @@ export function ResultScreen({
 
           <div className={styles.timeCard}>
             <div
-              className={`${styles.ruleIcon} bg-[var(--color-surface-soft)] text-[var(--color-ink-muted)]`}
+              className={`${styles.ruleIcon} bg-[var(--ds-color-bg-surface-soft)] text-[var(--ds-color-fg-secondary)]`}
             >
               <ClockIcon className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-xs font-bold text-[var(--color-ink-faint)]">Tiempo total</p>
-              <p className="mt-0.5 text-xl font-black text-[var(--color-ink)]">
+              <p className="text-xs font-bold text-[var(--ds-color-fg-secondary)]">Tiempo total</p>
+              <p className="mt-0.5 text-xl font-black text-[var(--ds-color-fg-primary)]">
                 {formatTime(totalTime)}
               </p>
             </div>
-            <span className="ml-auto font-mono text-xs font-bold text-[var(--color-brand)]">
+            <span className="ml-auto font-mono text-xs font-bold text-[var(--ds-color-fg-brand)]">
               SPRINT 01
             </span>
           </div>
 
           <div className={styles.tipCard}>
-            <span className="font-mono text-[10px] font-black tracking-widest text-[var(--color-brand)] uppercase">
+            <span className="font-mono text-[10px] font-black tracking-widest text-[var(--ds-color-fg-brand)] uppercase">
               Consejo flash
             </span>
-            <p className="mt-2 text-sm leading-6 text-[var(--color-ink-muted)]">
+            <p className="mt-2 text-sm leading-6 text-[var(--ds-color-fg-secondary)]">
               La velocidad suma, pero solo después de acertar. Lee una vez y confía en tu primera
               intuición.
             </p>

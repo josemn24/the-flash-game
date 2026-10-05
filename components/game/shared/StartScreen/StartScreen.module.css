@@ -90,8 +90,8 @@
     color: rgba(255, 255, 255, 0.46);
   }
   .heroTitleAccent {
-    color: var(--color-brand);
-    text-shadow: 0 0 45px rgb(var(--color-brand-rgb) / 0.2);
+    color: var(--ds-color-fg-brand);
+    text-shadow: 0 0 45px color-mix(in srgb, var(--ds-color-bg-brand) 20%, transparent);
     transform: skewX(-4deg);
   }
   .stageSelector {
@@ -126,7 +126,7 @@
     border: 1px solid rgba(53, 232, 255, 0.22);
     border-radius: 1.35rem;
     padding: 1.25rem 1.4rem;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     text-decoration: none;
     background: linear-gradient(120deg, rgba(53, 232, 255, 0.08), rgba(16, 18, 22, 0.96));
     transition:
@@ -139,7 +139,7 @@
   }
   .libraryCard small {
     display: block;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: 0.62rem;
     font-weight: 900;
@@ -166,7 +166,7 @@
     flex: 0 0 auto;
     align-items: center;
     gap: 0.4rem;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-size: 0.75rem;
     font-weight: 900;
   }
@@ -177,7 +177,7 @@
     }
   }
   .stageSelectCard:hover {
-    border-color: rgb(var(--color-brand-rgb) / 0.48);
+    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 48%, transparent);
     background: linear-gradient(120deg, rgba(32, 36, 37, 0.98), rgba(11, 13, 12, 0.98));
     transform: translateY(-2px);
   }
@@ -195,8 +195,8 @@
     width: 5.5rem;
     flex: 0 0 auto;
     place-items: center;
-    color: rgb(var(--color-brand-rgb) / 0.84);
-    background: rgb(var(--color-brand-rgb) / 0.055);
+    color: var(--ds-color-fg-brand-inverse);
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 5.5%, transparent);
     font-family: var(--type-display);
     font-size: 2.55rem;
     font-weight: var(--type-display-strong-weight);
@@ -212,7 +212,7 @@
   }
   .stageSelectContent strong {
     margin-top: 0.75rem;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     font-family: var(--type-display);
     font-size: 1.8rem;
     font-weight: var(--type-display-soft-weight);
@@ -240,7 +240,7 @@
     gap: 0.35rem;
     margin-top: auto;
     padding-top: 0.8rem;
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
     font-size: 0.72rem;
     font-weight: 900;
   }

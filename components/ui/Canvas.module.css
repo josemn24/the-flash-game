@@ -6,11 +6,11 @@
     background:
       radial-gradient(
         circle at 8% 12%,
-        color-mix(in srgb, var(--color-social) 10%, transparent),
+        color-mix(in srgb, var(--ds-color-bg-selected) 10%, transparent),
         transparent 32%
       ),
-      var(--color-canvas);
-    color: var(--color-ink);
+      var(--ds-color-bg-canvas);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-ui);
   }
 
@@ -19,7 +19,7 @@
     inset: 0;
     pointer-events: none;
     opacity: 0.28;
-    background-image: radial-gradient(var(--color-social) 0.7px, transparent 0.7px);
+    background-image: radial-gradient(var(--ds-color-bg-selected) 0.7px, transparent 0.7px);
     background-size: 18px 18px;
     mask-image: linear-gradient(to bottom, black, transparent 68%);
   }

@@ -5,7 +5,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    color: rgb(255 255 255 / 48%);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.72rem;
     font-weight: 800;
@@ -14,7 +14,7 @@
   }
 
   .header strong {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   .board {
@@ -31,7 +31,7 @@
   }
 
   .board:focus-visible {
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     box-shadow: 0 0 0 3px rgb(53 232 255 / 22%);
   }
 
@@ -42,7 +42,7 @@
     place-items: center;
     aspect-ratio: 1;
     border: 1px solid rgb(255 255 255 / 5%);
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     background:
       radial-gradient(circle at 50% 50%, rgb(255 255 255 / 5%) 0 0.08rem, transparent 0.09rem),
       rgb(255 255 255 / 3%);
@@ -65,7 +65,7 @@
   }
 
   .cellButton:focus-visible {
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: -4px;
   }
 
@@ -79,9 +79,10 @@
 
   .active.endpoint .symbol {
     box-shadow:
-      inset 0 0 0 2px color-mix(in srgb, var(--pair-color, var(--color-social)) 92%, #071011),
-      0 0 0 3px color-mix(in srgb, var(--pair-color, var(--color-social)) 28%, transparent),
-      0 0 1.2rem color-mix(in srgb, var(--pair-color, var(--color-social)) 45%, transparent);
+      inset 0 0 0 2px
+        color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 92%, #071011),
+      0 0 0 3px color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 28%, transparent),
+      0 0 1.2rem color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 45%, transparent);
   }
 
   .symbol {
@@ -93,11 +94,13 @@
     place-items: center;
     border-radius: 999px;
     color: #071011;
-    background: color-mix(in srgb, var(--pair-color, var(--color-social)) 76%, white);
+    background: color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 76%, white);
     font-size: clamp(0.8rem, 3vw, 1.1rem);
     box-shadow:
-      inset 0 0 0 2px color-mix(in srgb, var(--pair-color, var(--color-social)) 92%, #071011),
-      0 0 0.75rem color-mix(in srgb, var(--pair-color, var(--color-social)) 32%, transparent);
+      inset 0 0 0 2px
+        color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 92%, #071011),
+      0 0 0.75rem
+        color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 32%, transparent);
   }
 
   .routeOverlay {
@@ -112,12 +115,13 @@
 
   .routeLine {
     fill: none;
-    stroke: color-mix(in srgb, var(--pair-color, var(--color-social)) 86%, white);
+    stroke: color-mix(in srgb, var(--pair-color, var(--ds-color-fg-selected)) 86%, white);
     stroke-linecap: round;
     stroke-linejoin: round;
     stroke-width: 0.28;
     filter: drop-shadow(
-      0 0 0.08rem color-mix(in srgb, var(--pair-color, var(--color-social)) 54%, transparent)
+      0 0 0.08rem
+        color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 54%, transparent)
     );
   }
 
@@ -132,14 +136,14 @@
     border: 1px solid rgb(255 255 255 / 14%);
     border-radius: 0.75rem;
     padding: 0.65rem 0.85rem;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     background: rgb(255 255 255 / 6%);
     font-size: 0.78rem;
     font-weight: 850;
   }
 
   .actions button:hover:not(:disabled) {
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     background: rgb(53 232 255 / 10%);
   }
 
@@ -151,7 +155,7 @@
   .instructions {
     max-width: 31rem;
     margin: 0;
-    color: rgb(255 255 255 / 38%);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.75rem;
     line-height: 1.5;
     text-align: center;
@@ -161,7 +165,7 @@
     min-height: 1.25rem;
     max-width: 31rem;
     margin: -0.35rem 0 0;
-    color: rgb(255 255 255 / 58%);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.75rem;
     line-height: 1.4;
     text-align: center;
@@ -185,31 +189,31 @@
   }
 
   .root .header {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .root .header strong {
-    color: var(--state-selected);
+    color: var(--ds-color-fg-selected);
   }
 
   .root .board {
     border-color: rgb(23 23 32 / 16%);
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
   .root .board:focus-visible {
-    border-color: var(--state-focus);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--state-focus) 22%, transparent);
+    border-color: var(--ds-color-focus-ring);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ds-color-focus-ring) 22%, transparent);
   }
 
   .root .cell {
     border-color: rgb(23 23 32 / 8%);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     background:
       radial-gradient(circle at 50% 50%, rgb(23 23 32 / 6%) 0 0.08rem, transparent 0.09rem),
-      var(--color-surface);
+      var(--ds-color-bg-surface);
   }
 
   .root .empty .cellButton,
@@ -219,13 +223,13 @@
 
   .root .instructions,
   .root .statusText {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .root .actions button {
     min-height: 44px;
     border-color: var(--border-subtle);
-    color: var(--color-ink);
-    background: var(--color-surface-raised);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-raised);
   }
 }

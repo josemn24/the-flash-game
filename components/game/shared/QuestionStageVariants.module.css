@@ -6,7 +6,7 @@
 
   .questionIndicator {
     margin: 0;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 800;
@@ -15,12 +15,12 @@
   }
 
   .questionIndicator span {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .pyramidLevelIndicator {
     margin: 0;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 800;
@@ -29,7 +29,7 @@
   }
 
   .pyramidLevelIndicator span {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   @media (max-width: 520px) {
@@ -49,11 +49,11 @@
     min-height: 2.5rem;
     align-items: center;
     gap: 0.38rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 999px;
     padding: 0.55rem 0.72rem;
-    color: var(--color-ink-muted);
-    background: var(--color-surface);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface);
     font-family: var(--type-mono);
     font-size: 0.68rem;
     font-weight: 800;
@@ -61,9 +61,9 @@
 
   .notebookButton:hover,
   .notebookButton:focus-visible {
-    border-color: var(--color-social);
-    color: var(--color-ink);
-    background: var(--color-surface-raised);
+    border-color: var(--ds-color-border-selected);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .lifeHearts {
@@ -71,10 +71,10 @@
     min-height: 1.75rem;
     align-items: center;
     gap: 0.22rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 999px;
     padding: 0.32rem 0.48rem;
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
   }
 
   .lifeHeart {
@@ -89,12 +89,12 @@
   }
 
   .lifeHeartActive {
-    color: var(--color-danger);
-    fill: color-mix(in srgb, var(--color-danger) 18%, transparent);
+    color: var(--ds-color-fg-error);
+    fill: color-mix(in srgb, var(--ds-color-fg-error) 18%, transparent);
   }
 
   .lifeHeartLost {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
     fill: transparent;
     opacity: 0.75;
     transform: scale(0.92);

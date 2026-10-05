@@ -22,20 +22,24 @@
   .card {
     display: grid;
     gap: var(--space-4);
-    border: 1px solid color-mix(in srgb, var(--color-success) 42%, transparent);
+    border: 1px solid color-mix(in srgb, var(--ds-color-border-success) 42%, transparent);
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--color-success) 7%, transparent),
-      var(--color-surface) 42%
+      color-mix(in srgb, var(--ds-color-bg-success) 7%, transparent),
+      var(--ds-color-bg-surface) 42%
     );
-    box-shadow: 0 18px 48px color-mix(in srgb, var(--color-success) 14%, transparent);
+    box-shadow: 0 18px 48px color-mix(in srgb, var(--ds-color-bg-success) 14%, transparent);
     text-align: center;
   }
 
   .failure {
-    border-color: rgb(255 114 118 / 48%);
-    background: linear-gradient(180deg, rgb(255 114 118 / 7%), var(--color-surface) 42%);
-    box-shadow: 0 18px 48px rgb(255 114 118 / 14%);
+    border-color: color-mix(in srgb, var(--ds-color-border-error) 48%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--ds-color-bg-error) 7%, transparent),
+      var(--ds-color-bg-surface) 42%
+    );
+    box-shadow: 0 18px 48px color-mix(in srgb, var(--ds-color-bg-error) 14%, transparent);
   }
 
   .icon {
@@ -45,18 +49,19 @@
     margin: 0 auto;
     place-items: center;
     border-radius: var(--radius-pill);
-    background: var(--color-success);
-    color: var(--color-surface);
+    background: var(--ds-color-bg-success);
+    color: var(--ds-color-fg-on-success);
     box-shadow:
-      0 0 0 12px color-mix(in srgb, var(--color-success) 10%, transparent),
-      0 0 38px color-mix(in srgb, var(--color-success) 24%, transparent);
+      0 0 0 12px color-mix(in srgb, var(--ds-color-bg-success) 10%, transparent),
+      0 0 38px color-mix(in srgb, var(--ds-color-bg-success) 24%, transparent);
   }
 
   .failure .icon {
-    background: var(--color-danger);
+    color: var(--ds-color-fg-on-error);
+    background: var(--ds-color-bg-error);
     box-shadow:
-      0 0 0 12px rgb(255 114 118 / 10%),
-      0 0 38px rgb(255 114 118 / 24%);
+      0 0 0 12px color-mix(in srgb, var(--ds-color-bg-error) 10%, transparent),
+      0 0 38px color-mix(in srgb, var(--ds-color-bg-error) 24%, transparent);
   }
 
   .icon svg {
@@ -66,7 +71,7 @@
 
   .eyebrow {
     margin: 0;
-    color: var(--color-success);
+    color: var(--ds-color-fg-success);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 800;
@@ -75,7 +80,7 @@
   }
 
   .failure .eyebrow {
-    color: var(--color-danger);
+    color: var(--ds-color-fg-error);
   }
 
   .card h1 {
@@ -89,7 +94,7 @@
 
   .card > p:not(.eyebrow):not(.points) {
     margin: 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 15px;
     font-weight: 600;
     line-height: 1.5;
@@ -123,7 +128,7 @@
 
   .points {
     margin: 0;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-size: 18px;
     font-weight: 800;
   }

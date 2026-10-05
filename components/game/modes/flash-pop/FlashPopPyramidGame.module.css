@@ -34,7 +34,7 @@
 
   .levelIndicator {
     margin: 0;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 800;
@@ -43,7 +43,7 @@
   }
 
   .levelIndicator span {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .levelMap {
@@ -65,7 +65,7 @@
     padding: 6px 12px;
     border: var(--border-subtle);
     border-radius: var(--radius-control);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     background: rgb(255 255 255 / 30%);
     font-size: 13px;
     transition:
@@ -95,15 +95,19 @@
   }
 
   .levelTierCleared {
-    border-color: color-mix(in srgb, var(--state-correct) 55%, var(--color-border));
-    color: var(--state-correct);
-    background: color-mix(in srgb, var(--state-correct) 10%, var(--color-surface));
+    border-color: color-mix(
+      in srgb,
+      var(--ds-color-border-success) 55%,
+      var(--ds-color-border-default)
+    );
+    color: var(--ds-color-fg-success);
+    background: color-mix(in srgb, var(--ds-color-bg-success) 10%, var(--ds-color-bg-surface));
   }
 
   .levelTierCurrent {
-    border-color: var(--color-brand);
-    color: var(--color-ink);
-    background: var(--color-brand);
+    border-color: var(--ds-color-border-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
   }
 
@@ -122,9 +126,9 @@
     height: 44px;
     place-items: center;
     border-radius: 14px;
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-on-brand);
   }
 
   .brandMark svg {
@@ -149,7 +153,7 @@
   }
 
   .metaLabel {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 700;
@@ -170,7 +174,7 @@
     padding: clamp(20px, 5vw, 36px);
     border-radius: var(--radius-card);
     border: var(--border-subtle);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-hero);
   }
 
@@ -188,7 +192,7 @@
   .briefingDescription,
   .reviewCopy {
     margin: 12px 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 16px;
     font-weight: 600;
     line-height: 1.5;
@@ -196,7 +200,7 @@
 
   .briefingFormat {
     margin: 0;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: 12px;
     font-weight: 800;
@@ -211,7 +215,7 @@
     gap: 5px;
     padding: var(--space-4);
     border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .briefingStat strong {
@@ -220,7 +224,7 @@
   }
 
   .briefingStat span {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 12px;
     font-weight: 600;
     line-height: 1.35;
@@ -268,10 +272,10 @@
   .levelNotice {
     margin: var(--space-4) 0 0;
     padding: var(--space-3) var(--space-4);
-    border-left: 3px solid var(--color-social);
+    border-left: 3px solid var(--ds-color-border-selected);
     border-radius: 0 var(--radius-control) var(--radius-control) 0;
-    color: var(--color-ink);
-    background: rgb(105 87 232 / 9%);
+    color: var(--ds-color-fg-primary);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 9%, transparent);
     font-size: 13px;
     line-height: 1.45;
     text-align: left;
@@ -294,7 +298,7 @@
   .questionPrompt,
   .screen .questionCard .questionPrompt {
     margin-top: var(--space-3);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-display);
     font-size: clamp(24px, 6.4vw, 32px);
     font-weight: 700;
@@ -330,9 +334,9 @@
     place-items: center;
     border: var(--border-subtle);
     border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-control);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-size: 22px;
     font-weight: 800;
     transition:
@@ -361,20 +365,20 @@
   }
 
   .answerTile:hover:not(:disabled) {
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     transform: translateY(-2px);
   }
 
   .answerTile:active:not(:disabled),
   .answerTile.selected {
-    border-color: var(--color-social);
-    background: rgb(105 87 232 / 10%);
+    border-color: var(--ds-color-border-selected);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 10%, transparent);
     box-shadow: none;
     transform: translateY(3px);
   }
 
   .answerTile:focus-visible {
-    outline: 3px solid var(--color-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 
@@ -399,14 +403,14 @@
     margin-top: var(--space-5);
     padding: var(--space-4);
     border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     font-size: 18px;
     font-weight: 800;
   }
 
   .reviewExplanation {
     margin-top: var(--space-3);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 15px;
     line-height: 1.5;
   }
@@ -425,7 +429,7 @@
 
   @media (max-width: 520px) {
     .mobileLabelMuted {
-      color: var(--color-ink-muted);
+      color: var(--ds-color-fg-secondary);
     }
 
     .levelIndicator {

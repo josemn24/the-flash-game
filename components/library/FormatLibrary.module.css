@@ -8,7 +8,7 @@
     padding: 1.25rem 1.25rem 3.5rem;
   }
   .eyebrow {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: 0.65rem;
     font-weight: 900;
@@ -28,7 +28,7 @@
   .lead {
     max-width: 42rem;
     margin-top: 1.25rem;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     line-height: 1.75;
   }
   .grid {
@@ -43,20 +43,20 @@
     border: var(--border-subtle);
     border-radius: var(--radius-card);
     padding: 1.35rem;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     text-decoration: none;
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     transition:
       transform 180ms,
       border-color 180ms;
   }
   .card:hover {
-    border-color: var(--color-border-hover);
-    background: var(--color-surface-raised);
+    border-color: var(--ds-color-border-hover);
+    background: var(--ds-color-bg-surface-raised);
     transform: translateY(-3px);
   }
   .cardNumber {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-display);
     font-size: 2.3rem;
     font-weight: var(--type-display-strong-weight);
@@ -71,7 +71,7 @@
   }
   .card p {
     margin: 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.82rem;
     line-height: 1.6;
   }
@@ -84,7 +84,7 @@
     padding-top: 1.25rem;
   }
   .cardMeta span:first-child {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.6rem;
     font-weight: 800;
@@ -92,7 +92,7 @@
     text-transform: uppercase;
   }
   .cardMeta span:last-child {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-size: 0.72rem;
     font-weight: 900;
   }
@@ -104,7 +104,7 @@
     border-bottom: var(--border-subtle);
   }
   .detailIndex {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-display);
     font-size: clamp(4rem, 14vw, 8rem);
     font-weight: var(--type-display-strong-weight);
@@ -123,7 +123,7 @@
   .detailSummary {
     max-width: 42rem;
     margin: 1.25rem 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 1rem;
     line-height: 1.75;
   }
@@ -136,7 +136,7 @@
     border: var(--border-subtle);
     border-radius: var(--radius-card);
     padding: 1.35rem;
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
   }
   .section h2 {
     margin: 0 0 0.9rem;
@@ -147,7 +147,7 @@
   }
   .section p,
   .section li {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.85rem;
     line-height: 1.7;
   }
@@ -164,14 +164,18 @@
     padding-left: 1.1rem;
   }
   .sectionGood li::marker {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
   .sectionAvoid li::marker {
-    color: var(--color-danger);
+    color: var(--ds-color-fg-error);
   }
   .scoringPanel {
-    border-color: color-mix(in srgb, var(--color-brand) 36%, var(--color-border));
-    background: color-mix(in srgb, var(--color-brand) 10%, var(--color-surface));
+    border-color: color-mix(
+      in srgb,
+      var(--ds-color-border-brand) 36%,
+      var(--ds-color-border-default)
+    );
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 10%, var(--ds-color-bg-surface));
   }
   .scoringFlags {
     display: flex;
@@ -182,8 +186,8 @@
   .scoringFlags span {
     border-radius: 99px;
     padding: 0.45rem 0.7rem;
-    color: var(--color-ink-muted);
-    background: var(--color-surface-soft);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-soft);
     font-family: var(--type-mono);
     font-size: 0.58rem;
     font-weight: 900;
@@ -205,13 +209,13 @@
     border: var(--border-subtle);
     border-radius: var(--radius-control);
     padding: 1rem;
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     text-decoration: none;
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
   }
   .pager small {
     display: block;
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.55rem;
     font-weight: 900;
@@ -224,7 +228,7 @@
     font-size: 0.85rem;
   }
   .timingValue {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
   }
   @media (min-width: 640px) {

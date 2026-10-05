@@ -1,7 +1,7 @@
 @layer app-formats {
   .eyebrow {
     margin: 0;
-    color: rgb(255 255 255 / 45%);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.68rem;
     font-weight: 800;
@@ -26,7 +26,7 @@
 
   .sequenceRow {
     gap: clamp(0.45rem, 2.4vw, 1rem);
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     font-family: var(--type-mono);
     font-size: clamp(1.45rem, 7vw, 2.7rem);
     font-weight: 900;
@@ -42,7 +42,7 @@
 
   .differenceRow {
     gap: clamp(0.75rem, 4vw, 1.6rem);
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: clamp(0.82rem, 3.3vw, 1.05rem);
     font-weight: 800;
@@ -68,21 +68,21 @@
     margin-top: var(--space-4);
     border: var(--border-subtle);
     border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     padding: var(--space-4);
     box-shadow: none;
   }
 
   .prompt .eyebrow {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .prompt .sequenceRow {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-size: clamp(1.4rem, 7vw, 2.3rem);
   }
 
   .prompt .differenceRow {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 }

@@ -21,19 +21,50 @@ export const metadata: Metadata = {
   description: "Laboratorio aislado de tokens, primitivas y estados de The Flash.",
 };
 
+const roles = ["brand", "selected", "success", "error", "info", "reward"] as const;
+const surfaces = ["canvas", "surface", "surface-raised", "surface-soft"] as const;
+const foregrounds = ["primary", "secondary", ...roles] as const;
 const colors = [
-  ["Canvas", "--color-canvas", "#f4f1ea"],
-  ["Surface", "--color-surface", "#ffffff"],
-  ["Raised", "--color-surface-raised", "#fbfaf6"],
-  ["Soft", "--color-surface-soft", "#eae7ff"],
-  ["Ink", "--color-ink", "#171720"],
-  ["Flash", "--color-brand", "#d7ff19"],
-  ["Social", "--color-social", "#6957e8"],
-  ["Success", "--color-success", "#0f766e"],
-  ["Danger", "--color-danger", "#ff7276"],
-  ["Info", "--color-info", "#74a7f5"],
-  ["Reward", "--color-reward", "#ffd85a"],
-] as const;
+  ["Canvas", "--ds-color-bg-canvas"],
+  ["Surface", "--ds-color-bg-surface"],
+  ["Raised", "--ds-color-bg-surface-raised"],
+  ["Soft", "--ds-color-bg-surface-soft"],
+  ["Inverse", "--ds-color-bg-inverse"],
+  ...roles.map((role) => [role, `--ds-color-bg-${role}`]),
+];
+
+function ColorPair({
+  id,
+  background,
+  foreground,
+  border,
+  children,
+}: {
+  id: string;
+  background: string;
+  foreground: string;
+  border?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={styles.colorPair}
+      data-token-pair={id}
+      data-background={background}
+      data-foreground={foreground}
+      data-border={border}
+      style={
+        {
+          "--sample-background": `var(--ds-color-${background})`,
+          "--sample-foreground": `var(--ds-color-${foreground})`,
+          "--sample-border": `var(--ds-color-${border ?? "border-default"})`,
+        } as CSSProperties
+      }
+    >
+      {children}
+    </div>
+  );
+}
 
 const radii = [
   ["Sm", "--radius-sm", "8 px"],
@@ -92,7 +123,7 @@ export default function FlashPopUiKitPage() {
           Color y tipografía
         </SectionHeading>
         <div className={styles.swatchGrid}>
-          {colors.map(([name, token, value]) => (
+          {colors.map(([name, token]) => (
             <Card key={token} padding="compact" elevation="flat" className={styles.swatchCard}>
               <span
                 className={styles.swatch}
@@ -100,7 +131,7 @@ export default function FlashPopUiKitPage() {
               />
               <span>
                 <strong>{name}</strong>
-                <small>{value}</small>
+                <small>{token.replace("--ds-color-", "")}</small>
               </span>
             </Card>
           ))}
@@ -144,6 +175,108 @@ export default function FlashPopUiKitPage() {
             </div>
           </Card>
         </div>
+      </section>
+
+      <section className={styles.section} aria-labelledby="roles-title">
+        <SectionHeading id="roles-title" eyebrow="Roles · Color y estados">
+          Pares de color y contraste
+        </SectionHeading>
+        <p className={styles.roleHelp}>
+          Texto normal: 4,5:1. Foco e indicadores esenciales: 3:1. Los bordes sutiles delimitan
+          superficies; strong identifica controles.
+        </p>
+        {surfaces.map((surface) => (
+          <div key={surface} className={styles.pairGrid}>
+            {foregrounds.map((foreground) => (
+              <ColorPair
+                key={foreground}
+                id={`${surface}-${foreground}`}
+                background={`bg-${surface}`}
+                foreground={`fg-${foreground}`}
+              >
+                {surface} · {foreground}
+              </ColorPair>
+            ))}
+          </div>
+        ))}
+        <div className={styles.pairGrid}>
+          {roles.flatMap((role) => [
+            <ColorPair
+              key={`${role}-solid`}
+              id={`${role}-solid`}
+              background={`bg-${role}`}
+              foreground={`fg-on-${role}`}
+            >
+              {role} · sólido
+            </ColorPair>,
+            <ColorPair
+              key={`${role}-light`}
+              id={`${role}-light`}
+              background={role === "brand" ? "bg-canvas" : `bg-${role}-soft`}
+              foreground={`fg-${role}`}
+              border={role === "brand" ? "border-action" : `border-${role}`}
+            >
+              {role} · claro
+            </ColorPair>,
+            <ColorPair
+              key={`${role}-inverse`}
+              id={`${role}-inverse`}
+              background="bg-inverse"
+              foreground={`fg-${role}-inverse`}
+              border={`border-${role}-inverse`}
+            >
+              {role} · inverse
+            </ColorPair>,
+          ])}
+          <ColorPair id="inverse-primary" background="bg-inverse" foreground="fg-on-inverse">
+            Inverse · primary
+          </ColorPair>
+          <ColorPair
+            id="inverse-secondary"
+            background="bg-inverse"
+            foreground="fg-secondary-inverse"
+          >
+            Inverse · secondary
+          </ColorPair>
+        </div>
+        <div className={styles.pairGrid}>
+          {["subtle", "default", "hover", "action", "strong", "brand"].map((border) => (
+            <ColorPair
+              key={border}
+              id={`border-${border}`}
+              background="bg-surface"
+              foreground="fg-secondary"
+              border={`border-${border}`}
+            >
+              Borde {border}
+            </ColorPair>
+          ))}
+        </div>
+        <Card className={styles.errorExamples}>
+          <label htmlFor="ui-kit-email">Correo electrónico</label>
+          <input
+            id="ui-kit-email"
+            type="email"
+            defaultValue="ana@"
+            aria-invalid="true"
+            aria-describedby="ui-kit-email-help ui-kit-email-error"
+          />
+          <span id="ui-kit-email-help">Usa el correo asociado a tu cuenta.</span>
+          <p id="ui-kit-email-error" className={styles.fieldError}>
+            Introduce una dirección válida.
+          </p>
+          <ColorPair
+            id="error-notice"
+            background="bg-error-soft"
+            foreground="fg-error"
+            border="border-error"
+          >
+            No se pudo guardar. Revisa los campos indicados.
+          </ColorPair>
+          <ColorPair id="error-solid" background="bg-error" foreground="fg-on-error">
+            Credenciales incorrectas. Vuelve a intentarlo.
+          </ColorPair>
+        </Card>
       </section>
 
       <section className={styles.section} aria-labelledby="buttons-title">

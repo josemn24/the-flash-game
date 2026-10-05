@@ -86,7 +86,7 @@ function CompetitiveChallengeUnavailable({ mode }: { mode: string }) {
   return (
     <section role="alert" className="mx-auto max-w-xl px-6 py-16 text-center">
       <h1>Desafío no disponible</h1>
-      <p className="mt-3 text-[var(--color-ink-muted)]">
+      <p className="mt-3 text-[var(--ds-color-fg-secondary)]">
         El modo {mode} todavía no tiene una proyección competitiva server válida.
       </p>
     </section>

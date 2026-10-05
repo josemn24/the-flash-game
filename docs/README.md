@@ -19,6 +19,7 @@ capacidades aún pendientes no deben interpretarse como funcionalidades ya dispo
 | Qué decisiones son normativas                   | [`decisions/README.md`](decisions/README.md)                                                               |
 | Cómo se crean formatos y desafíos               | [`content/README.md`](content/README.md)                                                                   |
 | Qué estrategia e hipótesis siguen activas       | [`product/README.md`](product/README.md)                                                                   |
+| Cómo utilizar los colores y estados de la UI    | [`current/design-tokens.md`](current/design-tokens.md)                                                     |
 | Qué documentos describen etapas anteriores      | [`archive/README.md`](archive/README.md)                                                                   |
 
 ## Secciones

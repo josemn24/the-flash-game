@@ -112,7 +112,7 @@ export function QuestionTransition({
           {[0, 1, 2].map((item) => (
             <motion.span
               key={item}
-              className="h-1.5 w-8 skew-x-[-28deg] bg-[var(--color-brand)]"
+              className="h-1.5 w-8 skew-x-[-28deg] bg-[var(--ds-color-bg-brand)]"
               initial={{ opacity: 0.15 }}
               animate={{ opacity: [0.15, 1, 0.15] }}
               transition={{ duration: 0.55, repeat: Infinity, delay: item * 0.1 }}

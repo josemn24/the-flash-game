@@ -29,7 +29,7 @@
     place-items: center;
     border: var(--border-subtle);
     border-radius: var(--radius-card);
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-hero);
     justify-self: center;
     padding: clamp(0.55rem, 1.2vw, 0.8rem);
@@ -55,8 +55,8 @@
     place-items: center;
     border: var(--border-subtle);
     border-radius: var(--radius-pill);
-    color: var(--color-ink-muted);
-    background: var(--color-surface-raised);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-control);
     font-family: var(--type-display);
     font-size: 0.95rem;
@@ -89,40 +89,40 @@
     height: 1rem;
     place-items: center;
     border-radius: var(--radius-pill);
-    background: var(--color-ink);
-    color: var(--color-surface);
+    background: var(--ds-color-bg-inverse);
+    color: var(--ds-color-fg-on-inverse);
     font-size: 0.58rem;
   }
 
   .status_active {
     z-index: 2;
-    border-color: var(--color-brand);
-    color: var(--color-ink);
-    background: var(--color-brand);
+    border-color: var(--ds-color-border-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
 
   .status_passed {
-    border-color: var(--color-reward);
-    color: var(--color-ink);
-    background: color-mix(in srgb, var(--color-reward) 24%, var(--color-surface));
+    border-color: var(--ds-color-border-reward);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-reward-soft);
   }
 
   .status_correct {
-    border-color: var(--state-correct);
-    color: var(--color-ink);
-    background: color-mix(in srgb, var(--state-correct) 20%, var(--color-surface));
+    border-color: var(--ds-color-border-success);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-success-soft);
   }
 
   .status_incorrect {
-    border-color: var(--state-error);
-    color: var(--state-error);
-    background: color-mix(in srgb, var(--state-error) 14%, var(--color-surface));
+    border-color: var(--ds-color-border-error);
+    color: var(--ds-color-fg-error);
+    background: var(--ds-color-bg-error-soft);
   }
 
   .status_unanswered {
     border-style: dashed;
-    color: var(--color-ink-faint);
-    background: var(--color-surface-soft);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .inlineFeedback {
@@ -134,7 +134,7 @@
     width: 100%;
     padding: var(--space-4);
     border-radius: var(--radius-card);
-    background: color-mix(in srgb, var(--color-canvas) 64%, transparent);
+    background: color-mix(in srgb, var(--ds-color-bg-canvas) 64%, transparent);
     backdrop-filter: blur(5px);
     pointer-events: none;
   }
@@ -152,7 +152,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 11px;
     font-weight: 700;
@@ -163,7 +163,7 @@
   }
 
   .gameMeta strong {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
 
   .questionPanel {
@@ -189,7 +189,7 @@
   }
 
   .answerForm label {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 13px;
     font-weight: 700;
   }
@@ -199,20 +199,20 @@
     border: var(--border-subtle);
     border-radius: var(--radius-control);
     padding: 0 var(--space-4);
-    color: var(--color-ink);
-    background: var(--color-surface);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
     font-size: 16px;
     font-weight: 700;
   }
 
   .answerForm input::placeholder,
   .answerForm > p {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
   }
 
   .answerForm input:focus-visible {
-    border-color: var(--color-focus);
-    outline: 3px solid var(--color-focus);
+    border-color: var(--ds-color-focus-ring);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
 
@@ -236,10 +236,11 @@
   .serverMessage {
     margin: 0;
     padding: var(--space-3) var(--space-4);
-    border: 1px solid color-mix(in srgb, var(--state-error) 38%, var(--color-border));
+    border: 1px solid
+      color-mix(in srgb, var(--ds-color-border-error) 38%, var(--ds-color-border-default));
     border-radius: var(--radius-control);
-    color: var(--state-error);
-    background: color-mix(in srgb, var(--state-error) 9%, var(--color-surface));
+    color: var(--ds-color-fg-error);
+    background: var(--ds-color-bg-error-soft);
     font-size: 13px;
     font-weight: 700;
   }
