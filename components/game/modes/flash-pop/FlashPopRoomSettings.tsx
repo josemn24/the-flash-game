@@ -17,6 +17,7 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
         <header className={styles.heroToolbar}>
           <BackLink href={`/salas/${model.roomId}`} label="Volver al detalle de la sala" />
           <Button
+            className={styles.inviteButton}
             variant="secondary"
             size="sm"
             disabled

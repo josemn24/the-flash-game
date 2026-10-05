@@ -7,35 +7,45 @@ import ts from "typescript";
 
 const colorName =
   /^--(?:ds-color-|color-|state-)|(?:color|ink|muted|faint|accent|surface|danger|success|error|reward|focus|overlay|border|tone)$/;
+const designTokenName = /^--(?:space|radius|shadow|type|font|motion|control|ease|border)-/;
 const retired = /^--(?:color-(?!background$|foreground$)|state-)/;
 const colorProperty =
   /^(?:color|background(?:-color)?|border(?:-(?:top|right|bottom|left))?(?:-color)?|outline(?:-color)?|fill|stroke|caret-color|text-decoration-color)$/;
 const references = (value) =>
   [...value.matchAll(/var\(\s*(--[\w-]+)\s*[,)]/g)].map((match) => match[1]);
 const mentions = (value) =>
-  [...value.matchAll(/--(?:ds-color|color|state)-[\w-]+/g)]
+  [
+    ...value.matchAll(
+      /--(?:ds-color|color|state|space|radius|shadow|type|font|motion|control|ease|border)-[\w-]+/g,
+    ),
+  ]
     .map((match) => match[0])
     .filter((name) => !name.endsWith("-"));
 
 /** Checks source, rather than generated CSS. Local aliases may be inherited by child modules. */
-export function checkColorReferences(sources) {
+export function checkTokenReferences(sources) {
   const definitions = new Map();
   const uses = [];
-  const colorAliases = new Set();
+  const tokenAliases = new Set();
   const violations = new Set();
   function define(name, value, file, scope) {
     const entries = definitions.get(name) ?? [];
     entries.push({ value, file, scope });
     definitions.set(name, entries);
-    if (colorName.test(name) || references(value).some((ref) => colorName.test(ref)))
-      colorAliases.add(name);
+    if (
+      colorName.test(name) ||
+      designTokenName.test(name) ||
+      references(value).some((ref) => colorName.test(ref) || designTokenName.test(ref))
+    )
+      tokenAliases.add(name);
     inspect(value, file, name, scope);
     if (retired.test(name)) violations.add(`${file}: token retirado ${name}`);
   }
   function inspect(value, file, prop, scope) {
     for (const name of new Set([...references(value), ...mentions(value)])) {
       uses.push({ name, file, scope, prop });
-      if (colorName.test(name) || colorProperty.test(prop)) colorAliases.add(name);
+      if (colorName.test(name) || designTokenName.test(name) || colorProperty.test(prop))
+        tokenAliases.add(name);
     }
   }
   for (const [file, source] of sources) {
@@ -53,10 +63,34 @@ export function checkColorReferences(sources) {
         true,
         file.endsWith("x") ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
       );
+      // next/font generates these declarations; require an actual font factory call.
+      const fontFactories = new Set();
+      for (const statement of ast.statements) {
+        if (
+          !ts.isImportDeclaration(statement) ||
+          !ts.isStringLiteral(statement.moduleSpecifier) ||
+          !/^next\/font\/(?:google|local)$/.test(statement.moduleSpecifier.text)
+        )
+          continue;
+        const clause = statement.importClause;
+        if (clause?.name) fontFactories.add(clause.name.text);
+        if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings))
+          for (const binding of clause.namedBindings.elements) fontFactories.add(binding.name.text);
+      }
       function visit(node) {
         if (ts.isPropertyAssignment(node)) {
           const name = node.name.getText(ast).replace(/^["']|["']$/g, "");
           const value = node.initializer.getText(ast);
+          const call = node.parent.parent;
+          if (
+            name === "variable" &&
+            ts.isStringLiteral(node.initializer) &&
+            node.initializer.text.startsWith("--") &&
+            ts.isCallExpression(call) &&
+            ts.isIdentifier(call.expression) &&
+            fontFactories.has(call.expression.text)
+          )
+            define(node.initializer.text, "next/font", file, "inline");
           if (name.startsWith("--")) define(name, value, file, "inline");
           else if (
             /^(?:color|background|backgroundColor|border|borderColor|fill|stroke)$/.test(name)
@@ -82,17 +116,17 @@ export function checkColorReferences(sources) {
   while (changed) {
     changed = false;
     for (const [name, entries] of definitions) {
-      if (colorAliases.has(name)) continue;
-      if (entries.some(({ value }) => references(value).some((ref) => colorAliases.has(ref)))) {
-        colorAliases.add(name);
+      if (tokenAliases.has(name)) continue;
+      if (entries.some(({ value }) => references(value).some((ref) => tokenAliases.has(ref)))) {
+        tokenAliases.add(name);
         changed = true;
       }
     }
-    for (const name of colorAliases) {
+    for (const name of tokenAliases) {
       for (const { value } of definitions.get(name) ?? []) {
         for (const ref of references(value)) {
-          if (!colorAliases.has(ref)) {
-            colorAliases.add(ref);
+          if (!tokenAliases.has(ref)) {
+            tokenAliases.add(ref);
             changed = true;
           }
         }
@@ -101,8 +135,8 @@ export function checkColorReferences(sources) {
   }
   for (const { name, file } of uses) {
     if (retired.test(name)) violations.add(`${file}: token retirado ${name}`);
-    else if (colorAliases.has(name) && !definitions.has(name))
-      violations.add(`${file}: token de color desconocido ${name} (el fallback no lo valida)`);
+    else if (tokenAliases.has(name) && !definitions.has(name))
+      violations.add(`${file}: token desconocido ${name} (el fallback no lo valida)`);
   }
   // Resolve the closest definition; an override is evaluated in its own scope.
   function resolve(name, context) {
@@ -122,11 +156,11 @@ export function checkColorReferences(sources) {
       return;
     }
     for (const ref of references(entry.value)) {
-      if (!colorAliases.has(ref)) continue;
+      if (!tokenAliases.has(ref)) continue;
       for (const target of resolve(ref, entry)) visitAlias(ref, target, [...stack, name]);
     }
   }
-  for (const name of colorAliases) {
+  for (const name of tokenAliases) {
     for (const entry of definitions.get(name) ?? []) visitAlias(name, entry, []);
   }
   return [...violations];
@@ -169,7 +203,7 @@ export async function checkStyleArchitecture(root = process.cwd()) {
       files.map(async (file) => [file, await readFile(path.join(root, file), "utf8")]),
     ),
   );
-  const violations = checkColorReferences(sources);
+  const violations = checkTokenReferences(sources);
   const modules = files.filter((file) => file.endsWith(".module.css"));
   const legacyBrandLiteral =
     /#d7ff1[89]\b|rgb\(\s*215\s+255\s+24\s*\)|rgba\(\s*215\s*,\s*255\s*,\s*24\s*,/i;
@@ -227,5 +261,5 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     console.error(violations.join("\n"));
     process.exitCode = 1;
   } else
-    console.log(`Style architecture OK: ${moduleCount} CSS Modules; colores y aliases resueltos.`);
+    console.log(`Style architecture OK: ${moduleCount} CSS Modules; tokens y aliases resueltos.`);
 }

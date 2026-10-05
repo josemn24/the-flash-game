@@ -121,13 +121,15 @@ El caso más ajustado es fg-success sobre bg-surface-soft (aproximadamente 4,53:
 se debe atenuar ese foreground. Las excepciones disabled/decorative se identifican por su rol.
 
 - `npm run style-architecture` revisa CSS y TSX, aliases locales, referencias inexistentes,
-  tokens retirados y ciclos. Un fallback no legitima una referencia inexistente. Excluye pruebas
-  con fixtures y fuentes generadas. Los aliases heredados por componentes hijos se resuelven
+  tokens retirados y ciclos de color, espaciado, radios, sombras, tipografía, controles y movimiento.
+  Reconoce las variables generadas por las llamadas a `next/font` importadas. Un fallback no
+  legitima una referencia inexistente. Excluye pruebas con fixtures y fuentes generadas.
+  Los aliases heredados por componentes hijos se resuelven
   estáticamente por sus definiciones; el navegador comprueba la cascada real en el catálogo.
 - `npm test -- components/game/modes/flash-pop/flashPopContrast.test.ts scripts/check-style-architecture.test.mjs`
   resuelve aliases, mezclas sRGB y transparencia. Los fixtures del comprobador viven en directorios temporales.
 - `npm run test:e2e:design-system -- e2e/design-tokens.spec.ts` comprueba los colores computados, contraste,
-  foco, movimiento reducido y anchura a 390 y 1280 px.
+  foco, movimiento reducido, el espaciado `--space-7` (28 px) y anchura a 390 y 1280 px.
 
 Al añadir un color compartido, definir su rol aquí y en globals, mostrar sus pares en el catálogo
 y cubrir sus contrastes. La tipografía, el espaciado, los radios, las sombras y las mecánicas

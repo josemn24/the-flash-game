@@ -4,7 +4,7 @@ import { Button } from "@/components/ui";
 import { TokenValue } from "./TokenValue.client";
 import styles from "./Catalog.module.css";
 
-const spaces = ["1", "2", "3", "4", "5", "6", "8", "10", "12"];
+const spaces = ["1", "2", "3", "4", "5", "6", "7", "8", "10", "12"];
 const typography = [
   "type-ui",
   "type-display",

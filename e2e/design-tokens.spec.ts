@@ -9,6 +9,8 @@ for (const width of [390, 1280]) {
     test("resolves catalogue pairs after the cascade and CSS Modules", async ({ page }) => {
       await page.goto("/design-system/fundamentos");
       await expect(page.getByRole("heading", { name: "Fundamentos", exact: true })).toBeVisible();
+      const spacingSample = page.getByText("--space-7", { exact: true }).locator("..").locator("i");
+      await expect(spacingSample).toHaveCSS("width", "28px");
       const pairs = await page.locator("[data-token-pair]").evaluateAll((elements) =>
         elements.map((element) => {
           const el = element as HTMLElement;

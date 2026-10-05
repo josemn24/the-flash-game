@@ -41,7 +41,7 @@
     padding: calc(var(--space-8) + env(safe-area-inset-top)) var(--space-7) var(--space-5);
   }
 
-  .heroToolbar :global(.button) {
+  .inviteButton {
     border-color: var(--ds-color-border-ink);
     background: var(--ds-color-bg-brand);
     color: var(--ds-color-fg-on-brand);
