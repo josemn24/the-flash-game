@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 57 archivos y su revisión canónica es
-`20261004141603_alphabet_atomic_completion`. Las migraciones incrementales corresponden a esos archivos;
+Estado: el esquema declarativo vigente se compone de 58 archivos y su revisión canónica es
+`20261006110000_competitive_command_recovery`. Las migraciones incrementales corresponden a esos archivos;
 la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -337,6 +337,10 @@ con el **rol creador real**, las revocaciones de objetos existentes y sus grants
 transacción. Repetir los default privileges para cualquier otro rol de despliegue; no afectan a los
 objetos preexistentes ni a lo creado por otro propietario. Verificar la configuración de exposición
 y el catálogo/ACL efectivo en ese entorno. Nada de ello se ha ejecutado remotamente aquí.
+
+La [recuperación competitiva](../../docs/current/competitive-command-recovery.md) añade autorización
+antes del replay, evaluación persistida y resultado terminal propio independiente de la cookie.
+No añade tablas ni altera puntos históricos.
 
 ## Pruebas y riesgos pendientes
 

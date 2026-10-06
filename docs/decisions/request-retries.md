@@ -54,11 +54,13 @@ aplicar la [política de incidencias](service-incidents.md) cuando se confirme e
 
 ## Estado observado y trabajo pendiente
 
-Auth ya tiene un presupuesto compartido de 5 segundos y el cierre de Alfabeto dispone de tres
-reintentos adicionales. El transporte competitivo general todavía no configura un timeout total
-explícito. Estos mecanismos parciales no acreditan la aplicación completa de la tabla aprobada.
-
-Antes de implementar, concretar:
+El motor competitivo aplica el presupuesto completo a preparación de sesión, inicio, preparación,
+activación, recuperación, respuestas, formatos, abandono y cierre de los cinco modos. El transporte
+realiza una petición y el motor conserva el comando original durante retries/reconciliación.
+La [entrega competitiva](../current/competitive-command-recovery.md) describe pruebas y despliegue.
+Auth conserva su presupuesto de 5 s. La política completa de consultas de salas/rankings y las
+categorías ajenas al juego siguen pendientes.
+Para las categorías pendientes, concretar:
 
 - Mapeo de los comandos de inicio, preparación, activación, recuperación y cierre a cada categoría,
   evitando que una reconciliación encadene ciclos ilimitados.
@@ -93,5 +95,5 @@ Antes de implementar, concretar:
 - [Matriz de resiliencia](../current/resilience-matrix.md): R02, R03, R05, R09, R10 y R24.
 - [Transferencia de control](adr/0006-explicit-attempt-control-transfer.md): revocación y recuperación.
 
-Los valores quedan documentados y aprobados; esta actualización no modifica código ni ejecuta los
-casos de aceptación de la futura implementación.
+La implementación competitiva queda separada de las categorías pendientes y exige validación en
+staging antes de publicar.

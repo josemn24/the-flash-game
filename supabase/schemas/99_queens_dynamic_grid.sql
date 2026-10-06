@@ -303,6 +303,7 @@ begin
   if found and (cached.operation <> 'save_queens_draft' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -426,6 +427,7 @@ begin
   if found and (cached.operation <> 'submit_queens_answer' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;

@@ -1,3 +1,4 @@
+import { loseGameplayConfirmations } from "./support/lost-confirmations";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { dockerSql } from "../scripts/support/supabase-local.mjs";
@@ -26,6 +27,7 @@ test("Alfabeto conserva pases y vueltas tras recargar y completa el resultado", 
   page,
 }) => {
   test.setTimeout(60000);
+  const verifyConfirmations = await loseGameplayConfirmations(page);
   await open(page, (await fixture()).users.alice);
   await expect(page.getByRole("heading", { name: "Animal con placas óseas" })).toBeVisible({
     timeout: 15000,
@@ -46,6 +48,7 @@ test("Alfabeto conserva pases y vueltas tras recargar y completa el resultado", 
   await expect(page.getByText("Desafío completado")).toBeVisible();
   await page.getByRole("button", { name: "Ver respuestas" }).click();
   await expect(page.locator("details")).toHaveCount(3);
+  await verifyConfirmations();
 });
 
 test("Alfabeto cierra una vez cada letra pendiente tras el deadline global", async ({ page }) => {
@@ -88,8 +91,9 @@ test("Alfabeto reintenta preparación y verifica un cierre cuya respuesta se per
     });
   });
   await open(page, (await fixture()).users.carol);
-  await page.getByRole("button", { name: "Reintentar partida" }).click();
-  await expect(page.getByRole("heading", { name: "Animal con placas óseas" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Animal con placas óseas" })).toBeVisible({
+    timeout: 15000,
+  });
   expect(preparationBodies[1]).toEqual(preparationBodies[0]);
   let loseComplete = true;
   const completionBodies: Record<string, unknown>[] = [];

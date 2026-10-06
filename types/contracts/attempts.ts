@@ -17,6 +17,8 @@ export type StartAttemptInput = {
   readonly scheduledChallengeId: ScheduledChallengeId;
   readonly idempotencyKey: string;
 };
+export type PrepareAttemptSessionInput = Pick<StartAttemptInput, "scheduledChallengeId">;
+export type PrepareAttemptSessionResult = { readonly ready: true };
 export type StartAttemptResult = {
   readonly attemptId: AttemptId;
   readonly sessionId: AttemptSessionId;
@@ -287,6 +289,20 @@ export type FinishAttemptResult = AttemptCommandResult & {
   readonly outcome?: string | null;
   readonly livesRemaining?: number | null;
   readonly answers?: readonly AttemptRecoveryAnswer[];
+};
+/** Persisted completion without controller cookies, assets or solutions. */
+export type SavedAttemptResult = {
+  readonly scheduledChallengeId: ScheduledChallengeId;
+  readonly result: FinishAttemptResult & {
+    readonly status: "completed";
+    readonly score: number;
+    readonly answers: readonly AttemptRecoveryAnswer[];
+    readonly initialLives?: number;
+  };
+};
+export type SavedAbandonedAttemptResult = {
+  readonly scheduledChallengeId: ScheduledChallengeId;
+  readonly result: FinishAttemptResult & { readonly status: "abandoned" };
 };
 export type AcceptInvitationInput = {
   readonly invitationToken: string;

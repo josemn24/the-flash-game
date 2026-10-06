@@ -77,6 +77,8 @@ test("Narrative reintenta preparación y una respuesta aceptada sin duplicarla",
       await route.continue();
       return;
     }
+    const prepared = await route.fetch();
+    expect(prepared.status()).toBe(200);
     await route.fulfill({
       status: 503,
       contentType: "application/json",

@@ -28,3 +28,25 @@ language sql volatile set search_path = '' as $$
 $$;
 alter function private.lock_command_key(uuid, text) owner to postgres;
 revoke all on function private.lock_command_key(uuid, text) from public, anon, authenticated, service_role;
+-- Shared authorization for replay paths. Command keys never grant gameplay access.
+create function private.authorize_attempt_replay(target_attempt uuid, token_hash text) returns void
+language plpgsql stable security definer set search_path = '' as $$
+begin
+  if not exists (
+    select 1 from public.attempts a
+    join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+    join public.seasons season on season.id = sc.season_id
+    join public.rooms room on room.id = season.room_id
+    join public.room_memberships m on m.room_id = room.id and m.player_id = a.player_id
+    where a.id = target_attempt and a.player_id = private.current_player_id()
+      and a.kind = 'competitive' and room.status = 'active' and sc.status <> 'cancelled'
+      and m.status = 'active' and m.role in ('owner','admin','member')
+      and not exists (select 1 from private.platform_role_assignments where player_id = a.player_id)
+  ) then raise exception 'not_authorized' using errcode = '42501'; end if;
+  if not exists (select 1 from private.attempt_sessions s
+    where s.attempt_id = target_attempt and s.session_token_hash = token_hash and s.revoked_at is null)
+  then raise exception 'session_revoked' using errcode = '42501'; end if;
+end;
+$$;
+alter function private.authorize_attempt_replay(uuid, text) owner to postgres;
+revoke all on function private.authorize_attempt_replay(uuid, text) from public, anon, authenticated, service_role;

@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261004141603_alphabet_atomic_completion";
+const canonicalSchemaRevision = "20261006110000_competitive_command_recovery";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -57,6 +57,11 @@ async function checkDatabase() {
         and to_regprocedure('private.zip_content_valid(jsonb,jsonb)') is not null
         and to_regprocedure('private.escape_content_valid(jsonb,jsonb)') is not null
         and to_regprocedure('private.read_attempt_context(uuid,text)') is not null
+        and to_regprocedure('private.prepare_attempt_session(uuid)') is not null
+        and to_regprocedure('private.read_recorded_evaluation(uuid,text)') is not null
+        and to_regprocedure('private.read_completed_attempt(uuid)') is not null
+        and to_regprocedure('private.read_abandoned_attempt(uuid)') is not null
+        and to_regprocedure('private.authorize_attempt_replay(uuid,text)') is not null
         and to_regprocedure('public.get_my_competitive_challenge(text,uuid)') is not null
           and to_regprocedure('private.prepare_interaction(jsonb)') is not null
           and to_regprocedure('public.get_room_member_review(text,uuid,uuid)') is not null

@@ -11,8 +11,11 @@ import {
   requestIdFor,
   verifiedIdentity,
   AttemptApiError,
+  mapAttemptError,
 } from "@/server/competitive/attempt-api";
 import type { AttemptId } from "@/types/domain/identifiers";
+import { readAbandonedAttemptResult } from "@/server/competitive/flashResult";
+import type { FinishAttemptUseCaseResult } from "@/application/ports/attempt-use-cases";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,14 +33,30 @@ export async function POST(
     const { attemptId: rawAttemptId } = await params;
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
-    const sessionToken = await readAttemptToken(attemptId);
-    const commands = commandsFor(identity, requestId);
-    const abandoned = await commands.abandon({
-      attemptId: attemptId as AttemptId,
-      sessionToken,
-      lockVersion: requireLockVersion(body),
-      idempotencyKey: `abandon:${attemptId}`,
-    });
+    const lockVersion = requireLockVersion(body);
+    let abandoned: FinishAttemptUseCaseResult;
+    try {
+      const sessionToken = await readAttemptToken(attemptId);
+      abandoned = await commandsFor(identity, requestId).abandon({
+        attemptId: attemptId as AttemptId,
+        sessionToken,
+        lockVersion,
+        idempotencyKey: `abandon:${attemptId}`,
+      });
+    } catch (error) {
+      if (
+        ![
+          "attempt_session_missing",
+          "session_revoked",
+          "not_authorized",
+          "attempt_terminal",
+        ].includes(mapAttemptError(error).code)
+      )
+        throw error;
+      const saved = await readAbandonedAttemptResult(attemptId, identity);
+      if (!saved) throw error;
+      abandoned = saved;
+    }
     await clearAttemptToken(attemptId, identity.authUserId, abandoned.scheduledChallengeId);
     return responseFor(abandoned.result, 200, requestId, "competitive.attempt.abandon", startedAt);
   } catch (error) {

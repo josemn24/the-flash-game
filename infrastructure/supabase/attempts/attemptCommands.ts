@@ -81,14 +81,6 @@ function commandCode(error: unknown) {
   const infrastructureCode =
     error && typeof error === "object" && "code" in error ? String(error.code) : "";
   const message = error instanceof Error ? error.message : "";
-  if (
-    infrastructureCode.startsWith("08") ||
-    ["28P01", "28000", "42501"].includes(infrastructureCode) ||
-    ["ECONNREFUSED", "ETIMEDOUT", "ENOTFOUND", "EPIPE"].includes(infrastructureCode) ||
-    /connection|timeout|socket/i.test(message)
-  ) {
-    return "database_unavailable";
-  }
   const known = [
     "not_authorized",
     "competitive_access_denied",
@@ -139,7 +131,17 @@ function commandCode(error: unknown) {
     "invalid_question_payload",
     "invalid_attempt_context",
   ];
-  return known.find((candidate) => message.includes(candidate)) ?? "command_failed";
+  const domainCode = known.find((candidate) => message.includes(candidate));
+  if (domainCode) return domainCode;
+  if (
+    infrastructureCode.startsWith("08") ||
+    ["28P01", "28000", "42501"].includes(infrastructureCode) ||
+    ["ECONNREFUSED", "ETIMEDOUT", "ENOTFOUND", "EPIPE"].includes(infrastructureCode) ||
+    /connection|timeout|socket/i.test(message)
+  ) {
+    return "database_unavailable";
+  }
+  return "command_failed";
 }
 
 async function transaction<T>(
@@ -168,8 +170,16 @@ async function transaction<T>(
     return result;
   } catch (error) {
     try {
-      await client.query("ROLLBACK");
-    } catch {
+      // Expiry is a durable terminal transition, not a failed gameplay mutation.
+      await client.query(
+        error instanceof AttemptCommandError && error.code === "attempt_inactivity_expired"
+          ? "COMMIT"
+          : "ROLLBACK",
+      );
+    } catch (finalizationError) {
+      if (error instanceof AttemptCommandError && error.code === "attempt_inactivity_expired") {
+        throw new AttemptCommandError(commandCode(finalizationError), finalizationError);
+      }
       // The original database error is the useful one for the API mapper.
     }
     throw new AttemptCommandError(commandCode(error), error);
@@ -222,6 +232,10 @@ function isAttemptContext(value: unknown): value is AttemptContext {
 export class SupabaseAttemptCommands implements Pick<
   AttemptCommands,
   | "start"
+  | "prepareSession"
+  | "readCompletedAttempt"
+  | "readAbandonedAttempt"
+  | "readRecordedEvaluation"
   | "prepare"
   | "activate"
   | "receiveAnswer"
@@ -244,6 +258,41 @@ export class SupabaseAttemptCommands implements Pick<
 > {
   constructor(private readonly identity: VerifiedAuthIdentity) {}
 
+  async prepareSession(input: Parameters<AttemptCommands["prepareSession"]>[0]) {
+    await transaction(this.identity, (client) =>
+      client.query("select private.prepare_attempt_session($1::uuid)", [
+        input.scheduledChallengeId,
+      ]),
+    );
+  }
+
+  readCompletedAttempt(attemptId: string) {
+    return transaction(this.identity, async (client) => {
+      const response = await client.query<{
+        result: Awaited<ReturnType<AttemptCommands["readCompletedAttempt"]>>;
+      }>("select private.read_completed_attempt($1::uuid) as result", [attemptId]);
+      return response.rows[0]?.result ?? null;
+    });
+  }
+
+  readRecordedEvaluation(receiptId: AnswerReceiptId, sessionToken: string) {
+    return transaction(this.identity, async (client) => {
+      const response = await client.query<{ result: SubmitAnswerResult | null }>(
+        "select private.read_recorded_evaluation($1::uuid, $2::text) as result",
+        [receiptId, sessionToken],
+      );
+      return response.rows[0]?.result ?? null;
+    });
+  }
+
+  readAbandonedAttempt(attemptId: string) {
+    return transaction(this.identity, async (client) => {
+      const response = await client.query<{
+        result: Awaited<ReturnType<AttemptCommands["readAbandonedAttempt"]>>;
+      }>("select private.read_abandoned_attempt($1::uuid) as result", [attemptId]);
+      return response.rows[0]?.result ?? null;
+    });
+  }
   start(input: StartAttemptCommand) {
     return callAttemptCommand<StartAttemptResult>(this.identity, "start_attempt", input);
   }

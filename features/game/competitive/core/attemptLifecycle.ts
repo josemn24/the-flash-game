@@ -15,7 +15,8 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
       score: Number(
         response.score ?? runtime.state().results.reduce((sum, result) => sum + result.points, 0),
       ),
-      reviewChallenge: review,
+      reviewChallenge: response.reviewPending ? null : review,
+      reviewPending: response.reviewPending === true,
       ...(Array.isArray(response.answers) ? { results: recoveredResults(response.answers) } : {}),
     });
   };
@@ -62,16 +63,25 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
   const begin = async () => {
     if (runtime.state().busy || runtime.state().pendingCommand) return;
     await runtime.run(
-      "start",
+      "prepareSession",
       { scheduledChallengeId: runtime.challenge.id },
       {
-        accept: () =>
-          runtime.commit({
-            type: "phase",
-            phase: runtime.policy.initialPhase,
-            stepIndex: 0,
-            clearQuestion: true,
-          }),
+        accept: () => {},
+        after: async () => {
+          await runtime.run(
+            "start",
+            { scheduledChallengeId: runtime.challenge.id },
+            {
+              accept: () =>
+                runtime.commit({
+                  type: "phase",
+                  phase: runtime.policy.initialPhase,
+                  stepIndex: 0,
+                  clearQuestion: true,
+                }),
+            },
+          );
+        },
       },
     );
   };
@@ -81,59 +91,68 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     runtime.commit({ type: "phase", phase: "recovering" });
     // Start restores the session cookie and obtains the current authoritative version.
     await runtime.run(
-      "start",
+      "prepareSession",
       { scheduledChallengeId: runtime.challenge.id },
       {
-        accept: (response) => {
-          const deadline = timestamp(response.deadlineAt);
-          if (
-            runtime.challenge.mode === "alphabet" &&
-            deadline !== null &&
-            deadline <= Date.now()
-          ) {
-            finalizationRequested = true;
-            runtime.commit({ type: "phase", phase: "finalizing" });
-          }
-        },
+        accept: () => {},
         after: async () => {
           await runtime.run(
-            "recover",
-            {},
+            "start",
+            { scheduledChallengeId: runtime.challenge.id },
             {
               accept: (response) => {
-                snapshot = response;
-                const attempt = runtime.state().attempt!;
-                runtime.commit({
-                  type: "recovered",
-                  attempt: { id: attempt.id, lockVersion: Number(response.lockVersion) },
-                  results: recoveredResults(response.answers),
-                });
-                if (response.phase === "results") finish(response);
+                const deadline = timestamp(response.deadlineAt);
+                if (
+                  runtime.challenge.mode === "alphabet" &&
+                  deadline !== null &&
+                  deadline <= Date.now()
+                ) {
+                  finalizationRequested = true;
+                  runtime.commit({ type: "phase", phase: "finalizing" });
+                }
               },
               after: async () => {
-                if (!snapshot || snapshot.phase === "results") return;
-                if (runtime.challenge.mode === "alphabet" && finalizationRequested) {
-                  await finalizeAlphabet();
-                  return;
-                }
-                if (snapshot.resolved) {
-                  const resolved = snapshot.resolved as CompetitiveJsonObject;
-                  const position = runtime.policy.position(String(resolved.challengeItemId));
-                  runtime.commit({
-                    type: "phase",
-                    phase: "transition",
-                    ...(runtime.challenge.mode === "narrative"
-                      ? { stepIndex: position }
-                      : { questionIndex: position }),
-                  });
-                  runtime.schedule(
-                    "advance",
-                    runtime.challenge.mode === "narrative" ? 300 : 900,
-                    () => {
-                      void advance.next();
+                await runtime.run(
+                  "recover",
+                  {},
+                  {
+                    accept: (response) => {
+                      snapshot = response;
+                      const attempt = runtime.state().attempt!;
+                      runtime.commit({
+                        type: "recovered",
+                        attempt: { id: attempt.id, lockVersion: Number(response.lockVersion) },
+                        results: recoveredResults(response.answers),
+                      });
+                      if (response.phase === "results") finish(response);
                     },
-                  );
-                } else await advance.apply(runtime.policy.recover(runtime.state(), snapshot));
+                    after: async () => {
+                      if (!snapshot || snapshot.phase === "results") return;
+                      if (runtime.challenge.mode === "alphabet" && finalizationRequested) {
+                        await finalizeAlphabet();
+                        return;
+                      }
+                      if (snapshot.resolved) {
+                        const resolved = snapshot.resolved as CompetitiveJsonObject;
+                        const position = runtime.policy.position(String(resolved.challengeItemId));
+                        runtime.commit({
+                          type: "phase",
+                          phase: "transition",
+                          ...(runtime.challenge.mode === "narrative"
+                            ? { stepIndex: position }
+                            : { questionIndex: position }),
+                        });
+                        runtime.schedule(
+                          "advance",
+                          runtime.challenge.mode === "narrative" ? 300 : 900,
+                          () => {
+                            void advance.next();
+                          },
+                        );
+                      } else await advance.apply(runtime.policy.recover(runtime.state(), snapshot));
+                    },
+                  },
+                );
               },
             },
           );
@@ -181,6 +200,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     );
   };
   return {
+    reloadResult: () => runtime.run("recover", {}, { accept: finish }),
     begin,
     prepare,
     complete,

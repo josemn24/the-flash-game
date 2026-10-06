@@ -28,10 +28,11 @@ export class CommandExecutor {
     return this.enqueue(async () => {
       if (this.pending()) throw new PendingCommandBlocked();
       const attempt = this.attempt();
-      if (operation !== "start" && !attempt) throw new PendingCommandBlocked();
+      if (operation !== "start" && operation !== "prepareSession" && !attempt)
+        throw new PendingCommandBlocked();
       const input = {
         ...originalData,
-        ...(attempt && operation !== "start"
+        ...(attempt && operation !== "start" && operation !== "prepareSession"
           ? { attemptId: attempt.id, lockVersion: attempt.lockVersion }
           : {}),
         ...(operation !== "recover" && operation !== "abandon"

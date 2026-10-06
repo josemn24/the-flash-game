@@ -26,6 +26,7 @@ export async function POST(request: Request) {
     const identity = await verifiedIdentity();
     const scheduledChallengeId = requireUuid(body, "scheduledChallengeId") as ScheduledChallengeId;
     const sessionToken = await readStartAttemptToken(identity.authUserId, scheduledChallengeId);
+    if (!sessionToken) throw new AttemptApiError("attempt_session_missing", 409);
     const started = await commandsFor(identity, requestId).start({
       scheduledChallengeId,
       idempotencyKey: requireKey(body),

@@ -82,3 +82,37 @@ describe("competitive transport", () => {
     expect(error).toMatchObject({ code: "rate_limited", status: 429, retryAfterSeconds: 5 });
   });
 });
+
+describe("bounded requests", () => {
+  afterEach(() => vi.useRealTimers());
+  it.each([5000, 10000])(
+    "times out the whole response at %i ms without resending",
+    async (timeoutMs) => {
+      vi.useFakeTimers();
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue({ ok: true, headers: new Headers(), json: () => new Promise(() => {}) });
+      vi.stubGlobal("fetch", fetchMock);
+      const pending = postCompetitiveJson("/answer", {}, (value) => value, { timeoutMs });
+      const assertion = expect(pending).rejects.toMatchObject({
+        code: "request_timeout",
+        status: 0,
+      });
+      await vi.advanceTimersByTimeAsync(timeoutMs);
+      await assertion;
+      expect(fetchMock).toHaveBeenCalledOnce();
+      expect(fetchMock.mock.calls[0][1].signal.aborted).toBe(true);
+      expect(vi.getTimerCount()).toBe(0);
+    },
+  );
+  it("cancels on detach and does not fetch with an already cancelled session", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(
+      postCompetitiveJson("/answer", {}, (value) => value, { signal: controller.signal }),
+    ).rejects.toMatchObject({ code: "request_cancelled" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});

@@ -13,8 +13,8 @@ import {
   mapAttemptError,
 } from "@/server/competitive/attempt-api";
 import {
-  readTerminalFlashReview,
-  readTerminalAlphabetResult,
+  readTerminalReviewSafely,
+  readTerminalAttemptResult,
 } from "@/server/competitive/flashResult";
 import type { AttemptId } from "@/types/domain/identifiers";
 import type { RecoveryUseCaseResult } from "@/application/ports/attempt-use-cases";
@@ -53,11 +53,11 @@ export async function POST(
           "attempt_terminal",
         ].includes(mapAttemptError(error).code)
       ) {
-        const saved = await readTerminalAlphabetResult(attemptId);
+        const saved = await readTerminalAttemptResult(attemptId, identity);
         if (saved) {
           await clearAttemptToken(attemptId, identity.authUserId, saved.scheduledChallengeId);
           return responseFor(
-            { ...saved.result, phase: "results" },
+            { ...saved.result, ...(await readTerminalReviewSafely(attemptId)), phase: "results" },
             200,
             requestId,
             "competitive.attempt.recover",
@@ -69,7 +69,7 @@ export async function POST(
     }
     const snapshot = recovered.snapshot;
     if (recovered.completed) {
-      const review = await readTerminalFlashReview(attemptId);
+      const review = await readTerminalReviewSafely(attemptId);
       await clearAttemptToken(attemptId, identity.authUserId, snapshot.scheduledChallengeId);
       return responseFor(
         {
@@ -81,7 +81,7 @@ export async function POST(
           ...(snapshot.challengeMode === "narrative" && snapshot.narrativeCursor
             ? { narrativeCursor: snapshot.narrativeCursor }
             : {}),
-          review,
+          ...review,
           score: recovered.completed.score,
           ...(snapshot.challengeMode === "survival"
             ? {

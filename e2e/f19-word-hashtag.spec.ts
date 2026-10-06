@@ -52,15 +52,15 @@ test.describe("F19 — word-hashtag competitivo", () => {
     expect(await page.content()).not.toContain("solutionPayload");
 
     const requestBodies: Array<Record<string, unknown>> = [];
-    let firstResponse = true;
+    let failureResponses = 2;
     await page.route("**/api/competitive/attempts/*/word-hashtag/swap", async (route) => {
       const body = route.request().postDataJSON() as Record<string, unknown>;
       requestBodies.push(body);
-      if (!firstResponse) {
+      if (failureResponses === 0) {
         await route.continue();
         return;
       }
-      firstResponse = false;
+      failureResponses--;
       const response = await route.fetch();
       await response.body();
       await route.fulfill({
@@ -71,9 +71,11 @@ test.describe("F19 — word-hashtag competitivo", () => {
     });
 
     await swap(page, 1, 7);
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar" }).click();
-    expect(requestBodies).toHaveLength(2);
+    await expect.poll(() => requestBodies.length).toBe(2);
+    await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar", exact: true }).click();
+    await expect.poll(() => requestBodies.length).toBe(3);
+    expect(requestBodies[2]).toEqual(requestBodies[0]);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await swap(page, 5, 13);
     await swap(page, 16, 19);

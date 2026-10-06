@@ -34,6 +34,8 @@ describe("competitive performance diagnostics", () => {
       "attempt.answer",
       async () => {
         observer.setMode("alphabet");
+        observer.recordRecovery?.("receipt_pending");
+        observer.recordRecovery?.("evaluation_recovered");
         count("transactions");
         await observer.measure("attempt.scoring", () => pending);
         count("sqlQueries");
@@ -57,6 +59,7 @@ describe("competitive performance diagnostics", () => {
       sqlQueries: 1,
       rpcCalls: 0,
       result: "ok",
+      recoveryEvents: { receipt_pending: 1, evaluation_recovered: 1 },
     });
     expect(read).toMatchObject({ mode: "narrative", transactions: 0, sqlQueries: 0, rpcCalls: 1 });
     expect(answer.phases["attempt.scoring"]).toBeGreaterThanOrEqual(0);

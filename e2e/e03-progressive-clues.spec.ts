@@ -45,15 +45,15 @@ test.describe("E03 — Progressive-clues competitivo", () => {
     await expect(page.getByText("Está relacionado con una caída de muro.")).toHaveCount(0);
     expect(await page.content()).not.toContain("Caída del muro de Berlín");
 
-    let firstResponse = true;
+    let failureResponses = 2;
     const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/progressive-clues/reveal", async (route) => {
       requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
-      if (!firstResponse) {
+      if (failureResponses === 0) {
         await route.continue();
         return;
       }
-      firstResponse = false;
+      failureResponses--;
       const response = await route.fetch();
       await route.fulfill({
         status: 503,
@@ -64,9 +64,11 @@ test.describe("E03 — Progressive-clues competitivo", () => {
     });
 
     await page.getByRole("button", { name: /Revelar otra pista/ }).click();
+    await expect.poll(() => requestBodies.length).toBe(2);
     await expect(page.getByRole("button", { name: "Reintentar revelación" })).toBeVisible();
     await page.getByRole("button", { name: "Reintentar revelación" }).click();
-    expect(requestBodies).toHaveLength(2);
+    await expect.poll(() => requestBodies.length).toBe(3);
+    expect(requestBodies[2]).toEqual(requestBodies[0]);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("2 de 3 pistas")).toBeVisible();
     await expect(page.getByText("Máximo: 37 pts")).toBeVisible();

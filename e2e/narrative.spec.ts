@@ -1,3 +1,4 @@
+import { loseGameplayConfirmations } from "./support/lost-confirmations";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -40,6 +41,7 @@ test.describe("Fase 2 — Narrative competitivo persistido", () => {
     page,
   }) => {
     test.setTimeout(60_000);
+    const verifyConfirmations = await loseGameplayConfirmations(page);
     const data = await fixture();
     await openNarrative(page, data.users.alice);
 
@@ -76,6 +78,7 @@ test.describe("Fase 2 — Narrative competitivo persistido", () => {
     await expect(
       page.getByText("NARRATIVE_PRIVATE_TWO: El termómetro registra la temperatura."),
     ).toBeVisible();
+    await verifyConfirmations();
   });
 
   test("persiste un timeout, recupera la siguiente escena tras recargar y termina", async ({

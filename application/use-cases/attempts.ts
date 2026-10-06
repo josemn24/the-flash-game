@@ -43,6 +43,8 @@ import type {
   SubmitWordHashtagSwapResult,
   SubmitWordSearchSelectionInput,
   SubmitWordSearchSelectionResult,
+  PrepareAttemptSessionInput,
+  PrepareAttemptSessionResult,
   ValidateQueensBoardInput,
   ValidateQueensBoardResult,
   RevealProgressiveClueInput,
@@ -56,6 +58,8 @@ export type AttemptUseCaseDependencies = {
   readonly commands: Pick<
     AttemptCommands,
     | "start"
+    | "prepareSession"
+    | "readRecordedEvaluation"
     | "prepare"
     | "activate"
     | "receiveAnswer"
@@ -113,6 +117,11 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
     this.beforeInteractiveAction = dependencies.beforeInteractiveAction;
   }
 
+  async prepareSession(input: PrepareAttemptSessionInput): Promise<PrepareAttemptSessionResult> {
+    await this.commands.prepareSession(input);
+    return { ready: true };
+  }
+
   async start(input: StartAttemptUseCaseInput): Promise<StartAttemptUseCaseResult> {
     const sessionToken = input.sessionToken ?? this.sessionTokens.generate();
     const result = await this.commands.start({ ...input, sessionToken });
@@ -159,6 +168,7 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
   }
 
   async recover(input: RecoverAttemptInput): Promise<RecoveryUseCaseResult> {
+    this.performanceObserver?.recordRecovery?.("recovery_requested");
     const initial = await this.commands.readRecovery(input.attemptId, input.sessionToken);
     if (initial.challengeMode === "alphabet" && initial.deadlineReached) {
       const { result: completed } = await this.complete(input);
@@ -354,19 +364,41 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
     readonly receiptId: AnswerReceiptId;
     readonly idempotencyKey: string;
   }): Promise<SubmitAnswerResult> {
+    const saved = await this.commands.readRecordedEvaluation(input.receiptId, input.sessionToken);
+    if (saved) {
+      this.performanceObserver?.recordRecovery?.("evaluation_replayed");
+      return saved;
+    }
+    this.performanceObserver?.recordRecovery?.("receipt_pending");
     const result = await this.scoreReceipt(input);
-    const recorded = await observePerformance(this.performanceObserver, "attempt.record", () =>
-      this.commands.recordEvaluation({
-        attemptId: input.attemptId as SubmitAnswerResult["attemptId"],
-        sessionToken: input.sessionToken,
-        lockVersion: input.lockVersion,
-        idempotencyKey: input.idempotencyKey,
-        receiptId: input.receiptId,
-        status: result.status,
-        points: result.points,
-        ...(result.details ? { resultDetails: result.details } : {}),
-      }),
-    );
+    let recorded: SubmitAnswerResult;
+    try {
+      recorded = await observePerformance(this.performanceObserver, "attempt.record", () =>
+        this.commands.recordEvaluation({
+          attemptId: input.attemptId as SubmitAnswerResult["attemptId"],
+          sessionToken: input.sessionToken,
+          lockVersion: input.lockVersion,
+          idempotencyKey: input.idempotencyKey,
+          receiptId: input.receiptId,
+          status: result.status,
+          points: result.points,
+          ...(result.details ? { resultDetails: result.details } : {}),
+        }),
+      );
+    } catch (error) {
+      const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+      if (["stale_version", "already_evaluated", "idempotency_conflict"].includes(String(code))) {
+        const concurrent = await this.commands.readRecordedEvaluation(
+          input.receiptId,
+          input.sessionToken,
+        );
+        if (concurrent) {
+          this.performanceObserver?.recordRecovery?.("evaluation_recovered");
+          return concurrent;
+        }
+      }
+      throw error;
+    }
     return {
       ...recorded,
       ...(result.details ? { details: result.details } : {}),

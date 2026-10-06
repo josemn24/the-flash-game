@@ -462,7 +462,7 @@
 - Agotar el ciclo muestra «Reintentar» conservando el estado. Credenciales, permisos y datos inválidos
   requieren intervención del usuario; una versión obsoleta requiere reconciliación autorizada.
 - La [política de esperas y retries](request-retries.md) detalla categorías, aceptación y aspectos
-  pendientes. Los mecanismos actuales cubren parte del acuerdo; la implementación completa está pendiente.
+  pendientes. El runtime competitivo ya aplica los valores; la política completa de consultas sigue pendiente.
 
 ## 19. Guardado automático y recuperación de partidas
 
@@ -481,9 +481,9 @@
   un envío incierto se muestra pendiente y se reconcilia antes de avanzar.
 - Los borradores de formularios administrativos o de perfil quedan fuera de esta decisión y
   requieren una política específica. No se ha aprobado su guardado automático.
-- Pendiente verificar cobertura en los cinco modos: recepción durable, evaluación, checkpoint,
-  puntos y plazos coherentes incluso ante pérdida de respuesta HTTP o interrupción entre fases.
-  Esta actualización documenta el acuerdo; no modifica la implementación.
+- La [implementación competitiva](../current/competitive-command-recovery.md) incorpora recuperación
+  durable y pruebas de pérdida de confirmación en los cinco modos. La validación en staging sigue
+  pendiente antes de publicar.
 - **Casos de aceptación:** aceptar una respuesta y recargar conserva una sola evaluación y los
   mismos puntos/plazos; escribir sin enviar y recargar no restaura el texto ni lo puntúa; perder
   la confirmación HTTP después de persistir recupera la recepción sin duplicarla; interrumpir

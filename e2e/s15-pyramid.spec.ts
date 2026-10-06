@@ -1,3 +1,4 @@
+import { loseGameplayConfirmations } from "./support/lost-confirmations";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -502,6 +503,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
 
     const memberContext = await browser.newContext();
     const member = await memberContext.newPage();
+    const verifyConfirmations = await loseGameplayConfirmations(member);
     const ownerContext = await browser.newContext();
     const owner = await ownerContext.newPage();
     const interruptedContext = await browser.newContext();
@@ -537,18 +539,8 @@ test.describe("S15 — La Pirámide competitiva", () => {
           await expect(member.locator("header").getByText(/Nivel 1/)).toBeVisible();
           await member.setViewportSize({ width: 1280, height: 720 });
           await expect(member.locator("p[aria-label='Nivel 1 de 7']")).toBeVisible();
-          let failFirstAnswerRequest = true;
-          await member.route("**/api/competitive/attempts/*/answer", async (route) => {
-            if (failFirstAnswerRequest) {
-              failFirstAnswerRequest = false;
-              await route.abort();
-              return;
-            }
-            await route.continue();
-          });
           await member.getByRole("button", { name: "Verdadero" }).click();
           await expect(member.getByText("No hemos podido confirmar tu respuesta.")).toBeVisible();
-          await member.getByRole("button", { name: "Reintentar" }).click();
         } else if (level === 2) {
           await expect(
             member.getByRole("heading", { name: /Qué personaje bíblico soy/ }),
@@ -749,6 +741,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
       await member.goto(`/salas/${room.roomSlug}/ranking`);
       await expect(member.getByText("Member S15")).toBeVisible();
       await expect(member.getByRole("img", { name: /Flash Points$/ }).first()).toBeVisible();
+      await verifyConfirmations();
     } finally {
       await memberContext.close();
       await ownerContext.close();

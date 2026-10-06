@@ -106,7 +106,7 @@ export class SupabaseSurvivalQueries {
     const result = resultRows.length ? supabaseFlashQueries.toResult(resultRows) : undefined;
     const terminalReview =
       resultRows.length && first.own_attempt_id
-        ? await this.getTerminalReview(first.own_attempt_id)
+        ? await this.getTerminalReview(first.own_attempt_id).catch(() => undefined)
         : undefined;
 
     const challenge: ServerSurvivalChallenge = {

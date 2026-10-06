@@ -1,3 +1,4 @@
+import { loseGameplayConfirmations } from "./support/lost-confirmations";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -148,6 +149,7 @@ test.describe("S14 — supervivencia competitiva", () => {
 
     const memberContext = await browser.newContext();
     const member = await memberContext.newPage();
+    const verifyConfirmations = await loseGameplayConfirmations(member);
     const spectatorContext = await browser.newContext();
     const spectator = await spectatorContext.newPage();
     try {
@@ -158,7 +160,9 @@ test.describe("S14 — supervivencia competitiva", () => {
       const playableUrl = member.url();
       await expect(member.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
       await member.getByRole("button", { name: "Empezar desafío" }).click();
-      await expect(member.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+      await expect(member.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+        timeout: 15_000,
+      });
       await expect(member.getByLabel("1 de 1 vidas")).toBeVisible();
       expect(await member.content()).not.toContain("Lisboa es la capital de Portugal.");
       await member.getByRole("button", { name: "Lisboa" }).click();
@@ -190,6 +194,7 @@ test.describe("S14 — supervivencia competitiva", () => {
       await member.goto(`/salas/${data.data.e2eRoomSlug}/ranking`);
       await expect(member.getByText("Member S14")).toBeVisible();
       await expect(member.getByRole("img", { name: `${score} Flash Points` })).toBeVisible();
+      await verifyConfirmations();
     } finally {
       await memberContext.close();
       await spectatorContext.close();

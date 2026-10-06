@@ -90,6 +90,20 @@ describe("Supabase attempt database connection", () => {
   });
 
   const attemptId = "00000000-0000-4000-8000-000000000003";
+  it.each(["not_authorized", "session_revoked", "competitive_access_denied"])(
+    "preserves domain denial %s even with PostgreSQL permission SQLSTATE",
+    async (code) => {
+      client.query.mockImplementation(async (sql: string) => {
+        if (sql.includes("private.start_attempt"))
+          throw Object.assign(new Error(code), { code: "42501" });
+        return {};
+      });
+      await expect(
+        callAttemptCommand({ authUserId: attemptId }, "start_attempt", {}),
+      ).rejects.toMatchObject({ code });
+      expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
+    },
+  );
   const context = {
     challengeMode: "alphabet",
     scheduledChallengeId: "00000000-0000-4000-8000-000000000002",
@@ -147,7 +161,7 @@ describe("Supabase attempt database connection", () => {
     expect(client.query.mock.calls.some(([sql]) => sql.includes("read_attempt_context"))).toBe(
       false,
     );
-    expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
+    expect(client.query).toHaveBeenLastCalledWith("COMMIT");
     expect(client.release).toHaveBeenCalledOnce();
   });
 

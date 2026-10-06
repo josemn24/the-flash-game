@@ -190,7 +190,9 @@ begin
       raise exception 'not_authorized' using errcode = '42501';
     end if;
     select * into a from public.attempts where player_id = actor and scheduled_challenge_id = target and kind = 'competitive' for update;
-    if cached_result is not null then return jsonb_build_object(
+    if cached_result is not null then
+      perform private.authorize_attempt_replay(a.id, safe_input->>'sessionToken');
+      return jsonb_build_object(
         'result', cached_result,
         'entityType', 'attempt',
         'entityId', a.id,

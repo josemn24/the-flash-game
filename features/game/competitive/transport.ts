@@ -54,25 +54,52 @@ export async function postCompetitiveJson<T>(
   path: string,
   body: object,
   parser: CompetitiveResponseParser<T>,
+  options: { timeoutMs?: number; signal?: AbortSignal } = {},
 ): Promise<T> {
-  const response = await fetch(path, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(body),
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let onAbort: (() => void) | undefined;
+  const cancelled = new Promise<never>((_, reject) => {
+    onAbort = () => {
+      controller.abort();
+      reject(new CompetitiveCommandError("request_cancelled", 0));
+    };
+    if (options.signal?.aborted) onAbort();
+    else options.signal?.addEventListener("abort", onAbort, { once: true });
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new CompetitiveCommandError("request_timeout", 0));
+    }, options.timeoutMs ?? 5000);
   });
-  const retryAfterSeconds = parseRetryAfter(response.headers.get("retry-after"));
-  let value: unknown;
   try {
-    value = await response.json();
-  } catch {
-    throw new CompetitiveCommandError(
-      response.ok ? "invalid_json_response" : "competitive_command_failed",
-      response.status,
-      retryAfterSeconds,
-    );
+    if (options.signal?.aborted) return await cancelled;
+    return await Promise.race([
+      cancelled,
+      (async () => {
+        const response = await fetch(path, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        const retryAfterSeconds = parseRetryAfter(response.headers.get("retry-after"));
+        let value: unknown;
+        try {
+          value = await response.json();
+        } catch {
+          throw new CompetitiveCommandError(
+            response.ok ? "invalid_json_response" : "competitive_command_failed",
+            response.status,
+            retryAfterSeconds,
+          );
+        }
+        if (!response.ok)
+          throw new CompetitiveCommandError(errorCode(value), response.status, retryAfterSeconds);
+        return parser(value);
+      })(),
+    ]);
+  } finally {
+    clearTimeout(timer);
+    if (onAbort) options.signal?.removeEventListener("abort", onAbort);
   }
-  if (!response.ok) {
-    throw new CompetitiveCommandError(errorCode(value), response.status, retryAfterSeconds);
-  }
-  return parser(value);
 }

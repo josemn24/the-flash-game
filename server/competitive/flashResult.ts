@@ -1,4 +1,10 @@
 import "server-only";
+import type { AuthenticatedActor } from "@/application/ports/actors";
+import { SupabaseAttemptCommands } from "@/infrastructure/supabase/attempts/attemptCommands";
+import {
+  competitivePerformanceObserver,
+  observeCompetitiveOperation,
+} from "@/infrastructure/observability/competitivePerformance";
 
 import { supabaseFlashQueries } from "@/infrastructure/supabase/gameplay/flashQueries";
 import { supabaseAlphabetQueries } from "@/infrastructure/supabase/gameplay/alphabetQueries";
@@ -23,31 +29,32 @@ export async function readTerminalFlashReview(attemptId: string) {
   return supabaseNarrativeQueries.getTerminalReview(attemptId);
 }
 
-/** Authorized terminal projection also works after completion revokes the attempt session. */
-export async function readTerminalAlphabetResult(attemptId: string) {
-  const rows = await supabaseAlphabetQueries.getTerminalReview(attemptId);
-  const first = rows[0];
-  if (!first) return undefined;
-  return {
-    scheduledChallengeId: first.scheduled_challenge_id,
-    result: {
-      attemptId: first.attempt_id,
-      lockVersion: first.attempt_lock_version,
-      status: "completed" as const,
-      score: first.attempt_score,
-      answers: rows.map((row) => ({
-        challengeItemId: row.challenge_item_id,
-        answer: row.answer,
-        status: row.answer_status ?? "unanswered",
-        points: row.points,
-        timeUsedMs: row.time_used_ms,
-        resultDetails: row.result_details,
-      })),
-      review: rows.map((row) => ({
-        challengeItemId: row.challenge_item_id,
-        publicPayload: row.public_payload,
-        solutionPayload: row.solution_payload,
-      })),
-    },
-  };
+/** Safe completion projection independent of controller cookies and review assets. */
+export async function readTerminalAttemptResult(attemptId: string, identity: AuthenticatedActor) {
+  return observeCompetitiveOperation("attempt.readCompletedResult", async () => {
+    const saved = await new SupabaseAttemptCommands(identity).readCompletedAttempt(attemptId);
+    if (saved) competitivePerformanceObserver.recordRecovery?.("completed_result_recovered");
+    return saved;
+  });
+}
+
+export async function readAbandonedAttemptResult(attemptId: string, identity: AuthenticatedActor) {
+  return new SupabaseAttemptCommands(identity).readAbandonedAttempt(attemptId);
+}
+
+export async function readTerminalReviewSafely(attemptId: string) {
+  return observeCompetitiveOperation("attempt.readTerminalReview", async () => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const unavailable = new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("review_timeout")), 2000);
+      });
+      return { review: await Promise.race([readTerminalFlashReview(attemptId), unavailable]) };
+    } catch {
+      competitivePerformanceObserver.recordRecovery?.("review_pending");
+      return { review: [], reviewPending: true as const };
+    } finally {
+      clearTimeout(timer);
+    }
+  });
 }

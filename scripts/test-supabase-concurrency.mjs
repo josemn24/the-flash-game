@@ -325,12 +325,73 @@ export async function testConcurrentCommands(sql) {
     answer: true,
     idempotencyKey: "same-response",
   };
-  const answers = await race("owner", "owner", "receive_answer", response, response);
+  const firstAnswer = await invoke("owner", "receive_answer", response, true);
+  const answers = await Promise.allSettled([
+    firstAnswer.done,
+    ...Array.from({ length: 9 }, () => run("owner", "receive_answer", response)),
+  ]);
   assert.ok(answers.every((r) => r.status === "fulfilled"));
   assert.deepEqual(
     answers[0].value,
     answers[1].value,
     "Concurrent retries return the same receipt",
+  );
+  assert.equal((await sql("select count(*) from private.answer_receipts;")).trim(), "1");
+  await assert.rejects(
+    run("owner", "receive_answer", { ...response, answer: false }),
+    /idempotency_conflict/,
+  );
+  const receipt = answers[0].value;
+  const recoveryInput = {
+    attemptId: a.attemptId,
+    lockVersion: receipt.lockVersion,
+    sessionToken: response.sessionToken,
+    idempotencyKey: "race-recovery",
+  };
+  const evaluationInput = {
+    attemptId: a.attemptId,
+    lockVersion: receipt.lockVersion,
+    sessionToken: response.sessionToken,
+    receiptId: receipt.receiptId,
+    status: "correct",
+    points: 50,
+    idempotencyKey: "race-evaluation",
+  };
+  const recovery = await invoke("owner", "recover_attempt", recoveryInput, true);
+  const evaluating = await invoke("owner", "record_evaluation", evaluationInput);
+  const competing = await Promise.allSettled([recovery.done, evaluating.done]);
+  assert.equal(competing[0].status, "fulfilled");
+  assert.equal(competing[0].value.receiptId, receipt.receiptId);
+  assert.equal(competing[1].status, "rejected");
+  assert.match(competing[1].reason.message, /stale_version/);
+  const evaluatedInput = { ...evaluationInput, lockVersion: competing[0].value.lockVersion };
+  const evaluations = await race("owner", "owner", "record_evaluation", evaluatedInput, {
+    ...evaluatedInput,
+    idempotencyKey: "race-evaluation-recovery",
+  });
+  requireOneConflict(evaluations, "Concurrent evaluator and recovery register one evaluation");
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.attempt_answers where receipt_id=${quote(receipt.receiptId)};`,
+      )
+    ).trim(),
+    "1",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.answer_receipts where attempt_id=${quote(a.attemptId)};`,
+      )
+    ).trim(),
+    "1",
+  );
+  const tenReplays = await Promise.all(
+    Array.from({ length: 10 }, () => run("owner", "receive_answer", response)),
+  );
+  assert.ok(
+    tenReplays.every((value) => JSON.stringify(value) === JSON.stringify(answers[0].value)),
+    "Ten independent retries return one receipt",
   );
   assert.equal((await sql("select count(*) from private.answer_receipts;")).trim(), "1");
 

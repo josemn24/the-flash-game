@@ -1,3 +1,4 @@
+import { loseGameplayConfirmations } from "./support/lost-confirmations";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -40,6 +41,8 @@ test.describe("S03 — Flash competitivo persistido", () => {
   test("completa dos preguntas, persiste el resultado y lo conserva tras recargar", async ({
     page,
   }) => {
+    test.setTimeout(60000);
+    const verifyConfirmations = await loseGameplayConfirmations(page);
     const data = await fixture();
     await openFlash(page, data.users.alice);
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
@@ -60,15 +63,16 @@ test.describe("S03 — Flash competitivo persistido", () => {
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").first().locator("summary").click();
     await expect(page.getByText("Lisboa es la capital de Portugal")).toBeVisible();
+    await verifyConfirmations();
   });
 
   test("persiste un resultado válido con score cero", async ({ page }) => {
-    let firstResponse = true;
+    let failureResponses = 2;
     const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/api/competitive/attempts/*/answer", async (route) => {
       requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
-      if (!firstResponse) return route.continue();
-      firstResponse = false;
+      if (failureResponses === 0) return route.continue();
+      failureResponses--;
       const response = await route.fetch();
       await route.fulfill({
         status: 503,
@@ -81,10 +85,12 @@ test.describe("S03 — Flash competitivo persistido", () => {
     await openFlash(page, (await fixture()).users.carol);
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
     await page.getByRole("button", { name: "Oporto" }).click();
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
+    await expect.poll(() => requestBodies.length).toBe(2);
+    await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
     await expect(page.getByRole("button", { name: "Oporto" })).toHaveCount(0);
-    await page.getByRole("button", { name: "Reintentar" }).click();
-    expect(requestBodies).toHaveLength(2);
+    await page.getByRole("button", { name: "Reintentar", exact: true }).click();
+    await expect.poll(() => requestBodies.length).toBe(3);
+    expect(requestBodies[2]).toEqual(requestBodies[0]);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Venus" }).click();

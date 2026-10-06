@@ -97,6 +97,7 @@ begin
   perform private.lock_command_key(actor, key);
   select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
   if found and (cached.operation <> 'recover' or cached.input <> safe_input) then raise exception 'idempotency_conflict' using errcode = '40001'; end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
   if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
@@ -165,6 +166,7 @@ create function private.read_attempt_recovery(target_attempt uuid, session_token
 language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.command_actor(); result jsonb;
 begin
+  perform private.authorize_attempt_replay(target_attempt, private.secret_hash(session_token));
   select jsonb_build_object(
     'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status,
     'lockVersion', a.lock_version,

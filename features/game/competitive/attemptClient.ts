@@ -12,6 +12,7 @@ type AttemptCommandContext = {
 };
 
 export type CompetitiveAttemptClient = {
+  prepareSession: (input: { scheduledChallengeId: string }) => Promise<CompetitiveJsonObject>;
   start: (input: {
     scheduledChallengeId: string;
     idempotencyKey: string;
@@ -86,12 +87,15 @@ export type CompetitiveAttemptClient = {
   ) => Promise<CompetitiveJsonObject>;
 };
 
-function post(path: string, body: object) {
-  return postCompetitiveJson(path, body, parseCompetitiveObject);
-}
-
-export function createCompetitiveAttemptClient(): CompetitiveAttemptClient {
+export function createCompetitiveAttemptClient(signal?: AbortSignal): CompetitiveAttemptClient {
+  const post = (path: string, body: object) =>
+    postCompetitiveJson(path, body, parseCompetitiveObject, {
+      signal,
+      timeoutMs: path.endsWith("/complete") ? 10000 : 5000,
+    });
   return {
+    prepareSession: ({ scheduledChallengeId }) =>
+      post("/api/competitive/attempts/session", { scheduledChallengeId }),
     start: ({ scheduledChallengeId, idempotencyKey }) =>
       post("/api/competitive/attempts/start", { scheduledChallengeId, idempotencyKey }),
     recover: ({ attemptId, lockVersion }) =>

@@ -74,6 +74,7 @@ function setup(
   const calls = Object.fromEntries(Object.keys(client).map((key) => [key, vi.fn()])) as unknown as {
     [K in keyof typeof client]: ReturnType<typeof vi.fn<(typeof client)[K]>>;
   };
+  calls.prepareSession.mockResolvedValue({ ready: true });
   calls.start.mockResolvedValue({ attemptId: "attempt", lockVersion: 1 });
   calls.prepare.mockResolvedValue(prepared());
   calls.answer.mockResolvedValue(accepted(3));
@@ -1043,6 +1044,98 @@ describe("Alphabet atomic finalization", () => {
     await engine.interactions.onTimeUp();
     engine.dispose();
     await vi.advanceTimersByTimeAsync(10000);
+    expect(calls.complete).toHaveBeenCalledOnce();
+  });
+});
+
+describe("bounded gameplay retries", () => {
+  it("automatically retries an uncertain answer once with the exact input", async () => {
+    const { engine, calls } = setup();
+    await play(engine);
+    calls.answer.mockRejectedValue(new TypeError("connection lost after commit"));
+    await engine.interactions.submit("A");
+    await vi.advanceTimersByTimeAsync(999);
+    expect(calls.answer).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(calls.answer).toHaveBeenCalledTimes(2);
+    expect(calls.answer.mock.calls[1]).toEqual(calls.answer.mock.calls[0]);
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(calls.answer).toHaveBeenCalledTimes(2);
+    expect(engine.getSnapshot().pendingCommand).not.toBeNull();
+    expect(engine.getSnapshot().lifecycleError?.message).toBe(
+      "No hemos podido confirmar la operación",
+    );
+    const clickEvent: { self?: unknown } = {};
+    clickEvent.self = clickEvent;
+    await engine.retry(clickEvent as unknown as boolean);
+    expect(calls.answer).toHaveBeenCalledTimes(3);
+  });
+  it("gives a new input its own retry budget after a definitive rejection", async () => {
+    const { engine, calls } = setup({
+      ...flash,
+      slots: [{ ...slot("a"), questionType: "mini-wordle" }],
+    });
+    calls.prepare.mockResolvedValue(
+      prepared("a", 2, {
+        question: "Palabra",
+        wordLength: 4,
+        maxAttempts: 6,
+        hint: null,
+      }),
+    );
+    calls.miniWordleGuess
+      .mockRejectedValueOnce(new TypeError("lost response"))
+      .mockRejectedValueOnce(new CompetitiveCommandError("invalid_mini_wordle_guess", 400))
+      .mockRejectedValue(new TypeError("another lost response"));
+    await play(engine);
+    await engine.interactions.submitMiniWordleGuess("ZZZZ");
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(engine.getSnapshot().pendingCommand).toBeNull();
+    await engine.interactions.submitMiniWordleGuess("CASA");
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(calls.miniWordleGuess).toHaveBeenCalledTimes(4);
+    expect(calls.miniWordleGuess.mock.calls[3]).toEqual(calls.miniWordleGuess.mock.calls[2]);
+  });
+  it("stops retries and removes protected content after permission loss", async () => {
+    const { engine, calls } = setup();
+    await play(engine);
+    calls.answer
+      .mockRejectedValueOnce(new TypeError("lost response"))
+      .mockRejectedValue(new CompetitiveCommandError("not_authorized", 404));
+    await engine.interactions.submit("A");
+    await vi.advanceTimersByTimeAsync(1000);
+    await engine.retry();
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(calls.answer).toHaveBeenCalledTimes(2);
+    expect(engine.getSnapshot()).toMatchObject({
+      locked: true,
+      question: null,
+      pendingCommand: null,
+      lifecycleError: { retryable: false },
+    });
+  });
+  it("keeps the completed score when the review is temporarily unavailable", async () => {
+    const { engine, calls, refresh } = setup({ ...flash, slots: [slot("a")] });
+    calls.complete.mockResolvedValue({
+      lockVersion: 6,
+      score: 20,
+      review: [],
+      reviewPending: true,
+    });
+    await play(engine);
+    await engine.interactions.submit("A");
+    await vi.advanceTimersByTimeAsync(1100);
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "results",
+      score: 20,
+      reviewChallenge: null,
+      lifecycleError: { operation: "projection" },
+    });
+    calls.recover.mockResolvedValue({ lockVersion: 6, score: 20, review: [] });
+    await engine.retry();
+    expect(refresh).not.toHaveBeenCalled();
+    expect(calls.recover).toHaveBeenCalledOnce();
+    expect(engine.getSnapshot().lifecycleError).toBeUndefined();
     expect(calls.complete).toHaveBeenCalledOnce();
   });
 });

@@ -47,6 +47,7 @@ export type LifecycleError = {
   readonly message: string;
   readonly code?: string;
   readonly retryAt?: number;
+  readonly retryable?: boolean;
 };
 export type SessionState = {
   phase: SessionPhase;
@@ -95,6 +96,7 @@ export type SessionEvent =
       definitive?: boolean;
       notice?: string;
     }
+  | { type: "authorization_lost"; error: LifecycleError }
   | { type: "feedback_visible" }
   | {
       type: "prepared";
@@ -123,6 +125,7 @@ export type SessionEvent =
   | { type: "recovered"; attempt: Attempt; results: AnswerResult[] }
   | {
       type: "completed";
+      reviewPending?: boolean;
       score: number;
       reviewChallenge: SessionReview | null;
       results?: AnswerResult[];
@@ -202,7 +205,8 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         attempt: event.attempt,
         pendingCommand: null,
         busy: false,
-        lifecycleError: undefined,
+        lifecycleError:
+          state.lifecycleError?.code === "review_pending" ? state.lifecycleError : undefined,
         feedback: state.feedback?.state === "submitting" ? undefined : state.feedback,
       };
     case "command_failed":
@@ -216,6 +220,12 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         startNotice: event.notice,
         levelNotice: event.notice,
         phase: event.definitive && state.question ? "playing" : state.phase,
+      };
+    case "authorization_lost":
+      return {
+        ...initialSessionState("recovering"),
+        locked: true,
+        lifecycleError: event.error,
       };
     case "feedback_visible":
       return {
@@ -291,7 +301,13 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         questionDeadlineAt: null,
         progress: null,
         pendingCommand: null,
-        lifecycleError: undefined,
+        lifecycleError: event.reviewPending
+          ? {
+              operation: "projection",
+              code: "review_pending",
+              message: "Revisión temporalmente no disponible. Puedes volver a cargarla.",
+            }
+          : undefined,
         feedback: undefined,
         locked: true,
         busy: false,

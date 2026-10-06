@@ -1061,6 +1061,31 @@
       "arguments": "target_room_slug text, target_publication_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
+    },
+    "private.authorize_attempt_replay": {
+      "arguments": "target_attempt uuid, token_hash text",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.prepare_attempt_session": {
+      "arguments": "target_publication uuid",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_recorded_evaluation": {
+      "arguments": "target_receipt uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_completed_attempt": {
+      "arguments": "target_attempt uuid",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_abandoned_attempt": {
+      "arguments": "target_attempt uuid",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
     }
   }
 }

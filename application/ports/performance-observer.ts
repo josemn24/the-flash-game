@@ -17,6 +17,15 @@ export type PerformancePhase =
 export interface PerformanceObserver {
   measure<T>(phase: PerformancePhase, work: () => T | Promise<T>): Promise<T>;
   setMode(mode: GameMode): void;
+  recordRecovery?(
+    event:
+      | "receipt_pending"
+      | "evaluation_replayed"
+      | "evaluation_recovered"
+      | "recovery_requested"
+      | "completed_result_recovered"
+      | "review_pending",
+  ): void;
 }
 
 export function observePerformance<T>(

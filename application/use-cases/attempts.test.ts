@@ -53,6 +53,8 @@ function evaluationContext(): EvaluationContext {
 
 function createUseCases(overrides: Partial<AttemptUseCaseDependencies> = {}) {
   const commands = {
+    prepareSession: vi.fn(),
+    readRecordedEvaluation: vi.fn().mockResolvedValue(null),
     start: vi.fn(),
     prepare: vi.fn(),
     activate: vi.fn(),
@@ -492,5 +494,45 @@ describe("ApplicationAttemptUseCases", () => {
     expect(commands.recordEvaluation).toHaveBeenCalledWith(
       expect.objectContaining({ idempotencyKey: `evaluation:${receiptId}` }),
     );
+  });
+});
+
+describe("durable receipt reconciliation", () => {
+  it("returns a persisted evaluation without calling the evaluator again", async () => {
+    const { commands, evaluator, useCases } = createUseCases();
+    vi.mocked(commands.receiveAnswer).mockResolvedValue({ receiptId, lockVersion: 4 } as never);
+    const saved = { attemptId, receiptId, lockVersion: 5, status: "correct", points: 7 } as const;
+    vi.mocked(commands.readRecordedEvaluation).mockResolvedValue(saved);
+    expect((await useCases.submitAnswer(answerInput)).evaluated).toEqual(saved);
+    expect(evaluator.evaluate).not.toHaveBeenCalled();
+    expect(commands.recordEvaluation).not.toHaveBeenCalled();
+  });
+
+  it.each(["stale_version", "already_evaluated", "idempotency_conflict"])(
+    "reconciles %s when another request committed the evaluation",
+    async (code) => {
+      const { commands, useCases } = createUseCases();
+      vi.mocked(commands.receiveAnswer).mockResolvedValue({ receiptId, lockVersion: 4 } as never);
+      vi.mocked(commands.readEvaluationContext).mockResolvedValue(evaluationContext());
+      const saved = { attemptId, receiptId, lockVersion: 6, status: "correct", points: 7 } as const;
+      vi.mocked(commands.readRecordedEvaluation)
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce(saved);
+      vi.mocked(commands.recordEvaluation).mockRejectedValue({ code });
+      expect((await useCases.submitAnswer(answerInput)).evaluated).toEqual(saved);
+      expect(commands.receiveAnswer).toHaveBeenCalledOnce();
+      expect(commands.recordEvaluation).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("keeps a concurrency conflict when no evaluation has committed", async () => {
+    const { commands, useCases } = createUseCases();
+    vi.mocked(commands.receiveAnswer).mockResolvedValue({ receiptId, lockVersion: 4 } as never);
+    vi.mocked(commands.readEvaluationContext).mockResolvedValue(evaluationContext());
+    vi.mocked(commands.recordEvaluation).mockRejectedValue({ code: "stale_version" });
+    await expect(useCases.submitAnswer(answerInput)).rejects.toMatchObject({
+      code: "stale_version",
+    });
+    expect(commands.recordEvaluation).toHaveBeenCalledOnce();
   });
 });

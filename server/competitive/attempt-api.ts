@@ -228,6 +228,20 @@ export async function readStartAttemptToken(authUserId: string, scheduledChallen
   return (await cookies()).get(startCookieName(authUserId, scheduledChallengeId))?.value;
 }
 
+export async function setStartAttemptToken(
+  authUserId: string,
+  scheduledChallengeId: string,
+  token: string,
+) {
+  (await cookies()).set(startCookieName(authUserId, scheduledChallengeId), token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/api/competitive/attempts",
+    maxAge: attemptTokenMaxAgeSeconds,
+  });
+}
+
 export async function setAttemptToken(
   attemptId: string,
   authUserId: string,
@@ -362,7 +376,15 @@ export function errorResponse(
     durationMs: Date.now() - startedAt,
   });
   return Response.json(
-    { error: { code: mapped.code, requestId } },
+    {
+      error: {
+        code: mapped.code,
+        requestId,
+        ...(mapped.code === "attempt_session_missing"
+          ? { message: "Recarga la página para preparar la sesión antes de empezar." }
+          : {}),
+      },
+    },
     {
       status: mapped.status,
       headers: {

@@ -252,19 +252,24 @@ export class SupabaseFlashQueries {
     let terminalReview =
       resultRows.length === first.question_count ? resultRows.map(toTerminalReviewRow) : undefined;
     if (terminalReview) {
-      const authClient = await createClient();
-      const { data: authData } = await authClient.auth.getUser();
-      if (authData.user) {
-        terminalReview = await Promise.all(
-          terminalReview.map(async (review) => ({
-            ...review,
-            publicPayload: await resolveCompetitiveQuestionPayload({
-              authUserId: authData.user!.id,
-              attemptId: first.own_attempt_id!,
-              publicPayload: review.publicPayload,
-            }),
-          })),
-        );
+      try {
+        const authClient = await createClient();
+        const { data: authData } = await authClient.auth.getUser();
+        if (authData.user) {
+          terminalReview = await Promise.all(
+            terminalReview.map(async (review) => ({
+              ...review,
+              publicPayload: await resolveCompetitiveQuestionPayload({
+                authUserId: authData.user!.id,
+                attemptId: first.own_attempt_id!,
+                publicPayload: review.publicPayload,
+              }),
+            })),
+          );
+        }
+      } catch {
+        // A review asset outage must not hide an already persisted result.
+        terminalReview = undefined;
       }
     }
     const challenge: ServerFlashChallenge = {

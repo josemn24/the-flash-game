@@ -17,6 +17,9 @@ type Measurements = {
   transactions: number;
   sqlQueries: number;
   rpcCalls: number;
+  recoveryEvents: Partial<
+    Record<Parameters<NonNullable<PerformanceObserver["recordRecovery"]>>[0], number>
+  >;
 };
 const operations = new AsyncLocalStorage<Measurements>();
 const activePhases = new AsyncLocalStorage<readonly PerformancePhase[]>();
@@ -39,6 +42,10 @@ export const competitivePerformanceObserver: PerformanceObserver = {
     const collector = operations.getStore();
     if (collector) collector.mode = mode;
   },
+  recordRecovery(event) {
+    const collector = operations.getStore();
+    if (collector) collector.recoveryEvents[event] = (collector.recoveryEvents[event] ?? 0) + 1;
+  },
 };
 
 export function countCompetitiveDatabaseCall(kind: "transactions" | "sqlQueries" | "rpcCalls") {
@@ -60,6 +67,7 @@ export async function observeCompetitiveOperation<T>(
     transactions: 0,
     sqlQueries: 0,
     rpcCalls: 0,
+    recoveryEvents: {},
   };
   return operations.run(collector, async () => {
     const started = performance.now();
@@ -82,6 +90,7 @@ export async function observeCompetitiveOperation<T>(
           transactions: collector.transactions,
           sqlQueries: collector.sqlQueries,
           rpcCalls: collector.rpcCalls,
+          recoveryEvents: collector.recoveryEvents,
           result,
         }),
       );

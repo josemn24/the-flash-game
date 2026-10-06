@@ -15,8 +15,8 @@ import {
 } from "@/server/competitive/attempt-api";
 import type { AttemptId } from "@/types/domain/identifiers";
 import {
-  readTerminalFlashReview,
-  readTerminalAlphabetResult,
+  readTerminalReviewSafely,
+  readTerminalAttemptResult,
 } from "@/server/competitive/flashResult";
 
 export const runtime = "nodejs";
@@ -55,19 +55,16 @@ export async function POST(
             "attempt_terminal",
           ].includes(code)
         ) {
-          const saved = await readTerminalAlphabetResult(attemptId);
+          const saved = await readTerminalAttemptResult(attemptId, identity);
           if (saved) return saved;
         }
         throw error;
       }
     })();
-    const review =
-      "review" in completed.result
-        ? completed.result.review
-        : await readTerminalFlashReview(attemptId);
+    const review = await readTerminalReviewSafely(attemptId);
     await clearAttemptToken(attemptId, identity.authUserId, completed.scheduledChallengeId);
     return responseFor(
-      { ...completed.result, review },
+      { ...completed.result, ...review },
       200,
       requestId,
       "competitive.attempt.complete",

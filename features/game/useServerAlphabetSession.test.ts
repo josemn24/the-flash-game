@@ -122,6 +122,7 @@ describe("useServerAlphabetSession timeout finalization", () => {
       vi.fn(async (input: RequestInfo | URL) => {
         const path = String(input);
         paths.push(path);
+        if (path.endsWith("/session")) return jsonResponse({ ready: true });
         if (path.endsWith("/start"))
           return jsonResponse({ attemptId: "attempt-1", lockVersion: 1 });
         if (path.endsWith("/prepare"))
@@ -168,6 +169,7 @@ describe("useServerAlphabetSession timeout finalization", () => {
       vi.fn(async (input: RequestInfo | URL) => {
         const path = String(input);
         calls.push(path);
+        if (path.endsWith("/session")) return jsonResponse({ ready: true });
         if (path.endsWith("/start"))
           return jsonResponse({ attemptId: "attempt-1", lockVersion: 1 });
         if (path.endsWith("/prepare")) {

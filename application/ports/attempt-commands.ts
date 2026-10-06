@@ -7,6 +7,9 @@ import type {
   RecoverAttemptInput,
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
+  SavedAttemptResult,
+  SavedAbandonedAttemptResult,
+  PrepareAttemptSessionInput,
   FinishAttemptResult,
   PassInteractionInput,
   PassInteractionResult,
@@ -103,6 +106,13 @@ export type EvaluationContext = EvaluationReceipt & {
  * There is deliberately no insert/update/delete escape hatch.
  */
 export interface AttemptCommands {
+  prepareSession(input: PrepareAttemptSessionInput): Promise<void>;
+  readCompletedAttempt(attemptId: string): Promise<SavedAttemptResult | null>;
+  readAbandonedAttempt(attemptId: string): Promise<SavedAbandonedAttemptResult | null>;
+  readRecordedEvaluation(
+    receiptId: AnswerReceiptId,
+    sessionToken: string,
+  ): Promise<SubmitAnswerResult | null>;
   start(input: StartAttemptCommand): Promise<StartAttemptResult>;
   /** Reserved for a post-MVP multi-device policy; the database rejects it in the MVP. */
   takeOver(input: TakeOverAttemptCommand): Promise<TakeOverAttemptResult>;

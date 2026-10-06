@@ -3,8 +3,8 @@ const mocks = vi.hoisted(() => ({
   complete: vi.fn(),
   recover: vi.fn(),
   readAttemptToken: vi.fn(),
-  readTerminalAlphabetResult: vi.fn(),
-  readTerminalFlashReview: vi.fn(),
+  readTerminalAttemptResult: vi.fn(),
+  readTerminalReviewSafely: vi.fn(),
   clearAttemptToken: vi.fn(),
 }));
 vi.mock("@/server/competitive/attempt-api", () => ({
@@ -23,8 +23,8 @@ vi.mock("@/server/competitive/attempt-api", () => ({
   responseFor: (value: unknown) => Response.json(value),
 }));
 vi.mock("@/server/competitive/flashResult", () => ({
-  readTerminalAlphabetResult: mocks.readTerminalAlphabetResult,
-  readTerminalFlashReview: mocks.readTerminalFlashReview,
+  readTerminalAttemptResult: mocks.readTerminalAttemptResult,
+  readTerminalReviewSafely: mocks.readTerminalReviewSafely,
 }));
 import { POST } from "./[attemptId]/complete/route";
 import { POST as recover } from "./[attemptId]/recover/route";
@@ -44,7 +44,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.readAttemptToken.mockResolvedValue("token");
   mocks.complete.mockResolvedValue({ result, scheduledChallengeId: "publication" });
-  mocks.readTerminalFlashReview.mockResolvedValue([]);
+  mocks.readTerminalReviewSafely.mockResolvedValue({ review: [] });
 });
 describe("Alphabet completion HTTP contract", () => {
   it("returns all final answers and forwards only the authorized browser fields", async () => {
@@ -62,18 +62,20 @@ describe("Alphabet completion HTTP contract", () => {
     "reads the authorized saved result after %s",
     async (code) => {
       mocks.complete.mockRejectedValue({ code });
-      mocks.readTerminalAlphabetResult.mockResolvedValue({
+      mocks.readTerminalAttemptResult.mockResolvedValue({
         result: { ...result, review: [] },
         scheduledChallengeId: "publication",
       });
       expect((await invoke()).status).toBe(200);
-      expect(mocks.readTerminalAlphabetResult).toHaveBeenCalledWith("attempt");
+      expect(mocks.readTerminalAttemptResult).toHaveBeenCalledWith("attempt", {
+        authUserId: "user",
+      });
       expect(mocks.complete).toHaveBeenCalledTimes(1);
     },
   );
   it("recovers when the successful first completion removed the cookie", async () => {
     mocks.readAttemptToken.mockRejectedValue({ code: "attempt_session_missing" });
-    mocks.readTerminalAlphabetResult.mockResolvedValue({
+    mocks.readTerminalAttemptResult.mockResolvedValue({
       result: { ...result, review: [] },
       scheduledChallengeId: "publication",
     });
@@ -82,7 +84,7 @@ describe("Alphabet completion HTTP contract", () => {
   });
   it("keeps an authorization error when no accessible terminal result exists", async () => {
     mocks.complete.mockRejectedValue({ code: "not_authorized" });
-    mocks.readTerminalAlphabetResult.mockResolvedValue(undefined);
+    mocks.readTerminalAttemptResult.mockResolvedValue(undefined);
     expect((await invoke()).status).toBe(409);
     expect(mocks.clearAttemptToken).not.toHaveBeenCalled();
   });
@@ -91,7 +93,7 @@ describe("Alphabet completion HTTP contract", () => {
     async (code) => {
       if (code === "attempt_session_missing") mocks.readAttemptToken.mockRejectedValue({ code });
       else mocks.recover.mockRejectedValue({ code });
-      mocks.readTerminalAlphabetResult.mockResolvedValue({
+      mocks.readTerminalAttemptResult.mockResolvedValue({
         result: { ...result, review: [] },
         scheduledChallengeId: "publication",
       });
@@ -107,4 +109,11 @@ describe("Alphabet completion HTTP contract", () => {
       expect(mocks.clearAttemptToken).toHaveBeenCalledWith("attempt", "user", "publication");
     },
   );
+});
+
+it("returns confirmed points when Storage prevents loading the review", async () => {
+  mocks.readTerminalReviewSafely.mockResolvedValue({ review: [], reviewPending: true });
+  expect(await (await invoke()).json()).toEqual({ ...result, review: [], reviewPending: true });
+  expect(mocks.complete).toHaveBeenCalledOnce();
+  expect(mocks.clearAttemptToken).toHaveBeenCalledOnce();
 });

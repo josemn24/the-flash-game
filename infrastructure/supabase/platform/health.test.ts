@@ -60,6 +60,9 @@ describe("readPrivateHealth", () => {
     expect(markerQuery).toContain("public.get_superadmin_challenge_detail(uuid)");
     expect(markerQuery).toContain("public.manage_room_member(jsonb)");
     expect(markerQuery).toContain("member_previews jsonb");
+    expect(markerQuery).toContain("private.prepare_attempt_session(uuid)");
+    expect(markerQuery).toContain("private.read_completed_attempt(uuid)");
+    expect(markerQuery).toContain("private.read_recorded_evaluation(uuid,text)");
   });
 
   it("rejects an old expected revision", async () => {

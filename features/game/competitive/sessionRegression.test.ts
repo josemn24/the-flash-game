@@ -100,6 +100,7 @@ describe("competitive facade regressions", () => {
       "fetch",
       vi.fn(async (url: string, init: RequestInit) => {
         const body = JSON.parse(String(init.body));
+        if (url.endsWith("/session")) return json({ ready: true });
         if (url.endsWith("/start")) return json({ attemptId: "attempt", lockVersion: 1 });
         if (url.endsWith("/prepare"))
           return json({
@@ -136,6 +137,7 @@ describe("competitive facade regressions", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url: string, init: RequestInit) => {
+        if (url.endsWith("/session")) return json({ ready: true });
         if (url.endsWith("/start")) return json({ attemptId: "attempt", lockVersion: 1 });
         if (url.endsWith("/prepare"))
           return json({

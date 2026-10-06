@@ -21,6 +21,7 @@ import { formatFailure } from "../formats/failure";
 
 const lifecycleOperations = new Set<Operation>([
   "start",
+  "prepareSession",
   "recover",
   "prepare",
   "activate",
@@ -49,7 +50,8 @@ export class CompetitiveSessionEngine {
   private recoveryStarted = false;
   private reconciling = false;
   private retryAt = 0;
-  private completionRetries = 0;
+  private automaticRetries = 0;
+  private abortController = new AbortController();
   private retrying = false;
   private refresh: () => void;
   readonly policy;
@@ -69,8 +71,15 @@ export class CompetitiveSessionEngine {
       roomContext.result?.flashPoints ?? 0,
       terminalReview?.length ? reviewFor(challenge, terminalReview) : null,
     );
+    if (roomContext.result && !terminalReview?.length) {
+      this.snapshot.lifecycleError = {
+        operation: "projection",
+        code: "review_pending",
+        message: "Revisión temporalmente no disponible. Puedes volver a cargarla.",
+      };
+    }
     this.executor = new CommandExecutor(
-      options.client ?? createCompetitiveAttemptClient(),
+      options.client ?? createCompetitiveAttemptClient(this.abortController.signal),
       () => this.snapshot.attempt,
       () => this.snapshot.pendingCommand,
     );
@@ -117,6 +126,7 @@ export class CompetitiveSessionEngine {
   };
   dispose = () => {
     this.active = false;
+    this.abortController.abort();
     this.generation++;
     this.timers.clear();
     this.listeners.clear();
@@ -141,7 +151,11 @@ export class CompetitiveSessionEngine {
         response.lockVersion === undefined
           ? this.snapshot.attempt?.lockVersion
           : Number(response.lockVersion);
-      if (command.operation !== "abandon" && (!attemptId || !Number.isSafeInteger(lockVersion)))
+      if (
+        command.operation !== "abandon" &&
+        command.operation !== "prepareSession" &&
+        (!attemptId || !Number.isSafeInteger(lockVersion))
+      )
         throw new Error("invalid_attempt_response");
       step.accept(response, command);
       this.commit({
@@ -150,6 +164,8 @@ export class CompetitiveSessionEngine {
       });
       this.pendingStep = undefined;
       this.retryAt = 0;
+      this.automaticRetries = 0;
+      this.timers.cancel("completion-retry");
       return true;
     } catch (error) {
       if (!this.active || generation !== this.generation) return false;
@@ -165,6 +181,10 @@ export class CompetitiveSessionEngine {
     step: CommandStep,
   ): Promise<boolean> => {
     let accepted = false;
+    if (!this.snapshot.pendingCommand) {
+      this.automaticRetries = 0;
+      this.timers.cancel("completion-retry");
+    }
     try {
       await this.executor.execute(operation, data, async (command, invoke) => {
         accepted = await this.send(command, invoke, step);
@@ -192,6 +212,31 @@ export class CompetitiveSessionEngine {
   };
   private failed(command: PendingCommand, step: CommandStep, error: unknown) {
     const code = error instanceof CompetitiveCommandError ? error.code : undefined;
+    if (
+      [
+        "not_authorized",
+        "session_revoked",
+        "competitive_access_denied",
+        "auth_required",
+        "unauthorized",
+      ].includes(code ?? "") ||
+      (error instanceof CompetitiveCommandError &&
+        error.status === 401 &&
+        code !== "attempt_session_missing")
+    ) {
+      this.timers.clear();
+      this.pendingStep = undefined;
+      this.commit({
+        type: "authorization_lost",
+        error: {
+          operation: command.operation,
+          code,
+          retryable: false,
+          message: "Ya no tienes permiso para continuar esta partida.",
+        },
+      });
+      return;
+    }
     if (code === "attempt_inactivity_expired") {
       this.timers.clear();
       this.pendingStep = undefined;
@@ -210,25 +255,42 @@ export class CompetitiveSessionEngine {
         lifecycleError: {
           operation: "projection",
           code,
-          message: "Comprobando el resultado guardado. Puedes volver a cargarlo.",
+          message:
+            command.operation === "start" && code === "attempt_session_missing"
+              ? "Recarga la página para preparar la sesión antes de empezar."
+              : "Comprobando el resultado guardado. Puedes volver a cargarlo.",
         },
       });
       return;
     }
     const seconds =
       error instanceof CompetitiveCommandError &&
-      (error.status === 429 || code === "alphabet_deadline_not_reached")
+      (error.retryAfterSeconds !== undefined ||
+        error.status === 429 ||
+        code === "alphabet_deadline_not_reached")
         ? Math.max(1, error.retryAfterSeconds ?? 1)
         : undefined;
     this.retryAt = seconds === undefined ? 0 : Date.now() + seconds * 1000;
     const failure = formatFailure(command.operation, code, step.channel);
+    const retryable =
+      !failure.definitive &&
+      (!(error instanceof CompetitiveCommandError) ||
+        error.status === 0 ||
+        error.status >= 500 ||
+        error.status === 429 ||
+        code === "invalid_json_response" ||
+        code === "alphabet_deadline_not_reached");
+    const limit = command.operation === "complete" ? 3 : 1;
     const message =
-      code === "alphabet_deadline_not_reached"
-        ? "Esperando a que termine el tiempo de la partida."
-        : seconds !== undefined
-          ? `Demasiadas solicitudes. Espera ${seconds} ${seconds === 1 ? "segundo" : "segundos"} antes de volver a intentarlo.`
-          : failure.message;
+      retryable && this.automaticRetries >= limit
+        ? "No hemos podido confirmar la operación"
+        : code === "alphabet_deadline_not_reached"
+          ? "Esperando a que termine el tiempo de la partida."
+          : seconds !== undefined
+            ? `Demasiadas solicitudes. Espera ${seconds} ${seconds === 1 ? "segundo" : "segundos"} antes de volver a intentarlo.`
+            : failure.message;
     const lifecycle =
+      !failure.definitive ||
       lifecycleOperations.has(command.operation) ||
       code === "stale_version" ||
       this.options.challenge.mode === "alphabet";
@@ -242,36 +304,45 @@ export class CompetitiveSessionEngine {
       notice: lifecycle ? message : undefined,
     });
     if (failure.definitive) this.pendingStep = undefined;
-    const retryable =
-      !(error instanceof CompetitiveCommandError) ||
-      error.status >= 500 ||
-      error.status === 429 ||
-      code === "alphabet_deadline_not_reached";
-    if (
-      this.options.challenge.mode === "alphabet" &&
-      this.lifecycle.finalizationRequested() &&
-      (command.operation === "complete" ||
-        command.operation === "recover" ||
-        command.operation === "start") &&
-      retryable &&
-      this.completionRetries < 3
-    ) {
-      const delay = seconds === undefined ? 1000 * 2 ** this.completionRetries : seconds * 1000;
-      this.completionRetries++;
+    if (retryable) {
+      // Fixed fields only: never log the command, answer, identifiers or tokens.
+      console.info(
+        JSON.stringify({
+          event: "competitive_command_uncertain",
+          operation: command.operation,
+          retry: this.automaticRetries,
+        }),
+      );
+    }
+    if (retryable && this.automaticRetries < limit) {
+      const delay = seconds === undefined ? 1000 * 2 ** this.automaticRetries : seconds * 1000;
+      this.automaticRetries++;
       this.commit({ type: "completion_retry", scheduled: true });
-      this.timers.schedule("completion-retry", delay, () => {
-        void this.retry(true);
-      });
+      this.timers.schedule("completion-retry", delay, () => void this.retry(true));
     }
   }
+
   retry = async (automatic = false) => {
-    if (!this.active || this.snapshot.busy || this.retrying || Date.now() < this.retryAt) return;
+    // React handlers can pass an event; only our internal true means an automatic replay.
+    automatic = automatic === true;
+    if (
+      !this.active ||
+      this.snapshot.busy ||
+      this.retrying ||
+      this.snapshot.lifecycleError?.retryable === false ||
+      Date.now() < this.retryAt
+    )
+      return;
     if (!automatic) {
-      this.completionRetries = 0;
+      this.automaticRetries = 0;
       this.timers.cancel("completion-retry");
       this.commit({ type: "completion_retry", scheduled: false });
     }
     if (this.snapshot.lifecycleError?.operation === "projection") {
+      if (this.snapshot.lifecycleError.code === "review_pending" && this.snapshot.attempt) {
+        await this.lifecycle.reloadResult();
+        return;
+      }
       this.refresh();
       return;
     }
@@ -283,6 +354,13 @@ export class CompetitiveSessionEngine {
     const step = this.pendingStep;
     if (!command || !step) return;
     this.retrying = true;
+    console.info(
+      JSON.stringify({
+        event: "competitive_command_replay",
+        operation: command.operation,
+        automatic,
+      }),
+    );
     let accepted = false;
     try {
       await this.executor.retry(command, async (original, invoke) => {
@@ -295,7 +373,14 @@ export class CompetitiveSessionEngine {
     if (!accepted && this.snapshot.lifecycleError?.code === "stale_version") await this.reconcile();
   };
   reconcile = async () => {
-    if (this.reconciling || !this.active || this.snapshot.busy || Date.now() < this.retryAt) return;
+    if (
+      this.reconciling ||
+      !this.active ||
+      this.snapshot.busy ||
+      this.snapshot.lifecycleError?.retryable === false ||
+      Date.now() < this.retryAt
+    )
+      return;
     this.reconciling = true;
     // The uncertain command is superseded only by a new authoritative recovery flow.
     this.commit({ type: "command_failed", definitive: true });

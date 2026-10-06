@@ -32,6 +32,8 @@ import type {
   RevealProgressiveClueInput,
   RevealProgressiveClueResult,
   AttemptCommandInput,
+  PrepareAttemptSessionInput,
+  PrepareAttemptSessionResult,
 } from "@/types/contracts/attempts";
 import type { AuthenticatedActor } from "@/application/ports/actors";
 
@@ -63,6 +65,7 @@ export type FinishAttemptUseCaseResult = {
 
 export interface AttemptUseCases {
   readonly actor: AuthenticatedActor;
+  prepareSession(input: PrepareAttemptSessionInput): Promise<PrepareAttemptSessionResult>;
   start(input: StartAttemptUseCaseInput): Promise<StartAttemptUseCaseResult>;
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
   activate(input: ActivateInteractionInput): Promise<ActivateInteractionResult>;
