@@ -1,6 +1,7 @@
 import { AuthApiError, AuthRetryableFetchError } from "@supabase/supabase-js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { supabaseAuthentication } from "./authentication";
+import { AuthServiceUnavailableError } from "@/lib/supabase/auth-availability";
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
@@ -32,6 +33,9 @@ describe("Supabase authentication adapter", () => {
   });
 
   it.each([
+    [new AuthServiceUnavailableError("connection"), "connection"],
+    [new AuthServiceUnavailableError("service"), "service"],
+    [new AuthServiceUnavailableError("timeout"), "service"],
     [new AuthApiError("private", 400, "invalid_credentials"), "credentials"],
     [new AuthApiError("private", 429, undefined), "rate_limit"],
     [new AuthApiError("private", 400, "over_request_rate_limit"), "rate_limit"],

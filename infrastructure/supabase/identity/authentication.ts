@@ -4,8 +4,12 @@ import { isAuthError, isAuthRetryableFetchError } from "@supabase/supabase-js";
 import type { AuthenticationGateway } from "@/application/ports/authentication";
 import type { AuthenticationResult } from "@/types/contracts/authentication";
 import { createClient } from "@/lib/supabase/server";
+import { AuthServiceUnavailableError } from "@/lib/supabase/auth-availability";
 
 function authenticationFailure(error: unknown): AuthenticationResult {
+  if (error instanceof AuthServiceUnavailableError) {
+    return { ok: false, code: error.reason === "connection" ? "connection" : "service" };
+  }
   if (isAuthError(error)) {
     if (error.code === "invalid_credentials") return { ok: false, code: "credentials" };
     if (error.status === 429 || error.code === "over_request_rate_limit") {

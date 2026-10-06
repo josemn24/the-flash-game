@@ -39,6 +39,15 @@ falla al arrancar la composición server-only.
 
 ## Contrato HTTP
 
+Las operaciones de sesión tienen un presupuesto de cinco segundos por petición, compartido entre
+el proxy y el renderizado. Un fallo de conexión o un 5xx de Auth interrumpe la espera inmediatamente;
+el timeout cancela las peticiones activas y bloquea nuevos fetches de los reintentos pendientes del SDK.
+La caída conserva las cookies de sesión, incluidas las rotaciones completadas antes del fallo, y muestra
+«Servicio temporalmente no disponible». «Reintentar» vuelve a solicitar los datos con un presupuesto
+nuevo. Una sesión ausente o invalidada sigue mostrando el login; las API competitivas devuelven
+`503/auth_unavailable` cuando no pueden verificar la identidad. Este presupuesto no limita las
+operaciones de PostgREST, Storage o PostgreSQL.
+
 Las mutaciones competitivas requieren `Origin` igual a `APP_ORIGIN` cuando el runtime es `pilot`.
 Los cuerpos JSON están limitados a 32 KiB; el editor editorial limita el documento a 256 KiB.
 Los errores competitivos tienen la forma `{ error: { code, requestId } }`, usan `Cache-Control:
@@ -60,6 +69,11 @@ permanecer pendiente hasta la siguiente ejecución diaria. El tick sigue siendo 
 `start_attempt` revalida la ventana temporal.
 
 ## Verificación reproducible
+
+`npm run test:e2e:auth-outage` comprueba caída de conexión, 503, timeout, conservación de cookies,
+recuperación, login/logout, invalidación de sesión y las cabeceras internas del proxy. Usa una app y
+un servidor Supabase simulado aislados, sin Docker ni un proyecto remoto, en los puertos 3319 y 54329.
+Los puertos pueden cambiarse con `AUTH_OUTAGE_APP_PORT` y `AUTH_OUTAGE_UPSTREAM_PORT`.
 
 Con Docker disponible y sin desplegar sobre un proyecto remoto:
 

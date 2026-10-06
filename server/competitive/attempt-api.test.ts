@@ -11,6 +11,7 @@ import {
   setAttemptToken,
 } from "@/server/competitive/attempt-api";
 import { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommands";
+import { AuthServiceUnavailableError } from "@/lib/supabase/auth-availability";
 import { isJsonAnswer } from "@/app/api/competitive/attempts/[attemptId]/answer/route";
 import { CompetitiveRateLimitError } from "@/server/competitive/rate-limit";
 
@@ -74,6 +75,18 @@ describe("competitive HTTP contract", () => {
         }),
       ),
     ).not.toThrow();
+  });
+
+  it("maps Auth outages to 503 instead of an authentication failure", async () => {
+    const response = errorResponse(
+      new AuthServiceUnavailableError("timeout"),
+      "request-auth",
+      "test.auth",
+    );
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      error: { code: "auth_unavailable", requestId: "request-auth" },
+    });
   });
 
   it("maps database failures to a recoverable 503", () => {

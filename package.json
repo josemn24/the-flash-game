@@ -29,6 +29,7 @@
     "test:pwa:worker": "node --test scripts/pwa-service-worker.test.mjs",
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:e2e:raw": "playwright test",
+    "test:e2e:auth-outage": "playwright test --config playwright.auth-outage.config.ts",
     "mock-data:check": "vitest run data/mock/store.test.ts data/mock/validate.test.ts",
     "performance:summary": "node scripts/summarize-competitive-performance.mjs",
     "typecheck": "tsc --noEmit",

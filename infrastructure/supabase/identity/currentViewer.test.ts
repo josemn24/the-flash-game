@@ -1,4 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  AuthApiError,
+  AuthRetryableFetchError,
+  AuthSessionMissingError,
+} from "@supabase/supabase-js";
 import type { ProvisionedCurrentPlayer } from "./currentViewer";
 import {
   getProvisionedCurrentPlayer,
@@ -38,6 +43,22 @@ describe("supabase current viewer reader", () => {
     mocks.authGetUser.mockResolvedValue({ data: { user: null }, error: null });
 
     await expect(supabaseCurrentViewerReader.getCurrentViewer()).resolves.toBeNull();
+    expect(mocks.provisionPlayer).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    new AuthSessionMissingError(),
+    new AuthApiError("invalid", 400, "refresh_token_not_found"),
+  ])("returns null for invalid sessions: %s", async (error) => {
+    mocks.authGetUser.mockResolvedValue({ data: { user: null }, error });
+    await expect(getProvisionedCurrentPlayer()).resolves.toBeNull();
+    expect(mocks.provisionPlayer).not.toHaveBeenCalled();
+  });
+
+  it("propagates connectivity errors instead of showing the login", async () => {
+    const error = new AuthRetryableFetchError("fetch failed", 0);
+    mocks.authGetUser.mockResolvedValue({ data: { user: null }, error });
+    await expect(getProvisionedCurrentPlayer()).rejects.toBe(error);
     expect(mocks.provisionPlayer).not.toHaveBeenCalled();
   });
 

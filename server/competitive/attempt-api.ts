@@ -7,6 +7,7 @@ import "server-only";
 import { randomBytes, randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { AuthServiceUnavailableError } from "@/lib/supabase/auth-availability";
 import { getRuntimeScope } from "@/server/runtime-scope";
 import { logHttpEvent, requestIdFor, safePath } from "@/server/observability";
 import type { AuthenticatedActor, AttemptSessionTokenGenerator } from "@/application/ports/actors";
@@ -289,6 +290,8 @@ export function commandsFor(identity: AuthenticatedActor, requestId?: string) {
 }
 
 export function mapAttemptError(error: unknown): AttemptApiError {
+  if (error instanceof AuthServiceUnavailableError)
+    return new AttemptApiError("auth_unavailable", 503);
   if (error instanceof AttemptApiError) return error;
   if (error instanceof AttemptCommandError) {
     const status =

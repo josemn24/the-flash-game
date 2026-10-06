@@ -7,6 +7,7 @@ import type { PublicFunctionRow, RawRpcResponse } from "@/lib/supabase/rpcTypes"
 import type { PlayerId } from "@/types/domain";
 import type { ViewerProfile } from "@/types/view-models";
 import type { UserProfile } from "@/types/view-models/user";
+import { isInvalidSession } from "@/lib/supabase/auth-availability";
 
 type ProvisionedPlayerOverrides = {
   avatar_path: string | null;
@@ -64,7 +65,8 @@ function toViewerProfile(row: CurrentPlayerProfileRow | null): ViewerProfile | n
 export async function getProvisionedCurrentPlayer(): Promise<ProvisionedCurrentPlayer | null> {
   const supabase = await createClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError || !userData.user) return null;
+  if (userError && !isInvalidSession(userError)) throw userError;
+  if (!userData.user) return null;
 
   const response = await supabase.rpc("provision_player");
   const { data, error } = response as RawRpcResponse<typeof response>;

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/proxy";
+import { AUTH_DEADLINE_HEADER, AUTH_FAILURE_HEADER } from "@/lib/supabase/auth-availability";
 import {
   isDesignSystemAvailable,
   isDesignSystemPath,
@@ -18,7 +19,10 @@ export async function proxy(request: NextRequest) {
         headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" },
       });
     }
-    return NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.delete(AUTH_DEADLINE_HEADER);
+    requestHeaders.delete(AUTH_FAILURE_HEADER);
+    return NextResponse.next({ request: { headers: requestHeaders } });
   }
   return updateSession(request);
 }
