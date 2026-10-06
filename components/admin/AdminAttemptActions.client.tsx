@@ -1,7 +1,16 @@
 "use client";
 
-import { useActionState, useEffect, useRef, type FormEvent, type MutableRefObject } from "react";
-import { Button } from "@/components/ui";
+import {
+  useId,
+  useActionState,
+  useEffect,
+  useRef,
+  type FormEvent,
+  type MutableRefObject,
+} from "react";
+
+import { FormField, Input, Textarea, Button } from "@/components/ui";
+
 import {
   adjustSuperadminAttempt,
   invalidateSuperadminAttempt,
@@ -32,6 +41,7 @@ export function AdminAttemptActions({
   readonly status: "in_progress" | "completed" | "abandoned" | "invalidated";
   readonly effectiveScore: number;
 }) {
+  const fieldId = useId();
   const [adjustState, adjustAction, adjustPending] = useActionState(
     adjustSuperadminAttempt,
     initialState,
@@ -63,6 +73,7 @@ export function AdminAttemptActions({
         action={adjustAction}
         className={styles.actionForm}
         onSubmit={(event) => prepareKey(event, adjustKey)}
+        aria-busy={adjustPending}
       >
         <h2>Ajustar resultado</h2>
         <input type="hidden" name="roomId" value={roomId} readOnly />
@@ -70,26 +81,33 @@ export function AdminAttemptActions({
         <input type="hidden" name="attemptId" value={attemptId} readOnly />
         <input type="hidden" name="lockVersion" value={lockVersion} readOnly />
         <input type="hidden" name="idempotencyKey" defaultValue="" />
-        <label className={styles.field}>
-          <span>Puntuación efectiva objetivo · actual {effectiveScore}</span>
-          <input
-            name="score"
-            type="number"
-            min="0"
-            max="100"
-            defaultValue={effectiveScore}
-            required
-          />
-        </label>
-        <label className={styles.field}>
-          <span>Motivo de auditoría</span>
-          <textarea
-            name="reason"
-            maxLength={500}
-            required
-            placeholder="Explica la corrección aplicada"
-          />
-        </label>
+        <FormField
+          id={fieldId + "-score"}
+          label={<>Puntuación efectiva objetivo · actual {effectiveScore}</>}
+          density="compact"
+          required
+        >
+          {(field) => (
+            <Input
+              {...field}
+              name="score"
+              type="number"
+              min="0"
+              max="100"
+              defaultValue={effectiveScore}
+            />
+          )}
+        </FormField>
+        <FormField id={fieldId + "-reason"} label="Motivo de auditoría" density="compact" required>
+          {(field) => (
+            <Textarea
+              {...field}
+              name="reason"
+              maxLength={500}
+              placeholder="Explica la corrección aplicada"
+            />
+          )}
+        </FormField>
         {adjustState.message ? (
           <p className={styles.error} role="alert">
             {adjustState.message}
@@ -111,6 +129,7 @@ export function AdminAttemptActions({
           }
           prepareKey(event, invalidateKey);
         }}
+        aria-busy={invalidatePending}
       >
         <h2>Invalidar intento</h2>
         <input type="hidden" name="roomId" value={roomId} readOnly />
@@ -118,15 +137,16 @@ export function AdminAttemptActions({
         <input type="hidden" name="attemptId" value={attemptId} readOnly />
         <input type="hidden" name="lockVersion" value={lockVersion} readOnly />
         <input type="hidden" name="idempotencyKey" defaultValue="" />
-        <label className={styles.field}>
-          <span>Motivo de auditoría</span>
-          <textarea
-            name="reason"
-            maxLength={500}
-            required
-            placeholder="Explica por qué se invalida"
-          />
-        </label>
+        <FormField id={fieldId + "-reason"} label="Motivo de auditoría" density="compact" required>
+          {(field) => (
+            <Textarea
+              {...field}
+              name="reason"
+              maxLength={500}
+              placeholder="Explica por qué se invalida"
+            />
+          )}
+        </FormField>
         {invalidateState.message ? (
           <p className={styles.error} role="alert">
             {invalidateState.message}

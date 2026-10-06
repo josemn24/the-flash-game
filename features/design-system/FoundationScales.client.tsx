@@ -50,7 +50,12 @@ export function FoundationScales() {
           ))}
         </div>
         <div className={styles.grid}>
-          {["control-height", "control-height-hero", "control-height-icon"].map((name) => (
+          {[
+            "control-height",
+            "control-height-compact",
+            "control-height-hero",
+            "control-height-icon",
+          ].map((name) => (
             <div key={name} className={styles.entry}>
               <code>--{name}</code>
               <TokenValue token={`--${name}`} />

@@ -43,24 +43,6 @@
     display: grid;
     gap: var(--space-4);
   }
-  .field,
-  .reason {
-    display: grid;
-    gap: var(--space-2);
-    color: var(--ds-color-fg-secondary);
-    font-size: 12px;
-    font-weight: 700;
-  }
-  .field textarea,
-  .reason textarea {
-    width: 100%;
-    border: 1px solid var(--ds-color-border-strong);
-    border-radius: var(--radius-control);
-    background: var(--ds-color-bg-surface);
-    color: var(--ds-color-fg-primary);
-    padding: 0.8rem;
-    font: 11px/1.5 var(--type-mono);
-  }
   .version {
     display: grid;
     gap: 0.25rem;
@@ -89,45 +71,17 @@
     color: var(--ds-color-fg-secondary);
     font-size: 12px;
   }
-  .assetPanel > div {
+  .assetHeading {
     display: grid;
     gap: 0.25rem;
   }
   .assetFields {
+    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--space-2);
   }
-  .assetFields label {
-    display: grid;
-    gap: 0.25rem;
-    color: var(--ds-color-fg-secondary);
-    font-size: 11px;
-    font-weight: 700;
-  }
-  .assetFields input,
-  .assetFields select {
-    width: 100%;
-    border: 1px solid var(--ds-color-border-strong);
-    border-radius: var(--radius-control);
-    background: var(--ds-color-bg-surface);
-    color: var(--ds-color-fg-primary);
-    padding: 0.5rem;
-    font: 11px var(--type-mono);
-  }
   .assetPanel span {
     font-size: 11px;
-  }
-  .fileInput {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-    color: var(--ds-color-fg-primary);
-    font-weight: 700;
-  }
-  .fileInput input {
-    max-width: 100%;
-    font: 11px var(--type-mono);
   }
   .assetMessage {
     color: var(--ds-color-fg-primary);

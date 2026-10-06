@@ -1,7 +1,16 @@
 "use client";
 
-import { useActionState, useEffect, useRef, type FormEvent, type MutableRefObject } from "react";
-import { Button, Card, Chip } from "@/components/ui";
+import {
+  useId,
+  useActionState,
+  useEffect,
+  useRef,
+  type FormEvent,
+  type MutableRefObject,
+} from "react";
+
+import { FormField, Input, Textarea, Button, Card, Chip } from "@/components/ui";
+
 import type { SeasonStatus } from "@/types/domain/season";
 import type { SuperadminPortalRoom, SuperadminPortalSeason } from "@/types/view-models";
 import {
@@ -41,6 +50,7 @@ export function SeasonDateFields({
   readonly endsAt?: string;
   readonly state: SeasonActionState;
 }) {
+  const fieldId = useId();
   return (
     <div className={styles.dateGrid}>
       {(
@@ -49,21 +59,27 @@ export function SeasonDateFields({
           ["endsAtLocal", "Fin", endsAt],
         ] as const
       ).map(([name, label, value]) => (
-        <label className={styles.field} key={name}>
-          <span>
-            {label} · {timeZone}
-          </span>
-          <input
-            name={name}
-            type="datetime-local"
-            defaultValue={value ? utcToLocalDateTime(value, timeZone) : undefined}
-            required
-            aria-invalid={Boolean(state.fieldErrors?.[name])}
-          />
-          {state.fieldErrors?.[name] ? (
-            <small className={styles.error}>{state.fieldErrors[name]}</small>
-          ) : null}
-        </label>
+        <FormField
+          id={fieldId + "-" + name}
+          label={
+            <>
+              {label} · {timeZone}
+            </>
+          }
+          density="compact"
+          required
+          key={name}
+          error={state.fieldErrors?.[name]}
+        >
+          {(field) => (
+            <Input
+              {...field}
+              name={name}
+              type="datetime-local"
+              defaultValue={value ? utcToLocalDateTime(value, timeZone) : undefined}
+            />
+          )}
+        </FormField>
       ))}
     </div>
   );
@@ -77,25 +93,36 @@ function ReasonField({
   readonly label?: string;
   readonly placeholder?: string;
 }) {
+  const fieldId = useId();
   return (
-    <label className={styles.field}>
-      <span>{label}</span>
-      <textarea name="reason" maxLength={500} rows={2} required placeholder={placeholder} />
-      {state.fieldErrors?.reason ? (
-        <small className={styles.error}>{state.fieldErrors.reason}</small>
-      ) : null}
-    </label>
+    <FormField
+      id={fieldId + "-reason"}
+      label={label}
+      density="compact"
+      required
+      error={state.fieldErrors?.reason}
+    >
+      {(field) => (
+        <Textarea {...field} name="reason" maxLength={500} rows={2} placeholder={placeholder} />
+      )}
+    </FormField>
   );
 }
 
 export function DraftSeasonForm({ room }: { readonly room: SuperadminPortalRoom }) {
+  const fieldId = useId();
   const [state, action, pending] = useActionState(createSeasonDraft, initialState);
   const keyRef = useRef<string | null>(null);
   useEffect(() => {
     if (state.message) keyRef.current = null;
   }, [state.message]);
   return (
-    <form action={action} className={styles.form} onSubmit={(event) => prepareKey(event, keyRef)}>
+    <form
+      action={action}
+      className={styles.form}
+      onSubmit={(event) => prepareKey(event, keyRef)}
+      aria-busy={pending}
+    >
       <input type="hidden" name="roomId" value={room.roomId} readOnly />
       <input type="hidden" name="idempotencyKey" defaultValue="" />
       <div className={styles.formHeading}>
@@ -105,13 +132,17 @@ export function DraftSeasonForm({ room }: { readonly room: SuperadminPortalRoom 
         </div>
         <span className={styles.helper}>Las fechas se guardan en UTC.</span>
       </div>
-      <label className={styles.field}>
-        <span>Título</span>
-        <input name="title" minLength={3} maxLength={80} required placeholder="Liga de otoño" />
-        {state.fieldErrors?.title ? (
-          <small className={styles.error}>{state.fieldErrors.title}</small>
-        ) : null}
-      </label>
+      <FormField
+        id={fieldId + "-title"}
+        label="Título"
+        density="compact"
+        required
+        error={state.fieldErrors?.title}
+      >
+        {(field) => (
+          <Input {...field} name="title" minLength={3} maxLength={80} placeholder="Liga de otoño" />
+        )}
+      </FormField>
       <SeasonDateFields timeZone={room.timeZone} state={state} />
       <ReasonField state={state} />
       <ErrorMessage state={state} />
@@ -129,13 +160,19 @@ export function DraftSeasonEditor({
   readonly room: SuperadminPortalRoom;
   readonly season: SuperadminPortalSeason;
 }) {
+  const fieldId = useId();
   const [state, action, pending] = useActionState(updateSeasonDraft, initialState);
   const keyRef = useRef<string | null>(null);
   useEffect(() => {
     if (state.message) keyRef.current = null;
   }, [state.message]);
   return (
-    <form action={action} className={styles.form} onSubmit={(event) => prepareKey(event, keyRef)}>
+    <form
+      action={action}
+      className={styles.form}
+      onSubmit={(event) => prepareKey(event, keyRef)}
+      aria-busy={pending}
+    >
       <input type="hidden" name="seasonId" value={season.seasonId} readOnly />
       <input type="hidden" name="idempotencyKey" defaultValue="" />
       <div className={styles.formHeading}>
@@ -144,13 +181,17 @@ export function DraftSeasonEditor({
           <h4>{season.title}</h4>
         </div>
       </div>
-      <label className={styles.field}>
-        <span>Título</span>
-        <input name="title" minLength={3} maxLength={80} defaultValue={season.title} required />
-        {state.fieldErrors?.title ? (
-          <small className={styles.error}>{state.fieldErrors.title}</small>
-        ) : null}
-      </label>
+      <FormField
+        id={fieldId + "-title"}
+        label="Título"
+        density="compact"
+        required
+        error={state.fieldErrors?.title}
+      >
+        {(field) => (
+          <Input {...field} name="title" minLength={3} maxLength={80} defaultValue={season.title} />
+        )}
+      </FormField>
       <SeasonDateFields
         timeZone={room.timeZone}
         startsAt={season.startsAt}
@@ -167,6 +208,7 @@ export function DraftSeasonEditor({
 }
 
 export function ActivateSeasonForm({ season }: { readonly season: SuperadminPortalSeason }) {
+  const fieldId = useId();
   const [state, action, pending] = useActionState(activateSeason, initialState);
   const keyRef = useRef<string | null>(null);
   useEffect(() => {
@@ -182,22 +224,31 @@ export function ActivateSeasonForm({ season }: { readonly season: SuperadminPort
     prepareKey(event, keyRef);
   }
   return (
-    <form action={action} className={styles.activateForm} onSubmit={confirmActivation}>
+    <form
+      action={action}
+      className={styles.activateForm}
+      onSubmit={confirmActivation}
+      aria-busy={pending}
+    >
       <input type="hidden" name="seasonId" value={season.seasonId} readOnly />
       <input type="hidden" name="idempotencyKey" defaultValue="" />
-      <label className={styles.field}>
-        <span>Motivo de activación</span>
-        <textarea
-          name="reason"
-          maxLength={500}
-          rows={2}
-          required
-          placeholder="Abrir la temporada"
-        />
-        {state.fieldErrors?.reason ? (
-          <small className={styles.error}>{state.fieldErrors.reason}</small>
-        ) : null}
-      </label>
+      <FormField
+        id={fieldId + "-reason"}
+        label="Motivo de activación"
+        density="compact"
+        required
+        error={state.fieldErrors?.reason}
+      >
+        {(field) => (
+          <Textarea
+            {...field}
+            name="reason"
+            maxLength={500}
+            rows={2}
+            placeholder="Abrir la temporada"
+          />
+        )}
+      </FormField>
       <ErrorMessage state={state} />
       <Button type="submit" loading={pending}>
         Activar temporada

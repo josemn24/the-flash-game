@@ -63,9 +63,6 @@ export default function DesignSystemPage() {
         <h2>Mejoras para una siguiente fase</h2>
         <ul>
           <li>
-            Crear una primitiva compartida de campo con etiqueta, ayuda, error y estados de envío.
-          </li>
-          <li>
             Consolidar los avisos administrativos y de juego cuando compartan intención y semántica.
           </li>
           <li>
@@ -75,10 +72,7 @@ export default function DesignSystemPage() {
             Precisar la relación entre variantes social/danger y roles selected/error; blue/aqua
             comparten actualmente color.
           </li>
-          <li>
-            Reducir estilos de formularios repetidos y completar contratos de composición y
-            movimiento.
-          </li>
+          <li>Completar los contratos de composición y movimiento.</li>
         </ul>
         <p>
           Este catálogo documenta la implementación actual. Las mejoras anteriores no cambian las

@@ -1,6 +1,6 @@
 "use client";
-import { useState, type FormEvent } from "react";
-import { Button, Card } from "@/components/ui";
+import { useId, useState, type FormEvent } from "react";
+import { Button, Card, FormField, Input, Select, Textarea } from "@/components/ui";
 import { AdminFormError } from "@/components/admin/AdminFormError";
 import { AdminNotice } from "@/components/admin/AdminNotice";
 import { AdminEmptyState } from "@/components/admin/AdminEmptyState";
@@ -13,12 +13,12 @@ import { RoomLeaderboard } from "@/components/game/modes/flash-pop/RoomLeaderboa
 import { ReviewAnswerPanel } from "@/components/game/shared/ReviewAnswerPanel";
 import { RoomRankingSkeleton, RoomDetailSkeleton } from "@/components/loading";
 import type { AnswerStatus } from "@/types/gameplay";
-import adminStyles from "@/components/admin/SuperadminUserCreation.module.css";
 import { leaderboardEntries, reviewEntries } from "./fixtures";
 import { ExampleControls } from "../ExampleControls.client";
 import styles from "../Catalog.module.css";
 
 export function FormsExample() {
+  const exampleId = useId();
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "invalid" | "submitting" | "error" | "success">(
     "idle",
@@ -35,31 +35,123 @@ export function FormsExample() {
   return (
     <div className={styles.demo} data-example="formularios">
       <p className={styles.caption}>
-        Patrón existente: campos nativos y CSS administrativo. No hay una primitiva compartida de
-        campo.
+        FormField asocia etiqueta, ayuda y error. Comfortable se usa en acceso y perfil; compact, en
+        administración. Los controles conservan su comportamiento nativo.
       </p>
-      <form className={adminStyles.form} noValidate onSubmit={submit}>
-        <div className={adminStyles.field}>
-          <label htmlFor="catalog-email">Correo electrónico de ejemplo</label>
-          <input
-            id="catalog-email"
-            type="email"
-            value={email}
-            placeholder="ana@example.com"
-            disabled={state === "submitting"}
-            aria-invalid={Boolean(error)}
-            aria-describedby={`catalog-email-help${error ? " catalog-email-error" : ""}`}
-            onChange={(event) => {
-              setEmail(event.currentTarget.value);
-              if (state !== "idle") setState("idle");
-            }}
-          />
-          <small id="catalog-email-help">Solo se valida dentro de esta demo.</small>
-          {error ? (
-            <div id="catalog-email-error">
-              <AdminFormError message={error} />
-            </div>
-          ) : null}
+      <form
+        className={styles.formExample}
+        noValidate
+        onSubmit={submit}
+        aria-busy={state === "submitting"}
+      >
+        <FormField
+          id="catalog-email"
+          label="Correo electrónico de ejemplo"
+          description="Solo se valida dentro de esta demo."
+          error={error}
+          announceError
+        >
+          {(field) => (
+            <Input
+              {...field}
+              type="email"
+              value={email}
+              placeholder="ana@example.com"
+              disabled={state === "submitting"}
+              onChange={(event) => {
+                setEmail(event.currentTarget.value);
+                if (state !== "idle") setState("idle");
+              }}
+            />
+          )}
+        </FormField>
+        <div className={styles.formSamples}>
+          {(["comfortable", "compact"] as const).map((density) => (
+            <fieldset key={density} className={styles.formSample}>
+              <legend>
+                {density === "comfortable"
+                  ? "Comfortable · acceso y perfil"
+                  : "Compact · administración"}
+              </legend>
+              <FormField
+                id={`${exampleId}-${density}-name`}
+                label={`Nombre · ${density}`}
+                density={density}
+                description="Una ayuda con texto largo permite comprobar el ajuste del contenido en pantallas pequeñas."
+                required
+              >
+                {(field) => (
+                  <Input
+                    {...field}
+                    name={`example-${density}-name`}
+                    defaultValue="Ana"
+                    placeholder="Nombre visible"
+                    maxLength={24}
+                  />
+                )}
+              </FormField>
+              <FormField
+                id={`${exampleId}-${density}-role`}
+                label={`Rol · ${density}`}
+                density={density}
+              >
+                {(field) => (
+                  <Select {...field} defaultValue="member">
+                    <option value="member">Miembro</option>
+                    <option value="admin">Administrador de la sala</option>
+                  </Select>
+                )}
+              </FormField>
+              <FormField
+                id={`${exampleId}-${density}-notes`}
+                label={`Notas · ${density}`}
+                density={density}
+              >
+                {(field) => <Textarea {...field} rows={3} placeholder="Notas de auditoría" />}
+              </FormField>
+              <FormField
+                id={`${exampleId}-${density}-document`}
+                label={`Documento · ${density}`}
+                density={density}
+              >
+                {(field) => (
+                  <Textarea
+                    {...field}
+                    rows={2}
+                    font="mono"
+                    defaultValue={'{ "version": 1 }'}
+                    readOnly
+                  />
+                )}
+              </FormField>
+              <FormField
+                id={`${exampleId}-${density}-file`}
+                label={`Archivo · ${density}`}
+                density={density}
+                description="Selecciona un JPEG, PNG o WebP de ejemplo; no se sube a ningún servidor."
+              >
+                {(field) => (
+                  <Input {...field} type="file" accept="image/jpeg,image/png,image/webp" />
+                )}
+              </FormField>
+              <FormField
+                id={`${exampleId}-${density}-disabled`}
+                label={`Deshabilitado · ${density}`}
+                density={density}
+              >
+                {(field) => <Input {...field} disabled defaultValue="Sin permisos de edición" />}
+              </FormField>
+              <FormField
+                id={`${exampleId}-${density}-error`}
+                label={`Campo con error · ${density}`}
+                density={density}
+                description="Ayuda y error pueden coexistir."
+                error="Ejemplo de error local; revisa este valor."
+              >
+                {(field) => <Input {...field} defaultValue="Dato inválido" />}
+              </FormField>
+            </fieldset>
+          ))}
         </div>
         <Button type="submit" loading={state === "submitting"}>
           Guardar correo de ejemplo

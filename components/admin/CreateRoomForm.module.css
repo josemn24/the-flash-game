@@ -175,7 +175,6 @@
   }
 
   .form,
-  .field,
   .fieldset,
   .memberList,
   .memberRow {
@@ -193,18 +192,11 @@
     gap: var(--space-4);
   }
 
-  .field,
-  .fieldset {
-    gap: var(--space-2);
-  }
-
-  .field > span,
   .fieldset legend {
     font-size: 13px;
     font-weight: 800;
   }
 
-  .field em,
   .fieldset em {
     color: var(--ds-color-fg-secondary);
     font-size: 11px;
@@ -212,42 +204,19 @@
     font-weight: 500;
   }
 
-  .field input,
-  .field textarea,
-  .inlineField input,
-  .memberRow input,
-  .memberRow select {
-    width: 100%;
-    min-height: 52px;
-    border: 1.5px solid var(--ds-color-border-hover);
-    border-radius: var(--radius-control);
-    padding: var(--space-3) var(--space-4);
-    color: var(--ds-color-fg-primary);
-    background: var(--ds-color-bg-surface-raised);
-    font: inherit;
-    font-size: 15px;
-  }
-
-  .field textarea {
-    resize: vertical;
-  }
-
   .fieldset {
+    gap: var(--space-2);
     min-width: 0;
     border: 0;
     padding: 0;
   }
 
-  .legendRow legend {
-    margin-right: auto;
+  .legendRow {
+    width: 100%;
   }
 
   .inlineField {
     gap: var(--space-3);
-  }
-
-  .inlineField input {
-    flex: 1;
   }
 
   .memberList {
@@ -256,7 +225,7 @@
 
   .memberRow {
     grid-template-columns: minmax(0, 1fr) 130px auto auto;
-    align-items: center;
+    align-items: end;
     gap: var(--space-2);
   }
 
@@ -286,36 +255,6 @@
     display: flex;
     flex: 0 0 auto;
     gap: var(--space-3);
-  }
-
-  .cancelButton,
-  .submitButton {
-    min-height: 44px;
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-control);
-    cursor: pointer;
-    font: inherit;
-    font-size: 14px;
-    font-weight: 800;
-  }
-
-  .cancelButton {
-    border: 1px solid var(--ds-color-border-default);
-    background: var(--ds-color-bg-surface);
-    color: var(--ds-color-fg-primary);
-  }
-
-  .submitButton {
-    border: 1.5px solid var(--ds-color-border-ink);
-    background: var(--ds-color-bg-brand);
-    color: var(--ds-color-fg-on-brand);
-    box-shadow: var(--shadow-control);
-  }
-
-  .submitButton:disabled {
-    cursor: not-allowed;
-    opacity: var(--ds-opacity-disabled);
-    box-shadow: none;
   }
 
   @keyframes create-room-dialog-in {

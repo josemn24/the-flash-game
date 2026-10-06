@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Button, BoltIcon, Card, Canvas } from "@/components/ui";
+import { Button, BoltIcon, Card, Canvas, FormField, Input } from "@/components/ui";
 import { signIn } from "@/app/actions/authentication";
 import type { AuthenticationFailureCode } from "@/types/contracts/authentication";
 import styles from "./AuthPanel.module.css";
@@ -94,42 +94,50 @@ export function AuthPanel() {
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit} aria-busy={isPending}>
-          <div className={styles.field}>
-            <label htmlFor="auth-email">Correo electrónico</label>
-            <input
-              id="auth-email"
-              type="email"
-              value={email}
-              autoComplete="email"
-              disabled={isPending || authenticated}
-              aria-invalid={invalidCredentials || undefined}
-              aria-describedby={invalidCredentials ? "auth-error" : undefined}
-              onChange={(event) => {
-                setEmail(event.currentTarget.value);
-                clearError();
-              }}
-              required
-            />
-          </div>
+          <FormField
+            id="auth-email"
+            label="Correo electrónico"
+            required
+            invalid={invalidCredentials}
+            describedBy={invalidCredentials ? "auth-error" : undefined}
+          >
+            {(field) => (
+              <Input
+                {...field}
+                type="email"
+                value={email}
+                autoComplete="email"
+                disabled={isPending || authenticated}
+                onChange={(event) => {
+                  setEmail(event.currentTarget.value);
+                  clearError();
+                }}
+              />
+            )}
+          </FormField>
 
-          <div className={styles.field}>
-            <label htmlFor="auth-password">Contraseña</label>
-            <input
-              id="auth-password"
-              type="password"
-              value={password}
-              minLength={6}
-              autoComplete="current-password"
-              disabled={isPending || authenticated}
-              aria-invalid={invalidCredentials || undefined}
-              aria-describedby={invalidCredentials ? "auth-error" : undefined}
-              onChange={(event) => {
-                setPassword(event.currentTarget.value);
-                clearError();
-              }}
-              required
-            />
-          </div>
+          <FormField
+            id="auth-password"
+            label="Contraseña"
+            required
+            invalid={invalidCredentials}
+            describedBy={invalidCredentials ? "auth-error" : undefined}
+          >
+            {(field) => (
+              <Input
+                {...field}
+                type="password"
+                value={password}
+                minLength={6}
+                autoComplete="current-password"
+                disabled={isPending || authenticated}
+                onChange={(event) => {
+                  setPassword(event.currentTarget.value);
+                  clearError();
+                }}
+              />
+            )}
+          </FormField>
 
           <Button type="submit" fullWidth loading={isPending}>
             {progressMessage || (authenticated ? "Reintentar entrada" : "Iniciar sesión")}

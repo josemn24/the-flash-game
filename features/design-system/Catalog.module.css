@@ -1,4 +1,38 @@
 @layer app-components {
+  .formExample {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    gap: var(--space-4);
+  }
+  .formSamples {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+  .formSample {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    margin: 0;
+    padding: var(--space-4);
+    gap: var(--space-4);
+    border: 1px solid var(--ds-color-border-default);
+    border-radius: var(--radius-control);
+  }
+  .formSample legend {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    padding-inline: var(--space-2);
+    font-size: 13px;
+    font-weight: 800;
+  }
+  @media (max-width: 760px) {
+    .formSamples {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
   .shell {
     min-height: 100dvh;
     background: var(--ds-color-bg-canvas);

@@ -129,6 +129,7 @@
     --type-display-soft-line-height: 1.08;
 
     --control-height: 56px;
+    --control-height-compact: 44px;
     --control-height-hero: 64px;
     --control-height-icon: 48px;
     --motion-press-in: 90ms;

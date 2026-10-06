@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { Avatar, Button, CrossIcon } from "@/components/ui";
+import { Avatar, Button, CrossIcon, FormField, Input } from "@/components/ui";
 import { validateProfileName } from "@/lib/userProfile";
 import { validateAvatarSelection } from "@/lib/media/avatarValidation";
 import type { UserProfile } from "@/types/view-models/user";
@@ -30,6 +30,7 @@ export function FlashPopProfileDialog({
   const nameInputRef = useRef<HTMLInputElement>(null);
   const titleId = useId();
   const nameId = useId();
+  const avatarId = useId();
   const [draft, setDraft] = useState<UserProfile>(profile);
   const [errors, setErrors] = useState<ProfileErrors>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -147,49 +148,46 @@ export function FlashPopProfileDialog({
           </button>
         </header>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit} aria-busy={isSaving}>
           <div className={styles.avatarField}>
             <Avatar
               name={draft.name || profile.name}
               src={previewSrc ?? profile.avatarSrc}
               size="lg"
             />
-            <div className={styles.avatarCopy}>
-              <label htmlFor="profile-avatar">Imagen de perfil</label>
-              <span>JPEG, PNG o WebP. Máximo 5 MB y 2048 px.</span>
-              <input
-                id="profile-avatar"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={handleAvatarChange}
-                disabled={isSaving}
-                aria-invalid={Boolean(errors.avatar)}
-              />
-              {errors.avatar ? <span className={styles.error}>{errors.avatar}</span> : null}
-            </div>
+            <FormField
+              id={avatarId}
+              label="Imagen de perfil"
+              description="JPEG, PNG o WebP. Máximo 5 MB y 2048 px."
+              error={errors.avatar}
+              className={styles.avatarCopy}
+            >
+              {(field) => (
+                <Input
+                  {...field}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleAvatarChange}
+                  disabled={isSaving}
+                />
+              )}
+            </FormField>
           </div>
 
-          <div className={styles.field}>
-            <label htmlFor={nameId}>Nombre visible</label>
-            <input
-              ref={nameInputRef}
-              id={nameId}
-              type="text"
-              value={draft.name}
-              required
-              minLength={2}
-              maxLength={24}
-              autoComplete="name"
-              aria-invalid={Boolean(errors.name)}
-              aria-describedby={errors.name ? `${nameId}-error` : undefined}
-              onChange={handleNameChange}
-            />
-            {errors.name ? (
-              <span id={`${nameId}-error`} className={styles.error} role="alert">
-                {errors.name}
-              </span>
-            ) : null}
-          </div>
+          <FormField id={nameId} label="Nombre visible" required error={errors.name} announceError>
+            {(field) => (
+              <Input
+                {...field}
+                ref={nameInputRef}
+                type="text"
+                value={draft.name}
+                minLength={2}
+                maxLength={24}
+                autoComplete="name"
+                onChange={handleNameChange}
+              />
+            )}
+          </FormField>
 
           <div className={styles.actions}>
             <Button type="button" variant="secondary" onClick={closeDialog}>

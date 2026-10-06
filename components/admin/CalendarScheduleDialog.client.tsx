@@ -1,5 +1,7 @@
 "use client";
 
+import { FormField, Select, Input, Textarea, Button, CrossIcon } from "@/components/ui";
+
 import { useActionState, useEffect, useId, useRef, useState, type FormEvent } from "react";
 
 import {
@@ -7,7 +9,7 @@ import {
   type CalendarActionState,
   updateScheduledChallenge,
 } from "@/app/admin/calendar-actions";
-import { Button, CrossIcon } from "@/components/ui";
+
 import { utcToLocalDateTime } from "@/lib/zonedDateTime";
 import type {
   SuperadminCalendarContext,
@@ -59,18 +61,6 @@ function prepareKey(event: FormEvent<HTMLFormElement>, ref: { current: string | 
 
 function defaultLocalValue(timeZone: string, offsetMs: number) {
   return utcToLocalDateTime(new Date(Date.now() + offsetMs).toISOString(), timeZone);
-}
-
-function errorId(formId: string, field: string) {
-  return formId + "-" + field + "-error";
-}
-
-function FieldError({ id, message }: { readonly id: string; readonly message?: string }) {
-  return message ? (
-    <small id={id} className={styles.fieldError} role="alert">
-      {message}
-    </small>
-  ) : null;
 }
 
 function FormActions({
@@ -134,69 +124,78 @@ function CreateScheduleForm({
       action={action}
       onSubmit={(event) => prepareKey(event, keyRef)}
       className={styles.form}
+      aria-busy={pending}
     >
       <input type="hidden" name="idempotencyKey" defaultValue="" />
 
       <fieldset className={styles.group}>
         <legend>Contenido</legend>
 
-        <label htmlFor={formId + "-seasonId"}>
-          <span>Temporada activa</span>
-          <select
-            id={formId + "-seasonId"}
-            name="seasonId"
-            value={selected?.season.seasonId ?? ""}
-            onChange={(event) => setSeasonId(event.target.value)}
-            data-dialog-autofocus
-            aria-invalid={Boolean(fieldError("seasonId"))}
-            aria-describedby={fieldError("seasonId") ? errorId(formId, "seasonId") : undefined}
-          >
-            {activeSeasons.map(({ room, season }) => (
-              <option key={season.seasonId} value={season.seasonId}>
-                {room.title} · {season.title}
-              </option>
-            ))}
-          </select>
-          <FieldError id={errorId(formId, "seasonId")} message={fieldError("seasonId")} />
-        </label>
+        <FormField
+          id={formId + "-seasonId"}
+          label="Temporada activa"
+          density="compact"
+          error={fieldError("seasonId")}
+          announceError
+        >
+          {(field) => (
+            <Select
+              {...field}
+              name="seasonId"
+              value={selected?.season.seasonId ?? ""}
+              onChange={(event) => setSeasonId(event.target.value)}
+              data-dialog-autofocus
+            >
+              {activeSeasons.map(({ room, season }) => (
+                <option key={season.seasonId} value={season.seasonId}>
+                  {room.title} · {season.title}
+                </option>
+              ))}
+            </Select>
+          )}
+        </FormField>
 
-        <label htmlFor={formId + "-challengeVersionId"}>
-          <span>Contenido publicado</span>
-          <select
-            id={formId + "-challengeVersionId"}
-            name="challengeVersionId"
-            defaultValue={publishedContent[0]?.challengeVersionId}
-            aria-invalid={Boolean(fieldError("challengeVersionId"))}
-            aria-describedby={
-              fieldError("challengeVersionId") ? errorId(formId, "challengeVersionId") : undefined
-            }
-          >
-            {publishedContent.map((entry) => (
-              <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
-                {entry.title} · v{entry.versionNumber}
-              </option>
-            ))}
-          </select>
-          <FieldError
-            id={errorId(formId, "challengeVersionId")}
-            message={fieldError("challengeVersionId")}
-          />
-        </label>
+        <FormField
+          id={formId + "-challengeVersionId"}
+          label="Contenido publicado"
+          density="compact"
+          error={fieldError("challengeVersionId")}
+          announceError
+        >
+          {(field) => (
+            <Select
+              {...field}
+              name="challengeVersionId"
+              defaultValue={publishedContent[0]?.challengeVersionId}
+            >
+              {publishedContent.map((entry) => (
+                <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
+                  {entry.title} · v{entry.versionNumber}
+                </option>
+              ))}
+            </Select>
+          )}
+        </FormField>
 
-        <label className={styles.numberField} htmlFor={formId + "-number"}>
-          <span>Número</span>
-          <input
-            id={formId + "-number"}
-            name="number"
-            type="number"
-            min="1"
-            defaultValue={selected ? nextNumber(selected.season.seasonId) : 1}
-            required
-            aria-invalid={Boolean(fieldError("number"))}
-            aria-describedby={fieldError("number") ? errorId(formId, "number") : undefined}
-          />
-          <FieldError id={errorId(formId, "number")} message={fieldError("number")} />
-        </label>
+        <FormField
+          id={formId + "-number"}
+          label="Número"
+          density="compact"
+          required
+          error={fieldError("number")}
+          announceError
+          className={styles.numberField}
+        >
+          {(field) => (
+            <Input
+              {...field}
+              name="number"
+              type="number"
+              min="1"
+              defaultValue={selected ? nextNumber(selected.season.seasonId) : 1}
+            />
+          )}
+        </FormField>
       </fieldset>
 
       <fieldset className={styles.group}>
@@ -207,60 +206,65 @@ function CreateScheduleForm({
         </p>
 
         <div className={styles.dateGrid}>
-          <label htmlFor={formId + "-opensAtLocal"}>
-            <span>Apertura</span>
-            <input
-              id={formId + "-opensAtLocal"}
-              name="opensAtLocal"
-              type="datetime-local"
-              defaultValue={selected ? defaultLocalValue(selected.room.timeZone, 3_600_000) : ""}
-              required
-              aria-invalid={Boolean(fieldError("opensAtLocal"))}
-              aria-describedby={
-                fieldError("opensAtLocal") ? errorId(formId, "opensAtLocal") : undefined
-              }
-            />
-            <FieldError id={errorId(formId, "opensAtLocal")} message={fieldError("opensAtLocal")} />
-          </label>
+          <FormField
+            id={formId + "-opensAtLocal"}
+            label="Apertura"
+            density="compact"
+            required
+            error={fieldError("opensAtLocal")}
+            announceError
+          >
+            {(field) => (
+              <Input
+                {...field}
+                name="opensAtLocal"
+                type="datetime-local"
+                defaultValue={selected ? defaultLocalValue(selected.room.timeZone, 3_600_000) : ""}
+              />
+            )}
+          </FormField>
 
-          <label htmlFor={formId + "-closesAtLocal"}>
-            <span>Cierre</span>
-            <input
-              id={formId + "-closesAtLocal"}
-              name="closesAtLocal"
-              type="datetime-local"
-              defaultValue={selected ? defaultLocalValue(selected.room.timeZone, 7_200_000) : ""}
-              required
-              aria-invalid={Boolean(fieldError("closesAtLocal"))}
-              aria-describedby={
-                fieldError("closesAtLocal") ? errorId(formId, "closesAtLocal") : undefined
-              }
-            />
-            <FieldError
-              id={errorId(formId, "closesAtLocal")}
-              message={fieldError("closesAtLocal")}
-            />
-          </label>
+          <FormField
+            id={formId + "-closesAtLocal"}
+            label="Cierre"
+            density="compact"
+            required
+            error={fieldError("closesAtLocal")}
+            announceError
+          >
+            {(field) => (
+              <Input
+                {...field}
+                name="closesAtLocal"
+                type="datetime-local"
+                defaultValue={selected ? defaultLocalValue(selected.room.timeZone, 7_200_000) : ""}
+              />
+            )}
+          </FormField>
         </div>
       </fieldset>
 
       <fieldset className={styles.group}>
         <legend>Auditoría</legend>
 
-        <label htmlFor={formId + "-reason"}>
-          <span>Motivo de auditoría</span>
-          <textarea
-            id={formId + "-reason"}
-            name="reason"
-            rows={2}
-            maxLength={500}
-            required
-            placeholder="Programar el desafío de la beta"
-            aria-invalid={Boolean(fieldError("reason"))}
-            aria-describedby={fieldError("reason") ? errorId(formId, "reason") : undefined}
-          />
-          <FieldError id={errorId(formId, "reason")} message={fieldError("reason")} />
-        </label>
+        <FormField
+          id={formId + "-reason"}
+          label="Motivo de auditoría"
+          density="compact"
+          required
+          error={fieldError("reason")}
+          announceError
+        >
+          {(field) => (
+            <Textarea
+              {...field}
+              name="reason"
+              rows={2}
+              maxLength={500}
+              placeholder="Programar el desafío de la beta"
+            />
+          )}
+        </FormField>
       </fieldset>
 
       {state.message || state.fieldErrors?.form ? (
@@ -291,7 +295,12 @@ function UpdateScheduleForm({
   const fieldError = (field: string) => state.fieldErrors?.[field];
 
   return (
-    <form action={action} onSubmit={(event) => prepareKey(event, keyRef)} className={styles.form}>
+    <form
+      action={action}
+      onSubmit={(event) => prepareKey(event, keyRef)}
+      className={styles.form}
+      aria-busy={pending}
+    >
       <input type="hidden" name="idempotencyKey" defaultValue="" />
       <input type="hidden" name="roomId" value={room.roomId} readOnly />
       <input
@@ -309,44 +318,42 @@ function UpdateScheduleForm({
           {entry.roomTitle} · {entry.seasonTitle} · #{entry.number}
         </p>
 
-        <label htmlFor={formId + "-challengeVersionId"}>
-          <span>Contenido publicado</span>
-          <select
-            id={formId + "-challengeVersionId"}
-            name="challengeVersionId"
-            defaultValue={entry.challengeVersionId}
-            data-dialog-autofocus
-            aria-invalid={Boolean(fieldError("challengeVersionId"))}
-            aria-describedby={
-              fieldError("challengeVersionId") ? errorId(formId, "challengeVersionId") : undefined
-            }
-          >
-            {publishedContent.map((candidate) => (
-              <option key={candidate.challengeVersionId} value={candidate.challengeVersionId}>
-                {candidate.title} · v{candidate.versionNumber}
-              </option>
-            ))}
-          </select>
-          <FieldError
-            id={errorId(formId, "challengeVersionId")}
-            message={fieldError("challengeVersionId")}
-          />
-        </label>
+        <FormField
+          id={formId + "-challengeVersionId"}
+          label="Contenido publicado"
+          density="compact"
+          error={fieldError("challengeVersionId")}
+          announceError
+        >
+          {(field) => (
+            <Select
+              {...field}
+              name="challengeVersionId"
+              defaultValue={entry.challengeVersionId}
+              data-dialog-autofocus
+            >
+              {publishedContent.map((candidate) => (
+                <option key={candidate.challengeVersionId} value={candidate.challengeVersionId}>
+                  {candidate.title} · v{candidate.versionNumber}
+                </option>
+              ))}
+            </Select>
+          )}
+        </FormField>
 
-        <label className={styles.numberField} htmlFor={formId + "-number"}>
-          <span>Número</span>
-          <input
-            id={formId + "-number"}
-            name="number"
-            type="number"
-            min="1"
-            defaultValue={entry.number}
-            required
-            aria-invalid={Boolean(fieldError("number"))}
-            aria-describedby={fieldError("number") ? errorId(formId, "number") : undefined}
-          />
-          <FieldError id={errorId(formId, "number")} message={fieldError("number")} />
-        </label>
+        <FormField
+          id={formId + "-number"}
+          label="Número"
+          density="compact"
+          required
+          error={fieldError("number")}
+          announceError
+          className={styles.numberField}
+        >
+          {(field) => (
+            <Input {...field} name="number" type="number" min="1" defaultValue={entry.number} />
+          )}
+        </FormField>
       </fieldset>
 
       <fieldset className={styles.group}>
@@ -357,60 +364,65 @@ function UpdateScheduleForm({
         </p>
 
         <div className={styles.dateGrid}>
-          <label htmlFor={formId + "-opensAtLocal"}>
-            <span>Apertura</span>
-            <input
-              id={formId + "-opensAtLocal"}
-              name="opensAtLocal"
-              type="datetime-local"
-              defaultValue={utcToLocalDateTime(entry.opensAt, room.timeZone)}
-              required
-              aria-invalid={Boolean(fieldError("opensAtLocal"))}
-              aria-describedby={
-                fieldError("opensAtLocal") ? errorId(formId, "opensAtLocal") : undefined
-              }
-            />
-            <FieldError id={errorId(formId, "opensAtLocal")} message={fieldError("opensAtLocal")} />
-          </label>
+          <FormField
+            id={formId + "-opensAtLocal"}
+            label="Apertura"
+            density="compact"
+            required
+            error={fieldError("opensAtLocal")}
+            announceError
+          >
+            {(field) => (
+              <Input
+                {...field}
+                name="opensAtLocal"
+                type="datetime-local"
+                defaultValue={utcToLocalDateTime(entry.opensAt, room.timeZone)}
+              />
+            )}
+          </FormField>
 
-          <label htmlFor={formId + "-closesAtLocal"}>
-            <span>Cierre</span>
-            <input
-              id={formId + "-closesAtLocal"}
-              name="closesAtLocal"
-              type="datetime-local"
-              defaultValue={utcToLocalDateTime(entry.closesAt, room.timeZone)}
-              required
-              aria-invalid={Boolean(fieldError("closesAtLocal"))}
-              aria-describedby={
-                fieldError("closesAtLocal") ? errorId(formId, "closesAtLocal") : undefined
-              }
-            />
-            <FieldError
-              id={errorId(formId, "closesAtLocal")}
-              message={fieldError("closesAtLocal")}
-            />
-          </label>
+          <FormField
+            id={formId + "-closesAtLocal"}
+            label="Cierre"
+            density="compact"
+            required
+            error={fieldError("closesAtLocal")}
+            announceError
+          >
+            {(field) => (
+              <Input
+                {...field}
+                name="closesAtLocal"
+                type="datetime-local"
+                defaultValue={utcToLocalDateTime(entry.closesAt, room.timeZone)}
+              />
+            )}
+          </FormField>
         </div>
       </fieldset>
 
       <fieldset className={styles.group}>
         <legend>Auditoría</legend>
 
-        <label htmlFor={formId + "-reason"}>
-          <span>Motivo de auditoría</span>
-          <textarea
-            id={formId + "-reason"}
-            name="reason"
-            rows={2}
-            maxLength={500}
-            required
-            placeholder="Ajustar la ventana"
-            aria-invalid={Boolean(fieldError("reason"))}
-            aria-describedby={fieldError("reason") ? errorId(formId, "reason") : undefined}
-          />
-          <FieldError id={errorId(formId, "reason")} message={fieldError("reason")} />
-        </label>
+        <FormField
+          id={formId + "-reason"}
+          label="Motivo de auditoría"
+          density="compact"
+          required
+          error={fieldError("reason")}
+          announceError
+        >
+          {(field) => (
+            <Textarea
+              {...field}
+              name="reason"
+              rows={2}
+              maxLength={500}
+              placeholder="Ajustar la ventana"
+            />
+          )}
+        </FormField>
       </fieldset>
 
       {state.message || state.fieldErrors?.form ? (

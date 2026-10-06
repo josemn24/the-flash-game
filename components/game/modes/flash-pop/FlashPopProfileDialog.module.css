@@ -94,50 +94,8 @@
   }
 
   .avatarCopy {
-    display: grid;
     min-width: 0;
-    gap: 6px;
-    color: var(--ds-color-fg-secondary);
-    font-size: 12px;
-    line-height: 1.35;
-  }
-
-  .avatarCopy label {
-    color: var(--ds-color-fg-primary);
-    font-size: 13px;
-    font-weight: 800;
-  }
-
-  .avatarCopy input {
-    width: 100%;
-    min-width: 0;
-    color: var(--ds-color-fg-primary);
-    font-size: 12px;
-  }
-
-  .field {
-    display: grid;
-    gap: var(--space-2);
-  }
-
-  .field label {
-    font-size: 13px;
-    font-weight: 800;
-  }
-
-  .field input {
-    width: 100%;
-    min-height: 52px;
-    border: var(--border-subtle);
-    border-radius: var(--radius-control);
-    padding: 0 var(--space-4);
-    color: var(--ds-color-fg-primary);
-    background: var(--ds-color-bg-surface);
-    font-size: 16px;
-  }
-
-  .field input[aria-invalid="true"] {
-    border-color: var(--ds-color-border-error);
+    flex: 1;
   }
 
   .error {

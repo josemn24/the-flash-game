@@ -108,11 +108,40 @@ pruebas de tokens comprueban la cascada real, contraste y movimiento reducido en
 Las puertas del repositorio siguen siendo `type-architecture`, `style-architecture`, `stylelint`,
 `typecheck`, `lint`, `format:check`, `docs:check`, las pruebas afectadas, el service worker y `build`.
 
+## Formularios compartidos
+
+`components/ui` exporta `FormField`, `Input`, `Select`, `Textarea` y sus tipos públicos.
+Autenticación y perfil usan `comfortable`; administración, filtros, filas dinámicas y assets usan
+`compact`. Los controles especializados del juego conservan su implementación.
+
+`FormField` exige `id` y `label`, y compone el control mediante `children(field)`.
+El consumidor propaga `field` al control y mantiene IDs únicos, validación, envío y estado.
+`description` y `error` generan `${id}-help` y `${id}-error`; `describedBy` combina y deduplica
+referencias externas. Un error o `invalid=true` activa `aria-invalid`. `announceError=false`
+evita anuncios duplicados; se activa donde ya existía un error local anunciado.
+El acceso mantiene su error compartido `auth-error` asociado a ambos campos.
+
+| Contrato                    | Comfortable   | Compact       |
+| --------------------------- | ------------- | ------------- |
+| Input/select: altura mínima | 56 px         | 44 px         |
+| Texto / padding horizontal  | 16 px / 16 px | 16 px / 12 px |
+| Etiqueta/control            | 8 px          | 4 px          |
+
+Etiquetas de 13 px, ayuda/error de 12 px y textarea con interlineado 1,5 y resize vertical.
+`Textarea` acepta `font="ui"` (predeterminado) o `font="mono"` para documentos estructurados.
+Los controles conservan atributos, eventos, refs, `value`, `defaultValue`, `rows`, `disabled`,
+`readOnly`, selects y archivos nativos. Las primitivas no tienen estado, efectos ni acciones.
+El consumidor expresa el envío pendiente con `aria-busy` en el formulario y `Button.loading`.
+`Button` permite ajustar sus textos largos a varias líneas, incluidos los casos de zoom al 200 %.
+No se añaden dependencias, bibliotecas de formularios ni un gestor genérico de `<form>`.
+
+El catálogo demuestra ambas densidades, ayuda/error simultáneos, archivos, disabled y readOnly,
+y mantiene las simulaciones de envío, fallo, reintento y éxito.
+
 ## Trabajo posterior
 
 | Hueco observado                                      | Propuesta para una siguiente fase                               |
 | ---------------------------------------------------- | --------------------------------------------------------------- |
-| Campos nativos y estilos repetidos                   | Primitiva compartida de campo, label, ayuda, error y estados    |
 | Avisos de juego y administración con APIs diferentes | Unificar intención, semántica y composición de avisos           |
 | Aliases de tamaños y convivencia de density/padding  | Precisar la API canónica y estudiar una migración explícita     |
 | Variantes social/danger y blue/aqua                  | Alinear nomenclatura con roles y revisar variantes equivalentes |

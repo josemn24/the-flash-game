@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
-import { Button, Card, Chip } from "@/components/ui";
+import { useId, useActionState, useRef, useState } from "react";
+
+import { FormField, Textarea, Input, Select, Button, Card, Chip } from "@/components/ui";
+
 import { formatFlashEditorialQuestionDocument } from "@/lib/editorial/flashDocument";
 import type { SuperadminQuestionVersionDetail } from "@/types/view-models/editorial";
 import {
@@ -45,17 +47,19 @@ function ErrorMessage({ state }: { readonly state: QuestionActionState }) {
   ) : null;
 }
 function Reason() {
+  const fieldId = useId();
   return (
-    <label className={styles.reason}>
-      <span>Motivo de auditoría</span>
-      <textarea
-        name="reason"
-        rows={2}
-        maxLength={500}
-        required
-        placeholder="Preparar pregunta para la biblioteca"
-      />
-    </label>
+    <FormField id={fieldId + "-reason"} label="Motivo de auditoría" density="compact" required>
+      {(field) => (
+        <Textarea
+          {...field}
+          name="reason"
+          rows={2}
+          maxLength={500}
+          placeholder="Preparar pregunta para la biblioteca"
+        />
+      )}
+    </FormField>
   );
 }
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -69,6 +73,7 @@ function QuestionAssetUploader({
   readonly document: string;
   readonly onDocumentChange: (value: string) => void;
 }) {
+  const fieldId = useId();
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [altText, setAltText] = useState("");
@@ -184,7 +189,7 @@ function QuestionAssetUploader({
 
   return (
     <div className={styles.assetPanel}>
-      <div>
+      <div className={styles.assetHeading}>
         <strong>
           Asset privado de{" "}
           {target === "heat-map"
@@ -196,49 +201,61 @@ function QuestionAssetUploader({
         <span>El servidor inspecciona los bytes y guarda solo el assetId.</span>
       </div>
       <div className={styles.assetFields}>
-        <label>
-          <span>Texto alternativo</span>
-          <input
-            value={effectiveAlt}
-            maxLength={500}
-            onChange={(event) => setAltText(event.target.value)}
-            placeholder="Describe la imagen"
-          />
-        </label>
-        <label>
-          <span>Ajuste</span>
-          <select
-            value={effectiveFit}
-            onChange={(event) => setFit(event.target.value as "" | "cover" | "contain")}
-          >
-            <option value="">Predeterminado</option>
-            <option value="cover">Cover</option>
-            <option value="contain">Contain</option>
-          </select>
-        </label>
-        <label>
-          <span>Posición</span>
-          <input
-            value={effectivePosition}
-            maxLength={100}
-            onChange={(event) => setPosition(event.target.value)}
-            placeholder="center"
-          />
-        </label>
+        <FormField id={fieldId + "-texto-alternativo"} label="Texto alternativo" density="compact">
+          {(field) => (
+            <Input
+              {...field}
+              value={effectiveAlt}
+              maxLength={500}
+              onChange={(event) => setAltText(event.target.value)}
+              placeholder="Describe la imagen"
+            />
+          )}
+        </FormField>
+        <FormField id={fieldId + "-ajuste"} label="Ajuste" density="compact">
+          {(field) => (
+            <Select
+              {...field}
+              value={effectiveFit}
+              onChange={(event) => setFit(event.target.value as "" | "cover" | "contain")}
+            >
+              <option value="">Predeterminado</option>
+              <option value="cover">Cover</option>
+              <option value="contain">Contain</option>
+            </Select>
+          )}
+        </FormField>
+        <FormField id={fieldId + "-posicion"} label="Posición" density="compact">
+          {(field) => (
+            <Input
+              {...field}
+              value={effectivePosition}
+              maxLength={100}
+              onChange={(event) => setPosition(event.target.value)}
+              placeholder="center"
+            />
+          )}
+        </FormField>
       </div>
-      <label className={styles.fileInput}>
-        <span>Seleccionar JPEG, PNG o WebP</span>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          disabled={pending}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void upload(file);
-            event.currentTarget.value = "";
-          }}
-        />
-      </label>
+      <FormField
+        id={fieldId + "-seleccionar-jpeg-png-o-webp"}
+        label="Seleccionar JPEG, PNG o WebP"
+        density="compact"
+      >
+        {(field) => (
+          <Input
+            {...field}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={pending}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) void upload(file);
+              event.currentTarget.value = "";
+            }}
+          />
+        )}
+      </FormField>
       {pending ? <span role="status">Subiendo y confirmando…</span> : null}
       {message ? (
         <span className={styles.assetMessage} role="status">
@@ -256,6 +273,7 @@ export function QuestionVersionEditor({
   readonly detail?: SuperadminQuestionVersionDetail;
   readonly newQuestion?: boolean;
 }) {
+  const fieldId = useId();
   const latest = detail?.versions[0];
   const editable = latest?.status === "draft" && latest.document;
   const [text, setText] = useState(
@@ -314,18 +332,29 @@ export function QuestionVersionEditor({
       </div>
       <div className={styles.layout}>
         <Card as="section" className={styles.editor}>
-          <label className={styles.field}>
-            <span>Documento standalone (sin points)</span>
-            <textarea
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              rows={28}
-              spellCheck={false}
-            />
-          </label>
+          <FormField
+            id={fieldId + "-documento-standalone-sin-points"}
+            label="Documento standalone (sin points)"
+            density="compact"
+          >
+            {(field) => (
+              <Textarea
+                {...field}
+                font="mono"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                rows={28}
+                spellCheck={false}
+              />
+            )}
+          </FormField>
           <QuestionAssetUploader document={text} onDocumentChange={setText} />
           {newQuestion || !formTarget ? (
-            <form action={createAction} onSubmit={(event) => prepare(event, createKey)}>
+            <form
+              action={createAction}
+              onSubmit={(event) => prepare(event, createKey)}
+              aria-busy={createPending}
+            >
               <input type="hidden" name="idempotencyKey" />
               <input type="hidden" name="document" value={text} readOnly />
               {detail?.questionDefinitionId ? (
@@ -342,7 +371,11 @@ export function QuestionVersionEditor({
               </Button>
             </form>
           ) : editable ? (
-            <form action={updateAction} onSubmit={(event) => prepare(event, updateKey)}>
+            <form
+              action={updateAction}
+              onSubmit={(event) => prepare(event, updateKey)}
+              aria-busy={updatePending}
+            >
               <input type="hidden" name="idempotencyKey" />
               <input type="hidden" name="questionVersionId" value={formTarget} />
               <input type="hidden" name="expectedUpdatedAt" value={latest.updatedAt} />
@@ -354,7 +387,11 @@ export function QuestionVersionEditor({
               </Button>
             </form>
           ) : (
-            <form action={createAction} onSubmit={(event) => prepare(event, createKey)}>
+            <form
+              action={createAction}
+              onSubmit={(event) => prepare(event, createKey)}
+              aria-busy={createPending}
+            >
               <input type="hidden" name="idempotencyKey" />
               <input
                 type="hidden"
@@ -370,7 +407,11 @@ export function QuestionVersionEditor({
             </form>
           )}
           {latest?.status === "draft" ? (
-            <form action={publishAction} onSubmit={(event) => prepare(event, publishKey)}>
+            <form
+              action={publishAction}
+              onSubmit={(event) => prepare(event, publishKey)}
+              aria-busy={publishPending}
+            >
               <input type="hidden" name="idempotencyKey" />
               <input type="hidden" name="questionVersionId" value={latest.questionVersionId} />
               <input type="hidden" name="expectedUpdatedAt" value={latest.updatedAt} />
@@ -388,6 +429,7 @@ export function QuestionVersionEditor({
                 if (!window.confirm("¿Archivar esta versión?")) event.preventDefault();
                 else prepare(event, archiveKey);
               }}
+              aria-busy={archivePending}
             >
               <input type="hidden" name="idempotencyKey" />
               <input type="hidden" name="questionVersionId" value={latest.questionVersionId} />

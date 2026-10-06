@@ -1,6 +1,9 @@
 "use client";
 
-import { useActionState, useRef, useState, useTransition, type FormEvent } from "react";
+import { useId, useActionState, useRef, useState, useTransition, type FormEvent } from "react";
+
+import { Button, FormField, Input, Select, Textarea } from "@/components/ui";
+
 import {
   addPortalUserToRoom,
   lookupPortalUserByEmail,
@@ -12,6 +15,7 @@ import styles from "./AdminRoomMembers.module.css";
 const initialState: SuperadminUserActionState = {};
 
 export function AddSuperadminRoomMember({ roomId }: { readonly roomId: string }) {
+  const fieldId = useId();
   const [state, action, pending] = useActionState(addPortalUserToRoom, initialState);
   const [lookupPending, startLookup] = useTransition();
   const [email, setEmail] = useState("");
@@ -45,77 +49,99 @@ export function AddSuperadminRoomMember({ roomId }: { readonly roomId: string })
     if (keyField instanceof HTMLInputElement) keyField.value = idempotencyKeyRef.current;
   }
 
+  const emailError = [
+    ...new Set([lookupMessage, state.fieldErrors?.targetPlayerId].filter(Boolean)),
+  ].join(" ");
+
   return (
-    <form action={action} onSubmit={prepareSubmission} className={styles.addForm}>
+    <form
+      action={action}
+      onSubmit={prepareSubmission}
+      className={styles.addForm}
+      aria-busy={pending}
+    >
       <input type="hidden" name="roomId" value={roomId} readOnly />
       <input type="hidden" name="idempotencyKey" defaultValue="" />
       <input type="hidden" name="targetPlayerId" value={candidate?.playerId ?? ""} readOnly />
       <h3>Añadir usuario a la sala</h3>
       <p>Busca una cuenta existente por correo y elige su rol en esta sala.</p>
-      <div className={styles.addSearch}>
-        <label>
-          <span>Correo electrónico</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => {
-              setEmail(event.currentTarget.value);
-              setCandidate(null);
-              setLookupMessage("");
-              invalidateKey();
-            }}
-            autoComplete="off"
-            required
-          />
-        </label>
-        <button type="button" onClick={lookup} disabled={lookupPending || !email.trim()}>
-          {lookupPending ? "Buscando…" : "Buscar usuario"}
-        </button>
-      </div>
+      <FormField
+        id={fieldId + "-correo-electronico"}
+        label="Correo electrónico"
+        density="compact"
+        required
+        error={emailError}
+        announceError
+      >
+        {(field) => (
+          <div className={styles.addSearch}>
+            <Input
+              {...field}
+              type="email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.currentTarget.value);
+                setCandidate(null);
+                setLookupMessage("");
+                invalidateKey();
+              }}
+              autoComplete="off"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={lookup}
+              loading={lookupPending}
+              disabled={!email.trim()}
+            >
+              {lookupPending ? "Buscando…" : "Buscar usuario"}
+            </Button>
+          </div>
+        )}
+      </FormField>
       {candidate ? (
         <p className={styles.candidate}>
           ✓ {candidate.displayName} · {candidate.email}
         </p>
       ) : null}
-      {lookupMessage ? (
-        <p className={styles.formError} role="alert">
-          {lookupMessage}
-        </p>
-      ) : null}
-      {state.fieldErrors?.targetPlayerId ? (
-        <p className={styles.formError} role="alert">
-          {state.fieldErrors.targetPlayerId}
-        </p>
-      ) : null}
-      <label className={styles.addField}>
-        <span>Rol de sala</span>
-        <select name="role" defaultValue="member" onChange={invalidateKey}>
-          <option value="member">Miembro</option>
-          <option value="admin">Administrador</option>
-          <option value="spectator">Espectador</option>
-        </select>
-      </label>
-      {state.fieldErrors?.role ? (
-        <p className={styles.formError} role="alert">
-          {state.fieldErrors.role}
-        </p>
-      ) : null}
-      <label className={styles.addField}>
-        <span>Motivo de auditoría</span>
-        <textarea
-          name="reason"
-          rows={2}
-          maxLength={500}
-          required
-          onChange={invalidateKey}
-          placeholder="Incorporación a la beta"
-        />
-      </label>
-      {state.fieldErrors?.reason ? (
-        <p className={styles.formError} role="alert">
-          {state.fieldErrors.reason}
-        </p>
-      ) : null}
+
+      <FormField
+        id={fieldId + "-role"}
+        label="Rol de sala"
+        density="compact"
+        error={state.fieldErrors?.role}
+        announceError
+      >
+        {(field) => (
+          <Select {...field} name="role" defaultValue="member" onChange={invalidateKey}>
+            <option value="member">Miembro</option>
+            <option value="admin">Administrador</option>
+            <option value="spectator">Espectador</option>
+          </Select>
+        )}
+      </FormField>
+
+      <FormField
+        id={fieldId + "-reason"}
+        label="Motivo de auditoría"
+        error={state.fieldErrors?.reason}
+        announceError
+        density="compact"
+        required
+      >
+        {(field) => (
+          <Textarea
+            {...field}
+            name="reason"
+            rows={2}
+            maxLength={500}
+            onChange={invalidateKey}
+            placeholder="Incorporación a la beta"
+          />
+        )}
+      </FormField>
+
       {state.message ? (
         <p
           className={state.ok ? styles.formSuccess : styles.formError}
@@ -124,9 +150,9 @@ export function AddSuperadminRoomMember({ roomId }: { readonly roomId: string })
           {state.message}
         </p>
       ) : null}
-      <button type="submit" disabled={!candidate || pending}>
+      <Button type="submit" size="sm" loading={pending} disabled={!candidate}>
         {pending ? "Añadiendo…" : "Añadir a la sala"}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -168,50 +168,6 @@
     font-size: 14px;
     font-weight: 800;
   }
-  .form label {
-    display: grid;
-    gap: 6px;
-  }
-  .form label > span {
-    color: var(--ds-color-fg-primary);
-    font-size: 12px;
-    font-weight: 800;
-  }
-  .form input,
-  .form select,
-  .form textarea {
-    width: 100%;
-    min-height: 52px;
-    border: 1.5px solid var(--ds-color-border-hover);
-    border-radius: var(--radius-control);
-    padding: 10px 12px;
-    background: var(--ds-color-bg-surface-raised);
-    color: var(--ds-color-fg-primary);
-    font: inherit;
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 70%);
-    transition:
-      border-color var(--motion-press-out) ease,
-      background var(--motion-press-out) ease,
-      box-shadow var(--motion-press-out) ease;
-  }
-  .form input:focus-visible,
-  .form select:focus-visible,
-  .form textarea:focus-visible {
-    outline: 2px solid var(--ds-color-focus-ring);
-    outline-offset: 2px;
-    border-color: var(--ds-color-border-ink);
-    background: var(--ds-color-bg-surface);
-    box-shadow: 0 0 0 3px rgb(77 59 209 / 18%);
-  }
-  .form textarea {
-    min-height: 96px;
-    resize: vertical;
-  }
-  .form input::placeholder,
-  .form textarea::placeholder {
-    color: var(--ds-color-fg-secondary);
-    opacity: 1;
-  }
   .numberField {
     max-width: 220px;
   }
@@ -494,17 +450,11 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
-  .fieldError,
   .formError {
     margin: 0;
     color: var(--ds-color-fg-error);
     font-size: 12px;
     font-weight: 700;
-  }
-  .form input[aria-invalid="true"],
-  .form select[aria-invalid="true"],
-  .form textarea[aria-invalid="true"] {
-    border-color: var(--ds-color-border-error);
   }
   @keyframes calendar-dialog-in {
     from {

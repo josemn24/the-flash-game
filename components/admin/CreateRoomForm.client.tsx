@@ -1,21 +1,23 @@
 "use client";
 
 import {
+  useId,
   useActionState,
   useEffect,
-  useId,
   useRef,
   useState,
   useTransition,
   type FormEvent,
 } from "react";
 
+import { Button, FormField, Input, Textarea, CrossIcon } from "@/components/ui";
+
 import {
   createPrivateRoom,
   lookupSuperadminPlayers,
   type CreateRoomActionState,
 } from "@/app/admin/actions";
-import { CrossIcon } from "@/components/ui";
+
 import type { SuperadminPlayerCandidate } from "@/types/view-models";
 
 import { RoomMemberFields, RoomOwnerFields, type RoomMemberRow } from "./RoomMemberFields.client";
@@ -33,6 +35,7 @@ function candidateFor(candidates: readonly SuperadminPlayerCandidate[], email: s
 }
 
 function CreateRoomDialogForm({ onCancel }: { readonly onCancel: () => void }) {
+  const fieldId = useId();
   const [state, action, pending] = useActionState(createPrivateRoom, initialState);
   const [lookupPending, startLookup] = useTransition();
   const idempotencyKeyRef = useRef<string | null>(null);
@@ -109,54 +112,75 @@ function CreateRoomDialogForm({ onCancel }: { readonly onCancel: () => void }) {
   }
 
   return (
-    <form action={action} className={styles.form} onSubmit={setIdempotencyKey}>
+    <form action={action} className={styles.form} onSubmit={setIdempotencyKey} aria-busy={pending}>
       <input type="hidden" name="idempotencyKey" defaultValue="" />
 
       <div className={styles.grid}>
-        <label className={styles.field}>
-          <span>Título</span>
-          <input
-            name="title"
-            minLength={3}
-            maxLength={80}
-            required
-            placeholder="Liga de primavera"
-            data-dialog-autofocus
-          />
-          {state.fieldErrors?.title ? (
-            <small className={styles.error}>{state.fieldErrors.title}</small>
-          ) : null}
-        </label>
+        <FormField
+          id={fieldId + "-title"}
+          label="Título"
+          density="compact"
+          required
+          error={state.fieldErrors?.title}
+        >
+          {(field) => (
+            <Input
+              {...field}
+              name="title"
+              minLength={3}
+              maxLength={80}
+              placeholder="Liga de primavera"
+              data-dialog-autofocus
+            />
+          )}
+        </FormField>
 
-        <label className={styles.field}>
-          <span>Zona horaria</span>
-          <input
-            name="timeZone"
-            list="room-time-zones"
-            defaultValue="Europe/Madrid"
-            required
-            placeholder="Europe/Madrid"
-          />
-          <datalist id="room-time-zones">
-            {timeZoneOptions.map((option) => (
-              <option key={option} value={option} />
-            ))}
-          </datalist>
-          {state.fieldErrors?.timeZone ? (
-            <small className={styles.error}>{state.fieldErrors.timeZone}</small>
-          ) : null}
-        </label>
+        <FormField
+          id={fieldId + "-timeZone"}
+          label="Zona horaria"
+          density="compact"
+          required
+          error={state.fieldErrors?.timeZone}
+        >
+          {(field) => (
+            <>
+              <Input
+                {...field}
+                name="timeZone"
+                list={fieldId + "-time-zones"}
+                defaultValue="Europe/Madrid"
+                placeholder="Europe/Madrid"
+              />
+              <datalist id={fieldId + "-time-zones"}>
+                {timeZoneOptions.map((option) => (
+                  <option key={option} value={option} />
+                ))}
+              </datalist>
+            </>
+          )}
+        </FormField>
       </div>
 
-      <label className={styles.field}>
-        <span>
-          Descripción <em>(opcional)</em>
-        </span>
-        <textarea name="description" maxLength={280} rows={3} placeholder="Contexto de la sala" />
-        {state.fieldErrors?.description ? (
-          <small className={styles.error}>{state.fieldErrors.description}</small>
-        ) : null}
-      </label>
+      <FormField
+        id={fieldId + "-description"}
+        label={
+          <>
+            Descripción <em>(opcional)</em>
+          </>
+        }
+        density="compact"
+        error={state.fieldErrors?.description}
+      >
+        {(field) => (
+          <Textarea
+            {...field}
+            name="description"
+            maxLength={280}
+            rows={3}
+            placeholder="Contexto de la sala"
+          />
+        )}
+      </FormField>
 
       <RoomOwnerFields
         email={ownerEmail}
@@ -181,19 +205,23 @@ function CreateRoomDialogForm({ onCancel }: { readonly onCancel: () => void }) {
         onRemove={(id) => setMembers((current) => current.filter((item) => item.id !== id))}
       />
 
-      <label className={styles.field}>
-        <span>Motivo de auditoría</span>
-        <textarea
-          name="reason"
-          maxLength={500}
-          rows={2}
-          required
-          placeholder="Preparación de la beta cerrada"
-        />
-        {state.fieldErrors?.reason ? (
-          <small className={styles.error}>{state.fieldErrors.reason}</small>
-        ) : null}
-      </label>
+      <FormField
+        id={fieldId + "-reason"}
+        label="Motivo de auditoría"
+        density="compact"
+        required
+        error={state.fieldErrors?.reason}
+      >
+        {(field) => (
+          <Textarea
+            {...field}
+            name="reason"
+            maxLength={500}
+            rows={2}
+            placeholder="Preparación de la beta cerrada"
+          />
+        )}
+      </FormField>
 
       {state.message ? (
         <p className={styles.formMessage} role="alert">
@@ -202,12 +230,12 @@ function CreateRoomDialogForm({ onCancel }: { readonly onCancel: () => void }) {
       ) : null}
       <div className={styles.submitRow}>
         <div className={styles.dialogActions}>
-          <button type="button" className={styles.cancelButton} onClick={onCancel}>
+          <Button type="button" variant="secondary" size="sm" onClick={onCancel}>
             Cancelar
-          </button>
-          <button type="submit" className={styles.submitButton} disabled={!canSubmit || pending}>
+          </Button>
+          <Button type="submit" size="sm" disabled={!canSubmit} loading={pending}>
             {pending ? "Creando…" : "Crear sala"}
-          </button>
+          </Button>
         </div>
         {!ownerCandidate || hasUnresolvedMember ? (
           <small className={styles.helper}>Busca el owner y cada miembro antes de confirmar.</small>

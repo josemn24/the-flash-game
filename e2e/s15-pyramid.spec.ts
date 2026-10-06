@@ -119,7 +119,7 @@ async function createRoomAndSeason(page: Page, data: Fixture, suffix: string) {
   ] as const;
   for (const member of members) {
     await dialog.getByRole("button", { name: "Añadir miembro" }).click();
-    const row = dialog.locator('[aria-label="Email del miembro"]').last().locator("..");
+    const row = dialog.getByLabel("Email del miembro").last().locator("..").locator("..");
     await row.getByLabel("Email del miembro").fill(member.account.email);
     await row.getByLabel("Rol del miembro").selectOption(member.role);
     await row.getByRole("button", { name: "Buscar" }).click();

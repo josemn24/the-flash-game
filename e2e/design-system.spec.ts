@@ -1,3 +1,4 @@
+import { contrast, resolveColor } from "../scripts/test-utils/color-tokens.mjs";
 import { test, expect, type Page } from "@playwright/test";
 import { catalogGroups, catalogExamples } from "../features/design-system/registry";
 
@@ -109,7 +110,103 @@ for (const width of [390, 1280]) {
       await expect(page.getByText("Correo de ejemplo guardado", { exact: true })).toBeVisible();
       await page.getByRole("button", { name: "Reiniciar formulario" }).click();
       await expect(field).toHaveValue("");
-      await expect(field).toHaveAttribute("aria-invalid", "false");
+      await expect(field).not.toHaveAttribute("aria-invalid");
+    });
+    test("checks shared fields, native files and reflow at 200 percent", async ({ page }) => {
+      await page.goto("/design-system/preview/formularios");
+      await expectUniqueIds(page);
+      for (const density of ["comfortable", "compact"] as const) {
+        const expectedHeight = density === "comfortable" ? 56 : 44;
+        const field = page.getByLabel(`Nombre · ${density}`, { exact: true });
+        const select = page.getByLabel(`Rol · ${density}`, { exact: true });
+        const notes = page.getByLabel(`Notas · ${density}`, { exact: true });
+        for (const control of [field, select]) {
+          await expect(control).toHaveCSS("min-height", `${expectedHeight}px`);
+          await expect(control).toHaveCSS("font-size", "16px");
+          await expect(control).toHaveCSS(
+            "padding-left",
+            density === "comfortable" ? "16px" : "12px",
+          );
+          const colors = await control.evaluate((element) => {
+            const style = getComputedStyle(element);
+            return { fg: style.color, bg: style.backgroundColor, border: style.borderTopColor };
+          });
+          expect(contrast(resolveColor(colors.fg), resolveColor(colors.bg))).toBeGreaterThanOrEqual(
+            4.5,
+          );
+          expect(
+            contrast(resolveColor(colors.border), resolveColor(colors.bg)),
+          ).toBeGreaterThanOrEqual(3);
+        }
+        await expect(field.locator("..")).toHaveCSS(
+          "row-gap",
+          density === "comfortable" ? "8px" : "4px",
+        );
+        await expect(notes).toHaveAttribute("rows", "3");
+        await expect(notes).toHaveCSS("resize", "vertical");
+        await expect(notes).toHaveCSS("line-height", "24px");
+        await expect(page.getByLabel(`Documento · ${density}`, { exact: true })).toHaveAttribute(
+          "readonly",
+          "",
+        );
+        await expect(page.getByLabel(`Deshabilitado · ${density}`, { exact: true })).toBeDisabled();
+        const invalid = page.getByLabel(`Campo con error · ${density}`, { exact: true });
+        await expect(invalid).toHaveAttribute("aria-invalid", "true");
+        await expect(invalid).toHaveCSS("border-top-color", "rgb(167, 25, 48)");
+        const referenced = await invalid.evaluate((element) =>
+          (element.getAttribute("aria-describedby") || "")
+            .split(" ")
+            .map((id) => document.getElementById(id)?.textContent),
+        );
+        expect(referenced).toEqual([
+          "Ayuda y error pueden coexistir.",
+          "Ejemplo de error local; revisa este valor.",
+        ]);
+        const errorColor = await invalid
+          .locator("..")
+          .locator('div[id$="-error"]')
+          .evaluate((el) => getComputedStyle(el).color);
+        expect(contrast(resolveColor(errorColor), resolveColor("#ffffff"))).toBeGreaterThanOrEqual(
+          4.5,
+        );
+        await field.focus();
+        await expect(field).toHaveCSS("outline-width", "2px");
+        await expect(field).toHaveCSS("outline-offset", "3px");
+        await page.keyboard.press("Tab");
+        await expect(select).toBeFocused();
+        await select.selectOption("admin");
+        await expect(select).toHaveValue("admin");
+        const file = page.getByLabel(`Archivo · ${density}`, { exact: true });
+        await file.setInputFiles({
+          name: "un-nombre-de-archivo-muy-largo-para-comprobar-reflow.png",
+          mimeType: "image/png",
+          buffer: Buffer.from([137, 80, 78, 71]),
+        });
+        expect(await file.evaluate((el) => (el as HTMLInputElement).files?.[0]?.name)).toContain(
+          "reflow.png",
+        );
+        await field.fill("Un nombre largo con caracteres que exceden el espacio visible");
+      }
+      await page.screenshot({ path: `output/playwright/forms-${width}.png`, fullPage: true });
+      // CSS zoom applies an actual 2x scale, unlike deviceScaleFactor, which only changes pixels.
+      await page.evaluate(() => {
+        document.documentElement.style.zoom = "2";
+      });
+      await page.screenshot({
+        path: `output/playwright/forms-${width}-zoom-200.png`,
+        fullPage: true,
+      });
+      const zoomMetrics = await page.evaluate(() => ({
+        scroll: document.documentElement.scrollWidth,
+        viewport: innerWidth,
+        body: document.body.getBoundingClientRect().width,
+      }));
+      expect(zoomMetrics.scroll, JSON.stringify(zoomMetrics)).toBeLessThanOrEqual(width + 1);
+      for (const control of await page.locator("input:not(:disabled), select, textarea").all()) {
+        const box = await control.boundingBox();
+        expect(box?.width).toBeGreaterThan(0);
+        expect((box?.x || 0) + (box?.width || 0)).toBeLessThanOrEqual(width + 1);
+      }
     });
     test("resets action, timer, ranking, feedback and review demos", async ({ page }) => {
       await page.goto("/design-system/componentes/botones");

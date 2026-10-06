@@ -224,30 +224,6 @@
     font-size: 1.1rem;
   }
 
-  .field {
-    display: grid;
-    gap: 6px;
-    color: var(--ds-color-fg-primary);
-    font-size: 0.85rem;
-    font-weight: 700;
-  }
-
-  .field input,
-  .field textarea {
-    width: 100%;
-    border: 1px solid var(--ds-color-border-default);
-    border-radius: 10px;
-    padding: 10px 12px;
-    background: var(--ds-color-bg-surface);
-    color: var(--ds-color-fg-primary);
-    font: inherit;
-  }
-
-  .field textarea {
-    min-height: 80px;
-    resize: vertical;
-  }
-
   .error {
     margin: 0;
     color: var(--ds-color-fg-error);

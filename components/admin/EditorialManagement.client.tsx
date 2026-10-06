@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useId,
   useActionState,
   useEffect,
   useMemo,
@@ -9,8 +10,11 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+
+import { FormField, Textarea, Select, Input, Button, Card, Chip } from "@/components/ui";
+
 import Link from "next/link";
-import { Button, Card, Chip } from "@/components/ui";
+
 import { AdminSectionHeader } from "./AdminSectionHeader";
 import { EditorialPreview } from "./EditorialPreview";
 import {
@@ -146,17 +150,19 @@ function statusTone(status: SuperadminEditorialContext["entries"][number]["statu
 }
 
 function ReasonField() {
+  const fieldId = useId();
   return (
-    <label className={styles.field}>
-      <span>Motivo de auditoría</span>
-      <textarea
-        name="reason"
-        maxLength={500}
-        rows={2}
-        required
-        placeholder="Preparar contenido de la beta"
-      />
-    </label>
+    <FormField id={fieldId + "-reason"} label="Motivo de auditoría" density="compact" required>
+      {(field) => (
+        <Textarea
+          {...field}
+          name="reason"
+          maxLength={500}
+          rows={2}
+          placeholder="Preparar contenido de la beta"
+        />
+      )}
+    </FormField>
   );
 }
 
@@ -257,6 +263,7 @@ export function EditorialManagement({
   readonly canCreate?: boolean;
   readonly allowNewDraft?: boolean;
 }) {
+  const fieldId = useId();
   const drafts = context.entries.filter((entry) => entry.status === "draft");
   const [selectedId, setSelectedId] = useState(
     initialDraftId && drafts.some((entry) => entry.challengeVersionId === initialDraftId)
@@ -468,16 +475,17 @@ export function EditorialManagement({
 
             {drafts.length > 0 ? (
               <div className={styles.draftSelector}>
-                <label className={styles.field}>
-                  <span>Borrador</span>
-                  <select value={selectedId} onChange={selectDraft}>
-                    {drafts.map((entry) => (
-                      <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
-                        {entry.title} · {entry.slug}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <FormField id={fieldId + "-borrador"} label="Borrador" density="compact">
+                  {(field) => (
+                    <Select {...field} value={selectedId} onChange={selectDraft}>
+                      {drafts.map((entry) => (
+                        <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
+                          {entry.title} · {entry.slug}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </FormField>
                 {allowNewDraft ? (
                   <Button type="button" variant="secondary" onClick={startNewDraft}>
                     Nuevo borrador
@@ -489,32 +497,44 @@ export function EditorialManagement({
             {publishedLibraryEntries.length > 0 ? (
               <>
                 <div className={styles.draftSelector}>
-                  <label className={styles.field}>
-                    <span>Versión publicada de biblioteca</span>
-                    <select
-                      value={libraryQuestionId}
-                      onChange={(event) => setLibraryQuestionId(event.target.value)}
-                    >
-                      {publishedLibraryEntries.map((entry) => (
-                        <option key={entry.questionVersionId} value={entry.questionVersionId}>
-                          {entry.slug} · v{entry.versionNumber} · {entry.type}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className={styles.field}>
-                    <span>Sustituir pregunta</span>
-                    <select
-                      value={replaceIndex}
-                      onChange={(event) => setReplaceIndex(event.target.value)}
-                    >
-                      {parsedDocument?.questions.map((_, index) => (
-                        <option key={index} value={index}>
-                          #{index + 1}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  <FormField
+                    id={fieldId + "-version-publicada-de-biblioteca"}
+                    label="Versión publicada de biblioteca"
+                    density="compact"
+                  >
+                    {(field) => (
+                      <Select
+                        {...field}
+                        value={libraryQuestionId}
+                        onChange={(event) => setLibraryQuestionId(event.target.value)}
+                      >
+                        {publishedLibraryEntries.map((entry) => (
+                          <option key={entry.questionVersionId} value={entry.questionVersionId}>
+                            {entry.slug} · v{entry.versionNumber} · {entry.type}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                  </FormField>
+                  <FormField
+                    id={fieldId + "-sustituir-pregunta"}
+                    label="Sustituir pregunta"
+                    density="compact"
+                  >
+                    {(field) => (
+                      <Select
+                        {...field}
+                        value={replaceIndex}
+                        onChange={(event) => setReplaceIndex(event.target.value)}
+                      >
+                        {parsedDocument?.questions.map((_, index) => (
+                          <option key={index} value={index}>
+                            #{index + 1}
+                          </option>
+                        ))}
+                      </Select>
+                    )}
+                  </FormField>
                   <Button type="button" variant="secondary" onClick={selectLibraryQuestion}>
                     Usar versión
                   </Button>
@@ -530,37 +550,51 @@ export function EditorialManagement({
 
             {parsedDocument ? (
               <div className={styles.draftSelector}>
-                <label className={styles.field}>
-                  <span>Modo del desafío</span>
-                  <select
-                    aria-label="Modo del desafío"
-                    value={parsedDocument.challenge.mode}
-                    onChange={(event) =>
-                      updateMode(event.target.value as FlashEditorialDocument["challenge"]["mode"])
-                    }
-                  >
-                    <option value="flash">Flash</option>
-                    <option value="alphabet">Alphabet</option>
-                    <option value="survival">Supervivencia</option>
-                    {parsedDocument.challenge.mode === "narrative" ? (
-                      <option value="narrative">Narrativa</option>
-                    ) : null}
-                    <option value="pyramid">La Pirámide</option>
-                  </select>
-                </label>
+                <FormField
+                  id={fieldId + "-modo-del-desafio"}
+                  label="Modo del desafío"
+                  density="compact"
+                >
+                  {(field) => (
+                    <Select
+                      {...field}
+                      aria-label="Modo del desafío"
+                      value={parsedDocument.challenge.mode}
+                      onChange={(event) =>
+                        updateMode(
+                          event.target.value as FlashEditorialDocument["challenge"]["mode"],
+                        )
+                      }
+                    >
+                      <option value="flash">Flash</option>
+                      <option value="alphabet">Alphabet</option>
+                      <option value="survival">Supervivencia</option>
+                      {parsedDocument.challenge.mode === "narrative" ? (
+                        <option value="narrative">Narrativa</option>
+                      ) : null}
+                      <option value="pyramid">La Pirámide</option>
+                    </Select>
+                  )}
+                </FormField>
                 {parsedDocument.challenge.mode === "survival" ? (
-                  <label className={styles.field}>
-                    <span>Vidas iniciales (1–{parsedDocument.questions.length})</span>
-                    <input
-                      aria-label="Vidas iniciales"
-                      type="number"
-                      min={1}
-                      max={parsedDocument.questions.length}
-                      step={1}
-                      value={parsedDocument.challenge.modeConfig.lives as number}
-                      onChange={(event) => updateLives(Number(event.currentTarget.value))}
-                    />
-                  </label>
+                  <FormField
+                    id={fieldId + "-document-0"}
+                    label={<>Vidas iniciales (1– {parsedDocument.questions.length} )</>}
+                    density="compact"
+                  >
+                    {(field) => (
+                      <Input
+                        {...field}
+                        aria-label="Vidas iniciales"
+                        type="number"
+                        min={1}
+                        max={parsedDocument.questions.length}
+                        step={1}
+                        value={parsedDocument.challenge.modeConfig.lives as number}
+                        onChange={(event) => updateLives(Number(event.currentTarget.value))}
+                      />
+                    )}
+                  </FormField>
                 ) : null}
                 {parsedDocument.challenge.mode === "pyramid" ? (
                   <p className={styles.helper}>
@@ -574,21 +608,34 @@ export function EditorialManagement({
               </div>
             ) : null}
 
-            <label className={styles.field}>
-              <span>Documento editorial</span>
-              <textarea
-                name="document"
-                value={documentText}
-                onChange={(event) => setDocumentText(event.currentTarget.value)}
-                rows={24}
-                spellCheck={false}
-                aria-label="Documento editorial JSON"
-              />
-            </label>
+            <FormField
+              id={fieldId + "-document"}
+              label="Documento editorial"
+              density="compact"
+              error={previewError}
+              announceError
+            >
+              {(field) => (
+                <Textarea
+                  {...field}
+                  font="mono"
+                  name="document"
+                  value={documentText}
+                  onChange={(event) => setDocumentText(event.currentTarget.value)}
+                  rows={24}
+                  spellCheck={false}
+                  aria-label="Documento editorial JSON"
+                />
+              )}
+            </FormField>
 
             <div className={styles.actions}>
               {selected ? (
-                <form action={updateAction} onSubmit={(event) => prepareKey(event, updateKeyRef)}>
+                <form
+                  action={updateAction}
+                  onSubmit={(event) => prepareKey(event, updateKeyRef)}
+                  aria-busy={updatePending}
+                >
                   <input type="hidden" name="idempotencyKey" defaultValue="" />
                   <input
                     type="hidden"
@@ -610,7 +657,11 @@ export function EditorialManagement({
                   </Button>
                 </form>
               ) : (
-                <form action={createAction} onSubmit={(event) => prepareKey(event, createKeyRef)}>
+                <form
+                  action={createAction}
+                  onSubmit={(event) => prepareKey(event, createKeyRef)}
+                  aria-busy={createPending}
+                >
                   <input type="hidden" name="idempotencyKey" defaultValue="" />
                   <input type="hidden" name="document" value={documentText} readOnly />
                   <ReasonField />
@@ -624,11 +675,6 @@ export function EditorialManagement({
                 Validar y previsualizar
               </Button>
             </div>
-            {previewError ? (
-              <p className={styles.error} role="alert">
-                {previewError}
-              </p>
-            ) : null}
 
             {selected ? (
               <form
@@ -643,6 +689,7 @@ export function EditorialManagement({
                   }
                   prepareKey(event, publishKeyRef);
                 }}
+                aria-busy={publishPending}
               >
                 <input type="hidden" name="idempotencyKey" defaultValue="" />
                 <input
@@ -686,38 +733,46 @@ export function EditorialManagement({
           <>
             {historicalEntries.length > 1 ? (
               <form method="get" className={styles.compareSelector}>
-                <label className={styles.field}>
-                  <span>Comparar versión base</span>
-                  <select
-                    name="compareFrom"
-                    defaultValue={
-                      comparison?.from.challengeVersionId ??
-                      historicalEntries[0]?.challengeVersionId
-                    }
-                  >
-                    {context.entries.map((entry) => (
-                      <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
-                        v{entry.versionNumber} · {statusLabel(entry.status)} · {entry.title}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className={styles.field}>
-                  <span>Comparar con</span>
-                  <select
-                    name="compareTo"
-                    defaultValue={
-                      comparison?.to.challengeVersionId ??
-                      historicalEntries.at(-1)?.challengeVersionId
-                    }
-                  >
-                    {context.entries.map((entry) => (
-                      <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
-                        v{entry.versionNumber} · {statusLabel(entry.status)} · {entry.title}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <FormField
+                  id={fieldId + "-compareFrom"}
+                  label="Comparar versión base"
+                  density="compact"
+                >
+                  {(field) => (
+                    <Select
+                      {...field}
+                      name="compareFrom"
+                      defaultValue={
+                        comparison?.from.challengeVersionId ??
+                        historicalEntries[0]?.challengeVersionId
+                      }
+                    >
+                      {context.entries.map((entry) => (
+                        <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
+                          v{entry.versionNumber} · {statusLabel(entry.status)} · {entry.title}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </FormField>
+                <FormField id={fieldId + "-compareTo"} label="Comparar con" density="compact">
+                  {(field) => (
+                    <Select
+                      {...field}
+                      name="compareTo"
+                      defaultValue={
+                        comparison?.to.challengeVersionId ??
+                        historicalEntries.at(-1)?.challengeVersionId
+                      }
+                    >
+                      {context.entries.map((entry) => (
+                        <option key={entry.challengeVersionId} value={entry.challengeVersionId}>
+                          v{entry.versionNumber} · {statusLabel(entry.status)} · {entry.title}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
+                </FormField>
                 <Button type="submit" variant="secondary">
                   Comparar versiones
                 </Button>
@@ -761,6 +816,7 @@ export function EditorialManagement({
                     <form
                       action={revisionAction}
                       onSubmit={(event) => prepareKey(event, revisionKeyRef)}
+                      aria-busy={revisionPending}
                     >
                       <input type="hidden" name="idempotencyKey" defaultValue="" />
                       <input
@@ -788,6 +844,7 @@ export function EditorialManagement({
                           }
                           prepareKey(event, archiveKeyRef);
                         }}
+                        aria-busy={archivePending}
                       >
                         <input type="hidden" name="idempotencyKey" defaultValue="" />
                         <input

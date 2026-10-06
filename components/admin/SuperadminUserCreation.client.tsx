@@ -1,12 +1,16 @@
 "use client";
 
-import { useActionState, useRef, type FormEvent } from "react";
+import { useId, useActionState, useRef, type FormEvent } from "react";
+
+import { Button, FormField, Input, Textarea } from "@/components/ui";
+
 import { createPortalUser, type SuperadminUserActionState } from "@/app/admin/user-actions";
 import styles from "./SuperadminUserCreation.module.css";
 
 const initialState: SuperadminUserActionState = {};
 
 export function SuperadminUserCreation() {
+  const fieldId = useId();
   const [state, action, pending] = useActionState(createPortalUser, initialState);
   const keyRef = useRef<string | null>(null);
 
@@ -28,69 +32,92 @@ export function SuperadminUserCreation() {
         <p>La cuenta quedará confirmada y podrá acceder con esta contraseña.</p>
       </header>
 
-      <form action={action} onSubmit={prepareSubmission} className={styles.form}>
+      <form
+        action={action}
+        onSubmit={prepareSubmission}
+        className={styles.form}
+        aria-busy={pending}
+      >
         <input type="hidden" name="idempotencyKey" defaultValue="" />
-        <label className={styles.field}>
-          <span>Correo electrónico</span>
-          <input
-            name="email"
-            type="email"
-            autoComplete="off"
-            maxLength={320}
-            required
-            onChange={invalidateKey}
-            aria-invalid={Boolean(state.fieldErrors?.email)}
-          />
-          {state.fieldErrors?.email ? <small role="alert">{state.fieldErrors.email}</small> : null}
-        </label>
-        <label className={styles.field}>
-          <span>Nombre visible</span>
-          <input
-            name="displayName"
-            type="text"
-            minLength={2}
-            maxLength={24}
-            autoComplete="off"
-            required
-            onChange={invalidateKey}
-            aria-invalid={Boolean(state.fieldErrors?.displayName)}
-          />
-          {state.fieldErrors?.displayName ? (
-            <small role="alert">{state.fieldErrors.displayName}</small>
-          ) : null}
-        </label>
-        <label className={styles.field}>
-          <span>Contraseña inicial</span>
-          <input
-            name="password"
-            type="password"
-            minLength={8}
-            maxLength={128}
-            autoComplete="new-password"
-            required
-            onChange={invalidateKey}
-            aria-invalid={Boolean(state.fieldErrors?.password)}
-          />
-          {state.fieldErrors?.password ? (
-            <small role="alert">{state.fieldErrors.password}</small>
-          ) : null}
-          <small>Usa entre 8 y 128 caracteres. No se enviará por correo.</small>
-        </label>
-        <label className={styles.field}>
-          <span>Motivo de auditoría</span>
-          <textarea
-            name="reason"
-            rows={2}
-            maxLength={500}
-            required
-            onChange={invalidateKey}
-            placeholder="Alta para la beta privada"
-            aria-invalid={Boolean(state.fieldErrors?.reason)}
-          />
-          {state.fieldErrors?.reason ? (
-            <small role="alert">{state.fieldErrors.reason}</small>
-          ) : null}
-        </label>
+        <FormField
+          id={fieldId + "-email"}
+          label="Correo electrónico"
+          density="compact"
+          required
+          error={state.fieldErrors?.email}
+          announceError
+        >
+          {(field) => (
+            <Input
+              {...field}
+              name="email"
+              type="email"
+              autoComplete="off"
+              maxLength={320}
+              onChange={invalidateKey}
+            />
+          )}
+        </FormField>
+        <FormField
+          id={fieldId + "-displayName"}
+          label="Nombre visible"
+          density="compact"
+          required
+          error={state.fieldErrors?.displayName}
+          announceError
+        >
+          {(field) => (
+            <Input
+              {...field}
+              name="displayName"
+              type="text"
+              minLength={2}
+              maxLength={24}
+              autoComplete="off"
+              onChange={invalidateKey}
+            />
+          )}
+        </FormField>
+        <FormField
+          id={fieldId + "-password"}
+          label="Contraseña inicial"
+          density="compact"
+          required
+          description="Usa entre 8 y 128 caracteres. No se enviará por correo."
+          error={state.fieldErrors?.password}
+          announceError
+        >
+          {(field) => (
+            <Input
+              {...field}
+              name="password"
+              type="password"
+              minLength={8}
+              maxLength={128}
+              autoComplete="new-password"
+              onChange={invalidateKey}
+            />
+          )}
+        </FormField>
+        <FormField
+          id={fieldId + "-reason"}
+          label="Motivo de auditoría"
+          density="compact"
+          required
+          error={state.fieldErrors?.reason}
+          announceError
+        >
+          {(field) => (
+            <Textarea
+              {...field}
+              name="reason"
+              rows={2}
+              maxLength={500}
+              onChange={invalidateKey}
+              placeholder="Alta para la beta privada"
+            />
+          )}
+        </FormField>
 
         {state.message ? (
           <p
@@ -101,9 +128,9 @@ export function SuperadminUserCreation() {
             {state.fieldErrors?.form ? ` ${state.fieldErrors.form}` : ""}
           </p>
         ) : null}
-        <button className={styles.submit} type="submit" disabled={pending}>
+        <Button className={styles.submit} type="submit" size="sm" loading={pending}>
           {pending ? "Creando cuenta…" : "Crear cuenta"}
-        </button>
+        </Button>
       </form>
     </section>
   );

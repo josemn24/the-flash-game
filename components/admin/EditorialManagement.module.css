@@ -50,30 +50,6 @@
     display: grid;
     gap: var(--space-5);
   }
-  .field {
-    display: grid;
-    gap: var(--space-2);
-    color: var(--ds-color-fg-secondary);
-    font-size: 12px;
-    font-weight: 700;
-  }
-  .field input,
-  .field textarea,
-  .field select {
-    width: 100%;
-    border: 1px solid var(--ds-color-border-strong);
-    border-radius: var(--radius-control);
-    background: var(--ds-color-bg-surface);
-    color: var(--ds-color-fg-primary);
-    font: inherit;
-    padding: 0.75rem 0.85rem;
-  }
-  .field textarea {
-    resize: vertical;
-    font-family: var(--type-mono);
-    font-size: 11px;
-    line-height: 1.5;
-  }
   .draftSelector {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;

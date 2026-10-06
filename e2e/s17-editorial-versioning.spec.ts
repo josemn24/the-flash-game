@@ -21,6 +21,30 @@ async function publishQuestions(page: Page, suffix: string) {
   await page.getByLabel("Buscar").fill(suffix);
   const links = page.locator("a[href^='/admin/questions/']:not([href$='/new'])");
   await expect(links).toHaveCount(2);
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.getByLabel("Formato", { exact: true }).selectOption("true-false");
+    await expect(links).toHaveCount(0);
+    await page.getByLabel("Formato", { exact: true }).selectOption("multiple-choice");
+    await expect(links).toHaveCount(2);
+    await page.getByLabel("Estado", { exact: true }).selectOption("published");
+    await expect(links).toHaveCount(0);
+    await page.getByLabel("Estado", { exact: true }).selectOption("draft");
+    await expect(links).toHaveCount(2);
+    await page.getByLabel("Tag", { exact: true }).fill("sin-coincidencias-s17");
+    await expect(links).toHaveCount(0);
+    await page.getByLabel("Tag", { exact: true }).fill("");
+    await expect(links).toHaveCount(2);
+    const filters = page.getByRole("region", { name: "Filtros de preguntas" });
+    for (const control of await filters.locator("input, select").all()) {
+      await expect(control).toHaveCSS("min-height", "44px");
+      await expect(control).toHaveCSS("font-size", "16px");
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await filters.screenshot({ path: `output/playwright/library-filters-${width}.png` });
+  }
   const hrefs = await links.evaluateAll((items) =>
     items.map((item) => (item as HTMLAnchorElement).href),
   );
