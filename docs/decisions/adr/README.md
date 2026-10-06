@@ -7,3 +7,4 @@
 - [ADR-0003: Ciclo de vida y concurrencia de intentos](0003-attempt-lifecycle-and-concurrency.md)
 - [ADR-0004: Puntuación autoritativa en servidor](0004-server-authoritative-scoring.md)
 - [ADR-0005: Correcciones editoriales y versiones archivadas](0005-editorial-revisions-and-archived-versions.md)
+- [ADR-0006: Transferencia explícita de control de un intento](0006-explicit-attempt-control-transfer.md)

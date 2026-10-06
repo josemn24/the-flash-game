@@ -163,13 +163,19 @@ No son funciones de la UI pública.
 
 - **FR-18 —** Un jugador competitivo puede iniciar el desafío de su sala solo si tiene una
   membresía competitiva activa y la publicación está disponible.
+  [Perder ese permiso](../../decisions/decisions.md#20-pérdida-del-permiso-para-jugar) bloquea nuevas
+  acciones y cierra el intento en curso como no completado, sin acreditar puntos ni reabrirlo
+  después de reincorporarse. Se conservan los resultados ya completados. El bloqueo existe;
+  el cierre automático y su coordinación están pendientes de implementar.
 - **FR-19 —** El inicio oficial consume el único intento competitivo del jugador para ese desafío.
   (**Objetivo confirmado para la primera producción**)
 - **FR-20 —** Mientras el intento conserve el estado `inProgress`, una reapertura con la sesión
   controladora autorizada debe reanudar el mismo intento y no crear otro. El servidor debe resolver
   antes cualquier interacción temporal abierta según el modo; cerrar una pestaña o perder conexión
-  no marca por sí solo `abandoned`. Una segunda sesión se bloquea y un abandono explícito sí es
-  terminal.
+  no marca por sí solo `abandoned`. La transferencia explícita de control a la misma cuenta está
+  [aprobada y pendiente de implementar](../../decisions/adr/0006-explicit-attempt-control-transfer.md):
+  «Continuar aquí» revoca atómicamente la sesión anterior sin crear otro intento ni reiniciar plazos.
+  El runtime aún bloquea otra sesión; el abandono explícito sigue siendo terminal.
 - **FR-21 —** El desafío debe aplicar el tiempo total, los tiempos por pregunta y las reglas de
   finalización propias del modo. El agotamiento del tiempo de una pregunta o ronda se registra como
   una respuesta no contestada o como el estado equivalente definido por el modo; no implica por sí
@@ -416,7 +422,8 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 - **Resuelta (2026-09-13):** un resultado de cero Flash Points sigue siendo `completed` si el jugador
   llegó al final del flujo y se incluye en el ranking del desafío.
 - **Resuelta (2026-09-13, precisada 2026-09-15 y ampliada 2026-09-29):** `abandoned` se reserva
-  para un intento iniciado, por abandono explícito o por `inactivity_timeout`; `expired` se reserva
+  para un intento iniciado, por abandono explícito, `inactivity_timeout` o pérdida del permiso
+  competitivo (política aprobada el 2026-10-06, cierre pendiente de implementar); `expired` se reserva
   para una publicación que termina antes de que el jugador empiece. Una interrupción abierta mientras
   el desafío sigue vigente se recupera por modo y no equivale a abandono automático.
 - **Resuelta (2026-09-13):** `expired` ya no forma parte de `AttemptStatus`. El mock deriva la

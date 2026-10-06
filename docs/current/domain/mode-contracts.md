@@ -28,8 +28,19 @@ Estas reglas se aplican a cualquier modo cuando se juega dentro de una sala:
 - Si un intento iniciado se abandona, pasa a `abandoned` y se proyecta como `notCompleted`. Es
   terminal: no se reanuda ni se repite.
 - `inProgress` significa reanudar el mismo intento, no empezar una nueva partida.
-- En el MVP solo la sesión que inició el intento puede reanudarlo. Un segundo navegador o dispositivo
-  se bloquea; no existe transferencia de control entre dispositivos.
+- La [pérdida del permiso competitivo](../../decisions/decisions.md#20-pérdida-del-permiso-para-jugar)
+  bloquea nuevas acciones y cierra el intento como `abandoned`/`notCompleted`, con motivo separado
+  del abandono voluntario y sin acreditar puntos. Conserva hechos aceptados y resultados anteriores;
+  reincorporarse no reabre el intento. Esta regla común también se aplica a los modos cuyo contrato
+  menciona el abandono explícito; el cierre por permisos está aprobado y pendiente de implementar.
+- La [política de guardado aprobada](../../decisions/decisions.md#19-guardado-automático-y-recuperación-de-partidas)
+  conserva en el servidor respuestas aceptadas, puntos, progreso y tiempos. Las respuestas sin
+  enviar permanecen solo en memoria y no se restauran al recargar; los checkpoints y eventos
+  enviados y aceptados por el modo sí forman parte del progreso recuperable.
+- La [decisión aprobada de transferencia](../../decisions/adr/0006-explicit-attempt-control-transfer.md)
+  permite a la misma cuenta confirmar «Continuar aquí» en otro dispositivo: revoca atómicamente la
+  sesión anterior y recupera el mismo intento, sin reiniciar plazos ni repetir preguntas vistas.
+  El runtime actual todavía bloquea otra sesión; la transferencia está pendiente de implementar.
 - Cerrar una pestaña, perder conectividad u observar `offline` no demuestra por sí solo que el jugador
   haya abandonado. La acción explícita e idempotente de abandonar sigue terminando el intento como
   `abandoned`; además, una reconciliación server-side puede aplicar `inactivity_timeout` cuando han
@@ -195,10 +206,10 @@ versión reconcilia el intento antes de crear un nuevo comando de cierre.
   mecánica o al llegar al final.
 - **Recuperación y abandono:** una pregunta temporizada activa sin recepción se registra
   `unanswered` y aplica la pérdida normal de vida. Si se agotan las vidas, el intento se completa
-  con el feedback interno de eliminación; si no, avanza. Abandonar explícitamente es la única salida
-  que marca `abandoned`.
+  con el feedback interno de eliminación; si no, avanza. Abandonar explícitamente marca `abandoned`;
+  también se aplica el cierre común por pérdida del permiso competitivo.
 - **Checkpoint recomendado:** índice de pregunta, resultados, vidas restantes, errores, estado de
-  eliminación, intentos de código, borrador, pistas reveladas, deadline actual y transición
+  eliminación, intentos de código aceptados, pistas reveladas, deadline actual y transición
   pendiente. La vida no debe recalcularse solo desde datos enviados por el cliente.
 - **Resultado y revisión:** mostrar Flash Points, preguntas alcanzadas, vidas restantes y desglose.
   Tras un intento iniciado se permiten las respuestas propias y correctas; durante la partida solo
@@ -228,7 +239,7 @@ sin puntos, con `terminal_reason = inactivity_timeout`.
 - **Finalización:** después del último paso de la secuencia, incluido el epílogo cuando exista, el
   flujo pasa a resultados. El intento queda `completed` aunque no haya aciertos.
 - **Estado global:** `inProgress` durante escenas, preguntas y transiciones; `completed` al terminar
-  la secuencia; `abandoned` solo por abandono explícito.
+  la secuencia; `abandoned` por abandono explícito o por pérdida del permiso competitivo.
   Reacciones como `correct`, `incorrect` o `timeout` son feedback narrativo interno.
 - **Recuperación y abandono:** una pregunta temporizada activa sin recepción se registra
   `unanswered`, muestra la reacción de timeout si la narrativa la define y continúa al siguiente
@@ -272,13 +283,14 @@ segundo log narrativo.
   siete niveles y `failed` cuando se falla un nivel que termina el modo. Ambos producen
   `completed`; `failed` nunca se proyecta como `notCompleted`.
 - **Estado global:** `inProgress` mientras el jugador está en briefing o resolviendo un nivel;
-  `completed` después de cima o fallo de nivel; `abandoned` solo por abandono explícito.
+  `completed` después de cima o fallo de nivel; `abandoned` por abandono explícito o por pérdida
+  del permiso competitivo.
 - **Recuperación y abandono:** un briefing previo al inicio del temporizador se reanuda. Si el nivel
   temporizado ya se preparó y no existe recepción, se registra como `unanswered`, no se supera y La
   Pirámide termina con resultado interno `failed` y estado global `completed`; no hay vuelta a ese
   nivel. Abandonar explícitamente marca `abandoned`.
 - **Checkpoint recomendado:** reutilizar `PyramidAttemptRecord`: nivel actual, resultados,
-  borrador, códigos enviados, intentos incorrectos, pistas reveladas, `levelStartedAt`, deadline,
+  códigos enviados y aceptados, intentos incorrectos, pistas reveladas, `levelStartedAt`, deadline,
   fase y versión del contenido. Al finalizar, el snapshot deja de ser reanudable.
 - **Resultado y feedback:** mostrar Flash Points y niveles alcanzados. “Cima conquistada” se reserva
   para `summit`; “Ascenso terminado” describe `failed` sin convertirlo en un fallo global. Tras un

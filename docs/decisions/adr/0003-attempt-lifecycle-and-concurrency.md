@@ -17,7 +17,11 @@ pueden definir una política distinta y, si permiten varios, se acredita el mejo
 
 Cada intento tiene una única sesión activa, operaciones idempotentes, checkpoints y un `lock_version`.
 
-## Actualización del MVP (2026-09-15)
+## Actualización del MVP (2026-09-15; sustituida parcialmente)
+
+El aplazamiento de transferencia descrito a continuación fue sustituido el 2026-10-06 por
+[ADR-0006](0006-explicit-attempt-control-transfer.md). Se conserva como contexto histórico y refleja
+el bloqueo del runtime todavía vigente; la transferencia explícita aprobada está pendiente de implementar.
 
 La transferencia de control entre dispositivos se aplaza. Mientras el MVP esté vigente, un token de
 sesión distinto no puede revocar ni sustituir la sesión activa: recibe un conflicto de sesión activa
@@ -34,13 +38,32 @@ atómica:
 1. Si el servidor ya recibió una respuesta, la recupera y evalúa idempotentemente antes de avanzar.
 2. Si no hay recepción, no reentrega el payload ni reinicia el reloj: cierra el intervalo y aplica
    la consecuencia del modo.
-3. Solo el abandono explícito pasa el intento a `abandoned`; la interrupción se mantiene en
+3. En esta recuperación, solo el abandono explícito pasa el intento a `abandoned`; la interrupción se mantiene en
    `in_progress` mientras se resuelve o termina reglamentariamente por la propia mecánica.
 
 Flash avanza tras `unanswered`; Supervivencia aplica su pérdida normal de vida; Narrativa continúa
 desde la reacción o escena correspondiente; Pirámide falla y completa si ya comenzó el nivel; y
 Alfabeto mantiene su deadline global y registra un pase por interrupción distinto del pase voluntario.
 `invalidated` se reserva para fraude o administración y no forma parte de esta recuperación.
+
+## Actualización por pérdida del permiso competitivo (2026-10-06)
+
+La [decisión aprobada de permisos](../decisions.md#20-pérdida-del-permiso-para-jugar) añade un cierre
+terminal distinto de la recuperación por interrupción: perder el permiso para jugar bloquea nuevas
+acciones y cierra el intento como `abandoned`, con motivo diferenciado del abandono voluntario y sin
+acreditación. Conserva los hechos aceptados y los puntos de intentos completados anteriormente;
+reincorporarse no reabre el intento. El cierre automático está pendiente de implementar. Esto no
+afecta a la recuperación por pérdida de cookies/Auth ni a una transferencia autorizada de control.
+
+## Actualización por incidencias del servicio (2026-10-06)
+
+La [política aprobada de incidencias](../service-incidents.md) complementa esta recuperación cuando
+se confirma un fallo del servicio que impide continuar o compromete la competición. Se conservan
+los hechos aceptados y no se concede replay sobre preguntas vistas; el caso individual se somete
+a revisión y una caída general que compromete la competición cancela la publicación para todos,
+con reemplazo de contenido nuevo. Los umbrales, la marca de incidencia y el procedimiento operativo
+siguen pendientes. Una recarga o fallo de conexión local por sí solos mantienen las reglas de
+recuperación anteriores y no acreditan una incidencia del servicio.
 
 ## Consecuencias
 
@@ -52,5 +75,6 @@ Alfabeto mantiene su deadline global y registra un pase por interrupción distin
   permiten auditoría; `expired` sigue describiendo solo una publicación cerrada antes de iniciar.
 - La futura migración de intervalos debe distinguir el pase voluntario de Alfabeto del cierre por
   recuperación, sin crear un nuevo estado de respuesta final.
-- El comando técnico de takeover queda deshabilitado hasta que exista una política de producto,
-  UX y pruebas específicas para esa transferencia.
+- La política de transferencia explícita está aprobada en
+  [ADR-0006](0006-explicit-attempt-control-transfer.md). El comando sigue deshabilitado en el runtime
+  hasta implementar y verificar exclusión atómica, revocación, idempotencia y recuperación por modo.

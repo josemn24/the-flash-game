@@ -200,11 +200,17 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   inicial directo desde el portal y S18b cubre solo concesión/revocación de admin y eliminación
   lógica por el owner; transferencia, bloqueo/desbloqueo y el flujo completo de invitaciones permanecen
   pendientes.
+- La [política de pérdida del permiso competitivo](../decisions/decisions.md#20-pérdida-del-permiso-para-jugar)
+  está aprobada: bloqueo inmediato, cierre del intento como no completado sin acreditar puntos y
+  conservación de resultados previos. El runtime ya deniega comandos tras retirar la membresía;
+  el cierre automático, la concurrencia y el aviso coordinado de UI siguen pendientes.
 - Narrative competitivo ya usa `ApplicationCompetitiveChallengeReads`, `SupabaseNarrativeQueries` y el
   ciclo persistente `start → prepare → answer → complete`. Las escenas no consumen tiempo; cada
   pregunta se libera desde Supabase, la evaluación/puntuación permanecen en servidor y la revisión
   terminal resuelve los assets privados autorizados.
-- `results_locked_at` y el takeover entre dispositivos siguen fuera de alcance. La expiración por
+- `results_locked_at` sigue fuera de alcance. La transferencia explícita entre dispositivos está
+  [aprobada](../decisions/adr/0006-explicit-attempt-control-transfer.md), pendiente de implementar;
+  el runtime aún bloquea la segunda sesión. La expiración por
   inactividad está implementada: tras 15 minutos sin actividad, una publicación cerrada o con deadline
   vencido puede cerrar el intento como `abandoned` sin puntos; el tick diario y las lecturas/comandos
   aplican la reconciliación, mientras que un intento completamente inactivo puede esperar al siguiente

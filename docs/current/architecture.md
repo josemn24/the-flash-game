@@ -287,8 +287,9 @@ de lecturas y escrituras desde la aplicación.
 
 La frontera concreta está en [attempt-commands.ts](../../application/ports/attempt-commands.ts):
 inicio/recuperación con sesión exclusiva, preparación, recepción, evaluación, cierre, invitaciones
-y correcciones. El tipo de takeover se reserva para una política posterior, pero está deshabilitado
-en el MVP. La recuperación debe ser una operación de dominio: reconcilia una recepción pendiente o
+y correcciones. La [transferencia explícita](../decisions/adr/0006-explicit-attempt-control-transfer.md)
+está aprobada y pendiente de implementar; el comando permanece deshabilitado en el runtime.
+La recuperación debe ser una operación de dominio: reconcilia una recepción pendiente o
 resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
 ciega de un snapshot de cliente.
 Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
@@ -673,7 +674,8 @@ deben vivir en el servidor.
 - La matriz de permisos de `owner` frente a `admin` está cerrada: `admin` no gestiona `owner`,
   solo `owner` concede `admin` y `superadmin` audita sus acciones directas sobre salas. El alcance
   editorial del rol `editor` aún no está cerrado.
-- La transferencia de control entre dispositivos está deshabilitada durante el MVP. La expiración por
+- La transferencia de control entre dispositivos está aprobada por ADR-0006 y pendiente de implementar;
+  permanece deshabilitada en el runtime. La expiración por
   inactividad ya está definida: 15 minutos sin actividad, solo tras cierre o deadline, con `abandoned`
   sin puntos; no requiere heartbeat ni lease del navegador.
 - Debe definirse un contrato de errores estable para distinguir no autorizado, no disponible,

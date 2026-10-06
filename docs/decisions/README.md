@@ -8,8 +8,17 @@ contradecir estas decisiones sin que antes se registre una nueva decisión o ADR
 ## Documentos
 
 - [`decisions.md`](decisions.md): reglas e invariantes generales aprobadas.
+- [Guardado de partidas](decisions.md#19-guardado-automático-y-recuperación-de-partidas) y
+  [pérdida del permiso para jugar](decisions.md#20-pérdida-del-permiso-para-jugar): acuerdos de resiliencia
+  sobre hechos aceptados, bloqueo inmediato y cierre del intento sin acreditación.
 - [`open-questions.md`](open-questions.md): decisiones aplazadas o configurables.
+- [`service-incidents.md`](service-incidents.md): política aprobada para fallos del servicio durante
+  partidas; distingue recuperación, revisión individual y cancelación general.
+- [`request-retries.md`](request-retries.md): timeouts y límites de reintento aprobados por operación,
+  conservación de estado y comportamiento al agotarlos.
 - [`adr/`](adr/): decisiones arquitectónicas difíciles de revertir.
+- [ADR-0006](adr/0006-explicit-attempt-control-transfer.md): transferencia explícita de una partida
+  a otra sesión de la misma cuenta, con un único controlador; aprobada y pendiente de implementar.
 
 ## Orden de precedencia
 
