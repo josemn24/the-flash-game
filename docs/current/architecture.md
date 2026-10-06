@@ -453,7 +453,7 @@ Reglas concretas:
 4. `server` puede componer infraestructura y aplicación, pero no debe contener reglas de scoring.
 5. `app` usa la fachada server-only o entradas de backend; no lee `data/mock` directamente.
 6. `components` y `features` cliente no importan `server`, `infrastructure` ni `data`.
-   `type-architecture` rechaza además imports de `@supabase/*` y de `lib/supabase` desde
+   `type-architecture` rechaza además imports de `@supabase/*` y de `infrastructure/supabase` desde
    `components`, `features` y `app`, incluidos imports de tipos,
    reexports e imports dinámicos literales. La UI invoca Server Actions y consume contratos propios.
 7. `infrastructure` implementa puertos; no es importada desde el dominio.
@@ -462,7 +462,7 @@ Reglas concretas:
    `lib`, tipos y otros módulos de infraestructura: no importan `server/*`, `features/*` ni
    `application/presentation/*`. Las reglas puras de gameplay y la presentación compartida viven
    en `lib`.
-   El contrato de persistencia generado en `lib/supabase/database.types.ts` solo puede ser
+   El contrato de persistencia generado en `infrastructure/supabase/database.types.ts` solo puede ser
    consumido por el boundary de clientes Supabase y por `infrastructure/supabase`; no se expone a
    `application`, `server`, `features`, `components` ni `app`. En los adaptadores, el flujo es
    `Database` para transporte → guard runtime para datos externos → mapper para DTO/view model;

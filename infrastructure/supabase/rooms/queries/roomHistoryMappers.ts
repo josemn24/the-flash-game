@@ -43,7 +43,7 @@ import type {
 } from "@/types/view-models";
 import { deriveCompetitivePyramidProgress } from "@/lib/gameplay/pyramidProgress";
 import { deriveSurvivalProgress } from "@/lib/gameplay/survivalProgress";
-import { resolveAvatarPath } from "@/lib/media/publicAvatar";
+import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
 import { isRecord } from "./roomReadGuards";

@@ -10,8 +10,8 @@ import {
   SuperadminAccessDeniedError,
   SuperadminSeasonCommandError,
 } from "@/application/administration/errors";
-import { createClient } from "@/lib/supabase/server";
-import type { PublicFunctionArgs } from "@/lib/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { PublicFunctionArgs } from "@/infrastructure/supabase/rpcTypes";
 import type { SuperadminSeasonCommandResult } from "@/types/view-models";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

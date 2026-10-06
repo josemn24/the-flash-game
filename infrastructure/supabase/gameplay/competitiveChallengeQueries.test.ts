@@ -9,7 +9,9 @@ import { supabasePyramidQueries } from "./pyramidQueries";
 import { supabaseNarrativeQueries } from "./narrativeQueries";
 
 const clientMocks = vi.hoisted(() => ({ rpc: vi.fn() }));
-vi.mock("@/lib/supabase/server", () => ({ createClient: async () => clientMocks }));
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: async () => clientMocks,
+}));
 const challengeKey = "abcdef12-0000-4000-8000-abcdef123456";
 const context = {
   viewer: { playerId: "player-1", name: "Player" },

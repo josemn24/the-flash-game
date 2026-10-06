@@ -7,7 +7,7 @@ import "server-only";
 
 import type { CompetitiveChallengeQueries } from "@/application/queries";
 import type { CompetitiveChallengePageModel, QueryContext } from "@/types/view-models";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import { readCompetitiveProjection } from "./competitiveReadProjection";
 import { supabaseAlphabetQueries } from "./alphabetQueries";
 import { supabaseFlashQueries } from "./flashQueries";

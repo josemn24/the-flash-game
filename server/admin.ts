@@ -5,7 +5,7 @@ import { AuthenticationRequiredError } from "@/application/administration/errors
 import { getCurrentViewerProfile } from "@/server/profile";
 import { SuperadminAccessDeniedError } from "@/application/administration/errors";
 import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/admin/superadminQueries";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import type { SuperadminPortalContext } from "@/types/view-models";
 
 export type SuperadminActor = {

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { getSupabaseUrl } from "@/lib/supabase/config";
+import { getSupabaseUrl } from "@/infrastructure/supabase/config";
 
 export function resolveAvatarPath(path: string | null | undefined) {
   if (!path) return undefined;

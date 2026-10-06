@@ -21,8 +21,10 @@ const mocks = vi.hoisted(() => ({
   playersMaybeSingle: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
-vi.mock("@/lib/media/publicAvatar", () => ({
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: mocks.createClient,
+}));
+vi.mock("@/infrastructure/supabase/assets/publicAvatar", () => ({
   resolveAvatarPath: (path: string | null) => (path ? `/avatars/${path}` : undefined),
 }));
 

@@ -32,29 +32,29 @@ describe("type architecture boundary checker", () => {
     ["features", 'import { createBrowserClient } from "@supabase/ssr";', "@supabase/ssr"],
     [
       "components",
-      'import { createClient } from "@/lib/supabase/client";',
-      "@/lib/supabase/client",
+      'import { createClient } from "@/infrastructure/supabase/auth/server-client";',
+      "@/infrastructure/supabase/auth/server-client",
     ],
     [
       "components",
-      'import { createClient } from "../lib/supabase/client";',
-      "../lib/supabase/client",
+      'import { createClient } from "../infrastructure/supabase/auth/server-client";',
+      "../infrastructure/supabase/auth/server-client",
     ],
     [
       "components",
-      'export { createClient } from "@/lib/supabase/client";',
-      "@/lib/supabase/client",
+      'export { createClient } from "@/infrastructure/supabase/auth/server-client";',
+      "@/infrastructure/supabase/auth/server-client",
     ],
     ["features", 'const sdk = import("@supabase/supabase-js");', "@supabase/supabase-js"],
     [
       "app",
-      '"use client";\nimport { createClient } from "@/lib/supabase/client";',
-      "@/lib/supabase/client",
+      '"use client";\nimport { createClient } from "@/infrastructure/supabase/auth/server-client";',
+      "@/infrastructure/supabase/auth/server-client",
     ],
     [
       "app",
-      '"use server";\nimport { createClient } from "@/lib/supabase/server";',
-      "@/lib/supabase/server",
+      '"use server";\nimport { createClient } from "@/infrastructure/supabase/auth/server-client";',
+      "@/infrastructure/supabase/auth/server-client",
     ],
     [
       "components",
@@ -64,6 +64,34 @@ describe("type architecture boundary checker", () => {
   ])("rejects provider dependencies in %s: %s", async (layer, source, specifier) => {
     const file = `${layer}/__architecture-authentication-test__.ts`;
     await expectCheckerFailure(file, source, `${file} exposes Supabase to UI via ${specifier}`);
+  });
+
+  it("keeps the pure lib boundary from importing server modules", async () => {
+    await expectCheckerFailure(
+      "lib/__architecture-server-boundary-test__.ts",
+      'import { logHttpEvent } from "@/server/observability";\n\nvoid logHttpEvent;\n',
+      "lib/__architecture-server-boundary-test__.ts crosses a client-safe boundary via @/server/observability",
+    );
+  });
+
+  it("allows Supabase infrastructure to use infrastructure observability", async () => {
+    const fixturePath = path.join(
+      projectRoot,
+      "infrastructure",
+      "supabase",
+      "__architecture-observability-test__.ts",
+    );
+    await writeFile(
+      fixturePath,
+      'import { logHttpEvent } from "@/infrastructure/observability/http";\n\nvoid logHttpEvent;\n',
+    );
+    try {
+      await expect(runChecker()).resolves.toMatchObject({
+        stdout: expect.stringContaining("Type architecture OK"),
+      });
+    } finally {
+      await rm(fixturePath, { force: true });
+    }
   });
 
   it("fails when a production route imports the demo facade", async () => {

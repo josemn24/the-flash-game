@@ -42,7 +42,9 @@ vi.mock("./roomHistoryMappers", () => ({
   toRoomMemberReviewProgress: vi.fn(() => null),
 }));
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: mocks.createClient,
+}));
 const viewer = {
   id: "00000000-0000-0000-0000-000000000002",
   playerId: "00000000-0000-0000-0000-000000000002",

@@ -4,10 +4,12 @@ import { updateSession } from "./proxy";
 import { AUTH_DEADLINE_HEADER, AUTH_FAILURE_HEADER } from "./auth-availability";
 import { syntheticSession } from "@/test-utils/supabase-session";
 
+let logSpy: ReturnType<typeof vi.spyOn>;
+
 beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:54321");
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "synthetic-key");
-  vi.spyOn(console, "info").mockImplementation(() => undefined);
+  logSpy = vi.spyOn(console, "info").mockImplementation(() => undefined);
   vi.spyOn(console, "warn").mockImplementation(() => undefined);
   vi.spyOn(console, "error").mockImplementation(() => undefined);
 });
@@ -58,6 +60,7 @@ describe("proxy Auth availability", () => {
     expect(response.headers.get("x-middleware-request-cookie")).toBe(
       `${cookie.name}=${cookie.value}`,
     );
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"operation":"auth.proxy"'));
     await vi.advanceTimersByTimeAsync(30000);
     expect(fetcher).toHaveBeenCalledOnce();
   });

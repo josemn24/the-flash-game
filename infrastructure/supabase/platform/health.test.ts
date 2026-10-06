@@ -7,7 +7,7 @@ const configMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("pg", () => ({ Pool: pgMocks.Pool }));
-vi.mock("@/lib/supabase/config", () => configMocks);
+vi.mock("@/infrastructure/supabase/config", () => configMocks);
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 

@@ -6,7 +6,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 const projectRoot = process.cwd();
-const outputPath = path.join(projectRoot, "lib", "supabase", "database.types.ts");
+const outputPath = path.join(projectRoot, "infrastructure", "supabase", "database.types.ts");
 
 function npmCommand() {
   return process.platform === "win32" ? "npm.cmd" : "npm";

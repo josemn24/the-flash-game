@@ -7,7 +7,9 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: mocks.createClient,
+}));
 
 const operator = {
   playerId: "00000000-0000-4000-8000-000000000001",

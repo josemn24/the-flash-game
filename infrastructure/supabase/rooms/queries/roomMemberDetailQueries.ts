@@ -3,13 +3,13 @@ import "server-only";
 import type { PrivateQuestionAssetResolver } from "@/application/ports/private-question-assets";
 import type { RoomMemberDetailQueries } from "@/application/queries";
 import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/assets/privateQuestionAssetResolver";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import type {
   QueryContext,
   RoomDailyLeaderboardEntry,
   RoomMemberDetailModel,
 } from "@/types/view-models";
-import { resolveAvatarPath } from "@/lib/media/publicAvatar";
+import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
 import type { AttemptExpirationQueries } from "@/infrastructure/supabase/attempts/attemptExpiration";
 import type { RoomHistoryReadRow, RoomReadRow } from "./roomReadContracts";
 import {

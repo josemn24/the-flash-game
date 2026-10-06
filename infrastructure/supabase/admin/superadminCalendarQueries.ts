@@ -15,8 +15,8 @@ import {
   SuperadminCalendarCommandError,
 } from "@/application/administration/errors";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
-import { createClient } from "@/lib/supabase/server";
-import type { PublicFunctionArgs, RawRpcResponse } from "@/lib/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { PublicFunctionArgs, RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {
   SuperadminCalendarCommandResult,

@@ -10,8 +10,8 @@ import type {
   PublicFunctionArgs,
   PublicFunctionRow,
   RawRpcResponse,
-} from "@/lib/supabase/rpcTypes";
-import { createClient } from "@/lib/supabase/server";
+} from "@/infrastructure/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
 import type {
   AnswerResult,

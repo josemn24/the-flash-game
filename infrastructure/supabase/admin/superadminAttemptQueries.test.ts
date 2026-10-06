@@ -7,7 +7,9 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: mocks.createClient,
+}));
 
 const id = (suffix: string) => `00000000-0000-4000-8000-00000000000${suffix}`;
 const timestamp = "2026-09-25T10:00:00.000Z";

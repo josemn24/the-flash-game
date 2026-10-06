@@ -54,7 +54,7 @@ reproducible que se desplegará posteriormente en un entorno remoto.
 
 ## Workflow de tipos TypeScript generados
 
-El archivo [`lib/supabase/database.types.ts`](../lib/supabase/database.types.ts) se genera desde
+El archivo [`infrastructure/supabase/database.types.ts`](../infrastructure/supabase/database.types.ts) se genera desde
 el schema `public` de Supabase local. Es un artefacto versionado que debe cambiar junto con la
 migración o definición de schema que lo justifica.
 
@@ -106,7 +106,7 @@ Después de cambiar `supabase/schemas/` y crear o actualizar la migración:
    ```
 
 6. Versionar juntos la migración, la definición declarativa y
-   `lib/supabase/database.types.ts`.
+   `infrastructure/supabase/database.types.ts`.
 
 El script de generación usa el CLI local de Supabase, limita la salida al schema `public` y no
 ejecuta `db reset` automáticamente. Si la base local está obsoleta, actualízala explícitamente

@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({
   rpc: vi.fn(),
 }));
 
-vi.mock("@/lib/media/publicAvatar", () => ({
+vi.mock("@/infrastructure/supabase/assets/publicAvatar", () => ({
   resolveAvatarPath: (path: string | null) => (path ? `/avatars/${path}` : undefined),
 }));
 

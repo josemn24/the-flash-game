@@ -232,7 +232,7 @@ function isRoomSupabaseAdapter(relative) {
 }
 
 function isSupabaseGeneratedType(specifier) {
-  return specifier === "@/lib/supabase/database.types";
+  return specifier === "@/infrastructure/supabase/database.types";
 }
 
 function isSupabaseDependency(specifier, importingFile) {
@@ -242,9 +242,15 @@ function isSupabaseDependency(specifier, importingFile) {
     : specifier.startsWith(".")
       ? path.resolve(path.dirname(importingFile), specifier)
       : null;
-  const boundary = path.join(process.cwd(), "lib", "supabase");
+  const boundaries = [
+    path.join(process.cwd(), "lib", "supabase"),
+    path.join(process.cwd(), "infrastructure", "supabase"),
+  ];
   return (
-    resolved !== null && (resolved === boundary || resolved.startsWith(`${boundary}${path.sep}`))
+    resolved !== null &&
+    boundaries.some(
+      (boundary) => resolved === boundary || resolved.startsWith(`${boundary}${path.sep}`),
+    )
   );
 }
 
@@ -255,7 +261,7 @@ function isApplicationForbiddenImport(specifier) {
     specifier === "next" ||
     specifier === "react" ||
     specifier.startsWith("@supabase/") ||
-    specifier.startsWith("@/lib/supabase/") ||
+    specifier.startsWith("@/infrastructure/supabase/") ||
     specifier.startsWith("@/server/") ||
     specifier.startsWith("@/infrastructure/")
   );

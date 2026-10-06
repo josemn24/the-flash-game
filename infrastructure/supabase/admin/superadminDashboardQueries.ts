@@ -2,8 +2,8 @@ import "server-only";
 
 import type { SuperadminDashboardQueries } from "@/application/queries";
 import { SuperadminAccessDeniedError } from "@/application/administration/errors";
-import { createClient } from "@/lib/supabase/server";
-import type { RawRpcResponse } from "@/lib/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
 import type {
   SuperadminDashboardAlert,
   SuperadminDashboardModel,

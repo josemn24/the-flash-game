@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { ProfileCommands } from "@/application/ports/profile-commands";
-import { resolveAvatarPath } from "@/lib/media/publicAvatar";
+import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
 import type { ProvisionedCurrentPlayer } from "@/infrastructure/supabase/identity/currentViewer";
 
 export function supabaseProfileCommandsFor(current: ProvisionedCurrentPlayer): ProfileCommands {

@@ -1,17 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AUTH_DEADLINE_HEADER, AUTH_FAILURE_HEADER } from "./auth-availability";
-import { createClient } from "./server";
+import { createClient } from "./server-client";
 import { syntheticSession } from "@/test-utils/supabase-session";
 
 const mocks = vi.hoisted(() => ({ headers: vi.fn(), cookies: vi.fn() }));
 vi.mock("next/headers", () => ({ headers: mocks.headers, cookies: mocks.cookies }));
+
+let logSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:54321");
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "synthetic-key");
   mocks.cookies.mockResolvedValue({ getAll: () => [], set: vi.fn() });
   mocks.headers.mockResolvedValue(new Headers());
-  vi.spyOn(console, "info").mockImplementation(() => undefined);
+  logSpy = vi.spyOn(console, "info").mockImplementation(() => undefined);
 });
 afterEach(() => {
   vi.clearAllTimers();
@@ -30,7 +32,7 @@ describe("server Auth availability", () => {
       mocks.headers.mockResolvedValue(new Headers({ [AUTH_FAILURE_HEADER]: reason }));
       await expect(createClient()).rejects.toMatchObject({ code: "auth_unavailable", reason });
       expect(fetcher).not.toHaveBeenCalled();
-      expect(console.info).not.toHaveBeenCalled();
+      expect(logSpy).not.toHaveBeenCalled();
     },
   );
 
@@ -49,5 +51,6 @@ describe("server Auth availability", () => {
     const assertion = expect(client.auth.getUser()).rejects.toMatchObject({ reason: "timeout" });
     await vi.advanceTimersByTimeAsync(1000);
     await assertion;
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('"operation":"auth.session"'));
   });
 });

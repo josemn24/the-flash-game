@@ -8,7 +8,9 @@ const mocks = vi.hoisted(() => ({
   readRanking: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: mocks.createClient,
+}));
 vi.mock("./roomReadRpc", () => ({
   callRoomRead: mocks.readRoom,
   callRankingRead: mocks.readRanking,

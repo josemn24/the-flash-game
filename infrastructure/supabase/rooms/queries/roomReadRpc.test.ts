@@ -6,7 +6,9 @@ const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
 }));
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: mocks.createClient,
+}));
 
 describe("room read RPC transport", () => {
   it("expires stale attempts before invoking the history RPC", async () => {

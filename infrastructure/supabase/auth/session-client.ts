@@ -1,6 +1,6 @@
 import { createServerClient, type CookieMethodsServer } from "@supabase/ssr";
-import { getSupabasePublishableKey, getSupabaseUrl } from "./config";
-import type { Database } from "./database.types";
+import { getSupabasePublishableKey, getSupabaseUrl } from "../config";
+import type { Database } from "../database.types";
 import { AuthAvailability, isInvalidSession } from "./auth-availability";
 
 export function createSessionClient(cookies: CookieMethodsServer, availability: AuthAvailability) {

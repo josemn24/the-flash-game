@@ -11,7 +11,7 @@ import {
   setAttemptToken,
 } from "@/server/competitive/attempt-api";
 import { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommands";
-import { AuthServiceUnavailableError } from "@/lib/supabase/auth-availability";
+import { AuthServiceUnavailableError } from "@/infrastructure/supabase/auth/auth-availability";
 import { isJsonAnswer } from "@/app/api/competitive/attempts/[attemptId]/answer/route";
 import { CompetitiveRateLimitError } from "@/server/competitive/rate-limit";
 

@@ -11,8 +11,8 @@ import {
   SuperadminAccessDeniedError,
   SuperadminUserCommandError,
 } from "@/application/administration/errors";
-import { createClient } from "@/lib/supabase/server";
-import type { PublicFunctionInput, RawRpcResponse } from "@/lib/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { PublicFunctionInput, RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
 import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/admin/superadminQueries";
 
 function isRecord(value: unknown): value is Record<string, unknown> {

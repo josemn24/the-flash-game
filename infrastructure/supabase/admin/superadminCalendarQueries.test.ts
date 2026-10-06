@@ -11,7 +11,9 @@ const mocks = vi.hoisted(() => ({
 }));
 const pgMocks = vi.hoisted(() => ({ Pool: vi.fn() }));
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: mocks.createClient,
+}));
 vi.mock("pg", () => ({ Pool: pgMocks.Pool }));
 
 const id = (last: string) => `00000000-0000-4000-8000-00000000000${last}`;

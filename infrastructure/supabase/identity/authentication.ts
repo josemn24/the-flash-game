@@ -3,8 +3,8 @@ import "server-only";
 import { isAuthError, isAuthRetryableFetchError } from "@supabase/supabase-js";
 import type { AuthenticationGateway } from "@/application/ports/authentication";
 import type { AuthenticationResult } from "@/types/contracts/authentication";
-import { createClient } from "@/lib/supabase/server";
-import { AuthServiceUnavailableError } from "@/lib/supabase/auth-availability";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import { AuthServiceUnavailableError } from "@/infrastructure/supabase/auth/auth-availability";
 
 function authenticationFailure(error: unknown): AuthenticationResult {
   if (error instanceof AuthServiceUnavailableError) {

@@ -17,8 +17,8 @@ import type {
   PublicFunctionArgs,
   PublicFunctionRow,
   RawRpcResponse,
-} from "@/lib/supabase/rpcTypes";
-import { createClient } from "@/lib/supabase/server";
+} from "@/infrastructure/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type { GameRoomContext, QueryContext } from "@/types/view-models";

@@ -3,7 +3,9 @@ import { SuperadminAccessDeniedError } from "@/application/administration/errors
 import { SupabaseSuperadminUserCommands } from "./superadminUserCommands";
 
 const mocks = vi.hoisted(() => ({ createClient: vi.fn(), rpc: vi.fn() }));
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: mocks.createClient,
+}));
 vi.mock("@/infrastructure/supabase/admin/superadminQueries", () => ({
   supabaseSuperadminPortalQueries: { lookupPlayersByEmail: vi.fn() },
 }));

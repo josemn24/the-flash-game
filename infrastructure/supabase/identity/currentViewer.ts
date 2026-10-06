@@ -1,13 +1,13 @@
 import "server-only";
 
 import type { CurrentViewerReader } from "@/application/ports/current-viewer";
-import { resolveAvatarPath } from "@/lib/media/publicAvatar";
-import { createClient } from "@/lib/supabase/server";
-import type { PublicFunctionRow, RawRpcResponse } from "@/lib/supabase/rpcTypes";
+import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { PublicFunctionRow, RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
 import type { PlayerId } from "@/types/domain";
 import type { ViewerProfile } from "@/types/view-models";
 import type { UserProfile } from "@/types/view-models/user";
-import { isInvalidSession } from "@/lib/supabase/auth-availability";
+import { isInvalidSession } from "@/infrastructure/supabase/auth/auth-availability";
 
 type ProvisionedPlayerOverrides = {
   avatar_path: string | null;

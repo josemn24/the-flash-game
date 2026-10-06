@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/proxy";
-import { AUTH_DEADLINE_HEADER, AUTH_FAILURE_HEADER } from "@/lib/supabase/auth-availability";
+import { updateSession } from "@/infrastructure/supabase/auth/proxy";
+import {
+  AUTH_DEADLINE_HEADER,
+  AUTH_FAILURE_HEADER,
+} from "@/infrastructure/supabase/auth/auth-availability";
 import {
   isDesignSystemAvailable,
   isDesignSystemPath,

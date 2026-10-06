@@ -22,8 +22,8 @@ import {
   isFlashEditorialDocument,
   parseFlashEditorialQuestionDocument,
 } from "@/lib/editorial/flashDocument";
-import { createClient } from "@/lib/supabase/server";
-import type { PublicFunctionArgs, RawRpcResponse } from "@/lib/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { PublicFunctionArgs, RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
 import type {
   SuperadminEditorialCommandResult,
   SuperadminChallengeCatalogContext,

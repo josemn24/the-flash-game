@@ -9,13 +9,13 @@ import {
   SuperadminAccessDeniedError,
   SuperadminRoomCommandError,
 } from "@/application/administration/errors";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import type {
   PublicFunctionInput,
   PublicFunctionRow,
   RawRpcResponse,
-} from "@/lib/supabase/rpcTypes";
-import { resolveAvatarPath } from "@/lib/media/publicAvatar";
+} from "@/infrastructure/supabase/rpcTypes";
+import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {
   SuperadminPlayerCandidate,

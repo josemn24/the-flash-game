@@ -3,7 +3,7 @@ import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { proxy, config } from "./proxy";
 const mocks = vi.hoisted(() => ({ updateSession: vi.fn() }));
-vi.mock("@/lib/supabase/proxy", () => ({ updateSession: mocks.updateSession }));
+vi.mock("@/infrastructure/supabase/auth/proxy", () => ({ updateSession: mocks.updateSession }));
 afterEach(() => {
   vi.unstubAllEnvs();
   vi.clearAllMocks();

@@ -1,14 +1,16 @@
 import { AuthApiError, AuthRetryableFetchError } from "@supabase/supabase-js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { supabaseAuthentication } from "./authentication";
-import { AuthServiceUnavailableError } from "@/lib/supabase/auth-availability";
+import { AuthServiceUnavailableError } from "@/infrastructure/supabase/auth/auth-availability";
 
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
   signInWithPassword: vi.fn(),
   signOut: vi.fn(),
 }));
-vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.createClient }));
+vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
+  createClient: mocks.createClient,
+}));
 const credentials = { email: "player@example.com", password: "test-password" };
 
 beforeEach(() => {

@@ -7,8 +7,8 @@ import type {
   RoomMembershipCommands,
 } from "@/application/ports/room-membership-commands";
 import { RoomMembershipCommandError } from "@/application/administration/errors";
-import { createClient } from "@/lib/supabase/server";
-import type { RawRpcResponse } from "@/lib/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
 import type { RoomMembershipRole } from "@/types/view-models";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

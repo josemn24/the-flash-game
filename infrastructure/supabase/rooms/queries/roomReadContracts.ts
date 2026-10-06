@@ -1,6 +1,6 @@
 import type { GameMode } from "@/types/gameplay/challenge";
 import type { CompetitiveHistoryMode, RoomMembershipRole } from "@/types/view-models";
-import type { PublicFunctionRow } from "@/lib/supabase/rpcTypes";
+import type { PublicFunctionRow } from "@/infrastructure/supabase/rpcTypes";
 
 type RoomReadOverrides = {
   room_description: string | null;

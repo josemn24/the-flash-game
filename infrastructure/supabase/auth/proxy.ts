@@ -6,7 +6,7 @@ import {
   AuthAvailability,
   AuthServiceUnavailableError,
 } from "./auth-availability";
-import { logHttpEvent, requestIdFor, safePath } from "@/server/observability";
+import { logHttpEvent, requestIdFor, safePath } from "@/infrastructure/observability/http";
 
 export async function updateSession(request: NextRequest) {
   const startedAt = Date.now();

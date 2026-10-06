@@ -2,9 +2,9 @@ import "server-only";
 
 import type { SuperadminAttemptQueries } from "@/application/queries";
 import { SuperadminAccessDeniedError } from "@/application/administration/errors";
-import { createClient } from "@/lib/supabase/server";
-import type { PublicFunctionArgs, RawRpcResponse } from "@/lib/supabase/rpcTypes";
-import { resolveAvatarPath } from "@/lib/media/publicAvatar";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { PublicFunctionArgs, RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
+import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
 import type {
   SuperadminAttemptAuditEntry,
   SuperadminAttemptItemInspection,

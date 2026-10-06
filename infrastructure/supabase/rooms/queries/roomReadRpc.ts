@@ -1,7 +1,7 @@
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
-import type { PublicFunctionArgs, RawRpcResponse } from "@/lib/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { PublicFunctionArgs, RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
 import type { AttemptExpirationQueries } from "@/infrastructure/supabase/attempts/attemptExpiration";
 import { isRoomReadRow } from "./roomReadGuards";
 

@@ -293,7 +293,7 @@ redirects, `notFound()` ni Supabase. Las fachadas usan `cache` de React para com
 promesa dentro de la petición, incluida la lectura repetida por `generateMetadata` y por la página.
 No hay caché persistente ni compartida entre usuarios.
 
-Los clientes Supabase se tipan con `lib/supabase/database.types.ts`, generado desde el schema
+Los clientes Supabase se tipan con `infrastructure/supabase/database.types.ts`, generado desde el schema
 `public` de la base local mediante `npm run supabase:types`. Estos tipos describen el contrato de
 persistencia y RPC. Los adaptadores derivan de ellos los tipos de transporte y conservan aliases
 locales más estrictos para los datos después de pasar por guards; no sustituyen los guards, los

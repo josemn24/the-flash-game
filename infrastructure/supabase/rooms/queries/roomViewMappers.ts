@@ -14,7 +14,7 @@ import type {
   RoomLeaderboardEntry,
   RoomMembershipRole,
 } from "@/types/view-models";
-import { resolveAvatarPath } from "@/lib/media/publicAvatar";
+import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
 import {
   gameModes,
   roomRoles,

@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@supabase/supabase-js", () => ({ createClient: mocks.createClient }));
-vi.mock("@/lib/supabase/config", () => ({
+vi.mock("@/infrastructure/supabase/config", () => ({
   getSupabaseServiceRoleKey: () => "server-only-test-key-not-for-production",
   getSupabaseUrl: () => "http://supabase.test",
 }));

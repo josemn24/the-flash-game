@@ -13,7 +13,7 @@ supabase/.temp/
 
 # Generated files
 next-env.d.ts
-lib/supabase/database.types.ts
+infrastructure/supabase/database.types.ts
 *.tsbuildinfo
 
 # Environment and deployment files

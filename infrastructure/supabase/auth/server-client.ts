@@ -9,7 +9,7 @@ import {
   AUTH_FAILURE_HEADER,
   AuthAvailability,
 } from "./auth-availability";
-import { logHttpEvent } from "@/server/observability";
+import { logHttpEvent } from "@/infrastructure/observability/http";
 import { randomUUID } from "node:crypto";
 
 const requestAvailability = cache(async () => {

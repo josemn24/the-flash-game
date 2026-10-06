@@ -1,7 +1,7 @@
 import { validateCompetitiveRows } from "./competitiveReadProjection";
 import "server-only";
 
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import {
   callFlashRead,
   type GeneratedCompetitiveReadRow,

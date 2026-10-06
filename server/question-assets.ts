@@ -5,7 +5,7 @@ import {
   AuthenticationRequiredError,
   SuperadminAccessDeniedError,
 } from "@/application/administration/errors";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import { requireSuperadmin } from "@/server/admin";
 import {
   abortQuestionAsset,

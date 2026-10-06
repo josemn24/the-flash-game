@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHmac } from "node:crypto";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/supabase/config";
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/infrastructure/supabase/config";
 
 export class SuperadminAuthAdminError extends Error {
   readonly code:

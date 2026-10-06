@@ -2,7 +2,7 @@ import "server-only";
 
 import type { RoomRankingQueries } from "@/application/queries";
 import type { QueryContext, RoomRankingModel } from "@/types/view-models";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import { isSeasonRankingReadRow } from "./roomReadGuards";
 import { callRankingRead, callRoomRead } from "./roomReadRpc";
 import { toSeasonLeaderboard } from "./roomViewMappers";

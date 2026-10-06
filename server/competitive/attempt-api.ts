@@ -6,8 +6,8 @@ import "server-only";
 
 import { randomBytes, randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
-import { AuthServiceUnavailableError } from "@/lib/supabase/auth-availability";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import { AuthServiceUnavailableError } from "@/infrastructure/supabase/auth/auth-availability";
 import { getRuntimeScope } from "@/server/runtime-scope";
 import { logHttpEvent, requestIdFor, safePath } from "@/server/observability";
 import type { AuthenticatedActor, AttemptSessionTokenGenerator } from "@/application/ports/actors";
