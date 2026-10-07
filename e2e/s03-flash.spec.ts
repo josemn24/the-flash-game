@@ -8,6 +8,8 @@ type Fixture = {
     bob: { email: string; password: string };
     carol: { email: string; password: string };
     dave: { email: string; password: string };
+    erin: { email: string; password: string };
+    frank: { email: string; password: string };
   };
   data: {
     room: { slug: string };
@@ -30,11 +32,14 @@ async function signIn(page: Page, account: { email: string; password: string }) 
 async function openFlash(page: Page, account: { email: string; password: string }) {
   await signIn(page, account);
   await page.getByRole("link", { name: /Abrir sala Sala competitiva S03/ }).click();
-  await page.getByRole("link", { name: "Jugar" }).click();
+  await page.getByRole("link", { name: /^(Jugar|Continuar)$/ }).click();
   await expect(page.getByRole("heading", { name: "Flash competitivo" })).toBeVisible();
   await expect(page).toHaveURL(/\/desafios\/[^/]+\?roomId=/);
-  await expect(page.getByRole("button", { name: "Empezar desafío" })).toHaveCount(1);
-  await page.getByRole("button", { name: "Empezar desafío" }).click();
+  const startButton = page.getByRole("button", { name: "Empezar desafío" });
+  await expect(
+    page.getByRole("button", { name: /^(Empezar desafío|Continuar aquí)$/ }),
+  ).toHaveCount(1);
+  if (await startButton.count()) await startButton.click();
 }
 
 test.describe("S03 — Flash competitivo persistido", () => {
@@ -98,11 +103,57 @@ test.describe("S03 — Flash competitivo persistido", () => {
     await expect(page.getByText(/0\/100 puntos/)).toBeVisible();
   });
 
+  test("transfiere explícitamente el control entre dos contextos y bloquea al anterior", async ({
+    page,
+    browser,
+  }) => {
+    test.setTimeout(90000);
+    const data = await fixture();
+    const secondContext = await browser.newContext();
+    const secondPage = await secondContext.newPage();
+    let takeoverRequests = 0;
+    await secondPage.route("**/api/competitive/attempts/*/takeover", async (route) => {
+      takeoverRequests++;
+      const response = await route.fetch();
+      if (takeoverRequests === 1) {
+        await response.body();
+        await route.abort("failed");
+        return;
+      }
+      await route.fulfill({ response });
+    });
+
+    try {
+      await openFlash(page, data.users.erin);
+      await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+        timeout: 20_000,
+      });
+      await openFlash(secondPage, data.users.erin);
+      await expect(secondPage.getByRole("button", { name: "Continuar aquí" })).toBeVisible();
+      await secondPage.getByRole("button", { name: "Continuar aquí" }).click();
+      await expect.poll(() => takeoverRequests).toBe(2);
+      await expect(secondPage.getByRole("heading", { name: /planeta rojo/ })).toBeVisible({
+        timeout: 20_000,
+      });
+
+      await page.getByRole("button", { name: "Lisboa" }).click();
+      await expect(page.getByText("Has continuado esta partida en otro dispositivo")).toBeVisible({
+        timeout: 10_000,
+      });
+
+      await secondPage.getByRole("button", { name: "Marte" }).click();
+      await expect(secondPage.getByText("Desafío completado")).toBeVisible();
+    } finally {
+      await secondContext.close();
+    }
+  });
+
   test("convierte el timeout de una pregunta en una respuesta persistida", async ({ page }) => {
+    test.setTimeout(90000);
     await openFlash(page, (await fixture()).users.dave);
     await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Tiempo agotado" })).toBeVisible({
-      timeout: 20_000,
+      timeout: 75_000,
     });
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Venus" }).click();

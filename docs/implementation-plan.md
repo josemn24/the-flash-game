@@ -35,7 +35,7 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash, Alphabet, Supervivencia y Pirámide.                                                                                                                                                                                                                                                                                                                                                     | Sustituir autoridad cliente en Narrativa; Pirámide conserva `localStorage` solo en práctica.                                                       |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                                                                                                                                                                                                                                                                                                            | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
 | SQL       | 30 tablas, 53 archivos declarativos, migración versionada, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings.                                                                                                                                                                                                                                                                                                                                        | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado.                                     |
-| Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover para S03–S04, más comandos administrativos de sala y membresía parcial. El takeover queda deshabilitado.                                                                                                                                                                                                                                                                                | Alta de jugador, transferencia, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional.                                       |
+| Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover/takeover para S03–S04, más comandos administrativos de sala y membresía parcial.                                                                                                                                                                                                                                                                                                        | Alta de jugador, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional; rollout de takeover en staging.                      |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash, Alphabet, Supervivencia y Pirámide persisten evaluaciones; el servidor deriva vidas de Survival y ascenso/puntuación/cierre de Pirámide.                                                                                                                                                                                                                                                                                                   | Autoridad de escenas y cierre de Narrativa.                                                                                                        |
 | Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S15, D08a/D08b, E01–E06, F08, F16, F18, E10 y `multiple-choice` con assets privados.                                                                                                                                                                                                                                                                                                                  | Verificación contra un entorno remoto.                                                                                                             |
 
@@ -339,8 +339,8 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Objetivo / CU:** conservar el mismo intento ante recarga o fallo parcial y bloquear una segunda
   sesión/dispositivo; CU-16, CU-19 y recuperación de CU-17/CU-18.
 - **UI:** `RoomChallengeClient`, `useRoomAttemptSnapshot`, `RoomSessionProvider`, aviso de sesión
-  activa en otro dispositivo, acción explícita de abandono y estado «procesando respuesta»
-  recuperable. No hay CTA de takeover.
+  activa en otro dispositivo, CTA explícita «Continuar aquí», acción de mantener la sesión original
+  y estado «procesando respuesta» recuperable.
 - **Mocks retirados:** snapshot en memoria como fuente de progreso oficial del Flash migrado.
 - **Backend/dominio:** lectura autorizada del estado aceptado, recepción pendiente y versión actual;
   recuperar no rehidrata a ciegas. Si existe recepción, evaluarla/reconciliarla idempotentemente;
@@ -352,7 +352,8 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Persistencia:** usar `abandon_attempt` y añadir lectura y comando privado de recuperación con
   ACL mínima. El comando bloquea intento/intervalo, reconcilia recepción o cierra la interacción
   abierta, registra su efecto y solo después permite preparar la siguiente. El wrapper
-  `take_over_attempt` queda deshabilitado. Reconstruir desde respuestas/intervalos/recepciones;
+  `take_over_attempt` ejecuta la transferencia explícita y atómica definida en ADR-0006;
+  reconstruir desde respuestas/intervalos/recepciones;
   checkpoint nuevo solo si hace falta, con esquema validado. No abrir SELECT genérico sobre tablas
   privadas nuevas ni guardar el token en texto plano en DB, auditoría o idempotencia.
 - **Tests:** caída después de preparar, recibir, evaluar y acreditar; pérdida de HTTP tras preparar
@@ -362,7 +363,8 @@ No es requisito para obtener H2 ni para validar el producto con un catálogo men
 - **Dependencias:** S03, D01 de token y D03 de checkpoint.
 - **Terminada:** el jugador recupera el estado aceptado con la sesión original tras reiniciar el
   proceso; una interacción ya preparada se resuelve sin volver a mostrarse ni reiniciar su reloj.
-  Una segunda sesión solo recibe un bloqueo y no puede transferir el control; abandonar conserva
+  Una segunda sesión recibe un bloqueo hasta que el usuario confirma explícitamente la transferencia;
+  abandonar conserva
   respuestas, consume intento y no suma puntos. Desconexión sola todavía no promete abandono
   automático: corresponde a S21.
 - **Estado de implementación:** completado para Flash, Alphabet, Supervivencia y Pirámide. `recover_attempt`

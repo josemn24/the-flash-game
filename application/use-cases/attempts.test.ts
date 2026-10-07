@@ -56,6 +56,7 @@ function createUseCases(overrides: Partial<AttemptUseCaseDependencies> = {}) {
     prepareSession: vi.fn(),
     readRecordedEvaluation: vi.fn().mockResolvedValue(null),
     start: vi.fn(),
+    takeOver: vi.fn(),
     prepare: vi.fn(),
     activate: vi.fn(),
     receiveAnswer: vi.fn(),
@@ -106,6 +107,35 @@ const answerInput: SubmitAnswerInput = {
 };
 
 describe("ApplicationAttemptUseCases", () => {
+  it("passes the candidate token only to the takeover command and returns it for cookie rotation", async () => {
+    const { commands, useCases } = createUseCases();
+    vi.mocked(commands.takeOver).mockResolvedValue({
+      attemptId,
+      sessionId: "66666666-6666-4666-8666-666666666666" as never,
+      lockVersion: 4,
+      deadlineAt: null,
+      transferred: true,
+    });
+
+    const result = await useCases.takeOver({
+      attemptId,
+      scheduledChallengeId: snapshot().scheduledChallengeId,
+      lockVersion: 3,
+      idempotencyKey: "takeover:key",
+      sessionToken: "candidate-token",
+    });
+
+    expect(commands.takeOver).toHaveBeenCalledWith({
+      attemptId,
+      scheduledChallengeId: snapshot().scheduledChallengeId,
+      lockVersion: 3,
+      idempotencyKey: "takeover:key",
+      newSessionToken: "candidate-token",
+    });
+    expect(result.sessionToken).toBe("candidate-token");
+    expect(result.result.transferred).toBe(true);
+  });
+
   it("scores a pending Alphabet receipt outside the atomic completion command", async () => {
     const { commands, evaluator, useCases } = createUseCases();
     vi.mocked(commands.readRecovery).mockResolvedValue(

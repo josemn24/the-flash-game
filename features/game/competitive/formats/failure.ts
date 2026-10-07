@@ -3,6 +3,8 @@ import type { Feedback, FeedbackChannel, Operation } from "../core/sessionReduce
 const rejectedInput: Record<string, string> = {
   attempt_permission_revoked:
     "Esta partida se cerró porque ya no tienes permiso para competir en esta sala.",
+  takeover_not_prepared:
+    "Recarga la página para preparar este dispositivo antes de continuar la partida.",
   invalid_mini_wordle_guess: "Esta palabra no está disponible para este desafío.",
   duplicate_mini_wordle_guess: "Ya has probado esa palabra. El intento no se ha consumido.",
   invalid_logic_code: "El código debe tener la longitud indicada y contener solo cifras.",

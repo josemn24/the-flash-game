@@ -33,7 +33,20 @@ export async function POST(request: Request) {
       sessionToken,
     });
     if (started.result.controlRequired) {
-      throw new AttemptApiError("attempt_control_required", 409);
+      return responseFor(
+        {
+          error: { code: "attempt_control_required", requestId },
+          attempt: {
+            attemptId: started.result.attemptId,
+            lockVersion: started.result.lockVersion,
+            deadlineAt: started.result.deadlineAt,
+          },
+        },
+        409,
+        requestId,
+        "competitive.attempt.start",
+        startedAt,
+      );
     }
     // The token is intentionally absent from the JSON response and the HTML/RSC tree.
     await setAttemptToken(

@@ -293,8 +293,9 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
   reconciliar primero una recepción ya confirmada y evaluarla idempotentemente cuando falte su
   evaluación. Si queda un intervalo preparado sin recepción, cerrarlo atómicamente con la
   consecuencia de recuperación del modo; restaurar después el progreso confirmado y continuar.
-- **Reglas de negocio:** reanudar no equivale a repetir; solo una sesión controla el intento; una
-  segunda sesión se bloquea y no sustituye a la primera durante el MVP; actualizaciones obsoletas se
+- **Reglas de negocio:** reanudar no equivale a repetir; solo una sesión controla el intento. Una
+  segunda sesión queda bloqueada hasta que el jugador confirme «Continuar aquí»; la transferencia
+  revoca la sesión anterior, incrementa `lock_version` y no sustituye hechos ni plazos; actualizaciones obsoletas se
   rechazan; una interacción preparada se considera consumida aunque se haya perdido su respuesta
   HTTP y no se vuelve a entregar. Flash, Supervivencia, Narrativa, Pirámide y Alfabeto aplican la
   consecuencia definida en `mode-contracts.md`; `abandoned`, `completed` e `invalidated` no se
@@ -302,10 +303,22 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Resultado:** misma ejecución en progreso, o estado terminal consultable.
 - **Efectos secundarios:** `AttemptResumed` y renovación de actividad de la sesión vigente.
 - **Errores o impedimentos:** intento inexistente, deadline vencido, checkpoint incompatible, token
-  inválido, sesión activa en otro dispositivo, concurrencia obsoleta, intento terminal o una
+  inválido, sesión activa en otro dispositivo (`attempt_control_required` hasta confirmar), concurrencia obsoleta, intento terminal o una
   recuperación que complete reglamentariamente el modo.
 - **Permisos necesarios:** jugador del intento con autorización competitiva y token de la sesión
   que controla el intento.
+
+### CU-16A — Transferir explícitamente el control a este dispositivo [V1]
+
+- **Actor:** jugador propietario con membresía competitiva activa.
+- **Objetivo:** continuar el mismo intento desde B tras confirmar «Continuar aquí».
+- **Entrada relevante:** `attemptId`, `scheduledChallengeId`, `lockVersion`, clave idempotente y
+  cookie HttpOnly candidata preparada por `/session`; el token nunca viaja en JSON.
+- **Flujo principal:** validar cuenta, membresía, publicación, estado, deadline y versión bajo el
+  lock del intento; revocar la sesión activa con motivo `takeover`, incrementar `lock_version`,
+  crear la sesión de B y recuperar el intento existente.
+- **Errores:** cookie candidata ausente, `stale_version`, cuenta/espectador sin permiso, intento
+  terminal o deadline vencido. Ninguno crea un segundo intento ni reintenta automáticamente desde A.
 
 ### CU-17 — Enviar y evaluar una respuesta [V1]
 

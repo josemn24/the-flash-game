@@ -15,6 +15,8 @@ import type {
   SaveQueensDraftResult,
   StartAttemptInput,
   StartAttemptResult,
+  TakeOverAttemptInput,
+  TakeOverAttemptResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
   SubmitLogicCodeAttemptInput,
@@ -46,6 +48,16 @@ export type StartAttemptUseCaseResult = {
   readonly sessionToken: string;
 };
 
+export type TakeOverAttemptUseCaseInput = TakeOverAttemptInput & {
+  /** Candidate HttpOnly token prepared by the session endpoint. */
+  readonly sessionToken: string;
+};
+
+export type TakeOverAttemptUseCaseResult = {
+  readonly result: TakeOverAttemptResult;
+  readonly sessionToken: string;
+};
+
 export type SubmitAnswerUseCaseResult = {
   readonly received: ReceiveAnswerResult;
   readonly evaluated: SubmitAnswerResult;
@@ -67,6 +79,7 @@ export interface AttemptUseCases {
   readonly actor: AuthenticatedActor;
   prepareSession(input: PrepareAttemptSessionInput): Promise<PrepareAttemptSessionResult>;
   start(input: StartAttemptUseCaseInput): Promise<StartAttemptUseCaseResult>;
+  takeOver(input: TakeOverAttemptUseCaseInput): Promise<TakeOverAttemptUseCaseResult>;
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
   activate(input: ActivateInteractionInput): Promise<ActivateInteractionResult>;
   submitAnswer(input: SubmitAnswerInput): Promise<SubmitAnswerUseCaseResult>;

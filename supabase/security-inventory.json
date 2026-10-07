@@ -1077,6 +1077,11 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.raise_if_session_transferred": {
+      "arguments": "target_attempt uuid, token_hash text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
     "private.prepare_attempt_session": {
       "arguments": "target_publication uuid",
       "securityDefiner": true,

@@ -49,6 +49,27 @@ describe("competitive transport", () => {
     ).rejects.toMatchObject({ code: "attempt_busy", status: 409, retryAfterSeconds: 3 });
   });
 
+  it("preserves safe error metadata for explicit transfer", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: { code: "attempt_control_required" },
+            attempt: { attemptId: "attempt", lockVersion: 7, deadlineAt: null },
+          }),
+          { status: 409 },
+        ),
+      ),
+    );
+    await expect(
+      postCompetitiveJson("/api/competitive/attempts/start", {}, (value) => value),
+    ).rejects.toMatchObject({
+      code: "attempt_control_required",
+      details: { attempt: { attemptId: "attempt", lockVersion: 7 } },
+    });
+  });
+
   it("reports invalid JSON and unknown HTTP error codes safely", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("not-json", { status: 500 })));
     await expect(

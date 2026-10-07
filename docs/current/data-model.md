@@ -445,10 +445,11 @@ que deba llegar a la UI.
 - `created_at`, `last_seen_at timestamptz not null`.
 - `expires_at timestamptz null`: coincide con el deadline global cuando existe.
 - `revoked_at timestamptz null`.
+- `revocation_reason text null`: `takeover`, `terminal` o `permission_revoked`.
 
 Un índice único parcial sobre `attempt_id where revoked_at is null` garantiza una sesión activa. Se
-guardan hashes, nunca tokens reutilizables. En el MVP un token distinto se bloquea y no revoca ni
-sustituye a la sesión original; la transferencia entre dispositivos queda aplazada.
+guardan hashes, nunca tokens reutilizables. Un token distinto solo sustituye a la sesión original
+tras confirmación explícita, revocación atómica e incremento de `lock_version`.
 No se añade heartbeat ni lease. El deadline impide nuevo juego, pero permite persistir el timeout,
 evaluar la recepción ya guardada y cerrar el intento con la sesión propietaria.
 
@@ -767,7 +768,8 @@ la publicación está cerrada o su `deadline_at` ha vencido. La reconciliación 
 calendar tick y también bajo demanda en historial/comandos; una ejecución repetida es idempotente.
 
 El esquema mantiene el bloqueo de sesión única y correcciones de superadmin con motivo y auditoría.
-El wrapper técnico de takeover está deshabilitado durante el MVP. Heartbeat y lease del navegador no
+La transferencia explícita marca la sesión revocada con `revocation_reason = 'takeover'`, conserva el
+intento y su deadline, e incrementa `lock_version` bajo el mismo lock. Heartbeat y lease del navegador no
 son requisitos para la expiración server-side. S04 ya
 implementa para Flash `recover_attempt` y `read_attempt_recovery`: un intervalo abierto se cierra
 como `recovery_interrupted`, genera una recepción interna nula y se evalúa como `unanswered` antes de

@@ -55,6 +55,15 @@ export function ServerFlashPopAlphabetGame({
           onStart={session.begin}
           canStart
           notice={session.startNotice}
+          transfer={
+            session.transfer
+              ? {
+                  busy: session.busy,
+                  onConfirm: session.takeOver,
+                  onCancel: session.cancelTakeOver,
+                }
+              : undefined
+          }
           returnTo={roomContext.returnTo}
         />
       </motion.div>

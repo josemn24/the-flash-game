@@ -38,6 +38,8 @@ export const scenario = {
     { label: "bob", displayName: "Bob" },
     { label: "carol", displayName: "Carol" },
     { label: "dave", displayName: "Dave" },
+    { label: "erin", displayName: "Erin" },
+    { label: "frank", displayName: "Frank" },
   ],
 
   buildDomainSql({ accounts, sqlString, sqlUuid }) {
@@ -67,7 +69,9 @@ values
   (${sqlUuid(domainIds.room)}, ${sqlString(alice)}, 'owner', 'active', ${sqlString(dateStart)}),
   (${sqlUuid(domainIds.room)}, ${sqlString(bob)}, 'spectator', 'active', ${sqlString(dateStart)}),
   (${sqlUuid(domainIds.room)}, ${sqlString(accounts.carol.playerId)}, 'member', 'active', ${sqlString(dateStart)}),
-  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.dave.playerId)}, 'member', 'active', ${sqlString(dateStart)});
+  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.dave.playerId)}, 'member', 'active', ${sqlString(dateStart)}),
+  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.erin.playerId)}, 'member', 'active', ${sqlString(dateStart)}),
+  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.frank.playerId)}, 'member', 'active', ${sqlString(dateStart)});
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
 values (${sqlUuid(domainIds.season)}, ${sqlUuid(domainIds.room)}, 'Temporada S03', 'active',
   ${sqlString(dateStart)}, ${sqlString(dateEnd)});
@@ -80,9 +84,9 @@ insert into private.question_versions
    public_payload, created_by_player_id)
 values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlUuid(domainIds.questionOne)}, 1, 1,
-    'multiple-choice', 15000, ${sqlString(JSON.stringify(questionOne))}, ${sqlString(alice)}),
+    'multiple-choice', 60000, ${sqlString(JSON.stringify(questionOne))}, ${sqlString(alice)}),
   (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlUuid(domainIds.questionTwo)}, 1, 1,
-    'multiple-choice', 15000, ${sqlString(JSON.stringify(questionTwo))}, ${sqlString(alice)});
+    'multiple-choice', 60000, ${sqlString(JSON.stringify(questionTwo))}, ${sqlString(alice)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({ correctAnswer: "Lisboa", explanation: "Lisboa es la capital de Portugal." }))}),

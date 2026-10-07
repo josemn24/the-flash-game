@@ -28,7 +28,12 @@ export class CommandExecutor {
     return this.enqueue(async () => {
       if (this.pending()) throw new PendingCommandBlocked();
       const attempt = this.attempt();
-      if (operation !== "start" && operation !== "prepareSession" && !attempt)
+      if (
+        operation !== "start" &&
+        operation !== "prepareSession" &&
+        operation !== "takeover" &&
+        !attempt
+      )
         throw new PendingCommandBlocked();
       const input = {
         ...originalData,
@@ -38,8 +43,23 @@ export class CommandExecutor {
         ...(operation !== "recover" && operation !== "abandon"
           ? { idempotencyKey: createCompetitiveIdempotencyKey(operation) }
           : {}),
-      };
+      } as Parameters<CompetitiveAttemptClient[K]>[0];
       const command = { operation, input } as PendingCommand;
+      await send(command, () => this.invoke(command));
+    }).finally(() => this.scheduled.delete(operation));
+  }
+  executeInput<K extends Operation>(
+    operation: K,
+    input: Parameters<CompetitiveAttemptClient[K]>[0],
+    send: (command: PendingCommand, invoke: () => Promise<CompetitiveJsonObject>) => Promise<void>,
+  ) {
+    if (operation !== "queensDraft" && this.scheduled.has(operation))
+      return Promise.reject(new PendingCommandBlocked());
+    const originalInput = structuredClone(input);
+    this.scheduled.add(operation);
+    return this.enqueue(async () => {
+      if (this.pending()) throw new PendingCommandBlocked();
+      const command = { operation, input: originalInput } as PendingCommand;
       await send(command, () => this.invoke(command));
     }).finally(() => this.scheduled.delete(operation));
   }

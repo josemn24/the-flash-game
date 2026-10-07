@@ -16,6 +16,8 @@ import type {
   RecoveryUseCaseResult,
   StartAttemptUseCaseInput,
   StartAttemptUseCaseResult,
+  TakeOverAttemptUseCaseInput,
+  TakeOverAttemptUseCaseResult,
   SubmitAnswerUseCaseResult,
 } from "@/application/ports/attempt-use-cases";
 import type {
@@ -58,6 +60,7 @@ export type AttemptUseCaseDependencies = {
   readonly commands: Pick<
     AttemptCommands,
     | "start"
+    | "takeOver"
     | "prepareSession"
     | "readRecordedEvaluation"
     | "prepare"
@@ -125,6 +128,12 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
   async start(input: StartAttemptUseCaseInput): Promise<StartAttemptUseCaseResult> {
     const sessionToken = input.sessionToken ?? this.sessionTokens.generate();
     const result = await this.commands.start({ ...input, sessionToken });
+    return { result, sessionToken };
+  }
+
+  async takeOver(input: TakeOverAttemptUseCaseInput): Promise<TakeOverAttemptUseCaseResult> {
+    const { sessionToken, ...command } = input;
+    const result = await this.commands.takeOver({ ...command, newSessionToken: sessionToken });
     return { result, sessionToken };
   }
 

@@ -65,6 +65,7 @@ create table private.attempt_sessions (
   last_seen_at timestamptz not null default now(),
   expires_at timestamptz,
   revoked_at timestamptz,
+  revocation_reason text check (revocation_reason in ('takeover', 'terminal', 'permission_revoked')),
   check (expires_at > created_at),
   check (last_seen_at >= created_at),
   check (revoked_at is null or revoked_at >= created_at)

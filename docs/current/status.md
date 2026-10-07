@@ -203,13 +203,14 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - La [política de pérdida del permiso competitivo](../decisions/decisions.md#20-pérdida-del-permiso-para-jugar)
   está implementada: bloqueo inmediato, cierre atómico del intento como no completado sin acreditar
   puntos, revocación de sesiones y conservación de resultados previos. La recuperación terminal
-  muestra el motivo específico; la transferencia entre dispositivos sigue pendiente.
+  muestra el motivo específico; la transferencia entre dispositivos está implementada localmente y
+  pendiente de validación en staging.
 - Narrative competitivo ya usa `ApplicationCompetitiveChallengeReads`, `SupabaseNarrativeQueries` y el
   ciclo persistente `start → prepare → answer → complete`. Las escenas no consumen tiempo; cada
   pregunta se libera desde Supabase, la evaluación/puntuación permanecen en servidor y la revisión
   terminal resuelve los assets privados autorizados.
 - `results_locked_at` sigue fuera de alcance. La transferencia explícita entre dispositivos está
-  [aprobada](../decisions/adr/0006-explicit-attempt-control-transfer.md), pendiente de implementar;
+  [aprobada](../decisions/adr/0006-explicit-attempt-control-transfer.md) e implementada localmente;
   el runtime aún bloquea la segunda sesión. La expiración por
   inactividad está implementada: tras 15 minutos sin actividad, una publicación cerrada o con deadline
   vencido puede cerrar el intento como `abandoned` sin puntos; el tick diario y las lecturas/comandos

@@ -28,7 +28,7 @@ vi.mock("@/server/competitive/attempt-api", () => ({
   setAttemptToken: mocks.setAttemptToken,
   newAttemptToken: () => "new-secret-token",
   requestIdFor: () => "request",
-  responseFor: (value: unknown) => Response.json(value),
+  responseFor: (value: unknown, status = 200) => Response.json(value, { status }),
 }));
 import { POST as prepare } from "./session/route";
 import { POST as start } from "./start/route";
@@ -81,6 +81,29 @@ describe("session before start", () => {
       sessionToken: "existing-token",
       idempotencyKey: "original-key",
     });
+  });
+  it("returns safe transfer metadata when another controller owns the attempt", async () => {
+    mocks.readStartAttemptToken.mockResolvedValue("candidate-token");
+    mocks.start.mockResolvedValue({
+      sessionToken: "candidate-token",
+      result: {
+        attemptId: "attempt",
+        lockVersion: 7,
+        deadlineAt: "2026-10-07T10:00:00.000Z",
+        controlRequired: true,
+      },
+    });
+    const response = await start(request());
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      error: { code: "attempt_control_required", requestId: "request" },
+      attempt: {
+        attemptId: "attempt",
+        lockVersion: 7,
+        deadlineAt: "2026-10-07T10:00:00.000Z",
+      },
+    });
+    expect(mocks.setAttemptToken).not.toHaveBeenCalled();
   });
   it("does not set cookies when authorization fails", async () => {
     mocks.prepareSession.mockRejectedValue({ code: "not_authorized" });

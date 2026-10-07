@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 58 archivos y su revisión canónica es
-`20261007120000_permission_revoked_attempt_closure`. Las migraciones incrementales corresponden a esos archivos;
+`20261007130000_attempt_control_transfer`. Las migraciones incrementales corresponden a esos archivos;
 la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -98,8 +98,8 @@ el comportamiento provisional del mock.
   `last_activity_at` (o `started_at`) y solo se aplica cuando la publicación está cerrada o el
   deadline global ha vencido; marca el intento `abandoned` sin puntos. `expires_at` es nulo o coincide
   con el deadline global. Tras ese deadline solo se permite resolver timeout, evaluar, finalizar o
-  abandonar; no se entrega nuevo contenido jugable. El takeover entre dispositivos está deshabilitado
-  durante el MVP.
+  abandonar; no se entrega nuevo contenido jugable. La transferencia entre dispositivos requiere
+  confirmación explícita.
 - Política S04 implementada para el vertical Flash: una unidad e intervalo confirmados antes de
   devolver contenido se consideran consumidos. Al recuperar, una recepción existente se evalúa; sin
   recepción del jugador se cierra atómicamente el intervalo y se crea una recepción interna de
@@ -209,7 +209,7 @@ la UI. El adaptador de comandos deberá:
    antes de devolver la conexión al pool. La credencial SQL no verifica JWT por sí sola.
 2. Generar el token aleatorio en el primer inicio y conservarlo de forma segura para reintentos.
    La misma cookie permite recuperar el intento. Otro token devuelve `controlRequired`, se bloquea
-   y no revoca la sesión anterior; el takeover entre dispositivos está aplazado para después del MVP.
+   y no revoca la sesión anterior. Si devuelve `controlRequired`, el destino debe confirmar el takeover explícitamente.
 3. Llamar `prepare_interaction` y **confirmar la transacción antes de devolver `publicPayload`**.
    En la evolución de recuperación, si existe un intervalo abierto no resuelto, el adaptador debe
    resolverlo primero con el comando transaccional de recuperación; no debe reentregar ese payload
@@ -238,18 +238,18 @@ adaptador debe resolver las letras pendientes mediante preparar/recibir timeout/
 payload jugable, y completar. Las letras nunca visitadas tienen duración de interacción cero.
 No hay un proceso automático de timeout o recuperación de evaluaciones en este cambio.
 
-| Operación privada                                                                            | Autorización y garantía                                                                                                     |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `start_attempt`                                                                              | Miembro competitivo durante apertura para un inicio nuevo; recuperación sin nuevo intento.                                  |
-| `take_over_attempt`                                                                          | Reservado para una política posterior; devuelve `takeover_disabled` durante el MVP.                                         |
-| `prepare_interaction`                                                                        | Propietario y sesión vigente; persiste reloj antes de devolver contenido.                                                   |
-| `recover_attempt` / `read_attempt_recovery`                                                  | S04/S14/S15: evalúa como `unanswered` una interacción abierta, deriva progreso del modo y no reentrega payload.             |
-| `receive_answer`, `pass_interaction`                                                         | Sesión, item actual, versión y recepción autoritativa; pasar solo en Alfabeto antes del deadline.                           |
-| `read_evaluation_context`, `record_evaluation`                                               | Servidor confiable en contexto del propietario; recepción vinculada a versión congelada.                                    |
-| `complete_attempt`, `abandon_attempt`                                                        | Propietario y sesión vigente; cierre, sesiones, puntos y auditoría atómicos.                                                |
-| `accept_invitation`                                                                          | Actor verificado; sala activa, token, caducidad, usos y estado de membresía bajo bloqueo.                                   |
-| `invalidate_attempt`, `adjust_result`                                                        | Superadmin activo, motivo y versión; saldo y auditoría atómicos.                                                            |
-| `create_superadmin_flash_draft`, `update_superadmin_flash_draft`, `publish_superadmin_flash` | Solo superadmin; grafo versionado, solución privada, locks, concurrencia optimista, publicación atómica y auditoría segura. |
+| Operación privada                                                                            | Autorización y garantía                                                                                                                                   |
+| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `start_attempt`                                                                              | Miembro competitivo durante apertura para un inicio nuevo; recuperación sin nuevo intento.                                                                |
+| `take_over_attempt`                                                                          | Transfiere explícitamente el control con token candidato, versión, membresía y deadline validados; revoca la sesión anterior e incrementa `lock_version`. |
+| `prepare_interaction`                                                                        | Propietario y sesión vigente; persiste reloj antes de devolver contenido.                                                                                 |
+| `recover_attempt` / `read_attempt_recovery`                                                  | S04/S14/S15: evalúa como `unanswered` una interacción abierta, deriva progreso del modo y no reentrega payload.                                           |
+| `receive_answer`, `pass_interaction`                                                         | Sesión, item actual, versión y recepción autoritativa; pasar solo en Alfabeto antes del deadline.                                                         |
+| `read_evaluation_context`, `record_evaluation`                                               | Servidor confiable en contexto del propietario; recepción vinculada a versión congelada.                                                                  |
+| `complete_attempt`, `abandon_attempt`                                                        | Propietario y sesión vigente; cierre, sesiones, puntos y auditoría atómicos.                                                                              |
+| `accept_invitation`                                                                          | Actor verificado; sala activa, token, caducidad, usos y estado de membresía bajo bloqueo.                                                                 |
+| `invalidate_attempt`, `adjust_result`                                                        | Superadmin activo, motivo y versión; saldo y auditoría atómicos.                                                                                          |
+| `create_superadmin_flash_draft`, `update_superadmin_flash_draft`, `publish_superadmin_flash` | Solo superadmin; grafo versionado, solución privada, locks, concurrencia optimista, publicación atómica y auditoría segura.                               |
 
 El dispatcher genérico y sus helpers no tienen EXECUTE para los roles API. No hay RPC de escritura
 pública. Los errores de versión/idempotencia usan SQLSTATE `40001`; autorización `42501`, input

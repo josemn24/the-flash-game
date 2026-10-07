@@ -12,12 +12,14 @@ import type {
   RecordEvaluationCommand,
   RecoverAttemptCommand,
   StartAttemptCommand,
+  TakeOverAttemptCommand,
 } from "@/application/ports/attempt-commands";
 import type {
   ActivateInteractionResult,
   PrepareInteractionResult,
   ReceiveAnswerResult,
   StartAttemptResult,
+  TakeOverAttemptResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
   FinishAttemptResult,
@@ -86,6 +88,7 @@ function commandCode(error: unknown) {
     "attempt_permission_revoked",
     "competitive_access_denied",
     "session_revoked",
+    "session_transferred",
     "stale_version",
     "idempotency_conflict",
     "invalid_command",
@@ -105,7 +108,7 @@ function commandCode(error: unknown) {
     "alphabet_deadline_not_reached",
     "receipt_not_found",
     "already_evaluated",
-    "takeover_disabled",
+    "takeover_not_prepared",
     "attempt_inactivity_expired",
     "recovery_required",
     "invalid_mini_wordle_guess",
@@ -233,6 +236,7 @@ function isAttemptContext(value: unknown): value is AttemptContext {
 export class SupabaseAttemptCommands implements Pick<
   AttemptCommands,
   | "start"
+  | "takeOver"
   | "prepareSession"
   | "readCompletedAttempt"
   | "readAbandonedAttempt"
@@ -296,6 +300,10 @@ export class SupabaseAttemptCommands implements Pick<
   }
   start(input: StartAttemptCommand) {
     return callAttemptCommand<StartAttemptResult>(this.identity, "start_attempt", input);
+  }
+
+  takeOver(input: TakeOverAttemptCommand) {
+    return callAttemptCommand<TakeOverAttemptResult>(this.identity, "take_over_attempt", input);
   }
 
   async prepare(input: Parameters<AttemptCommands["prepare"]>[0]) {

@@ -3,6 +3,7 @@ create function private.read_attempt_context(target_attempt uuid, session_token 
 language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.command_actor(); result jsonb;
 begin
+  perform private.raise_if_session_transferred(target_attempt, private.secret_hash(session_token));
   select jsonb_build_object('challengeMode', version.mode, 'scheduledChallengeId', attempt.scheduled_challenge_id)
   into result
   from public.attempts attempt

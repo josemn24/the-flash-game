@@ -17,6 +17,12 @@ export type CompetitiveAttemptClient = {
     scheduledChallengeId: string;
     idempotencyKey: string;
   }) => Promise<CompetitiveJsonObject>;
+  takeover: (input: {
+    attemptId: string;
+    scheduledChallengeId: string;
+    lockVersion: number;
+    idempotencyKey: string;
+  }) => Promise<CompetitiveJsonObject>;
   recover: (input: AttemptCommandContext) => Promise<CompetitiveJsonObject>;
   prepare: (
     input: AttemptCommandContext & { idempotencyKey: string },
@@ -98,6 +104,12 @@ export function createCompetitiveAttemptClient(signal?: AbortSignal): Competitiv
       post("/api/competitive/attempts/session", { scheduledChallengeId }),
     start: ({ scheduledChallengeId, idempotencyKey }) =>
       post("/api/competitive/attempts/start", { scheduledChallengeId, idempotencyKey }),
+    takeover: ({ attemptId, scheduledChallengeId, lockVersion, idempotencyKey }) =>
+      post(`/api/competitive/attempts/${attemptId}/takeover`, {
+        scheduledChallengeId,
+        lockVersion,
+        idempotencyKey,
+      }),
     recover: ({ attemptId, lockVersion }) =>
       post(`/api/competitive/attempts/${attemptId}/recover`, { lockVersion }),
     prepare: ({ attemptId, lockVersion, idempotencyKey }) =>

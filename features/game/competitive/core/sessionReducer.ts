@@ -25,6 +25,13 @@ export type SessionPhase =
   | "results"
   | "review";
 export type Attempt = { readonly id: string; readonly lockVersion: number };
+export type TransferContext = {
+  readonly attemptId: string;
+  readonly lockVersion: number;
+  readonly deadlineAt: string | null;
+  readonly scheduledChallengeId: string;
+  readonly idempotencyKey: string;
+};
 export type SessionQuestion = ServerFlashQuestion | ServerAlphabetQuestion;
 export type SessionReview = FlashChallenge | PyramidChallenge | AlphabetChallenge;
 export type Operation = keyof CompetitiveAttemptClient;
@@ -77,6 +84,7 @@ export type SessionState = {
   completionRetryScheduled: boolean;
   attemptExpired: boolean;
   pendingCommand: PendingCommand | null;
+  transfer: TransferContext | null;
   lifecycleError?: LifecycleError;
   feedback?: Feedback;
   pendingAnswer: AnswerValue | null;
@@ -106,6 +114,8 @@ export type SessionEvent =
       notice?: string;
     }
   | { type: "authorization_lost"; error: LifecycleError }
+  | { type: "control_required"; transfer: TransferContext }
+  | { type: "control_cancelled" }
   | { type: "feedback_visible" }
   | {
       type: "prepared";
@@ -169,6 +179,7 @@ export function initialSessionState(
     completionRetryScheduled: false,
     attemptExpired: false,
     pendingCommand: null,
+    transfer: null,
     pendingAnswer: null,
   };
 }
@@ -221,6 +232,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
       return {
         ...state,
         attempt: event.attempt,
+        transfer: state.pendingCommand?.operation === "takeover" ? null : state.transfer,
         pendingCommand: null,
         busy: false,
         commandStatus: "confirmed",
@@ -250,6 +262,34 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         locked: true,
         commandStatus: "definitive_failure",
         lifecycleError: event.error,
+      };
+    case "control_required":
+      return {
+        ...state,
+        transfer: event.transfer,
+        pendingCommand: null,
+        busy: false,
+        locked: false,
+        commandStatus: "definitive_failure",
+        lifecycleError: {
+          operation: "start",
+          code: "attempt_control_required",
+          retryable: false,
+          message: "Existe una sesión activa en otro dispositivo.",
+        },
+        startNotice: "Existe una sesión activa en otro dispositivo.",
+        phase: "intro",
+      };
+    case "control_cancelled":
+      return {
+        ...state,
+        transfer: null,
+        lifecycleError: undefined,
+        startNotice: undefined,
+        pendingCommand: null,
+        busy: false,
+        locked: false,
+        commandStatus: "idle",
       };
     case "feedback_visible":
       return {

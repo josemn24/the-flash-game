@@ -674,8 +674,8 @@ deben vivir en el servidor.
 - La matriz de permisos de `owner` frente a `admin` está cerrada: `admin` no gestiona `owner`,
   solo `owner` concede `admin` y `superadmin` audita sus acciones directas sobre salas. El alcance
   editorial del rol `editor` aún no está cerrado.
-- La transferencia de control entre dispositivos está aprobada por ADR-0006 y pendiente de implementar;
-  permanece deshabilitada en el runtime. La expiración por
+- La transferencia de control entre dispositivos está implementada según ADR-0006 en PostgreSQL, API
+  y runtime; queda validación multi-dispositivo en staging. La expiración por
   inactividad ya está definida: 15 minutos sin actividad, solo tras cierre o deadline, con `abandoned`
   sin puntos; no requiere heartbeat ni lease del navegador.
 - Debe definirse un contrato de errores estable para distinguir no autorizado, no disponible,

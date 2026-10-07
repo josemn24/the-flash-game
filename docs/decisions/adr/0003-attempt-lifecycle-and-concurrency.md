@@ -21,7 +21,8 @@ Cada intento tiene una única sesión activa, operaciones idempotentes, checkpoi
 
 El aplazamiento de transferencia descrito a continuación fue sustituido el 2026-10-06 por
 [ADR-0006](0006-explicit-attempt-control-transfer.md). Se conserva como contexto histórico y refleja
-el bloqueo del runtime todavía vigente; la transferencia explícita aprobada está pendiente de implementar.
+el bloqueo histórico del runtime. La política vigente de transferencia explícita y su implementación
+se describen en [ADR-0006](0006-explicit-attempt-control-transfer.md).
 
 La transferencia de control entre dispositivos se aplaza. Mientras el MVP esté vigente, un token de
 sesión distinto no puede revocar ni sustituir la sesión activa: recibe un conflicto de sesión activa

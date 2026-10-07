@@ -1,6 +1,6 @@
 # ADR 0006: Transferencia explícita de control de un intento
 
-- Estado: aceptado como política de producto; implementación pendiente.
+- Estado: aceptado e implementado en cliente, API y PostgreSQL; validación multi-dispositivo en staging pendiente.
 - Fecha: 2026-10-06.
 - Sustituye: el aplazamiento y bloqueo de transferencia entre dispositivos del ADR-0003 de
   2026-09-15. Conserva sus reglas de intento único, recuperación y concurrencia.
@@ -52,16 +52,18 @@ La recuperación deja de depender de conservar una cookie concreta, sin debilita
 sesiones concurrentes. El backend sigue decidiendo identidad, permisos, plazo y progreso; los tokens
 revocados no pueden usarse para escribir aunque la pantalla anterior permanezca abierta.
 
-Esta decisión cambia el objetivo de producto, no el comportamiento del runtime actual. El comando
-de transferencia permanece deshabilitado hasta implementar y verificar las garantías anteriores.
+La implementación usa la cookie HttpOnly candidata preparada por `/session`. El endpoint de
+confirmación nunca serializa el token: PostgreSQL lo recibe solo para calcular su hash, revoca la
+sesión anterior, incrementa `lock_version` y crea la nueva sesión dentro de la misma transacción.
 
-## Detalles pendientes de implementación
+## Detalles de implementación y operación
 
-- Contrato del comando, renovación del token controlador y consulta del resultado de transferencia.
-- Presentación de la confirmación y mecanismo para que la UI anterior detecte revocación, incluidas
-  pestañas que compartan cookies. La exclusión real siempre se valida en servidor.
-- Mensajes para permisos perdidos, intento terminal, conflicto concurrente y resultado incierto.
-- Límites de frecuencia, auditoría y conservación de claves idempotentes de transferencia.
+- `POST /api/competitive/attempts/:attemptId/takeover` exige la cookie candidata, la misma cuenta,
+  membresía competitiva y `lockVersion`. Su replay con la misma clave devuelve el resultado cacheado.
+- La UI confirma con «Continuar aquí» y puede cancelar. La sesión anterior recibe
+  `session_transferred` en su siguiente acción y cancela timers/retries.
+- La auditoría registra `takeover_confirmed`; los conflictos y estados inciertos se registran como
+  eventos técnicos sin tokens. Staging debe verificar concurrencia, respuesta HTTP perdida y los cinco modos.
 
 ## Criterios de aceptación
 

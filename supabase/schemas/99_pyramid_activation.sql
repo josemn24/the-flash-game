@@ -114,6 +114,7 @@ begin
   select * into session_row from private.attempt_sessions
   where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
   if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
     raise exception 'session_revoked' using errcode = '42501';
   end if;
   expected := (input->>'lockVersion')::bigint;

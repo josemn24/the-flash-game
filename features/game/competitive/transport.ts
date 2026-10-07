@@ -7,6 +7,7 @@ export class CompetitiveCommandError extends Error {
     readonly code: string,
     readonly status: number,
     readonly retryAfterSeconds?: number,
+    readonly details?: CompetitiveJsonObject,
   ) {
     super(code);
     this.name = "CompetitiveCommandError";
@@ -93,8 +94,16 @@ export async function postCompetitiveJson<T>(
             retryAfterSeconds,
           );
         }
-        if (!response.ok)
-          throw new CompetitiveCommandError(errorCode(value), response.status, retryAfterSeconds);
+        if (!response.ok) {
+          throw new CompetitiveCommandError(
+            errorCode(value),
+            response.status,
+            retryAfterSeconds,
+            value && typeof value === "object" && !Array.isArray(value)
+              ? (value as CompetitiveJsonObject)
+              : undefined,
+          );
+        }
         return parser(value);
       })(),
     ]);

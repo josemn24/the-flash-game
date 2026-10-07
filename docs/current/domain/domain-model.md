@@ -451,7 +451,7 @@ El modelo no decide todavía:
 - alcance exacto del editor/autor de contenido, que no es un rol de sala en esta fase;
 - señalización de UI previa a la expiración y observabilidad de cierres automáticos;
 - qué checkpoints y borradores adicionales se conservan para cada modo; la recuperación consume la
-  interacción ya preparada y la toma de control en otro dispositivo queda aplazada tras el MVP;
+  interacción ya preparada y la toma de control explícita conserva solo hechos aceptados;
 - política de consulta y revisión de intentos `invalidated`;
 - detalles de tiempo, finalización, feedback y exposición de soluciones de cada modo que no estén
   cerrados en sus contratos;

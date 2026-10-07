@@ -103,7 +103,10 @@ begin
   if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
     or exists (select 1 from private.platform_role_assignments where player_id = actor) then raise exception 'not_authorized' using errcode = '42501'; end if;
   select * into s from private.attempt_sessions where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or s.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or s.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into receipt from private.answer_receipts r where r.attempt_id = a.id and not exists (

@@ -33,6 +33,7 @@ export class AttemptApiError extends Error {
     readonly code: string,
     readonly status: number,
     readonly retryAfterSeconds?: number,
+    readonly details?: JsonObject,
   ) {
     super(code);
     this.name = "AttemptApiError";
@@ -221,8 +222,9 @@ export async function readAttemptToken(attemptId: string) {
 }
 
 /**
- * The scheduled-challenge cookie lets the server reuse the controlling token after a reload.
- * It is still HttpOnly: a different browser/device does not receive it and remains blocked.
+ * The scheduled-challenge cookie is a one-device candidate. It lets the server
+ * reuse the token after a reload and authorizes an explicit takeover request;
+ * it never grants control until PostgreSQL commits the transfer.
  */
 export async function readStartAttemptToken(authUserId: string, scheduledChallengeId: string) {
   return (await cookies()).get(startCookieName(authUserId, scheduledChallengeId))?.value;

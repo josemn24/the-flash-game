@@ -40,8 +40,25 @@ select throws_ok($$select test_support.run('prepare_interaction')$$,'55000',null
 select pg_sleep(0.02);
 select lives_ok($$select test_support.run('record_evaluation','{"status":"correct","points":50}')$$,'Delayed evaluation uses recorded reception');
 select lives_ok($$select test_support.run('prepare_interaction')$$,'Next question becomes available after evaluation');
-select throws_ok($$select test_support.run('take_over_attempt','{"newSessionToken":"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"}')$$,'55000','takeover_disabled','Cross-device takeover is disabled for the MVP');
-select lives_ok($$select test_support.run('receive_answer','{"answer":true}')$$,'Original session continues existing interaction');
+create temporary table takeover_snapshot as
+select (runtime.state->>'attemptId')::uuid as attempt_id,
+  (runtime.state->>'lockVersion')::bigint as lock_version,
+  attempts.deadline_at::text as deadline_at
+from test_support.runtime runtime
+join public.attempts attempts on attempts.id=(runtime.state->>'attemptId')::uuid;
+select lives_ok($$select test_support.run('take_over_attempt','{"newSessionToken":"nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn"}')$$,'Explicit takeover transfers control atomically');
+select is((select (state->>'attemptId')::uuid from test_support.runtime),
+  (select attempt_id from takeover_snapshot),'Takeover preserves the attempt');
+select is((select (state->>'lockVersion')::bigint from test_support.runtime),
+  (select lock_version + 1 from takeover_snapshot),'Takeover increments lock_version exactly once');
+select is((select state->>'deadlineAt' from test_support.runtime),
+  (select deadline_at from takeover_snapshot),'Takeover preserves the deadline');
+select is((select count(*) from private.attempt_sessions where attempt_id=(select attempt_id from takeover_snapshot) and revoked_at is null),1::bigint,'Takeover leaves one active session');
+select is((select count(*) from private.attempt_sessions where attempt_id=(select attempt_id from takeover_snapshot) and revocation_reason='takeover'),1::bigint,'Takeover marks the previous session explicitly');
+select throws_ok($$select test_support.run('take_over_attempt',jsonb_build_object('lockVersion',(select lock_version from takeover_snapshot),'newSessionToken',repeat('c',40)))$$,'40001','stale_version','A second transfer with the obsolete version loses');
+select throws_ok($$select test_support.run('receive_answer','{"answer":true,"sessionToken":"ssssssssssssssssssssssssssssssssssssssss"}')$$,'42501','session_transferred','The previous controller is blocked after takeover');
+select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Replay of takeover returns the cached result');
+select lives_ok($$select test_support.run('receive_answer','{"answer":true}')$$,'New controller continues the same interaction');
 select lives_ok($$select test_support.run('record_evaluation','{"status":"correct","points":50}')$$,'Second answer evaluated');
 select lives_ok($$select test_support.run('complete_attempt','{"score":100}')$$,'Completion credits and revokes atomically');
 select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Completion retry works after session revocation');
@@ -50,6 +67,7 @@ select is((select count(*) from private.flash_point_entries),1::bigint,'Exactly 
 select is((select count(*) from private.attempt_sessions where revoked_at is null),0::bigint,'Terminal attempt has no controlling session');
 select ok(not exists(select 1 from private.command_requests where input::text like '%ssssssssssssssss%' or result::text like '%nnnnnnnnnnnnnnnn%'),'Idempotency records never retain raw tokens');
 select is((select count(*) from private.audit_log where action='complete'),1::bigint,'Completion has exactly one audit event');
+select is((select count(*) from private.audit_log where action='takeover_confirmed'),1::bigint,'Takeover has exactly one technical audit event');
 select test_support.as_actor('superadmin');
 set local role service_role;
 select lives_ok($$select test_support.run('adjust_result','{"score":60,"reason":"test correction"}')$$,'Superadmin correction is transactional');

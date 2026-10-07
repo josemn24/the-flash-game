@@ -66,6 +66,46 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     );
   };
   const advance = createAdvancement(runtime, prepare, complete);
+  const recoverCurrent = async () => {
+    let snapshot: CompetitiveJsonObject | undefined;
+    await runtime.run(
+      "recover",
+      {},
+      {
+        accept: (response) => {
+          snapshot = response;
+          const attempt = runtime.state().attempt!;
+          runtime.commit({
+            type: "recovered",
+            attempt: { id: attempt.id, lockVersion: Number(response.lockVersion) },
+            results: recoveredResults(response.answers),
+          });
+          if (response.phase === "results") finish(response);
+        },
+        after: async () => {
+          if (!snapshot || snapshot.phase === "results") return;
+          if (runtime.challenge.mode === "alphabet" && finalizationRequested) {
+            await finalizeAlphabet();
+            return;
+          }
+          if (snapshot.resolved) {
+            const resolved = snapshot.resolved as CompetitiveJsonObject;
+            const position = runtime.policy.position(String(resolved.challengeItemId));
+            runtime.commit({
+              type: "phase",
+              phase: "transition",
+              ...(runtime.challenge.mode === "narrative"
+                ? { stepIndex: position }
+                : { questionIndex: position }),
+            });
+            runtime.schedule("advance", runtime.challenge.mode === "narrative" ? 300 : 900, () => {
+              void advance.next();
+            });
+          } else await advance.apply(runtime.policy.recover(runtime.state(), snapshot));
+        },
+      },
+    );
+  };
   const begin = async () => {
     if (runtime.state().busy || runtime.state().pendingCommand) return;
     await runtime.run(
@@ -92,7 +132,6 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     );
   };
   const recover = async () => {
-    let snapshot: CompetitiveJsonObject | undefined;
     runtime.cancelAll();
     runtime.commit({ type: "phase", phase: "recovering" });
     // Start restores the session cookie and obtains the current authoritative version.
@@ -118,53 +157,18 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
                 }
               },
               after: async () => {
-                await runtime.run(
-                  "recover",
-                  {},
-                  {
-                    accept: (response) => {
-                      snapshot = response;
-                      const attempt = runtime.state().attempt!;
-                      runtime.commit({
-                        type: "recovered",
-                        attempt: { id: attempt.id, lockVersion: Number(response.lockVersion) },
-                        results: recoveredResults(response.answers),
-                      });
-                      if (response.phase === "results") finish(response);
-                    },
-                    after: async () => {
-                      if (!snapshot || snapshot.phase === "results") return;
-                      if (runtime.challenge.mode === "alphabet" && finalizationRequested) {
-                        await finalizeAlphabet();
-                        return;
-                      }
-                      if (snapshot.resolved) {
-                        const resolved = snapshot.resolved as CompetitiveJsonObject;
-                        const position = runtime.policy.position(String(resolved.challengeItemId));
-                        runtime.commit({
-                          type: "phase",
-                          phase: "transition",
-                          ...(runtime.challenge.mode === "narrative"
-                            ? { stepIndex: position }
-                            : { questionIndex: position }),
-                        });
-                        runtime.schedule(
-                          "advance",
-                          runtime.challenge.mode === "narrative" ? 300 : 900,
-                          () => {
-                            void advance.next();
-                          },
-                        );
-                      } else await advance.apply(runtime.policy.recover(runtime.state(), snapshot));
-                    },
-                  },
-                );
+                await recoverCurrent();
               },
             },
           );
         },
       },
     );
+  };
+  const recoverTransferred = async () => {
+    runtime.cancelAll();
+    runtime.commit({ type: "phase", phase: "recovering" });
+    await recoverCurrent();
   };
   const recoverTerminal = async () => {
     let terminal = false;
@@ -229,6 +233,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     finalizeAlphabet,
     finalizationRequested: () => finalizationRequested,
     recover,
+    recoverTransferred,
     recoverTerminal,
     activate,
     ...advance,

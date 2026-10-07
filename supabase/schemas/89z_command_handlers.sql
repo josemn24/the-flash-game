@@ -220,6 +220,9 @@ begin
     if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
     select * into sc from public.scheduled_challenges where id = a.scheduled_challenge_id for share;
     select * into cv from private.challenge_versions where id = a.challenge_version_id;
+    if op = 'takeover' and a.scheduled_challenge_id <> (input->>'scheduledChallengeId')::uuid then
+      raise exception 'not_authorized' using errcode = '42501';
+    end if;
     if op not in ('invalidate','adjust') then
       if a.player_id <> actor or a.kind <> 'competitive' or is_admin or not exists (
         select 1 from public.seasons s join public.rooms r on r.id = s.room_id
@@ -230,9 +233,16 @@ begin
       if op <> 'takeover' then
         select * into session_row from private.attempt_sessions where attempt_id = a.id
           and session_token_hash = safe_input->>'sessionToken';
-        if not found or (session_row.revoked_at is not null and not (
-          op in ('complete','abandon') and cached_result is not null and a.status in ('completed','abandoned')
-        )) then raise exception 'session_revoked' using errcode = '42501'; end if;
+        if not found then
+          raise exception 'session_revoked' using errcode = '42501';
+        elsif session_row.revoked_at is not null then
+          if session_row.revocation_reason = 'takeover' then
+            raise exception 'session_transferred' using errcode = '42501';
+          end if;
+          if not (op in ('complete','abandon') and cached_result is not null and a.status in ('completed','abandoned')) then
+            raise exception 'session_revoked' using errcode = '42501';
+          end if;
+        end if;
         -- The global game deadline stops new gameplay, not authenticated timeout/evaluation cleanup.
       end if;
     end if;
@@ -256,10 +266,18 @@ begin
     case op
       when 'takeover' then
         if a.deadline_at is not null and instant >= a.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
-        update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
+        update private.attempt_sessions
+        set revoked_at = instant, revocation_reason = 'takeover'
+        where attempt_id = a.id and revoked_at is null;
         insert into private.attempt_sessions(attempt_id, session_token_hash, expires_at)
           values(a.id, safe_input->>'newSessionToken', a.deadline_at) returning * into session_row;
-        result := jsonb_build_object('sessionId', session_row.id, 'deadlineAt', a.deadline_at);
+        result := jsonb_build_object(
+          'attemptId', a.id,
+          'sessionId', session_row.id,
+          'lockVersion', a.lock_version,
+          'deadlineAt', a.deadline_at,
+          'transferred', true
+        );
       when 'prepare' then
         if cv.mode = 'pyramid' and exists (
           select 1 from private.attempt_answers answer
@@ -636,7 +654,9 @@ begin
         delete from private.prepared_interactions where attempt_id = a.id;
         update public.attempts set status = target_status, score = points, completed_at = instant,
           outcome = completion_outcome, progress_payload = null, lock_version = lock_version + 1 where id = a.id returning * into a;
-        update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
+        update private.attempt_sessions
+        set revoked_at = instant, revocation_reason = 'terminal'
+        where attempt_id = a.id and revoked_at is null;
         if op = 'complete' then
           insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type, amount, idempotency_key)
           values(sc.season_id, a.player_id, sc.id, a.id, 'accreditation', points, 'complete:' || a.id);

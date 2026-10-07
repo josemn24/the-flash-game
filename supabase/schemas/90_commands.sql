@@ -19,7 +19,7 @@ begin
     when 'start' then
       allowed := array['idempotencyKey','scheduledChallengeId','sessionToken']; required := allowed;
     when 'takeover' then
-      allowed := array['idempotencyKey','attemptId','lockVersion','newSessionToken']; required := allowed;
+      allowed := array['idempotencyKey','attemptId','scheduledChallengeId','lockVersion','newSessionToken']; required := allowed;
     when 'prepare' then
       allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
     when 'activate' then
@@ -69,7 +69,8 @@ begin
   if coalesce((outcome->>'replayed')::boolean, false) then return result; end if;
 
   insert into private.audit_log(actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload)
-  values(actor, op, outcome->>'entityType', (outcome->>'entityId')::uuid, input->>'reason', key,
+  values(actor, case when op = 'takeover' then 'takeover_confirmed' else op end,
+    outcome->>'entityType', (outcome->>'entityId')::uuid, input->>'reason', key,
     nullif(outcome->'beforePayload', 'null'::jsonb),
     -- Avoid persisting playable payloads or free-text answers into a second store.
     result - 'publicPayload' - 'answers');
@@ -87,11 +88,8 @@ revoke all on function private.start_attempt(jsonb) from public, anon, authentic
 grant execute on function private.start_attempt(jsonb) to service_role;
 
 create function private.take_over_attempt(input jsonb) returns jsonb
-language plpgsql security definer set search_path = '' as $$
-begin
-  -- Cross-device control transfer is deliberately deferred for the MVP.
-  raise exception 'takeover_disabled' using errcode = '55000';
-end;
+language sql security definer set search_path = '' as $$
+  select private.execute_command('takeover', input)
 $$;
 alter function private.take_over_attempt(jsonb) owner to postgres;
 revoke all on function private.take_over_attempt(jsonb) from public, anon, authenticated, service_role;

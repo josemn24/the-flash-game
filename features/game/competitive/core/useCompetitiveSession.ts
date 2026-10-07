@@ -65,6 +65,8 @@ export function useCompetitiveSession(options: Omit<SessionOptions, "client" | "
     wordSearchError: wordSearch?.message,
     ...engine.interactions,
     begin: engine.lifecycle.begin,
+    takeOver: engine.takeOver,
+    cancelTakeOver: engine.cancelTakeOver,
     startQuestions: engine.startQuestions,
     continueScene: engine.continueScene,
     handleTimeUp: () => engine.interactions.onTimeUp(state.question?.id),

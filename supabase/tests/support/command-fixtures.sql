@@ -84,7 +84,7 @@ begin
   select state into s from test_support.runtime;
   case command
     when 'start_attempt' then keys:=array['scheduledChallengeId','sessionToken'];
-    when 'take_over_attempt' then keys:=array['attemptId','lockVersion','newSessionToken'];
+    when 'take_over_attempt' then keys:=array['attemptId','scheduledChallengeId','lockVersion','newSessionToken'];
     when 'prepare_interaction' then keys:=array['attemptId','lockVersion','sessionToken'];
     when 'activate_interaction' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'receive_answer' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];

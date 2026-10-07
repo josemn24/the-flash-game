@@ -175,4 +175,48 @@ describe("Supabase attempt database connection", () => {
     });
     expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
   });
+
+  it("sends takeover through the same transactional command boundary", async () => {
+    client.query.mockImplementation(async (sql: string) => {
+      if (sql.includes("private.take_over_attempt")) {
+        return {
+          rows: [
+            {
+              result: {
+                attemptId,
+                sessionId: "00000000-0000-4000-8000-000000000004",
+                lockVersion: 8,
+                deadlineAt: null,
+                transferred: true,
+              },
+            },
+          ],
+        };
+      }
+      return { rows: [{ result: { abandonedAttempts: 0 } }] };
+    });
+
+    await expect(
+      commands.takeOver({
+        attemptId: attemptId as never,
+        scheduledChallengeId: "00000000-0000-4000-8000-000000000003" as never,
+        lockVersion: 7,
+        idempotencyKey: "takeover:key",
+        newSessionToken: "candidate-token",
+      }),
+    ).resolves.toMatchObject({ attemptId, lockVersion: 8, transferred: true });
+    expect(client.query).toHaveBeenCalledWith(
+      "select private.take_over_attempt($1::jsonb) as result",
+      [
+        JSON.stringify({
+          attemptId,
+          scheduledChallengeId: "00000000-0000-4000-8000-000000000003",
+          lockVersion: 7,
+          idempotencyKey: "takeover:key",
+          newSessionToken: "candidate-token",
+        }),
+      ],
+    );
+    expect(client.query).toHaveBeenLastCalledWith("COMMIT");
+  });
 });

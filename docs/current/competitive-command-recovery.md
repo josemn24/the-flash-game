@@ -21,8 +21,10 @@ recuperación autoritativa lo sustituye, nunca para crear un retry con una opera
 La preparación `POST /api/competitive/attempts/session` autoriza la publicación y establece una
 cookie HttpOnly sin consumir intento ni iniciar relojes. `start` exige esa cookie antes de escribir.
 Una pestaña antigua o un navegador que no devuelve la cookie recibe `attempt_session_missing`
-y una indicación de recarga. Perder la confirmación del inicio conserva un solo intento y controlador.
-No se habilita la transferencia entre dispositivos.
+y una indicación de recarga. Si ya existe un controlador, `start` devuelve `attempt_control_required`
+con metadatos seguros; «Continuar aquí» usa la cookie candidata y una clave idempotente para
+transferir explícitamente el mismo intento. Perder la confirmación conserva la cookie candidata,
+por lo que el replay puede recuperar el resultado sin crear otra sesión.
 
 La recuperación prioriza recepciones pendientes y la evaluación usa el contenido congelado.
 Una evaluación registrada se lee sin recalcular; una carrera consulta el resultado persistido
@@ -100,9 +102,10 @@ ni un registro alternativo de respuestas/puntos.
 
 ## Despliegue
 
-1. Aplicar las migraciones [de recuperación](../../supabase/migrations/20261006110000_competitive_command_recovery.sql)
-   y [de cierre por permisos](../../supabase/migrations/20261007120000_permission_revoked_attempt_closure.sql)
-   antes del cliente y verificar la revisión `20261007120000_permission_revoked_attempt_closure`.
+1. Aplicar las migraciones [de recuperación](../../supabase/migrations/20261006110000_competitive_command_recovery.sql),
+   [de cierre por permisos](../../supabase/migrations/20261007120000_permission_revoked_attempt_closure.sql)
+   y [de transferencia](../../supabase/migrations/20261007130000_attempt_control_transfer.sql) antes del cliente;
+   verificar la revisión `20261007130000_attempt_control_transfer`.
    Mantiene datos existentes; no recalcula puntos, añade tablas ni purga claves.
 2. Validar en staging los mismos cortes después del commit y antes de la evaluación, fallo de
    acreditación, concurrencia, revocación y Storage. Usar cuentas/publicaciones de prueba.
@@ -110,6 +113,6 @@ ni un registro alternativo de respuestas/puntos.
 4. Vigilar operaciones inciertas, replays y recepciones pendientes. Un fallo de publicación se
    trata conforme a [la política de incidencias](../decisions/service-incidents.md).
 
-No se han ejecutado migraciones ni pruebas contra staging. Quedan fuera de este cambio la transferencia
-de control, compensación por incidentes, cambios de puntuación y autosave de formularios. Las
+No se han ejecutado migraciones ni pruebas contra staging. Quedan pendientes en staging la
+transferencia multi-dispositivo, la compensación por incidentes, los cambios de puntuación y el autosave de formularios. Las
 decisiones aprobadas para esos trabajos siguen vigentes.

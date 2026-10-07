@@ -239,11 +239,13 @@ export type PassInteractionResult = AttemptCommandResult & { readonly passed: tr
 export type TakeOverAttemptInput = Pick<
   AttemptCommandInput,
   "attemptId" | "lockVersion" | "idempotencyKey"
->;
-/** Reserved for a post-MVP multi-device policy; the current command is deliberately disabled. */
+> & {
+  readonly scheduledChallengeId: ScheduledChallengeId;
+};
 export type TakeOverAttemptResult = AttemptCommandResult & {
   readonly sessionId: AttemptSessionId;
   readonly deadlineAt: UtcIsoDateTime | null;
+  readonly transferred: true;
 };
 export type CompleteAttemptInput = AttemptCommandInput;
 /** Recovery is server initiated after the original HttpOnly session is restored. */

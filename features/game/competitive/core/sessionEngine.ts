@@ -1,7 +1,11 @@
 import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import { createCompetitiveAttemptClient, type CompetitiveAttemptClient } from "../attemptClient";
-import { CompetitiveCommandError, type CompetitiveJsonObject } from "../transport";
+import {
+  CompetitiveCommandError,
+  createCompetitiveIdempotencyKey,
+  type CompetitiveJsonObject,
+} from "../transport";
 import { createModePolicy, reviewFor, type CompetitiveChallenge } from "../modes/policy";
 import { CommandExecutor, PendingCommandBlocked, type CommandData } from "./commandExecutor";
 import {
@@ -29,6 +33,7 @@ const lifecycleOperations = new Set<Operation>([
   "abandon",
   "alphabetPass",
   "queensDraft",
+  "takeover",
 ]);
 export type SessionOptions = {
   challenge: CompetitiveChallenge;
@@ -56,6 +61,7 @@ export class CompetitiveSessionEngine {
   private terminalRecoveryAttempted = false;
   private terminalRecoveryRequested = false;
   private refresh: () => void;
+  private readonly client: CompetitiveAttemptClient;
   readonly policy;
   readonly lifecycle;
   readonly interactions;
@@ -80,8 +86,9 @@ export class CompetitiveSessionEngine {
         message: "Revisión temporalmente no disponible. Puedes volver a cargarla.",
       };
     }
+    this.client = options.client ?? createCompetitiveAttemptClient(this.abortController.signal);
     this.executor = new CommandExecutor(
-      options.client ?? createCompetitiveAttemptClient(this.abortController.signal),
+      this.client,
       () => this.snapshot.attempt,
       () => this.snapshot.pendingCommand,
     );
@@ -148,7 +155,9 @@ export class CompetitiveSessionEngine {
       const response = await invoke();
       if (!this.active || generation !== this.generation) return false;
       const attemptId =
-        command.operation === "start" ? String(response.attemptId) : this.snapshot.attempt?.id;
+        command.operation === "start" || command.operation === "takeover"
+          ? String(response.attemptId)
+          : this.snapshot.attempt?.id;
       const lockVersion =
         response.lockVersion === undefined
           ? this.snapshot.attempt?.lockVersion
@@ -171,6 +180,40 @@ export class CompetitiveSessionEngine {
       return true;
     } catch (error) {
       if (!this.active || generation !== this.generation) return false;
+      if (
+        command.operation === "start" &&
+        error instanceof CompetitiveCommandError &&
+        error.code === "attempt_control_required"
+      ) {
+        const attempt = error.details?.attempt;
+        const attemptObject =
+          attempt && typeof attempt === "object" && !Array.isArray(attempt)
+            ? (attempt as Record<string, unknown>)
+            : undefined;
+        const attemptId =
+          attemptObject && typeof attemptObject.attemptId === "string"
+            ? attemptObject.attemptId
+            : null;
+        const lockVersion = attemptObject ? Number(attemptObject.lockVersion) : Number.NaN;
+        const deadlineAt =
+          attemptObject?.deadlineAt === null || typeof attemptObject?.deadlineAt === "string"
+            ? (attemptObject.deadlineAt as string | null)
+            : null;
+        if (attemptId && Number.isSafeInteger(lockVersion) && lockVersion > 0) {
+          this.pendingStep = undefined;
+          this.commit({
+            type: "control_required",
+            transfer: {
+              attemptId,
+              lockVersion,
+              deadlineAt,
+              scheduledChallengeId: this.options.challenge.id,
+              idempotencyKey: createCompetitiveIdempotencyKey("takeover"),
+            },
+          });
+          return false;
+        }
+      }
       await this.failed(command, step, error);
       return false;
     } finally {
@@ -215,6 +258,43 @@ export class CompetitiveSessionEngine {
   };
   private async failed(command: PendingCommand, step: CommandStep, error: unknown) {
     const code = error instanceof CompetitiveCommandError ? error.code : undefined;
+    if (command.operation === "takeover") {
+      if (code === "stale_version" || code === "idempotency_conflict") {
+        console.info(JSON.stringify({ event: "takeover_conflict", code }));
+        this.timers.clear();
+        this.pendingStep = undefined;
+        this.commit({
+          type: "command_failed",
+          definitive: true,
+          lifecycleError: {
+            operation: "takeover",
+            code,
+            retryable: false,
+            message: "La partida ha cambiado en otro dispositivo. Vuelve a comprobar su estado.",
+          },
+          notice: "La partida ha cambiado en otro dispositivo. Vuelve a comprobar su estado.",
+        });
+        return;
+      } else if (!(error instanceof CompetitiveCommandError) || error.status === 0) {
+        console.info(JSON.stringify({ event: "takeover_uncertain" }));
+      }
+    }
+    if (code === "session_transferred") {
+      this.timers.clear();
+      this.pendingStep = undefined;
+      this.terminalRecoveryRequested = false;
+      this.commit({
+        type: "authorization_lost",
+        error: {
+          operation: command.operation,
+          code,
+          retryable: false,
+          message: "Has continuado esta partida en otro dispositivo.",
+        },
+      });
+      console.info(JSON.stringify({ event: "session_transferred", operation: command.operation }));
+      return;
+    }
     if (
       [
         "not_authorized",
@@ -442,6 +522,41 @@ export class CompetitiveSessionEngine {
     if (this.options.challenge.mode === "pyramid")
       this.commit({ type: "phase", phase: "preparing", clearQuestion: true });
     await this.lifecycle.prepare();
+  };
+  takeOver = async () => {
+    const transfer = this.snapshot.transfer;
+    if (!this.active || !transfer || this.snapshot.busy || this.snapshot.pendingCommand)
+      return false;
+    let accepted = false;
+    const step: CommandStep = {
+      accept: () => {},
+      after: async () => {
+        await this.lifecycle.recoverTransferred();
+      },
+    };
+    console.info(JSON.stringify({ event: "takeover_requested" }));
+    try {
+      await this.executor.executeInput(
+        "takeover",
+        {
+          attemptId: transfer.attemptId,
+          scheduledChallengeId: transfer.scheduledChallengeId,
+          lockVersion: transfer.lockVersion,
+          idempotencyKey: transfer.idempotencyKey,
+        },
+        async (command, invoke) => {
+          accepted = await this.send(command, invoke, step);
+        },
+      );
+    } catch (error) {
+      if (!(error instanceof PendingCommandBlocked)) throw error;
+    }
+    if (accepted && this.active) await step.after?.();
+    return accepted;
+  };
+  cancelTakeOver = () => {
+    if (!this.snapshot.transfer || this.snapshot.busy) return;
+    this.commit({ type: "control_cancelled" });
   };
   continueScene = async () => {
     if (this.snapshot.phase === "scene" && !this.snapshot.busy && !this.snapshot.pendingCommand)

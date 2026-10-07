@@ -54,6 +54,20 @@
     text-transform: uppercase;
   }
 
+  .transferPrompt {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--ds-color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--ds-color-bg-selected);
+  }
+
+  .transferPrompt p {
+    margin: 0;
+    color: var(--ds-color-fg-primary);
+  }
+
   .metrics {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));

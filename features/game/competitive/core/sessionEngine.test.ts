@@ -148,6 +148,61 @@ describe("competitive session ownership", () => {
     expect(calls.start).toHaveBeenCalledTimes(1);
     expect(calls.prepare).toHaveBeenCalledTimes(1);
   });
+  it("asks for explicit confirmation, transfers once, and recovers without restarting", async () => {
+    const { engine, calls } = setup();
+    calls.start.mockRejectedValueOnce(
+      new CompetitiveCommandError("attempt_control_required", 409, undefined, {
+        attempt: {
+          attemptId: "attempt",
+          lockVersion: 7,
+          deadlineAt: "2026-10-02T10:05:00.000Z",
+        },
+      }),
+    );
+    calls.takeover.mockResolvedValue({
+      attemptId: "attempt",
+      lockVersion: 8,
+      deadlineAt: "2026-10-02T10:05:00.000Z",
+      transferred: true,
+    });
+    calls.recover.mockResolvedValue({
+      phase: "prepare",
+      lockVersion: 9,
+      answers: [],
+      resolved: { challengeItemId: "a" },
+    });
+    await engine.lifecycle.begin();
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "intro",
+      transfer: { attemptId: "attempt", lockVersion: 7 },
+      startNotice: "Existe una sesión activa en otro dispositivo.",
+    });
+    await engine.takeOver();
+    expect(calls.takeover).toHaveBeenCalledWith(
+      expect.objectContaining({ attemptId: "attempt", lockVersion: 7 }),
+    );
+    expect(calls.start).toHaveBeenCalledTimes(1);
+    expect(calls.recover).toHaveBeenCalledWith({ attemptId: "attempt", lockVersion: 8 });
+    expect(engine.getSnapshot()).toMatchObject({ attempt: { id: "attempt", lockVersion: 9 } });
+  });
+
+  it("treats a transferred session as terminal and cancels retries", async () => {
+    const { engine, calls } = setup();
+    await play(engine);
+    calls.answer.mockRejectedValueOnce(new CompetitiveCommandError("session_transferred", 401));
+    await engine.interactions.submit("A");
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "recovering",
+      locked: true,
+      pendingCommand: null,
+      lifecycleError: {
+        code: "session_transferred",
+        message: "Has continuado esta partida en otro dispositivo.",
+      },
+    });
+    await engine.retry();
+    expect(calls.answer).toHaveBeenCalledTimes(1);
+  });
   it("retains an uncertain answer and blocks further writes until the exact retry", async () => {
     const { engine, calls } = setup();
     await play(engine);

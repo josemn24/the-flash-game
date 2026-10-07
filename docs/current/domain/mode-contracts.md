@@ -41,7 +41,8 @@ Estas reglas se aplican a cualquier modo cuando se juega dentro de una sala:
 - La [decisión aprobada de transferencia](../../decisions/adr/0006-explicit-attempt-control-transfer.md)
   permite a la misma cuenta confirmar «Continuar aquí» en otro dispositivo: revoca atómicamente la
   sesión anterior y recupera el mismo intento, sin reiniciar plazos ni repetir preguntas vistas.
-  El runtime actual todavía bloquea otra sesión; la transferencia está pendiente de implementar.
+  La UI confirma la transferencia mediante el endpoint de takeover; el runtime recupera el mismo
+  intento sin volver a iniciar ni reiniciar plazos.
 - Cerrar una pestaña, perder conectividad u observar `offline` no demuestra por sí solo que el jugador
   haya abandonado. La acción explícita e idempotente de abandonar sigue terminando el intento como
   `abandoned`; además, una reconciliación server-side puede aplicar `inactivity_timeout` cuando han
