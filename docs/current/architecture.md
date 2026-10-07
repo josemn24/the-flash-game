@@ -28,7 +28,8 @@ Navegador
 
 La regla central es que Next.js transporta y compone la experiencia, pero no contiene las reglas
 competitivas. Los casos de uso coordinan operaciones; el dominio decide qué es válido; la
-persistencia conserva hechos y estados.
+persistencia conserva hechos y estados. El [contrato del ciclo de vida de intentos](attempt-lifecycle.md)
+alinea modo, estado y resultado entre dominio, adaptadores y PostgreSQL.
 
 ### Decisión de transporte
 

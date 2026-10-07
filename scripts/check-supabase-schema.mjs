@@ -6,6 +6,9 @@ import { testConcurrentCommands } from "./test-supabase-concurrency.mjs";
 import { testFormatContracts } from "./test-format-contracts.mjs";
 
 const container = process.env.SUPABASE_DB_CONTAINER ?? "supabase_db_the-flash-game";
+const sourceDirectory = process.argv.includes("--migrations")
+  ? "supabase/migrations"
+  : "supabase/schemas";
 const database = `flash_schema_check_${randomUUID().replaceAll("-", "")}`;
 function docker(args, input = "") {
   return new Promise((resolve, reject) => {
@@ -33,13 +36,13 @@ try {
   await docker(["createdb", "-U", "postgres", database]);
   created = true;
   await sql(await readFile("supabase/tests/support/bootstrap.sql", "utf8"));
-  const files = (await readdir("supabase/schemas")).filter((name) => name.endsWith(".sql")).sort();
+  const files = (await readdir(sourceDirectory)).filter((name) => name.endsWith(".sql")).sort();
   const statements = await Promise.all(
-    files.map((name) => readFile(`supabase/schemas/${name}`, "utf8")),
+    files.map((name) => readFile(`${sourceDirectory}/${name}`, "utf8")),
   );
   await sql(`begin;\n${statements.join("\n")}\ncommit;`);
   await checkInventory(sql);
-  console.log(`Loaded ${files.length} schema files; security inventory verified.`);
+  console.log(`Loaded ${files.length} files from ${sourceDirectory}; security inventory verified.`);
   for (const file of (await readdir("supabase/tests"))
     .filter((name) => name.endsWith(".test.sql"))
     .sort()) {

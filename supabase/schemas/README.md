@@ -48,6 +48,14 @@ con soluciones privadas, selecciones server-side, errores persistidos, recuperac
 con referencias publicadas `short-text`, reloj global, pases y lecturas terminales autorizadas. Las migraciones están versionadas;
 no hay seed global; la CLI local mantiene un enlace de staging sin que esta revisión se haya desplegado.
 
+La revisión `20261007180832_attempt_lifecycle_contracts` limita el resultado persistido a
+`survived`, `eliminated`, `summit`, `failed` o `null`. Dos CHECK y `guard_attempt` exigen
+combinaciones válidas según el modo de la versión; invalidar conserva los hechos originales.
+Cierres y lecturas terminales proyectan `challengeMode` y `outcome` explícitos. La recuperación
+mantiene `terminalOutcome` derivado como señal independiente. No hay backfills ni traducciones
+históricas; el despliegue requiere la base reiniciada acordada. Véase
+[el contrato completo](../../docs/current/attempt-lifecycle.md).
+
 La revisión `20261004141603_alphabet_atomic_completion` cierra Alphabet competitivo en una
 transacción al vencer el reloj de PostgreSQL. Conserva las respuestas recibidas, registra las
 letras pendientes como `unanswered` y acredita los puntos una sola vez. La recuperación agotada

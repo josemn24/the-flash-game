@@ -345,7 +345,11 @@ function hasReviewAttemptFields(row: ReadRow) {
     typeof row.attempt_id === "string" &&
     (row.attempt_status === "completed" || row.attempt_status === "abandoned") &&
     isNullableNumber(row.attempt_score) &&
-    isValidAttemptLifecycle({challengeMode: row.challenge_mode, status: row.attempt_status, outcome: row.attempt_outcome}) &&
+    isValidAttemptLifecycle({
+      challengeMode: row.challenge_mode,
+      status: row.attempt_status,
+      outcome: row.attempt_outcome,
+    }) &&
     typeof row.attempt_started_at === "string" &&
     isNullableString(row.attempt_completed_at) &&
     typeof row.attempt_duration_ms === "number" &&

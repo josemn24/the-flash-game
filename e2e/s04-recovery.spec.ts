@@ -193,7 +193,7 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
         .then(async (response) => ({ status: response.status, body: await response.json() }))
         .catch(() => ({ status: 0, body: null }));
     expect((await page.evaluate(postAbandon, request)).status).toBe(0);
-    expect(saved?.status).toBe("abandoned");
+    expect(saved).toMatchObject({ status: "abandoned", challengeMode: "flash", outcome: null });
     const replay = await page.evaluate(postAbandon, request);
     expect(replay.status).toBe(200);
     expect(replay.body).toEqual(saved);

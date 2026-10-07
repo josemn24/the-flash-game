@@ -19,8 +19,11 @@ function requireContract(condition: unknown): asserts condition {
 }
 
 function hasCommandIdentity(value: Record<string, unknown>) {
-  return typeof value.attemptId === "string" &&
-    Number.isSafeInteger(value.lockVersion) && Number(value.lockVersion) > 0;
+  return (
+    typeof value.attemptId === "string" &&
+    Number.isSafeInteger(value.lockVersion) &&
+    Number(value.lockVersion) > 0
+  );
 }
 
 /** PostgreSQL JSON is untrusted until its mode/status/outcome contract is checked. */
@@ -29,8 +32,11 @@ export function decodeFinishAttemptResult(value: unknown): FinishAttemptResult {
   const row: Record<string, unknown> = value;
   assertAttemptLifecycle(value);
   requireContract(value.status === "completed" || value.status === "abandoned");
-  requireContract(value.status === "abandoned" ? row.score === null :
-    Number.isInteger(row.score) && Number(row.score) >= 0 && Number(row.score) <= 100);
+  requireContract(
+    value.status === "abandoned"
+      ? row.score === null
+      : Number.isInteger(row.score) && Number(row.score) >= 0 && Number(row.score) <= 100,
+  );
   return value as FinishAttemptResult;
 }
 
@@ -42,7 +48,9 @@ export function decodeSavedAttemptResult(value: unknown): SavedAttemptResult | n
   return value as SavedAttemptResult;
 }
 
-export function decodeSavedAbandonedAttemptResult(value: unknown): SavedAbandonedAttemptResult | null {
+export function decodeSavedAbandonedAttemptResult(
+  value: unknown,
+): SavedAbandonedAttemptResult | null {
   if (value === null) return null;
   requireContract(isRecord(value) && typeof value.scheduledChallengeId === "string");
   const result = decodeFinishAttemptResult(value.result);
@@ -54,10 +62,15 @@ export function decodeAttemptRecoverySnapshot(value: unknown): AttemptRecoverySn
   requireContract(isRecord(value) && hasCommandIdentity(value));
   const row: Record<string, unknown> = value;
   assertAttemptLifecycle(value);
-  requireContract(typeof row.scheduledChallengeId === "string" &&
-    typeof row.hasStartedInteraction === "boolean" &&
-    typeof row.allItemsResolved === "boolean" && Array.isArray(row.answers));
-  requireContract(row.terminalOutcome === undefined ||
-    isValidTerminalOutcomeHint(value.challengeMode, row.terminalOutcome));
+  requireContract(
+    typeof row.scheduledChallengeId === "string" &&
+      typeof row.hasStartedInteraction === "boolean" &&
+      typeof row.allItemsResolved === "boolean" &&
+      Array.isArray(row.answers),
+  );
+  requireContract(
+    row.terminalOutcome === undefined ||
+      isValidTerminalOutcomeHint(value.challengeMode, row.terminalOutcome),
+  );
   return value as AttemptRecoverySnapshot;
 }

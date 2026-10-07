@@ -75,9 +75,9 @@ async function checkDatabase() {
           ) like '%has_persisted_answer boolean%'
           and pg_get_function_result(to_regprocedure('public.get_my_room_cards()')) like '%member_previews jsonb%'
         and exists (select 1 from pg_constraint
-          where conrelid = 'public.attempts'::regclass and conname = 'attempts_outcome_values_check')
+          where conrelid = to_regclass('public.attempts') and conname = 'attempts_outcome_values_check')
         and exists (select 1 from pg_constraint
-          where conrelid = 'public.attempts'::regclass and conname = 'attempts_outcome_status_check')
+          where conrelid = to_regclass('public.attempts') and conname = 'attempts_outcome_status_check')
         and pg_get_functiondef(to_regprocedure('private.guard_attempt()')) like '%invalid_attempt_lifecycle%'
         and pg_get_functiondef(to_regprocedure('private.read_completed_attempt(uuid)')) like '%challengeMode%'
           as schema_revision_marker

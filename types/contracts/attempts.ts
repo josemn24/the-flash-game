@@ -1,4 +1,9 @@
-import type { AnswerStatus, AttemptStatus, AttemptLifecycle, SurvivalAttemptOutcome, PyramidAttemptOutcome } from "@/types/domain/attempt";
+import type {
+  AnswerStatus,
+  AttemptLifecycle,
+  SurvivalAttemptOutcome,
+  PyramidAttemptOutcome,
+} from "@/types/domain/attempt";
 import type {
   AttemptId,
   AttemptSessionId,
@@ -286,12 +291,13 @@ export type AttemptRecoverySnapshot = AttemptLifecycle & {
   readonly terminalOutcome?: RecoveryTerminalOutcome;
   readonly answers: readonly AttemptRecoveryAnswer[];
 };
-export type FinishAttemptResult = AttemptCommandResult & Extract<AttemptLifecycle, { status: "completed" | "abandoned" }> & {
-  readonly score: number | null;
-  readonly terminalReason?: string | null;
-  readonly livesRemaining?: number | null;
-  readonly answers?: readonly AttemptRecoveryAnswer[];
-};
+export type FinishAttemptResult = AttemptCommandResult &
+  Extract<AttemptLifecycle, { status: "completed" | "abandoned" }> & {
+    readonly score: number | null;
+    readonly terminalReason?: string | null;
+    readonly livesRemaining?: number | null;
+    readonly answers?: readonly AttemptRecoveryAnswer[];
+  };
 /** Persisted completion without controller cookies, assets or solutions. */
 export type SavedAttemptResult = {
   readonly scheduledChallengeId: ScheduledChallengeId;

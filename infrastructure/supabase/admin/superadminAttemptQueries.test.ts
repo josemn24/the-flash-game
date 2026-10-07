@@ -57,9 +57,44 @@ describe("SupabaseSuperadminAttemptQueries", () => {
     mocks.createClient.mockResolvedValue({ rpc: mocks.rpc });
   });
 
-  it.each(["passed", "failed", "summit", "survived"])("rejects incompatible Flash outcome %s", async outcome => {
-    mocks.rpc.mockResolvedValue({ data: { publication, attempts: [{ ...attempt, outcome }], nextCursor: null }, error: null });
-    await expect(new SupabaseSuperadminAttemptQueries().listAttempts(publication.roomId, publication.scheduledChallengeId)).rejects.toMatchObject({ code: "invalid_attempt_lifecycle" });
+  it.each(["passed", "failed", "summit", "survived"])(
+    "rejects incompatible Flash outcome %s",
+    async (outcome) => {
+      mocks.rpc.mockResolvedValue({
+        data: { publication, attempts: [{ ...attempt, outcome }], nextCursor: null },
+        error: null,
+      });
+      await expect(
+        new SupabaseSuperadminAttemptQueries().listAttempts(
+          publication.roomId,
+          publication.scheduledChallengeId,
+        ),
+      ).rejects.toMatchObject({ code: "invalid_attempt_lifecycle" });
+    },
+  );
+
+  it.each([
+    ["survival", "survived"],
+    ["survival", "eliminated"],
+    ["pyramid", "summit"],
+    ["pyramid", "failed"],
+  ])("preserves canonical %s / %s after reading an invalidated attempt", async (mode, outcome) => {
+    mocks.rpc.mockResolvedValue({
+      data: {
+        publication: { ...publication, mode },
+        attempts: [{ ...attempt, status: "invalidated", outcome, effectiveScore: 0 }],
+        nextCursor: null,
+      },
+      error: null,
+    });
+    await expect(
+      new SupabaseSuperadminAttemptQueries().listAttempts(
+        publication.roomId,
+        publication.scheduledChallengeId,
+      ),
+    ).resolves.toMatchObject({
+      attempts: [{ status: "invalidated", outcome, originalScore: 70, effectiveScore: 0 }],
+    });
   });
 
   it("validates the publication list and maps a cursor-paginated attempt list", async () => {

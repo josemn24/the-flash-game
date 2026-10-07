@@ -95,7 +95,7 @@ select is((select count(*) from private.flash_point_entries where attempt_id=(se
 -- Flash and Narrative zero-point closures always project explicit null, including receipt reads.
 select test_support.as_actor('owner');
 set local role service_role;
-select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-flash')));
+select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-flash'),'sessionToken',repeat('f',40)));
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer','{"answer":false}');
 select test_support.run('record_evaluation','{"status":"incorrect","points":0}');
@@ -107,7 +107,7 @@ select is((select last_result->'outcome' from test_support.runtime),'null'::json
 select is((select private.read_completed_attempt((state->>'attemptId')::uuid)->'result'->'outcome'
   from test_support.runtime),'null'::jsonb,'Lost Flash confirmation retains explicit null');
 
-select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-narrative')));
+select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-narrative'),'sessionToken',repeat('n',40)));
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer','{"answer":false}');
 select test_support.run('record_evaluation','{"status":"incorrect","points":0}');
@@ -119,7 +119,7 @@ select is((select last_result->'outcome' from test_support.runtime),'null'::json
 select is((select private.read_completed_attempt((state->>'attemptId')::uuid)->'result'->>'challengeMode'
   from test_support.runtime),'narrative','Terminal reads project the correct Narrative mode');
 
-select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-pyramid')));
+select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-pyramid'),'sessionToken',repeat('p',40)));
 select test_support.run('abandon_attempt');
 select is((select last_result->'outcome' from test_support.runtime),'null'::jsonb,'Abandonment explicitly returns null');
 select is((select private.read_abandoned_attempt((state->>'attemptId')::uuid)->'result'->'outcome'

@@ -176,13 +176,52 @@ describe("Supabase attempt database connection", () => {
     expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
   });
 
+  it.each([
+    "attempts_outcome_values_check",
+    "attempts_outcome_status_check",
+    "attempts_status_check",
+  ])("maps SQL contract constraint %s to an internal lifecycle error", async (constraint) => {
+    client.query.mockImplementation(async (sql: string) => {
+      if (sql.includes("private.complete_attempt"))
+        throw Object.assign(new Error("check constraint violation"), { code: "23514", constraint });
+      return { rows: [{ result: { abandonedAttempts: 0 } }] };
+    });
+    await expect(
+      commands.completeFromPersistedAnswers({
+        attemptId: attemptId as never,
+        lockVersion: 3,
+        sessionToken: "token",
+        idempotencyKey: "key",
+      }),
+    ).rejects.toMatchObject({ code: "invalid_attempt_lifecycle" });
+    expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
+  });
+
   it("rolls back a malformed authoritative completion with the lifecycle code", async () => {
     client.query.mockImplementation(async (sql: string) => ({
-      rows: [{ result: sql.includes("private.complete_attempt") ? {
-        attemptId, lockVersion: 4, challengeMode: "survival", status: "completed", outcome: "failed", score: 0,
-      } : { abandonedAttempts: 0 } }],
+      rows: [
+        {
+          result: sql.includes("private.complete_attempt")
+            ? {
+                attemptId,
+                lockVersion: 4,
+                challengeMode: "survival",
+                status: "completed",
+                outcome: "failed",
+                score: 0,
+              }
+            : { abandonedAttempts: 0 },
+        },
+      ],
     }));
-    await expect(commands.completeFromPersistedAnswers({ attemptId: attemptId as never, lockVersion: 3, sessionToken: "token", idempotencyKey: "key" })).rejects.toMatchObject({ code: "invalid_attempt_lifecycle" });
+    await expect(
+      commands.completeFromPersistedAnswers({
+        attemptId: attemptId as never,
+        lockVersion: 3,
+        sessionToken: "token",
+        idempotencyKey: "key",
+      }),
+    ).rejects.toMatchObject({ code: "invalid_attempt_lifecycle" });
     expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
   });
 

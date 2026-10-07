@@ -179,7 +179,11 @@ function isListPayload(value: unknown): value is {
   if (!isRecord(value) || !isPublication(value.publication) || !Array.isArray(value.attempts))
     return false;
   for (const attempt of value.attempts) {
-    assertAttemptLifecycle({challengeMode:value.publication.mode, status: isRecord(attempt) ? attempt.status : undefined, outcome: isRecord(attempt) ? attempt.outcome : undefined});
+    assertAttemptLifecycle({
+      challengeMode: value.publication.mode,
+      status: isRecord(attempt) ? attempt.status : undefined,
+      outcome: isRecord(attempt) ? attempt.outcome : undefined,
+    });
   }
   return (
     value.attempts.every(isAttemptRow) &&
@@ -203,7 +207,11 @@ function isDetailPayload(value: unknown): value is {
   if (!isRecord(value) || !isPublication(value.publication) || !isRecord(value.attempt))
     return false;
   const attempt = value.attempt;
-  assertAttemptLifecycle({challengeMode:value.publication.mode, status:attempt.status, outcome:attempt.outcome});
+  assertAttemptLifecycle({
+    challengeMode: value.publication.mode,
+    status: attempt.status,
+    outcome: attempt.outcome,
+  });
   if (!isAttemptRow(attempt)) return false;
   const detailAttempt = attempt as SuperadminAttemptListRow & {
     readonly email: string | null;

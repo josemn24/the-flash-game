@@ -1,3 +1,4 @@
+import { assertAttemptLifecycle } from "@/lib/attemptLifecycle";
 import { validateCompetitiveRows } from "./competitiveReadProjection";
 import {
   competitivePerformanceObserver,
@@ -145,7 +146,17 @@ async function callNarrativeRead<
   );
   const { data, error } = response as RawRpcResponse<typeof response>;
   if (error) throw new Error(`Supabase narrative read failed (${functionName}): ${error.message}`);
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return [];
+  if (functionName === "get_my_narrative_result") {
+    for (const value of data) {
+      assertAttemptLifecycle({
+        challengeMode: "narrative",
+        status: isRecord(value) ? value.attempt_status : undefined,
+        outcome: isRecord(value) && "attempt_outcome" in value ? value.attempt_outcome : null,
+      });
+    }
+  }
+  return data;
 }
 
 function toRoomContext(

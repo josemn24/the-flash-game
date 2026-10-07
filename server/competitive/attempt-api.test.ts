@@ -125,10 +125,15 @@ describe("competitive HTTP contract", () => {
     log.mockRestore();
   });
 
-  it.each([new InvalidAttemptLifecycleError(), new AttemptCommandError("invalid_attempt_lifecycle")])("returns a sanitized internal contract error", async error => {
+  it.each([
+    new InvalidAttemptLifecycleError(),
+    new AttemptCommandError("invalid_attempt_lifecycle"),
+  ])("returns a sanitized internal contract error", async (error) => {
     const response = errorResponse(error, "lifecycle-test", "competitive.attempt.complete");
     expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({ error: { code: "invalid_attempt_lifecycle", requestId: "lifecycle-test" } });
+    expect(await response.json()).toEqual({
+      error: { code: "invalid_attempt_lifecycle", requestId: "lifecycle-test" },
+    });
   });
 
   it("returns the authoritative retry delay when Alphabet's deadline has not been reached", () => {

@@ -33,7 +33,15 @@ import { POST as recover } from "./[attemptId]/recover/route";
 const answers = [
   { challengeItemId: "A", status: "unanswered", answer: null, points: 0, timeUsedMs: 0 },
 ];
-const result = { attemptId: "attempt", status: "completed", lockVersion: 3, score: 0, answers };
+const result = {
+  attemptId: "attempt",
+  challengeMode: "alphabet",
+  status: "completed",
+  outcome: null,
+  lockVersion: 3,
+  score: 0,
+  answers,
+};
 const invoke = (extra = {}) =>
   POST(
     new Request("http://localhost/api/competitive/attempts/attempt/complete", {
@@ -50,7 +58,11 @@ beforeEach(() => {
 });
 describe("Alphabet completion HTTP contract", () => {
   it("returns all final answers and forwards only the authorized browser fields", async () => {
-    const response = await invoke({ score: 100, pendingEvaluation: { points: 100 } });
+    const response = await invoke({
+      score: 100,
+      outcome: "summit",
+      pendingEvaluation: { points: 100 },
+    });
     expect(await response.json()).toEqual({ ...result, review: [] });
     expect(mocks.complete).toHaveBeenCalledWith({
       attemptId: "attempt",
@@ -98,6 +110,8 @@ describe("Alphabet completion HTTP contract", () => {
       result: {
         attemptId: "attempt",
         status: "abandoned",
+        challengeMode: "alphabet",
+        outcome: null,
         terminalReason: "permission_revoked",
         lockVersion: 4,
         score: null,
@@ -109,6 +123,8 @@ describe("Alphabet completion HTTP contract", () => {
     expect(await response.json()).toEqual({
       attemptId: "attempt",
       status: "abandoned",
+      challengeMode: "alphabet",
+      outcome: null,
       terminalReason: "permission_revoked",
       lockVersion: 4,
       score: null,
@@ -142,6 +158,67 @@ describe("Alphabet completion HTTP contract", () => {
       expect(mocks.clearAttemptToken).toHaveBeenCalledWith("attempt", "user", "publication");
     },
   );
+  it.each(["flash", "alphabet", "narrative", "survival", "pyramid"])(
+    "projects explicit persisted outcome in %s recovery",
+    async (challengeMode) => {
+      const terminalOutcome =
+        challengeMode === "survival" ? "eliminated" : challengeMode === "pyramid" ? "failed" : null;
+      mocks.recover.mockResolvedValue({
+        snapshot: {
+          attemptId: "attempt",
+          scheduledChallengeId: "publication",
+          status: "in_progress",
+          challengeMode,
+          outcome: null,
+          terminalOutcome,
+          lockVersion: 3,
+          answers,
+          hasStartedInteraction: true,
+        },
+      });
+      const request = () =>
+        new Request("http://localhost/api/competitive/attempts/attempt/recover", {
+          method: "POST",
+          body: JSON.stringify({ lockVersion: 2 }),
+        });
+      expect(
+        await (
+          await recover(request(), { params: Promise.resolve({ attemptId: "attempt" }) })
+        ).json(),
+      ).toMatchObject({
+        challengeMode,
+        status: "in_progress",
+        outcome: null,
+        terminalOutcome,
+      });
+      const outcome =
+        challengeMode === "survival" ? "eliminated" : challengeMode === "pyramid" ? "failed" : null;
+      mocks.recover.mockResolvedValue({
+        snapshot: {
+          attemptId: "attempt",
+          scheduledChallengeId: "publication",
+          challengeMode,
+          outcome,
+          status: "completed",
+          terminalOutcome,
+          lockVersion: 4,
+          answers,
+        },
+        completed: { ...result, challengeMode, outcome, lockVersion: 4 },
+      });
+      expect(
+        await (
+          await recover(request(), { params: Promise.resolve({ attemptId: "attempt" }) })
+        ).json(),
+      ).toMatchObject({
+        challengeMode,
+        status: "completed",
+        outcome,
+        phase: "results",
+      });
+    },
+  );
+
   it("recovers permission-revoked state without a controller cookie", async () => {
     mocks.readAttemptToken.mockRejectedValue({ code: "attempt_session_missing" });
     mocks.readTerminalAttemptResult.mockResolvedValue(undefined);
@@ -150,6 +227,8 @@ describe("Alphabet completion HTTP contract", () => {
       result: {
         attemptId: "attempt",
         status: "abandoned",
+        challengeMode: "alphabet",
+        outcome: null,
         terminalReason: "permission_revoked",
         lockVersion: 4,
         score: null,
@@ -165,6 +244,8 @@ describe("Alphabet completion HTTP contract", () => {
     );
     expect(await response.json()).toMatchObject({
       status: "abandoned",
+      challengeMode: "alphabet",
+      outcome: null,
       terminalReason: "permission_revoked",
       phase: "results",
       answers,

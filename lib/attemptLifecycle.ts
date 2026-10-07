@@ -9,7 +9,10 @@ export class InvalidAttemptLifecycleError extends Error {
   }
 }
 
-export function isAttemptOutcomeForMode(mode: unknown, outcome: unknown): outcome is AttemptOutcome {
+export function isAttemptOutcomeForMode(
+  mode: unknown,
+  outcome: unknown,
+): outcome is AttemptOutcome {
   switch (mode) {
     case "flash":
     case "alphabet":

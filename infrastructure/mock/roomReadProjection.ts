@@ -1,3 +1,4 @@
+import { assertAttemptLifecycle } from "@/lib/attemptLifecycle";
 import type {
   RoomHistoryQueries,
   RoomLobbyQueries,
@@ -116,6 +117,13 @@ function historicalReviewProjection(
     (candidate) => candidate.id === getScheduledChallengeRouteKey(schedule.id),
   );
   if (!challenge) throw new Error(`Missing legacy challenge for "${schedule.id}".`);
+  assertAttemptLifecycle({
+    challengeMode: store.challengeVersions.find(
+      (version) => version.id === schedule.challengeVersionId,
+    )?.mode,
+    status: attempt.status,
+    outcome: attempt.outcome,
+  });
   const items = store.challengeItems
     .filter((item) => item.challengeVersionId === schedule.challengeVersionId)
     .sort((left, right) => left.position - right.position);
@@ -225,8 +233,9 @@ function historicalReviewProjection(
             ...progress,
             outcome:
               attempt.status === "completed" &&
-                (attempt.outcome === "survived" || attempt.outcome === "eliminated")
-                ? attempt.outcome : progress.outcome,
+              (attempt.outcome === "survived" || attempt.outcome === "eliminated")
+                ? attempt.outcome
+                : progress.outcome,
           };
         })()
       : challenge.mode === "pyramid"
@@ -240,8 +249,9 @@ function historicalReviewProjection(
                 answers.map(mockAnswerResult),
               ),
               ...(attempt.status === "completed" &&
-                (attempt.outcome === "summit" || attempt.outcome === "failed")
-                ? { outcome: attempt.outcome } : {}),
+              (attempt.outcome === "summit" || attempt.outcome === "failed")
+                ? { outcome: attempt.outcome }
+                : {}),
             };
           })()
         : challenge.mode === "alphabet"

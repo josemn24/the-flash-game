@@ -142,8 +142,17 @@ function commandCode(error: unknown) {
     "invalid_attempt_context",
     "invalid_attempt_lifecycle",
   ];
-  if (infrastructureCode === "23514" && error && typeof error === "object" &&
-    "constraint" in error && ["attempts_outcome_values_check", "attempts_outcome_status_check"].includes(String(error.constraint))) {
+  if (
+    infrastructureCode === "23514" &&
+    error &&
+    typeof error === "object" &&
+    "constraint" in error &&
+    [
+      "attempts_outcome_values_check",
+      "attempts_outcome_status_check",
+      "attempts_status_check",
+    ].includes(String(error.constraint))
+  ) {
     return "invalid_attempt_lifecycle";
   }
   const domainCode = known.find((candidate) => message.includes(candidate));
@@ -217,7 +226,7 @@ export async function callAttemptCommand<T>(
       `select private.${functionName}($1::jsonb) as result`,
       [JSON.stringify(input)],
     );
-    return decode ? decode(result.rows[0]?.result) : result.rows[0]?.result as T;
+    return decode ? decode(result.rows[0]?.result) : (result.rows[0]?.result as T);
   });
 }
 

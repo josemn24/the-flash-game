@@ -21,21 +21,41 @@ function response(body = "public content", { status = 200, type = "basic" } = {}
   return result;
 }
 
-function createWorker() {
+function createWorker({ failOpen = [], failMatch = [], failPut = [] } = {}) {
   const listeners = new Map();
   const cacheEntries = new Map();
   const fetchRequests = [];
+  const failures = {
+    open: new Set(failOpen),
+    match: new Set(failMatch),
+    put: new Set(failPut),
+  };
   let fetchImplementation = () => response();
   let claimed = false;
   const cacheStorage = {
     async open(name) {
+      if (failures.open.has(name)) {
+        throw Object.assign(new Error(`Cache open failed for ${name}`), {
+          name: "InvalidStateError",
+        });
+      }
       if (!cacheEntries.has(name)) cacheEntries.set(name, new Map());
       const entries = cacheEntries.get(name);
       return {
         async match(request) {
+          if (failures.match.has(name)) {
+            throw Object.assign(new Error(`Cache match failed for ${name}`), {
+              name: "UnknownError",
+            });
+          }
           return entries.get(request.url)?.clone();
         },
         async put(request, response) {
+          if (failures.put.has(name)) {
+            throw Object.assign(new Error(`Cache put failed for ${name}`), {
+              name: "QuotaExceededError",
+            });
+          }
           entries.set(request.url, response.clone());
         },
       };
@@ -70,6 +90,11 @@ function createWorker() {
     caches: cacheStorage,
     fetchRequests,
     setFetch: (implementation) => (fetchImplementation = implementation),
+    setCacheFailure: (operation, name, enabled = true) => {
+      if (!failures[operation]) throw new Error(`Unknown cache operation: ${operation}`);
+      if (enabled) failures[operation].add(name);
+      else failures[operation].delete(name);
+    },
     hasClaimedClients: () => claimed,
     dispatchFetch(request) {
       let pendingResponse;
@@ -191,6 +216,55 @@ test("refreshes cached pages from the network and falls back only when the netwo
   assert.equal(worker.fetchRequests.length, 2);
   await assert.rejects(
     worker.dispatchFetch(request("/demo/flash-pop-typography")),
+    /The requested public page is unavailable offline/,
+  );
+});
+
+test("returns the network asset when cache.put fails", async () => {
+  const worker = createWorker({ failPut: [assetCacheName] });
+  const assetRequest = request("/icons/the-flash-192.png", { mode: "cors" });
+  worker.setFetch(() => response("fresh asset"));
+
+  assert.equal(await (await worker.dispatchFetch(assetRequest)).text(), "fresh asset");
+});
+
+test("returns the fresh network page when cache.put fails", async () => {
+  const worker = createWorker();
+  const pageRequest = request("/demo/flash-pop");
+  const cache = await worker.caches.open(pageCacheName);
+  await cache.put(pageRequest, response("stale page"));
+  worker.setCacheFailure("put", pageCacheName);
+  worker.setFetch(() => response("fresh page"));
+
+  assert.equal(await (await worker.dispatchFetch(pageRequest)).text(), "fresh page");
+  assert.equal(await (await cache.match(pageRequest)).text(), "stale page");
+});
+
+test("continues online when cache.open fails", async () => {
+  const worker = createWorker({ failOpen: [pageCacheName] });
+  const pageRequest = request("/demo/flash-pop");
+  worker.setFetch(() => response("online page"));
+
+  assert.equal(await (await worker.dispatchFetch(pageRequest)).text(), "online page");
+});
+
+test("continues online when cache.match fails", async () => {
+  const worker = createWorker({ failMatch: [pageCacheName] });
+  const pageRequest = request("/demo/flash-pop");
+  worker.setFetch(() => response("online page"));
+
+  assert.equal(await (await worker.dispatchFetch(pageRequest)).text(), "online page");
+});
+
+test("reports the offline error when network and cache.match both fail", async () => {
+  const worker = createWorker({ failMatch: [pageCacheName] });
+  const pageRequest = request("/demo/flash-pop");
+  worker.setFetch(() => {
+    throw new TypeError("offline");
+  });
+
+  await assert.rejects(
+    worker.dispatchFetch(pageRequest),
     /The requested public page is unavailable offline/,
   );
 });

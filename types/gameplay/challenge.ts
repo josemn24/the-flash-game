@@ -1,3 +1,4 @@
+import type { PyramidAttemptOutcome } from "@/types/domain/attempt";
 import type {
   ImageSurface,
   ConnectPairsPair,
@@ -218,7 +219,7 @@ export type ServerPyramidChallenge = Omit<ServerFlashChallenge, "mode" | "slots"
   }[];
 };
 
-export type ServerPyramidOutcome = "failed" | "summit";
+export type ServerPyramidOutcome = PyramidAttemptOutcome;
 
 export type ServerAlphabetLetterStatus =
   "unvisited" | "active" | "passed" | "correct" | "incorrect" | "unanswered";

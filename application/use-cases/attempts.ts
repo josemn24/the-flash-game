@@ -233,14 +233,15 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
 
     return {
       recovery,
-      snapshot: completed ? {
-        ...snapshot,
-        ...completed,
-        allItemsResolved: true,
-        hasOpenInteraction: false,
-        pendingReceiptId: null,
-        answers: completed.answers ?? snapshot.answers,
-      } : snapshot,
+      snapshot: completed
+        ? {
+            ...snapshot,
+            ...completed,
+            hasOpenInteraction: false,
+            pendingReceiptId: null,
+            answers: completed.answers ?? snapshot.answers,
+          }
+        : snapshot,
       ...(evaluated ? { evaluated } : {}),
       ...(completed ? { completed } : {}),
     };

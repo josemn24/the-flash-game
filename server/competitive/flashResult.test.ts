@@ -1,3 +1,4 @@
+import { InvalidAttemptLifecycleError } from "@/lib/attemptLifecycle";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readTerminalReviewSafely } from "./flashResult";
 const readers = vi.hoisted(() => ({ flash: vi.fn() }));
@@ -27,6 +28,13 @@ describe("terminal review is optional after a confirmed result", () => {
     readers.flash.mockResolvedValue(review);
     await expect(readTerminalReviewSafely("attempt")).resolves.toEqual({ review });
   });
+  it("propagates contract corruption instead of marking the review as pending", async () => {
+    readers.flash.mockRejectedValue(new InvalidAttemptLifecycleError());
+    await expect(readTerminalReviewSafely("attempt")).rejects.toMatchObject({
+      code: "invalid_attempt_lifecycle",
+    });
+  });
+
   it("reports Storage failure as pending instead of failing completion", async () => {
     readers.flash.mockRejectedValue(new Error("Storage unavailable"));
     await expect(readTerminalReviewSafely("attempt")).resolves.toEqual({

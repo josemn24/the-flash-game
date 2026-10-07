@@ -71,8 +71,12 @@ export async function callHistoryRead<T>(
     throw new Error(`Supabase history read returned an invalid payload (${functionName})`);
   }
   return data.map((value, index) => {
-    if (functionName === "get_room_member_review" && isRecord(value)) {
-      assertAttemptLifecycle({challengeMode:value.challenge_mode, status:value.attempt_status, outcome:value.attempt_outcome});
+    if (functionName === "get_room_member_review") {
+      assertAttemptLifecycle({
+        challengeMode: isRecord(value) ? value.challenge_mode : undefined,
+        status: isRecord(value) ? value.attempt_status : undefined,
+        outcome: isRecord(value) ? value.attempt_outcome : undefined,
+      });
     }
     if (!guard(value)) {
       throw new Error(`Supabase history read returned an invalid row (${functionName}, ${index})`);

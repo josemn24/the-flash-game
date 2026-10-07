@@ -357,7 +357,12 @@ describe("ApplicationAttemptUseCases", () => {
     });
     vi.mocked(commands.readEvaluationContext).mockResolvedValue(evaluationContext());
     vi.mocked(commands.readRecovery).mockResolvedValue(
-      snapshot({ lockVersion: 6, allItemsResolved: true, terminalOutcome: "survived" }),
+      snapshot({
+        challengeMode: "survival",
+        lockVersion: 6,
+        allItemsResolved: true,
+        terminalOutcome: "survived",
+      }),
     );
     vi.mocked(commands.recordEvaluation).mockResolvedValue({
       attemptId,
@@ -386,6 +391,44 @@ describe("ApplicationAttemptUseCases", () => {
       }),
     );
   });
+
+  it.each([
+    { challengeMode: "survival", outcome: "eliminated" },
+    { challengeMode: "pyramid", outcome: "failed" },
+  ] as const)(
+    "persists early $challengeMode termination without claiming all items were resolved",
+    async (terminal) => {
+      const { commands, useCases } = createUseCases();
+      vi.mocked(commands.recover).mockResolvedValue({
+        attemptId,
+        lockVersion: 4,
+        receiptId: null,
+        recovered: true,
+      });
+      vi.mocked(commands.readRecovery).mockResolvedValue(
+        snapshot({
+          challengeMode: terminal.challengeMode,
+          lockVersion: 4,
+          terminalOutcome: terminal.outcome,
+          allItemsResolved: false,
+        }),
+      );
+      vi.mocked(commands.completeFromPersistedAnswers).mockResolvedValue({
+        attemptId,
+        lockVersion: 5,
+        status: "completed",
+        score: 0,
+        ...terminal,
+      });
+      const result = await useCases.recover(answerInput);
+      expect(result.snapshot).toMatchObject({
+        ...terminal,
+        status: "completed",
+        allItemsResolved: false,
+      });
+      expect(result.completed).toMatchObject(terminal);
+    },
+  );
 
   it("recovers and scores a frozen survival image receipt with an old caption", async () => {
     const { commands, useCases } = createUseCases({ evaluator: supabaseCompetitiveEvaluator });

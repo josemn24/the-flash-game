@@ -1,4 +1,5 @@
 import "server-only";
+import { InvalidAttemptLifecycleError } from "@/lib/attemptLifecycle";
 import type { AuthenticatedActor } from "@/application/ports/actors";
 import { SupabaseAttemptCommands } from "@/infrastructure/supabase/attempts/attemptCommands";
 import {
@@ -53,7 +54,8 @@ export async function readTerminalReviewSafely(attemptId: string) {
         timer = setTimeout(() => reject(new Error("review_timeout")), 2000);
       });
       return { review: await Promise.race([readTerminalFlashReview(attemptId), unavailable]) };
-    } catch {
+    } catch (error) {
+      if (error instanceof InvalidAttemptLifecycleError) throw error;
       competitivePerformanceObserver.recordRecovery?.("review_pending");
       return { review: [], reviewPending: true as const };
     } finally {

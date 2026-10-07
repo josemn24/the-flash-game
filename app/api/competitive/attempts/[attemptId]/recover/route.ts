@@ -86,8 +86,8 @@ export async function POST(
       await clearAttemptToken(attemptId, identity.authUserId, snapshot.scheduledChallengeId);
       return responseFor(
         {
-          status: recovered.completed.status,
-          lockVersion: recovered.completed.lockVersion,
+          ...recovered.completed,
+          terminalOutcome: snapshot.terminalOutcome ?? null,
           answers: recovered.completed.answers ?? snapshot.answers,
           phase: "results",
           ...(recovered.evaluated ? { resolved: recovered.evaluated } : {}),
@@ -100,11 +100,7 @@ export async function POST(
             ? {
                 livesRemaining: recovered.completed.livesRemaining ?? snapshot.livesRemaining,
                 initialLives: snapshot.initialLives,
-                outcome: recovered.completed.outcome ?? snapshot.terminalOutcome,
               }
-            : {}),
-          ...(snapshot.challengeMode === "pyramid"
-            ? { outcome: recovered.completed.outcome ?? snapshot.terminalOutcome }
             : {}),
         },
         200,
@@ -115,7 +111,11 @@ export async function POST(
     }
     return responseFor(
       {
+        attemptId: snapshot.attemptId,
+        challengeMode: snapshot.challengeMode,
         status: snapshot.status,
+        outcome: snapshot.outcome,
+        terminalOutcome: snapshot.terminalOutcome ?? null,
         lockVersion: snapshot.lockVersion,
         answers: snapshot.answers,
         phase:
@@ -128,7 +128,6 @@ export async function POST(
           ? {
               livesRemaining: snapshot.livesRemaining,
               initialLives: snapshot.initialLives,
-              outcome: snapshot.terminalOutcome,
             }
           : {}),
         ...(recovered.evaluated ? { resolved: recovered.evaluated } : {}),

@@ -770,6 +770,7 @@ const reviewRows = [
 const survivalEstimationRow = {
   ...reviewRows[0],
   challenge_mode: "survival",
+  attempt_outcome: "eliminated",
   question_count: 20,
   initial_lives: 3,
   item_position: 12,
@@ -907,6 +908,10 @@ describe("Supabase history and review capabilities S07", () => {
       expect(model?.result?.attempt?.answers[11]?.answer).toBe(490000);
     },
   );
+
+  it("accepts the canonical Survival estimation review contract", () => {
+    expect(isRoomMemberReviewReadRow(survivalEstimationRow)).toBe(true);
+  });
 
   it.each([NaN, Infinity, -Infinity])("rejects a non-finite estimation answer: %s", (answer) => {
     expect(isRoomMemberReviewReadRow({ ...survivalEstimationRow, answer })).toBe(false);

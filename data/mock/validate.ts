@@ -289,8 +289,14 @@ export function validateMockDomainStore(store: MockDomainStore = mockDomainStore
   }
   for (const attempt of store.attempts) {
     const schedule = scheduleById.get(attempt.scheduledChallengeId);
-    const version = schedule && store.challengeVersions.find(({ id }) => id === schedule.challengeVersionId);
-    if (!isValidAttemptLifecycle({ challengeMode: version?.mode, status: attempt.status, outcome: attempt.outcome })) {
+    const version = schedule && challengeVersionById.get(schedule.challengeVersionId);
+    if (
+      !isValidAttemptLifecycle({
+        challengeMode: version?.mode,
+        status: attempt.status,
+        outcome: attempt.outcome,
+      })
+    ) {
       errors.push(`Attempt ${attempt.id} has an invalid lifecycle.`);
     }
     if (!playerIds.has(attempt.playerId) || !schedule) errors.push(`Broken attempt ${attempt.id}.`);

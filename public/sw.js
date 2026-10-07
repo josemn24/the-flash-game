@@ -71,29 +71,67 @@ function isPublicNavigationRequest(request, url) {
   return PUBLIC_PAGE_PREFIXES.some((prefix) => matchesPath(url.pathname, prefix));
 }
 
+function reportCacheFailure(operation, cacheName, error) {
+  console.warn("The Flash cache operation failed.", {
+    operation,
+    cacheName,
+    error,
+  });
+}
+
+async function openCacheBestEffort(cacheName) {
+  try {
+    return await caches.open(cacheName);
+  } catch (error) {
+    reportCacheFailure("open", cacheName, error);
+    return null;
+  }
+}
+
+async function matchCacheBestEffort(cache, request, cacheName) {
+  if (!cache) return undefined;
+
+  try {
+    return await cache.match(request);
+  } catch (error) {
+    reportCacheFailure("match", cacheName, error);
+    return undefined;
+  }
+}
+
+async function putCacheBestEffort(cache, request, response, cacheName) {
+  if (!cache) return;
+
+  try {
+    await cache.put(request, response.clone());
+  } catch (error) {
+    reportCacheFailure("put", cacheName, error);
+  }
+}
+
 async function cacheFirst(request) {
-  const cache = await caches.open(ASSET_CACHE);
-  const cached = await cache.match(request);
+  const cache = await openCacheBestEffort(ASSET_CACHE);
+  const cached = await matchCacheBestEffort(cache, request, ASSET_CACHE);
   if (cached) return cached;
 
   const response = await fetch(request);
   if (response.ok && response.type === "basic") {
-    await cache.put(request, response.clone());
+    void putCacheBestEffort(cache, request, response, ASSET_CACHE);
   }
   return response;
 }
 
 async function networkFirst(request) {
-  const cache = await caches.open(PAGE_CACHE);
+  const cache = await openCacheBestEffort(PAGE_CACHE);
 
   try {
     const response = await fetch(request);
     if (response.ok && response.type === "basic") {
-      await cache.put(request, response.clone());
+      void putCacheBestEffort(cache, request, response, PAGE_CACHE);
     }
     return response;
   } catch {
-    const cached = await cache.match(request);
+    const cached = await matchCacheBestEffort(cache, request, PAGE_CACHE);
     if (cached) return cached;
     throw new Error("The requested public page is unavailable offline.");
   }
