@@ -154,7 +154,7 @@ function canonicalResolution(
     ...(reveals ? { reveals } : {}),
   };
 }
-function readStored(context: StoredQuestionReadContext): ResolvedQuestion {
+export function readResolvedStoredQuestion(context: StoredQuestionContext): ResolvedQuestion {
   const capability = competitiveCapabilityFor(context.questionType, context.mode);
   if (
     capability === null ||
@@ -213,7 +213,7 @@ function readStored(context: StoredQuestionReadContext): ResolvedQuestion {
   return solutionResult.value;
 }
 export function readStoredQuestion(context: StoredQuestionReadContext): StoredQuestionResolution {
-  return canonicalResolution(context, readStored(context));
+  return canonicalResolution(context, readResolvedStoredQuestion(context));
 }
 export function validateStoredQuestion(context: StoredQuestionReadContext) {
   return validationResult("question", () => readStoredQuestion(context));

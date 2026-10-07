@@ -6,11 +6,11 @@ Cada formato tiene tres entradas independientes. No hay un barrel que importe a 
 renderizadores React y composición privada. Las capacidades de los diez formatos exclusivos de
 práctica siguen en el manifiesto, pero no crean entradas competitivas.
 
-| Capa                                          | Responsabilidad                                                                      | Registro                                                                  |
-| --------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
-| `lib/question-formats/<formato>`              | Metadatos, validación pura y conversión del contenido almacenado y público           | `definitions`, `storedPublicRegistry`, `storedRegistry`, `publicRegistry` |
-| `features/question-formats/formats/<formato>` | Entrada competitiva y adaptación de la revisión autorizada, reutilizando componentes | `competitiveInputRegistry`, `reviewRegistry`                              |
-| `server/evaluation/formats/<formato>`         | Composición del contrato público con la solución privada                             | `registry`, protegido con `server-only`                                   |
+| Capa                                          | Responsabilidad                                                                   | Registro                                                                                    |
+| --------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `lib/question-formats/<formato>`              | Metadatos, validación pura, conversión del contenido y transformación de revisión | `definitions`, `storedPublicRegistry`, `storedRegistry`, `publicRegistry`, `reviewRegistry` |
+| `features/question-formats/formats/<formato>` | Renderizadores de entrada y revisión, fichas y previews editoriales               | `competitiveInputRegistry`, `reviewContentRegistry`, `editorialPreviewRegistry`, `catalog`  |
+| `server/evaluation/formats/<formato>`         | Composición del contrato público con la solución privada                          | `registry`, protegido con `server-only`                                                     |
 
 `definition.ts` contiene únicamente metadatos: versiones, capacidades por modo y política de
 puntuación. Los registros enlazan funciones reales y son exhaustivos mediante tipos y pruebas.
