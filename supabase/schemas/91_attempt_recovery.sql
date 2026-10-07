@@ -171,7 +171,7 @@ declare actor uuid := private.command_actor(); result jsonb;
 begin
   perform private.authorize_attempt_replay(target_attempt, private.secret_hash(session_token));
   select jsonb_build_object(
-    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status,
+    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status, 'outcome', a.outcome,
     'lockVersion', a.lock_version,
     'deadlineAt', a.deadline_at,
     'deadlineReached', a.deadline_at is not null and clock_timestamp() >= a.deadline_at,

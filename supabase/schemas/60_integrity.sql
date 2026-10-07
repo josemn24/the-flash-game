@@ -199,6 +199,7 @@ create trigger publications_guard before insert or update on public.scheduled_ch
 -- tick must not block a live window, and a closed or finished window rejects new attempts.
 create function private.guard_attempt() returns trigger
 language plpgsql set search_path = '' as $$
+declare attempt_mode text;
 begin
   if tg_op = 'INSERT' then
     if new.status <> 'in_progress' then raise exception 'An attempt must start in progress'; end if;
@@ -252,6 +253,16 @@ begin
     end if;
   elsif new.status = 'invalidated' then
     raise exception 'Complete or abandon before administrative invalidation';
+  end if;
+  if new.status = 'completed' then
+    select cv.mode into attempt_mode from private.challenge_versions cv
+      where cv.id = new.challenge_version_id;
+    if attempt_mode is null
+      or (attempt_mode in ('flash', 'alphabet', 'narrative') and new.outcome is not null)
+      or (attempt_mode = 'survival' and (new.outcome is null or new.outcome not in ('survived', 'eliminated')))
+      or (attempt_mode = 'pyramid' and (new.outcome is null or new.outcome not in ('summit', 'failed'))) then
+      raise exception 'invalid_attempt_lifecycle' using errcode = '23514';
+    end if;
   end if;
   return new;
 end;

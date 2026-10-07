@@ -1,4 +1,4 @@
-import type { AnswerStatus, AttemptStatus } from "@/types/domain/attempt";
+import type { AnswerStatus, AttemptStatus, AttemptLifecycle, SurvivalAttemptOutcome, PyramidAttemptOutcome } from "@/types/domain/attempt";
 import type {
   AttemptId,
   AttemptSessionId,
@@ -263,11 +263,12 @@ export type AttemptRecoveryAnswer = {
   readonly timeUsedMs: DurationMs;
   readonly resultDetails?: AnswerResultDetails | null;
 };
+/** Evaluated terminal hint; it does not imply the attempt has committed completion. */
+export type RecoveryTerminalOutcome = SurvivalAttemptOutcome | PyramidAttemptOutcome | null;
 /** Deliberately excludes question public/solution payloads. */
-export type AttemptRecoverySnapshot = {
+export type AttemptRecoverySnapshot = AttemptLifecycle & {
   readonly attemptId: AttemptId;
   readonly scheduledChallengeId: ScheduledChallengeId;
-  readonly status: AttemptStatus;
   readonly lockVersion: number;
   readonly hasStartedInteraction: boolean;
   readonly hasOpenInteraction?: boolean;
@@ -279,16 +280,14 @@ export type AttemptRecoverySnapshot = {
   readonly deadlineAt?: UtcIsoDateTime | null;
   readonly deadlineReached?: boolean;
   readonly pendingReceiptId?: AnswerReceiptId | null;
-  readonly challengeMode?: "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
   readonly initialLives?: number | null;
   readonly livesRemaining?: number | null;
-  readonly terminalOutcome?: "eliminated" | "survived" | "failed" | "summit" | null;
+  /** Derived progress hint; may exist while persisted outcome is still null. */
+  readonly terminalOutcome?: RecoveryTerminalOutcome;
   readonly answers: readonly AttemptRecoveryAnswer[];
 };
-export type FinishAttemptResult = AttemptCommandResult & {
-  readonly status: Extract<AttemptStatus, "completed" | "abandoned">;
+export type FinishAttemptResult = AttemptCommandResult & Extract<AttemptLifecycle, { status: "completed" | "abandoned" }> & {
   readonly score: number | null;
-  readonly outcome?: string | null;
   readonly terminalReason?: string | null;
   readonly livesRemaining?: number | null;
   readonly answers?: readonly AttemptRecoveryAnswer[];

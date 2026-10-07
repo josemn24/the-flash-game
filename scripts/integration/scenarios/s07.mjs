@@ -129,7 +129,7 @@ export const scenario = {
     });
     assert(survivalReview.length === 1, "Supervivencia solo expone las preguntas alcanzadas");
     assert(
-      survivalReview[0].attempt_outcome === "passed",
+      survivalReview[0].attempt_outcome === "survived",
       "La revisión de Supervivencia conserva el outcome persistido",
     );
 

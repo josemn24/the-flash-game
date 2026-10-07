@@ -224,11 +224,9 @@ function historicalReviewProjection(
             initialLives: config.lives,
             ...progress,
             outcome:
-              attempt.outcome === "passed"
-                ? "survived"
-                : attempt.outcome === "failed"
-                  ? "eliminated"
-                  : progress.outcome,
+              attempt.status === "completed" &&
+                (attempt.outcome === "survived" || attempt.outcome === "eliminated")
+                ? attempt.outcome : progress.outcome,
           };
         })()
       : challenge.mode === "pyramid"
@@ -241,6 +239,9 @@ function historicalReviewProjection(
                 config.levels.length,
                 answers.map(mockAnswerResult),
               ),
+              ...(attempt.status === "completed" &&
+                (attempt.outcome === "summit" || attempt.outcome === "failed")
+                ? { outcome: attempt.outcome } : {}),
             };
           })()
         : challenge.mode === "alphabet"

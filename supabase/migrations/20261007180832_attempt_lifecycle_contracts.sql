@@ -1,143 +1,94 @@
--- Internal command handlers. The dispatcher owns idempotency and audit writes.
--- Keep this after 89_progressive_clues.sql for its prepare/reveal helpers.
-set local check_function_bodies = off;
+-- Canonical attempt lifecycle contracts. Apply on the agreed clean database.
+-- Generated with supabase db schema declarative sync; unrelated pre-existing drift omitted.
+begin;
+SET local check_function_bodies = off;
 
-create function private.next_attempt_item(target_attempt uuid) returns uuid
-language sql stable set search_path = '' as $$
-  select i.id from public.attempts a
-  join private.challenge_versions cv on cv.id = a.challenge_version_id
-  join private.challenge_items i on i.challenge_version_id = a.challenge_version_id
-  where a.id = target_attempt and not exists (
-    select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id
-  )
-  order by
-    case when cv.mode = 'alphabet' and exists (select 1 from private.interaction_intervals x
-      where x.attempt_id = a.id and x.challenge_item_id = i.id) then 1 else 0 end,
-    case when cv.mode = 'alphabet' and i.position <= coalesce((
-      select ci.position from private.interaction_intervals x
-      join private.challenge_items ci on ci.id = x.challenge_item_id
-      where x.attempt_id = a.id order by x.started_at desc, x.id desc limit 1
-    ), 0) then 1 else 0 end,
-    i.position limit 1
-$$;
-alter function private.next_attempt_item(uuid) owner to postgres;
-revoke all on function private.next_attempt_item(uuid) from public, anon, authenticated, service_role;
-
-
-create function private.handle_attempt_admin_command(
-  op text,
-  input jsonb,
-  actor uuid,
-  target_attempt public.attempts,
-  target_schedule public.scheduled_challenges,
-  instant timestamptz,
-  key text
-) returns jsonb
-language plpgsql set search_path = '' as $$
-declare
-  a public.attempts%rowtype := target_attempt;
-  sc public.scheduled_challenges%rowtype := target_schedule;
-  balance integer;
-  points integer;
-  result jsonb;
+CREATE OR REPLACE FUNCTION private.guard_attempt()
+  RETURNS TRIGGER
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare attempt_mode text;
 begin
-        if nullif(btrim(input->>'reason'), '') is null then raise exception 'reason_required' using errcode = '22023'; end if;
-        if a.kind <> 'competitive' then raise exception 'not_competitive' using errcode = '55000'; end if;
-        select coalesce(sum(amount),0)::integer into balance from private.flash_point_entries where attempt_id = a.id;
-        if op = 'invalidate' then
-          if a.status not in ('completed','abandoned') then raise exception 'attempt_not_terminal' using errcode = '55000'; end if;
-          update public.attempts set status = 'invalidated', terminal_reason = input->>'reason', lock_version = lock_version + 1
-            where id = a.id returning * into a;
-          update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
-          if exists (select 1 from private.flash_point_entries where attempt_id = a.id and entry_type = 'accreditation') then
-            insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type,
-              amount, reason, created_by_player_id, idempotency_key)
-            values(sc.season_id, a.player_id, sc.id, a.id, 'reversal', -balance, input->>'reason', actor, 'invalidate:' || a.id);
-          end if;
-          result := jsonb_build_object('status', a.status, 'effectiveScore', 0);
-        else
-          if a.status not in ('completed','abandoned') then
-            raise exception 'attempt_not_terminal' using errcode = '55000';
-          end if;
-          points := (input->>'score')::integer;
-          if points not between 0 and 100 then raise exception 'invalid_score' using errcode = '22023'; end if;
-          insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type,
-            amount, reason, created_by_player_id, idempotency_key)
-          values(sc.season_id, a.player_id, sc.id, a.id, 'adjustment', points - balance, input->>'reason', actor, 'adjust:' || actor || ':' || key);
-          update public.attempts set lock_version = lock_version + 1 where id = a.id returning * into a;
-          -- Corrections preserve the immutable original score/status.
-          result := jsonb_build_object('status', a.status, 'effectiveScore', points);
-        end if;
-  return result;
-end;
-$$;
-alter function private.handle_attempt_admin_command(text, jsonb, uuid, public.attempts, public.scheduled_challenges, timestamptz, text) owner to postgres;
-revoke all on function private.handle_attempt_admin_command(text, jsonb, uuid, public.attempts, public.scheduled_challenges, timestamptz, text) from public, anon, authenticated, service_role;
-
-create function private.handle_invitation_command(
-  input jsonb,
-  safe_input jsonb,
-  actor uuid,
-  cached_result jsonb
-) returns jsonb
-language plpgsql set search_path = '' as $$
-declare
-  target uuid;
-  invitation private.room_invitations%rowtype;
-  member public.room_memberships%rowtype;
-  result jsonb;
-begin
-    -- Room before invitation/membership is the shared lock order for membership writers.
-    select room_id into target from private.room_invitations where token_hash = safe_input->>'invitationToken';
-    perform 1 from public.rooms where id = target and status = 'active' for update;
-    if not found then raise exception 'invitation_unavailable' using errcode = '42501'; end if;
-    select * into invitation from private.room_invitations where token_hash = safe_input->>'invitationToken' for update;
-    select * into member from public.room_memberships where room_id = target and player_id = actor for update;
-    if member.status = 'banned' then raise exception 'invitation_unavailable' using errcode = '42501'; end if;
-    if cached_result is not null then
-      return jsonb_build_object(
-        'result', cached_result,
-        'entityType', 'invitation',
-        'entityId', invitation.id,
-        'beforePayload', null,
-        'replayed', true
-      );
-    end if;
-    if invitation.revoked_at is not null or invitation.expires_at <= clock_timestamp()
-      or (invitation.max_uses is not null and invitation.use_count >= invitation.max_uses) then
-      raise exception 'invitation_unavailable' using errcode = '42501';
-    end if;
-    if member.status = 'active' then
-      result := jsonb_build_object('membershipId', member.id, 'joined', false);
+  if tg_op = 'INSERT' then
+    if new.status <> 'in_progress' then raise exception 'An attempt must start in progress'; end if;
+    new.started_at := clock_timestamp();
+    -- Derive the global clock from the exact persisted start, including very short limits.
+    -- Other modes have only question/level clocks; never accept a caller's global deadline.
+    select case when cv.mode = 'alphabet' then
+      new.started_at + cv.global_time_limit_ms * interval '1 millisecond' else null end
+      into new.deadline_at from private.challenge_versions cv where cv.id = new.challenge_version_id;
+    if new.kind = 'competitive' then
+      if exists (select 1 from private.platform_role_assignments where player_id = new.player_id) then
+        raise exception 'Superadministrators only create test attempts';
+      end if;
+      perform 1 from public.scheduled_challenges sc
+        join public.seasons s on s.id = sc.season_id
+        join public.rooms r on r.id = s.room_id
+        join public.room_memberships m on m.room_id = r.id and m.player_id = new.player_id
+        join public.players p on p.id = m.player_id
+        where sc.id = new.scheduled_challenge_id
+          and private.publication_is_effectively_open(
+            sc.status, s.status, s.starts_at, s.ends_at,
+            sc.opens_at, sc.closes_at, new.started_at
+          )
+          and r.status = 'active'
+          and m.status = 'active' and m.role in ('owner', 'admin', 'member')
+          and p.status = 'active' and p.auth_user_id is not null
+        for share of sc, s, r, m, p;
+      if not found then raise exception 'No competitive access or publication unavailable'; end if;
     else
-      insert into public.room_memberships(room_id, player_id, role) values(target, actor, invitation.role)
-      on conflict (room_id, player_id) do update set status = 'active', ended_at = null,
-        joined_at = clock_timestamp(), role = excluded.role returning * into member;
-      update private.room_invitations set use_count = use_count + 1 where id = invitation.id;
-      result := jsonb_build_object('membershipId', member.id, 'joined', true);
+      if not exists (select 1 from private.platform_role_assignments x join public.players p on p.id = x.player_id
+        where x.player_id = new.player_id and p.status = 'active' and p.auth_user_id is not null) then
+        raise exception 'Test attempts require a superadministrator';
+      end if;
     end if;
-    target := invitation.id;
-  return jsonb_build_object(
-    'result', result,
-    'entityType', 'invitation',
-    'entityId', target,
-    'beforePayload', null,
-    'replayed', false
-  );
+    return new;
+  end if;
+  if (new.id, new.player_id, new.scheduled_challenge_id, new.challenge_version_id, new.kind,
+      new.attempt_number, new.started_at, new.deadline_at) is distinct from
+     (old.id, old.player_id, old.scheduled_challenge_id, old.challenge_version_id, old.kind,
+      old.attempt_number, old.started_at, old.deadline_at) then
+    raise exception 'Attempt context is immutable';
+  end if;
+  if new.lock_version <> old.lock_version + 1 then raise exception 'Expected next lock_version'; end if;
+  if old.status <> 'in_progress' then
+    if new.status = old.status and (to_jsonb(new) - 'lock_version' - 'updated_at') =
+      (to_jsonb(old) - 'lock_version' - 'updated_at') then return new; end if;
+    if old.status not in ('completed', 'abandoned') or new.status <> 'invalidated'
+      or (to_jsonb(new) - 'status' - 'terminal_reason' - 'lock_version' - 'updated_at') <>
+         (to_jsonb(old) - 'status' - 'terminal_reason' - 'lock_version' - 'updated_at') then
+      raise exception 'Terminal attempts cannot be replayed or overwritten';
+    end if;
+  elsif new.status = 'invalidated' then
+    raise exception 'Complete or abandon before administrative invalidation';
+  end if;
+  if new.status = 'completed' then
+    select cv.mode into attempt_mode from private.challenge_versions cv
+      where cv.id = new.challenge_version_id;
+    if attempt_mode is null
+      or (attempt_mode in ('flash', 'alphabet', 'narrative') and new.outcome is not null)
+      or (attempt_mode = 'survival' and (new.outcome is null or new.outcome not in ('survived', 'eliminated')))
+      or (attempt_mode = 'pyramid' and (new.outcome is null or new.outcome not in ('summit', 'failed'))) then
+      raise exception 'invalid_attempt_lifecycle' using errcode = '23514';
+    end if;
+  end if;
+  return new;
 end;
-$$;
-alter function private.handle_invitation_command(jsonb, jsonb, uuid, jsonb) owner to postgres;
-revoke all on function private.handle_invitation_command(jsonb, jsonb, uuid, jsonb) from public, anon, authenticated, service_role;
+$function$;
 
-create function private.handle_attempt_command(
-  op text,
-  input jsonb,
-  safe_input jsonb,
-  actor uuid,
+CREATE OR REPLACE FUNCTION private.handle_attempt_command (
+  op            text,
+  input         jsonb,
+  safe_input    jsonb,
+  actor         uuid,
   cached_result jsonb,
-  received_at timestamptz
-) returns jsonb
-language plpgsql set search_path = '' as $$
+  received_at   timestamp with time zone
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
 declare
   instant timestamptz;
   received timestamptz := received_at;
@@ -695,6 +646,194 @@ begin
     'replayed', false
   );
 end;
-$$;
-alter function private.handle_attempt_command(text, jsonb, jsonb, uuid, jsonb, timestamptz) owner to postgres;
-revoke all on function private.handle_attempt_command(text, jsonb, jsonb, uuid, jsonb, timestamptz) from public, anon, authenticated, service_role;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.read_abandoned_attempt (
+  target_attempt uuid
+)
+  RETURNS jsonb
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  select jsonb_build_object(
+    'scheduledChallengeId', a.scheduled_challenge_id,
+    'result', coalesce(command.result, jsonb_strip_nulls(jsonb_build_object(
+      'attemptId', a.id,
+      'lockVersion', a.lock_version,
+      'status', a.status,
+      'score', a.score,
+      'outcome', a.outcome,
+      'terminalReason', a.terminal_reason,
+      'answers', coalesce((
+        select jsonb_agg(jsonb_build_object(
+          'challengeItemId', answer.challenge_item_id,
+          'answer', answer.answer,
+          'status', answer.status,
+          'points', answer.points,
+          'timeUsedMs', answer.time_used_ms,
+          'resultDetails', answer.result_details
+        ) order by item.position)
+        from private.attempt_answers answer
+        join private.challenge_items item on item.id = answer.challenge_item_id
+        where answer.attempt_id = a.id
+      ), '[]'::jsonb)
+    ))) || jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome, 'score', a.score)
+  )
+  from public.attempts a
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
+  join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+  join public.seasons season on season.id = sc.season_id
+  join public.rooms room on room.id = season.room_id
+  left join public.room_memberships m on m.room_id = room.id and m.player_id = a.player_id
+  left join private.command_requests command on command.actor_id = a.player_id
+    and command.operation = 'abandon' and command.input->>'attemptId' = a.id::text
+  where a.id = target_attempt and a.player_id = private.current_player_id()
+    and a.kind = 'competitive' and a.status = 'abandoned'
+    and sc.status <> 'cancelled' and room.status = 'active'
+    and (
+      (a.terminal_reason = 'permission_revoked')
+      or (
+        command.result->>'status' = 'abandoned'
+        and m.status = 'active' and m.role in ('owner','admin','member')
+      )
+    )
+    and not exists (select 1 from private.platform_role_assignments where player_id = a.player_id)
+$function$;
+
+CREATE OR REPLACE FUNCTION private.read_attempt_recovery (
+  target_attempt uuid,
+  session_token  text
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare actor uuid := private.command_actor(); result jsonb;
+begin
+  perform private.authorize_attempt_replay(target_attempt, private.secret_hash(session_token));
+  select jsonb_build_object(
+    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status, 'outcome', a.outcome,
+    'lockVersion', a.lock_version,
+    'deadlineAt', a.deadline_at,
+    'deadlineReached', a.deadline_at is not null and clock_timestamp() >= a.deadline_at,
+    'pendingReceiptId', (select receipt.id from private.answer_receipts receipt
+      where receipt.attempt_id = a.id and not exists (
+        select 1 from private.attempt_answers answer where answer.receipt_id = receipt.id
+      ) order by receipt.received_at, receipt.id limit 1),
+    'hasStartedInteraction', exists (select 1 from private.attempt_timing_units u where u.attempt_id = a.id),
+    'hasOpenInteraction', exists (select 1 from private.interaction_intervals interval_row
+      where interval_row.attempt_id = a.id and interval_row.ended_at is null),
+    'narrativeCursor', case when cv.mode = 'narrative' then jsonb_build_object(
+      'currentChallengeItemId', (select interval_row.challenge_item_id
+        from private.interaction_intervals interval_row
+        where interval_row.attempt_id = a.id and interval_row.ended_at is null
+        order by interval_row.started_at desc limit 1),
+      'nextChallengeItemId', (select item.id
+        from private.challenge_items item
+        where item.challenge_version_id = a.challenge_version_id
+          and not exists (select 1 from private.attempt_answers answer
+            where answer.attempt_id = a.id and answer.challenge_item_id = item.id)
+        order by item.position limit 1)
+    ) else null end,
+    'allItemsResolved', not exists (select 1 from private.challenge_items i where i.challenge_version_id = a.challenge_version_id
+      and not exists (select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id)),
+    'challengeMode', cv.mode,
+    'initialLives', case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer else null end,
+    'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
+      select sum(case
+        when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
+        when question.type = 'queens'
+          and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
+        else 0 end)::integer
+      from private.attempt_answers answer
+      join private.challenge_items item on item.id = answer.challenge_item_id
+      join private.question_versions question on question.id = item.question_version_id
+      where answer.attempt_id = a.id
+    ), 0), 0) else null end,
+    'terminalOutcome', case when cv.mode = 'survival' and (
+      greatest((cv.mode_config->>'lives')::integer - coalesce((
+        select sum(case
+          when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
+          when question.type = 'queens'
+            and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
+          else 0 end)::integer
+        from private.attempt_answers answer
+        join private.challenge_items item on item.id = answer.challenge_item_id
+        join private.question_versions question on question.id = item.question_version_id
+        where answer.attempt_id = a.id
+      ), 0), 0) = 0
+    ) then 'eliminated' when cv.mode = 'survival' and not exists (
+      select 1 from private.challenge_items item where item.challenge_version_id = a.challenge_version_id
+        and not exists (select 1 from private.attempt_answers answer where answer.attempt_id = a.id and answer.challenge_item_id = item.id)
+    ) then 'survived'
+      when cv.mode = 'pyramid' and exists (select 1 from private.attempt_answers answer
+        where answer.attempt_id = a.id and answer.status <> 'correct') then 'failed'
+      when cv.mode = 'pyramid' and (
+        select count(*) from private.attempt_answers answer where answer.attempt_id = a.id
+      ) = 7 then 'summit'
+      else null end,
+    'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
+      'status', aa.status, 'answer', aa.answer, 'points', aa.points, 'timeUsedMs', aa.time_used_ms,
+      'resultDetails', aa.result_details) order by i.position)
+      from private.attempt_answers aa join private.challenge_items i on i.id = aa.challenge_item_id where aa.attempt_id = a.id), '[]'::jsonb)
+  ) into result
+  from public.attempts a join private.attempt_sessions s on s.attempt_id = a.id
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
+  where a.id = target_attempt and a.player_id = actor and a.kind = 'competitive'
+    and s.revoked_at is null and s.session_token_hash = private.secret_hash(session_token)
+    and not exists (select 1 from private.platform_role_assignments where player_id = actor);
+  if result is null then raise exception 'not_authorized' using errcode = '42501'; end if;
+  return result;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.read_completed_attempt (
+  target_attempt uuid
+)
+  RETURNS jsonb
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  select jsonb_build_object('scheduledChallengeId', sc.id, 'result',
+    jsonb_strip_nulls(jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version,
+      'status', a.status, 'score', a.score, 'outcome', a.outcome,
+      'initialLives', case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer end,
+      'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
+        select sum(case when answer.status in ('incorrect','unanswered','timeout') then 1
+          when q.type = 'queens' and coalesce((answer.result_details->>'incorrectAttempts')::integer,0) > 0 then 1 else 0 end)::integer
+        from private.attempt_answers answer
+        join private.challenge_items item on item.id = answer.challenge_item_id
+        join private.question_versions q on q.id = item.question_version_id where answer.attempt_id = a.id
+      ),0),0) end,
+      'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', answer.challenge_item_id,
+        'answer', answer.answer, 'status', answer.status, 'points', answer.points,
+        'timeUsedMs', answer.time_used_ms, 'resultDetails', answer.result_details) order by item.position)
+        from private.attempt_answers answer join private.challenge_items item on item.id = answer.challenge_item_id
+        where answer.attempt_id = a.id), '[]'::jsonb))) ||
+      jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome))
+  from public.attempts a
+  join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+  join public.seasons season on season.id = sc.season_id
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
+  join public.rooms room on room.id = season.room_id
+  join public.room_memberships m on m.room_id = room.id and m.player_id = a.player_id
+  where a.id = target_attempt and a.player_id = private.current_player_id()
+    and a.kind = 'competitive' and a.status = 'completed' and sc.status <> 'cancelled'
+    and room.status = 'active' and m.status = 'active' and m.role in ('owner','admin','member')
+    and not exists (select 1 from private.platform_role_assignments where player_id = a.player_id)
+$function$;
+
+ALTER TABLE "public"."attempts"
+  ADD CONSTRAINT "attempts_outcome_status_check" CHECK (((status <> ALL (ARRAY['in_progress'::text, 'abandoned'::text])) OR (outcome IS NULL)));
+
+
+ALTER TABLE "public"."attempts"
+  ADD CONSTRAINT "attempts_outcome_values_check" CHECK (((outcome IS NULL) OR (outcome = ANY (ARRAY['survived'::text, 'eliminated'::text, 'summit'::text, 'failed'::text]))));
+
+commit;

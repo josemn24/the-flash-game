@@ -1,7 +1,7 @@
 import type { Attempt } from "@/types/domain";
 import type { CompetitiveAttemptStatus } from "@/types/view-models/room";
 
-type AttemptProjection = Pick<Attempt, "status" | "outcome">;
+type AttemptProjection = Pick<Attempt, "status">;
 
 export function getCompetitiveAttemptStatus(
   attempts: readonly AttemptProjection[],

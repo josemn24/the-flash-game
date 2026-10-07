@@ -1,3 +1,4 @@
+import { isValidAttemptLifecycle } from "@/lib/attemptLifecycle";
 import { mockDomainStore, type MockDomainStore } from "@/data/mock/store";
 import {
   isSupportedConfigSchemaVersion,
@@ -288,6 +289,10 @@ export function validateMockDomainStore(store: MockDomainStore = mockDomainStore
   }
   for (const attempt of store.attempts) {
     const schedule = scheduleById.get(attempt.scheduledChallengeId);
+    const version = schedule && store.challengeVersions.find(({ id }) => id === schedule.challengeVersionId);
+    if (!isValidAttemptLifecycle({ challengeMode: version?.mode, status: attempt.status, outcome: attempt.outcome })) {
+      errors.push(`Attempt ${attempt.id} has an invalid lifecycle.`);
+    }
     if (!playerIds.has(attempt.playerId) || !schedule) errors.push(`Broken attempt ${attempt.id}.`);
     if (!Number.isInteger(attempt.attemptNumber) || attempt.attemptNumber < 1) {
       errors.push(`Attempt ${attempt.id} has an invalid number.`);

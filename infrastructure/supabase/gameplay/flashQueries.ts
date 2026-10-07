@@ -1,3 +1,5 @@
+import { assertAttemptLifecycle } from "@/lib/attemptLifecycle";
+import type { AttemptOutcome } from "@/types/domain/attempt";
 import {
   competitivePerformanceObserver,
   countCompetitiveDatabaseCall,
@@ -61,7 +63,7 @@ type FlashResultOverrides = {
   time_used_ms: number;
   attempt_status: "completed";
   attempt_score: number;
-  attempt_outcome?: string | null;
+  attempt_outcome?: AttemptOutcome;
 };
 
 type CompetitiveResultFunctionName =
@@ -191,7 +193,23 @@ export async function callFlashRead(
   );
   const { data, error } = response as RawRpcResponse<typeof response>;
   if (error) throw new Error(`Supabase flash read failed (${functionName}): ${error.message}`);
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) return [];
+  const resultMode = ({
+    get_my_flash_result: "flash",
+    get_my_survival_result: "survival",
+    get_my_pyramid_result: "pyramid",
+  } as const)[functionName as CompetitiveResultFunctionName];
+  if (resultMode) {
+    for (const value of data) {
+      assertAttemptLifecycle({
+        challengeMode: resultMode,
+        status: isRecord(value) ? value.attempt_status : undefined,
+        // Flash's answer-review RPC does not project outcome; its fixed mode only admits null.
+        outcome: isRecord(value) ? (resultMode === "flash" && !("attempt_outcome" in value) ? null : value.attempt_outcome) : undefined,
+      });
+    }
+  }
+  return data;
 }
 
 export function toRoomContext(

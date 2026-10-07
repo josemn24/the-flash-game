@@ -1,3 +1,4 @@
+import { InvalidAttemptLifecycleError } from "@/lib/attemptLifecycle";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const cookiesMock = vi.hoisted(() => ({ cookies: vi.fn(), set: vi.fn() }));
@@ -122,6 +123,12 @@ describe("competitive HTTP contract", () => {
       errorCode: "rate_limited",
     });
     log.mockRestore();
+  });
+
+  it.each([new InvalidAttemptLifecycleError(), new AttemptCommandError("invalid_attempt_lifecycle")])("returns a sanitized internal contract error", async error => {
+    const response = errorResponse(error, "lifecycle-test", "competitive.attempt.complete");
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: { code: "invalid_attempt_lifecycle", requestId: "lifecycle-test" } });
   });
 
   it("returns the authoritative retry delay when Alphabet's deadline has not been reached", () => {

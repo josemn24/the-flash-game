@@ -133,7 +133,7 @@ values
   (pg_temp.test_id('attempt-invalidated'), pg_temp.test_id('dave'), pg_temp.test_id('publication-empty'), pg_temp.test_id('challenge-version'), 1, 'competitive', 'invalidated', now() - interval '6 days 2 hours', now() - interval '6 days 1 hour', null, 1, 1),
   (pg_temp.test_id('attempt-survival'), pg_temp.test_id('carol'), pg_temp.test_id('publication-survival'), pg_temp.test_id('survival-challenge-version'), 1, 'competitive', 'completed', now() - interval '2 days 2 hours', now() - interval '2 days 1 hour', 50, 1, 1),
   (pg_temp.test_id('attempt-pyramid'), pg_temp.test_id('carol'), pg_temp.test_id('publication-pyramid'), pg_temp.test_id('pyramid-challenge-version'), 1, 'competitive', 'completed', now() - interval '12 hours', now() - interval '11 hours', 15, 1, 1);
-update public.attempts set outcome = 'passed' where id = pg_temp.test_id('attempt-survival');
+update public.attempts set outcome = 'survived' where id = pg_temp.test_id('attempt-survival');
 update public.attempts set outcome = 'failed' where id = pg_temp.test_id('attempt-pyramid');
 insert into private.flash_point_entries
   (season_id, player_id, scheduled_challenge_id, attempt_id, entry_type, amount, idempotency_key)
@@ -212,7 +212,7 @@ select ok(exists (select 1 from public.get_room_member_review('s07-test-room', p
   'Authorized review receives the immutable solution payload');
 select is((select count(*) from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-survival'), pg_temp.test_id('carol'))), 1::bigint,
   'Survival review returns only reached persisted questions');
-select is((select attempt_outcome from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-survival'), pg_temp.test_id('carol')) limit 1), 'passed',
+select is((select attempt_outcome from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-survival'), pg_temp.test_id('carol')) limit 1), 'survived',
   'Survival review preserves the persisted outcome');
 select is((select count(*) from public.get_room_member_review('s07-test-room', pg_temp.test_id('publication-pyramid'), pg_temp.test_id('carol'))), 7::bigint,
   'Pyramid review returns all seven levels');

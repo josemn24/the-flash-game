@@ -1,3 +1,4 @@
+import { InvalidAttemptLifecycleError } from "@/lib/attemptLifecycle";
 import {
   competitivePerformanceObserver,
   instrumentCompetitiveCommands,
@@ -309,6 +310,10 @@ export function mapAttemptError(error: unknown): AttemptApiError {
   if (error instanceof AuthServiceUnavailableError)
     return new AttemptApiError("auth_unavailable", 503);
   if (error instanceof AttemptApiError) return error;
+  if (error instanceof InvalidAttemptLifecycleError ||
+    (error instanceof AttemptCommandError && error.code === "invalid_attempt_lifecycle")) {
+    return new AttemptApiError("invalid_attempt_lifecycle", 500);
+  }
   if (error instanceof AttemptCommandError) {
     const status =
       error.code === "invalid_mini_wordle_guess" ||

@@ -23,6 +23,9 @@ function replaceBaseAttempt(replacement: Attempt) {
 }
 
 describe("mock domain store negative integrity scenarios", () => {
+  it.each(["passed", "failed", "unknown"])("rejects outcome %s on a completed Flash fixture", outcome => {
+    expectInvalid(replaceBaseAttempt({ ...baseAttempt, outcome: outcome as Attempt["outcome"] }), "invalid lifecycle");
+  });
   it("rejects unsupported content contract versions", () => {
     expectInvalid(
       changed({

@@ -1,3 +1,4 @@
+import type { SurvivalAttemptOutcome, PyramidAttemptOutcome } from "@/types/domain/attempt";
 import type { Challenge, ChallengeAvailabilityStatus, GameMode } from "@/types/gameplay/challenge";
 import type { AnswerReview, RoomChallengeResult } from "@/types/gameplay/completion";
 import type { PracticeQuestion } from "@/types/gameplay/practice";
@@ -53,14 +54,14 @@ export type RoomMemberReviewProgress =
       totalQuestionCount: number;
       initialLives: number;
       livesRemaining: number;
-      outcome: "in_progress" | "eliminated" | "survived";
+      outcome: "in_progress" | SurvivalAttemptOutcome;
     }
   | {
       mode: "pyramid";
       reachedLevelCount: number;
       levelsCleared: number;
       totalLevelCount: number;
-      outcome: "in_progress" | "failed" | "summit";
+      outcome: "in_progress" | PyramidAttemptOutcome;
     }
   | {
       mode: "narrative";

@@ -867,6 +867,7 @@ describe("Supabase history and review capabilities S07", () => {
       const survivalRows = Array.from({ length: 13 }, (_, index) => ({
         ...(index === 11 ? survivalEstimationRow : reviewRows[0]),
         challenge_mode: "survival",
+        attempt_outcome: "eliminated",
         question_count: 20,
         initial_lives: 3,
         publication_id: publicationId,

@@ -57,6 +57,11 @@ describe("SupabaseSuperadminAttemptQueries", () => {
     mocks.createClient.mockResolvedValue({ rpc: mocks.rpc });
   });
 
+  it.each(["passed", "failed", "summit", "survived"])("rejects incompatible Flash outcome %s", async outcome => {
+    mocks.rpc.mockResolvedValue({ data: { publication, attempts: [{ ...attempt, outcome }], nextCursor: null }, error: null });
+    await expect(new SupabaseSuperadminAttemptQueries().listAttempts(publication.roomId, publication.scheduledChallengeId)).rejects.toMatchObject({ code: "invalid_attempt_lifecycle" });
+  });
+
   it("validates the publication list and maps a cursor-paginated attempt list", async () => {
     mocks.rpc
       .mockResolvedValueOnce({ data: { entries: [publication] }, error: null })

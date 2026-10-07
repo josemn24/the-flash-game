@@ -1,3 +1,4 @@
+import type { AttemptOutcome } from "@/types/domain/attempt";
 import type { GameMode } from "@/types/gameplay/challenge";
 import type { CompetitiveHistoryMode, RoomMembershipRole } from "@/types/view-models";
 import type { PublicFunctionRow } from "@/infrastructure/supabase/rpcTypes";
@@ -107,7 +108,7 @@ type RoomMemberReviewOverrides = {
   avatar_path: string | null;
   attempt_status: "completed" | "abandoned";
   attempt_score: number | null;
-  attempt_outcome: string | null;
+  attempt_outcome: AttemptOutcome;
   attempt_completed_at: string | null;
   question_type:
     | "multiple-choice"

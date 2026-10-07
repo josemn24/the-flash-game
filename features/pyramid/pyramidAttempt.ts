@@ -1,3 +1,4 @@
+import type { PyramidAttemptOutcome as PersistedPyramidOutcome } from "@/types/domain/attempt";
 import type { AnswerResult, AnswerValue, PyramidChallenge } from "@/types/gameplay";
 import type { PracticeQuestion } from "@/types/gameplay/practice";
 import { compareChallengeRankingMetrics } from "@/lib/challengeRanking";
@@ -5,7 +6,7 @@ import { isPyramidLevelPassed, normalizePyramidResult } from "@/lib/gameplay/pyr
 
 export const PYRAMID_ATTEMPT_SCHEMA_VERSION = 3;
 
-export type PyramidAttemptOutcome = "failed" | "summit";
+export type PyramidAttemptOutcome = PersistedPyramidOutcome;
 export type PyramidAttemptPhase = "briefing" | "playing" | "transition" | "completed";
 
 export type PyramidAttemptSummary = {

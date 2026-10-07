@@ -4,19 +4,19 @@ import { getCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatu
 describe("competitive attempt status", () => {
   it("maps the lifecycle to the visible room states", () => {
     expect(getCompetitiveAttemptStatus([])).toBe("available");
-    expect(getCompetitiveAttemptStatus([{ status: "in_progress", outcome: null }])).toBe(
+    expect(getCompetitiveAttemptStatus([{ status: "in_progress" }])).toBe(
       "inProgress",
     );
-    expect(getCompetitiveAttemptStatus([{ status: "completed", outcome: "passed" }])).toBe(
+    expect(getCompetitiveAttemptStatus([{ status: "completed" }])).toBe(
       "completed",
     );
-    expect(getCompetitiveAttemptStatus([{ status: "completed", outcome: "failed" }])).toBe(
+    expect(getCompetitiveAttemptStatus([{ status: "completed" }])).toBe(
       "completed",
     );
-    expect(getCompetitiveAttemptStatus([{ status: "abandoned", outcome: null }])).toBe(
+    expect(getCompetitiveAttemptStatus([{ status: "abandoned" }])).toBe(
       "notCompleted",
     );
-    expect(getCompetitiveAttemptStatus([{ status: "invalidated", outcome: null }])).toBe(
+    expect(getCompetitiveAttemptStatus([{ status: "invalidated" }])).toBe(
       "notCompleted",
     );
   });

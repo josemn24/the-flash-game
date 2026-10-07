@@ -50,7 +50,8 @@ language sql stable security definer set search_path = '' as $$
         'answer', answer.answer, 'status', answer.status, 'points', answer.points,
         'timeUsedMs', answer.time_used_ms, 'resultDetails', answer.result_details) order by item.position)
         from private.attempt_answers answer join private.challenge_items item on item.id = answer.challenge_item_id
-        where answer.attempt_id = a.id), '[]'::jsonb))))
+        where answer.attempt_id = a.id), '[]'::jsonb))) ||
+      jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome))
   from public.attempts a
   join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
   join public.seasons season on season.id = sc.season_id
@@ -98,9 +99,10 @@ language sql stable security definer set search_path = '' as $$
         join private.challenge_items item on item.id = answer.challenge_item_id
         where answer.attempt_id = a.id
       ), '[]'::jsonb)
-    )))
+    ))) || jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome, 'score', a.score)
   )
   from public.attempts a
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
   join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
   join public.seasons season on season.id = sc.season_id
   join public.rooms room on room.id = season.room_id

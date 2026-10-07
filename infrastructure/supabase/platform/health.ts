@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261007130000_attempt_control_transfer";
+const canonicalSchemaRevision = "20261007180832_attempt_lifecycle_contracts";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -74,6 +74,12 @@ async function checkDatabase() {
             to_regprocedure('public.get_room_member_review(text,uuid,uuid)')
           ) like '%has_persisted_answer boolean%'
           and pg_get_function_result(to_regprocedure('public.get_my_room_cards()')) like '%member_previews jsonb%'
+        and exists (select 1 from pg_constraint
+          where conrelid = 'public.attempts'::regclass and conname = 'attempts_outcome_values_check')
+        and exists (select 1 from pg_constraint
+          where conrelid = 'public.attempts'::regclass and conname = 'attempts_outcome_status_check')
+        and pg_get_functiondef(to_regprocedure('private.guard_attempt()')) like '%invalid_attempt_lifecycle%'
+        and pg_get_functiondef(to_regprocedure('private.read_completed_attempt(uuid)')) like '%challengeMode%'
           as schema_revision_marker
     `);
     const row = result.rows[0];

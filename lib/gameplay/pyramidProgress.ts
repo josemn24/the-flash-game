@@ -1,6 +1,7 @@
+import type { PyramidAttemptOutcome } from "@/types/domain/attempt";
 import type { AnswerResult } from "@/types/gameplay";
 
-export type CompetitivePyramidOutcome = "in_progress" | "failed" | "summit";
+export type CompetitivePyramidOutcome = "in_progress" | PyramidAttemptOutcome;
 
 export type CompetitivePyramidProgress = {
   readonly reachedLevelCount: number;

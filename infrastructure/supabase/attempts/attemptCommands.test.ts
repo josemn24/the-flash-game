@@ -176,6 +176,16 @@ describe("Supabase attempt database connection", () => {
     expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
   });
 
+  it("rolls back a malformed authoritative completion with the lifecycle code", async () => {
+    client.query.mockImplementation(async (sql: string) => ({
+      rows: [{ result: sql.includes("private.complete_attempt") ? {
+        attemptId, lockVersion: 4, challengeMode: "survival", status: "completed", outcome: "failed", score: 0,
+      } : { abandonedAttempts: 0 } }],
+    }));
+    await expect(commands.completeFromPersistedAnswers({ attemptId: attemptId as never, lockVersion: 3, sessionToken: "token", idempotencyKey: "key" })).rejects.toMatchObject({ code: "invalid_attempt_lifecycle" });
+    expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
+  });
+
   it("sends takeover through the same transactional command boundary", async () => {
     client.query.mockImplementation(async (sql: string) => {
       if (sql.includes("private.take_over_attempt")) {

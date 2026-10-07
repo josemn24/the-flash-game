@@ -2,6 +2,7 @@ import type {
   AnswerStatus,
   Attempt,
   AttemptKind,
+  AttemptLifecycle,
   AttemptOutcome,
   AttemptStatus,
   ContentStatus,
@@ -59,7 +60,7 @@ type PublicationStatesAreExhaustive = Assert<
 type AttemptStatesAreExhaustive = Assert<
   IsEqual<AttemptStatus, "in_progress" | "completed" | "abandoned" | "invalidated">
 >;
-type AttemptOutcomesAreExhaustive = Assert<IsEqual<AttemptOutcome, "passed" | "failed" | null>>;
+type AttemptOutcomesAreExhaustive = Assert<IsEqual<AttemptOutcome, "survived" | "eliminated" | "summit" | "failed" | null>>;
 type AnswerStatesAreExhaustive = Assert<
   IsEqual<AnswerStatus, "correct" | "partial" | "incorrect" | "unanswered" | "timeout">
 >;
@@ -90,3 +91,10 @@ export type DomainTypeAssertions =
   | AttemptOutcomesAreExhaustive
   | AnswerStatesAreExhaustive
   | AttemptKindsAreExhaustive;
+
+// @ts-expect-error A survival attempt cannot reach the pyramid summit.
+const invalidModeOutcome: AttemptLifecycle = { challengeMode: "survival", status: "completed", outcome: "summit" };
+// @ts-expect-error A persisted active attempt cannot already have a terminal outcome.
+const invalidActiveOutcome: AttemptLifecycle = { challengeMode: "pyramid", status: "in_progress", outcome: "failed" };
+void invalidModeOutcome;
+void invalidActiveOutcome;

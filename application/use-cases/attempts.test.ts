@@ -1,3 +1,4 @@
+import { assertAttemptLifecycle } from "@/lib/attemptLifecycle";
 import { describe, expect, it, vi } from "vitest";
 import type { AttemptCommands, EvaluationContext } from "@/application/ports/attempt-commands";
 import type { CompetitiveEvaluator } from "@/application/ports/competitive-evaluator";
@@ -15,7 +16,9 @@ const challengeItemId =
 const receiptId = "33333333-3333-4333-8333-333333333333" as EvaluationContext["receiptId"];
 
 function snapshot(overrides: Partial<AttemptRecoverySnapshot> = {}): AttemptRecoverySnapshot {
-  return {
+  const value = {
+    challengeMode: "flash" as const,
+    outcome: null,
     attemptId,
     scheduledChallengeId:
       "44444444-4444-4444-8444-444444444444" as AttemptRecoverySnapshot["scheduledChallengeId"],
@@ -26,6 +29,8 @@ function snapshot(overrides: Partial<AttemptRecoverySnapshot> = {}): AttemptReco
     answers: [],
     ...overrides,
   };
+  assertAttemptLifecycle(value);
+  return value;
 }
 
 function evaluationContext(): EvaluationContext {
@@ -149,6 +154,8 @@ describe("ApplicationAttemptUseCases", () => {
       attemptId,
       lockVersion: 4,
       status: "completed",
+      challengeMode: "alphabet",
+      outcome: null,
       score: 7,
       answers: [],
     });
@@ -187,6 +194,8 @@ describe("ApplicationAttemptUseCases", () => {
       attemptId,
       lockVersion: 4,
       status: "completed",
+      challengeMode: "alphabet",
+      outcome: null,
       score: 0,
       answers,
     });
@@ -362,6 +371,7 @@ describe("ApplicationAttemptUseCases", () => {
       lockVersion: 8,
       status: "completed",
       score: 7,
+      challengeMode: "survival",
       outcome: "survived",
     });
 
@@ -467,12 +477,16 @@ describe("ApplicationAttemptUseCases", () => {
       attemptId,
       lockVersion: 10,
       status: "completed",
+      challengeMode: "flash",
+      outcome: null,
       score: 10,
     });
     vi.mocked(commands.abandon).mockResolvedValue({
       attemptId,
       lockVersion: 11,
       status: "abandoned",
+      challengeMode: "flash",
+      outcome: null,
       score: null,
     });
 

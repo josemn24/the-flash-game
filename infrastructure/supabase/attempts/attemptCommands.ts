@@ -5,6 +5,12 @@ import {
 import "server-only";
 
 import { Pool, type PoolClient } from "pg";
+import {
+  decodeAttemptRecoverySnapshot,
+  decodeFinishAttemptResult,
+  decodeSavedAttemptResult,
+  decodeSavedAbandonedAttemptResult,
+} from "./attemptLifecycleContracts";
 import type {
   AttemptCommands,
   AttemptContext,
@@ -134,7 +140,12 @@ function commandCode(error: unknown) {
     "unsupported_question",
     "invalid_question_payload",
     "invalid_attempt_context",
+    "invalid_attempt_lifecycle",
   ];
+  if (infrastructureCode === "23514" && error && typeof error === "object" &&
+    "constraint" in error && ["attempts_outcome_values_check", "attempts_outcome_status_check"].includes(String(error.constraint))) {
+    return "invalid_attempt_lifecycle";
+  }
   const domainCode = known.find((candidate) => message.includes(candidate));
   if (domainCode) return domainCode;
   if (
@@ -196,16 +207,17 @@ export async function callAttemptCommand<T>(
   identity: VerifiedAuthIdentity,
   functionName: string,
   input: object,
+  decode?: (value: unknown) => T,
 ): Promise<T> {
   return transaction(identity, async (client) => {
     if ("attemptId" in input && typeof input.attemptId === "string" && input.attemptId.length > 0) {
       await expireStaleAttempt(client, input.attemptId);
     }
-    const result = await client.query<{ result: T }>(
+    const result = await client.query<{ result: unknown }>(
       `select private.${functionName}($1::jsonb) as result`,
       [JSON.stringify(input)],
     );
-    return result.rows[0]?.result as T;
+    return decode ? decode(result.rows[0]?.result) : result.rows[0]?.result as T;
   });
 }
 
@@ -274,9 +286,9 @@ export class SupabaseAttemptCommands implements Pick<
   readCompletedAttempt(attemptId: string) {
     return transaction(this.identity, async (client) => {
       const response = await client.query<{
-        result: Awaited<ReturnType<AttemptCommands["readCompletedAttempt"]>>;
+        result: unknown;
       }>("select private.read_completed_attempt($1::uuid) as result", [attemptId]);
-      return response.rows[0]?.result ?? null;
+      return decodeSavedAttemptResult(response.rows[0]?.result);
     });
   }
 
@@ -293,9 +305,9 @@ export class SupabaseAttemptCommands implements Pick<
   readAbandonedAttempt(attemptId: string) {
     return transaction(this.identity, async (client) => {
       const response = await client.query<{
-        result: Awaited<ReturnType<AttemptCommands["readAbandonedAttempt"]>>;
+        result: unknown;
       }>("select private.read_abandoned_attempt($1::uuid) as result", [attemptId]);
-      return response.rows[0]?.result ?? null;
+      return decodeSavedAbandonedAttemptResult(response.rows[0]?.result);
     });
   }
   start(input: StartAttemptCommand) {
@@ -404,8 +416,8 @@ export class SupabaseAttemptCommands implements Pick<
     return callAttemptCommand<SubmitAnswerResult>(this.identity, "record_evaluation", input);
   }
 
-  abandon(input: Parameters<AttemptCommands["abandon"]>[0]) {
-    return callAttemptCommand<FinishAttemptResult>(this.identity, "abandon_attempt", input);
+  async abandon(input: Parameters<AttemptCommands["abandon"]>[0]) {
+    return callAttemptCommand(this.identity, "abandon_attempt", input, decodeFinishAttemptResult);
   }
 
   recover(input: RecoverAttemptCommand) {
@@ -428,11 +440,11 @@ export class SupabaseAttemptCommands implements Pick<
   readRecovery(attemptId: string, sessionToken: string) {
     return transaction<AttemptRecoverySnapshot>(this.identity, async (client) => {
       await expireStaleAttempt(client, attemptId);
-      const result = await client.query<{ read_attempt_recovery: AttemptRecoverySnapshot }>(
+      const result = await client.query<{ read_attempt_recovery: unknown }>(
         "select private.read_attempt_recovery($1::uuid, $2::text)",
         [attemptId, sessionToken],
       );
-      return result.rows[0]?.read_attempt_recovery as AttemptRecoverySnapshot;
+      return decodeAttemptRecoverySnapshot(result.rows[0]?.read_attempt_recovery);
     });
   }
 
@@ -446,7 +458,7 @@ export class SupabaseAttemptCommands implements Pick<
         [input.attemptId],
       );
       const score = scoreResult.rows[0]?.score ?? 0;
-      const command = await client.query<{ result: FinishAttemptResult }>(
+      const command = await client.query<{ result: unknown }>(
         "select private.complete_attempt($1::jsonb) as result",
         [
           JSON.stringify({
@@ -455,7 +467,7 @@ export class SupabaseAttemptCommands implements Pick<
           }),
         ],
       );
-      return command.rows[0]?.result as FinishAttemptResult;
+      return decodeFinishAttemptResult(command.rows[0]?.result);
     });
   }
 }

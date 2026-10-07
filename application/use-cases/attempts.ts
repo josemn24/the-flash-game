@@ -190,7 +190,7 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
         },
         snapshot: {
           ...initial,
-          status: completed.status,
+          ...completed,
           lockVersion: completed.lockVersion,
           allItemsResolved: true,
           hasOpenInteraction: false,
@@ -233,7 +233,14 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
 
     return {
       recovery,
-      snapshot,
+      snapshot: completed ? {
+        ...snapshot,
+        ...completed,
+        allItemsResolved: true,
+        hasOpenInteraction: false,
+        pendingReceiptId: null,
+        answers: completed.answers ?? snapshot.answers,
+      } : snapshot,
       ...(evaluated ? { evaluated } : {}),
       ...(completed ? { completed } : {}),
     };

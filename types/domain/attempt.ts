@@ -6,9 +6,29 @@ import type {
   ScheduledChallengeId,
 } from "@/types/domain/identifiers";
 import type { DurationMs, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
+import type { GameMode } from "@/types/domain/content";
 
 export type AttemptStatus = "in_progress" | "completed" | "abandoned" | "invalidated";
-export type AttemptOutcome = "passed" | "failed" | null;
+export type SurvivalAttemptOutcome = "survived" | "eliminated";
+export type PyramidAttemptOutcome = "summit" | "failed";
+export type AttemptOutcome = SurvivalAttemptOutcome | PyramidAttemptOutcome | null;
+export type AttemptOutcomeByMode = {
+  readonly flash: null;
+  readonly alphabet: null;
+  readonly narrative: null;
+  readonly survival: SurvivalAttemptOutcome;
+  readonly pyramid: PyramidAttemptOutcome;
+};
+
+/** Mode comes from the immutable challenge version, never a second persisted column. */
+export type AttemptLifecycle = {
+  [Mode in GameMode]: { readonly challengeMode: Mode } & (
+    | { readonly status: "in_progress"; readonly outcome: null }
+    | { readonly status: "abandoned"; readonly outcome: null }
+    | { readonly status: "completed"; readonly outcome: AttemptOutcomeByMode[Mode] }
+    | { readonly status: "invalidated"; readonly outcome: AttemptOutcomeByMode[Mode] | null }
+  );
+}[GameMode];
 export type AttemptKind = "competitive" | "test";
 export type AnswerStatus = "correct" | "partial" | "incorrect" | "unanswered" | "timeout";
 

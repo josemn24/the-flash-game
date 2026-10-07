@@ -1,3 +1,4 @@
+import type { SurvivalAttemptOutcome } from "@/types/domain/attempt";
 import type { AnswerResult } from "@/types/gameplay";
 import type { PracticeQuestionType } from "@/types/gameplay/practice";
 
@@ -5,7 +6,7 @@ type SurvivalMistakeResult = Pick<AnswerResult, "details"> & {
   readonly status: AnswerResult["status"] | "timeout";
 };
 
-export type SurvivalOutcome = "in_progress" | "eliminated" | "survived";
+export type SurvivalOutcome = "in_progress" | SurvivalAttemptOutcome;
 
 export type SurvivalProgress = {
   readonly livesRemaining: number;

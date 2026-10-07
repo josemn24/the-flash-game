@@ -18,6 +18,7 @@ type NoAuthority<T> =
     | "points"
     | "score"
     | "status"
+    | "outcome"
   > extends never
     ? true
     : false;

@@ -1,3 +1,4 @@
+import { assertAttemptLifecycle } from "@/lib/attemptLifecycle";
 import {
   getChallengeDisplayTitle,
   getChallengeFormatLabel,
@@ -1226,6 +1227,7 @@ export function toRoomMemberReviewProgress(
 ): RoomMemberReviewProgress | null {
   const first = rows[0];
   if (!first) return null;
+  assertAttemptLifecycle({ challengeMode:first.challenge_mode, status:first.attempt_status, outcome:first.attempt_outcome });
   const orderedRows = rows.slice().sort((left, right) => left.item_position - right.item_position);
   if (first.challenge_mode === "alphabet") {
     return {
@@ -1245,12 +1247,9 @@ export function toRoomMemberReviewProgress(
       first.question_count,
       reviews,
     );
-    const persistedOutcome =
-      first.attempt_outcome === "passed"
-        ? "survived"
-        : first.attempt_outcome === "failed"
-          ? "eliminated"
-          : progress.outcome;
+    const persistedOutcome = first.attempt_status === "completed" &&
+      (first.attempt_outcome === "survived" || first.attempt_outcome === "eliminated")
+      ? first.attempt_outcome : progress.outcome;
     return {
       mode: "survival",
       totalQuestionCount: first.question_count,
@@ -1261,7 +1260,10 @@ export function toRoomMemberReviewProgress(
   }
   if (first.challenge_mode === "pyramid") {
     const progress = deriveCompetitivePyramidProgress(first.question_count, reviews);
-    return { mode: "pyramid", totalLevelCount: first.question_count, ...progress };
+    return { mode: "pyramid", totalLevelCount: first.question_count, ...progress,
+      outcome: first.attempt_status === "completed" &&
+        (first.attempt_outcome === "summit" || first.attempt_outcome === "failed")
+        ? first.attempt_outcome : progress.outcome };
   }
   if (first.challenge_mode === "narrative") {
     return {

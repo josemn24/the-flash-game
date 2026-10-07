@@ -375,7 +375,7 @@ insert into public.attempts
 values
   (${attempt(ids.attemptSurvival)}, ${sqlString(carol)}, ${pub(ids.publicationSurvival)}, ${survivalVersion},
    1, 'competitive', 'completed', ${sqlString("2026-01-13T10:00:00Z")},
-   ${sqlString("2026-01-14T00:10:00Z")}, 50, 1, 1, 'passed'),
+   ${sqlString("2026-01-14T00:10:00Z")}, 50, 1, 1, 'survived'),
   (${attempt(ids.attemptPyramid)}, ${sqlString(carol)}, ${pub(ids.publicationPyramid)}, ${pyramidVersion},
    1, 'competitive', 'completed', ${sqlString("2026-01-15T10:00:00Z")},
    ${sqlString("2026-01-16T00:10:00Z")}, 15, 1, 1, 'failed');
