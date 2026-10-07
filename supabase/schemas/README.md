@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 58 archivos y su revisión canónica es
-`20261006110000_competitive_command_recovery`. Las migraciones incrementales corresponden a esos archivos;
+`20261007120000_permission_revoked_attempt_closure`. Las migraciones incrementales corresponden a esos archivos;
 la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -30,7 +30,8 @@ S17 añade clonación, comparación editorial y archivado optimista de versiones
 y Pirámide; los borradores clonados mantienen referencias a preguntas publicadas y las publicaciones
 existentes siguen resolviendo versiones archivadas.
 S18b permite al owner conceder/quitar
-admin y eliminar lógicamente miembros mediante `public.manage_room_member(jsonb)`; transferencia,
+admin y eliminar lógicamente miembros mediante `public.manage_room_member(jsonb)`; eliminar un
+miembro cierra atómicamente sus intentos competitivos activos y revoca sus sesiones; transferencia,
 bloqueo/desbloqueo e invitaciones completas siguen pendientes. S10 añade preparación/edición de
 borradores y activación explícita de temporadas; S11 añade el editor Flash de 2 a 20 preguntas y
 publicación inmutable; S12 añade calendario local y tick temporal sin participación ficticia. E01

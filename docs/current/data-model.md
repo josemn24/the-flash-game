@@ -422,9 +422,11 @@ Constraints y reglas:
   `challenge_version_id` inmutable en la tabla como referencia redundante para consultas y
   restricciones compuestas; no es una segunda relación conceptual.
 - Un intento abandonado conserva respuestas aceptadas, pero su `progress_payload` recuperable se
-  elimina o invalida. `terminal_reason` distingue abandono voluntario, `inactivity_timeout` o
-  invalidación administrativa; una desconexión mientras el desafío sigue vigente se resuelve por
-  recuperación y no es motivo terminal.
+  elimina o invalida. `terminal_reason` distingue abandono voluntario, `inactivity_timeout`,
+  `permission_revoked` o invalidación administrativa; una desconexión mientras el desafío sigue
+  vigente se resuelve por recuperación y no es motivo terminal. Cuando la membresía pasa a
+  `removed`/`banned`, el cierre competitivo y la revocación de sesiones se confirman en la misma
+  transacción, sin crear acreditaciones nuevas.
 
 Para F19, `progress_payload` contiene únicamente el tipo, el `challengeItemId` y la secuencia de
 swaps aceptados. La solución de cuatro palabras permanece en `question_version_solutions`; cada swap

@@ -201,9 +201,9 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
   lógica por el owner; transferencia, bloqueo/desbloqueo y el flujo completo de invitaciones permanecen
   pendientes.
 - La [política de pérdida del permiso competitivo](../decisions/decisions.md#20-pérdida-del-permiso-para-jugar)
-  está aprobada: bloqueo inmediato, cierre del intento como no completado sin acreditar puntos y
-  conservación de resultados previos. El runtime ya deniega comandos tras retirar la membresía;
-  el cierre automático, la concurrencia y el aviso coordinado de UI siguen pendientes.
+  está implementada: bloqueo inmediato, cierre atómico del intento como no completado sin acreditar
+  puntos, revocación de sesiones y conservación de resultados previos. La recuperación terminal
+  muestra el motivo específico; la transferencia entre dispositivos sigue pendiente.
 - Narrative competitivo ya usa `ApplicationCompetitiveChallengeReads`, `SupabaseNarrativeQueries` y el
   ciclo persistente `start → prepare → answer → complete`. Las escenas no consumen tiempo; cada
   pregunta se libera desde Supabase, la evaluación/puntuación permanecen en servidor y la revisión

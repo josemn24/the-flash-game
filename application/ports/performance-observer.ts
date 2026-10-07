@@ -24,6 +24,7 @@ export interface PerformanceObserver {
       | "evaluation_recovered"
       | "recovery_requested"
       | "completed_result_recovered"
+      | "permission_revoked_result_recovered"
       | "review_pending",
   ): void;
 }

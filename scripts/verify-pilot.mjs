@@ -15,7 +15,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261006140000_avatar_confirmation_recovery",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261007120000_permission_revoked_attempt_closure",
 };
 
 async function run(label, command, args, options = {}) {

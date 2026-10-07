@@ -53,6 +53,8 @@ export class CompetitiveSessionEngine {
   private automaticRetries = 0;
   private abortController = new AbortController();
   private retrying = false;
+  private terminalRecoveryAttempted = false;
+  private terminalRecoveryRequested = false;
   private refresh: () => void;
   readonly policy;
   readonly lifecycle;
@@ -169,7 +171,7 @@ export class CompetitiveSessionEngine {
       return true;
     } catch (error) {
       if (!this.active || generation !== this.generation) return false;
-      this.failed(command, step, error);
+      await this.failed(command, step, error);
       return false;
     } finally {
       if (this.active) this.timers.cancel("status");
@@ -192,6 +194,7 @@ export class CompetitiveSessionEngine {
     } catch (error) {
       if (!(error instanceof PendingCommandBlocked)) throw error;
     }
+    await this.recoverTerminalIfRequested();
     if (accepted && this.active) await step.after?.();
     if (!accepted && this.snapshot.lifecycleError?.code === "stale_version" && !this.reconciling)
       await this.reconcile();
@@ -210,7 +213,7 @@ export class CompetitiveSessionEngine {
     }
     return accepted;
   };
-  private failed(command: PendingCommand, step: CommandStep, error: unknown) {
+  private async failed(command: PendingCommand, step: CommandStep, error: unknown) {
     const code = error instanceof CompetitiveCommandError ? error.code : undefined;
     if (
       [
@@ -219,6 +222,7 @@ export class CompetitiveSessionEngine {
         "competitive_access_denied",
         "auth_required",
         "unauthorized",
+        "attempt_permission_revoked",
       ].includes(code ?? "") ||
       (error instanceof CompetitiveCommandError &&
         error.status === 401 &&
@@ -226,6 +230,25 @@ export class CompetitiveSessionEngine {
     ) {
       this.timers.clear();
       this.pendingStep = undefined;
+      if (
+        !this.terminalRecoveryAttempted &&
+        command.operation !== "recover" &&
+        this.snapshot.attempt
+      ) {
+        this.terminalRecoveryAttempted = true;
+        this.commit({
+          type: "command_failed",
+          definitive: true,
+          lifecycleError: {
+            operation: command.operation,
+            code,
+            retryable: false,
+            message: "Comprobando el estado final de la partida.",
+          },
+        });
+        this.terminalRecoveryRequested = true;
+        return;
+      }
       this.commit({
         type: "authorization_lost",
         error: {
@@ -322,6 +345,24 @@ export class CompetitiveSessionEngine {
     }
   }
 
+  private async recoverTerminalIfRequested() {
+    if (!this.terminalRecoveryRequested || !this.active) return false;
+    this.terminalRecoveryRequested = false;
+    if (await this.lifecycle.recoverTerminal()) return true;
+    this.timers.clear();
+    this.pendingStep = undefined;
+    this.commit({
+      type: "authorization_lost",
+      error: {
+        operation: "recover",
+        code: "attempt_session_missing",
+        retryable: false,
+        message: "Ya no tienes permiso para continuar esta partida.",
+      },
+    });
+    return false;
+  }
+
   retry = async (automatic = false) => {
     // React handlers can pass an event; only our internal true means an automatic replay.
     automatic = automatic === true;
@@ -369,6 +410,7 @@ export class CompetitiveSessionEngine {
     } finally {
       this.retrying = false;
     }
+    await this.recoverTerminalIfRequested();
     if (accepted && this.active) await step.after?.();
     if (!accepted && this.snapshot.lifecycleError?.code === "stale_version") await this.reconcile();
   };

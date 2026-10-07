@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   recover: vi.fn(),
   readAttemptToken: vi.fn(),
   readTerminalAttemptResult: vi.fn(),
+  readAbandonedAttemptResult: vi.fn(),
   readTerminalReviewSafely: vi.fn(),
   clearAttemptToken: vi.fn(),
 }));
@@ -24,6 +25,7 @@ vi.mock("@/server/competitive/attempt-api", () => ({
 }));
 vi.mock("@/server/competitive/flashResult", () => ({
   readTerminalAttemptResult: mocks.readTerminalAttemptResult,
+  readAbandonedAttemptResult: mocks.readAbandonedAttemptResult,
   readTerminalReviewSafely: mocks.readTerminalReviewSafely,
 }));
 import { POST } from "./[attemptId]/complete/route";
@@ -88,6 +90,37 @@ describe("Alphabet completion HTTP contract", () => {
     expect((await invoke()).status).toBe(409);
     expect(mocks.clearAttemptToken).not.toHaveBeenCalled();
   });
+  it("returns a safe permission-revoked result without review solutions", async () => {
+    mocks.complete.mockRejectedValue({ code: "attempt_permission_revoked" });
+    mocks.readTerminalAttemptResult.mockResolvedValue(undefined);
+    mocks.readAbandonedAttemptResult.mockResolvedValue({
+      scheduledChallengeId: "publication",
+      result: {
+        attemptId: "attempt",
+        status: "abandoned",
+        terminalReason: "permission_revoked",
+        lockVersion: 4,
+        score: null,
+        answers: [{ ...answers[0], status: "correct", points: 10 }],
+      },
+    });
+    const response = await invoke();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      attemptId: "attempt",
+      status: "abandoned",
+      terminalReason: "permission_revoked",
+      lockVersion: 4,
+      score: null,
+      answers: [{ ...answers[0], status: "correct", points: 10 }],
+      review: [],
+    });
+    expect(mocks.readAbandonedAttemptResult).toHaveBeenCalledWith("attempt", {
+      authUserId: "user",
+    });
+    expect(mocks.clearAttemptToken).toHaveBeenCalledWith("attempt", "user", "publication");
+    expect(mocks.readTerminalReviewSafely).not.toHaveBeenCalled();
+  });
   it.each(["attempt_session_missing", "session_revoked"])(
     "recovers a terminal Alphabet after recovery lost its response and reports %s",
     async (code) => {
@@ -109,6 +142,35 @@ describe("Alphabet completion HTTP contract", () => {
       expect(mocks.clearAttemptToken).toHaveBeenCalledWith("attempt", "user", "publication");
     },
   );
+  it("recovers permission-revoked state without a controller cookie", async () => {
+    mocks.readAttemptToken.mockRejectedValue({ code: "attempt_session_missing" });
+    mocks.readTerminalAttemptResult.mockResolvedValue(undefined);
+    mocks.readAbandonedAttemptResult.mockResolvedValue({
+      scheduledChallengeId: "publication",
+      result: {
+        attemptId: "attempt",
+        status: "abandoned",
+        terminalReason: "permission_revoked",
+        lockVersion: 4,
+        score: null,
+        answers,
+      },
+    });
+    const response = await recover(
+      new Request("http://localhost/api/competitive/attempts/attempt/recover", {
+        method: "POST",
+        body: JSON.stringify({ lockVersion: 4 }),
+      }),
+      { params: Promise.resolve({ attemptId: "attempt" }) },
+    );
+    expect(await response.json()).toMatchObject({
+      status: "abandoned",
+      terminalReason: "permission_revoked",
+      phase: "results",
+      answers,
+    });
+    expect(mocks.clearAttemptToken).toHaveBeenCalledWith("attempt", "user", "publication");
+  });
 });
 
 it("returns confirmed points when Storage prevents loading the review", async () => {

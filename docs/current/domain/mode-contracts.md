@@ -32,7 +32,8 @@ Estas reglas se aplican a cualquier modo cuando se juega dentro de una sala:
   bloquea nuevas acciones y cierra el intento como `abandoned`/`notCompleted`, con motivo separado
   del abandono voluntario y sin acreditar puntos. Conserva hechos aceptados y resultados anteriores;
   reincorporarse no reabre el intento. Esta regla común también se aplica a los modos cuyo contrato
-  menciona el abandono explícito; el cierre por permisos está aprobado y pendiente de implementar.
+  menciona el abandono explícito; el cierre se realiza server-side con motivo
+  `permission_revoked` y conserva solo la proyección terminal segura.
 - La [política de guardado aprobada](../../decisions/decisions.md#19-guardado-automático-y-recuperación-de-partidas)
   conserva en el servidor respuestas aceptadas, puntos, progreso y tiempos. Las respuestas sin
   enviar permanecen solo en memoria y no se restauran al recargar; los checkpoints y eventos

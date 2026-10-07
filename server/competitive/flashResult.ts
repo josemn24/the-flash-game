@@ -39,7 +39,10 @@ export async function readTerminalAttemptResult(attemptId: string, identity: Aut
 }
 
 export async function readAbandonedAttemptResult(attemptId: string, identity: AuthenticatedActor) {
-  return new SupabaseAttemptCommands(identity).readAbandonedAttempt(attemptId);
+  const saved = await new SupabaseAttemptCommands(identity).readAbandonedAttempt(attemptId);
+  if (saved?.result.terminalReason === "permission_revoked")
+    competitivePerformanceObserver.recordRecovery?.("permission_revoked_result_recovered");
+  return saved;
 }
 
 export async function readTerminalReviewSafely(attemptId: string) {

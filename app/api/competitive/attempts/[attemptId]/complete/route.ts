@@ -17,6 +17,7 @@ import type { AttemptId } from "@/types/domain/identifiers";
 import {
   readTerminalReviewSafely,
   readTerminalAttemptResult,
+  readAbandonedAttemptResult,
 } from "@/server/competitive/flashResult";
 
 export const runtime = "nodejs";
@@ -52,16 +53,22 @@ export async function POST(
             "attempt_session_missing",
             "session_revoked",
             "not_authorized",
+            "attempt_permission_revoked",
             "attempt_terminal",
           ].includes(code)
         ) {
           const saved = await readTerminalAttemptResult(attemptId, identity);
           if (saved) return saved;
+          const abandoned = await readAbandonedAttemptResult(attemptId, identity);
+          if (abandoned) return abandoned;
         }
         throw error;
       }
     })();
-    const review = await readTerminalReviewSafely(attemptId);
+    const review =
+      completed.result.status === "completed"
+        ? await readTerminalReviewSafely(attemptId)
+        : { review: [] as const };
     await clearAttemptToken(attemptId, identity.authUserId, completed.scheduledChallengeId);
     return responseFor(
       { ...completed.result, ...review },

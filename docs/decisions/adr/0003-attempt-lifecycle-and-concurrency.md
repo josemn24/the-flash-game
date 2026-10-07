@@ -46,14 +46,16 @@ desde la reacción o escena correspondiente; Pirámide falla y completa si ya co
 Alfabeto mantiene su deadline global y registra un pase por interrupción distinto del pase voluntario.
 `invalidated` se reserva para fraude o administración y no forma parte de esta recuperación.
 
-## Actualización por pérdida del permiso competitivo (2026-10-06)
+## Actualización por pérdida del permiso competitivo (2026-10-07)
 
 La [decisión aprobada de permisos](../decisions.md#20-pérdida-del-permiso-para-jugar) añade un cierre
 terminal distinto de la recuperación por interrupción: perder el permiso para jugar bloquea nuevas
 acciones y cierra el intento como `abandoned`, con motivo diferenciado del abandono voluntario y sin
 acreditación. Conserva los hechos aceptados y los puntos de intentos completados anteriormente;
-reincorporarse no reabre el intento. El cierre automático está pendiente de implementar. Esto no
-afecta a la recuperación por pérdida de cookies/Auth ni a una transferencia autorizada de control.
+reincorporarse no reabre el intento. El cierre automático está implementado localmente mediante una
+transacción que actualiza la membresía, cierra el intento y revoca sus sesiones. Quedan pendientes
+la validación en staging y la reconciliación operativa de datos preexistentes. Esto no afecta a la
+recuperación por pérdida de cookies/Auth ni a una transferencia autorizada de control.
 
 ## Actualización por incidencias del servicio (2026-10-06)
 

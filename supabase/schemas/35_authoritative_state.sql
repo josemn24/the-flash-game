@@ -90,3 +90,139 @@ alter table private.answer_receipts enable row level security;
 revoke all on private.command_requests, private.attempt_timing_units,
   private.interaction_intervals, private.prepared_interactions, private.answer_receipts
   from public, anon, authenticated, service_role;
+
+-- Shared terminal closure for competitive attempts. The caller must already
+-- hold the membership/room lock when this is used for permission revocation.
+-- It deliberately preserves receipts/evaluations and never writes points.
+create function private.close_attempt_as_abandoned(
+  target_attempt uuid,
+  closed_at timestamptz,
+  terminal_reason_value text,
+  audit_actor uuid,
+  audit_request_id text,
+  audit_reason text
+) returns boolean
+language plpgsql volatile security definer set search_path = '' as $$
+declare
+  attempt_row public.attempts%rowtype;
+  before_payload jsonb;
+begin
+  if terminal_reason_value not in ('abandon', 'inactivity_timeout', 'permission_revoked')
+    or closed_at is null
+    or audit_request_id is null then
+    raise exception 'invalid_attempt_closure' using errcode = '22023';
+  end if;
+
+  select * into attempt_row
+  from public.attempts
+  where id = target_attempt
+  for update;
+
+  if not found or attempt_row.kind <> 'competitive' or attempt_row.status <> 'in_progress' then
+    return false;
+  end if;
+
+  before_payload := jsonb_build_object(
+    'status', attempt_row.status,
+    'lockVersion', attempt_row.lock_version,
+    'score', attempt_row.score,
+    'lastActivityAt', attempt_row.last_activity_at,
+    'deadlineAt', attempt_row.deadline_at
+  );
+
+  update private.interaction_intervals interval_row
+  set ended_at = greatest(interval_row.started_at, least(closed_at, timing_unit.deadline_at)),
+      end_reason = 'abandon'
+  from private.attempt_timing_units timing_unit
+  where interval_row.attempt_id = attempt_row.id
+    and interval_row.ended_at is null
+    and timing_unit.id = interval_row.timing_unit_id;
+
+  delete from private.prepared_interactions where attempt_id = attempt_row.id;
+
+  update public.attempts
+  set status = 'abandoned',
+      score = null,
+      outcome = null,
+      completed_at = closed_at,
+      progress_payload = null,
+      terminal_reason = terminal_reason_value,
+      lock_version = lock_version + 1
+  where id = attempt_row.id and status = 'in_progress'
+  returning * into attempt_row;
+
+  if not found then return false; end if;
+
+  update private.attempt_sessions
+  set revoked_at = closed_at
+  where attempt_id = attempt_row.id and revoked_at is null;
+
+  insert into private.audit_log(
+    actor_player_id, action, entity_type, entity_id, reason, request_id,
+    before_payload, after_payload
+  ) values (
+    audit_actor,
+    case when terminal_reason_value = 'inactivity_timeout'
+      then 'expire_stale_attempt'
+      else 'close_attempt_' || terminal_reason_value
+    end,
+    'attempt', attempt_row.id,
+    audit_reason, audit_request_id, before_payload,
+    jsonb_build_object(
+      'status', 'abandoned',
+      'lockVersion', attempt_row.lock_version,
+      'score', null,
+      'completedAt', closed_at,
+      'terminalReason', terminal_reason_value
+    )
+  );
+  return true;
+end;
+$$;
+alter function private.close_attempt_as_abandoned(uuid, timestamptz, text, uuid, text, text)
+  owner to postgres;
+revoke all on function private.close_attempt_as_abandoned(uuid, timestamptz, text, uuid, text, text)
+  from public, anon, authenticated, service_role;
+
+create function private.close_attempts_for_permission_loss(
+  target_player uuid,
+  target_room uuid,
+  closed_at timestamptz,
+  audit_actor uuid,
+  audit_request_id text
+) returns integer
+language plpgsql volatile security definer set search_path = '' as $$
+declare
+  attempt_id uuid;
+  closed_count integer := 0;
+begin
+  for attempt_id in
+    select attempt.id
+    from public.attempts attempt
+    join public.scheduled_challenges schedule on schedule.id = attempt.scheduled_challenge_id
+    join public.seasons season on season.id = schedule.season_id
+    where attempt.player_id = target_player
+      and attempt.kind = 'competitive'
+      and attempt.status = 'in_progress'
+      and season.room_id = target_room
+    order by attempt.id
+    for update of attempt
+  loop
+    if private.close_attempt_as_abandoned(
+      attempt_id,
+      closed_at,
+      'permission_revoked',
+      audit_actor,
+      audit_request_id || ':permission_revoked:' || attempt_id::text,
+      'Competitive permission revoked for the room membership'
+    ) then
+      closed_count := closed_count + 1;
+    end if;
+  end loop;
+  return closed_count;
+end;
+$$;
+alter function private.close_attempts_for_permission_loss(uuid, uuid, timestamptz, uuid, text)
+  owner to postgres;
+revoke all on function private.close_attempts_for_permission_loss(uuid, uuid, timestamptz, uuid, text)
+  from public, anon, authenticated, service_role;

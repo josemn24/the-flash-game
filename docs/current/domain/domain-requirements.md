@@ -165,8 +165,8 @@ No son funciones de la UI pública.
   membresía competitiva activa y la publicación está disponible.
   [Perder ese permiso](../../decisions/decisions.md#20-pérdida-del-permiso-para-jugar) bloquea nuevas
   acciones y cierra el intento en curso como no completado, sin acreditar puntos ni reabrirlo
-  después de reincorporarse. Se conservan los resultados ya completados. El bloqueo existe;
-  el cierre automático y su coordinación están pendientes de implementar.
+  después de reincorporarse. Se conservan los resultados ya completados. La membresía, el cierre,
+  la revocación de sesiones y la auditoría se coordinan en una única transacción.
 - **FR-19 —** El inicio oficial consume el único intento competitivo del jugador para ese desafío.
   (**Objetivo confirmado para la primera producción**)
 - **FR-20 —** Mientras el intento conserve el estado `inProgress`, una reapertura con la sesión
@@ -421,9 +421,9 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
   validarse en servidor cuando exista backend.
 - **Resuelta (2026-09-13):** un resultado de cero Flash Points sigue siendo `completed` si el jugador
   llegó al final del flujo y se incluye en el ranking del desafío.
-- **Resuelta (2026-09-13, precisada 2026-09-15 y ampliada 2026-09-29):** `abandoned` se reserva
+- **Resuelta (2026-09-13, precisada 2026-09-15, ampliada 2026-09-29 y cerrada 2026-10-07):** `abandoned` se reserva
   para un intento iniciado, por abandono explícito, `inactivity_timeout` o pérdida del permiso
-  competitivo (política aprobada el 2026-10-06, cierre pendiente de implementar); `expired` se reserva
+  competitivo (`permission_revoked`); `expired` se reserva
   para una publicación que termina antes de que el jugador empiece. Una interrupción abierta mientras
   el desafío sigue vigente se recupera por modo y no equivale a abandono automático.
 - **Resuelta (2026-09-13):** `expired` ya no forma parte de `AttemptStatus`. El mock deriva la

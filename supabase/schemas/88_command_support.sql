@@ -32,6 +32,16 @@ revoke all on function private.lock_command_key(uuid, text) from public, anon, a
 create function private.authorize_attempt_replay(target_attempt uuid, token_hash text) returns void
 language plpgsql stable security definer set search_path = '' as $$
 begin
+  if exists (
+    select 1 from public.attempts a
+    where a.id = target_attempt
+      and a.player_id = private.current_player_id()
+      and a.kind = 'competitive'
+      and a.status = 'abandoned'
+      and a.terminal_reason = 'permission_revoked'
+  ) then
+    raise exception 'attempt_permission_revoked' using errcode = '42501';
+  end if;
   if not exists (
     select 1 from public.attempts a
     join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id

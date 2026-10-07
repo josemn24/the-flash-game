@@ -15,6 +15,7 @@ import {
 import {
   readTerminalReviewSafely,
   readTerminalAttemptResult,
+  readAbandonedAttemptResult,
 } from "@/server/competitive/flashResult";
 import type { AttemptId } from "@/types/domain/identifiers";
 import type { RecoveryUseCaseResult } from "@/application/ports/attempt-use-cases";
@@ -50,6 +51,7 @@ export async function POST(
           "attempt_session_missing",
           "session_revoked",
           "not_authorized",
+          "attempt_permission_revoked",
           "attempt_terminal",
         ].includes(mapAttemptError(error).code)
       ) {
@@ -58,6 +60,17 @@ export async function POST(
           await clearAttemptToken(attemptId, identity.authUserId, saved.scheduledChallengeId);
           return responseFor(
             { ...saved.result, ...(await readTerminalReviewSafely(attemptId)), phase: "results" },
+            200,
+            requestId,
+            "competitive.attempt.recover",
+            startedAt,
+          );
+        }
+        const abandoned = await readAbandonedAttemptResult(attemptId, identity);
+        if (abandoned) {
+          await clearAttemptToken(attemptId, identity.authUserId, abandoned.scheduledChallengeId);
+          return responseFor(
+            { ...abandoned.result, phase: "results" },
             200,
             requestId,
             "competitive.attempt.recover",

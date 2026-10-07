@@ -48,11 +48,11 @@ Cada modo debe declarar explícitamente:
 - Procedimiento concreto para conceder y retirar el rol global `superadmin`.
 - Interfaz y flujo de auditoría para correcciones de puntuación.
 - Límites de frecuencia por operación competitiva.
-- Implementación del [bloqueo inmediato aprobado](decisions.md#20-pérdida-del-permiso-para-jugar):
-  cierre idempotente del intento como no completado, motivo auditado, coordinación atómica con
-  respuestas/finalización y aviso de UI. El runtime ya deniega nuevas acciones tras expulsar,
-  pero no cierra el intento automáticamente. Permitir terminar tras perder el permiso ya no es
-  una cuestión abierta; la conservación de puntos completados también queda confirmada.
+- Validación operativa del [bloqueo inmediato aprobado](decisions.md#20-pérdida-del-permiso-para-jugar):
+  la implementación local ya cierra idempotentemente el intento como no completado, registra el
+  motivo, coordina la membresía con respuestas/finalización, revoca la sesión y actualiza la UI.
+  Quedan staging, la reconciliación de datos preexistentes y las carreras de despliegue; permitir
+  terminar tras perder el permiso ya no es una cuestión abierta.
 - Política de borradores de formularios administrativos y de perfil: alcance, duración, identidad
   y tratamiento de información sensible. El guardado de partidas ya está aprobado; no incluye
   guardar respuestas sin enviar ni aprobar autosave para estos formularios.

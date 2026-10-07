@@ -18,6 +18,8 @@ declare
   before_payload jsonb;
   after_payload jsonb;
   result jsonb;
+  closed_at timestamptz;
+  closed_attempts integer := 0;
 begin
   if jsonb_typeof(input) is distinct from 'object'
     or not input ?& array['idempotencyKey','roomKey','targetPlayerId','action']
@@ -113,10 +115,18 @@ begin
     where id = target_membership.id
     returning * into target_membership;
   else
+    closed_at := clock_timestamp();
     update public.room_memberships
-    set status = 'removed', ended_at = clock_timestamp()
+    set status = 'removed', ended_at = closed_at
     where id = target_membership.id
     returning * into target_membership;
+    closed_attempts := private.close_attempts_for_permission_loss(
+      target_player_id,
+      room_row.id,
+      closed_at,
+      actor,
+      key
+    );
   end if;
 
   result := jsonb_build_object(
@@ -124,7 +134,8 @@ begin
     'targetPlayerId', target_membership.player_id,
     'action', action_value,
     'role', target_membership.role,
-    'status', target_membership.status
+    'status', target_membership.status,
+    'closedAttemptCount', closed_attempts
   );
   after_payload := jsonb_build_object(
     'playerId', target_membership.player_id,

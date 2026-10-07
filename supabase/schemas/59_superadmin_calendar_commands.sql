@@ -520,7 +520,6 @@ declare
   now_value timestamptz;
   attempt_row public.attempts%rowtype;
   abandoned_count integer := 0;
-  before_payload jsonb;
 begin
   if coalesce(current_setting('role', true), '') <> 'service_role' then
     raise exception 'attempt_expiration_unauthorized' using errcode = '42501';
@@ -577,53 +576,14 @@ begin
     order by attempt.id
     for update of attempt skip locked
   loop
-    before_payload := jsonb_build_object(
-      'status', attempt_row.status,
-      'lockVersion', attempt_row.lock_version,
-      'score', attempt_row.score,
-      'lastActivityAt', attempt_row.last_activity_at,
-      'deadlineAt', attempt_row.deadline_at
-    );
-
-    update private.interaction_intervals interval_row
-    set ended_at = greatest(interval_row.started_at, least(now_value, timing_unit.deadline_at)),
-        end_reason = 'abandon'
-    from private.attempt_timing_units timing_unit
-    where interval_row.attempt_id = attempt_row.id
-      and interval_row.ended_at is null
-      and timing_unit.id = interval_row.timing_unit_id;
-
-    delete from private.prepared_interactions where attempt_id = attempt_row.id;
-    update public.attempts
-    set status = 'abandoned',
-        score = null,
-        outcome = null,
-        completed_at = now_value,
-        progress_payload = null,
-        terminal_reason = 'inactivity_timeout',
-        lock_version = lock_version + 1
-    where id = attempt_row.id
-      and status = 'in_progress';
-    if found then
-      update private.attempt_sessions
-      set revoked_at = now_value
-      where attempt_id = attempt_row.id and revoked_at is null;
-
-      insert into private.audit_log(
-        actor_player_id, action, entity_type, entity_id, reason, request_id,
-        before_payload, after_payload
-      ) values (
-        null, 'expire_stale_attempt', 'attempt', attempt_row.id,
-        '15 minutes without activity after challenge closure or deadline', run_id_value,
-        before_payload,
-        jsonb_build_object(
-          'status', 'abandoned',
-          'lockVersion', attempt_row.lock_version + 1,
-          'score', null,
-          'completedAt', now_value,
-          'terminalReason', 'inactivity_timeout'
-        )
-      );
+    if private.close_attempt_as_abandoned(
+      attempt_row.id,
+      now_value,
+      'inactivity_timeout',
+      null,
+      run_id_value || ':inactivity_timeout:' || attempt_row.id::text,
+      '15 minutes without activity after challenge closure or deadline'
+    ) then
       abandoned_count := abandoned_count + 1;
     end if;
   end loop;

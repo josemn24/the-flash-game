@@ -83,6 +83,7 @@ function commandCode(error: unknown) {
   const message = error instanceof Error ? error.message : "";
   const known = [
     "not_authorized",
+    "attempt_permission_revoked",
     "competitive_access_denied",
     "session_revoked",
     "stale_version",

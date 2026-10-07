@@ -28,6 +28,9 @@ create index attempts_publication_version_idx on public.attempts (scheduled_chal
 create index attempts_inactivity_candidates_idx
   on public.attempts (last_activity_at, started_at, scheduled_challenge_id)
   where kind = 'competitive' and status = 'in_progress';
+create index attempts_active_player_idx
+  on public.attempts (player_id, scheduled_challenge_id)
+  where kind = 'competitive' and status = 'in_progress';
 create unique index sessions_one_unrevoked_idx on private.attempt_sessions (attempt_id)
   where revoked_at is null;
 create index sessions_attempt_idx on private.attempt_sessions (attempt_id);

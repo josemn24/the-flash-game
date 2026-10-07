@@ -40,6 +40,11 @@ ni acredita el intento abandonado.
 Si se pierde la confirmación de un abandono explícito, la cuenta propietaria con permisos vigentes
 recupera el resultado original aunque su cookie ya esté revocada. Una expiración sin comando de
 abandono no se presenta como un abandono solicitado por el jugador.
+Si la membresía competitiva pasa a `removed` o `banned`, la misma transacción cierra los intentos
+competitivos activos como `abandoned` con `terminalReason: permission_revoked`, conserva respuestas y
+evaluaciones aceptadas, revoca sesiones y no acredita puntos. El propietario puede recuperar esa
+proyección terminal segura aunque la membresía ya no esté activa; no recibe nuevas preguntas ni
+soluciones y no puede enviar comandos.
 
 ## Presupuesto del cliente
 
@@ -87,15 +92,17 @@ con la cookie ya eliminada, sin acreditación ni controlador activo.
 
 Los eventos de recuperación se incorporan a `competitive_performance` cuando
 `FLASH_PERFORMANCE_DIAGNOSTICS=1`: recepción pendiente, evaluación repetida/recuperada, solicitud
-de recuperación, resultado terminal recuperado y revisión pendiente. El navegador registra
+de recuperación, resultado terminal recuperado, resultado terminal por permiso recuperado y revisión
+pendiente. El navegador registra
 `competitive_command_uncertain` y `competitive_command_replay` con operación y contador/tipo de retry.
 No incluyen payloads, respuestas, tokens, soluciones ni URLs firmadas. Son diagnósticos, no una cola
 ni un registro alternativo de respuestas/puntos.
 
 ## Despliegue
 
-1. Aplicar [la migración](../../supabase/migrations/20261006110000_competitive_command_recovery.sql)
-   antes del cliente y verificar la revisión `20261006110000_competitive_command_recovery`.
+1. Aplicar las migraciones [de recuperación](../../supabase/migrations/20261006110000_competitive_command_recovery.sql)
+   y [de cierre por permisos](../../supabase/migrations/20261007120000_permission_revoked_attempt_closure.sql)
+   antes del cliente y verificar la revisión `20261007120000_permission_revoked_attempt_closure`.
    Mantiene datos existentes; no recalcula puntos, añade tablas ni purga claves.
 2. Validar en staging los mismos cortes después del commit y antes de la evaluación, fallo de
    acreditación, concurrencia, revocación y Storage. Usar cuentas/publicaciones de prueba.
@@ -104,5 +111,5 @@ ni un registro alternativo de respuestas/puntos.
    trata conforme a [la política de incidencias](../decisions/service-incidents.md).
 
 No se han ejecutado migraciones ni pruebas contra staging. Quedan fuera de este cambio la transferencia
-de control, cierre por expulsión, compensación por incidentes, cambios de puntuación y autosave de
-formularios. Las decisiones aprobadas para esos trabajos siguen vigentes.
+de control, compensación por incidentes, cambios de puntuación y autosave de formularios. Las
+decisiones aprobadas para esos trabajos siguen vigentes.

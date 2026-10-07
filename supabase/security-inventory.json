@@ -242,6 +242,16 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "private.close_attempt_as_abandoned": {
+      "arguments": "target_attempt uuid, closed_at timestamp with time zone, terminal_reason_value text, audit_actor uuid, audit_request_id text, audit_reason text",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.close_attempts_for_permission_loss": {
+      "arguments": "target_player uuid, target_room uuid, closed_at timestamp with time zone, audit_actor uuid, audit_request_id text",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.confirm_avatar_upload_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,

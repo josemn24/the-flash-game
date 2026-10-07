@@ -138,6 +138,7 @@ export type SessionEvent =
       score: number;
       reviewChallenge: SessionReview | null;
       results?: AnswerResult[];
+      terminalReason?: string | null;
     }
   | { type: "completion_retry"; scheduled: boolean }
   | { type: "expired" }
@@ -224,7 +225,10 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         busy: false,
         commandStatus: "confirmed",
         lifecycleError:
-          state.lifecycleError?.code === "review_pending" ? state.lifecycleError : undefined,
+          state.lifecycleError?.code === "review_pending" ||
+          state.lifecycleError?.code === "attempt_permission_revoked"
+            ? state.lifecycleError
+            : undefined,
         feedback: state.feedback?.state === "submitting" ? undefined : state.feedback,
       };
     case "command_failed":
@@ -331,7 +335,15 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
               code: "review_pending",
               message: "Revisión temporalmente no disponible. Puedes volver a cargarla.",
             }
-          : undefined,
+          : event.terminalReason === "permission_revoked"
+            ? {
+                operation: "projection",
+                code: "attempt_permission_revoked",
+                retryable: false,
+                message:
+                  "Esta partida se cerró porque ya no tienes permiso para competir en esta sala.",
+              }
+            : undefined,
         feedback: undefined,
         locked: true,
         busy: false,

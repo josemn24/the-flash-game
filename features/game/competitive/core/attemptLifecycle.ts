@@ -9,14 +9,20 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
   let finalizationRequested = false;
   const finish = (response: CompetitiveJsonObject) => {
     const review = reviewFor(runtime.challenge, terminalReviewFromResponse(response.review));
+    const permissionRevoked = response.terminalReason === "permission_revoked";
     runtime.cancelAll();
     runtime.commit({
       type: "completed",
-      score: Number(
-        response.score ?? runtime.state().results.reduce((sum, result) => sum + result.points, 0),
-      ),
+      score: permissionRevoked
+        ? 0
+        : Number(
+            response.score ??
+              runtime.state().results.reduce((sum, result) => sum + result.points, 0),
+          ),
       reviewChallenge: response.reviewPending ? null : review,
       reviewPending: response.reviewPending === true,
+      terminalReason:
+        typeof response.terminalReason === "string" ? response.terminalReason : undefined,
       ...(Array.isArray(response.answers) ? { results: recoveredResults(response.answers) } : {}),
     });
   };
@@ -160,6 +166,22 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
       },
     );
   };
+  const recoverTerminal = async () => {
+    let terminal = false;
+    const accepted = await runtime.run(
+      "recover",
+      {},
+      {
+        accept: (response) => {
+          if (response.phase !== "results" && response.status !== "abandoned")
+            throw new Error("terminal_recovery_not_terminal");
+          terminal = true;
+          finish(response);
+        },
+      },
+    );
+    return accepted && terminal;
+  };
   const activate = async () => {
     const state = runtime.state();
     if (
@@ -207,6 +229,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     finalizeAlphabet,
     finalizationRequested: () => finalizationRequested,
     recover,
+    recoverTerminal,
     activate,
     ...advance,
     setTimeoutAnswer: (answer: () => Promise<void>) => {

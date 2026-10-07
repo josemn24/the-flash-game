@@ -287,6 +287,7 @@ export type FinishAttemptResult = AttemptCommandResult & {
   readonly status: Extract<AttemptStatus, "completed" | "abandoned">;
   readonly score: number | null;
   readonly outcome?: string | null;
+  readonly terminalReason?: string | null;
   readonly livesRemaining?: number | null;
   readonly answers?: readonly AttemptRecoveryAnswer[];
 };
@@ -302,7 +303,10 @@ export type SavedAttemptResult = {
 };
 export type SavedAbandonedAttemptResult = {
   readonly scheduledChallengeId: ScheduledChallengeId;
-  readonly result: FinishAttemptResult & { readonly status: "abandoned" };
+  readonly result: FinishAttemptResult & {
+    readonly status: "abandoned";
+    readonly answers?: readonly AttemptRecoveryAnswer[];
+  };
 };
 export type AcceptInvitationInput = {
   readonly invitationToken: string;

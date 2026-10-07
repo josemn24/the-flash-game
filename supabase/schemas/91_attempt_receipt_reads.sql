@@ -72,21 +72,51 @@ grant execute on function private.prepare_attempt_session(uuid), private.read_re
   private.read_completed_attempt(uuid) to service_role;
 
 -- A lost abandonment confirmation must also be recoverable after controller revocation.
--- Return its original command result; inactivity expiry has no abandonment command to replay.
+-- Permission-revoked closures have no abandon command to replay, so build the
+-- same safe terminal projection from persisted attempt facts.
 create function private.read_abandoned_attempt(target_attempt uuid) returns jsonb
 language sql stable security definer set search_path = '' as $$
-  select jsonb_build_object('scheduledChallengeId', a.scheduled_challenge_id, 'result', command.result)
+  select jsonb_build_object(
+    'scheduledChallengeId', a.scheduled_challenge_id,
+    'result', coalesce(command.result, jsonb_strip_nulls(jsonb_build_object(
+      'attemptId', a.id,
+      'lockVersion', a.lock_version,
+      'status', a.status,
+      'score', a.score,
+      'outcome', a.outcome,
+      'terminalReason', a.terminal_reason,
+      'answers', coalesce((
+        select jsonb_agg(jsonb_build_object(
+          'challengeItemId', answer.challenge_item_id,
+          'answer', answer.answer,
+          'status', answer.status,
+          'points', answer.points,
+          'timeUsedMs', answer.time_used_ms,
+          'resultDetails', answer.result_details
+        ) order by item.position)
+        from private.attempt_answers answer
+        join private.challenge_items item on item.id = answer.challenge_item_id
+        where answer.attempt_id = a.id
+      ), '[]'::jsonb)
+    )))
+  )
   from public.attempts a
   join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
   join public.seasons season on season.id = sc.season_id
   join public.rooms room on room.id = season.room_id
-  join public.room_memberships m on m.room_id = room.id and m.player_id = a.player_id
-  join private.command_requests command on command.actor_id = a.player_id
+  left join public.room_memberships m on m.room_id = room.id and m.player_id = a.player_id
+  left join private.command_requests command on command.actor_id = a.player_id
     and command.operation = 'abandon' and command.input->>'attemptId' = a.id::text
   where a.id = target_attempt and a.player_id = private.current_player_id()
-    and a.kind = 'competitive' and a.status = 'abandoned' and command.result->>'status' = 'abandoned'
+    and a.kind = 'competitive' and a.status = 'abandoned'
     and sc.status <> 'cancelled' and room.status = 'active'
-    and m.status = 'active' and m.role in ('owner','admin','member')
+    and (
+      (a.terminal_reason = 'permission_revoked')
+      or (
+        command.result->>'status' = 'abandoned'
+        and m.status = 'active' and m.role in ('owner','admin','member')
+      )
+    )
     and not exists (select 1 from private.platform_role_assignments where player_id = a.player_id)
 $$;
 alter function private.read_abandoned_attempt(uuid) owner to postgres;

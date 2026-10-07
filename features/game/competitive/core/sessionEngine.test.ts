@@ -1098,20 +1098,31 @@ describe("bounded gameplay retries", () => {
   });
   it("stops retries and removes protected content after permission loss", async () => {
     const { engine, calls } = setup();
+    calls.recover.mockResolvedValue({
+      lockVersion: 4,
+      phase: "results",
+      status: "abandoned",
+      terminalReason: "permission_revoked",
+      score: 0,
+      answers: [accepted(4)],
+    });
     await play(engine);
     calls.answer
       .mockRejectedValueOnce(new TypeError("lost response"))
       .mockRejectedValue(new CompetitiveCommandError("not_authorized", 404));
     await engine.interactions.submit("A");
     await vi.advanceTimersByTimeAsync(1000);
+    await drain();
     await engine.retry();
     await vi.advanceTimersByTimeAsync(10000);
+    await drain();
     expect(calls.answer).toHaveBeenCalledTimes(2);
     expect(engine.getSnapshot()).toMatchObject({
+      phase: "results",
       locked: true,
       question: null,
       pendingCommand: null,
-      lifecycleError: { retryable: false },
+      lifecycleError: { code: "attempt_permission_revoked", retryable: false },
     });
   });
   it("keeps the completed score when the review is temporarily unavailable", async () => {
