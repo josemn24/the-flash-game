@@ -1,3 +1,5 @@
+import type { ViewerProfile } from "@/types/view-models";
+
 export type AvatarAssetRecord = {
   readonly assetId: string;
   readonly objectPath: string;
@@ -8,11 +10,20 @@ export type AvatarCommandResult = {
   readonly assetId: string;
   readonly objectPath: string;
   readonly oldObjectPath: string | null;
-  readonly profile: {
-    readonly playerId: string;
-    readonly name: string;
-    readonly avatarPath: string;
-  };
+  readonly profile: ViewerProfile;
+};
+
+export type AvatarConfirmationInput = {
+  readonly assetId: string;
+  readonly idempotencyKey: string;
+};
+
+export type AvatarInspection = {
+  readonly mimeType: "image/jpeg" | "image/png" | "image/webp";
+  readonly byteSize: number;
+  readonly width: number;
+  readonly height: number;
+  readonly sha256: string;
 };
 
 export interface MediaAssetCommands {
@@ -24,6 +35,8 @@ export interface MediaAssetCommands {
     readonly idempotencyKey: string;
   }): Promise<AvatarAssetRecord>;
   readAvatar(assetId: string): Promise<AvatarAssetRecord | null>;
-  confirmAvatar(input: Record<string, unknown>): Promise<AvatarCommandResult>;
+  readConfirmation(input: AvatarConfirmationInput): Promise<AvatarCommandResult | null>;
+  confirmAvatar(input: AvatarConfirmationInput & AvatarInspection): Promise<AvatarCommandResult>;
   abortAvatar(input: { readonly assetId: string }): Promise<AvatarAssetRecord>;
+  claimArchivedCleanup(input: { readonly objectPath: string }): Promise<AvatarAssetRecord | null>;
 }

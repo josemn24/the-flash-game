@@ -1,7 +1,7 @@
 export const E2E_BY_SCENARIO = Object.freeze({
   "format-contracts": ["e2e/format-contracts.spec.ts"],
   "format-contracts-pyramid": ["e2e/format-contracts-pyramid.spec.ts"],
-  portal: ["e2e/admin-portal.spec.ts", "e2e/auth-login.spec.ts"],
+  portal: ["e2e/admin-portal.spec.ts", "e2e/auth-login.spec.ts", "e2e/avatar-resilience.spec.ts"],
   s02: ["e2e/s02-rooms.spec.ts"],
   s03: ["e2e/s03-flash.spec.ts"],
   narrative: ["e2e/narrative.spec.ts"],

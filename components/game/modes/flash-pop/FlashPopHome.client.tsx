@@ -15,13 +15,7 @@ import {
   TrophyIcon,
 } from "@/components/ui";
 import { LogoutButton } from "@/components/auth/LogoutButton.client";
-import {
-  abortProfileAvatar,
-  confirmProfileAvatar,
-  prepareProfileAvatar,
-  updateProfileName,
-} from "@/app/actions/profile";
-import { uploadFile } from "@/lib/media/uploadFile";
+import { useProfileSave } from "./useProfileSave";
 import { ROOM_ART_FALLBACK } from "@/lib/roomPresentation";
 import { getProfileInitials } from "@/lib/userProfile";
 import type { RoomCardModel } from "@/types/view-models/room";
@@ -34,7 +28,11 @@ type FlashPopHomeProps = {
   initialProfile: UserProfile;
 };
 
-export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
+export function FlashPopHome(props: FlashPopHomeProps) {
+  return <FlashPopHomeForAccount key={props.initialProfile.id} {...props} />;
+}
+
+function FlashPopHomeForAccount({ rooms, initialProfile }: FlashPopHomeProps) {
   const [profile, setProfile] = useState(initialProfile);
   const [profileOpen, setProfileOpen] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
@@ -70,48 +68,16 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
     }
   }, [profileOpen]);
 
-  const handleProfileSave = useCallback(
-    async ({ name, file }: { name: string; file: File | null }) => {
-      const nameResult = await updateProfileName(name);
-      if (!nameResult.ok) return nameResult;
-      if (!file) {
-        setProfile(nameResult.profile);
-        setProfileOpen(false);
-        setStatusMessage("Cambios guardados.");
-        return nameResult;
-      }
-
-      const idempotencyKey = crypto.randomUUID();
-      const prepared = await prepareProfileAvatar({
-        mimeType: file.type,
-        byteSize: file.size,
-        idempotencyKey,
-      });
-      if (!prepared.ok) return prepared;
-
-      const uploaded = await uploadFile(prepared.signedUploadUrl, file);
-      if (!uploaded) {
-        await abortProfileAvatar(prepared.assetId);
-        return {
-          ok: false as const,
-          code: "storage_unavailable" as const,
-          message: "No se ha podido subir la imagen. Inténtalo de nuevo.",
-        };
-      }
-
-      const confirmed = await confirmProfileAvatar({
-        assetId: prepared.assetId,
-        idempotencyKey: prepared.confirmIdempotencyKey,
-      });
-      if (confirmed.ok) {
-        setProfile(confirmed.profile);
-        setProfileOpen(false);
-        setStatusMessage("Cambios guardados.");
-      }
-      return confirmed;
-    },
-    [],
-  );
+  const handleSaved = useCallback((saved: UserProfile) => {
+    setProfile(saved);
+    setProfileOpen(false);
+    setStatusMessage("Cambios guardados.");
+  }, []);
+  const {
+    save: handleProfileSave,
+    isSaving,
+    confirmationPending,
+  } = useProfileSave(initialProfile.id, setProfile, handleSaved);
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -250,6 +216,8 @@ export function FlashPopHome({ rooms, initialProfile }: FlashPopHomeProps) {
         profile={profile}
         onClose={() => setProfileOpen(false)}
         onSave={handleProfileSave}
+        saving={isSaving}
+        confirmationPending={confirmationPending}
       />
     </Canvas>
   );

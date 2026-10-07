@@ -3,6 +3,8 @@ import "server-only";
 import { Pool, type PoolClient } from "pg";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 import type { MediaAssetCommands } from "@/application/ports/media-asset-commands";
+import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
+import type { PlayerId } from "@/types/domain/identifiers";
 
 const poolKey = Symbol.for("the-flash-game.supabase.media-asset-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -92,6 +94,26 @@ export function abortAvatarAsset(authUserId: string, input: object) {
   return call<AvatarAssetRecord>(authUserId, "abort_avatar_upload_command", input);
 }
 
+export function readAvatarConfirmation(authUserId: string, input: object) {
+  return call<{
+    command: AvatarCommandResult;
+    currentProfile: { playerId: string; name: string; avatarPath: string | null };
+  } | null>(authUserId, "read_avatar_upload_confirmation", input);
+}
+
+export function claimArchivedAvatarCleanup(authUserId: string, input: object) {
+  return call<AvatarAssetRecord | null>(authUserId, "claim_archived_avatar_cleanup", input);
+}
+
+function avatarProfile(profile: { playerId: string; name: string; avatarPath: string | null }) {
+  return {
+    id: profile.playerId,
+    playerId: profile.playerId as PlayerId,
+    name: profile.name,
+    avatarSrc: resolveAvatarPath(profile.avatarPath),
+  };
+}
+
 export function prepareQuestionAsset(authUserId: string, input: object) {
   return call<QuestionAssetRecord>(authUserId, "prepare_question_asset_upload_command", input);
 }
@@ -123,7 +145,15 @@ export function supabaseMediaAssetCommandsFor(authUserId: string): MediaAssetCom
   return {
     prepareAvatar: (input) => prepareAvatarAsset(authUserId, input),
     readAvatar: (assetId) => readAvatarAsset(authUserId, assetId),
-    confirmAvatar: (input) => confirmAvatarAsset(authUserId, input),
+    async readConfirmation(input) {
+      const saved = await readAvatarConfirmation(authUserId, input);
+      return saved ? { ...saved.command, profile: avatarProfile(saved.currentProfile) } : null;
+    },
+    async confirmAvatar(input) {
+      const saved = await confirmAvatarAsset(authUserId, input);
+      return { ...saved, profile: avatarProfile(saved.profile) };
+    },
     abortAvatar: (input) => abortAvatarAsset(authUserId, input),
+    claimArchivedCleanup: (input) => claimArchivedAvatarCleanup(authUserId, input),
   };
 }

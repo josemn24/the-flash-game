@@ -10,6 +10,8 @@ import styles from "./FlashPopProfileDialog.module.css";
 
 type FlashPopProfileDialogProps = {
   open: boolean;
+  saving?: boolean;
+  confirmationPending?: boolean;
   profile: UserProfile;
   onClose: () => void;
   onSave: (input: { name: string; file: File | null }) => Promise<ProfileSaveResult>;
@@ -25,6 +27,8 @@ export function FlashPopProfileDialog({
   profile,
   onClose,
   onSave,
+  saving,
+  confirmationPending = false,
 }: FlashPopProfileDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -33,7 +37,15 @@ export function FlashPopProfileDialog({
   const avatarId = useId();
   const [draft, setDraft] = useState<UserProfile>(profile);
   const [errors, setErrors] = useState<ProfileErrors>({});
-  const [isSaving, setIsSaving] = useState(false);
+  const [locallySaving, setIsSaving] = useState(false);
+  const isSaving = saving ?? locallySaving;
+  const submitGeneration = useRef(0);
+  useEffect(
+    () => () => {
+      submitGeneration.current += 1;
+    },
+    [profile.id, open],
+  );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewSrc, setPreviewSrc] = useState<string>();
 
@@ -60,6 +72,8 @@ export function FlashPopProfileDialog({
     setSelectedFile(null);
     setPreviewSrc(undefined);
     setErrors({});
+    setIsSaving(false);
+    submitGeneration.current += 1;
     dialogRef.current?.close();
   }
 
@@ -90,9 +104,11 @@ export function FlashPopProfileDialog({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSaving) return;
+    const ownGeneration = submitGeneration.current;
 
     const nameError = validateProfileName(draft.name);
-    if (nameError) {
+    if (nameError && !confirmationPending) {
       setErrors((current) => ({ ...current, name: nameError }));
       nameInputRef.current?.focus();
       return;
@@ -101,17 +117,21 @@ export function FlashPopProfileDialog({
     setIsSaving(true);
     try {
       const result = await onSave({ name: draft.name.trim(), file: selectedFile });
+      if (ownGeneration !== submitGeneration.current) return;
       if (!result.ok) {
         const isAvatarError =
           result.code === "invalid_file" ||
           result.code === "storage_unavailable" ||
-          result.code === "conflict";
+          result.code === "conflict" ||
+          result.code === "confirmation_pending" ||
+          (result.code === "save_failed" && Boolean(selectedFile || confirmationPending));
         setErrors(isAvatarError ? { avatar: result.message } : { name: result.message });
       }
     } catch {
-      setErrors({ name: "No se ha podido guardar el nombre. Inténtalo de nuevo." });
+      if (ownGeneration === submitGeneration.current)
+        setErrors({ avatar: "No se han podido confirmar los cambios. Inténtalo de nuevo." });
     } finally {
-      setIsSaving(false);
+      if (ownGeneration === submitGeneration.current) setIsSaving(false);
     }
   }
 
@@ -159,7 +179,7 @@ export function FlashPopProfileDialog({
               id={avatarId}
               label="Imagen de perfil"
               description="JPEG, PNG o WebP. Máximo 5 MB y 2048 px."
-              error={errors.avatar}
+              error={confirmationPending ? undefined : errors.avatar}
               className={styles.avatarCopy}
             >
               {(field) => (
@@ -168,7 +188,7 @@ export function FlashPopProfileDialog({
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
                   onChange={handleAvatarChange}
-                  disabled={isSaving}
+                  disabled={isSaving || confirmationPending}
                 />
               )}
             </FormField>
@@ -180,6 +200,7 @@ export function FlashPopProfileDialog({
                 {...field}
                 ref={nameInputRef}
                 type="text"
+                disabled={isSaving || confirmationPending}
                 value={draft.name}
                 minLength={2}
                 maxLength={24}
@@ -189,12 +210,14 @@ export function FlashPopProfileDialog({
             )}
           </FormField>
 
+          {confirmationPending ? <p role="status">No hemos podido confirmar la imagen</p> : null}
+
           <div className={styles.actions}>
             <Button type="button" variant="secondary" onClick={closeDialog}>
               Cancelar
             </Button>
             <Button type="submit" loading={isSaving}>
-              Guardar cambios
+              {confirmationPending ? "Reintentar confirmación" : "Guardar cambios"}
             </Button>
           </div>
         </form>

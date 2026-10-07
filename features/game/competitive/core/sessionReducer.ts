@@ -42,6 +42,14 @@ export type Feedback = {
   visible: boolean;
   message?: string;
 };
+/**
+ * Transport state for the current command. This is deliberately separate from
+ * the domain attempt status: a command can be uncertain while the attempt is
+ * still in progress, and a replay can confirm it without applying a second
+ * mutation.
+ */
+export type CommandStatus =
+  "idle" | "submitting" | "uncertain" | "reconciling" | "confirmed" | "definitive_failure";
 export type LifecycleError = {
   readonly operation: Operation | "projection";
   readonly message: string;
@@ -65,6 +73,7 @@ export type SessionState = {
   reviewChallenge: SessionReview | null;
   locked: boolean;
   busy: boolean;
+  commandStatus: CommandStatus;
   completionRetryScheduled: boolean;
   attemptExpired: boolean;
   pendingCommand: PendingCommand | null;
@@ -155,6 +164,7 @@ export function initialSessionState(
     reviewChallenge,
     locked: phase === "results" || phase === "recovering",
     busy: false,
+    commandStatus: phase === "recovering" ? "reconciling" : "idle",
     completionRetryScheduled: false,
     attemptExpired: false,
     pendingCommand: null,
@@ -171,6 +181,12 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         questionIndex: event.questionIndex ?? state.questionIndex,
         busy: false,
         locked: event.phase !== "playing",
+        commandStatus:
+          event.phase === "recovering"
+            ? "reconciling"
+            : state.commandStatus === "reconciling"
+              ? "confirmed"
+              : state.commandStatus,
         ...(event.clearQuestion
           ? {
               question: null,
@@ -187,6 +203,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         pendingCommand: event.command,
         completionRetryScheduled: false,
         busy: event.command.operation !== "queensDraft",
+        commandStatus: "submitting",
         locked: event.command.operation === "queensDraft" ? state.locked : true,
         lifecycleError: undefined,
         startNotice: undefined,
@@ -205,6 +222,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         attempt: event.attempt,
         pendingCommand: null,
         busy: false,
+        commandStatus: "confirmed",
         lifecycleError:
           state.lifecycleError?.code === "review_pending" ? state.lifecycleError : undefined,
         feedback: state.feedback?.state === "submitting" ? undefined : state.feedback,
@@ -214,6 +232,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         ...state,
         busy: false,
         locked: !event.definitive,
+        commandStatus: event.definitive ? "definitive_failure" : "uncertain",
         pendingCommand: event.definitive ? null : state.pendingCommand,
         lifecycleError: event.lifecycleError,
         feedback: event.feedback,
@@ -225,6 +244,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
       return {
         ...initialSessionState("recovering"),
         locked: true,
+        commandStatus: "definitive_failure",
         lifecycleError: event.error,
       };
     case "feedback_visible":
@@ -246,6 +266,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         phase: event.phase,
         locked: event.locked,
         busy: false,
+        commandStatus: "confirmed",
         pendingAnswer: null,
         feedback: undefined,
         lastWordSearchSelection: undefined,
@@ -253,6 +274,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
     case "progress":
       return {
         ...state,
+        commandStatus: "confirmed",
         question: event.question,
         lastWordSearchSelection: event.selection ?? state.lastWordSearchSelection,
         locked: false,
@@ -274,6 +296,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         pendingAnswer: null,
         locked: true,
         busy: false,
+        commandStatus: "confirmed",
         feedback: undefined,
       };
     }
@@ -285,6 +308,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         lastResult: event.results.at(-1),
         pendingCommand: null,
         lifecycleError: undefined,
+        commandStatus: "confirmed",
         feedback: undefined,
         pendingAnswer: null,
       };
@@ -311,6 +335,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         feedback: undefined,
         locked: true,
         busy: false,
+        commandStatus: "confirmed",
       };
     case "completion_retry":
       return { ...state, completionRetryScheduled: event.scheduled };
@@ -318,6 +343,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
       return {
         ...initialSessionState("results", state.results),
         locked: true,
+        commandStatus: "confirmed",
         attemptExpired: true,
       };
     case "draft":

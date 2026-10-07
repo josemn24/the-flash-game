@@ -1086,6 +1086,16 @@
       "arguments": "target_attempt uuid",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
+    },
+    "private.read_avatar_upload_confirmation": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.claim_archived_avatar_cleanup": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
     }
   }
 }

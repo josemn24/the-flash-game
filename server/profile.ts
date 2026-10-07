@@ -15,6 +15,8 @@ import { supabaseMediaAssetCommandsFor } from "@/infrastructure/supabase/assets/
 import { supabaseMediaStorage } from "@/infrastructure/supabase/assets/mediaStorage";
 import type { ProfileSaveResult } from "@/types/view-models/user-actions";
 import type { PlayerId } from "@/types/domain/identifiers";
+import { logHttpEvent } from "@/server/observability";
+import { randomUUID } from "node:crypto";
 
 export type { AvatarUploadConfirmationResult, AvatarUploadPreparationResult };
 
@@ -22,6 +24,14 @@ async function createProfileUseCases() {
   const current = await getProvisionedCurrentPlayer();
   if (!current) return null;
   return new ApplicationProfileUseCases({
+    onAvatarEvent: (event, assetId) =>
+      logHttpEvent({
+        requestId: randomUUID(),
+        route: "profile/avatar",
+        operation: event,
+        status: event === "confirmation_recovered" ? 200 : 503,
+        assetId,
+      }),
     actor: { authUserId: current.authUserId, playerId: current.row.player_id as PlayerId },
     currentViewer: supabaseCurrentViewerReaderFor(current),
     profileCommands: supabaseProfileCommandsFor(current),
@@ -45,7 +55,7 @@ export async function updateCurrentPlayerName(name: string): Promise<ProfileSave
     };
   }
   const result = await useCases.updateName(name);
-  if (result.ok) revalidatePath("/");
+  if (result.ok) revalidateProfile();
   return result;
 }
 
@@ -66,11 +76,24 @@ export async function confirmCurrentPlayerAvatar(input: {
   const useCases = await createProfileUseCases();
   if (!useCases) return { ok: false, code: "unauthorized", message: "Tu sesión ha caducado." };
   const result = await useCases.confirmAvatar(input);
-  if (result.ok) revalidatePath("/");
+  if (result.ok) revalidateProfile();
   return result;
 }
 
 export async function abortCurrentPlayerAvatar(assetId: string) {
   const useCases = await createProfileUseCases();
   if (useCases) await useCases.abortAvatar(assetId);
+}
+
+function revalidateProfile() {
+  try {
+    revalidatePath("/");
+  } catch {
+    logHttpEvent({
+      requestId: randomUUID(),
+      route: "profile",
+      operation: "revalidation_failed",
+      status: 503,
+    });
+  }
 }

@@ -63,6 +63,8 @@ describe("readPrivateHealth", () => {
     expect(markerQuery).toContain("private.prepare_attempt_session(uuid)");
     expect(markerQuery).toContain("private.read_completed_attempt(uuid)");
     expect(markerQuery).toContain("private.read_recorded_evaluation(uuid,text)");
+    expect(markerQuery).toContain("private.read_avatar_upload_confirmation(jsonb)");
+    expect(markerQuery).toContain("private.claim_archived_avatar_cleanup(jsonb)");
   });
 
   it("rejects an old expected revision", async () => {

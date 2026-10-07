@@ -15,7 +15,12 @@ export type AvatarUploadConfirmationResult =
   | {
       readonly ok: false;
       readonly code:
-        "unauthorized" | "invalid_file" | "storage_unavailable" | "save_failed" | "conflict";
+        | "unauthorized"
+        | "invalid_file"
+        | "storage_unavailable"
+        | "save_failed"
+        | "conflict"
+        | "confirmation_pending";
       readonly message: string;
     };
 

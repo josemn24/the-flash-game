@@ -26,6 +26,8 @@ contenido Flash/Supervivencia y programa su calendario local.
   diagnóstico opcional y comparación local del camino competitivo.
 - [`competitive-format-contracts.md`](competitive-format-contracts.md): representaciones,
   validación y registros por capa de los formatos competitivos.
+- [`avatar-confirmation-recovery.md`](avatar-confirmation-recovery.md): confirmación recuperable,
+  autorización transaccional de limpieza y validación de avatares.
 - [`glosario.md`](glosario.md): vocabulario del producto.
 
 Las decisiones normativas están en [`../decisions/README.md`](../decisions/README.md), no duplicadas

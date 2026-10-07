@@ -10,6 +10,7 @@ export type ProfileSaveResult =
         | "save_failed"
         | "invalid_file"
         | "storage_unavailable"
+        | "confirmation_pending"
         | "conflict";
       readonly message: string;
     };

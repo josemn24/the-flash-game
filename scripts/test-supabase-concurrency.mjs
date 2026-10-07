@@ -546,4 +546,133 @@ export async function testConcurrentCommands(sql) {
     ).trim(),
     "1",
   );
+  // Avatar lifecycle races use separate connections and a barrier after the
+  // first command has acquired its locks, before its COMMIT.
+  const avatarInput = (assetId, key) => ({
+    assetId,
+    idempotencyKey: key,
+    mimeType: "image/png",
+    byteSize: 128,
+    width: 64,
+    height: 64,
+    sha256: "a".repeat(64),
+  });
+  const prepareAvatar = async () => {
+    const assetId = randomUUID();
+    const path = `avatars/${id("owner")}/${assetId}.png`;
+    await run("owner", "prepare_avatar_upload_command", {
+      assetId,
+      objectPath: path,
+      idempotencyKey: randomUUID(),
+      mimeType: "image/png",
+      byteSize: 128,
+    });
+    return { assetId, path };
+  };
+  const confirmedFirst = await prepareAvatar();
+  const confirming = await invoke(
+    "owner",
+    "confirm_avatar_upload_command",
+    avatarInput(confirmedFirst.assetId, "avatar-confirm-first"),
+    true,
+  );
+  const cancelAfter = await invoke("owner", "abort_avatar_upload_command", {
+    assetId: confirmedFirst.assetId,
+  });
+  const confirmationRace = await Promise.allSettled([confirming.done, cancelAfter.done]);
+  assert.equal(confirmationRace[0].status, "fulfilled");
+  assert.equal(confirmationRace[1].status, "rejected");
+  assert.match(confirmationRace[1].reason.message, /media_asset_in_use/);
+  assert.equal(
+    (
+      await sql(
+        `select status from private.media_assets where id=${quote(confirmedFirst.assetId)};`,
+      )
+    ).trim(),
+    "ready",
+  );
+
+  const canceledFirst = await prepareAvatar();
+  const canceling = await invoke(
+    "owner",
+    "abort_avatar_upload_command",
+    { assetId: canceledFirst.assetId },
+    true,
+  );
+  const confirmAfter = await invoke(
+    "owner",
+    "confirm_avatar_upload_command",
+    avatarInput(canceledFirst.assetId, "avatar-canceled-first"),
+  );
+  const cancelRace = await Promise.allSettled([canceling.done, confirmAfter.done]);
+  assert.equal(cancelRace[0].value.status, "deleted");
+  assert.equal(cancelRace[1].status, "rejected");
+  assert.match(cancelRace[1].reason.message, /media_asset_not_pending/);
+  assert.equal(
+    (await sql(`select avatar_path from public.players where id=${quote(id("owner"))};`)).trim(),
+    confirmedFirst.path,
+  );
+
+  const firstReplacement = await prepareAvatar();
+  const secondReplacement = await prepareAvatar();
+  const replacements = await race(
+    "owner",
+    "owner",
+    "confirm_avatar_upload_command",
+    avatarInput(firstReplacement.assetId, "avatar-replace-one"),
+    avatarInput(secondReplacement.assetId, "avatar-replace-two"),
+  );
+  assert.equal(
+    replacements.filter((r) => r.status === "fulfilled").length,
+    2,
+    "Replacements serialize without deadlock",
+  );
+  assert.equal(
+    (await sql(`select avatar_path from public.players where id=${quote(id("owner"))};`)).trim(),
+    secondReplacement.path,
+  );
+  const oldClaim = await invoke(
+    "owner",
+    "claim_archived_avatar_cleanup",
+    { objectPath: firstReplacement.path },
+    true,
+  );
+  const oldReplay = await invoke("owner", "read_avatar_upload_confirmation", {
+    assetId: firstReplacement.assetId,
+    idempotencyKey: "avatar-replace-one",
+  });
+  const [claim, replay] = await Promise.all([oldClaim.done, oldReplay.done]);
+  assert.equal(claim.status, "deleted");
+  assert.equal(replay.currentProfile.avatarPath, secondReplacement.path);
+  assert.equal(
+    (
+      await sql(
+        `select status from private.media_assets where id=${quote(secondReplacement.assetId)};`,
+      )
+    ).trim(),
+    "ready",
+  );
+
+  const duplicate = await prepareAvatar();
+  const duplicateCommand = avatarInput(duplicate.assetId, "avatar-ten-copies");
+  const leader = await invoke("owner", "confirm_avatar_upload_command", duplicateCommand, true);
+  const followers = await Promise.all(
+    Array.from({ length: 9 }, () =>
+      invoke("owner", "confirm_avatar_upload_command", duplicateCommand),
+    ),
+  );
+  const duplicateResults = await Promise.all([leader.done, ...followers.map((f) => f.done)]);
+  for (const result of duplicateResults) assert.deepEqual(result, duplicateResults[0]);
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.audit_log where action='confirm_avatar_upload' and entity_id=${quote(duplicate.assetId)};`,
+      )
+    ).trim(),
+    "1",
+  );
+  await assert.rejects(
+    run("owner", "confirm_avatar_upload_command", { ...duplicateCommand, sha256: "b".repeat(64) }),
+    /idempotency_conflict/,
+  );
 }

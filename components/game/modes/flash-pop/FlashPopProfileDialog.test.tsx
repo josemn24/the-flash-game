@@ -102,4 +102,44 @@ describe("profile form", () => {
       vi.unstubAllGlobals();
     }
   });
+  it("blocks replacements and offers confirmation retry after closing and reopening", async () => {
+    const save = vi.fn().mockResolvedValue({
+      ok: false,
+      code: "confirmation_pending",
+      message: "No hemos podido confirmar la imagen",
+    });
+    const { rerender } = render(
+      <FlashPopProfileDialog
+        open
+        profile={profile}
+        onClose={vi.fn()}
+        onSave={save}
+        confirmationPending
+      />,
+    );
+    expect(screen.getByLabelText<HTMLInputElement>("Imagen de perfil").disabled).toBe(true);
+    expect(screen.getByLabelText<HTMLInputElement>("Nombre visible").disabled).toBe(true);
+    expect(screen.getByRole("status").textContent).toBe("No hemos podido confirmar la imagen");
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    rerender(
+      <FlashPopProfileDialog
+        open={false}
+        profile={profile}
+        onClose={vi.fn()}
+        onSave={save}
+        confirmationPending
+      />,
+    );
+    rerender(
+      <FlashPopProfileDialog
+        open
+        profile={profile}
+        onClose={vi.fn()}
+        onSave={save}
+        confirmationPending
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar confirmación" }));
+    await waitFor(() => expect(save).toHaveBeenCalledWith({ name: "Ana", file: null }));
+  });
 });

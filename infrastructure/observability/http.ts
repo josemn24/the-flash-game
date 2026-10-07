@@ -14,6 +14,7 @@ export type HttpLogFields = {
   readonly errorCode?: string;
   readonly attemptId?: string;
   readonly receiptId?: string;
+  readonly assetId?: string;
 };
 
 export function requestIdFor(request: Request): string {

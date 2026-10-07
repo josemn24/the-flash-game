@@ -52,6 +52,7 @@ describe("server profile composition", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.revalidatePath.mockReset();
     mocks.getProvisionedCurrentPlayer.mockResolvedValue(current);
     mocks.currentViewerReaderFor.mockReturnValue({ getCurrentViewer: vi.fn() });
     mocks.profileCommandsFor.mockReturnValue({ updateName: vi.fn() });
@@ -105,5 +106,21 @@ describe("server profile composition", () => {
       code: "unauthorized",
     });
     expect(mocks.ApplicationProfileUseCases).not.toHaveBeenCalled();
+  });
+  it("keeps successful name and avatar results when revalidation fails", async () => {
+    const log = vi.spyOn(console, "info").mockImplementation(() => undefined);
+    try {
+      mocks.revalidatePath.mockImplementation(() => {
+        throw new Error("cache outage");
+      });
+      await expect(
+        confirmCurrentPlayerAvatar({ assetId: "asset-1", idempotencyKey: "confirm-key" }),
+      ).resolves.toMatchObject({ ok: true });
+      await expect(updateCurrentPlayerName("Alice")).resolves.toMatchObject({ ok: true });
+      expect(mocks.useCases.abortAvatar).not.toHaveBeenCalled();
+      expect(log).toHaveBeenCalledWith(expect.stringContaining("revalidation_failed"));
+    } finally {
+      log.mockRestore();
+    }
   });
 });

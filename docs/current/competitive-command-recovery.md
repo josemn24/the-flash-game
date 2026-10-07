@@ -11,6 +11,13 @@ su operación, payload, versión y clave. Se bloquean acciones incompatibles; lo
 ese comando y una recarga reconstruye respuestas, puntos, progreso y tiempos desde PostgreSQL.
 No se guardan respuestas sin enviar ni se crea una cola offline.
 
+El estado de transporte del motor distingue `idle`, `submitting`, `uncertain`, `reconciling`,
+`confirmed` y `definitive_failure`. `uncertain` no equivale a rechazo: mantiene el comando
+original y bloquea acciones incompatibles hasta que un replay exacto o la recuperación server-side
+confirme los hechos. `confirmed` solo se alcanza después de aplicar la respuesta autoritativa;
+`definitive_failure` elimina el comando pendiente para errores de negocio/autorización o cuando una
+recuperación autoritativa lo sustituye, nunca para crear un retry con una operación distinta.
+
 La preparación `POST /api/competitive/attempts/session` autoriza la publicación y establece una
 cookie HttpOnly sin consumir intento ni iniciar relojes. `start` exige esa cookie antes de escribir.
 Una pestaña antigua o un navegador que no devuelve la cookie recibe `attempt_session_missing`

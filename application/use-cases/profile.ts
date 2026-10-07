@@ -1,6 +1,11 @@
 import { createHash } from "node:crypto";
 import type { AuthenticatedActor } from "@/application/ports/actors";
-import type { MediaAssetCommands } from "@/application/ports/media-asset-commands";
+import type {
+  AvatarAssetRecord,
+  AvatarCommandResult,
+  AvatarConfirmationInput,
+  MediaAssetCommands,
+} from "@/application/ports/media-asset-commands";
 import type { MediaStorage } from "@/application/ports/media-storage";
 import type { ProfileCommands } from "@/application/ports/profile-commands";
 import type {
@@ -13,7 +18,10 @@ import type { ProfileSaveResult } from "@/types/view-models/user-actions";
 import { AVATAR_ALLOWED_MIME_TYPES, AVATAR_MAX_BYTES } from "@/lib/media/avatarValidation";
 import { validateProfileName } from "@/lib/userProfile";
 
+export type AvatarEvent = "confirmation_pending" | "confirmation_recovered" | "cleanup_failed";
+
 type ProfileUseCaseDependencies = {
+  readonly onAvatarEvent?: (event: AvatarEvent, assetId: string) => void;
   readonly actor: AuthenticatedActor;
   readonly currentViewer: { getCurrentViewer(): Promise<ViewerProfile | null> };
   readonly profileCommands: ProfileCommands;
@@ -38,6 +46,7 @@ function avatarExtension(mimeType: string) {
 }
 
 export class ApplicationProfileUseCases implements ProfileUseCases {
+  private readonly onAvatarEvent: NonNullable<ProfileUseCaseDependencies["onAvatarEvent"]>;
   private readonly actor: AuthenticatedActor;
   private readonly currentViewer: ProfileUseCaseDependencies["currentViewer"];
   private readonly profileCommands: ProfileCommands;
@@ -46,6 +55,7 @@ export class ApplicationProfileUseCases implements ProfileUseCases {
   private readonly assetIdGenerator: NonNullable<ProfileUseCaseDependencies["assetIdGenerator"]>;
 
   constructor(dependencies: ProfileUseCaseDependencies) {
+    this.onAvatarEvent = dependencies.onAvatarEvent ?? (() => undefined);
     this.actor = dependencies.actor;
     this.currentViewer = dependencies.currentViewer;
     this.profileCommands = dependencies.profileCommands;
@@ -96,13 +106,20 @@ export class ApplicationProfileUseCases implements ProfileUseCases {
     const assetId = this.assetIdGenerator.generate(this.actor.authUserId, input.idempotencyKey);
     const objectPath = `avatars/${this.actor.playerId}/${assetId}.${avatarExtension(input.mimeType)}`;
     try {
-      await this.mediaAssetCommands.prepareAvatar({
+      const prepared = await this.mediaAssetCommands.prepareAvatar({
         assetId,
         objectPath,
         mimeType: input.mimeType,
         byteSize: input.byteSize,
         idempotencyKey: input.idempotencyKey,
       });
+      if (prepared.status !== "pending") {
+        return {
+          ok: false,
+          code: "conflict",
+          message: "La subida ya no está pendiente. Recarga el perfil.",
+        };
+      }
       const upload = await this.mediaStorage.prepareUpload({
         assetId,
         objectPath,
@@ -124,64 +141,139 @@ export class ApplicationProfileUseCases implements ProfileUseCases {
     }
   }
 
-  async confirmAvatar(input: {
-    assetId: string;
-    idempotencyKey: string;
-  }): Promise<AvatarUploadConfirmationResult> {
-    if (!this.actor.playerId)
-      return { ok: false, code: "unauthorized", message: "Tu sesión ha caducado." };
-    let asset: Awaited<ReturnType<MediaAssetCommands["readAvatar"]>> = null;
+  private observe(event: AvatarEvent, assetId: string) {
+    // Observability must never change a confirmed result or authorize cleanup.
     try {
-      asset = await this.mediaAssetCommands.readAvatar(input.assetId);
-      if (!asset || asset.status !== "pending") {
-        return { ok: false, code: "save_failed", message: "La subida ya no está disponible." };
+      this.onAvatarEvent(event, assetId);
+    } catch {
+      /* best effort */
+    }
+  }
+
+  private async deleteClaimed(asset: AvatarAssetRecord | null) {
+    if (!asset || asset.status !== "deleted") return;
+    try {
+      await this.mediaStorage.deleteObject({ bucket: "avatars", objectPath: asset.objectPath });
+    } catch {
+      this.observe("cleanup_failed", asset.assetId);
+    }
+  }
+
+  private async confirmed(result: AvatarCommandResult): Promise<AvatarUploadConfirmationResult> {
+    if (result.oldObjectPath) {
+      try {
+        const claim = await this.mediaAssetCommands.claimArchivedCleanup({
+          objectPath: result.oldObjectPath,
+        });
+        await this.deleteClaimed(claim);
+      } catch {
+        this.observe("cleanup_failed", result.assetId);
       }
-      const inspection = await this.mediaStorage.inspectUpload({ objectPath: asset.objectPath });
-      const result = await this.mediaAssetCommands.confirmAvatar({
-        assetId: input.assetId,
-        idempotencyKey: input.idempotencyKey,
-        ...inspection,
-      });
-      if (result.oldObjectPath?.startsWith("avatars/")) {
-        await this.mediaStorage
-          .deleteObject({ bucket: "avatars", objectPath: result.oldObjectPath })
-          .catch(() => undefined);
-      }
-      const profile = await this.currentViewer.getCurrentViewer();
-      if (!profile)
-        return { ok: false, code: "save_failed", message: "No se ha podido confirmar el perfil." };
-      return { ok: true, profile };
-    } catch (error) {
-      if (asset?.objectPath) {
-        await this.mediaStorage
-          .deleteObject({ bucket: "avatars", objectPath: asset.objectPath })
-          .catch(() => undefined);
-      }
-      await this.mediaAssetCommands.abortAvatar({ assetId: input.assetId }).catch(() => undefined);
-      const isInvalidFile =
-        error instanceof Error &&
-        ["unsupported_type", "too_large", "dimensions", "corrupt", "empty"].includes(error.message);
-      const isConflict = error instanceof Error && error.message.includes("idempotency_conflict");
+    }
+    return { ok: true, profile: result.profile };
+  }
+
+  private confirmationError(error: unknown): AvatarUploadConfirmationResult {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("not_authorized")) {
+      return { ok: false, code: "unauthorized", message: "Tu sesión ha caducado." };
+    }
+    if (message.includes("idempotency_conflict")) {
       return {
         ok: false,
-        code: isInvalidFile ? "invalid_file" : isConflict ? "conflict" : "storage_unavailable",
-        message: isInvalidFile
-          ? "El archivo no es un JPEG, PNG o WebP válido de hasta 2048 px."
-          : isConflict
-            ? "La subida ya tiene otra solicitud asociada. Reinténtalo con una nueva selección."
-            : "No se ha podido confirmar la imagen. Inténtalo de nuevo.",
+        code: "conflict",
+        message: "La subida ya tiene otra solicitud asociada. Recarga el perfil.",
       };
+    }
+    if (
+      ["media_asset_not_pending", "media_asset_not_found", "invalid_avatar_upload"].some((code) =>
+        message.includes(code),
+      )
+    ) {
+      return {
+        ok: false,
+        code: "save_failed",
+        message: "La subida ya no está disponible. Recarga el perfil.",
+      };
+    }
+    return {
+      ok: false,
+      code: "confirmation_pending",
+      message: "No hemos podido confirmar la imagen",
+    };
+  }
+
+  async confirmAvatar(input: AvatarConfirmationInput): Promise<AvatarUploadConfirmationResult> {
+    if (!this.actor.playerId)
+      return { ok: false, code: "unauthorized", message: "Tu sesión ha caducado." };
+    try {
+      const saved = await this.mediaAssetCommands.readConfirmation(input);
+      if (saved) {
+        this.observe("confirmation_recovered", input.assetId);
+        return this.confirmed(saved);
+      }
+      const asset = await this.mediaAssetCommands.readAvatar(input.assetId);
+      if (!asset || asset.status !== "pending") {
+        // A concurrent confirmation may have committed between the two reads.
+        const committed = await this.mediaAssetCommands.readConfirmation(input);
+        if (committed) return this.confirmed(committed);
+        return {
+          ok: false,
+          code: "save_failed",
+          message: "La subida ya no está disponible. Recarga el perfil.",
+        };
+      }
+      let inspection;
+      try {
+        inspection = await this.mediaStorage.inspectUpload({ objectPath: asset.objectPath });
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          ["unsupported_type", "too_large", "dimensions", "corrupt", "empty"].includes(
+            error.message,
+          )
+        ) {
+          await this.abortAvatar(input.assetId);
+          return {
+            ok: false,
+            code: "invalid_file",
+            message: "El archivo no es un JPEG, PNG o WebP válido de hasta 2048 px.",
+          };
+        }
+        throw error;
+      }
+      const result = await this.mediaAssetCommands.confirmAvatar({ ...input, ...inspection });
+      return this.confirmed(result);
+    } catch (error) {
+      // COMMIT acknowledgment can be lost. Absence/failure of this read never
+      // proves the original transaction rolled back, so it never triggers abort.
+      try {
+        const committed = await this.mediaAssetCommands.readConfirmation(input);
+        if (committed) {
+          this.observe("confirmation_recovered", input.assetId);
+          return this.confirmed(committed);
+        }
+      } catch (recoveryError) {
+        const result = this.confirmationError(recoveryError);
+        if (!result.ok && result.code !== "confirmation_pending") return result;
+        this.observe("confirmation_pending", input.assetId);
+        return result;
+      }
+      const result = this.confirmationError(error);
+      if (!result.ok && result.code === "confirmation_pending")
+        this.observe("confirmation_pending", input.assetId);
+      return result;
     }
   }
 
   async abortAvatar(assetId: string) {
     if (!this.actor.playerId) return;
-    const asset = await this.mediaAssetCommands.readAvatar(assetId).catch(() => null);
-    if (asset?.objectPath) {
-      await this.mediaStorage
-        .deleteObject({ bucket: "avatars", objectPath: asset.objectPath })
-        .catch(() => undefined);
+    try {
+      // Only a committed tombstone grants permission to delete object bytes.
+      const claimed = await this.mediaAssetCommands.abortAvatar({ assetId });
+      await this.deleteClaimed(claimed);
+    } catch {
+      this.observe("cleanup_failed", assetId);
     }
-    await this.mediaAssetCommands.abortAvatar({ assetId }).catch(() => undefined);
   }
 }
