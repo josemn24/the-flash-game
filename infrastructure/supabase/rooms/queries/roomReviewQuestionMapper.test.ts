@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { RoomMemberReviewReadRow } from "./roomReadContracts";
 import { toHistoricalFlashQuestion as after } from "./roomReviewQuestionMapper";
 
-const cases = corpus.filter((test) => test.valid && test.document.type !== "connect-pairs");
+const cases = corpus.filter((test) => test.valid);
 describe("historical question read boundary", () => {
   it.each(cases)("reads $id from flat and enveloped projections without mutating them", (test) => {
     const payload = runtimePayload(test).payload as Record<string, unknown>;

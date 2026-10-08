@@ -28,6 +28,7 @@ const reviewQuestionTypes = new Set<ReviewQuestionType>([
   "logic-matrix",
   "progressive-clues",
   "matching",
+  "connect-pairs",
   "progressive-image",
   "queens",
   "true-false",

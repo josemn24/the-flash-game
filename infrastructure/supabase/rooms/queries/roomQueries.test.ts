@@ -913,6 +913,22 @@ describe("Supabase history and review capabilities S07", () => {
     expect(isRoomMemberReviewReadRow(survivalEstimationRow)).toBe(true);
   });
 
+  it("accepts a Pyramid connect-pairs review row", () => {
+    expect(
+      isRoomMemberReviewReadRow({
+        ...reviewRows[0],
+        challenge_mode: "pyramid",
+        attempt_outcome: "failed",
+        question_type: "connect-pairs",
+        level_id: "cumbre-logica-ii-4",
+        level_label: "Conexiones",
+        briefing_title: "Encuentra las rutas",
+        briefing_format: "connect-pairs",
+        briefing_description: "Completa el tablero.",
+      }),
+    ).toBe(true);
+  });
+
   it.each([NaN, Infinity, -Infinity])("rejects a non-finite estimation answer: %s", (answer) => {
     expect(isRoomMemberReviewReadRow({ ...survivalEstimationRow, answer })).toBe(false);
   });
