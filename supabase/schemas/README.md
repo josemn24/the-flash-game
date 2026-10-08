@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 58 archivos y su revisión canónica es
-`20261007180832_attempt_lifecycle_contracts`. Las migraciones incrementales corresponden a esos archivos;
+`20261008090000_unlock_daily_member_review`. Las migraciones incrementales corresponden a esos archivos;
 la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -319,7 +319,9 @@ alcanzadas en `survival`, mantiene los huecos de Flash y devuelve los siete nive
 payload y solución nulos para los niveles no alcanzados. Solo `owner`, `admin` y `member` pueden
 revisar; `spectator` conserva historial/ranking pero nunca recibe respuestas ni soluciones, tampoco
 por URL directa. La revisión propia terminal está disponible durante la ventana efectiva abierta;
-la ajena exige cierre efectivo y ausencia de intentos en progreso. `get_room_member_review`
+la revisión ajena durante una ventana abierta exige que quien consulta y el objetivo tengan un
+intento competitivo completado; una vez cerrada, conserva la revisión histórica existente y la
+ausencia de intentos en progreso. `get_room_member_review`
 normaliza el estado a `open`/`closed` y añade `global_time_limit_ms` y `alphabet_letter`: ambos
 son nulos fuera de Alfabeto. Alfabeto devuelve todas las letras, incluso las ausentes o agotadas,
 y sus soluciones de la versión original. La expiración conserva los 15 minutos de inactividad

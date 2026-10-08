@@ -62,6 +62,47 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).not.toContain("pendientes por jugar");
   });
 
+  it.each([
+    ["available", "member", false],
+    ["inProgress", "member", false],
+    ["notCompleted", "member", false],
+    ["completed", "member", true],
+    ["completed", "spectator", false],
+  ] as const)(
+    "only links daily leaderboard members after a completed attempt (%s, %s)",
+    async (dailyAttemptStatus, role, expectsLinks) => {
+      const model = await getRoomDetailModel();
+      const markup = renderToStaticMarkup(
+        <FlashPopRoomDetail
+          model={{
+            ...model,
+            currentUser: {
+              ...model.currentUser,
+              dailyAttemptStatus,
+              role,
+            },
+            dailyLeaderboard: [
+              {
+                memberId: "daily-player",
+                name: "Daily Player",
+                initials: "DP",
+                flashPoints: 0,
+                rank: 1,
+                completed: true,
+                durationMs: 1000,
+                startedAt: "2026-09-06T11:00:00.000Z",
+              },
+            ],
+          }}
+        />,
+      );
+
+      expect(markup.includes('href="/salas/tabarnia-room/ranking/daily-player"')).toBe(
+        expectsLinks,
+      );
+    },
+  );
+
   it("does not add the season calendar, chat or activity feed", async () => {
     const model = await getRoomDetailModel();
     const markup = renderToStaticMarkup(<FlashPopRoomDetail model={model} />);

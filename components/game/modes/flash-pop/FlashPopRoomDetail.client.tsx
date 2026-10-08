@@ -190,6 +190,10 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
       ? visibleModel.roomLeaderboard.length - visibleModel.dailyLeaderboard.length
       : 0,
   );
+  const canReviewDailyMembers =
+    Boolean(visibleModel.dailyChallenge) &&
+    visibleModel.currentUser.role !== "spectator" &&
+    visibleModel.currentUser.dailyAttemptStatus === "completed";
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -252,9 +256,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
             variant="cards"
             pendingCount={pendingCount}
             memberHrefBase={
-              visibleModel.source === "supabase"
-                ? undefined
-                : `/salas/${visibleModel.roomId}/ranking`
+              canReviewDailyMembers ? `/salas/${visibleModel.roomId}/ranking` : undefined
             }
           />
         </div>

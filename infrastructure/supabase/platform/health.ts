@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261007180832_attempt_lifecycle_contracts";
+const canonicalSchemaRevision = "20261008090000_unlock_daily_member_review";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();

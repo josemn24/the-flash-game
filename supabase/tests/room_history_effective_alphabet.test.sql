@@ -60,14 +60,18 @@ select test_support.id('history-alpha-completed'), test_support.id('history-alph
   'history-alpha-answer-' || n
 from generate_series(1,3) n;
 
--- A completed current challenge stays out; raw scheduled maps to effective open for self review.
+-- A completed current challenge is reviewable by a player who has also completed it;
+-- raw scheduled maps to effective open for self review.
 insert into public.scheduled_challenges(id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values(test_support.id('history-current'), test_support.id('season-flash'), test_support.id('cv-flash'),
   2, 'scheduled', now()-interval '30 seconds', now()+interval '1 hour');
 insert into public.attempts(id, player_id, scheduled_challenge_id, challenge_version_id, kind, status,
   completed_at, score, client_state_schema_version)
-values(test_support.id('history-current-attempt'), test_support.id('member'), test_support.id('history-current'),
-  test_support.id('cv-flash'), 'competitive', 'completed', now(), 50, 1);
+values
+  (test_support.id('history-current-attempt'), test_support.id('member'), test_support.id('history-current'),
+    test_support.id('cv-flash'), 'competitive', 'completed', now(), 50, 1),
+  (test_support.id('history-current-owner-attempt'), test_support.id('owner'), test_support.id('history-current'),
+    test_support.id('cv-flash'), 'competitive', 'completed', now(), 0, 1);
 insert into public.seasons(id, room_id, title, status, starts_at, ends_at)
 select test_support.id('history-season-' || status), test_support.id('room-flash'), status, status,
   now()-interval '2 days', now()+interval '2 days'
@@ -87,7 +91,7 @@ set local role authenticated;
 select is((select publication_status from public.get_room_history('commands-alphabet') limit 1), 'closed', 'Expired raw scheduled publication returns effective closed');
 select is((select count(*) from public.get_room_history('commands-flash')), 0::bigint, 'Recent and stale in-progress attempts block history; current completed and excluded seasons stay out');
 select is((select count(*) from public.get_room_member_review('commands-flash', test_support.id('sc-flash'), test_support.id('member'))), 0::bigint, 'In-progress attempts block peer review');
-select is((select count(*) from public.get_room_member_review('commands-flash', test_support.id('history-current'), test_support.id('member'))), 0::bigint, 'Current completed peer stays private');
+select is((select count(*) from public.get_room_member_review('commands-flash', test_support.id('history-current'), test_support.id('member'))), 2::bigint, 'Completed player can review a completed peer while the challenge is open');
 select is((select string_agg(alphabet_letter, ',' order by item_position) from public.get_room_member_review('commands-alphabet', test_support.id('sc-alphabet'), test_support.id('member'))), 'B,A,Ñ,Z', 'Alphabet includes every original letter in order');
 select is((select count(*) from public.get_room_member_review('commands-alphabet', test_support.id('sc-alphabet'), test_support.id('member')) where global_time_limit_ms=60000 and question_type='short-text' and publication_status='closed'), 4::bigint, 'Alphabet exposes global deadline and short-text review metadata');
 select is((select string_agg(coalesce(answer_status,'absent'), ',' order by item_position) from public.get_room_member_review('commands-alphabet', test_support.id('sc-alphabet'), test_support.id('member'))), 'correct,incorrect,timeout,absent', 'Correct, incorrect, timed out and absent answers survive projection');
@@ -96,6 +100,10 @@ select is((select count(*) from public.get_room_member_review('commands-flash', 
 select is((select count(*) from public.get_room_history('commands-survival')), 1::bigint, 'Expired open Survival without results stays visible');
 select is((select count(*) from public.get_room_history('commands-narrative')), 1::bigint, 'Expired open Narrative without results stays visible');
 select is((select count(*) from public.get_room_history('commands-pyramid')), 1::bigint, 'Expired open Pyramid without results stays visible');
+reset role;
+select test_support.as_actor('member2');
+set local role authenticated;
+select is((select count(*) from public.get_room_member_review('commands-flash', test_support.id('history-current'), test_support.id('member'))), 0::bigint, 'Player without a completed attempt cannot review an open challenge peer');
 reset role;
 select test_support.as_actor('member');
 set local role authenticated;

@@ -587,6 +587,7 @@ export class MockRoomReadProjection
         dailyFlashPoints: dailyEntry?.flashPoints ?? 0,
         dailyCompleted: dailyEntry?.completed ?? false,
         dailyAttemptStatus,
+        role: access.membership.role,
       },
       dailyChallenge: daily
         ? {
