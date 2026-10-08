@@ -504,6 +504,8 @@ begin
     ) then
       raise exception 'question_not_published' using errcode = '55000';
     end if;
+    -- Alphabet short-text questions are validated by the dedicated Alphabet
+    -- document branch; they must not be routed through the common Flash guard.
     if challenge_row.mode in ('flash', 'survival', 'pyramid') and (
       not private.is_supported_flash_question(question_row.id)
       or (challenge_row.mode = 'survival' and question_row.type = 'short-text')
@@ -617,7 +619,7 @@ begin
       )
       from private.challenge_versions version
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where version.mode in ('flash', 'survival', 'pyramid')
+      where version.mode in ('flash', 'alphabet', 'survival', 'pyramid')
     ), '[]'::jsonb)
   );
 end;

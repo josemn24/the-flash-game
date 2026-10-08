@@ -25,7 +25,7 @@ begin
   if version_status <> 'published' then
     raise exception 'content_not_published' using errcode = '55000';
   end if;
-  if version_mode not in ('flash', 'survival', 'narrative', 'pyramid') then
+  if version_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
     raise exception 'unsupported_content' using errcode = '22023';
   end if;
 
@@ -39,7 +39,9 @@ begin
           or version_mode = 'narrative'
           and jsonb_typeof(item.mode_config) = 'object'
           and jsonb_typeof(item.mode_config->'questionSlug') = 'string'
-          or version_mode not in ('pyramid', 'narrative') and item.mode_config = '{}'::jsonb)
+          or version_mode = 'alphabet'
+          and jsonb_typeof(item.mode_config->'letter') = 'string'
+          or version_mode not in ('pyramid', 'narrative', 'alphabet') and item.mode_config = '{}'::jsonb)
         and private.is_supported_flash_question(question.id)
     )::integer,
     coalesce(sum(item.points), 0)::integer
@@ -56,6 +58,7 @@ begin
 
   if version_schema <> 1 or version_score <> 100
     or (version_mode = 'flash' and version_config <> '{}'::jsonb)
+    or (version_mode = 'alphabet' and version_config <> '{}'::jsonb)
     or (version_mode = 'survival' and (
       (select count(*) from jsonb_object_keys(version_config)) <> 1
       or jsonb_typeof(version_config->'lives') is distinct from 'number'
@@ -774,7 +777,7 @@ begin
       join public.rooms room on room.id = season.room_id
       join private.challenge_versions version on version.id = schedule.challenge_version_id
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where room.status = 'active' and version.status in ('published', 'archived') and version.mode in ('flash', 'survival', 'narrative', 'pyramid')
+      where room.status = 'active' and version.status in ('published', 'archived') and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     ), '[]'::jsonb)
   );
 end;
@@ -822,7 +825,7 @@ begin
       where room.id = target_room_id
         and room.status = 'active'
         and version.status in ('published', 'archived')
-        and version.mode in ('flash', 'survival', 'narrative', 'pyramid')
+        and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     ), '[]'::jsonb)
   );
 end;

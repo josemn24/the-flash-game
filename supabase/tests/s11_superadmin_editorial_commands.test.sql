@@ -29,6 +29,10 @@ select set_config('request.jwt.claims', jsonb_build_object(
 )::text, true);
 set local role authenticated;
 
+select is((select count(*) from jsonb_array_elements(public.get_superadmin_editorial_context()->'entries') entry
+  where entry->>'mode' = 'alphabet'), 2::bigint,
+  'The editorial context includes Alphabet versions');
+
 select set_config('s11.document', jsonb_build_object(
   'challenge', jsonb_build_object(
     'slug', 's11-flash-001', 'title', 'Flash S11', 'subtitle', 'Dos preguntas',

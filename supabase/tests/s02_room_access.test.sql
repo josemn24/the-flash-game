@@ -51,30 +51,30 @@ insert into private.question_versions
   (id, question_definition_id, version_number, type, time_limit_ms, public_payload, created_by_player_id)
 values
   (pg_temp.test_id('question-version-one'), pg_temp.test_id('question-one'), 1, 'short-text', 60000,
-    '{"prompt":"S02_PRIVATE_PROMPT_ONE"}', pg_temp.test_id('alice')),
+    '{"question":"S02_PRIVATE_PROMPT_ONE"}', pg_temp.test_id('alice')),
   (pg_temp.test_id('question-version-two'), pg_temp.test_id('question-two'), 1, 'short-text', 60000,
-    '{"prompt":"S02_PRIVATE_PROMPT_TWO"}', pg_temp.test_id('alice'));
+    '{"question":"S02_PRIVATE_PROMPT_TWO"}', pg_temp.test_id('alice'));
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
-  (pg_temp.test_id('question-version-one'), '{"answer":"S02_PRIVATE_SOLUTION_ONE"}'),
-  (pg_temp.test_id('question-version-two'), '{"answer":"S02_PRIVATE_SOLUTION_TWO"}');
+  (pg_temp.test_id('question-version-one'), '{"correctAnswer":"S02_PRIVATE_SOLUTION_ONE","acceptedAnswers":["S02_PRIVATE_SOLUTION_ONE"]}'),
+  (pg_temp.test_id('question-version-two'), '{"correctAnswer":"S02_PRIVATE_SOLUTION_TWO","acceptedAnswers":["S02_PRIVATE_SOLUTION_TWO"]}');
 update private.question_versions set status = 'published';
 
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values (pg_temp.test_id('challenge'), 's02-private-challenge', pg_temp.test_id('alice'));
 insert into private.challenge_versions
-  (id, challenge_definition_id, version_number, mode, title, subtitle, created_by_player_id)
+  (id, challenge_definition_id, version_number, mode, title, subtitle, global_time_limit_ms, mode_config, created_by_player_id)
 values (
-  pg_temp.test_id('challenge-version'), pg_temp.test_id('challenge'), 1, 'flash',
-  'Flash: Metadatos S02', 'Dos preguntas de prueba', pg_temp.test_id('alice')
+  pg_temp.test_id('challenge-version'), pg_temp.test_id('challenge'), 1, 'alphabet',
+  'Alphabet: Metadatos S02', 'Dos preguntas de prueba', 60000, '{}'::jsonb, pg_temp.test_id('alice')
 );
 insert into private.challenge_items
-  (id, challenge_version_id, question_version_id, position, points)
+  (id, challenge_version_id, question_version_id, position, points, mode_config)
 values
   (pg_temp.test_id('challenge-item-one'), pg_temp.test_id('challenge-version'),
-    pg_temp.test_id('question-version-one'), 1, 50),
+    pg_temp.test_id('question-version-one'), 1, 50, jsonb_build_object('letter', 'A')),
   (pg_temp.test_id('challenge-item-two'), pg_temp.test_id('challenge-version'),
-    pg_temp.test_id('question-version-two'), 2, 50);
+    pg_temp.test_id('question-version-two'), 2, 50, jsonb_build_object('letter', 'B'));
 update private.challenge_versions set status = 'published';
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
@@ -110,6 +110,15 @@ select is((select membership_role from public.get_room_introduction(
 select is((select challenge_max_score from public.get_room_introduction(
   's02-main', pg_temp.test_id('publication'))), 100,
   'Introduction exposes the challenge maximum score');
+select is((select challenge_mode from public.get_my_room_cards()
+  where room_slug = 's02-main'), 'alphabet',
+  'Room cards expose Alphabet as a generic competitive mode');
+select ok((select competitive_playable from public.get_my_room_cards()
+  where room_slug = 's02-main'),
+  'Alphabet is playable from the generic room-card projection');
+select ok((select competitive_playable from public.get_room_introduction(
+  's02-main', pg_temp.test_id('publication'))),
+  'Alphabet is playable from the generic room introduction');
 select is((select question_count from public.get_room_introduction(
   's02-main', pg_temp.test_id('publication'))), 2::bigint,
   'Introduction exposes a question count, not questions');

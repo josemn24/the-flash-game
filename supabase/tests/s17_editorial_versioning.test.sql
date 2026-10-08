@@ -118,6 +118,37 @@ values
 select set_config('s17.flash_updated_at', (select updated_at::text from private.challenge_versions where id = test_support.id('s17-cv-flash')), true);
 select set_config('s17.survival_updated_at', (select updated_at::text from private.challenge_versions where id = test_support.id('s17-cv-survival')), true);
 select set_config('s17.pyramid_updated_at', (select updated_at::text from private.challenge_versions where id = test_support.id('s17-cv-pyramid')), true);
+select set_config('s17.alphabet_updated_at', (select updated_at::text from private.challenge_versions where id = test_support.id('cv-alphabet')), true);
+
+select set_config('s17.alphabet_revision', (public.create_superadmin_challenge_revision(jsonb_build_object(
+  'idempotencyKey', 's17-revise-alphabet-001',
+  'sourceChallengeVersionId', test_support.id('cv-alphabet'),
+  'reason', 'Corregir Alphabet piloto'
+)) ->> 'challengeVersionId'), true);
+select is((select status from private.challenge_versions where id = current_setting('s17.alphabet_revision')::uuid), 'draft',
+  'Alphabet correction always starts as draft');
+select is((select mode from private.challenge_versions where id = current_setting('s17.alphabet_revision')::uuid), 'alphabet',
+  'Alphabet correction preserves its editorial mode');
+select is((select global_time_limit_ms from private.challenge_versions where id = current_setting('s17.alphabet_revision')::uuid), 60000,
+  'Alphabet correction preserves the global time limit');
+select is((select mode_config->>'letter' from private.challenge_items where challenge_version_id = current_setting('s17.alphabet_revision')::uuid and position = 1), 'A',
+  'Alphabet correction preserves item letters');
+select is((select count(*) from private.challenge_items where challenge_version_id = current_setting('s17.alphabet_revision')::uuid), 2::bigint,
+  'Alphabet correction copies the complete item graph');
+select is((public.archive_superadmin_challenge_version(jsonb_build_object(
+  'idempotencyKey', 's17-archive-alphabet-001',
+  'challengeVersionId', test_support.id('cv-alphabet'),
+  'expectedUpdatedAt', current_setting('s17.alphabet_updated_at')::timestamptz,
+  'reason', 'Retirar Alphabet anterior'
+)) ->> 'status'), 'archived',
+  'A published Alphabet version can be archived');
+select is((public.get_superadmin_challenge_version_comparison(
+  test_support.id('cv-alphabet'), current_setting('s17.alphabet_revision')::uuid
+)->'from'->>'mode'), 'alphabet', 'Alphabet comparison identifies the source mode');
+select is((public.get_superadmin_challenge_version_comparison(
+  test_support.id('cv-alphabet'), current_setting('s17.alphabet_revision')::uuid
+)->'to'->'items'->0->'modeConfig'->>'letter'), 'A',
+  'Alphabet comparison preserves item mode configuration');
 
 select set_config('s17.flash_revision', (public.create_superadmin_challenge_revision(jsonb_build_object(
   'idempotencyKey', 's17-revise-flash-001',

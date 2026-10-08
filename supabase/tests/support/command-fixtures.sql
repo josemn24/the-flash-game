@@ -22,16 +22,20 @@ select test_support.id('season-'||m),test_support.id('room-'||m),m,'active',now(
 from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m;
 insert into private.question_definitions(id,slug,created_by_player_id)
 select test_support.id('q-'||m),'commands-q-'||m,test_support.id('superadmin')
-from unnest(array['normal','normal-2','fast','fast-2','pyramid-1','pyramid-2','pyramid-3','pyramid-4','pyramid-5','pyramid-6','pyramid-7']) m;
+from unnest(array['normal','normal-2','fast','fast-2','alphabet-1','alphabet-2','pyramid-1','pyramid-2','pyramid-3','pyramid-4','pyramid-5','pyramid-6','pyramid-7']) m;
 insert into private.question_versions(id,question_definition_id,version_number,type,time_limit_ms,public_payload,created_by_player_id)
 select test_support.id('qv-'||m),test_support.id('q-'||m),1,
-  case when m like 'pyramid-%' then 'multiple-choice' else 'true-false' end,
+  case when m like 'pyramid-%' then 'multiple-choice' when m like 'alphabet-%' then 'short-text' else 'true-false' end,
   case m when 'fast' then 10 else 60000 end,
-  case when m like 'pyramid-%' then '{"question":"Test?","options":["A","B"]}'::jsonb else '{"prompt":"Test?"}'::jsonb end,
+  case when m like 'pyramid-%' then '{"question":"Test?","options":["A","B"]}'::jsonb
+    when m like 'alphabet-%' then jsonb_build_object('question', '¿Qué letra es?')
+    else '{"prompt":"Test?"}'::jsonb end,
   test_support.id('superadmin')
-from unnest(array['normal','normal-2','fast','fast-2','pyramid-1','pyramid-2','pyramid-3','pyramid-4','pyramid-5','pyramid-6','pyramid-7']) m;
+from unnest(array['normal','normal-2','fast','fast-2','alphabet-1','alphabet-2','pyramid-1','pyramid-2','pyramid-3','pyramid-4','pyramid-5','pyramid-6','pyramid-7']) m;
 insert into private.question_version_solutions(question_version_id,solution_payload)
-select id,case when type = 'multiple-choice' then '{"correctAnswer":"A"}'::jsonb else '{"correctAnswer":true}'::jsonb end from private.question_versions;
+select id,case when type = 'multiple-choice' then '{"correctAnswer":"A"}'::jsonb
+  when type = 'short-text' then jsonb_build_object('correctAnswer', 'A', 'acceptedAnswers', jsonb_build_array('A'))
+  else '{"correctAnswer":true}'::jsonb end from private.question_versions;
 update private.question_versions set status='published';
 insert into private.challenge_definitions(id,slug,created_by_player_id)
 select test_support.id('cd-'||m),'commands-cd-'||m,test_support.id('superadmin') from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m;
@@ -40,14 +44,19 @@ select test_support.id('cv-'||m),test_support.id('cd-'||m),1,case when m='fast' 
   case when m='alphabet' then 60000 when m='alphabet-fast' then 100 else null end,test_support.id('superadmin'),
   case when m='survival' then '{"lives":1}'::jsonb else '{}'::jsonb end
 from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m;
-insert into private.challenge_items(id,challenge_version_id,question_version_id,position,points)
+insert into private.challenge_items(id,challenge_version_id,question_version_id,position,points,mode_config)
 select test_support.id('item-'||m||'-'||n),test_support.id('cv-'||m),test_support.id('qv-'||case
   when m='pyramid' then 'pyramid-'||n
   when m='fast' and n=2 then 'fast-2'
   when m='fast' then 'fast'
+  when m in ('alphabet','alphabet-fast') then 'alphabet-'||n
   when n=2 then 'normal-2'
   else 'normal'
-end),n,50
+end),n,50,
+  case when m in ('alphabet','alphabet-fast')
+    then jsonb_build_object('letter', chr(64 + n))
+    else '{}'::jsonb
+  end
 from unnest(array['flash','alphabet','survival','narrative','pyramid','fast','alphabet-fast']) m cross join generate_series(1,2) n;
 insert into private.challenge_items(id,challenge_version_id,question_version_id,position,points)
 select test_support.id('item-pyramid-'||n),test_support.id('cv-pyramid'),test_support.id('qv-pyramid-'||n),n,

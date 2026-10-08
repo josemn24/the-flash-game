@@ -118,10 +118,12 @@ language sql stable security definer set search_path = '' as $$
         where items.challenge_version_id = cv.id
       ) as question_count,
       (
-        select (count(*) between 2 and 20 and cv.mode in ('flash', 'survival', 'narrative')
+        select (count(*) between 2 and 20 and cv.mode in ('flash', 'alphabet', 'survival', 'narrative')
             or count(*) = 7 and cv.mode = 'pyramid')
           and bool_and(private.is_supported_flash_question(q.id))
           and (cv.mode = 'flash' and cv.mode_config = '{}'::jsonb
+            or cv.mode = 'alphabet' and cv.mode_config = '{}'::jsonb
+              and bool_and(jsonb_typeof(items.mode_config->'letter') = 'string')
             or cv.mode = 'survival'
               and jsonb_typeof(cv.mode_config->'lives') = 'number'
               and (cv.mode_config->>'lives')::integer between 1 and count(*)
@@ -222,10 +224,12 @@ language sql stable security definer set search_path = '' as $$
     version.mode,
     version.max_score,
     (select count(*)::bigint from private.challenge_items item where item.challenge_version_id = version.id),
-    (select (count(*) between 2 and 20 and version.mode in ('flash', 'survival', 'narrative')
+    (select (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative')
           or count(*) = 7 and version.mode = 'pyramid')
         and bool_and(private.is_supported_flash_question(question.id))
         and (version.mode = 'flash' and version.mode_config = '{}'::jsonb
+          or version.mode = 'alphabet' and version.mode_config = '{}'::jsonb
+            and bool_and(jsonb_typeof(item.mode_config->'letter') = 'string')
           or version.mode = 'survival'
             and jsonb_typeof(version.mode_config->'lives') = 'number'
             and (version.mode_config->>'lives')::integer between 1 and count(*)

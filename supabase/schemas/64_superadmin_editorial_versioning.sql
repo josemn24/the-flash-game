@@ -75,7 +75,7 @@ begin
   if source_row.status not in ('published', 'archived') then
     raise exception 'content_not_published' using errcode = '55000';
   end if;
-  if source_row.mode not in ('flash', 'survival', 'narrative', 'pyramid') then
+  if source_row.mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
     raise exception 'unsupported_mode' using errcode = '22023';
   end if;
 
@@ -227,7 +227,7 @@ begin
   if not found then
     raise exception 'content_not_found' using errcode = 'P0002';
   end if;
-  if version_row.mode not in ('flash', 'survival', 'narrative', 'pyramid') then
+  if version_row.mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
     raise exception 'unsupported_mode' using errcode = '22023';
   end if;
   if version_row.status <> 'published' then
@@ -361,7 +361,7 @@ begin
   if from_definition_id <> to_definition_id then
     raise exception 'invalid_comparison' using errcode = '22023';
   end if;
-  if from_mode not in ('flash', 'survival', 'narrative', 'pyramid') or to_mode not in ('flash', 'survival', 'narrative', 'pyramid') then
+  if from_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') or to_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
     raise exception 'unsupported_mode' using errcode = '22023';
   end if;
 

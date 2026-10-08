@@ -15,7 +15,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261008150000_betavip_alphabet_calendar",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261008170000_alphabet_generic_mode_support",
 };
 
 async function run(label, command, args, options = {}) {
