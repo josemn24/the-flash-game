@@ -7,40 +7,45 @@ import type {
   SuperadminAttemptCommands,
 } from "@/application/ports/superadmin-attempt-commands";
 import { SuperadminAttemptCommandError } from "@/application/administration/errors";
-import { SupabaseSuperadminAttemptCommands } from "@/infrastructure/supabase/admin/superadminAttemptCommands";
-import {
-  AttemptCommandError,
-  type VerifiedAuthIdentity,
-} from "@/infrastructure/supabase/attempts/attemptCommands";
 import { consumeAdminRateLimit } from "@/server/competitive/rate-limit";
-
-function commandFor(authUserId: string, commands?: SuperadminAttemptCommands) {
-  return commands ?? new SupabaseSuperadminAttemptCommands({ authUserId });
-}
+import { productionAdminServices } from "@/server/composition/admin";
 
 function runCommand<T>(operation: () => Promise<T>) {
   return operation().catch((error: unknown) => {
-    if (error instanceof AttemptCommandError) {
-      throw new SuperadminAttemptCommandError(error.code, error);
+    const code = error && typeof error === "object" && "code" in error ? error.code : null;
+    if (
+      error instanceof Error &&
+      error.name === "AttemptCommandError" &&
+      typeof code === "string"
+    ) {
+      throw new SuperadminAttemptCommandError(code, error);
     }
     throw error;
   });
 }
 
 export function adjustSuperadminAttempt(
-  authUserId: VerifiedAuthIdentity["authUserId"],
+  authUserId: string,
   input: SuperadminAdjustResultInput,
   commands?: SuperadminAttemptCommands,
 ): Promise<SuperadminAdministrativeResult> {
-  consumeAdminRateLimit("superadmin");
-  return runCommand(() => commandFor(authUserId, commands).adjust(input));
+  if (commands) {
+    consumeAdminRateLimit("superadmin");
+    return runCommand(() => commands.adjust(input));
+  }
+  void authUserId;
+  return runCommand(() => productionAdminServices.commands.adjustAttempt(input));
 }
 
 export function invalidateSuperadminAttempt(
-  authUserId: VerifiedAuthIdentity["authUserId"],
+  authUserId: string,
   input: SuperadminAttemptCommandInput,
   commands?: SuperadminAttemptCommands,
 ): Promise<SuperadminAdministrativeResult> {
-  consumeAdminRateLimit("superadmin");
-  return runCommand(() => commandFor(authUserId, commands).invalidate(input));
+  if (commands) {
+    consumeAdminRateLimit("superadmin");
+    return runCommand(() => commands.invalidate(input));
+  }
+  void authUserId;
+  return runCommand(() => productionAdminServices.commands.invalidateAttempt(input));
 }

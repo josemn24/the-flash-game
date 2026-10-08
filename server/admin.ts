@@ -1,18 +1,9 @@
 import "server-only";
 
-import { randomUUID } from "node:crypto";
-import { AuthenticationRequiredError } from "@/application/administration/errors";
-import { getCurrentViewerProfile } from "@/server/profile";
-import { SuperadminAccessDeniedError } from "@/application/administration/errors";
-import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/admin/superadminQueries";
-import { createClient } from "@/infrastructure/supabase/auth/server-client";
-import type { SuperadminPortalContext } from "@/types/view-models";
+import type { SuperadminAccess } from "@/application/ports/superadmin-access";
+import { productionAdminServices } from "@/server/composition/admin";
 
-export type SuperadminActor = {
-  readonly playerId: string;
-  readonly displayName: string;
-  readonly requestId: string;
-};
+export type { SuperadminAccess, SuperadminActor } from "@/application/ports/superadmin-access";
 
 export type AdminAuditContext = {
   readonly actorPlayerId: string;
@@ -22,36 +13,10 @@ export type AdminAuditContext = {
   readonly requestId: string;
 };
 
-export type SuperadminAccess = {
-  readonly actor: SuperadminActor;
-  readonly context: SuperadminPortalContext;
-  readonly authUserId: string;
-};
-
 /**
- * Resolves Auth and the persisted platform assignment for every portal request.
- * Future administrative commands must call this guard independently; the page
- * layout and hidden controls are not authorization boundaries.
+ * Server-only compatibility facade for the application access use case.
+ * Every caller still resolves access independently of UI visibility or layout guards.
  */
 export async function requireSuperadmin(): Promise<SuperadminAccess> {
-  const viewer = await getCurrentViewerProfile();
-  if (!viewer) throw new AuthenticationRequiredError();
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) throw new AuthenticationRequiredError();
-
-  const context = await supabaseSuperadminPortalQueries.getContext();
-  if (context.operator.playerId !== viewer.playerId) throw new SuperadminAccessDeniedError();
-
-  const requestId = randomUUID();
-  return {
-    actor: {
-      playerId: context.operator.playerId,
-      displayName: context.operator.displayName,
-      requestId,
-    },
-    context,
-    authUserId: data.user.id,
-  };
+  return productionAdminServices.access.requireAccess();
 }

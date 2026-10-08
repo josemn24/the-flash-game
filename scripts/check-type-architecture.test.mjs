@@ -157,6 +157,14 @@ describe("type architecture boundary checker", () => {
     );
   });
 
+  it("keeps administrative Supabase adapters inside the admin composition", async () => {
+    await expectCheckerFailure(
+      "server/admin-architecture-test.ts",
+      'import { supabaseSuperadminPortalQueries } from "@/infrastructure/supabase/admin/superadminQueries";\n\nvoid supabaseSuperadminPortalQueries;\n',
+      "server/admin-architecture-test.ts imports administrative infrastructure directly; use server/composition/admin",
+    );
+  });
+
   it("fails when a demo route imports the production game barrel", async () => {
     await expectCheckerFailure(
       "app/demo/__architecture-production-surface-test__.ts",

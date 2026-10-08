@@ -1,19 +1,10 @@
 import "server-only";
 
-import type {
-  AddSuperadminRoomMemberInput,
-  CreateSuperadminPlayerInput,
-} from "@/application/ports/superadmin-user-commands";
-import { SuperadminUserCommandError } from "@/application/administration/errors";
-import { supabaseSuperadminUserCommands } from "@/infrastructure/supabase/admin/superadminUserCommands";
-import {
-  SuperadminAuthAdminError,
-  createOrRecoverSuperadminAuthUser,
-} from "@/infrastructure/supabase/admin/superadminAuthAdmin";
-import { consumeAdminRateLimit } from "@/server/competitive/rate-limit";
+import type { AddSuperadminRoomMemberInput } from "@/application/ports/superadmin-user-commands";
+import { productionAdminServices } from "@/server/composition/admin";
 
 export async function lookupSuperadminPlayers(emails: readonly string[]) {
-  return supabaseSuperadminUserCommands.lookupPlayers(emails);
+  return productionAdminServices.reads.lookupPlayers(emails);
 }
 
 export async function createSuperadminPlayerAccount(input: {
@@ -24,26 +15,16 @@ export async function createSuperadminPlayerAccount(input: {
   readonly reason: string;
   readonly actorPlayerId: string;
 }) {
-  consumeAdminRateLimit(`superadmin-user-create:${input.actorPlayerId}`);
-  let authUserId: string;
-  try {
-    authUserId = await createOrRecoverSuperadminAuthUser(input);
-  } catch (error) {
-    if (error instanceof SuperadminAuthAdminError) {
-      throw new SuperadminUserCommandError(error.code, error);
-    }
-    throw new SuperadminUserCommandError("auth_unavailable", error);
-  }
-
-  return supabaseSuperadminUserCommands.createPlayer({
+  void input.actorPlayerId;
+  return productionAdminServices.commands.createPlayer({
     idempotencyKey: input.idempotencyKey,
-    authUserId,
+    email: input.email,
+    password: input.password,
     displayName: input.displayName,
     reason: input.reason,
-  } satisfies CreateSuperadminPlayerInput);
+  });
 }
 
 export async function addSuperadminRoomMember(input: AddSuperadminRoomMemberInput) {
-  consumeAdminRateLimit("superadmin-room-member-add");
-  return supabaseSuperadminUserCommands.addRoomMember(input);
+  return productionAdminServices.commands.addRoomMember(input);
 }

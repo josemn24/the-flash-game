@@ -271,6 +271,11 @@ for (const file of productionFiles) {
   const source = await readFile(file, "utf8");
   const relative = path.relative(process.cwd(), file);
   const layer = relative.split(path.sep)[0];
+  const isAdministrativeFacade =
+    relative.startsWith(`server${path.sep}admin`) ||
+    relative === `server${path.sep}production-admin-data-access.ts` ||
+    relative.startsWith(`app${path.sep}admin${path.sep}`) ||
+    relative.startsWith(`app${path.sep}actions${path.sep}`);
   const isScoringBoundary =
     relative.startsWith(`lib${path.sep}scoringCore${path.sep}`) ||
     relative.startsWith(`server${path.sep}evaluation${path.sep}`) ||
@@ -281,6 +286,16 @@ for (const file of productionFiles) {
   const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
 
   for (const imported of importsIn(source, true)) {
+    if (
+      isAdministrativeFacade &&
+      relative !== `server${path.sep}composition${path.sep}admin.ts` &&
+      imported.specifier.startsWith("@/infrastructure/supabase/admin/")
+    ) {
+      violations.push(
+        `${relative} imports administrative infrastructure directly; use server/composition/admin`,
+      );
+    }
+
     if (
       ["app", "components", "features"].includes(layer) &&
       isSupabaseDependency(imported.specifier, file)

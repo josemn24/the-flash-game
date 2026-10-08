@@ -11,7 +11,7 @@ import {
   FlashEditorialValidationError,
   parseFlashEditorialJson,
 } from "@/lib/editorial/flashDocument";
-import { findEditorialCapabilityIssue } from "@/features/question-formats/capabilityPreflight";
+import { findEditorialCapabilityIssue } from "@/lib/editorial/capabilityPreflight";
 import { requireSuperadmin } from "@/server/admin";
 import {
   archiveSuperadminChallengeVersion,
