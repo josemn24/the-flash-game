@@ -66,6 +66,29 @@ export function FlashPopProfileDialog({
     }
   }, [open]);
 
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    const viewport = window.visualViewport;
+
+    if (!dialog || !open || !viewport) {
+      return;
+    }
+
+    const syncViewportHeight = () => {
+      dialog.style.setProperty("--profile-dialog-viewport-height", `${viewport.height}px`);
+    };
+
+    syncViewportHeight();
+    viewport.addEventListener("resize", syncViewportHeight);
+    viewport.addEventListener("scroll", syncViewportHeight);
+
+    return () => {
+      viewport.removeEventListener("resize", syncViewportHeight);
+      viewport.removeEventListener("scroll", syncViewportHeight);
+      dialog.style.removeProperty("--profile-dialog-viewport-height");
+    };
+  }, [open]);
+
   function closeDialog() {
     if (previewSrc) URL.revokeObjectURL(previewSrc);
     setDraft(profile);

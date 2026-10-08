@@ -26,6 +26,7 @@ afterEach(() => {
   cleanup();
   Reflect.deleteProperty(HTMLDialogElement.prototype, "showModal");
   Reflect.deleteProperty(HTMLDialogElement.prototype, "close");
+  Reflect.deleteProperty(window, "visualViewport");
   vi.restoreAllMocks();
 });
 
@@ -102,6 +103,39 @@ describe("profile form", () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it("tracks the visual viewport height and removes listeners when closed", () => {
+    const visualViewport = new EventTarget();
+    Object.defineProperty(visualViewport, "height", {
+      configurable: true,
+      value: 640,
+      writable: true,
+    });
+    Object.defineProperty(window, "visualViewport", {
+      configurable: true,
+      value: visualViewport,
+    });
+    const removeEventListener = vi.spyOn(visualViewport, "removeEventListener");
+    const save = vi.fn().mockResolvedValue({ ok: true, profile });
+    const { rerender } = render(
+      <FlashPopProfileDialog open profile={profile} onClose={vi.fn()} onSave={save} />,
+    );
+    const dialog = screen.getByRole("dialog");
+
+    expect(dialog.style.getPropertyValue("--profile-dialog-viewport-height")).toBe("640px");
+
+    Object.defineProperty(visualViewport, "height", { value: 420 });
+    visualViewport.dispatchEvent(new Event("resize"));
+    expect(dialog.style.getPropertyValue("--profile-dialog-viewport-height")).toBe("420px");
+
+    rerender(
+      <FlashPopProfileDialog open={false} profile={profile} onClose={vi.fn()} onSave={save} />,
+    );
+    expect(dialog.style.getPropertyValue("--profile-dialog-viewport-height")).toBe("");
+    expect(removeEventListener).toHaveBeenCalledWith("resize", expect.any(Function));
+    expect(removeEventListener).toHaveBeenCalledWith("scroll", expect.any(Function));
+  });
+
   it("blocks replacements and offers confirmation retry after closing and reopening", async () => {
     const save = vi.fn().mockResolvedValue({
       ok: false,
