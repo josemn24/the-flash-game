@@ -115,3 +115,67 @@ describe("competitive progressive-image evaluation", () => {
     ).toThrow("invalid_question_solution");
   });
 });
+
+describe("competitive logic-code evaluation", () => {
+  function logicCodeContext(overrides: Partial<EvaluationContext> = {}): EvaluationContext {
+    return context({
+      questionType: "logic-code",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 25_000 as EvaluationContext["timeLimitMs"],
+      timeUsedMs: 0 as EvaluationContext["timeUsedMs"],
+      answer: "042",
+      publicPayload: {
+        question: "Deduce el código de tres cifras.",
+        codeLength: 3,
+        clues: [{ code: "682", hint: "Una cifra es correcta y está bien colocada." }],
+      },
+      solutionPayload: { correctAnswer: "042" },
+      mode: "flash",
+      modeConfig: {},
+      submittedCodes: ["042"],
+      incorrectAttempts: 0,
+      ...overrides,
+    });
+  }
+
+  it("keeps the successful first attempt and its leading zero in the review details", () => {
+    expect(supabaseCompetitiveEvaluator.evaluate(logicCodeContext())).toEqual({
+      status: "correct",
+      points: 100,
+      details: { type: "logic-code", submittedCodes: ["042"], incorrectAttempts: 0 },
+    });
+  });
+
+  it("keeps all persisted attempts in order and applies the failed-attempt penalty", () => {
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(
+        logicCodeContext({ submittedCodes: ["111", "222", "042"], incorrectAttempts: 2 }),
+      ),
+    ).toEqual({
+      status: "correct",
+      points: 80,
+      details: {
+        type: "logic-code",
+        submittedCodes: ["111", "222", "042"],
+        incorrectAttempts: 2,
+      },
+    });
+  });
+
+  it("keeps failed attempts when the question times out without a final answer", () => {
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(
+        logicCodeContext({
+          answer: null,
+          timedOut: true,
+          submittedCodes: ["111", "222"],
+          incorrectAttempts: 2,
+        }),
+      ),
+    ).toEqual({
+      status: "unanswered",
+      points: 0,
+      details: { type: "logic-code", submittedCodes: ["111", "222"], incorrectAttempts: 2 },
+    });
+  });
+});

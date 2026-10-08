@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { getChallengeById } from "@/test-utils/mockGameplay";
+import { getChallengeById, questionsById } from "@/test-utils/mockGameplay";
 import {
   buildReviewAnswerEntries,
   ReviewAnswerList,
@@ -104,5 +104,120 @@ describe("ReviewAnswerList", () => {
       true,
     );
     expect(reviewQuestionsFor(challenge).length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    {
+      name: "a successful legacy first attempt",
+      answer: "427",
+      status: "correct" as const,
+      submittedCodes: [],
+      incorrectAttempts: 0,
+      expectedCodes: ["427"],
+      expectedLabel: "Códigos enviados",
+      expectedSummary: "1 intento · 16 puntos · 5.0 s",
+    },
+    {
+      name: "a legacy success after two failed attempts",
+      answer: "427",
+      status: "correct" as const,
+      submittedCodes: [],
+      incorrectAttempts: 2,
+      expectedCodes: ["427"],
+      expectedLabel: "Último código enviado",
+      expectedSummary: "3 intentos · 16 puntos · 5.0 s",
+    },
+    {
+      name: "a complete history including the successful attempt",
+      answer: "427",
+      status: "correct" as const,
+      submittedCodes: ["123", "427"],
+      incorrectAttempts: 1,
+      expectedCodes: ["123", "427"],
+      expectedLabel: "Códigos enviados",
+      expectedSummary: "2 intentos · 16 puntos · 5.0 s",
+    },
+    {
+      name: "failed attempts before timeout",
+      answer: null,
+      status: "unanswered" as const,
+      submittedCodes: ["123", "406"],
+      incorrectAttempts: 2,
+      expectedCodes: ["123", "406"],
+      expectedLabel: "Códigos enviados",
+      expectedSummary: "2 intentos · 0 puntos · 5.0 s",
+    },
+    {
+      name: "a legacy timeout with missing codes and a persisted attempt count",
+      answer: null,
+      status: "unanswered" as const,
+      submittedCodes: [],
+      incorrectAttempts: 2,
+      expectedCodes: [],
+      expectedLabel: "Códigos no disponibles",
+      expectedSummary: "2 intentos · 0 puntos · 5.0 s",
+    },
+  ])("shows $name consistently", (scenario) => {
+    const question = questionsById["logic-connection"];
+    if (question.type !== "logic-code") throw new Error("Expected logic-code question");
+
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question: { ...question, correctAnswer: "427" },
+            marker: "06",
+            result: {
+              questionId: question.id,
+              answer: scenario.answer,
+              status: scenario.status,
+              isCorrect: scenario.status === "correct",
+              points: scenario.status === "correct" ? 16 : 0,
+              timeUsed: 5,
+              details: {
+                type: "logic-code",
+                submittedCodes: scenario.submittedCodes,
+                incorrectAttempts: scenario.incorrectAttempts,
+              },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain(scenario.expectedLabel);
+    expect(markup).toContain(scenario.expectedSummary);
+    expect(markup).not.toContain(">Sin respuesta<");
+    for (const code of scenario.expectedCodes) {
+      expect(markup).toMatch(new RegExp(`<b[^>]*>${code}</b>`));
+    }
+  });
+
+  it("shows no response and zero attempts only when no code was submitted", () => {
+    const question = questionsById["logic-connection"];
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "06",
+            result: {
+              questionId: question.id,
+              answer: null,
+              status: "unanswered",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 25,
+              details: { type: "logic-code", submittedCodes: [], incorrectAttempts: 0 },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain(">Sin respuesta<");
+    expect(markup).toContain("0 intentos · 0 puntos · 25.0 s");
   });
 });

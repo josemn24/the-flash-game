@@ -1,5 +1,6 @@
 import { CheckIcon, ClockIcon, CrossIcon, LockIcon } from "@/components/ui";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
+import { logicCodeReviewResult } from "@/lib/question-formats/logic-code/review";
 import type { AnswerResult, AnswerStatus } from "@/types/gameplay";
 import type { PracticeChallenge, PracticeQuestion } from "@/types/gameplay/practice";
 import { QuestionReviewContent } from "@/features/question-formats/QuestionReviewContent";
@@ -43,7 +44,7 @@ function statusIcon(status: ReviewAnswerVisualStatus) {
   return <ClockIcon aria-hidden="true" />;
 }
 
-function resultSummary(result: AnswerResult) {
+function resultSummary(result: AnswerResult, question: PracticeQuestion) {
   const details = result.details;
   const summary: string[] = [];
 
@@ -62,8 +63,9 @@ function resultSummary(result: AnswerResult) {
   if (details?.type === "image-labeling" && details.task === "assign-all") {
     summary.push(`${details.correctLabels}/${details.totalLabels} etiquetas correctas`);
   }
-  if (details?.type === "logic-code") {
-    summary.push(`${details.submittedCodes.length} intentos`);
+  if (question.type === "logic-code") {
+    const { attemptCount } = logicCodeReviewResult(result);
+    summary.push(`${attemptCount} ${attemptCount === 1 ? "intento" : "intentos"}`);
   }
   if (details?.type === "estimation") {
     summary.push(`Cercanía: ${Math.round(details.proximity * 100)}%`);
@@ -120,7 +122,7 @@ export function ReviewAnswerList({
                 <QuestionReviewContent question={entry.question} result={result} />
                 {entry.showMeta !== false ? (
                   <div className={styles.reviewAnswerMeta} aria-label="Resumen de la respuesta">
-                    {resultSummary(result)}
+                    {resultSummary(result, entry.question)}
                   </div>
                 ) : null}
                 <p className={styles.reviewAnswerExplanation}>{entry.question.explanation}</p>

@@ -22,6 +22,7 @@ export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
         normalizeCompetitiveEvaluationContext(context, "authorized-runtime"),
       ),
       answer: (context.answer as AnswerValue | null) ?? null,
+      submittedCodes: [...(context.submittedCodes ?? [])],
       progressiveCluesRevealed: context.progressiveCluesRevealed ?? 1,
       progressiveClueAvailablePoints: context.progressiveClueAvailablePoints,
       matchingIncorrectAttempts: context.matchingIncorrectAttempts ?? 0,
