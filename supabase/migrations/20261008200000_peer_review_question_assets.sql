@@ -1,145 +1,84 @@
--- S07 room history and terminal member review.
--- These projections keep the private content tables outside the Data API. The
--- historical version is deliberately read by its persisted foreign key, so an
--- archived version remains available to an authorized room member.
+-- Allow authorized daily-review readers to resolve private question assets.
+begin;
+set local check_function_bodies = off;
 
-create function public.get_room_history(
-  target_room_slug text,
-  target_publication_id uuid default null
-)
-returns table (
-  room_id                 uuid,
-  room_slug               text,
-  room_title              text,
-  viewer_role             text,
-  season_id               uuid,
-  season_title            text,
-  publication_id          uuid,
-  publication_number      integer,
-  publication_status      text,
-  publication_opens_at    timestamptz,
-  publication_closes_at   timestamptz,
-  challenge_id            uuid,
-  challenge_slug          text,
-  challenge_version_id    uuid,
-  challenge_title         text,
-  challenge_subtitle      text,
-  challenge_description   text,
-  challenge_mode          text,
-  challenge_max_score     integer,
-  question_count          bigint,
-  played_at               timestamptz,
-  player_count            bigint,
-  player_id               uuid,
-  display_name            text,
-  avatar_path             text,
-  flash_points            bigint,
-  duration_ms             bigint,
-  started_at              timestamptz,
-  "position"              bigint
-)
+create or replace function private.can_review_competitive_attempt(target_attempt_id uuid)
+returns boolean
 language sql stable security definer set search_path = '' as $$
-  with viewer as (
-    select p.id as player_id, m.role as viewer_role
-    from public.rooms r
-    join public.room_memberships m on m.room_id = r.id
-    join public.players p on p.id = private.current_player_id()
-      and p.id = m.player_id
-    where r.slug = target_room_slug
-      and r.status = 'active'
-      and m.status = 'active'
-  ), eligible_publications as (
+  with target as (
     select
+      a.id as attempt_id,
+      a.player_id as target_player_id,
+      a.status as attempt_status,
+      a.scheduled_challenge_id as publication_id,
       r.id as room_id,
-      r.slug as room_slug,
-      r.title as room_title,
-      v.viewer_role,
-      s.id as season_id,
-      s.title as season_title,
-      sc.id as publication_id,
-      sc.number as publication_number,
-      'closed'::text as publication_status,
-      sc.opens_at as publication_opens_at,
-      sc.closes_at as publication_closes_at,
-      cd.id as challenge_id,
-      cd.slug as challenge_slug,
-      cv.id as challenge_version_id,
-      cv.title as challenge_title,
-      cv.subtitle as challenge_subtitle,
-      cv.description as challenge_description,
-      cv.mode as challenge_mode,
-      cv.max_score as challenge_max_score,
-      (select count(*)::bigint
-         from private.challenge_items i
-        where i.challenge_version_id = cv.id) as question_count,
-      coalesce((
-        select max(a.completed_at)
-        from public.attempts a
-        where a.scheduled_challenge_id = sc.id
-          and a.kind = 'competitive'
-          and a.status in ('completed', 'abandoned')
-      ), sc.closes_at) as played_at,
-      coalesce((
-        select count(distinct a.player_id)::bigint
-        from public.attempts a
-        where a.scheduled_challenge_id = sc.id
-          and a.kind = 'competitive'
-          and a.status in ('completed', 'abandoned')
-      ), 0::bigint) as player_count
-    from public.rooms r
-    join public.seasons s on s.room_id = r.id and s.status in ('active', 'finished')
-    join public.scheduled_challenges sc on sc.season_id = s.id
-    join private.challenge_versions cv on cv.id = sc.challenge_version_id
-    join private.challenge_definitions cd on cd.id = cv.challenge_definition_id
-    cross join viewer v
-    where r.slug = target_room_slug
-      and sc.id = coalesce(target_publication_id, sc.id)
-      and private.publication_effective_status(
+      private.publication_effective_status(
         sc.status, s.status, s.starts_at, s.ends_at,
         sc.opens_at, sc.closes_at, statement_timestamp()
-      ) = 'closed'
+      ) as publication_status
+    from public.attempts a
+    join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+    join public.seasons s on s.id = sc.season_id
+    join public.rooms r on r.id = s.room_id
+    join private.challenge_versions cv on cv.id = sc.challenge_version_id
+    where a.id = target_attempt_id
+      and a.kind = 'competitive'
+      and a.status in ('completed', 'abandoned')
+      and r.status = 'active'
+      and s.status in ('active', 'finished')
       and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
       and cv.status in ('published', 'archived')
-      and not exists (
-        select 1 from public.attempts in_progress
-        where in_progress.scheduled_challenge_id = sc.id
-          and in_progress.status = 'in_progress'
-      )
-  ), ranked_results as (
-    select
-      e.scheduled_challenge_id as publication_id,
-      e.player_id,
-      p.display_name,
-      p.avatar_path,
-      e.flash_points,
-      e.duration_ms,
-      e.started_at,
-      rank() over (
-        partition by e.scheduled_challenge_id
-        order by e.flash_points desc, e.duration_ms, e.started_at
-      ) as "position"
-    from private.effective_results e
-    join eligible_publications h on h.publication_id = e.scheduled_challenge_id
-    join public.players p on p.id = e.player_id
   )
-  select
-    h.room_id, h.room_slug, h.room_title, h.viewer_role,
-    h.season_id, h.season_title, h.publication_id, h.publication_number,
-    h.publication_status, h.publication_opens_at, h.publication_closes_at,
-    h.challenge_id, h.challenge_slug, h.challenge_version_id, h.challenge_title,
-    h.challenge_subtitle, h.challenge_description, h.challenge_mode,
-    h.challenge_max_score, h.question_count, h.played_at, h.player_count,
-    r.player_id, r.display_name, r.avatar_path, r.flash_points, r.duration_ms,
-    r.started_at, r."position"
-  from eligible_publications h
-  left join ranked_results r on r.publication_id = h.publication_id
-  order by h.played_at desc, h.publication_number desc, h.publication_id,
-    r."position" nulls last, r.player_id
+  select exists (
+    select 1
+    from target t
+    join public.room_memberships viewer_membership
+      on viewer_membership.room_id = t.room_id
+      and viewer_membership.player_id = private.current_player_id()
+      and viewer_membership.status = 'active'
+      and viewer_membership.role in ('owner', 'admin', 'member')
+    where exists (
+      select 1
+      from public.room_memberships historical_membership
+      where historical_membership.room_id = t.room_id
+        and historical_membership.player_id = t.target_player_id
+    )
+      and (
+        (
+          t.target_player_id = private.current_player_id()
+          and t.publication_status in ('available', 'closed')
+        )
+        or (
+          t.target_player_id <> private.current_player_id()
+          and (
+            (
+              t.publication_status = 'available'
+              and t.attempt_status = 'completed'
+              and exists (
+                select 1
+                from public.attempts viewer_completed
+                where viewer_completed.scheduled_challenge_id = t.publication_id
+                  and viewer_completed.player_id = private.current_player_id()
+                  and viewer_completed.kind = 'competitive'
+                  and viewer_completed.status = 'completed'
+              )
+            )
+            or (
+              t.publication_status = 'closed'
+              and not exists (
+                select 1
+                from public.attempts in_progress
+                where in_progress.scheduled_challenge_id = t.publication_id
+                  and in_progress.status = 'in_progress'
+              )
+            )
+          )
+        )
+      )
+  );
 $$;
 
--- Common historical member review. Payloads are deliberately nullable for
--- unreached Pyramid levels and are omitted entirely for future Survival items.
-create function public.get_room_member_review(
+create or replace function public.get_room_member_review(
   target_room_slug text,
   target_publication_id uuid,
   target_player_id uuid
@@ -299,11 +238,50 @@ language sql stable security definer set search_path = '' as $$
   order by i.position
 $$;
 
-alter function public.get_room_history(text, uuid) owner to postgres;
+create or replace function private.read_competitive_question_asset(input jsonb) returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+declare result jsonb;
+begin
+  select jsonb_build_object('assetId', asset.id, 'objectPath', asset.object_path, 'status', asset.status)
+    into result
+  from public.attempts attempt
+  join private.challenge_items item on item.challenge_version_id = attempt.challenge_version_id
+  join private.question_versions question on question.id = item.question_version_id
+  join private.media_assets asset on asset.id = coalesce(
+    question.public_payload->'surface'->>'assetId',
+    question.public_payload->'media'->>'assetId'
+  )::uuid
+  where attempt.id = (input->>'attemptId')::uuid
+    and attempt.kind = 'competitive'
+    and private.can_review_competitive_attempt(attempt.id)
+    and item.question_version_id is not null
+    and question.payload_schema_version = 2
+    and (
+      (question.type = 'progressive-image' and question.public_payload->'surface' ? 'assetId')
+      or (question.type = 'multiple-choice' and question.public_payload->'media' ? 'assetId')
+      or (question.type = 'estimation' and question.public_payload->'media' ? 'assetId')
+      or (question.type = 'heat-map' and question.public_payload->'surface' ? 'assetId')
+    )
+    and asset.kind = 'question-asset' and asset.status in ('ready','archived')
+    and asset.id = (input->>'assetId')::uuid;
+  if result is null then raise exception 'not_authorized' using errcode = '42501'; end if;
+  return result;
+exception when invalid_text_representation then
+  raise exception 'not_authorized' using errcode = '42501';
+end;
+$$;
+
+alter function private.can_review_competitive_attempt(uuid) owner to postgres;
 alter function public.get_room_member_review(text, uuid, uuid) owner to postgres;
-revoke all on function public.get_room_history(text, uuid),
-  public.get_room_member_review(text, uuid, uuid)
-  from public, anon, service_role;
-grant execute on function public.get_room_history(text, uuid),
-  public.get_room_member_review(text, uuid, uuid)
+alter function private.read_competitive_question_asset(jsonb) owner to postgres;
+revoke all on function private.can_review_competitive_attempt(uuid)
+  from public, anon, authenticated, service_role;
+revoke all on function public.get_room_member_review(text, uuid, uuid),
+  private.read_competitive_question_asset(jsonb)
+  from public, anon, authenticated, service_role;
+grant execute on function public.get_room_member_review(text, uuid, uuid)
   to authenticated;
+grant execute on function private.read_competitive_question_asset(jsonb)
+  to service_role;
+
+commit;

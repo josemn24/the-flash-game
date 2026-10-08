@@ -57,4 +57,48 @@ describe("resolveCompetitiveQuestionPayload", () => {
       },
     });
   });
+
+  it("resolves a progressive-image surface asset into a signed runtime source", async () => {
+    vi.mocked(readCompetitiveQuestionAsset).mockResolvedValue({
+      assetId: "asset-progressive",
+      objectPath: "question-assets/asset-progressive.png",
+      status: "ready",
+    });
+    vi.mocked(supabaseMediaStorage.createSignedReadUrl).mockResolvedValue({
+      signedUrl: "https://signed.example/progressive.png?token=test",
+      expiresAt: "2026-09-19T12:05:00.000Z",
+    });
+
+    const resolved = await resolveCompetitiveQuestionPayload({
+      authUserId: "player-1",
+      attemptId: "peer-attempt-1",
+      publicPayload: {
+        question: "¿Qué aparece?",
+        surface: {
+          assetId: "asset-progressive",
+          alt: "Imagen progresiva",
+          width: 1024,
+          height: 1024,
+          fit: "contain",
+        },
+        revealDurationMs: 7000,
+      },
+    });
+
+    expect(readCompetitiveQuestionAsset).toHaveBeenCalledWith("player-1", {
+      attemptId: "peer-attempt-1",
+      assetId: "asset-progressive",
+    });
+    expect(resolved).toEqual({
+      question: "¿Qué aparece?",
+      surface: {
+        src: "https://signed.example/progressive.png?token=test",
+        alt: "Imagen progresiva",
+        width: 1024,
+        height: 1024,
+        fit: "contain",
+      },
+      revealDurationMs: 7000,
+    });
+  });
 });

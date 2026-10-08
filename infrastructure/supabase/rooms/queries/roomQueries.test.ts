@@ -860,6 +860,83 @@ describe("Supabase history and review capabilities S07", () => {
     expect(model?.returnHref).toBe(`/salas/s06-main/historial/${historyRows[0].publication_id}`);
   });
 
+  it("resolves private assets when reviewing another player's current result", async () => {
+    const peerPlayerId = seasonRows[0].player_id;
+    const peerReviewRows = reviewRows.map((row, index) => ({
+      ...row,
+      publication_id: roomRow.publication_id,
+      publication_status: "open",
+      player_id: peerPlayerId,
+      display_name: "Alice Owner",
+      avatar_path: null,
+      attempt_id: "00000000-0000-0000-0000-000000000021",
+      challenge_item_id: `00000000-0000-0000-0000-00000000002${index + 2}`,
+      item_position: index + 1,
+      question_type: "multiple-choice",
+      payload_schema_version: 1,
+      time_limit_ms: 15000,
+      public_payload: {
+        category: "Cultura",
+        tags: {
+          domains: ["culture"],
+          topics: ["general"],
+          cognitiveSkills: ["memory"],
+          formatSkills: ["recall"],
+          lifeSkills: [],
+        },
+        question: index === 0 ? "¿Capital?" : "¿Planeta?",
+        options: index === 0 ? ["Lisboa", "Oporto"] : ["Venus", "Marte"],
+        media: {
+          type: "image",
+          assetId: `asset-${index + 1}`,
+          alt: "Imagen de pregunta",
+          width: 640,
+          height: 480,
+          fit: "contain",
+        },
+        promptVisual: null,
+      },
+      solution_payload: {
+        correctAnswer: index === 0 ? "Lisboa" : "Marte",
+      },
+    }));
+    const resolve = vi.fn(async ({ publicPayload }: { publicPayload: unknown }) => {
+      const payload = publicPayload as Record<string, unknown>;
+      const media = payload.media as Record<string, unknown>;
+      const { assetId: _assetId, ...runtimeMedia } = media;
+      return {
+        ...payload,
+        media: { ...runtimeMedia, src: "https://signed.example/peer-question.png" },
+      };
+    });
+    mocks.createClient.mockResolvedValue({
+      auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-viewer" } } }) },
+      rpc: vi.fn(async (functionName: string) => ({
+        data:
+          functionName === "get_room_detail"
+            ? [roomRow]
+            : functionName === "get_room_member_review"
+              ? peerReviewRows
+              : functionName === "get_season_ranking"
+                ? seasonRows
+                : challengeRows,
+        error: null,
+      })),
+    });
+
+    const model = await new SupabaseRoomMemberDetailQueries(
+      supabaseAttemptExpiration,
+      { resolve },
+    ).getMemberDetail("s06-main", peerPlayerId, queryContext);
+
+    expect(resolve).toHaveBeenCalledWith({
+      authUserId: "auth-viewer",
+      attemptId: "00000000-0000-0000-0000-000000000021",
+      publicPayload: peerReviewRows[0].public_payload,
+    });
+    expect(model?.reviewItems[0]?.question).toMatchObject({ type: "multiple-choice" });
+  });
+
   it.each(["current", "historical"])(
     "loads %s Survival results with a persisted numeric estimation answer",
     async (view) => {

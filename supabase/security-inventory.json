@@ -242,6 +242,11 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
+    "private.can_review_competitive_attempt": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
     "private.close_attempt_as_abandoned": {
       "arguments": "target_attempt uuid, closed_at timestamp with time zone, terminal_reason_value text, audit_actor uuid, audit_request_id text, audit_reason text",
       "securityDefiner": true,

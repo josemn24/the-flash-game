@@ -176,7 +176,8 @@ exception when invalid_text_representation then
 end;
 $$;
 
--- A competitive or historical owner may resolve only an asset referenced by their own attempt.
+-- A competitive participant or authorized reviewer may resolve only an asset
+-- referenced by the target attempt's published question.
 create function private.read_competitive_question_asset(input jsonb) returns jsonb
 language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.command_actor(); result jsonb;
@@ -191,7 +192,8 @@ begin
     question.public_payload->'media'->>'assetId'
   )::uuid
   where attempt.id = (input->>'attemptId')::uuid
-    and attempt.player_id = actor and attempt.kind = 'competitive'
+    and attempt.kind = 'competitive'
+    and private.can_review_competitive_attempt(attempt.id)
     and item.question_version_id is not null
     and question.payload_schema_version = 2
     and (

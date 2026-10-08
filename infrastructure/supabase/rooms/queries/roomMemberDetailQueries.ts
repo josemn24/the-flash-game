@@ -109,7 +109,7 @@ export class SupabaseRoomMemberDetailQueries implements RoomMemberDetailQueries 
         (isRecord(surface) && typeof surface.assetId === "string")
       );
     });
-    if (reviewNeedsPrivateAsset && memberKey === context.viewer.playerId) {
+    if (reviewNeedsPrivateAsset) {
       const authClient = await createClient();
       const { data: authData } = await authClient.auth.getUser();
       if (authData.user) {

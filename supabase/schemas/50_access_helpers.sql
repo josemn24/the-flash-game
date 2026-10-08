@@ -140,14 +140,97 @@ language sql stable set search_path = '' as $$
   ) = 'available'
 $$;
 
+-- Shared authorization for reviewing a competitive attempt. This is used by
+-- both the room review projection and the private question-asset resolver so
+-- that resolving an image can never be broader than reading the review.
+create function private.can_review_competitive_attempt(target_attempt_id uuid)
+returns boolean
+language sql stable security definer set search_path = '' as $$
+  with target as (
+    select
+      a.id as attempt_id,
+      a.player_id as target_player_id,
+      a.status as attempt_status,
+      a.scheduled_challenge_id as publication_id,
+      r.id as room_id,
+      private.publication_effective_status(
+        sc.status, s.status, s.starts_at, s.ends_at,
+        sc.opens_at, sc.closes_at, statement_timestamp()
+      ) as publication_status
+    from public.attempts a
+    join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+    join public.seasons s on s.id = sc.season_id
+    join public.rooms r on r.id = s.room_id
+    join private.challenge_versions cv on cv.id = sc.challenge_version_id
+    where a.id = target_attempt_id
+      and a.kind = 'competitive'
+      and a.status in ('completed', 'abandoned')
+      and r.status = 'active'
+      and s.status in ('active', 'finished')
+      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      and cv.status in ('published', 'archived')
+  )
+  select exists (
+    select 1
+    from target t
+    join public.room_memberships viewer_membership
+      on viewer_membership.room_id = t.room_id
+      and viewer_membership.player_id = private.current_player_id()
+      and viewer_membership.status = 'active'
+      and viewer_membership.role in ('owner', 'admin', 'member')
+    where exists (
+      select 1
+      from public.room_memberships historical_membership
+      where historical_membership.room_id = t.room_id
+        and historical_membership.player_id = t.target_player_id
+    )
+      and (
+        (
+          t.target_player_id = private.current_player_id()
+          and t.publication_status in ('available', 'closed')
+        )
+        or (
+          t.target_player_id <> private.current_player_id()
+          and (
+            (
+              t.publication_status = 'available'
+              and t.attempt_status = 'completed'
+              and exists (
+                select 1
+                from public.attempts viewer_completed
+                where viewer_completed.scheduled_challenge_id = t.publication_id
+                  and viewer_completed.player_id = private.current_player_id()
+                  and viewer_completed.kind = 'competitive'
+                  and viewer_completed.status = 'completed'
+              )
+            )
+            or (
+              t.publication_status = 'closed'
+              and not exists (
+                select 1
+                from public.attempts in_progress
+                where in_progress.scheduled_challenge_id = t.publication_id
+                  and in_progress.status = 'in_progress'
+              )
+            )
+          )
+        )
+      )
+  );
+$$;
+
 -- Ownership is fixed explicitly; do not reassign these helpers to an API role.
 alter function private.current_player_id() owner to postgres;
 alter function private.is_room_member(uuid) owner to postgres;
 alter function private.can_read_profile(uuid) owner to postgres;
 alter function private.can_read_own_attempt(uuid, uuid) owner to postgres;
+alter function private.can_review_competitive_attempt(uuid) owner to postgres;
 alter function private.publication_effective_status(text, text, timestamptz, timestamptz, timestamptz, timestamptz, timestamptz) owner to postgres;
 alter function private.publication_is_effectively_open(text, text, timestamptz, timestamptz, timestamptz, timestamptz, timestamptz) owner to postgres;
 alter function public.provision_player() owner to postgres;
 
 revoke all on function public.provision_player() from public;
 grant execute on function public.provision_player() to authenticated;
+
+revoke all on function private.can_review_competitive_attempt(uuid)
+  from public, anon, authenticated, service_role;
