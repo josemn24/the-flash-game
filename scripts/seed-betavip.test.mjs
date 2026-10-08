@@ -200,7 +200,7 @@ describe("BetaVIP seed", () => {
     expect(new Set(Object.values(paths).flat()).size).toBe(25);
   });
 
-  it("publishes Survival, Alphabet and Cumbre lógica II on consecutive days", () => {
+  it("publishes Alphabet, Cumbre lógica II and Survival on consecutive days", () => {
     const data = betaVipManifest(tabarniaFixture);
     const sql = buildBetaVipDomainSql({
       tabarniaFixture,
@@ -231,16 +231,16 @@ describe("BetaVIP seed", () => {
     expect(
       data.publications.map((item) => [item.number, item.title, item.mode, item.status]),
     ).toEqual([
-      [1, "Supervivencia: Cultura pop", "survival", "open"],
-      [2, "La vuelta al mundo", "alphabet", "scheduled"],
-      [3, "Cumbre lógica II", "pyramid", "scheduled"],
+      [1, "La vuelta al mundo", "alphabet", "open"],
+      [2, "Cumbre lógica II", "pyramid", "scheduled"],
+      [3, "Supervivencia: Cultura pop", "survival", "scheduled"],
     ]);
     expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48]);
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([20, 18, 7]);
-    expect(data.survivalPublicationId).toBe(data.publications[0].id);
-    expect(data.alphabetPublicationId).toBe(data.publications[1].id);
-    expect(data.pyramidPublicationId).toBe(data.publications[2].id);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 20]);
+    expect(data.alphabetPublicationId).toBe(data.publications[0].id);
+    expect(data.pyramidPublicationId).toBe(data.publications[1].id);
+    expect(data.survivalPublicationId).toBe(data.publications[2].id);
     expect(data.publications.some((item) => item.slug === "steel-ball-run")).toBe(false);
     expect(sql).toContain("'BetaVIP'");
     expect(sql).toContain("'Temporada BetaVIP'");

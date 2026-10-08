@@ -173,9 +173,9 @@ describe("staging bootstrap", () => {
         opensAfterHours,
       ]),
     ).toEqual([
-      ["Supervivencia: Cultura pop", "survival", "open", 0],
-      ["La vuelta al mundo", "alphabet", "scheduled", 24],
-      ["Cumbre lógica II", "pyramid", "scheduled", 48],
+      ["La vuelta al mundo", "alphabet", "open", 0],
+      ["Cumbre lógica II", "pyramid", "scheduled", 24],
+      ["Supervivencia: Cultura pop", "survival", "scheduled", 48],
     ]);
     expect(content.survival).toHaveLength(20);
     expect(content.alphabet).toHaveLength(18);

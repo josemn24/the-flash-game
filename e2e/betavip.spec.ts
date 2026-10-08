@@ -35,23 +35,25 @@ async function signIn(page: Page, account: Account) {
   await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
 }
 
-test("BetaVIP muestra Supervivencia como primer desafío", async ({ page }) => {
+test("BetaVIP muestra La vuelta al mundo como primer desafío", async ({ page }) => {
   const data = await fixture();
-  const [survival, alphabet, pyramid] = data.data.publications;
-  expect(data.data.publicationId).toBe(survival.id);
+  const [alphabet, pyramid, survival] = data.data.publications;
+  expect(data.data.publicationId).toBe(alphabet.id);
   expect(data.data.survivalPublicationId).toBe(survival.id);
   expect(data.data.alphabetPublicationId).toBe(alphabet.id);
   expect(data.data.pyramidPublicationId).toBe(pyramid.id);
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
-    [1, "Supervivencia: Cultura pop", "survival"],
-    [2, "La vuelta al mundo", "alphabet"],
-    [3, "Cumbre lógica II", "pyramid"],
+    [1, "La vuelta al mundo", "alphabet"],
+    [2, "Cumbre lógica II", "pyramid"],
+    [3, "Supervivencia: Cultura pop", "survival"],
   ]);
 
   await signIn(page, data.users.ches);
   await page.getByRole("link", { name: /Abrir sala BetaVIP/ }).click();
   await page.getByRole("link", { name: "Jugar" }).click();
-  await expect(page.getByRole("heading", { name: "Cultura pop", exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "La vuelta al mundo", exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
   expect(
     await sqlCount(
@@ -60,33 +62,93 @@ test("BetaVIP muestra Supervivencia como primer desafío", async ({ page }) => {
   ).toBe(0);
 });
 
-test("Ches responde la imagen progresiva y continúa Supervivencia", async ({ page }) => {
+test("Ches continúa con Cumbre lógica II en el segundo periodo", async ({ page }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [survival, alphabet, pyramid] = data.data.publications;
-  expect(data.data.publicationId).toBe(survival.id);
+  const [alphabet, pyramid, survival] = data.data.publications;
+  expect(data.data.publicationId).toBe(alphabet.id);
   expect(data.data.survivalPublicationId).toBe(survival.id);
   expect(data.data.alphabetPublicationId).toBe(alphabet.id);
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
-    [1, "Supervivencia: Cultura pop", "survival"],
-    [2, "La vuelta al mundo", "alphabet"],
-    [3, "Cumbre lógica II", "pyramid"],
+    [1, "La vuelta al mundo", "alphabet"],
+    [2, "Cumbre lógica II", "pyramid"],
+    [3, "Supervivencia: Cultura pop", "survival"],
   ]);
 
   await dockerSql(`
 begin;
 update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
+where id = '${alphabet.id}';
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
 where id = '${pyramid.id}';
 set local role service_role;
-select private.run_calendar_tick_command('{"runId":"betavip-e2e-survival"}'::jsonb);
+select private.run_calendar_tick_command('{"runId":"betavip-e2e-pyramid"}'::jsonb);
 commit;
 `);
 
+  expect(
+    await sqlCount(
+      `select count(*) from public.scheduled_challenges where id = '${pyramid.id}' and status = 'open';`,
+    ),
+  ).toBe(1);
   await signIn(page, data.users.ches);
   await expect(page.getByRole("link", { name: /Abrir sala Tabarnia/ })).toBeVisible();
   await page.getByRole("link", { name: /Abrir sala BetaVIP/ }).click();
   await expect(page.getByRole("heading", { name: "BetaVIP", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Jugar" }).click();
+  await expect(page.getByRole("heading", { name: "Cumbre lógica II", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
+  await expect(page.getByRole("list", { name: "Niveles de La Pirámide" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Une los puntos en orden y cubre todo el tablero." }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Empezar nivel" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Une los puntos en orden y cubre todo el tablero." }),
+  ).toBeVisible();
+  expect(
+    await sqlCount(
+      `select count(*) from public.attempts where player_id = '${data.users.ches.playerId}' and scheduled_challenge_id = '${pyramid.id}' and challenge_version_id = '${pyramid.challengeVersionId}';`,
+    ),
+  ).toBe(1);
+  expect(
+    await sqlCount(
+      `select count(*) from public.attempts where scheduled_challenge_id in ('${alphabet.id}', '${survival.id}');`,
+    ),
+  ).toBe(0);
+});
+
+test("Ches responde la imagen progresiva en el tercer periodo de Supervivencia", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const data = await fixture();
+  const [alphabet, pyramid, survival] = data.data.publications;
+
+  await dockerSql(`
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where id = '${pyramid.id}' and status = 'open';
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${survival.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-e2e-survival"}'::jsonb);
+commit;
+`);
+  expect(
+    await sqlCount(
+      `select count(*) from public.scheduled_challenges where id = '${survival.id}' and status = 'open';`,
+    ),
+  ).toBe(1);
+
+  await signIn(page, data.users.ches);
+  await page.getByRole("link", { name: /Abrir sala BetaVIP/ }).click();
   await page.getByRole("link", { name: "Jugar" }).click();
   await expect(page.getByRole("heading", { name: "Cultura pop", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Empezar desafío" }).click();
@@ -127,62 +189,6 @@ commit;
   expect(
     await sqlCount(
       `select count(*) from private.attempt_answers answer join public.attempts attempt on attempt.id = answer.attempt_id join private.challenge_items item on item.id = answer.challenge_item_id where attempt.player_id = '${data.users.ches.playerId}' and attempt.scheduled_challenge_id = '${survival.id}' and item.position = 1 and answer.status = 'correct';`,
-    ),
-  ).toBe(1);
-  expect(
-    await sqlCount(
-      `select count(*) from public.attempts where scheduled_challenge_id in ('${alphabet.id}');`,
-    ),
-  ).toBe(0);
-});
-
-test("Ches juega la primera letra del Alphabet al abrirse el segundo desafío", async ({ page }) => {
-  test.setTimeout(90_000);
-  const data = await fixture();
-  const [survival, alphabet, pyramid] = data.data.publications;
-
-  await dockerSql(`
-begin;
-update public.scheduled_challenges
-set status = 'cancelled', cancelled_at = clock_timestamp()
-where id = '${survival.id}';
-update public.scheduled_challenges
-set status = 'cancelled', cancelled_at = clock_timestamp()
-where id = '${pyramid.id}';
-update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
-    closes_at = clock_timestamp() + interval '1 hour'
-where id = '${alphabet.id}';
-set local role service_role;
-select private.run_calendar_tick_command('{"runId":"betavip-e2e-alphabet"}'::jsonb);
-commit;
-`);
-  expect(
-    await sqlCount(
-      `select count(*) from public.scheduled_challenges where id = '${alphabet.id}' and status = 'open';`,
-    ),
-  ).toBe(1);
-
-  await signIn(page, data.users.ches);
-  await page.getByRole("link", { name: /Abrir sala BetaVIP/ }).click();
-  await page.getByRole("link", { name: "Jugar" }).click();
-  await expect(page.getByRole("heading", { name: "La vuelta al mundo" }).first()).toBeVisible();
-  await page.getByRole("button", { name: "Empezar desafío" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Conjunto de islas próximas entre sí." }),
-  ).toBeVisible();
-  await page.getByLabel("Tu respuesta").fill("archipiélago");
-  await page.getByRole("button", { name: "Responder" }).click();
-  await expect(page.getByRole("status").getByText("Correcto")).toBeVisible();
-
-  expect(
-    await sqlCount(
-      `select count(*) from public.attempts where player_id = '${data.users.ches.playerId}' and scheduled_challenge_id = '${alphabet.id}';`,
-    ),
-  ).toBe(1);
-  expect(
-    await sqlCount(
-      `select count(*) from private.attempt_answers answer join public.attempts attempt on attempt.id = answer.attempt_id join private.challenge_items item on item.id = answer.challenge_item_id where attempt.player_id = '${data.users.ches.playerId}' and attempt.scheduled_challenge_id = '${alphabet.id}' and item.position = 1 and answer.status = 'correct';`,
     ),
   ).toBe(1);
 });

@@ -119,22 +119,9 @@ export function betaVipManifest(tabarniaFixture, schedule = "production") {
   const profile = resolveScheduleProfile(schedule);
   const steel = steelBallRun(tabarniaFixture);
   const scheduleData = scheduleManifest(profile, 3, profile.name === "fast" ? 15 : 72 * 60);
-  const pyramid = {
-    id: stableId("publication:beta-vip-cumbre-logica-ii"),
-    number: 3,
-    slug: BETA_VIP_PYRAMID.slug,
-    title: BETA_VIP_PYRAMID.title,
-    mode: "pyramid",
-    challengeId: stableId(`challenge:${BETA_VIP_PYRAMID.slug}`),
-    challengeVersionId: stableId(`challenge-version:${BETA_VIP_PYRAMID.slug}-v1`),
-    questionCount: pyramidItems.length,
-    pointsTotal: pyramidItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[2],
-    status: "scheduled",
-  };
   const alphabet = {
     id: stableId("publication:beta-vip-la-vuelta-al-mundo"),
-    number: 2,
+    number: 1,
     slug: BETA_VIP_ALPHABET.slug,
     title: BETA_VIP_ALPHABET.title,
     mode: "alphabet",
@@ -142,12 +129,25 @@ export function betaVipManifest(tabarniaFixture, schedule = "production") {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_ALPHABET.definitionSlug}-v1`),
     questionCount: alphabetItems.length,
     pointsTotal: alphabetItems.reduce((total, item) => total + item.points, 0),
+    ...scheduleData.publications[0],
+    status: "open",
+  };
+  const pyramid = {
+    id: stableId("publication:beta-vip-cumbre-logica-ii"),
+    number: 2,
+    slug: BETA_VIP_PYRAMID.slug,
+    title: BETA_VIP_PYRAMID.title,
+    mode: "pyramid",
+    challengeId: stableId(`challenge:${BETA_VIP_PYRAMID.slug}`),
+    challengeVersionId: stableId(`challenge-version:${BETA_VIP_PYRAMID.slug}-v1`),
+    questionCount: pyramidItems.length,
+    pointsTotal: pyramidItems.reduce((total, item) => total + item.points, 0),
     ...scheduleData.publications[1],
     status: "scheduled",
   };
   const survivalPublication = {
     id: stableId("publication:beta-vip-pop-culture-survival"),
-    number: 1,
+    number: 3,
     slug: BETA_VIP_SURVIVAL.slug,
     title: BETA_VIP_SURVIVAL.title,
     mode: "survival",
@@ -155,8 +155,8 @@ export function betaVipManifest(tabarniaFixture, schedule = "production") {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
     questionCount: survivalItems.length,
     pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[0],
-    status: "open",
+    ...scheduleData.publications[2],
+    status: "scheduled",
   };
   return {
     room: { id: stableId("room:beta-vip"), slug: "beta-vip" },
@@ -164,15 +164,15 @@ export function betaVipManifest(tabarniaFixture, schedule = "production") {
     scheduleWindowMinutes: scheduleData.scheduleWindowMinutes,
     seasonDurationMinutes: scheduleData.seasonDurationMinutes,
     seasonId: stableId("season:beta-vip"),
-    publicationId: survivalPublication.id,
-    challengeId: survivalPublication.challengeId,
-    challengeVersionId: survivalPublication.challengeVersionId,
-    questionCount: survivalPublication.questionCount,
-    pointsTotal: survivalPublication.pointsTotal,
+    publicationId: alphabet.id,
+    challengeId: alphabet.challengeId,
+    challengeVersionId: alphabet.challengeVersionId,
+    questionCount: alphabet.questionCount,
+    pointsTotal: alphabet.pointsTotal,
     pyramidPublicationId: pyramid.id,
     alphabetPublicationId: alphabet.id,
     survivalPublicationId: survivalPublication.id,
-    publications: [survivalPublication, alphabet, pyramid],
+    publications: [alphabet, pyramid, survivalPublication],
     questionAssets: [
       {
         id: cassetteAssetId,
@@ -374,11 +374,11 @@ select private.assert_supported_calendar_content(${sqlString(pyramid.challengeVe
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 1,
+  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1,
    'open', now(), ${scheduleInterval(profile, 1)}),
-  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 2,
+  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2,
    'scheduled', ${scheduleInterval(profile, 1)}, ${scheduleInterval(profile, 2)}),
-  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 3,
+  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 3,
    'scheduled', ${scheduleInterval(profile, 2)}, ${scheduleInterval(profile, 3)});
 set constraints all immediate;
 commit;
@@ -386,23 +386,9 @@ commit;
 }
 
 export function stagingBetaVipManifest() {
-  const pyramid = {
-    id: stableId("publication:beta-vip-cumbre-logica-ii"),
-    number: 3,
-    slug: BETA_VIP_PYRAMID.slug,
-    title: BETA_VIP_PYRAMID.title,
-    mode: "pyramid",
-    challengeId: stableId(`challenge:${BETA_VIP_PYRAMID.slug}`),
-    challengeVersionId: stableId(`challenge-version:${BETA_VIP_PYRAMID.slug}-v1`),
-    questionCount: pyramidItems.length,
-    pointsTotal: pyramidItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 48,
-    durationHours: 24,
-    status: "scheduled",
-  };
   const alphabet = {
     id: stableId("publication:beta-vip-la-vuelta-al-mundo"),
-    number: 2,
+    number: 1,
     slug: BETA_VIP_ALPHABET.slug,
     title: BETA_VIP_ALPHABET.title,
     mode: "alphabet",
@@ -410,13 +396,27 @@ export function stagingBetaVipManifest() {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_ALPHABET.definitionSlug}-v1`),
     questionCount: alphabetItems.length,
     pointsTotal: alphabetItems.reduce((total, item) => total + item.points, 0),
+    opensAfterHours: 0,
+    durationHours: 24,
+    status: "open",
+  };
+  const pyramid = {
+    id: stableId("publication:beta-vip-cumbre-logica-ii"),
+    number: 2,
+    slug: BETA_VIP_PYRAMID.slug,
+    title: BETA_VIP_PYRAMID.title,
+    mode: "pyramid",
+    challengeId: stableId(`challenge:${BETA_VIP_PYRAMID.slug}`),
+    challengeVersionId: stableId(`challenge-version:${BETA_VIP_PYRAMID.slug}-v1`),
+    questionCount: pyramidItems.length,
+    pointsTotal: pyramidItems.reduce((total, item) => total + item.points, 0),
     opensAfterHours: 24,
     durationHours: 24,
     status: "scheduled",
   };
   const survival = {
     id: stableId("publication:beta-vip-pop-culture-survival"),
-    number: 1,
+    number: 3,
     slug: BETA_VIP_SURVIVAL.slug,
     title: BETA_VIP_SURVIVAL.title,
     mode: "survival",
@@ -424,22 +424,22 @@ export function stagingBetaVipManifest() {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
     questionCount: survivalItems.length,
     pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 0,
+    opensAfterHours: 48,
     durationHours: 24,
-    status: "open",
+    status: "scheduled",
   };
   return {
     room: { id: stableId("room:beta-vip"), slug: "beta-vip" },
     seasonId: stableId("season:beta-vip"),
-    publicationId: survival.id,
-    challengeId: survival.challengeId,
-    challengeVersionId: survival.challengeVersionId,
-    questionCount: survival.questionCount,
-    pointsTotal: survival.pointsTotal,
+    publicationId: alphabet.id,
+    challengeId: alphabet.challengeId,
+    challengeVersionId: alphabet.challengeVersionId,
+    questionCount: alphabet.questionCount,
+    pointsTotal: alphabet.pointsTotal,
     pyramidPublicationId: pyramid.id,
     alphabetPublicationId: alphabet.id,
     survivalPublicationId: survival.id,
-    publications: [survival, alphabet, pyramid],
+    publications: [alphabet, pyramid, survival],
     questionAssets: [
       {
         id: cassetteAssetId,
@@ -632,9 +632,9 @@ select private.assert_supported_calendar_content(${sqlString(pyramid.challengeVe
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 1, 'open', (select starts_at from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '24 hours' from public.seasons where id = ${sqlString(data.seasonId)})),
-  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 2, 'scheduled', (select starts_at + interval '24 hours' from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '48 hours' from public.seasons where id = ${sqlString(data.seasonId)})),
-  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 3, 'scheduled', (select starts_at + interval '48 hours' from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '72 hours' from public.seasons where id = ${sqlString(data.seasonId)}))
+  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1, 'open', (select starts_at from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '24 hours' from public.seasons where id = ${sqlString(data.seasonId)})),
+  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2, 'scheduled', (select starts_at + interval '24 hours' from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '48 hours' from public.seasons where id = ${sqlString(data.seasonId)})),
+  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 3, 'scheduled', (select starts_at + interval '48 hours' from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '72 hours' from public.seasons where id = ${sqlString(data.seasonId)}))
 on conflict (id) do nothing;
 `;
 }

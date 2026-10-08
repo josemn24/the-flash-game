@@ -867,6 +867,7 @@ language sql stable security definer set search_path = '' as $$
     attempt.status,
     membership.role <> 'spectator' and (
       version.mode = 'flash' and version.mode_config = '{}'::jsonb
+      or version.mode = 'alphabet' and version.mode_config = '{}'::jsonb
       or version.mode = 'survival'
         and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
         and jsonb_typeof(version.mode_config->'lives') = 'number'
@@ -890,7 +891,7 @@ language sql stable security definer set search_path = '' as $$
   join lateral (
     select
       count(*)::bigint as question_count,
-      (count(*) between 2 and 20 and version.mode in ('flash', 'survival', 'narrative')
+      (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative')
         or count(*) = 7 and version.mode = 'pyramid')
         and coalesce(bool_and(item.position between 1 and case when version.mode = 'pyramid' then 7 else 20 end), false)
         and coalesce(bool_and(item.points > 0), false)
@@ -899,7 +900,10 @@ language sql stable security definer set search_path = '' as $$
           or version.mode = 'narrative'
             and jsonb_typeof(item.mode_config) = 'object'
             and jsonb_typeof(item.mode_config->'questionSlug') = 'string'
-          or version.mode not in ('pyramid', 'narrative') and item.mode_config = '{}'::jsonb
+          or version.mode = 'alphabet'
+            and jsonb_typeof(item.mode_config->'letter') = 'string'
+          or version.mode not in ('pyramid', 'narrative', 'alphabet')
+            and item.mode_config = '{}'::jsonb
         )), false)
         and (version.mode <> 'pyramid' or count(distinct item.mode_config->>'levelId') = 7)
         and count(*) filter (where private.is_supported_flash_question(question.id)) = count(*)
@@ -915,7 +919,7 @@ language sql stable security definer set search_path = '' as $$
     and membership.player_id = private.current_player_id()
     and membership.status = 'active'
     and version.status in ('published', 'archived')
-    and version.mode in ('flash', 'survival', 'narrative', 'pyramid')
+    and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     and version.config_schema_version = 1
     and version.max_score = 100
   order by schedule.number
