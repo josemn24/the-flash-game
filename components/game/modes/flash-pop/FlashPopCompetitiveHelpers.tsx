@@ -73,6 +73,7 @@ export function ReviewStage({
   returnTo,
   roomContext,
   presentation = "default",
+  totalQuestionCount,
 }: {
   challenge: FlashChallenge;
   results: AnswerResult[];
@@ -81,6 +82,7 @@ export function ReviewStage({
   returnTo: string;
   roomContext?: GameRoomContext;
   presentation?: "default" | "flash" | "survival";
+  totalQuestionCount?: number;
 }) {
   const resultByQuestionId = new Map(results.map((result) => [result.questionId, result]));
   const entries = challenge.questions.map((question, index) => ({
@@ -89,7 +91,8 @@ export function ReviewStage({
     result: resultByQuestionId.get(question.id),
     marker: String(index + 1).padStart(2, "0"),
   }));
-  const reached = Math.min(results.length, challenge.questions.length);
+  const total = totalQuestionCount ?? challenge.questions.length;
+  const reached = Math.min(results.length, total);
 
   if (presentation === "flash" || presentation === "survival") {
     const isFlash = presentation === "flash";
@@ -99,12 +102,12 @@ export function ReviewStage({
         countLabel={
           isFlash
             ? `${reached} ${reached === 1 ? "respuesta" : "respuestas"}`
-            : `${reached} de ${challenge.questions.length} superados`
+            : `${reached} de ${total} retos alcanzados`
         }
         title="Historial de respuestas"
         description="Consulta tu respuesta, la solución aceptada y la explicación de cada desafío."
-        progress={{ value: reached, max: challenge.questions.length }}
-        progressLabel={isFlash ? "Respuestas registradas" : "Retos superados"}
+        progress={{ value: reached, max: total }}
+        progressLabel={isFlash ? "Respuestas registradas" : "Retos alcanzados"}
         backAtTop
         onBack={onBack}
         onReplay={onReplay}

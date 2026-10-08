@@ -257,6 +257,7 @@ export function ServerFlashPopSurvivalGame({
             returnTo={roomContext.returnTo}
             roomContext={roomContext}
             presentation="survival"
+            totalQuestionCount={challenge.slots.length}
           />
         </motion.div>
       ) : null}

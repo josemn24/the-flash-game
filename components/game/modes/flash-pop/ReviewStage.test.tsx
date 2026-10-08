@@ -44,9 +44,9 @@ describe("ReviewStage", () => {
       />,
     );
 
-    expect(markup).toContain("2 de 16 superados");
+    expect(markup).toContain("2 de 16 retos alcanzados");
     expect(markup).toContain('role="progressbar"');
-    expect(markup).toContain('aria-label="Retos superados"');
+    expect(markup).toContain('aria-label="Retos alcanzados"');
     expect(markup).toContain('aria-valuenow="2"');
     expect(markup).toContain('aria-valuemax="16"');
     expect(markup.indexOf('aria-label="Volver al resultado"')).toBeLessThan(
@@ -79,5 +79,31 @@ describe("ReviewStage", () => {
     expect(markup).not.toContain("Revisión");
     expect(markup).not.toContain("Tabarnia");
     expect(markup).not.toContain("superados");
+  });
+
+  it("keeps the original Survival total when the review challenge is filtered to reached questions", () => {
+    const reachedChallenge = {
+      ...challenge,
+      questions: challenge.questions.slice(0, 13),
+    };
+    const results = reachedChallenge.questions.map((question, index) =>
+      makeResult(question.id, index === 12 ? "incorrect" : "correct"),
+    );
+    const markup = renderToStaticMarkup(
+      <ReviewStage
+        challenge={reachedChallenge}
+        results={results}
+        onBack={() => {}}
+        returnTo="/lobby"
+        presentation="survival"
+        totalQuestionCount={20}
+      />,
+    );
+
+    expect(markup).toContain("13 de 20 retos alcanzados");
+    expect(markup).toContain("Incorrecta");
+    expect(markup).toContain('aria-valuenow="13"');
+    expect(markup).toContain('aria-valuemax="20"');
+    expect(markup).not.toContain("13 de 13");
   });
 });
