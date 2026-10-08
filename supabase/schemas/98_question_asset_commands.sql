@@ -193,7 +193,10 @@ begin
   )::uuid
   where attempt.id = (input->>'attemptId')::uuid
     and attempt.kind = 'competitive'
-    and private.can_review_competitive_attempt(attempt.id)
+    and (
+      attempt.player_id = actor
+      or private.can_review_competitive_attempt(attempt.id)
+    )
     and item.question_version_id is not null
     and question.payload_schema_version = 2
     and (

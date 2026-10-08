@@ -12,6 +12,7 @@ values
   (test_support.id('e10-room'), test_support.id('owner'), 'owner', 'active'),
   (test_support.id('e10-room'), test_support.id('member'), 'member', 'active'),
   (test_support.id('e10-room'), test_support.id('member2'), 'member', 'active'),
+  (test_support.id('e10-room'), test_support.id('outsider'), 'member', 'active'),
   (test_support.id('e10-room'), test_support.id('spectator'), 'spectator', 'active');
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
 values (test_support.id('e10-season'), test_support.id('e10-room'), 'E10', 'active', now() - interval '1 hour', now() + interval '1 hour');
@@ -100,7 +101,10 @@ values
    now() + interval '10 minutes', now() - interval '10 minutes', 0, 1, 1),
   (test_support.id('e10-peer-attempt'), test_support.id('member2'), test_support.id('e10-sc'),
    test_support.id('e10-cv'), 'competitive', 'completed', now() - interval '20 minutes',
-   now() + interval '10 minutes', now() - interval '9 minutes', 50, 1, 1);
+   now() + interval '10 minutes', now() - interval '9 minutes', 50, 1, 1),
+  (test_support.id('e10-active-peer-attempt'), test_support.id('outsider'), test_support.id('e10-sc'),
+   test_support.id('e10-cv'), 'competitive', 'in_progress', now() - interval '5 minutes',
+   now() + interval '15 minutes', null, null, 1, 1);
 set local session_replication_role = origin;
 
 select ok(private.is_supported_flash_question(test_support.id('e10-qv-image')), 'Progressive-image is a supported Flash question');
@@ -130,6 +134,11 @@ select ok((select not (state->'publicPayload'->'surface' ? 'src') from test_supp
 select ok((select not (state->'publicPayload' ? 'correctAnswer') from test_support.runtime), 'Prepare does not return the solution');
 select ok((select not (state->'publicPayload' ? 'solutionAlt') from test_support.runtime), 'Prepare does not return solution alt text');
 select ok((select state ? 'presentedAt' and state ? 'deadlineAt' from test_support.runtime), 'Prepare returns server presentation and deadline timestamps');
+select is((private.read_competitive_question_asset(jsonb_build_object(
+  'attemptId', (select state->>'attemptId' from test_support.runtime),
+  'assetId', test_support.id('e10-asset')))->>'assetId'),
+  test_support.id('e10-asset')::text,
+  'The active attempt owner can resolve the Progressive-image asset during gameplay');
 
 select test_support.run('receive_answer', jsonb_build_object('answer', '  EIFFEL TOWER  ', 'clientTimeUsedMs', 999999999));
 select set_config('e10.time_used_ms', (select last_result->>'timeUsedMs' from test_support.runtime), true);
@@ -153,6 +162,9 @@ select is((private.read_competitive_question_asset(jsonb_build_object(
 select throws_ok($$select private.read_competitive_question_asset(jsonb_build_object(
   'attemptId', test_support.id('e10-peer-attempt'), 'assetId', test_support.id('e10-unbound-asset')))
   $$, '42501', 'not_authorized', 'An asset not referenced by the question cannot be resolved');
+select throws_ok($$select private.read_competitive_question_asset(jsonb_build_object(
+  'attemptId', test_support.id('e10-active-peer-attempt'), 'assetId', test_support.id('e10-asset')))
+  $$, '42501', 'not_authorized', 'A reviewer cannot resolve an unrelated in-progress attempt');
 reset role;
 select test_support.as_actor('spectator');
 set local role authenticated;

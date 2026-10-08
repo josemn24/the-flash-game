@@ -7,7 +7,11 @@ import {
   ApplicationAttemptUseCases,
   type AttemptUseCaseDependencies,
 } from "@/application/use-cases/attempts";
-import type { AttemptRecoverySnapshot, SubmitAnswerInput } from "@/types/contracts/attempts";
+import type {
+  AttemptRecoverySnapshot,
+  PrepareInteractionResult,
+  SubmitAnswerInput,
+} from "@/types/contracts/attempts";
 import { supabaseCompetitiveEvaluator } from "@/server/evaluation/competitive-evaluator";
 
 const attemptId = "11111111-1111-4111-8111-111111111111" as SubmitAnswerInput["attemptId"];
@@ -288,6 +292,52 @@ describe("ApplicationAttemptUseCases", () => {
       }),
     );
     expect(result.evaluated.lockVersion).toBe(5);
+  });
+
+  it("resolves a private progressive-image asset during prepare", async () => {
+    const { commands, privateQuestionAssets, useCases } = createUseCases();
+    const publicPayload = {
+      question: "¿Qué aparece?",
+      surface: {
+        assetId: "asset-progressive",
+        alt: "Imagen",
+        width: 1200,
+        height: 800,
+      },
+    };
+    const resolvedPayload = {
+      ...publicPayload,
+      surface: {
+        ...publicPayload.surface,
+        src: "https://signed.example/progressive.png",
+      },
+    };
+    vi.mocked(commands.prepare).mockResolvedValue({
+      attemptId,
+      lockVersion: 4,
+      challengeItemId,
+      questionType: "progressive-image",
+      payloadSchemaVersion: 2,
+      publicPayload,
+      presentedAt: "2026-09-30T10:00:00.000Z" as never,
+      deadlineAt: "2026-09-30T10:00:20.000Z" as never,
+      timedOut: false,
+    } satisfies PrepareInteractionResult);
+    vi.mocked(privateQuestionAssets.resolve).mockResolvedValue(resolvedPayload);
+
+    const result = await useCases.prepare({
+      attemptId,
+      sessionToken: "session-token",
+      lockVersion: 3,
+      idempotencyKey: "prepare-idempotency",
+    });
+
+    expect(result.publicPayload).toEqual(resolvedPayload);
+    expect(privateQuestionAssets.resolve).toHaveBeenCalledWith({
+      authUserId: "auth-user",
+      attemptId,
+      publicPayload,
+    });
   });
 
   it("applies the mode action guard to answers and passes without exposing it to routes", async () => {
