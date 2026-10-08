@@ -103,6 +103,13 @@ describe("competitive HTTP contract", () => {
     expect(response.status).toBe(503);
   });
 
+  it("maps Queens overflow to a definitive bad request", () => {
+    expect(mapAttemptError(new AttemptCommandError("queens_answer_overflow"))).toMatchObject({
+      code: "queens_answer_overflow",
+      status: 400,
+    });
+  });
+
   it("returns the calculated Retry-After for rate-limited operations", async () => {
     const log = vi.spyOn(console, "info").mockImplementation(() => undefined);
     const response = errorResponse(

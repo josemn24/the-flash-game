@@ -100,6 +100,7 @@ export function createInteractions(
       "queensDraft",
       { challengeItemId: question.id, queens },
       {
+        channel: "queens",
         accept: (response, command) => {
           const outcome = normalizeInteraction(
             runtime.state().question ?? question,

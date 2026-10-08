@@ -14,6 +14,9 @@ const rejectedInput: Record<string, string> = {
   word_search_target_already_found: "Esa palabra ya está encontrada.",
   invalid_word_search_selection: "La selección no es válida.",
   queens_answer_incomplete: "Completa el tablero para validar la respuesta.",
+  queens_answer_overflow: "Ya tienes todas las coronas. Retira una antes de colocar otra.",
+  invalid_queens_answer:
+    "La configuración de Queens no es válida. Revisa las coronas y las casillas.",
   invalid_matching_answer: "La respuesta de parejas no es válida. Revisa todas las asociaciones.",
 };
 const uncertainInput: Partial<Record<Operation, string>> = {

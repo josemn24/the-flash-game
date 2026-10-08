@@ -764,6 +764,43 @@ describe("format coordination", () => {
     expect(calls.queensDraft.mock.calls[1]).toEqual(calls.queensDraft.mock.calls[0]);
     expect(calls.queensValidation).toHaveBeenCalledTimes(1);
   });
+  it.each(["queens_answer_overflow", "invalid_queens_answer"])(
+    "keeps a definitive Queens input error recoverable in the playing phase (%s)",
+    async (code) => {
+      const { engine, calls } = setup({
+        ...flash,
+        slots: [{ ...slot("a"), questionType: "queens" }],
+      });
+      calls.prepare.mockResolvedValue(prepared("a", 2, queensPayload));
+      calls.queensDraft.mockRejectedValueOnce(new CompetitiveCommandError(code, 400));
+
+      await play(engine);
+      engine.interactions.updateQueensDraft([2, 4, 11, 13, 14]);
+      await vi.advanceTimersByTimeAsync(300);
+      await drain();
+
+      expect(calls.queensDraft).toHaveBeenCalledTimes(1);
+      expect(engine.getSnapshot()).toMatchObject({
+        phase: "playing",
+        locked: false,
+        busy: false,
+        pendingCommand: null,
+        commandStatus: "definitive_failure",
+        feedback: {
+          channel: "queens",
+          state: "idle",
+          visible: true,
+          message:
+            code === "queens_answer_overflow"
+              ? "Ya tienes todas las coronas. Retira una antes de colocar otra."
+              : "La configuración de Queens no es válida. Revisa las coronas y las casillas.",
+        },
+      });
+
+      await vi.advanceTimersByTimeAsync(2500);
+      expect(calls.queensDraft).toHaveBeenCalledTimes(1);
+    },
+  );
   it("resumes an expired timer after retrying a lost partial-format response", async () => {
     const { engine, calls } = setup({
       ...flash,

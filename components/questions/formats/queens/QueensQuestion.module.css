@@ -228,6 +228,14 @@
   .progress strong {
     color: var(--ds-color-fg-on-inverse);
   }
+  .placementNotice {
+    margin: 0;
+    color: var(--ds-color-fg-error);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+  }
   .instructions {
     margin: 0;
     color: var(--ds-color-fg-secondary);

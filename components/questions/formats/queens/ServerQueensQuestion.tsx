@@ -37,6 +37,7 @@ export function ServerQueensQuestion({
   const [draftQueens, setDraftQueens] = useState<number[]>(() => [...progress.queens]);
   const [marks, setMarks] = useState<number[]>([]);
   const [tool, setTool] = useState<QueensTool>("queen");
+  const [placementNotice, setPlacementNotice] = useState<string | null>(null);
   const [focusedCell, setFocusedCell] = useState(0);
   const cellRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const conflicts = useMemo(
@@ -45,22 +46,35 @@ export function ServerQueensQuestion({
   );
   const disabled = locked || validationState === "submitting";
   const targetQueens = question.grid.rows;
+  const targetQueensLabel = targetQueens === 5 ? "cinco" : String(targetQueens);
+  const totalQueenCount = useMemo(
+    () => new Set([...question.prefilledQueens, ...draftQueens]).size,
+    [draftQueens, question.prefilledQueens],
+  );
 
   const publishQueens = (nextQueens: number[]) => {
+    const nextQueenCount = new Set([...question.prefilledQueens, ...nextQueens]).size;
+    setPlacementNotice(null);
     setDraftQueens(nextQueens);
     onDraft(nextQueens);
-    if (draftQueens.length < targetQueens && nextQueens.length === targetQueens)
-      onValidate(nextQueens);
+    if (totalQueenCount < targetQueens && nextQueenCount === targetQueens) onValidate(nextQueens);
   };
 
   const applyAction = (cell: number) => {
     if (disabled || question.prefilledQueens.includes(cell)) return;
     const hasQueen = draftQueens.includes(cell);
     if (tool === "mark") {
+      setPlacementNotice(null);
       setMarks((current) =>
         current.includes(cell)
           ? current.filter((candidate) => candidate !== cell)
           : [...current, cell].sort((a, b) => a - b),
+      );
+      return;
+    }
+    if (!hasQueen && totalQueenCount >= targetQueens) {
+      setPlacementNotice(
+        `Ya tienes ${targetQueensLabel} coronas. Retira una antes de colocar otra.`,
       );
       return;
     }
@@ -143,10 +157,15 @@ export function ServerQueensQuestion({
       />
       <div className={styles.progress} aria-live="polite">
         <strong>
-          {draftQueens.length}/{targetQueens} coronas
+          {totalQueenCount}/{targetQueens} coronas
         </strong>
         <span>{conflicts.size ? `${conflicts.size} en conflicto` : "Sin conflictos"}</span>
       </div>
+      {placementNotice ? (
+        <p className={styles.placementNotice} role="status" aria-live="polite">
+          {placementNotice}
+        </p>
+      ) : null}
       <p className={styles.instructions}>
         La corona marcada como pista es fija. Coloca una por fila, columna y región sin que se
         toquen. El tablero se valida automáticamente al colocar las {targetQueens} coronas.

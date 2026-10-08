@@ -324,6 +324,7 @@ export function mapAttemptError(error: unknown): AttemptApiError {
       error.code === "logic_code_requires_attempt_command" ||
       error.code === "invalid_queens_answer" ||
       error.code === "queens_answer_incomplete" ||
+      error.code === "queens_answer_overflow" ||
       error.code === "invalid_word_hashtag_swap" ||
       error.code === "word_hashtag_requires_swap_command" ||
       error.code === "invalid_question_payload" ||

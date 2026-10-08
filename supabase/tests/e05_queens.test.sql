@@ -57,12 +57,35 @@ reset role;
 select lives_ok($$select test_support.run('save_queens_draft', '{"queens":[0,2]}')$$, 'Guardar un borrador no valida el tablero');
 select is((select last_result->'queens' from test_support.runtime), '[0,2]'::jsonb, 'El borrador conserva las coronas');
 select is((select count(*) from private.queens_validation_events), 0::bigint, 'El borrador no crea validaciones');
+select set_config('e05.draft_lock_version', (
+  select (last_result->>'lockVersion') from test_support.runtime
+), true);
+select throws_ok($$select test_support.run('save_queens_draft', '{"queens":[0,2,5,14,20,24]}')$$,
+  '22023', 'queens_answer_overflow', 'Un borrador con seis coronas en un tablero 5×5 devuelve overflow');
+select is((select (lock_version)::text from public.attempts
+  where id = (select (state->>'attemptId')::uuid from test_support.runtime)),
+  current_setting('e05.draft_lock_version'), 'El overflow del borrador no incrementa la versión');
+select is((select progress_payload->'queens' from public.attempts
+  where id = (select (state->>'attemptId')::uuid from test_support.runtime)),
+  '[0,2]'::jsonb, 'El overflow del borrador no modifica el progreso');
 select lives_ok($$select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,20]}')$$, 'Una validación completa incorrecta se acepta');
 select is((select (last_result->>'terminal')::boolean from test_support.runtime), false, 'La validación incorrecta no es terminal');
 select is((select (last_result->>'correct')::boolean from test_support.runtime), false, 'El servidor rechaza el tablero incorrecto');
 select is((select count(*) from private.queens_validation_events), 1::bigint, 'La validación fallida queda auditada');
 select is((select (last_result->>'incorrectAttempts')::integer from test_support.runtime), 1, 'La penalización cuenta validaciones completas');
 select is(test_support.repeat_last(), (select last_result from test_support.runtime), 'La validación es idempotente');
+select set_config('e05.answer_lock_version', (
+  select (last_result->>'lockVersion') from test_support.runtime
+), true);
+select throws_ok($$select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,20,24]}')$$,
+  '22023', 'queens_answer_overflow', 'Una respuesta con seis coronas devuelve overflow');
+select is((select (lock_version)::text from public.attempts
+  where id = (select (state->>'attemptId')::uuid from test_support.runtime)),
+  current_setting('e05.answer_lock_version'), 'El overflow final no incrementa la versión');
+select is((select count(*) from private.queens_validation_events), 1::bigint,
+  'El overflow final no crea una validación');
+select throws_ok($$select test_support.run('submit_queens_answer', '{"queens":[2,9,10,18]}')$$,
+  '22023', 'queens_answer_incomplete', 'Una respuesta con menos coronas conserva incomplete');
 select lives_ok($$select test_support.run('submit_queens_answer', '{"queens":[2,9,10,18,21]}')$$, 'La solución completa se acepta');
 select is((select (last_result->>'terminal')::boolean from test_support.runtime), true, 'Completar Queens es terminal');
 select is((select count(*) from private.answer_receipts), 1::bigint, 'La resolución crea una recepción final');

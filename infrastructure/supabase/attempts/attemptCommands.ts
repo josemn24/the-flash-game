@@ -133,6 +133,7 @@ function commandCode(error: unknown) {
     "invalid_queens_placement",
     "invalid_queens_answer",
     "queens_answer_incomplete",
+    "queens_answer_overflow",
     "queens_requires_placement_command",
     "prefilled_queen_locked",
     "all_clues_revealed",

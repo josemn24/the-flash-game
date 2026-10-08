@@ -347,7 +347,7 @@ begin
     select distinct cell from unnest(prefilled) cell
   ) cells;
   if coalesce(array_length(normalized, 1), 0) > board_size then
-    raise exception 'invalid_queens_answer' using errcode = '22023';
+    raise exception 'queens_answer_overflow' using errcode = '22023';
   end if;
   update public.attempts
     set progress_payload = jsonb_build_object('kind', 'queens', 'challengeItemId', item.id, 'queens', to_jsonb(normalized)),
@@ -463,7 +463,10 @@ begin
     raise exception 'unsupported_question' using errcode = '22023';
   end if;
   cell_count := board_size * board_size;
-  if coalesce(array_length(candidate, 1), 0) <> board_size then
+  if coalesce(array_length(candidate, 1), 0) > board_size then
+    raise exception 'queens_answer_overflow' using errcode = '22023';
+  end if;
+  if coalesce(array_length(candidate, 1), 0) < board_size then
     raise exception 'queens_answer_incomplete' using errcode = '22023';
   end if;
   if exists (select 1 from unnest(candidate) cell where cell not between 0 and cell_count - 1) then
@@ -478,7 +481,10 @@ begin
     union
     select distinct cell from unnest(prefilled) cell
   ) cells;
-  if coalesce(array_length(normalized, 1), 0) <> board_size then
+  if coalesce(array_length(normalized, 1), 0) > board_size then
+    raise exception 'queens_answer_overflow' using errcode = '22023';
+  end if;
+  if coalesce(array_length(normalized, 1), 0) < board_size then
     raise exception 'queens_answer_incomplete' using errcode = '22023';
   end if;
   select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
