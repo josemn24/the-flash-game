@@ -133,7 +133,7 @@ export class SupabaseRoomMemberDetailQueries implements RoomMemberDetailQueries 
     const member = toHistoricalMember(reviewRows, {
       id: memberKey,
       name: seasonEntry?.display_name ?? context.viewer.name,
-      avatarSrc: resolveAvatarPath(seasonEntry?.avatar_path) ?? context.viewer.avatarSrc,
+      avatarSrc: resolveAvatarPath(seasonEntry?.avatar_path),
     });
     member.totalFlashPoints = seasonEntry?.flash_points ?? 0;
     const roomLeaderboard = toSeasonLeaderboard(seasonRows);

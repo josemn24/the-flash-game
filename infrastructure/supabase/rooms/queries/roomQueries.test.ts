@@ -934,6 +934,11 @@ describe("Supabase history and review capabilities S07", () => {
       attemptId: "00000000-0000-0000-0000-000000000021",
       publicPayload: peerReviewRows[0].public_payload,
     });
+    expect(model?.member).toMatchObject({
+      id: peerPlayerId,
+      name: "Alice Owner",
+      avatarSrc: undefined,
+    });
     expect(model?.reviewItems[0]?.question).toMatchObject({ type: "multiple-choice" });
   });
 
