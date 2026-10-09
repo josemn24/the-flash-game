@@ -120,7 +120,8 @@
     border-radius: 0.72rem;
     padding: 0 0.9rem;
     background: rgba(255, 255, 255, 0.045);
-    font-size: 0.9rem;
+    /* iOS Safari zooms focused inputs when their text is smaller than 16px. */
+    font-size: max(16px, 1rem);
     font-weight: 700;
     color: var(--ds-color-fg-on-inverse);
     caret-color: var(--ds-color-fg-brand);

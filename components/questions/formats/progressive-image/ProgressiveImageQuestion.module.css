@@ -205,6 +205,8 @@
     padding: 0.95rem 1rem;
     color: var(--format-ink);
     font: inherit;
+    /* iOS Safari zooms focused inputs when their text is smaller than 16px. */
+    font-size: max(16px, 1em);
     border: var(--border-subtle);
     border-radius: var(--radius-control);
     background: var(--ds-color-bg-surface-raised);
