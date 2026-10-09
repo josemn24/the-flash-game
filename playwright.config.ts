@@ -60,7 +60,7 @@ const localEnv = {
   // Keep production's smaller admin burst while allowing the local browser run to complete.
   FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261009172416_queens_pyramid_validation_limit",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261009180205_question_validation_by_format",
 };
 
 export default defineConfig({

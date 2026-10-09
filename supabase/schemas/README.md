@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 58 archivos y su revisión canónica es
-`20261009172416_queens_pyramid_validation_limit`. Las migraciones incrementales corresponden a esos archivos;
+Estado: el esquema declarativo vigente se compone de 80 archivos y su revisión canónica es
+`20261009180205_question_validation_by_format`. Las migraciones incrementales corresponden a esos archivos;
 la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -10,8 +10,10 @@ parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade bucket
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
 Queens en Pirámide permite tres validaciones completas incorrectas por prueba: el contador se deriva
 de `queens_validation_events` y el tercer fallo genera una única recepción terminal, sin tablas ni
-contadores duplicados. La migración actual modifica funciones y no incluye migración de datos.
-**30 tablas**, una vista
+contadores duplicados. El refactor de validadores añade 33 helpers privados y sustituye dos fachadas, sin cambios de datos.
+La organización, las comprobaciones y la reversión se describen en
+[validación SQL por formato](../../docs/current/sql-question-validation-refactor.md).
+**31 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S15, S17a, S18b parcial, S05-Alphabet, F* y E* conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas, Flash, Supervivencia y Pirámide
@@ -161,7 +163,9 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [57_pyramid_reads.sql](57_pyramid_reads.sql)                                     | Proyección de briefings/niveles permitidos y lectura propia de resultado/revisión terminal.                                                                     |
 | [40_indexes.sql](40_indexes.sql)                                                 | Índices de autorización, calendario, unicidad y consultas competitivas.                                                                                         |
 | [50_access_helpers.sql](50_access_helpers.sql)                                   | Resolución del jugador y ayudas RLS sin recursión.                                                                                                              |
-| [54_question_validation.sql](54_question_validation.sql)                         | Valida preguntas individuales y documentos de desafío para edición y admisión competitiva; centraliza los contratos editoriales por formato.                    |
+| `53_question_validation_<formato>.sql`                                           | 21 archivos planos con validación editorial y, en 12 formatos, elegibilidad publicada.                                                                          |
+| [54_question_validation.sql](54_question_validation.sql)                         | Fachadas: envelope general, versiones, publicación, coordinación y tratamiento de excepciones.                                                                  |
+| [54z_challenge_validation.sql](54z_challenge_validation.sql)                     | Validación del desafío completo: modos, referencias, puntos, cantidades y niveles.                                                                              |
 | [55_room_reads.sql](55_room_reads.sql)                                           | Lecturas autorizadas de tarjetas, detalles e introducciones de salas; limita los datos de desafíos expuestos.                                                   |
 | [56_flash_reads.sql](56_flash_reads.sql)                                         | Lectura autorizada del desafío Flash y del resultado propio al terminar; no expone soluciones durante el juego.                                                 |
 | [57_superadmin_reads.sql](57_superadmin_reads.sql)                               | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                                             |

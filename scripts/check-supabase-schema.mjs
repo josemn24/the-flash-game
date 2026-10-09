@@ -4,11 +4,18 @@ import { randomUUID } from "node:crypto";
 import { checkInventory } from "./supabase-security-inventory.mjs";
 import { testConcurrentCommands } from "./test-supabase-concurrency.mjs";
 import { testFormatContracts } from "./test-format-contracts.mjs";
+import { testQuestionValidation } from "./test-question-validation.mjs";
+import {
+  questionValidationMigration,
+  testQuestionValidationUpgrade,
+} from "./test-question-validation-upgrade.mjs";
 
 const container = process.env.SUPABASE_DB_CONTAINER ?? "supabase_db_the-flash-game";
-const sourceDirectory = process.argv.includes("--migrations")
-  ? "supabase/migrations"
-  : "supabase/schemas";
+const upgradeValidation = process.argv.includes("--upgrade-question-validation");
+const sourceDirectory =
+  process.argv.includes("--migrations") || upgradeValidation
+    ? "supabase/migrations"
+    : "supabase/schemas";
 const database = `flash_schema_check_${randomUUID().replaceAll("-", "")}`;
 function docker(args, input = "") {
   return new Promise((resolve, reject) => {
@@ -40,34 +47,48 @@ try {
   const statements = await Promise.all(
     files.map((name) => readFile(`${sourceDirectory}/${name}`, "utf8")),
   );
-  await sql(`begin;\n${statements.join("\n")}\ncommit;`);
-  await checkInventory(sql);
-  console.log(`Loaded ${files.length} files from ${sourceDirectory}; security inventory verified.`);
-  for (const file of (await readdir("supabase/tests"))
-    .filter((name) => name.endsWith(".test.sql"))
-    .sort()) {
-    let source = await readFile(`supabase/tests/${file}`, "utf8");
-    for (const name of ["command", "pyramid-queens"]) {
-      if (source.includes(`-- @${name}-fixtures`)) {
-        const fixtures = await readFile(`supabase/tests/support/${name}-fixtures.sql`, "utf8");
-        source = source.replace(`-- @${name}-fixtures`, () => fixtures);
+  if (upgradeValidation) {
+    const index = files.indexOf(questionValidationMigration);
+    if (index < 1)
+      throw new Error("Question validation migration or its previous revision missing");
+    await sql(`begin;\n${statements.slice(0, index).join("\n")}\ncommit;`);
+    console.log(`Upgrade baseline: ${files[index - 1]}.`);
+    await testQuestionValidation(sql);
+    await testQuestionValidationUpgrade(sql, statements[index]);
+    process.exitCode = 0;
+  } else {
+    await sql(`begin;\n${statements.join("\n")}\ncommit;`);
+    await checkInventory(sql);
+    console.log(
+      `Loaded ${files.length} files from ${sourceDirectory}; security inventory verified.`,
+    );
+    for (const file of (await readdir("supabase/tests"))
+      .filter((name) => name.endsWith(".test.sql"))
+      .sort()) {
+      let source = await readFile(`supabase/tests/${file}`, "utf8");
+      for (const name of ["command", "pyramid-queens"]) {
+        if (source.includes(`-- @${name}-fixtures`)) {
+          const fixtures = await readFile(`supabase/tests/support/${name}-fixtures.sql`, "utf8");
+          source = source.replace(`-- @${name}-fixtures`, () => fixtures);
+        }
       }
+      let result;
+      try {
+        result = await sql(source);
+      } catch (error) {
+        throw new Error(`${file}:\n${error instanceof Error ? error.message : String(error)}`, {
+          cause: error,
+        });
+      }
+      if (/^not ok|^Bail out!|# Looks like you failed/m.test(result) || !/^1\.\.\d+/m.test(result))
+        throw new Error(`${file}:\n${result}`);
+      console.log(`${file}: ${result.match(/^1\.\.(\d+)/m)?.[1]} checks passed.`);
     }
-    let result;
-    try {
-      result = await sql(source);
-    } catch (error) {
-      throw new Error(`${file}:\n${error instanceof Error ? error.message : String(error)}`, {
-        cause: error,
-      });
-    }
-    if (/^not ok|^Bail out!|# Looks like you failed/m.test(result) || !/^1\.\.\d+/m.test(result))
-      throw new Error(`${file}:\n${result}`);
-    console.log(`${file}: ${result.match(/^1\.\.(\d+)/m)?.[1]} checks passed.`);
+    await testFormatContracts(sql);
+    await testQuestionValidation(sql);
+    await testConcurrentCommands(sql);
+    console.log("Concurrent command tests passed (independent PostgreSQL connections).");
   }
-  await testFormatContracts(sql);
-  await testConcurrentCommands(sql);
-  console.log("Concurrent command tests passed (independent PostgreSQL connections).");
 } finally {
   if (created) await docker(["dropdb", "-U", "postgres", "--force", database]);
 }

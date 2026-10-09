@@ -17,10 +17,13 @@ El esquema declarativo es la fuente de verdad:
 La configuración de Supabase usa `pg-delta` con `declarative_schema_path = "./schemas"`. El detalle
 de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/README.md).
 
-El historial activo está consolidado en las migraciones
-`20260927140000_queens_board_validation.sql`, `20260927170000_queens_dynamic_grid.sql` y
-`20260927172602_cancel-scheduled-challenge.sql`, generadas desde los 53 archivos declarativos. La rama de
+El historial activo parte de `20260926080239_initial_schema.sql` y conserva sus
+migraciones incrementales posteriores. La revisión canónica vigente es
+`20261009180205_question_validation_by_format`, con 80 archivos declarativos. La rama de
 respaldo conserva el historial incremental anterior.
+
+La [validación SQL por formato](../docs/current/sql-question-validation-refactor.md) documenta
+los helpers privados, las pruebas de compatibilidad y la reversión del último refactor.
 
 ## Flujo para un cambio de esquema
 

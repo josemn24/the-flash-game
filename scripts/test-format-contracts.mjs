@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 
 // The same JSON corpus is consumed by Vitest. SQL implementations stay independent.
 const literal = (value) => `'${String(value).replaceAll("'", "''")}'`;
-export async function testFormatContracts(sql) {
+export async function loadFormatContractFixtures() {
   const cases = JSON.parse(await readFile("test-utils/format-contracts/corpus.json", "utf8"));
   const fixtures = await readFile("supabase/tests/support/command-fixtures.sql", "utf8");
   const assets = new Map();
@@ -18,13 +18,18 @@ export async function testFormatContracts(sql) {
         `insert into private.media_assets(id,bucket_id,object_path,kind,status,created_by_player_id,mime_type,byte_size,width,height,sha256) values (${literal(id)},'question-assets',${literal(`question-assets/${id}.png`)},'question-asset','ready',test_support.id('superadmin'),'image/png',1,${asset.width},${asset.height},${literal("0".repeat(64))});`,
     )
     .join("\n");
+  return { cases, fixtures: `${fixtures}\n${assetSql}` };
+}
+
+export async function testFormatContracts(sql) {
+  const { cases, fixtures } = await loadFormatContractFixtures();
   const checks = cases
     .map(
       (test) =>
         `select ${literal(test.id)}, pg_temp.contract_accepts(${literal(test.id)}, ${literal(JSON.stringify(test.document))}::jsonb, ${test.inline});`,
     )
     .join("\n");
-  const result = await sql(`begin;\n${fixtures}\n${assetSql}
+  const result = await sql(`begin;\n${fixtures}
 create temporary table format_contract_errors(id text,error text);
 create function pg_temp.contract_accepts(case_id text, document jsonb, inline_document boolean) returns boolean language plpgsql as $$
 declare definition uuid := gen_random_uuid(); version uuid := gen_random_uuid(); supported boolean; draft jsonb;

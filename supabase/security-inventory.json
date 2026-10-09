@@ -320,7 +320,8 @@
     "private.validate_flash_editorial_document": {
       "arguments": "document jsonb",
       "securityDefiner": false,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.create_flash_draft_command": {
       "arguments": "input jsonb",
@@ -365,7 +366,8 @@
     "private.validate_flash_question_document": {
       "arguments": "document jsonb",
       "securityDefiner": false,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.update_flash_draft_command": {
       "arguments": "input jsonb",
@@ -485,7 +487,8 @@
     "private.is_supported_flash_question": {
       "arguments": "target_question uuid",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.is_valid_published_competitive_question_format": {
       "arguments": "target_question uuid, expected_type text",
@@ -1116,6 +1119,204 @@
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
+    },
+    "private.validate_anagram_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_classification_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_connect_pairs_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_escape_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_estimation_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_heat_map_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_logic_code_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_logic_matrix_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_matching_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_mini_wordle_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_multiple_choice_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_odd_one_out_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_ordering_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_progressive_clues_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_progressive_image_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_queens_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_short_text_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_true_false_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_word_hashtag_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_word_search_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_zip_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.is_supported_anagram_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_estimation_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_heat_map_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_logic_code_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_matching_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_mini_wordle_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_multiple_choice_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_progressive_clues_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_progressive_image_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_queens_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_short_text_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_word_search_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
     }
   }
 }

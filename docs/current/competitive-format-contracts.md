@@ -80,6 +80,14 @@ estructural, mientras las pruebas existentes comprueban permisos y disponibilida
 divergencia nueva requiere un caso reproducible y una expectativa respaldada por el contrato.
 Los cambios SQL se mantienen tanto en el esquema declarativo como en una migración de funciones.
 
+Las reglas SQL se organizan en 21 archivos planos `53_question_validation_<formato>.sql`.
+Cada uno conserva por separado el contrato editorial y, cuando existe, la elegibilidad publicada.
+Las fachadas coordinan el envelope, las versiones y las excepciones; el desafío completo se valida
+en `54z_challenge_validation.sql`. La [caracterización previa al refactor](../../test-utils/format-contracts/sql-validation-baseline.json)
+fija 904 resultados, incluidos `NULL`, SQLSTATE y mensajes de error. Véase
+[validación SQL por formato](sql-question-validation-refactor.md) para las fronteras de seguridad,
+la prueba de actualización con datos y la reversión.
+
 `npm run test:e2e:isolated` ejecuta los escenarios competitivos en un stack local separado. Incluye
 Flash y Pirámide con `short-text`, pérdida de una respuesta HTTP ya aceptada y una pregunta
 `multiple-choice` v2 con imagen privada, además de formatos, recuperación, ranking, historial y

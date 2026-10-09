@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261009172416_queens_pyramid_validation_limit";
+const canonicalSchemaRevision = "20261009180205_question_validation_by_format";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -56,6 +56,12 @@ async function checkDatabase() {
           like '%jsonb_build_object(''foundWordIds''%'
         and to_regprocedure('private.zip_content_valid(jsonb,jsonb)') is not null
         and to_regprocedure('private.escape_content_valid(jsonb,jsonb)') is not null
+        and to_regprocedure('private.validate_multiple_choice_question_document(jsonb)') is not null
+        and to_regprocedure('private.is_supported_multiple_choice_question(private.question_versions,jsonb)') is not null
+        and pg_get_functiondef(to_regprocedure('private.validate_flash_question_document(jsonb)'))
+          like '%private.validate_multiple_choice_question_document%'
+        and pg_get_functiondef(to_regprocedure('private.is_supported_flash_question(uuid)'))
+          like '%private.is_supported_multiple_choice_question%'
         and to_regprocedure('private.read_attempt_context(uuid,text)') is not null
         and to_regprocedure('private.prepare_attempt_session(uuid)') is not null
         and to_regprocedure('private.read_recorded_evaluation(uuid,text)') is not null
