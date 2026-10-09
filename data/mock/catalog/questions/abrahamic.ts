@@ -16,7 +16,7 @@ export const abrahamicQuestions = defineQuestionCatalog([
       },
       prompt: "Relaciona cada personaje bíblico con su asociación más conocida.",
       context: null,
-      timeLimitMs: 15000,
+      timeLimitMs: 18000,
       payload: {
         leftItems: [
           {

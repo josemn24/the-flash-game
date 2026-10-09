@@ -45,7 +45,7 @@ export const betaVipPyramidQuestions = [
     "betavip-cumbre-logica-ii-zip",
     "zip",
     "Une los puntos en orden y cubre todo el tablero.",
-    45000,
+    30000,
     {
       grid: { rows: 5, columns: 5 },
       checkpoints: [
@@ -107,7 +107,7 @@ export const betaVipPyramidQuestions = [
     "betavip-cumbre-logica-ii-intruso",
     "odd-one-out",
     "¿Qué número rompe el patrón?",
-    25000,
+    30000,
     {
       items: [
         { id: "cube-8", label: "8" },

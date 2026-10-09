@@ -16,7 +16,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "El Teide es el pico más alto de España.",
       context: null,
-      timeLimitMs: 9000,
+      timeLimitMs: 11000,
       payload: null,
     },
     privatePayload: {
@@ -91,7 +91,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "Marca aproximadamente dónde está Santa Cruz de Tenerife.",
       context: null,
-      timeLimitMs: 12000,
+      timeLimitMs: 16000,
       payload: {
         surface: {
           src: "/visuals/spain-survival/canary_islands_map.svg",
@@ -293,7 +293,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "¿Cuál es el nombre original del personaje de Don Quijote de la Mancha?",
       context: null,
-      timeLimitMs: 10000,
+      timeLimitMs: 14000,
       payload: {
         options: ["Miguel Quejana", "Alonso Quijano", "Amadís de Gaula", "Quijote"],
         media: null,
@@ -327,7 +327,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       prompt:
         "¿Qué científico español recibió el Premio Nobel por sus investigaciones sobre la estructura del sistema nervioso?",
       context: null,
-      timeLimitMs: 10000,
+      timeLimitMs: 14000,
       payload: {
         options: [
           "Severo Ochoa",
@@ -366,7 +366,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       prompt:
         "¿Qué director español ganó el Óscar a mejor película de habla no inglesa por «Todo sobre mi madre»?",
       context: null,
-      timeLimitMs: 10000,
+      timeLimitMs: 14000,
       payload: {
         options: ["Pedro Almodóvar", "Luis Buñuel", "Alejandro Amenábar", "Fernando Trueba"],
         media: null,
@@ -398,7 +398,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "¿Cuál es aproximadamente la superficie de España?",
       context: null,
-      timeLimitMs: 14000,
+      timeLimitMs: 16000,
       payload: {
         min: 300000,
         max: 700000,
@@ -480,7 +480,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "¿Cuántos títulos de Grand Slam ganó Rafael Nadal en su carrera?",
       context: null,
-      timeLimitMs: 12000,
+      timeLimitMs: 14000,
       payload: {
         options: ["14", "20", "22", "32"],
         media: null,
@@ -513,7 +513,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "Ordena cronológicamente estos acontecimientos de la historia de España.",
       context: null,
-      timeLimitMs: 18000,
+      timeLimitMs: 20000,
       payload: {
         items: [
           "Aprobación de la Constitución española actual.",
@@ -777,7 +777,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "¿Qué baile tradicional catalán se realiza formando círculos?",
       context: null,
-      timeLimitMs: 10000,
+      timeLimitMs: 14000,
       payload: {
         options: ["Flamenco", "Jota", "Sardana", "Muñeira"],
         media: null,
@@ -811,7 +811,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       prompt:
         "¿Cuál de estos árboles es característico de la dehesa ibérica y produce bellotas muy utilizadas en la alimentación del cerdo ibérico?",
       context: null,
-      timeLimitMs: 12000,
+      timeLimitMs: 14000,
       payload: {
         options: ["Encina", "Olivo", "Pino piñonero", "Naranjo"],
         media: null,

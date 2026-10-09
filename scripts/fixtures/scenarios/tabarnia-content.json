@@ -504,7 +504,7 @@
         },
         "prompt": "¿Cuál es el nombre original del personaje de Don Quijote de la Mancha?",
         "context": null,
-        "timeLimitMs": 10000,
+        "timeLimitMs": 14000,
         "payload": {
           "options": ["Miguel Quejana", "Alonso Quijano", "Amadís de Gaula", "Quijote"],
           "media": null,
@@ -536,7 +536,7 @@
         },
         "prompt": "¿Qué científico español recibió el Premio Nobel por sus investigaciones sobre la estructura del sistema nervioso?",
         "context": null,
-        "timeLimitMs": 10000,
+        "timeLimitMs": 14000,
         "payload": {
           "options": [
             "Severo Ochoa",
@@ -573,7 +573,7 @@
         },
         "prompt": "¿Qué director español ganó el Óscar a mejor película de habla no inglesa por «Todo sobre mi madre»?",
         "context": null,
-        "timeLimitMs": 10000,
+        "timeLimitMs": 14000,
         "payload": {
           "options": ["Pedro Almodóvar", "Luis Buñuel", "Alejandro Amenábar", "Fernando Trueba"],
           "media": null,
@@ -686,7 +686,7 @@
         },
         "prompt": "¿Cuántos títulos de Grand Slam ganó Rafael Nadal en su carrera?",
         "context": null,
-        "timeLimitMs": 12000,
+        "timeLimitMs": 14000,
         "payload": {
           "options": ["14", "20", "22", "32"],
           "media": null,
@@ -980,7 +980,7 @@
         },
         "prompt": "¿Qué baile tradicional catalán se realiza formando círculos?",
         "context": null,
-        "timeLimitMs": 10000,
+        "timeLimitMs": 14000,
         "payload": {
           "options": ["Flamenco", "Jota", "Sardana", "Muñeira"],
           "media": null,
@@ -1012,7 +1012,7 @@
         },
         "prompt": "¿Cuál de estos árboles es característico de la dehesa ibérica y produce bellotas muy utilizadas en la alimentación del cerdo ibérico?",
         "context": null,
-        "timeLimitMs": 12000,
+        "timeLimitMs": 14000,
         "payload": {
           "options": ["Encina", "Olivo", "Pino piñonero", "Naranjo"],
           "media": null,
@@ -1044,7 +1044,7 @@
         },
         "prompt": "Relaciona cada personaje bíblico con su asociación más conocida.",
         "context": null,
-        "timeLimitMs": 15000,
+        "timeLimitMs": 18000,
         "payload": {
           "leftItems": [
             {
