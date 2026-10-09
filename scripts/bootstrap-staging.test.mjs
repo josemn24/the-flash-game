@@ -28,7 +28,7 @@ const validEnv = {
   NEXT_PUBLIC_SUPABASE_URL: `https://${projectRef}.supabase.co`,
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "publishable-secret",
   SUPABASE_SERVICE_ROLE_KEY: "service-role-secret",
-  SUPABASE_ADMIN_DB_URL: "postgresql://admin:secret@db.staging-ref.supabase.co:5432/postgres",
+  SUPABASE_ADMIN_DB_URL: "postgresql://postgres:secret@db.staging-ref.supabase.co:5432/postgres",
   STAGING_XESMONA_EMAIL: "xesmona@example.test",
   STAGING_CHES_EMAIL: "ches@example.test",
   STAGING_BOOTSTRAP_CONFIRM: "the-flash-game-staging",
@@ -67,6 +67,16 @@ describe("staging bootstrap", () => {
     expect(JSON.stringify(result)).not.toContain("secret");
   });
 
+  it.each([
+    "postgresql://postgres:secret@db.production-ref.supabase.co:5432/postgres",
+    "postgresql://postgres.production-ref:secret@aws-1-eu-west-1.pooler.supabase.com:5432/postgres",
+    "postgresql://postgres.staging-ref:secret@aws-1-eu-west-1.pooler.supabase.com:6543/postgres",
+  ])("rejects a mismatched or runtime database connection before provisioning: %s", (url) => {
+    expect(() => validateBootstrapConfig({ ...validEnv, SUPABASE_ADMIN_DB_URL: url })).toThrow(
+      /mismo proyecto/,
+    );
+  });
+
   it("does not expose secrets in the CLI output", async () => {
     const { stdout, stderr } = await execFileAsync(
       process.execPath,
@@ -75,7 +85,7 @@ describe("staging bootstrap", () => {
     );
     expect(`${stdout}\n${stderr}`).not.toContain("publishable-secret");
     expect(`${stdout}\n${stderr}`).not.toContain("service-role-secret");
-    expect(`${stdout}\n${stderr}`).not.toContain("postgresql://admin:secret");
+    expect(`${stdout}\n${stderr}`).not.toContain("postgresql://postgres:secret");
     expect(stdout).toContain("staging-ref");
   });
 

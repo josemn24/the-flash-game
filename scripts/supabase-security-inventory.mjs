@@ -92,9 +92,10 @@ function verify(actual, expected) {
   }
 }
 
-export async function checkInventory(sql) {
+export async function checkInventory(sql, { mutationTests = true } = {}) {
   const expected = JSON.parse(await readFile("supabase/security-inventory.json", "utf8"));
   verify(JSON.parse(await sql(snapshotQuery)), expected);
+  if (!mutationTests) return;
   // Mutation tests: a harmless new object must still require an explicit inventory decision.
   for (const ddl of [
     "create table public.unreviewed_probe(id uuid); alter table public.unreviewed_probe enable row level security;",

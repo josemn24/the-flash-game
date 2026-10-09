@@ -60,6 +60,7 @@ try {
   await run("supabase-start", "npx", ["supabase", "start"]);
   await run("schema-revision", "npm", ["run", "schema:revision:check"]);
   await run("schema-security", "npm", ["run", "supabase:schema:test"]);
+  await run("schema-migrations", "npm", ["run", "supabase:schema:test", "--", "--migrations"]);
   await run("schema-reconciliation", "npm", ["run", "supabase:schema:reconciliation:test"]);
   await run("dictionary-load", "npm", ["run", "supabase:dictionary:load"]);
   await run("unit-tests", "npm", ["test"], {

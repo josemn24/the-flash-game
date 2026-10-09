@@ -91,6 +91,10 @@ los 160 tests de conformance TypeScript y los tres tests de health. La actualiza
 las 31 tablas del dominio. Pasan tipos, arquitectura, revisión de esquema, enlaces y formato;
 los tipos públicos generados permanecen iguales.
 
+El 2026-10-10 también se aplicó el historial completo a la base local de la aplicación mediante
+el [procedimiento de instalación limpia](supabase-clean-installation.md), incluida la reconciliación
+posterior de comandos. Staging y producción quedan pendientes.
+
 Los E2E de Flash y Pirámide pasan usando `next build` y `next start` en stacks desechables,
 con una configuración temporal fuera del repositorio que solo cambia el arranque del servidor
 y su directorio de trabajo. Se conservan los specs, aserciones y tiempos de espera originales.

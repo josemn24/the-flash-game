@@ -1,15 +1,25 @@
-import { createHash, randomBytes } from "node:crypto";
-import { chmod, mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "pg";
 import { createClient } from "@supabase/supabase-js";
+import { validateRemoteEnvironment } from "./support/supabase-environment.mjs";
 import {
   buildStagingBetaVipDomainSql,
   prepareCassetteAsset,
   stagingBetaVipExpectedContent,
   stagingBetaVipManifest,
 } from "./seed-betavip.mjs";
+import {
+  APPLICATION_BUCKETS as STAGING_BUCKETS,
+  bucketMatches,
+  ensureBuckets,
+  generatePassword,
+  readJsonIfPresent,
+  writeJsonSecure,
+} from "./support/supabase-provisioning.mjs";
+export { STAGING_BUCKETS, bucketMatches, generatePassword, writeJsonSecure };
 
 const CONFIRMATION_VALUE = "the-flash-game-staging";
 const DEFAULT_CREDENTIALS_PATH = path.join("output", "staging", "bootstrap-credentials.json");
@@ -17,20 +27,6 @@ const DEFAULT_MANIFEST_PATH = path.join("output", "staging", "bootstrap-manifest
 const ACCOUNT_DEFINITIONS = [
   { key: "xesmona", displayName: "Xesmona" },
   { key: "ches", displayName: "Ches" },
-];
-export const STAGING_BUCKETS = [
-  {
-    id: "avatars",
-    public: true,
-    fileSizeLimit: "5MB",
-    allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
-  },
-  {
-    id: "question-assets",
-    public: false,
-    fileSizeLimit: "50MB",
-    allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
-  },
 ];
 
 export function parseArgs(args) {
@@ -94,6 +90,8 @@ export function validateBootstrapConfig(env = process.env) {
   if (forbiddenHosts.has(adminDbUrl.hostname)) {
     throw new Error("SUPABASE_ADMIN_DB_URL no puede apuntar a localhost.");
   }
+  // Auth, Storage and owner SQL must all address the same staging project.
+  validateRemoteEnvironment("staging", env);
 
   return {
     projectRef,
@@ -106,10 +104,6 @@ export function validateBootstrapConfig(env = process.env) {
       ches: env.STAGING_CHES_EMAIL.trim().toLowerCase(),
     },
   };
-}
-
-export function generatePassword() {
-  return `${randomBytes(24).toString("base64url")}Aa1!`;
 }
 
 export function buildAuthUserPayload({ definition, email, password, projectRef }) {
@@ -214,68 +208,6 @@ async function ensureAccount(config, definition, credentials, { onCreated } = {}
     ...account,
     authUserId: account.authUserId ?? authUserId,
   }));
-}
-
-export async function writeJsonSecure(filePath, value) {
-  const directory = path.dirname(filePath);
-  await mkdir(directory, { recursive: true, mode: 0o700 });
-  await chmod(directory, 0o700);
-  const temporaryPath = `${filePath}.${process.pid}.tmp`;
-  await writeFile(temporaryPath, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
-  await chmod(temporaryPath, 0o600);
-  await rename(temporaryPath, filePath);
-  await chmod(filePath, 0o600);
-}
-
-async function readJsonIfPresent(filePath) {
-  try {
-    return JSON.parse(await readFile(filePath, "utf8"));
-  } catch (error) {
-    if (error?.code === "ENOENT") return null;
-    throw new Error(`No se pudo leer ${filePath}.`);
-  }
-}
-
-function comparableSize(value) {
-  if (typeof value === "number") return value;
-  if (typeof value !== "string") return null;
-  const match = value.trim().match(/^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB)?$/i);
-  if (!match) return null;
-  // Supabase Storage serializa los límites expresados como MB con unidades decimales.
-  const multipliers = { b: 1, kb: 1000, mb: 1000 ** 2, gb: 1000 ** 3 };
-  return Math.round(Number(match[1]) * (multipliers[match[2]?.toLowerCase() ?? "b"] ?? 1));
-}
-
-export function bucketMatches(bucket, expected) {
-  const allowedMimeTypes = bucket.allowedMimeTypes ?? bucket.allowed_mime_types ?? [];
-  const fileSizeLimit = bucket.fileSizeLimit ?? bucket.file_size_limit;
-  return (
-    Boolean(bucket.public) === expected.public &&
-    comparableSize(fileSizeLimit) === comparableSize(expected.fileSizeLimit) &&
-    JSON.stringify([...allowedMimeTypes].sort()) ===
-      JSON.stringify([...expected.allowedMimeTypes].sort())
-  );
-}
-
-async function ensureBuckets(client) {
-  const { data, error } = await client.storage.listBuckets();
-  if (error) throw new Error(`No se pudieron consultar los buckets: ${error.message}`);
-  for (const bucket of STAGING_BUCKETS) {
-    const existing = data.find((item) => item.id === bucket.id);
-    if (existing) {
-      if (!bucketMatches(existing, bucket)) {
-        throw new Error(`El bucket ${bucket.id} existe con una configuración incompatible.`);
-      }
-      continue;
-    }
-    const { error: createError } = await client.storage.createBucket(bucket.id, {
-      public: bucket.public,
-      fileSizeLimit: bucket.fileSizeLimit,
-      allowedMimeTypes: bucket.allowedMimeTypes,
-    });
-    if (createError)
-      throw new Error(`No se pudo crear el bucket ${bucket.id}: ${createError.message}`);
-  }
 }
 
 async function prepareAndUploadCassette(client) {

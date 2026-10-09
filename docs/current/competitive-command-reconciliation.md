@@ -1,6 +1,6 @@
 # Reconciliación de comandos competitivos
 
-> Estado: implementación y migración preparadas localmente; aplicación a la base de la aplicación, staging y producción pendiente.
+> Estado: vigente. Aplicada y verificada en la base local de la aplicación. Staging y producción quedan pendientes.
 
 Fecha: 2026-10-09. Revisión:
 `20261009190015_competitive_command_reconciliation`.
@@ -140,6 +140,10 @@ permanecen persistidos; no se vuelven a etiquetar ni recalculan puntos.
 
 ## Estado de aplicación
 
-La migración está preparada para revisión y aplicación posterior. Solo se ha aplicado, revertido
-y reaplicado en bases desechables de pruebas. La aplicación a la base local de la aplicación
-y la validación en staging quedan pendientes del flujo de despliegue. No se ha aplicado a producción.
+El 2026-10-10 se reconstruyó la base local de la aplicación con el historial completo, incluida
+esta migración. El bootstrap mínimo y health reconocen la revisión reconciliada. La reversión
+y reaplicación siguen verificándose en bases desechables.
+
+El [procedimiento de instalación limpia](supabase-clean-installation.md) registra el estado local
+y deja definida la ejecución posterior de staging y producción. Ningún entorno remoto se ha
+reiniciado ni desplegado durante este trabajo.

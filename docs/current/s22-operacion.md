@@ -8,8 +8,9 @@ S22 fija un alcance cerrado para operar localmente y en CI, y deja documentado e
 producción sin convertir el entorno remoto en requisito para la verificación reproducible.
 El piloto incluye Flash, Narrative, Supervivencia y Pirámide competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
 Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape, F19 Word-hashtag y E10 Progressive-image,
-además de los formatos F habilitados. Narrativa, formatos no migrados, E07–E09, takeover y
-`results_locked_at` siguen fuera de alcance. La expiración por inactividad de intentos competitivos
+además de los formatos F habilitados. Los formatos no migrados, E07–E09 y
+`results_locked_at` siguen fuera de alcance. La transferencia de control está disponible según
+la [reconciliación de comandos](competitive-command-reconciliation.md). La expiración por inactividad de intentos competitivos
 sí está activa: 15 minutos sin actividad tras cierre/deadline, estado `abandoned`, sin puntos.
 D08a/S13 habilita avatares y
 D08b habilita assets privados de E10 y `multiple-choice` desde el editor y el recorrido competitivo.
@@ -189,6 +190,7 @@ npm run supabase:schema:test -- --migrations
 npm run test:e2e:isolated -- e2e/pyramid-queens.spec.ts e2e/e05-queens.spec.ts
 ```
 
-No existe todavía despliegue remoto ni rollback de migraciones destructivo. El rollback del piloto
-es de aplicación: conservar el esquema compatible, detener el proceso actual y arrancar el build
-anterior sin sustituir datos por mocks.
+La [instalación limpia](supabase-clean-installation.md) define el reinicio completo, el bootstrap
+mínimo y el procedimiento posterior para staging y producción. El alcance ejecutado en este trabajo
+es local. La [reconciliación de comandos](competitive-command-reconciliation.md) incluye una reversión
+de funciones mediante migración posterior; nunca requiere sustituir datos por mocks.

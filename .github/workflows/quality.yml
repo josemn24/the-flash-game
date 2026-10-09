@@ -63,6 +63,12 @@ jobs:
       - name: Schema tests
         run: npm run supabase:schema:test
 
+      - name: Schema tests from migration history
+        run: npm run supabase:schema:test -- --migrations
+
+      - name: Schema reconciliation
+        run: npm run supabase:schema:reconciliation:test
+
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 

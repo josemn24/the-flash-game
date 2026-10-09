@@ -22,6 +22,8 @@ contenido Flash/Supervivencia y programa su calendario local.
 - [`design-tokens.md`](design-tokens.md): roles de color, estados, contrastes y equivalencias de migración.
 - [`design-system.md`](design-system.md): catálogo de desarrollo, componentes reales, demos y mantenimiento.
 - [`qa.md`](qa.md): estado vigente de las comprobaciones automatizadas y sus limitaciones.
+- [`supabase-clean-installation.md`](supabase-clean-installation.md): reinicio completo, bootstrap
+  mínimo y procedimiento posterior para staging y producción.
 - [`local-device-testing.md`](local-device-testing.md): pruebas desde un móvil u otro equipo de la
   red local, configuración de Supabase y resolución de problemas.
 - [`competitive-read-performance.md`](competitive-read-performance.md): contratos de lectura,

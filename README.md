@@ -171,6 +171,10 @@ en `output/staging/bootstrap-credentials.json` con permisos `0600` y el estado n
 `output/staging/bootstrap-manifest.json`; copia las contraseñas a un gestor seguro y elimina el
 archivo de credenciales después.
 
+Para reiniciar un entorno completo, incluida la limpieza de Auth y Storage, y arrancar con el
+perfil mínimo, sigue la [instalación limpia de Supabase](docs/current/supabase-clean-installation.md).
+El procedimiento remoto queda preparado para una ventana posterior; el alcance actual es local.
+
 ## Estructura principal
 
 ```text

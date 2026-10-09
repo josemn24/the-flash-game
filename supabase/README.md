@@ -158,6 +158,8 @@ supabase/
 ```
 
 Para preparar cuentas y datos de navegador, consulta [`local-development.md`](local-development.md).
+Para reiniciar también Auth y Storage e instalar el perfil mínimo, consulta
+[`supabase-clean-installation.md`](../docs/current/supabase-clean-installation.md).
 Para los límites de seguridad y el modelo de persistencia, consulta
 [`architecture.md`](architecture.md). El estado funcional y las capacidades pendientes se mantienen
 en [`docs/current/status.md`](../docs/current/status.md).
