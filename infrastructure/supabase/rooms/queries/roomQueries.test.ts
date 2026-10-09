@@ -903,7 +903,8 @@ describe("Supabase history and review capabilities S07", () => {
     const resolve = vi.fn(async ({ publicPayload }: { publicPayload: unknown }) => {
       const payload = publicPayload as Record<string, unknown>;
       const media = payload.media as Record<string, unknown>;
-      const { assetId: _assetId, ...runtimeMedia } = media;
+      const runtimeMedia = { ...media };
+      delete runtimeMedia.assetId;
       return {
         ...payload,
         media: { ...runtimeMedia, src: "https://signed.example/peer-question.png" },
@@ -924,10 +925,9 @@ describe("Supabase history and review capabilities S07", () => {
       })),
     });
 
-    const model = await new SupabaseRoomMemberDetailQueries(
-      supabaseAttemptExpiration,
-      { resolve },
-    ).getMemberDetail("s06-main", peerPlayerId, queryContext);
+    const model = await new SupabaseRoomMemberDetailQueries(supabaseAttemptExpiration, {
+      resolve,
+    }).getMemberDetail("s06-main", peerPlayerId, queryContext);
 
     expect(resolve).toHaveBeenCalledWith({
       authUserId: "auth-viewer",

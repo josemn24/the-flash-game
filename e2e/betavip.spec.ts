@@ -126,7 +126,7 @@ test("Ches responde la imagen progresiva en el tercer periodo de Supervivencia",
 }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [alphabet, pyramid, survival] = data.data.publications;
+  const [, pyramid, survival] = data.data.publications;
 
   await dockerSql(`
 begin;

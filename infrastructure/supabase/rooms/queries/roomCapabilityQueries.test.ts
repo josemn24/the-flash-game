@@ -159,7 +159,7 @@ describe("room capability queries", () => {
     ).resolves.toBeNull();
   });
 
-  it("does not resolve private assets for another member", async () => {
+  it("resolves peer assets after the RPC returns an authorized review", async () => {
     const memberKey = "00000000-0000-0000-0000-000000000003";
     mocks.callHistoryRead.mockResolvedValueOnce([historyRow]).mockResolvedValueOnce([
       {
@@ -176,6 +176,26 @@ describe("room capability queries", () => {
     ).getMemberDetail("room-key", memberKey, queryContext, historyRow.publication_id);
 
     expect(model).not.toBeNull();
+    expect(mocks.privateAssetResolve).toHaveBeenCalledWith({
+      authUserId: "auth-user-id",
+      attemptId: "00000000-0000-0000-0000-000000000016",
+      publicPayload: { media: { assetId: "private-asset" } },
+    });
+  });
+
+  it("does not resolve assets when the RPC returns no authorized review rows", async () => {
+    mocks.callHistoryRead.mockResolvedValueOnce([historyRow]).mockResolvedValueOnce([]);
+    await expect(
+      new SupabaseRoomMemberDetailQueries(
+        { expireStaleAttemptsForRoom: vi.fn() },
+        { resolve: mocks.privateAssetResolve },
+      ).getMemberDetail(
+        "room-key",
+        "00000000-0000-0000-0000-000000000003",
+        queryContext,
+        historyRow.publication_id,
+      ),
+    ).resolves.toBeNull();
     expect(mocks.privateAssetResolve).not.toHaveBeenCalled();
   });
 

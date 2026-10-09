@@ -76,8 +76,12 @@ describe("product design-system boundaries", () => {
   });
 
   it("keeps the components root organized by domain", () => {
-    const rootFiles = readdirSync(componentsRoot).filter((entry) =>
-      statSync(join(componentsRoot, entry)).isFile(),
+    // Architecture checker tests create and remove this reserved fixture in parallel.
+    const rootFiles = readdirSync(componentsRoot).filter(
+      (entry) =>
+        entry !== ".DS_Store" &&
+        entry !== "__architecture-authentication-test__.ts" &&
+        statSync(join(componentsRoot, entry)).isFile(),
     );
     expect(rootFiles).toEqual([]);
     for (const domain of requiredDomains) {

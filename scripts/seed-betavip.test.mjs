@@ -108,7 +108,7 @@ describe("BetaVIP seed", () => {
     ).toEqual([5, 10, 14, 18]);
     expect(questions.find((item) => item.position === 3)).toMatchObject({
       type: "progressive-image",
-      publicPayload: { revealDurationMs: 7000 },
+      publicPayload: { revealDurationMs: 5000 },
       solutionPayload: {
         acceptedAnswers: ["casete", "caset", "cassette", "cinta de casete"],
       },

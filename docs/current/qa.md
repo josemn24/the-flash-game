@@ -159,3 +159,19 @@ El flujo competitivo Flash debe conservar estas garantías:
 
 Los modos todavía locales no deben usar estas garantías como autoridad competitiva hasta completar
 su propia vertical slice.
+
+## Incidencia de la prueba SQL de Logic Code
+
+Durante la verificación de la instalación limpia, la comprobación de ocultación de la solución
+en `e02_logic_code.test.sql` rechazó una respuesta válida porque un UUID aleatorio contenía
+los dígitos `0420`. La comparación anterior buscaba esa subcadena en todo el JSON serializado.
+La prueba ahora comprueba valores JSON completos y la ausencia de la clave `correctAnswer`.
+No se modifican payloads, validadores ni reglas de Logic Code; se elimina un falso positivo
+de la prueba existente.
+
+La ejecución completa detectó además expectativas anteriores a cambios ya presentes en el código:
+BetaVIP publica la imagen progresiva durante 5.000 ms y las revisiones autorizadas de otros miembros
+resuelven assets privados. Se actualizaron esas expectativas sin cambiar el contenido ni la
+autorización SQL, y se añadió el caso sin filas de revisión autorizadas. La comprobación de carpetas
+ignora `.DS_Store` y el fixture temporal reservado del checker de arquitectura para evitar que
+las pruebas concurrentes interfieran. Se retiraron dos variables sin uso en helpers de pruebas.
