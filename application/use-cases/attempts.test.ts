@@ -116,6 +116,106 @@ const answerInput: SubmitAnswerInput = {
 };
 
 describe("ApplicationAttemptUseCases", () => {
+  it("evaluates Queens exhaustion once and replays the recorded terminal result", async () => {
+    const { commands, useCases } = createUseCases({ evaluator: supabaseCompetitiveEvaluator });
+    const input = { ...answerInput, queens: [0, 2, 5, 14, 21] };
+    const accepted = {
+      attemptId,
+      challengeItemId,
+      lockVersion: 5,
+      receiptId,
+      timeUsedMs: 500 as never,
+      terminal: true,
+      correct: false,
+      queens: input.queens,
+      placedQueens: 5,
+      completedRows: 5,
+      completedColumns: 3,
+      completedRegions: 4,
+      conflictingQueens: 2,
+      solved: false,
+      incorrectAttempts: 3,
+      incorrectValidations: 3,
+      maxIncorrectValidations: 3,
+    };
+    vi.mocked(commands.validateQueensBoard).mockResolvedValue(accepted);
+    vi.mocked(commands.readEvaluationContext).mockResolvedValue({
+      ...evaluationContext(),
+      mode: "pyramid",
+      questionType: "queens",
+      itemPoints: 14,
+      publicPayload: {
+        question: "Coronas",
+        grid: { rows: 5, columns: 5 },
+        regions: [0, 0, 0, 1, 1, 2, 0, 1, 1, 1, 2, 2, 1, 3, 1, 2, 3, 3, 3, 3, 2, 4, 3, 3, 3],
+        prefilledQueens: [2],
+      },
+      solutionPayload: { solution: [2, 9, 10, 18, 21] },
+      answer: { queens: input.queens, marks: [] },
+      incorrectAttempts: 3,
+      incorrectValidations: 3,
+    });
+    vi.mocked(commands.recordEvaluation).mockResolvedValue({
+      attemptId,
+      receiptId,
+      lockVersion: 6,
+      status: "incorrect",
+      points: 0,
+    });
+    const result = await useCases.validateQueensBoard(input);
+    expect(result).toMatchObject({
+      terminal: true,
+      status: "incorrect",
+      points: 0,
+      incorrectValidations: 3,
+      details: { type: "queens", failureReason: "attempts_exhausted" },
+    });
+    expect(commands.recordEvaluation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "incorrect",
+        points: 0,
+        idempotencyKey: `evaluation:${receiptId}`,
+        resultDetails: expect.objectContaining({ failureReason: "attempts_exhausted" }),
+      }),
+    );
+    vi.mocked(commands.readRecordedEvaluation).mockResolvedValue({
+      ...result,
+      receiptId,
+      status: "incorrect",
+      points: 0,
+    });
+    expect(await useCases.validateQueensBoard(input)).toEqual(result);
+    expect(commands.recordEvaluation).toHaveBeenCalledTimes(1);
+    expect(commands.readEvaluationContext).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps a nonterminal Queens failure open without creating an evaluation", async () => {
+    const { commands, useCases } = createUseCases();
+    const accepted = {
+      attemptId,
+      challengeItemId,
+      lockVersion: 5,
+      terminal: false,
+      correct: false,
+      queens: [0, 2, 5, 14, 20],
+      placedQueens: 5,
+      completedRows: 4,
+      completedColumns: 3,
+      completedRegions: 3,
+      conflictingQueens: 2,
+      solved: false,
+      incorrectAttempts: 1,
+      incorrectValidations: 1,
+      maxIncorrectValidations: 3,
+    };
+    vi.mocked(commands.validateQueensBoard).mockResolvedValue(accepted);
+    expect(await useCases.validateQueensBoard({ ...answerInput, queens: accepted.queens })).toEqual(
+      accepted,
+    );
+    expect(commands.recordEvaluation).not.toHaveBeenCalled();
+    expect(commands.readEvaluationContext).not.toHaveBeenCalled();
+  });
+
   it("passes the candidate token only to the takeover command and returns it for cookie rotation", async () => {
     const { commands, useCases } = createUseCases();
     vi.mocked(commands.takeOver).mockResolvedValue({

@@ -2,7 +2,12 @@ import { definition } from "./definition";
 
 import type { ServerQueensProgress } from "@/types/gameplay/challenge";
 
-import { isQueensBoardSize, queensCellCount, queensGrid } from "@/lib/queens";
+import {
+  isQueensBoardSize,
+  queensCellCount,
+  queensGrid,
+  QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS,
+} from "@/lib/queens";
 
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
 import { publicEnvelope, type PublicReadContext, ServerFlashQuestionError } from "../public-common";
@@ -37,6 +42,12 @@ export function readPublic(
       : [];
   const safeProgress: ServerQueensProgress = {
     kind: "queens",
+    incorrectValidations: Number(rawProgress.incorrectValidations ?? 0),
+    maxIncorrectValidations:
+      rawProgress.maxIncorrectValidations === undefined ||
+      rawProgress.maxIncorrectValidations === null
+        ? null
+        : Number(rawProgress.maxIncorrectValidations),
     queens,
     placedQueens: Number(rawProgress.placedQueens ?? queens.length),
     completedRows: Number(rawProgress.completedRows ?? 0),
@@ -60,12 +71,15 @@ export function readPublic(
     !validCells(queens) ||
     safeProgress.placedQueens !== queens.length ||
     ![
+      safeProgress.incorrectValidations,
       safeProgress.placedQueens,
       safeProgress.completedRows,
       safeProgress.completedColumns,
       safeProgress.completedRegions,
       safeProgress.conflictingQueens,
     ].every((metric) => Number.isSafeInteger(metric) && metric >= 0) ||
+    (safeProgress.maxIncorrectValidations !== null &&
+      safeProgress.maxIncorrectValidations !== QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS) ||
     safeProgress.completedRows > boardGrid.rows ||
     safeProgress.completedColumns > boardGrid.columns ||
     safeProgress.completedRegions > boardGrid.rows

@@ -348,6 +348,10 @@ begin
     raise exception 'unsupported_question' using errcode = '22023';
   end if;
 
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'pyramid') then
+    raise exception 'queens_requires_board_validation' using errcode = '22023';
+  end if;
+
   current_queens := private.queens_board(a.id, item.id);
   if action = 'remove' and cell = any(coalesce((select array_agg(value::integer) from jsonb_array_elements_text(coalesce(question.public_payload->'prefilledQueens', '[]'::jsonb)) value), '{}'::integer[])) then
     raise exception 'prefilled_queen_locked' using errcode = '55000';
@@ -836,6 +840,7 @@ begin
       select count(*)::integer from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
     ), 0) else null end,
+    'incorrectValidations', case when q.type = 'queens' then (private.queens_progress(r.attempt_id, r.challenge_item_id)->>'incorrectValidations')::integer else null end,
     'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
     'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
     'itemConfig', i.mode_config, 'mode', cv.mode,

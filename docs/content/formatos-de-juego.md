@@ -443,8 +443,9 @@ El jugador coloca `N` coronas en una cuadrícula cuadrada `N × N`, con una coro
 
 - **Interacción actual:** herramientas explícitas para colocar coronas o marcas X, edición reversible, control táctil y por teclado, conflictos anunciados inmediatamente y validación automática al colocar las `N` coronas. Las coronas se guardan localmente y mediante checkpoints no bloqueantes.
 - **Puntuación actual:** resolución binaria ajustada por velocidad; cada validación completa incorrecta resta un 5 % de los puntos base hasta un mínimo de cero. Los conflictos intermedios y editar marcas no penalizan.
+- **Pirámide competitivo:** tres validaciones completas incorrectas terminan el ascenso. Las pistas fijas cuentan dentro de las `N` coronas; el tablero se bloquea durante cada validación y muestra los intentos restantes confirmados por el servidor. Acertar en la tercera oportunidad supera el nivel. El tercer fallo aporta cero puntos para Queens y conserva los de niveles anteriores. Los demás modos y la práctica mantienen sus reglas.
 - **Accesibilidad:** las regiones combinan color, patrón y bordes; cada celda comunica fila, columna, región, estado y conflictos.
-- **Uso actual:** tipo nativo y ejemplo jugable curado en la biblioteca. Todavía no se publica en desafíos y no incluye generador ni pistas.
+- **Uso actual:** tipo nativo competitivo y ejemplo jugable curado en la biblioteca, con pistas precolocadas. No incluye generador.
 
 ### 37. Zip / Una línea — Implementada
 

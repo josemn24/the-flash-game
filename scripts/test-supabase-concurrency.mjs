@@ -675,4 +675,180 @@ export async function testConcurrentCommands(sql) {
     run("owner", "confirm_avatar_upload_command", { ...duplicateCommand, sha256: "b".repeat(64) }),
     /idempotency_conflict/,
   );
+  await sql(
+    `begin; ${await readFile("supabase/tests/support/pyramid-queens-fixtures.sql", "utf8")} commit;`,
+  );
+  const queens = lastJson(
+    await sql(`begin;
+    select test_support.as_actor('member');
+    set local role service_role;
+    select test_support.start_pyramid_queens();
+    select test_support.run('activate_interaction');
+    commit;`),
+  );
+  let queensInput = {
+    attemptId: queens.attemptId,
+    challengeItemId: id("pyramid-queens-item-2"),
+    sessionToken: "q".repeat(40),
+    lockVersion: queens.lockVersion,
+    queens: [0, 2, 5, 14, 20],
+    idempotencyKey: "queens-first-wrong",
+  };
+  const firstWrong = await run("member", "submit_queens_answer", queensInput);
+  queensInput = {
+    ...queensInput,
+    lockVersion: firstWrong.lockVersion,
+    idempotencyKey: "queens-second-wrong",
+  };
+  const secondWrongRace = await race("member", "member", "submit_queens_answer", queensInput, {
+    ...queensInput,
+    idempotencyKey: "queens-second-competing",
+  });
+  requireOneConflict(
+    secondWrongRace,
+    "Concurrent different validations consume only one opportunity",
+  );
+  const secondWrong = secondWrongRace.find((r) => r.status === "fulfilled").value;
+  assert.equal(secondWrong.incorrectValidations, 2);
+  queensInput = {
+    ...queensInput,
+    lockVersion: secondWrong.lockVersion,
+    idempotencyKey: "queens-third-wrong",
+  };
+  const finalRace = await race(
+    "member",
+    "member",
+    "submit_queens_answer",
+    queensInput,
+    queensInput,
+  );
+  assert.ok(
+    finalRace.every((r) => r.status === "fulfilled"),
+    "Concurrent identical validations replay successfully",
+  );
+  const terminalQueens = finalRace[0].value;
+  assert.deepEqual(terminalQueens, finalRace[1].value);
+  assert.equal(terminalQueens.terminal, true);
+  assert.equal(terminalQueens.incorrectValidations, 3);
+  await assert.rejects(
+    run("member", "save_queens_draft", {
+      ...queensInput,
+      lockVersion: terminalQueens.lockVersion,
+      idempotencyKey: "queens-late-draft",
+      queens: [2],
+    }),
+    /interaction_not_presented/,
+  );
+  const evaluatedQueens = await run("member", "record_evaluation", {
+    attemptId: queens.attemptId,
+    sessionToken: queensInput.sessionToken,
+    lockVersion: terminalQueens.lockVersion,
+    receiptId: terminalQueens.receiptId,
+    idempotencyKey: "queens-final-evaluation",
+    status: "incorrect",
+    points: 0,
+    resultDetails: { type: "queens", failureReason: "attempts_exhausted", solved: false },
+  });
+  const queensComplete = {
+    attemptId: queens.attemptId,
+    sessionToken: queensInput.sessionToken,
+    lockVersion: evaluatedQueens.lockVersion,
+    idempotencyKey: "queens-final-completion",
+    score: 0,
+    outcome: "failed",
+  };
+  const completionRace = await race(
+    "member",
+    "member",
+    "complete_attempt",
+    queensComplete,
+    queensComplete,
+  );
+  assert.ok(completionRace.every((r) => r.status === "fulfilled"));
+  assert.deepEqual(completionRace[0].value, completionRace[1].value);
+  assert.equal(completionRace[0].value.outcome, "failed");
+  assert.equal(completionRace[0].value.score, 14);
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.queens_validation_events where attempt_id=${quote(queens.attemptId)};`,
+      )
+    ).trim(),
+    "3",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.answer_receipts where attempt_id=${quote(queens.attemptId)} and challenge_item_id=${quote(queensInput.challengeItemId)};`,
+      )
+    ).trim(),
+    "1",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.flash_point_entries where attempt_id=${quote(queens.attemptId)} and entry_type='accreditation';`,
+      )
+    ).trim(),
+    "1",
+  );
+
+  const timedQueens = lastJson(
+    await sql(`begin;
+    select test_support.as_actor('member');
+    set local role service_role;
+    select test_support.start_pyramid_queens(6);
+    select test_support.run('activate_interaction');
+    commit;`),
+  );
+  const timedInput = {
+    attemptId: timedQueens.attemptId,
+    challengeItemId: id("pyramid-queens-timeout-item-2"),
+    sessionToken: "u".repeat(40),
+    lockVersion: timedQueens.lockVersion,
+  };
+  // The draft holds the attempt row beyond the published one-second clock. The validation
+  // starts before that deadline but must use the clock after acquiring the attempt lock.
+  const delayedDraft = await invoke(
+    "member",
+    "save_queens_draft",
+    {
+      ...timedInput,
+      queens: [2, 9],
+      idempotencyKey: "queens-held-draft",
+    },
+    true,
+  );
+  const lateValidation = await invoke("member", "submit_queens_answer", {
+    ...timedInput,
+    lockVersion: timedInput.lockVersion + 1,
+    queens: [2, 9, 10, 18, 21],
+    idempotencyKey: "queens-validation-crosses-deadline",
+  });
+  const timingRace = await Promise.allSettled([delayedDraft.done, lateValidation.done]);
+  requireOneConflict(timingRace, "A validation waiting beyond the server deadline is rejected");
+  assert.match(String(timingRace[1].reason), /deadline_reached/);
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.queens_validation_events where attempt_id=${quote(timedQueens.attemptId)};`,
+      )
+    ).trim(),
+    "0",
+  );
+  const recoveredQueens = await run("member", "recover_attempt", {
+    attemptId: timedInput.attemptId,
+    sessionToken: timedInput.sessionToken,
+    lockVersion: timedInput.lockVersion + 1,
+    idempotencyKey: "queens-timeout-recovery",
+  });
+  const timedContext = lastJson(
+    await sql(`begin;
+    select test_support.as_actor('member');
+    set local role service_role;
+    select private.read_evaluation_context(${quote(recoveredQueens.receiptId)}::uuid, ${quote(timedInput.sessionToken)});
+    commit;`),
+  );
+  assert.equal(timedContext.timedOut, true);
+  assert.equal(timedContext.incorrectValidations, 0);
 }

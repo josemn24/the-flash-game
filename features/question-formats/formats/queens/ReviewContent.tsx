@@ -11,6 +11,9 @@ export function ReviewContent({ question, result }: ReviewProps<PracticeQuestion
   const details = result.details?.type === "queens" ? result.details : undefined;
   return (
     <div className="grid gap-3">
+      {details?.failureReason === "attempts_exhausted" ? (
+        <p>Has agotado los tres intentos.</p>
+      ) : null}
       <div className={styles.queensReviewPair}>
         <div>
           <span className={styles.memoryGridLabel}>Tu tablero</span>

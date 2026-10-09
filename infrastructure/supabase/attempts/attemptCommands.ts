@@ -135,6 +135,7 @@ function commandCode(error: unknown) {
     "queens_answer_incomplete",
     "queens_answer_overflow",
     "queens_requires_placement_command",
+    "queens_requires_board_validation",
     "prefilled_queen_locked",
     "all_clues_revealed",
     "progressive_clues_requires_reveal_command",

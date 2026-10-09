@@ -44,7 +44,11 @@ export function ServerQueensQuestion({
     () => getQueensConflicts(question, [...new Set([...question.prefilledQueens, ...draftQueens])]),
     [draftQueens, question],
   );
-  const disabled = locked || validationState === "submitting";
+  const remainingAttempts =
+    progress.maxIncorrectValidations === null
+      ? null
+      : Math.max(0, progress.maxIncorrectValidations - progress.incorrectValidations);
+  const disabled = locked || validationState === "submitting" || remainingAttempts === 0;
   const targetQueens = question.grid.rows;
   const targetQueensLabel = targetQueens === 5 ? "cinco" : String(targetQueens);
   const totalQueenCount = useMemo(
@@ -161,6 +165,13 @@ export function ServerQueensQuestion({
         </strong>
         <span>{conflicts.size ? `${conflicts.size} en conflicto` : "Sin conflictos"}</span>
       </div>
+      {remainingAttempts !== null ? (
+        <p className={styles.instructions} role="status" aria-live="polite" aria-atomic="true">
+          {remainingAttempts === 1
+            ? "1 intento restante · Último intento"
+            : `${remainingAttempts} intentos restantes`}
+        </p>
+      ) : null}
       {placementNotice ? (
         <p className={styles.placementNotice} role="status" aria-live="polite">
           {placementNotice}
@@ -168,7 +179,8 @@ export function ServerQueensQuestion({
       ) : null}
       <p className={styles.instructions}>
         La corona marcada como pista es fija. Coloca una por fila, columna y región sin que se
-        toquen. El tablero se valida automáticamente al colocar las {targetQueens} coronas.
+        toquen. El tablero se valida automáticamente al completar las {targetQueens} coronas.
+        {progress.maxIncorrectValidations !== null ? " Tres fallos terminan la partida." : null}
       </p>
       <ServerOperationStatus
         state={validationState}

@@ -46,11 +46,13 @@ try {
   for (const file of (await readdir("supabase/tests"))
     .filter((name) => name.endsWith(".test.sql"))
     .sort()) {
-    const fixtures = await readFile("supabase/tests/support/command-fixtures.sql", "utf8");
-    const source = (await readFile(`supabase/tests/${file}`, "utf8")).replace(
-      "-- @command-fixtures",
-      () => fixtures,
-    );
+    let source = await readFile(`supabase/tests/${file}`, "utf8");
+    for (const name of ["command", "pyramid-queens"]) {
+      if (source.includes(`-- @${name}-fixtures`)) {
+        const fixtures = await readFile(`supabase/tests/support/${name}-fixtures.sql`, "utf8");
+        source = source.replace(`-- @${name}-fixtures`, () => fixtures);
+      }
+    }
     let result;
     try {
       result = await sql(source);

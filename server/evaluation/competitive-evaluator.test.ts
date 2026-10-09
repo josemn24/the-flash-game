@@ -179,3 +179,68 @@ describe("competitive logic-code evaluation", () => {
     });
   });
 });
+
+describe("competitive Pyramid Queens evaluation", () => {
+  const solution = [2, 9, 10, 18, 21];
+  function queensContext(overrides: Partial<EvaluationContext> = {}): EvaluationContext {
+    return context({
+      questionType: "queens",
+      payloadSchemaVersion: 1,
+      mode: "pyramid",
+      modeConfig: {},
+      timeLimitMs: 60_000 as EvaluationContext["timeLimitMs"],
+      timeUsedMs: 0 as EvaluationContext["timeUsedMs"],
+      publicPayload: {
+        question: "Coloca cinco coronas",
+        grid: { rows: 5, columns: 5 },
+        regions: [0, 0, 0, 1, 1, 2, 0, 1, 1, 1, 2, 2, 1, 3, 1, 2, 3, 3, 3, 3, 2, 4, 3, 3, 3],
+        prefilledQueens: [2],
+      },
+      solutionPayload: { solution, explanation: "Una por fila, columna y región" },
+      answer: { queens: [0, 2, 5, 14, 20], marks: [] },
+      incorrectAttempts: 3,
+      incorrectValidations: 3,
+      ...overrides,
+    });
+  }
+  it("records exhaustion as incorrect with metrics and zero points", () => {
+    expect(supabaseCompetitiveEvaluator.evaluate(queensContext())).toMatchObject({
+      status: "incorrect",
+      points: 0,
+      details: {
+        type: "queens",
+        failureReason: "attempts_exhausted",
+        placedQueens: 5,
+        incorrectAttempts: 3,
+        solved: false,
+      },
+    });
+  });
+  it.each([0, 1, 2])(
+    "accepts a correct board after %i failures with its existing penalty",
+    (failures) => {
+      expect(
+        supabaseCompetitiveEvaluator.evaluate(
+          queensContext({
+            answer: { queens: solution, marks: [] },
+            incorrectAttempts: failures,
+            incorrectValidations: failures,
+          }),
+        ),
+      ).toMatchObject({ status: "correct", points: 100 - failures * 5 });
+    },
+  );
+  it.each(["flash", "survival", "narrative"] as const)(
+    "leaves %s Queens scoring unchanged",
+    (mode) => {
+      const result = supabaseCompetitiveEvaluator.evaluate(queensContext({ mode }));
+      expect(result.status).toBe("partial");
+      expect(result.details).not.toHaveProperty("failureReason");
+    },
+  );
+  it("does not turn a timeout into exhaustion", () => {
+    const result = supabaseCompetitiveEvaluator.evaluate(queensContext({ timedOut: true }));
+    expect(result.status).toBe("unanswered");
+    expect(result.details).not.toHaveProperty("failureReason");
+  });
+});

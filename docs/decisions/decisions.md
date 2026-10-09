@@ -311,13 +311,20 @@
   en la versión publicada.
 - Las coronas se editan localmente y se guardan mediante checkpoints server-side sin bloquear la UI.
   Al alcanzar `N` coronas se envía automáticamente el tablero completo a un comando idempotente de
-  validación; una respuesta incorrecta deja la interacción abierta y permite continuar editando.
+  validación, con el tablero bloqueado mientras se confirma. Una respuesta incorrecta permite
+  continuar editando, salvo al agotar las tres validaciones incorrectas de Queens en Pirámide competitivo.
 - Cada validación completa incorrecta registra un evento privado y aplica una penalización del 5% de
   los puntos del item; las marcas X pertenecen únicamente al estado de interfaz y se pierden al
   recuperar la interacción.
 - Completar el tablero válido crea la recepción terminal una sola vez. La solución no forma parte del
   payload de `prepare`, del progreso ni de los comandos del navegador y solo se expone en evaluación
   o revisión autorizada.
+- En Pirámide competitivo el límite fijo es de tres validaciones completas incorrectas por prueba.
+  El tercer fallo crea una recepción terminal con el tablero enviado y se evalúa como `incorrect`,
+  con cero puntos y motivo `attempts_exhausted`; el ascenso termina como `failed` conservando los
+  puntos anteriores. Acertar en la tercera oportunidad supera el nivel. El contador público se
+  deriva de `queens_validation_events`; borradores, entradas inválidas y reintentos idempotentes no
+  consumen oportunidades. `/queens/place` se rechaza en Pirámide. Los demás modos conservan sus reglas.
 - La puntuación competitiva se denomina **Flash Points**. Los Flash Points obtenidos al jugar un
   desafío se suman al total de la temporada activa de la sala.
 - `⚡` y “Flash Points” son equivalentes como representación de interfaz. El texto completo se

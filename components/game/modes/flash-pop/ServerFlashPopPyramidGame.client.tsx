@@ -52,11 +52,15 @@ function PyramidFeedback({
     : timedOut
       ? "¡Se escapó por poco!"
       : "Casi.";
+  const attemptsExhausted =
+    result.details?.type === "queens" && result.details.failureReason === "attempts_exhausted";
   const body = passed
     ? isLast
       ? "Has superado todos los niveles."
       : "Preparando la siguiente pregunta…"
-    : "El ascenso termina en este nivel.";
+    : attemptsExhausted
+      ? "Has agotado los tres intentos. El ascenso termina en este nivel."
+      : "El ascenso termina en este nivel.";
 
   return (
     <FlashPopFeedback

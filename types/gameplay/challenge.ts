@@ -504,6 +504,8 @@ export type ServerProgressiveImageQuestion = ServerFlashQuestionBase & {
 
 export type ServerQueensProgress = {
   readonly kind: "queens";
+  readonly incorrectValidations: number;
+  readonly maxIncorrectValidations: number | null;
   readonly queens: readonly number[];
   readonly placedQueens: number;
   readonly completedRows: number;

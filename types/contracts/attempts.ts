@@ -188,6 +188,8 @@ export type SaveQueensDraftInput = AttemptCommandInput & {
   readonly queens: readonly number[];
 };
 export type SaveQueensDraftResult = AttemptCommandResult & {
+  readonly incorrectValidations: number;
+  readonly maxIncorrectValidations: number | null;
   readonly challengeItemId: ChallengeItemId;
   readonly queens: readonly number[];
   readonly placedQueens: number;
@@ -202,6 +204,8 @@ export type ValidateQueensBoardInput = AttemptCommandInput & {
   readonly queens: readonly number[];
 };
 export type ValidateQueensBoardResult = AttemptCommandResult & {
+  readonly incorrectValidations: number;
+  readonly maxIncorrectValidations: number | null;
   readonly challengeItemId: ChallengeItemId;
   readonly correct: boolean;
   readonly terminal: boolean;

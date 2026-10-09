@@ -172,6 +172,23 @@ y valida automáticamente el tablero completo con `POST /api/competitive/attempt
 al colocar las `N` coronas del tablero. Las validaciones incorrectas mantienen la interacción abierta y aplican
 una penalización del 5%; las marcas X son locales y la solución solo aparece en la revisión autorizada.
 
+En Pirámide competitivo, Queens tiene tres validaciones incorrectas como máximo. El tercer fallo
+termina el ascenso con cero puntos para Queens y conserva los niveles anteriores; acertar en la
+última oportunidad permite avanzar. El progreso devuelve `incorrectValidations` y
+`maxIncorrectValidations` (`3` en Pirámide, `null` en los demás modos). Los reintentos repiten el
+comando idempotente y no consumen otra oportunidad. La UI permite editar entre validaciones y se
+bloquea mientras espera confirmación. Se conserva la política de timeout y recuperación de Pirámide.
+
+La migración `20261009172416_queens_pyramid_validation_limit` actualiza funciones existentes, sin
+añadir tablas ni contadores persistidos ni migrar partidas anteriores. Para comprobar un esquema
+limpio y el flujo de navegador sin reiniciar la base habitual:
+
+```bash
+npm run supabase:schema:test
+npm run supabase:schema:test -- --migrations
+npm run test:e2e:isolated -- e2e/pyramid-queens.spec.ts e2e/e05-queens.spec.ts
+```
+
 No existe todavía despliegue remoto ni rollback de migraciones destructivo. El rollback del piloto
 es de aplicación: conservar el esquema compatible, detener el proceso actual y arrancar el build
 anterior sin sustituir datos por mocks.

@@ -58,6 +58,7 @@ export type AnswerResultDetails =
     }
   | {
       type: "queens";
+      failureReason?: "attempts_exhausted";
       placedQueens: number;
       completedRows: number;
       completedColumns: number;

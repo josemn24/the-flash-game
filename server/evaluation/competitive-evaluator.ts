@@ -5,6 +5,7 @@ import type { CompetitiveEvaluator } from "@/application/ports/competitive-evalu
 import { normalizeCompetitiveEvaluationContext } from "@/infrastructure/supabase/attempts/normalize-competitive-context";
 import { evaluateCompetitiveReceipt } from "@/server/evaluation/evaluate-receipt";
 import { resolveCompetitiveQuestion } from "@/server/evaluation/resolve-competitive-question";
+import { QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS } from "@/lib/queens";
 import type { AnswerValue } from "@/types/contracts";
 
 export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
@@ -28,6 +29,20 @@ export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
       matchingIncorrectAttempts: context.matchingIncorrectAttempts ?? 0,
       incorrectAttempts: context.incorrectAttempts ?? 0,
     });
+
+    if (
+      context.mode === "pyramid" &&
+      !context.timedOut &&
+      result.details?.type === "queens" &&
+      !result.details.solved &&
+      (context.incorrectValidations ?? 0) >= QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS
+    ) {
+      return {
+        status: "incorrect",
+        points: 0,
+        details: { ...result.details, failureReason: "attempts_exhausted" },
+      };
+    }
 
     return {
       status: result.status,

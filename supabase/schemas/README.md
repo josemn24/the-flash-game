@@ -1,13 +1,16 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 58 archivos y su revisión canónica es
-`20261008170000_alphabet_generic_mode_support`. Las migraciones incrementales corresponden a esos archivos;
+`20261009172416_queens_pyramid_validation_limit`. Las migraciones incrementales corresponden a esos archivos;
 la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
+Queens en Pirámide permite tres validaciones completas incorrectas por prueba: el contador se deriva
+de `queens_validation_events` y el tercer fallo genera una única recepción terminal, sin tablas ni
+contadores duplicados. La migración actual modifica funciones y no incluye migración de datos.
 **30 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S15, S17a, S18b parcial, S05-Alphabet, F* y E* conectan

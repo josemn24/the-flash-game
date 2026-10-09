@@ -208,9 +208,19 @@ E05 entrega el tablero `N×N` (entre 4×4 y 8×8), las regiones, las coronas pre
 edita las coronas localmente y guarda checkpoints mediante `private.save_queens_draft(jsonb)` sin
 crear resultados ni penalizaciones. Al alcanzar `N` coronas, el tablero completo pasa por
 `private.submit_queens_answer(jsonb)`, que bloquea el intento, reconstruye las métricas, registra una
-validación completa y solo crea una recepción terminal si la solución es correcta. Cada validación
+validación completa y crea una recepción terminal si la solución es correcta o si se agotan las tres
+validaciones incorrectas de Queens en Pirámide competitivo. Cada validación
 incorrecta aplica un 5% de penalización; las marcas X siguen siendo estado local y se descartan al
 recuperar. La solución solo se reconstruye en el contexto privado de evaluación y revisión autorizada.
+
+El progreso público y las respuestas de borrador/validación incluyen `incorrectValidations` y
+`maxIncorrectValidations`: el contador se calcula desde `queens_validation_events` por intento e item,
+y el máximo es `3` en Pirámide y `null` en los demás modos. El tercer fallo cierra la interacción en la
+misma transacción bloqueada e idempotente y entrega una única recepción para la evaluación habitual:
+`incorrect`, cero puntos y `failureReason: attempts_exhausted`. La finalización de Pirámide conserva
+los puntos de niveles anteriores. Una petición tardía sigue la política de timeout del servidor;
+entradas incompletas, inválidas o con demasiadas coronas no crean eventos. El comando legado
+`submit_queens_placement` se rechaza en Pirámide.
 
 S05 entrega `public.get_my_alphabet_challenge` con letras y payloads públicos `short-text`, y
 `public.get_my_alphabet_result` solo tras un intento completado. El cliente conserva únicamente el

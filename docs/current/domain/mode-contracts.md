@@ -284,6 +284,12 @@ segundo log narrativo.
 - **Finalización:** hay dos resultados internos: `summit` cuando se completan correctamente los
   siete niveles y `failed` cuando se falla un nivel que termina el modo. Ambos producen
   `completed`; `failed` nunca se proyecta como `notCompleted`.
+- **Queens competitivo:** cada prueba permite tres validaciones completas incorrectas. Al completar
+  `N` coronas, incluidas las pistas fijas, el tablero se valida automáticamente y se bloquea hasta
+  confirmar. Los dos primeros fallos permiten seguir editando; el tercero cierra Queens como
+  `incorrect`, con cero puntos y motivo `attempts_exhausted`, y termina el ascenso como `failed`
+  conservando los puntos anteriores. Acertar en la tercera oportunidad supera el nivel. El límite
+  es fijo; los borradores, entradas inválidas y reintentos idempotentes no consumen oportunidades.
 - **Estado global:** `inProgress` mientras el jugador está en briefing o resolviendo un nivel;
   `completed` después de cima o fallo de nivel; `abandoned` por abandono explícito o por pérdida
   del permiso competitivo.

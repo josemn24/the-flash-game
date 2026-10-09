@@ -93,6 +93,7 @@ export type EvaluationContext = EvaluationReceipt & {
   readonly modeConfig: JsonValue;
   readonly submittedCodes?: readonly string[];
   readonly incorrectAttempts?: number;
+  readonly incorrectValidations?: number;
   readonly matchingIncorrectAttempts?: number;
   readonly progressiveCluesRevealed?: number;
   readonly progressiveClueAvailablePoints?: number;

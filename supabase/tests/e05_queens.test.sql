@@ -86,6 +86,14 @@ select is((select count(*) from private.queens_validation_events), 1::bigint,
   'El overflow final no crea una validación');
 select throws_ok($$select test_support.run('submit_queens_answer', '{"queens":[2,9,10,18]}')$$,
   '22023', 'queens_answer_incomplete', 'Una respuesta con menos coronas conserva incomplete');
+select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,24]}');
+select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,21]}');
+select is((select last_result->'terminal' from test_support.runtime), 'false'::jsonb,
+  'Flash mantiene abierta la prueba tras tres validaciones incorrectas');
+select is((select last_result->'maxIncorrectValidations' from test_support.runtime), 'null'::jsonb,
+  'Flash no tiene el límite de Pirámide');
+select is((select last_result->'incorrectValidations' from test_support.runtime), '3'::jsonb,
+  'Flash mantiene el contador para la penalización');
 select lives_ok($$select test_support.run('submit_queens_answer', '{"queens":[2,9,10,18,21]}')$$, 'La solución completa se acepta');
 select is((select (last_result->>'terminal')::boolean from test_support.runtime), true, 'Completar Queens es terminal');
 select is((select count(*) from private.answer_receipts), 1::bigint, 'La resolución crea una recepción final');
@@ -93,9 +101,9 @@ select is((select count(*) from private.answer_receipts), 1::bigint, 'La resoluc
 select test_support.as_actor('owner');
 set local role service_role;
 select is((select private.read_evaluation_context((select (last_result->>'receiptId')::uuid from test_support.runtime), repeat('q', 40))->'answer' from test_support.runtime), '{"queens":[2,9,10,18,21],"marks":[]}'::jsonb, 'La evaluación reconstruye el tablero y descarta marcas');
-select is((select (private.read_evaluation_context((select (last_result->>'receiptId')::uuid from test_support.runtime), repeat('q', 40))->>'incorrectAttempts')::integer from test_support.runtime), 1, 'La evaluación cuenta penalizaciones desde eventos');
+select is((select (private.read_evaluation_context((select (last_result->>'receiptId')::uuid from test_support.runtime), repeat('q', 40))->>'incorrectAttempts')::integer from test_support.runtime), 3, 'La evaluación cuenta penalizaciones desde eventos');
 reset role;
-select test_support.run('record_evaluation', '{"status":"correct","points":95}');
+select test_support.run('record_evaluation', '{"status":"correct","points":85}');
 select is((select count(*) from private.attempt_answers), 1::bigint, 'El resultado evaluado queda persistido');
 
 select * from finish();
