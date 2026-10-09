@@ -1,4 +1,6 @@
 "use client";
+
+import { randomUuid } from "@/lib/randomUuid";
 import {
   abortQuestionAsset,
   confirmQuestionAsset,
@@ -61,7 +63,7 @@ export function QuestionAssetUploader({
   async function upload(file: File) {
     setMessage(null);
     setPending(true);
-    const idempotencyKey = crypto.randomUUID();
+    const idempotencyKey = randomUuid();
     try {
       const alt = effectiveAlt.trim();
       if (!alt || alt.length > 500) {

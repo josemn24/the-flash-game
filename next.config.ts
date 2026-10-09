@@ -1,11 +1,18 @@
 import type { NextConfig } from "next";
+import { getAllowedDevOrigins } from "./lib/config/allowedDevOrigins";
+import { getLocalStorageRewrite } from "./lib/media/localStorageProxy";
+import { QUESTION_ASSET_MAX_BYTES } from "./lib/media/uploadLimits";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseImageOrigin = supabaseUrl ? new URL(supabaseUrl) : null;
+const storageRewrite = getLocalStorageRewrite(supabaseUrl, process.env.NODE_ENV);
 
 const nextConfig: NextConfig = {
   distDir: process.env.FLASH_NEXT_DIST_DIR || ".next",
-  allowedDevOrigins: ["127.0.0.1"],
+  allowedDevOrigins: getAllowedDevOrigins(
+    process.env.NODE_ENV === "development" ? process.env.FLASH_DEV_ALLOWED_ORIGINS : undefined,
+  ),
+  ...(storageRewrite ? { experimental: { proxyClientMaxBodySize: QUESTION_ASSET_MAX_BYTES } } : {}),
   images: {
     remotePatterns: supabaseImageOrigin
       ? [
@@ -17,6 +24,9 @@ const nextConfig: NextConfig = {
           },
         ]
       : [],
+  },
+  async rewrites() {
+    return storageRewrite ? [storageRewrite] : [];
   },
   async redirects() {
     return [

@@ -95,6 +95,37 @@ describe("superadmin question asset use case", () => {
     );
   });
 
+  it("accepts exactly 50 MiB", async () => {
+    const { assets, commands, storage } = createAssets();
+
+    await expect(
+      assets.prepare({
+        mimeType: "image/png",
+        byteSize: 50 * 1024 * 1024,
+        idempotencyKey: "asset-1",
+      }),
+    ).resolves.toMatchObject({ ok: true, assetId: "asset-1" });
+    expect(commands.prepare).toHaveBeenCalledWith(
+      "auth-1",
+      expect.objectContaining({ byteSize: 50 * 1024 * 1024 }),
+    );
+    expect(storage.prepareUpload).toHaveBeenCalledOnce();
+  });
+
+  it("rejects 50 MiB plus one byte before preparing SQL or Storage", async () => {
+    const { assets, commands, storage } = createAssets();
+
+    await expect(
+      assets.prepare({
+        mimeType: "image/png",
+        byteSize: 50 * 1024 * 1024 + 1,
+        idempotencyKey: "asset-1",
+      }),
+    ).resolves.toMatchObject({ ok: false, code: "invalid_file" });
+    expect(commands.prepare).not.toHaveBeenCalled();
+    expect(storage.prepareUpload).not.toHaveBeenCalled();
+  });
+
   it("maps missing authentication to the existing operation error", async () => {
     const { assets } = createAssets(null);
 

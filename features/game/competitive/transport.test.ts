@@ -11,6 +11,16 @@ afterEach(() => {
 });
 
 describe("competitive transport", () => {
+  it("generates distinct UUID command keys when randomUUID is unavailable on HTTP", () => {
+    const getRandomValues = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
+    vi.stubGlobal("crypto", { getRandomValues });
+    const first = createCompetitiveIdempotencyKey("answer");
+    const second = createCompetitiveIdempotencyKey("answer");
+    expect(first).toMatch(
+      /^answer:[\da-f]{8}-[\da-f]{4}-4[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/,
+    );
+    expect(second).not.toBe(first);
+  });
   it("parses successful JSON through the caller-provided parser", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ lockVersion: 4 }), {

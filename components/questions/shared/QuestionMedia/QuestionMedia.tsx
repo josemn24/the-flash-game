@@ -1,3 +1,5 @@
+import { shouldBypassImageOptimization } from "@/lib/media/imageOptimization";
+
 import Image from "next/image";
 import styles from "./QuestionMedia.module.css";
 import type {
@@ -68,9 +70,6 @@ export function QuestionMedia({
   const stageClassName = `${styles.visualStage} ${compact ? styles.visualStageCompact : ""} ${prominent ? styles.visualStageProminent : ""}`;
 
   if (media.type === "image") {
-    const isSvg = media.src.endsWith(".svg");
-    const isRemote = /^https?:\/\//.test(media.src);
-
     return (
       <div className={stageClassName}>
         <Image
@@ -78,7 +77,7 @@ export function QuestionMedia({
           alt={media.alt}
           fill
           sizes="(max-width: 768px) calc(100vw - 2rem), 48rem"
-          unoptimized={isSvg || isRemote}
+          unoptimized={shouldBypassImageOptimization(media.src)}
           className={media.fit === "contain" ? "object-contain" : "object-cover"}
           style={{ objectPosition: media.position }}
         />

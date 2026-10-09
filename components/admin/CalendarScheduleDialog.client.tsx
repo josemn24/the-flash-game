@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import { FormField, Select, Input, Textarea, Button, CrossIcon } from "@/components/ui";
 
 import { useActionState, useEffect, useId, useRef, useState, type FormEvent } from "react";
@@ -49,7 +51,7 @@ type CalendarScheduleDialogProps = CreateProps | UpdateProps;
 
 function prepareKey(event: FormEvent<HTMLFormElement>, ref: { current: string | null }) {
   if (!ref.current) {
-    ref.current = globalThis.crypto.randomUUID();
+    ref.current = randomUuid();
   }
 
   const input = event.currentTarget.elements.namedItem("idempotencyKey");

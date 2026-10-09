@@ -1,3 +1,5 @@
+import { randomUuid } from "@/lib/randomUuid";
+
 export type CompetitiveJsonObject = Record<string, unknown>;
 
 export type CompetitiveResponseParser<T> = (value: unknown) => T;
@@ -15,7 +17,7 @@ export class CompetitiveCommandError extends Error {
 }
 
 export function createCompetitiveIdempotencyKey(prefix: string): string {
-  return `${prefix}:${crypto.randomUUID()}`;
+  return `${prefix}:${randomUuid()}`;
 }
 
 export function parseCompetitiveTimestamp(value: unknown): number {

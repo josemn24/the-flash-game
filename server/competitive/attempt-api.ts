@@ -190,6 +190,21 @@ export function assertSameOrigin(request: Request) {
   try {
     actualUrl = new URL(origin);
     expectedUrl = new URL(request.url);
+    // Next uses the server's bind address (e.g. 0.0.0.0) for request.url.
+    // Host carries the actual destination used by the browser on the LAN.
+    const host = request.headers.get("host");
+    if (host) {
+      expectedUrl = new URL(`${expectedUrl.protocol}//${host}`);
+      if (
+        expectedUrl.username ||
+        expectedUrl.password ||
+        expectedUrl.pathname !== "/" ||
+        expectedUrl.search ||
+        expectedUrl.hash
+      ) {
+        throw new Error("Invalid request host.");
+      }
+    }
   } catch {
     throw new AttemptApiError("invalid_origin", 403);
   }

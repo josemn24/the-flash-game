@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import { useActionState, useId, useRef, useState } from "react";
 
 import { Button, Card, Chip, FormField, Textarea } from "@/components/ui";
@@ -35,7 +37,7 @@ const emptyQuestion = {
 } as const;
 
 function key() {
-  return globalThis.crypto.randomUUID();
+  return randomUuid();
 }
 function ErrorMessage({ state }: { readonly state: QuestionActionState }) {
   return state.message ? (

@@ -7,6 +7,7 @@ import type {
   MediaUploadPreparation,
 } from "@/application/ports/media-storage";
 import { inspectAvatarBytes, inspectQuestionAssetBytes } from "@/lib/media/avatarValidation";
+import { resolveStorageBrowserUrl } from "./browserStorageUrl";
 
 const AVATAR_BUCKET = "avatars" as const;
 
@@ -29,7 +30,7 @@ export const supabaseMediaStorage: MediaStorage = {
     return {
       assetId: input.assetId,
       objectPath: input.objectPath,
-      signedUploadUrl: data.signedUrl,
+      signedUploadUrl: resolveStorageBrowserUrl(data.signedUrl),
       uploadToken: data.token,
       expiresAt: new Date(Date.now() + 600_000).toISOString(),
     };
@@ -58,7 +59,7 @@ export const supabaseMediaStorage: MediaStorage = {
       .createSignedUrl(input.objectPath, input.expiresInSeconds);
     if (error || !data?.signedUrl) throw new Error("storage_unavailable");
     return {
-      signedUrl: data.signedUrl,
+      signedUrl: resolveStorageBrowserUrl(data.signedUrl),
       expiresAt: new Date(Date.now() + input.expiresInSeconds * 1000).toISOString(),
     };
   },
@@ -67,6 +68,8 @@ export const supabaseMediaStorage: MediaStorage = {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     if (!url) throw new Error("storage_unavailable");
     const encodedPath = objectPath.split("/").map(encodeURIComponent).join("/");
-    return `${url.replace(/\/$/, "")}/storage/v1/object/public/${AVATAR_BUCKET}/${encodedPath}`;
+    return resolveStorageBrowserUrl(
+      `${url.replace(/\/$/, "")}/storage/v1/object/public/${AVATAR_BUCKET}/${encodedPath}`,
+    );
   },
 };

@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import { useId, useActionState, useRef, useState, useTransition, type FormEvent } from "react";
 
 import { Button, FormField, Input, Select, Textarea } from "@/components/ui";
@@ -44,7 +46,7 @@ export function AddSuperadminRoomMember({ roomId }: { readonly roomId: string })
   }
 
   function prepareSubmission(event: FormEvent<HTMLFormElement>) {
-    idempotencyKeyRef.current ??= globalThis.crypto.randomUUID();
+    idempotencyKeyRef.current ??= randomUuid();
     const keyField = event.currentTarget.elements.namedItem("idempotencyKey");
     if (keyField instanceof HTMLInputElement) keyField.value = idempotencyKeyRef.current;
   }

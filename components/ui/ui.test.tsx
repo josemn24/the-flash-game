@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { BellIcon, BoltIcon, CheckIcon, QueensCrownIcon } from "@/components/ui";
 import {
+  Avatar,
   AvatarStack,
   BackButton,
   BackLink,
@@ -108,6 +109,23 @@ describe("canonical UI primitives", () => {
     expect(markup).toContain("LÚ");
     expect(markup).toContain("+2");
     expect(markup).toContain("4 ya jugaron");
+  });
+
+  it.each([
+    "/__local-supabase/storage/v1/object/public/avatars/player.png",
+    "data:image/png;base64,test",
+    "blob:http://localhost:3000/image-id",
+  ])("serves avatar sources directly: %s", (src) => {
+    const markup = renderToStaticMarkup(<Avatar name="Ana Moreno" src={src} />);
+
+    expect(markup).toContain(`src="${src}"`);
+    expect(markup).not.toContain("/_next/image");
+  });
+
+  it("keeps local raster avatars optimized", () => {
+    const markup = renderToStaticMarkup(<Avatar name="Ana Moreno" src="/avatars/player.png" />);
+
+    expect(markup).toContain("/_next/image");
   });
 
   it("keeps card semantics and deterministic timer states", () => {

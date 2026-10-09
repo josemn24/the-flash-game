@@ -26,6 +26,7 @@
     "dictionary:check": "node scripts/generate-mini-wordle-dictionary.mjs --length=4 --check && node scripts/generate-mini-wordle-dictionary.mjs --length=5 --check",
     "supabase:dictionary:load": "node scripts/load-mini-wordle-dictionary.mjs",
     "test": "vitest run",
+    "test:local-storage-proxy": "node scripts/test-local-storage-proxy.mjs",
     "test:pwa:worker": "node --test scripts/pwa-service-worker.test.mjs",
     "test:e2e": "node scripts/run-e2e.mjs",
     "test:e2e:raw": "playwright test",

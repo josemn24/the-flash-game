@@ -22,6 +22,8 @@ contenido Flash/Supervivencia y programa su calendario local.
 - [`design-tokens.md`](design-tokens.md): roles de color, estados, contrastes y equivalencias de migración.
 - [`design-system.md`](design-system.md): catálogo de desarrollo, componentes reales, demos y mantenimiento.
 - [`qa.md`](qa.md): estado vigente de las comprobaciones automatizadas y sus limitaciones.
+- [`local-device-testing.md`](local-device-testing.md): pruebas desde un móvil u otro equipo de la
+  red local, configuración de Supabase y resolución de problemas.
 - [`competitive-read-performance.md`](competitive-read-performance.md): contratos de lectura,
   diagnóstico opcional y comparación local del camino competitivo.
 - [`competitive-format-contracts.md`](competitive-format-contracts.md): representaciones,

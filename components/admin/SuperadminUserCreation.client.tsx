@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import { useId, useActionState, useRef, type FormEvent } from "react";
 
 import { Button, FormField, Input, Textarea } from "@/components/ui";
@@ -15,7 +17,7 @@ export function SuperadminUserCreation() {
   const keyRef = useRef<string | null>(null);
 
   function prepareSubmission(event: FormEvent<HTMLFormElement>) {
-    keyRef.current ??= globalThis.crypto.randomUUID();
+    keyRef.current ??= randomUuid();
     const keyField = event.currentTarget.elements.namedItem("idempotencyKey");
     if (keyField instanceof HTMLInputElement) keyField.value = keyRef.current;
   }

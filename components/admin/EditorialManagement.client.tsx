@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import {
   useActionState,
   useEffect,
@@ -56,7 +58,7 @@ import { emptyEditorialDocument } from "@/lib/editorial/emptyDocument";
 const initialState: EditorialActionState = {};
 
 function newKey() {
-  return globalThis.crypto.randomUUID();
+  return randomUuid();
 }
 
 function prepareKey(event: FormEvent<HTMLFormElement>, keyRef: { current: string | null }) {

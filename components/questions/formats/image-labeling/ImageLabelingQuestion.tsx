@@ -1,5 +1,7 @@
 "use client";
 
+import { shouldBypassImageOptimization } from "@/lib/media/imageOptimization";
+
 import Image from "next/image";
 import { motion } from "motion/react";
 import type { FormEvent } from "react";
@@ -44,7 +46,7 @@ export function AssignAllImageLabelingReviewSurface({
           alt=""
           fill
           sizes="(max-width: 768px) calc(100vw - 3rem), 30rem"
-          unoptimized={question.surface.src.endsWith(".svg")}
+          unoptimized={shouldBypassImageOptimization(question.surface.src)}
           draggable={false}
         />
         <div className={styles.anchors} aria-hidden="true">
@@ -104,7 +106,7 @@ export function IdentifyOneImageLabelingReviewSurface({
           alt=""
           fill
           sizes="(max-width: 768px) calc(100vw - 3rem), 30rem"
-          unoptimized={question.surface.src.endsWith(".svg")}
+          unoptimized={shouldBypassImageOptimization(question.surface.src)}
           draggable={false}
         />
         <div className={styles.anchors} aria-hidden="true">
@@ -137,7 +139,7 @@ function IdentifyOneSurface({ question }: { question: IdentifyOneImageLabelingQu
         alt=""
         fill
         sizes="(max-width: 768px) calc(100vw - 3rem), 30rem"
-        unoptimized={question.surface.src.endsWith(".svg")}
+        unoptimized={shouldBypassImageOptimization(question.surface.src)}
         draggable={false}
       />
       <div className={styles.anchors} aria-hidden="true">
@@ -213,7 +215,7 @@ function AssignAllImageLabelingQuestion({
           alt={question.surface.alt}
           fill
           sizes="(max-width: 768px) calc(100vw - 3rem), 30rem"
-          unoptimized={question.surface.src.endsWith(".svg")}
+          unoptimized={shouldBypassImageOptimization(question.surface.src)}
           draggable={false}
         />
         <div className={styles.anchors} aria-label="Zonas para etiquetar">

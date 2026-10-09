@@ -1,5 +1,7 @@
 "use client";
 
+import { shouldBypassImageOptimization } from "@/lib/media/imageOptimization";
+
 import Image from "next/image";
 import { motion } from "motion/react";
 import { KeyboardEvent, MouseEvent, useState } from "react";
@@ -72,7 +74,7 @@ export function HeatMapSurface({
         alt=""
         fill
         sizes="(max-width: 768px) calc(100vw - 3rem), 32rem"
-        unoptimized={surface.src.endsWith(".svg") || /^https?:\/\//.test(surface.src)}
+        unoptimized={shouldBypassImageOptimization(surface.src)}
         draggable={false}
       />
       <svg

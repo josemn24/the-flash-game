@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import { FormField, Textarea, Button, CrossIcon } from "@/components/ui";
 
 import { useActionState, useEffect, useId, useRef, useState, type FormEvent } from "react";
@@ -14,7 +16,7 @@ const initialState: CalendarActionState = {};
 type Entry = SuperadminCalendarContext["entries"][number];
 
 function prepareKey(event: FormEvent<HTMLFormElement>, ref: { current: string | null }) {
-  if (!ref.current) ref.current = globalThis.crypto.randomUUID();
+  if (!ref.current) ref.current = randomUuid();
   const input = event.currentTarget.elements.namedItem("idempotencyKey");
   if (input instanceof HTMLInputElement) input.value = ref.current;
 }

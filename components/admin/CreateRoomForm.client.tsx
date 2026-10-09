@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import {
   useId,
   useActionState,
@@ -103,7 +105,7 @@ function CreateRoomDialogForm({ onCancel }: { readonly onCancel: () => void }) {
 
   function setIdempotencyKey(event: FormEvent<HTMLFormElement>) {
     if (!idempotencyKeyRef.current) {
-      idempotencyKeyRef.current = globalThis.crypto.randomUUID();
+      idempotencyKeyRef.current = randomUuid();
     }
     const field = event.currentTarget.elements.namedItem("idempotencyKey");
     if (field instanceof HTMLInputElement) {

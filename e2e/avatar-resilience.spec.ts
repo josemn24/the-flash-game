@@ -37,6 +37,19 @@ async function storedAvatar(assetId: string) {
   };
 }
 
+async function expectPersistedAvatar(page: Page, image: Buffer) {
+  const avatar = page.getByRole("button", { name: "Perfil", exact: true }).locator("img");
+  await expect(avatar).toBeVisible();
+  await expect
+    .poll(() => avatar.evaluate((element: HTMLImageElement) => element.naturalWidth))
+    .toBe(32);
+  const src = await avatar.getAttribute("src");
+  if (!src) throw new Error("El avatar persistido no tiene src.");
+  const response = await page.request.get(new URL(src, page.url()).href);
+  expect(response.ok()).toBe(true);
+  expect(await response.body()).toEqual(image);
+}
+
 test("recupera la confirmación perdida después del commit sin otra subida, incluso al cerrar el diálogo", async ({
   page,
 }) => {
@@ -44,12 +57,10 @@ test("recupera la confirmación perdida después del commit sin otra subida, inc
   await signIn(page);
   const { dialog, image } = await selectAvatar(page, "#da3559");
   const commands: { assetId: string; idempotencyKey: string }[] = [];
-  let uploadCount = 0,
-    storageOrigin = "";
+  let uploadCount = 0;
   page.on("request", (request) => {
     if (request.method() === "PUT" && request.url().includes("/object/upload/sign/")) {
       uploadCount++;
-      storageOrigin = new URL(request.url()).origin;
     }
   });
   await page.route("**/*", async (route) => {
@@ -94,28 +105,15 @@ test("recupera la confirmación perdida después del commit sin otra subida, inc
   expect(uploadCount).toBe(1);
   const stored = await storedAvatar(commands[0].assetId);
   expect(stored).toMatchObject({ status: "ready", referenced: true, confirmations: 1 });
-  const object = await page.request.get(
-    `${storageOrigin}/storage/v1/object/public/avatars/${stored.path}`,
-  );
-  expect(object.ok()).toBe(true);
-  expect(await object.body()).toEqual(image);
   await page.reload();
-  const avatar = page.getByRole("button", { name: "Perfil", exact: true }).locator("img");
-  await expect(avatar).toBeVisible();
-  await expect
-    .poll(() => avatar.evaluate((element: HTMLImageElement) => element.naturalWidth))
-    .toBe(32);
+  await expectPersistedAvatar(page, image);
 });
 
 test("una recarga tras perder la confirmación muestra el avatar persistido", async ({ page }) => {
   test.setTimeout(60_000);
   await signIn(page);
   const { dialog, image } = await selectAvatar(page, "#2c87a0");
-  let assetId = "",
-    origin = "";
-  page.on("request", (request) => {
-    if (request.method() === "PUT") origin = new URL(request.url()).origin;
-  });
+  let assetId = "";
   await page.route("**/*", async (route) => {
     const request = route.request(),
       body = request.postData() ?? "";
@@ -137,14 +135,5 @@ test("una recarga tras perder la confirmación muestra el avatar persistido", as
   await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
   const stored = await storedAvatar(assetId);
   expect(stored).toMatchObject({ status: "ready", referenced: true, confirmations: 1 });
-  const response = await page.request.get(
-    `${origin}/storage/v1/object/public/avatars/${stored.path}`,
-  );
-  expect(response.ok()).toBe(true);
-  expect(await response.body()).toEqual(image);
-  const avatar = page.getByRole("button", { name: "Perfil", exact: true }).locator("img");
-  await expect(avatar).toBeVisible();
-  await expect
-    .poll(() => avatar.evaluate((element: HTMLImageElement) => element.naturalWidth))
-    .toBe(32);
+  await expectPersistedAvatar(page, image);
 });

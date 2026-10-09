@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   abortProfileAvatar,
@@ -64,7 +66,7 @@ export function useProfileSave(
           const prepared = await prepareProfileAvatar({
             mimeType: file.type,
             byteSize: file.size,
-            idempotencyKey: crypto.randomUUID(),
+            idempotencyKey: randomUuid(),
           });
           if (!current()) return unavailable;
           if (!prepared.ok) return prepared;

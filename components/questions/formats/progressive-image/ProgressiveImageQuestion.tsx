@@ -1,5 +1,7 @@
 "use client";
 
+import { shouldBypassImageOptimization } from "@/lib/media/imageOptimization";
+
 import Image from "next/image";
 import { CSSProperties, FormEvent, useEffect, useRef, useState } from "react";
 import { ArrowIcon } from "@/components/ui";
@@ -124,7 +126,6 @@ export function ProgressiveImageQuestion({
   const scale = 1 + (1 - progress) * (PROGRESSIVE_IMAGE_INITIAL_SCALE - 1);
   const progressPercentage = Math.round(progress * 100);
   const unavailable = locked || imageState !== "ready";
-  const isRemote = /^https?:\/\//.test(surface.src);
 
   return (
     <section className={`${styles.root}`} aria-label="Imagen progresivamente revelada">
@@ -157,7 +158,7 @@ export function ProgressiveImageQuestion({
           src={surface.src}
           alt={surface.alt}
           fill
-          unoptimized={isRemote}
+          unoptimized={shouldBypassImageOptimization(surface.src)}
           preload
           sizes="(max-width: 768px) calc(100vw - 2rem), 48rem"
           className={surface.fit === "contain" ? styles.imageContain : styles.imageCover}

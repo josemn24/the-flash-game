@@ -78,6 +78,79 @@ describe("competitive HTTP contract", () => {
     ).not.toThrow();
   });
 
+  it.each(["192.168.1.14:3000", "localhost:3000", "127.0.0.1:3000"])(
+    "accepts the browser destination %s when Next uses its bind address internally",
+    (host) => {
+      process.env.FLASH_RUNTIME_SCOPE = "development";
+      expect(() =>
+        assertSameOrigin(
+          new Request("http://0.0.0.0:3000/api/competitive/attempts/session", {
+            method: "POST",
+            headers: { host, origin: `http://${host}` },
+          }),
+        ),
+      ).not.toThrow();
+    },
+  );
+
+  it.each([
+    "http://evil.example",
+    "http://192.168.1.15:3000",
+    "http://192.168.1.14:3001",
+    "https://192.168.1.14:3000",
+  ])("rejects a different browser origin %s even with an internal bind address", (origin) => {
+    process.env.FLASH_RUNTIME_SCOPE = "development";
+    expect(() =>
+      assertSameOrigin(
+        new Request("http://0.0.0.0:3000/api/competitive/attempts/session", {
+          method: "POST",
+          headers: { host: "192.168.1.14:3000", origin },
+        }),
+      ),
+    ).toThrow("invalid_origin");
+  });
+
+  it("keeps localhost aliases working without a Host header", () => {
+    process.env.FLASH_RUNTIME_SCOPE = "development";
+    expect(() =>
+      assertSameOrigin(
+        new Request("http://127.0.0.1:3000/api/competitive/attempts/session", {
+          headers: { origin: "http://localhost:3000" },
+        }),
+      ),
+    ).not.toThrow();
+  });
+
+  it.each(["user@192.168.1.14:3000", "192.168.1.14:3000/path", "192.168.1.14:3000?query"])(
+    "rejects malformed Host authorities: %s",
+    (host) => {
+      process.env.FLASH_RUNTIME_SCOPE = "development";
+      expect(() =>
+        assertSameOrigin(
+          new Request("http://0.0.0.0:3000/api/competitive/attempts/session", {
+            headers: { host, origin: "http://192.168.1.14:3000" },
+          }),
+        ),
+      ).toThrow("invalid_origin");
+    },
+  );
+
+  it("does not let Host or forwarded headers override the canonical origin in pilot", () => {
+    process.env.FLASH_RUNTIME_SCOPE = "pilot";
+    process.env.APP_ORIGIN = "https://app.example";
+    expect(() =>
+      assertSameOrigin(
+        new Request("https://app.example/api/competitive/attempts/session", {
+          headers: {
+            host: "evil.example",
+            "x-forwarded-host": "evil.example",
+            origin: "https://evil.example",
+          },
+        }),
+      ),
+    ).toThrow("invalid_origin");
+  });
+
   it("maps Auth outages to 503 instead of an authentication failure", async () => {
     const response = errorResponse(
       new AuthServiceUnavailableError("timeout"),

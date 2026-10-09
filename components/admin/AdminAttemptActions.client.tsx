@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import {
   useId,
   useActionState,
@@ -21,7 +23,7 @@ import styles from "./AdminAttemptInspection.module.css";
 const initialState: AttemptActionState = {};
 
 function prepareKey(event: FormEvent<HTMLFormElement>, keyRef: MutableRefObject<string | null>) {
-  if (!keyRef.current) keyRef.current = globalThis.crypto.randomUUID();
+  if (!keyRef.current) keyRef.current = randomUuid();
   const field = event.currentTarget.elements.namedItem("idempotencyKey");
   if (field instanceof HTMLInputElement) field.value = keyRef.current;
 }

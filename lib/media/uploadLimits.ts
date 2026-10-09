@@ -1,0 +1,2 @@
+export const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+export const QUESTION_ASSET_MAX_BYTES = 50 * 1024 * 1024;

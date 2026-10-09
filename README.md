@@ -71,6 +71,9 @@ Abre [http://localhost:3000](http://localhost:3000) en el navegador. Para la exp
 necesita configuración adicional. Para probar las slices persistidas actuales, copia `.env.example` a
 `.env.local`, inicia Supabase local y sigue el workflow de [`supabase/README.md`](supabase/README.md).
 
+Para probar desde un móvil u otro equipo de la red local, consulta la
+[guía de pruebas desde dispositivos externos](docs/current/local-device-testing.md).
+
 ## Comandos disponibles
 
 | Comando                              | Descripción                                                                                              |

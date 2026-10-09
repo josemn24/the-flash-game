@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import {
   useId,
   useActionState,
@@ -24,7 +26,7 @@ import styles from "./SeasonManagement.module.css";
 
 const initialState: SeasonActionState = {};
 function newKey() {
-  return globalThis.crypto.randomUUID();
+  return randomUuid();
 }
 function prepareKey(event: FormEvent<HTMLFormElement>, keyRef: MutableRefObject<string | null>) {
   if (!keyRef.current) keyRef.current = newKey();

@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
+import { AVATAR_MAX_BYTES, QUESTION_ASSET_MAX_BYTES } from "./uploadLimits";
+
+export { AVATAR_MAX_BYTES, QUESTION_ASSET_MAX_BYTES } from "./uploadLimits";
 
 export const AVATAR_ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
-export const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
 export const AVATAR_MAX_DIMENSION = 2048;
-export const QUESTION_ASSET_MAX_BYTES = 50 * 1024 * 1024;
 export const QUESTION_ASSET_MAX_DIMENSION = 8192;
 
 export type AvatarMimeType = (typeof AVATAR_ALLOWED_MIME_TYPES)[number];
