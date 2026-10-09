@@ -64,6 +64,14 @@ const localEnv = {
 };
 
 export default defineConfig({
+  projects: [
+    { name: "chromium" },
+    {
+      name: "webkit-profile",
+      testMatch: "**/profile-dialog-layout.spec.ts",
+      use: { ...devices["Desktop Safari"] },
+    },
+  ],
   testDir: "./e2e",
   timeout: 30_000,
   fullyParallel: false,

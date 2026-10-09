@@ -95,7 +95,7 @@ test("recupera la confirmación perdida después del commit sin otra subida, inc
   await dialog.getByRole("button", { name: "Guardar cambios" }).click();
   await expect(dialog.getByRole("button", { name: "Reintentar confirmación" })).toBeEnabled();
   await expect(dialog.getByLabel("Imagen de perfil")).toBeDisabled();
-  await dialog.getByRole("button", { name: "Cancelar" }).click();
+  await dialog.getByRole("button", { name: "Cerrar perfil" }).click();
   await expect(dialog).not.toBeVisible();
   await page.getByRole("button", { name: "Perfil", exact: true }).click();
   await dialog.getByRole("button", { name: "Reintentar confirmación" }).click();
