@@ -136,6 +136,12 @@ select is((select count(*) from private.attempt_sessions session
     and attempt.scheduled_challenge_id = test_support.id('sc-flash')
     and session.revoked_at is not null), 1::bigint,
   'Permission closure revokes the affected controller session');
+select is((select session.revocation_reason from private.attempt_sessions session
+  join public.attempts attempt on attempt.id = session.attempt_id
+  where attempt.player_id = test_support.id('member2')
+    and attempt.scheduled_challenge_id = test_support.id('sc-flash')
+    and session.revoked_at is not null), 'permission_revoked',
+  'Membership removal labels the session as permission revocation');
 select is((select count(*) from private.flash_point_entries entry
   join public.attempts attempt on attempt.id = entry.attempt_id
   where attempt.player_id = test_support.id('member2')

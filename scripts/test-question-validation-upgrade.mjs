@@ -3,20 +3,23 @@ import { readFile } from "node:fs/promises";
 
 export const questionValidationMigration = "20261009180205_question_validation_by_format.sql";
 
-const functionsQuery = `select coalesce(jsonb_object_agg(n.nspname || '.' || p.proname || '(' ||
+export const functionsQuery = `select coalesce(jsonb_object_agg(n.nspname || '.' || p.proname || '(' ||
   pg_get_function_identity_arguments(p.oid) || ')', jsonb_build_object(
     'oid', p.oid, 'definition', pg_get_functiondef(p.oid),
     'owner', pg_get_userbyid(p.proowner), 'acl', p.proacl,
     'arguments', pg_get_function_identity_arguments(p.oid),
     'result', pg_get_function_result(p.oid), 'volatility', p.provolatile,
-    'securityDefiner', p.prosecdef, 'config', p.proconfig)), '{}')
+    'securityDefiner', p.prosecdef, 'config', p.proconfig,
+    'language', (select lanname from pg_language where oid = p.prolang),
+    'strict', p.proisstrict, 'leakproof', p.proleakproof, 'parallel', p.proparallel,
+    'cost', p.procost, 'rows', p.prorows)), '{}')
 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
 where n.nspname in ('public', 'private') and not exists (
   select 1 from pg_depend d where d.classid = 'pg_proc'::regclass and d.objid = p.oid and d.deptype = 'e');`;
 
 // Snapshot every domain table, including empty ones, without relying on primary keys.
 const rowsQuery = `select pg_temp.domain_rows();`;
-const snapshotFunction = `create function pg_temp.domain_rows() returns jsonb language plpgsql as $$
+export const snapshotFunction = `create function pg_temp.domain_rows() returns jsonb language plpgsql as $$
 declare relation record; rows jsonb; snapshot jsonb := '{}';
 begin
   for relation in select n.nspname, c.relname from pg_class c

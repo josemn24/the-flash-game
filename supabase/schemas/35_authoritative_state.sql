@@ -154,7 +154,9 @@ begin
   if not found then return false; end if;
 
   update private.attempt_sessions
-  set revoked_at = closed_at, revocation_reason = 'permission_revoked'
+  set revoked_at = closed_at,
+      revocation_reason = case when terminal_reason_value = 'permission_revoked'
+        then 'permission_revoked' else 'terminal' end
   where attempt_id = attempt_row.id and revoked_at is null;
 
   insert into private.audit_log(

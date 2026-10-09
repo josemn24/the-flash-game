@@ -121,11 +121,7 @@ begin
     where id = target_membership.id
     returning * into target_membership;
     closed_attempts := private.close_attempts_for_permission_loss(
-      target_player_id,
-      room_row.id,
-      closed_at,
-      actor,
-      key
+      target_player_id, room_row.id, closed_at, actor, key
     );
   end if;
 

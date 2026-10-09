@@ -15,7 +15,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261009180205_question_validation_by_format",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261009190015_competitive_command_reconciliation",
 };
 
 async function run(label, command, args, options = {}) {
@@ -60,6 +60,7 @@ try {
   await run("supabase-start", "npx", ["supabase", "start"]);
   await run("schema-revision", "npm", ["run", "schema:revision:check"]);
   await run("schema-security", "npm", ["run", "supabase:schema:test"]);
+  await run("schema-reconciliation", "npm", ["run", "supabase:schema:reconciliation:test"]);
   await run("dictionary-load", "npm", ["run", "supabase:dictionary:load"]);
   await run("unit-tests", "npm", ["test"], {
     env: { ...pilotEnv, FLASH_RUNTIME_SCOPE: "test" },

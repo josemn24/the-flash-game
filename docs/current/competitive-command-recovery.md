@@ -102,11 +102,16 @@ ni un registro alternativo de respuestas/puntos.
 
 ## Despliegue
 
-1. Aplicar las migraciones [de recuperación](../../supabase/migrations/20261006110000_competitive_command_recovery.sql),
-   [de cierre por permisos](../../supabase/migrations/20261007120000_permission_revoked_attempt_closure.sql)
-   y [de transferencia](../../supabase/migrations/20261007130000_attempt_control_transfer.sql) antes del cliente;
-   verificar la revisión `20261007130000_attempt_control_transfer`.
+1. Aplicar las migraciones pendientes del historial hasta `20261009190015_competitive_command_reconciliation`,
+   incluidas las [de recuperación](../../supabase/migrations/20261006110000_competitive_command_recovery.sql),
+   [de cierre por permisos](../../supabase/migrations/20261007120000_permission_revoked_attempt_closure.sql),
+   [de transferencia](../../supabase/migrations/20261007130000_attempt_control_transfer.sql)
+   y [de reconciliación](../../supabase/migrations/20261009190015_competitive_command_reconciliation.sql) antes del cliente;
+   verificar la revisión `20261009190015_competitive_command_reconciliation`.
    Mantiene datos existentes; no recalcula puntos, añade tablas ni purga claves.
+   La [reconciliación](competitive-command-reconciliation.md) documenta errores de transferencia,
+   validación de campos nulos y permisos vigentes en replays; las transferencias ya confirmadas
+   conservan su resultado y su deadline cuando la cuenta mantiene acceso.
 2. Validar en staging los mismos cortes después del commit y antes de la evaluación, fallo de
    acreditación, concurrencia, revocación y Storage. Usar cuentas/publicaciones de prueba.
 3. Publicar el cliente después de validar. Una pestaña antigua sin cookie no consume un intento.

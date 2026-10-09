@@ -19,11 +19,16 @@ de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/READ
 
 El historial activo parte de `20260926080239_initial_schema.sql` y conserva sus
 migraciones incrementales posteriores. La revisión canónica vigente es
-`20261009180205_question_validation_by_format`, con 80 archivos declarativos. La rama de
+`20261009190015_competitive_command_reconciliation`, con 80 archivos declarativos. La rama de
 respaldo conserva el historial incremental anterior.
 
 La [validación SQL por formato](../docs/current/sql-question-validation-refactor.md) documenta
 los helpers privados, las pruebas de compatibilidad y la reversión del último refactor.
+
+La [auditoría de las 14 funciones pendientes](../docs/current/supabase-function-drift-audit.md)
+clasifica las diferencias anteriores entre esquema e historial y documenta cómo reproducirlas.
+La [reconciliación de comandos competitivos](../docs/current/competitive-command-reconciliation.md)
+resuelve esas diferencias, documenta los cambios intencionados y prueba actualización y reversión.
 
 ## Flujo para un cambio de esquema
 

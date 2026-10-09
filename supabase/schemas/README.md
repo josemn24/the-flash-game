@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 80 archivos y su revisión canónica es
-`20261009180205_question_validation_by_format`. Las migraciones incrementales corresponden a esos archivos;
+`20261009190015_competitive_command_reconciliation`. Las migraciones incrementales corresponden a esos archivos;
 la rama de respaldo conserva el historial incremental anterior. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
 pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
@@ -13,6 +13,9 @@ de `queens_validation_events` y el tercer fallo genera una única recepción ter
 contadores duplicados. El refactor de validadores añade 33 helpers privados y sustituye dos fachadas, sin cambios de datos.
 La organización, las comprobaciones y la reversión se describen en
 [validación SQL por formato](../../docs/current/sql-question-validation-refactor.md).
+La [reconciliación de comandos](../../docs/current/competitive-command-reconciliation.md) sustituye
+once cuerpos, conserva OIDs y permisos, y distingue cierres normales de pérdida de permisos.
+Su aplicación se ha verificado en bases desechables; sigue pendiente en la base de la aplicación.
 **31 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S15, S17a, S18b parcial, S05-Alphabet, F* y E* conectan

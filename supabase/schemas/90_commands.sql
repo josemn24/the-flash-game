@@ -71,7 +71,9 @@ begin
   insert into private.audit_log(actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload)
   values(actor, case when op = 'takeover' then 'takeover_confirmed' else op end,
     outcome->>'entityType', (outcome->>'entityId')::uuid, input->>'reason', key,
-    nullif(outcome->'beforePayload', 'null'::jsonb),
+    case when op = 'takeover' then
+      nullif(outcome->'beforePayload', 'null'::jsonb) || jsonb_build_object('deadlineAt', result->'deadlineAt')
+      else nullif(outcome->'beforePayload', 'null'::jsonb) end,
     -- Avoid persisting playable payloads or free-text answers into a second store.
     result - 'publicPayload' - 'answers');
   insert into private.command_requests(actor_id, idempotency_key, operation, input, result)

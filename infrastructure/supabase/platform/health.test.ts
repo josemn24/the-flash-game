@@ -68,6 +68,10 @@ describe("readPrivateHealth", () => {
     expect(markerQuery).toContain("attempts_outcome_values_check");
     expect(markerQuery).toContain("attempts_outcome_status_check");
     expect(markerQuery).toContain("invalid_attempt_lifecycle");
+    expect(markerQuery).toContain("private.take_over_attempt(jsonb)");
+    expect(markerQuery).toContain("private.execute_command(text,jsonb)");
+    expect(markerQuery).toContain("case when terminal_reason_value = ''permission_revoked''");
+    expect(markerQuery).toContain("private.raise_if_session_transferred");
   });
 
   it("rejects an old expected revision", async () => {

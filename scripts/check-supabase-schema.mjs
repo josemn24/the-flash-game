@@ -9,11 +9,17 @@ import {
   questionValidationMigration,
   testQuestionValidationUpgrade,
 } from "./test-question-validation-upgrade.mjs";
+import {
+  competitiveCommandMigration,
+  testCompetitiveCommandUpgrade,
+} from "./test-competitive-command-reconciliation.mjs";
 
 const container = process.env.SUPABASE_DB_CONTAINER ?? "supabase_db_the-flash-game";
 const upgradeValidation = process.argv.includes("--upgrade-question-validation");
+const upgradeCommands = process.argv.includes("--upgrade-competitive-commands");
+if (upgradeValidation && upgradeCommands) throw new Error("Select one upgrade scenario per run");
 const sourceDirectory =
-  process.argv.includes("--migrations") || upgradeValidation
+  process.argv.includes("--migrations") || upgradeValidation || upgradeCommands
     ? "supabase/migrations"
     : "supabase/schemas";
 const database = `flash_schema_check_${randomUUID().replaceAll("-", "")}`;
@@ -24,6 +30,8 @@ function docker(args, input = "") {
     });
     let out = "",
       err = "";
+    child.stdout.setEncoding("utf8");
+    child.stderr.setEncoding("utf8");
     child.stdout.on("data", (data) => {
       out += data;
     });
@@ -47,14 +55,18 @@ try {
   const statements = await Promise.all(
     files.map((name) => readFile(`${sourceDirectory}/${name}`, "utf8")),
   );
-  if (upgradeValidation) {
-    const index = files.indexOf(questionValidationMigration);
-    if (index < 1)
-      throw new Error("Question validation migration or its previous revision missing");
+  if (upgradeValidation || upgradeCommands) {
+    const target = upgradeValidation ? questionValidationMigration : competitiveCommandMigration;
+    const index = files.indexOf(target);
+    if (index < 1) throw new Error(`${target}: migration or its previous revision missing`);
     await sql(`begin;\n${statements.slice(0, index).join("\n")}\ncommit;`);
     console.log(`Upgrade baseline: ${files[index - 1]}.`);
-    await testQuestionValidation(sql);
-    await testQuestionValidationUpgrade(sql, statements[index]);
+    if (upgradeValidation) {
+      await testQuestionValidation(sql);
+      await testQuestionValidationUpgrade(sql, statements[index]);
+    } else {
+      await testCompetitiveCommandUpgrade(sql, statements[index]);
+    }
     process.exitCode = 0;
   } else {
     await sql(`begin;\n${statements.join("\n")}\ncommit;`);

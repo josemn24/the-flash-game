@@ -447,6 +447,11 @@ que deba llegar a la UI.
 - `revoked_at timestamptz null`.
 - `revocation_reason text null`: `takeover`, `terminal` o `permission_revoked`.
 
+Los nuevos cierres por abandono o inactividad registran `terminal`; `permission_revoked`
+se reserva para pérdida de acceso competitivo. Las sesiones históricas con motivo `null`
+se conservan. La [reconciliación de comandos](competitive-command-reconciliation.md) describe
+la migración que incorpora esa distinción y sus cambios de validación y replay.
+
 Un índice único parcial sobre `attempt_id where revoked_at is null` garantiza una sesión activa. Se
 guardan hashes, nunca tokens reutilizables. Un token distinto solo sustituye a la sesión original
 tras confirmación explícita, revocación atómica e incremento de `lock_version`.

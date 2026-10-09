@@ -127,6 +127,9 @@ eliminación/recreación de `take_over_attempt`. Esas operaciones se excluyeron 
 generada para mantener el alcance acordado. No se han corregido como parte de este refactor;
 la prueba de actualización exige que sus definiciones anteriores permanezcan intactas.
 
+La [auditoría posterior de estas 14 funciones](supabase-function-drift-audit.md) distingue
+diferencias de formato, errores bajo concurrencia y cambios de autorización y auditoría.
+
 El lint global también encuentra dos avisos anteriores de variables sin uso en
 [betavip.spec.ts](../../e2e/betavip.spec.ts) (`alphabet`) y
 [roomQueries.test.ts](../../infrastructure/supabase/rooms/queries/roomQueries.test.ts) (`_assetId`).

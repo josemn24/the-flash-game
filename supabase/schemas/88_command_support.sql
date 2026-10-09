@@ -44,7 +44,8 @@ begin
     raise exception 'attempt_permission_revoked' using errcode = '42501';
   end if;
   if not exists (
-    select 1 from public.attempts a
+    select 1
+    from public.attempts a
     join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
     join public.seasons season on season.id = sc.season_id
     join public.rooms room on room.id = season.room_id
@@ -53,7 +54,9 @@ begin
       and a.kind = 'competitive' and room.status = 'active' and sc.status <> 'cancelled'
       and m.status = 'active' and m.role in ('owner','admin','member')
       and not exists (select 1 from private.platform_role_assignments where player_id = a.player_id)
-  ) then raise exception 'not_authorized' using errcode = '42501'; end if;
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
   select s.revocation_reason into revoked_reason
   from private.attempt_sessions s
   where s.attempt_id = target_attempt and s.session_token_hash = token_hash
@@ -63,9 +66,12 @@ begin
   if revoked_reason = 'takeover' then
     raise exception 'session_transferred' using errcode = '42501';
   end if;
-  if not exists (select 1 from private.attempt_sessions s
-    where s.attempt_id = target_attempt and s.session_token_hash = token_hash and s.revoked_at is null)
-  then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not exists (
+    select 1 from private.attempt_sessions s
+    where s.attempt_id = target_attempt and s.session_token_hash = token_hash and s.revoked_at is null
+  ) then
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
 end;
 $$;
 alter function private.authorize_attempt_replay(uuid, text) owner to postgres;

@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261009180205_question_validation_by_format";
+const canonicalSchemaRevision = "20261009190015_competitive_command_reconciliation";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -62,6 +62,14 @@ async function checkDatabase() {
           like '%private.validate_multiple_choice_question_document%'
         and pg_get_functiondef(to_regprocedure('private.is_supported_flash_question(uuid)'))
           like '%private.is_supported_multiple_choice_question%'
+        and exists (select 1 from pg_proc fn join pg_language lang on lang.oid = fn.prolang
+          where fn.oid = to_regprocedure('private.take_over_attempt(jsonb)') and lang.lanname = 'sql')
+        and pg_get_functiondef(to_regprocedure('private.execute_command(text,jsonb)'))
+          like '%''attemptId'',''scheduledChallengeId'',''lockVersion'',''newSessionToken''%'
+        and pg_get_functiondef(to_regprocedure('private.close_attempt_as_abandoned(uuid,timestamptz,text,uuid,text,text)'))
+          like '%case when terminal_reason_value = ''permission_revoked''%'
+        and pg_get_functiondef(to_regprocedure('private.recover_attempt(jsonb)'))
+          like '%private.raise_if_session_transferred%'
         and to_regprocedure('private.read_attempt_context(uuid,text)') is not null
         and to_regprocedure('private.prepare_attempt_session(uuid)') is not null
         and to_regprocedure('private.read_recorded_evaluation(uuid,text)') is not null

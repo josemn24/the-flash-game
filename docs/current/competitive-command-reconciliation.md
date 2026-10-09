@@ -1,0 +1,145 @@
+# Reconciliación de comandos competitivos
+
+> Estado: implementación y migración preparadas localmente; aplicación a la base de la aplicación, staging y producción pendiente.
+
+Fecha: 2026-10-09. Revisión:
+`20261009190015_competitive_command_reconciliation`.
+
+## Comportamiento resultante
+
+Los cierres de sesiones distinguen la pérdida de permisos del fin normal de un intento:
+
+| Motivo terminal del intento | Motivo de revocación de sus sesiones activas |
+| --------------------------- | -------------------------------------------- |
+| `abandon`                   | `terminal`                                   |
+| `inactivity_timeout`        | `terminal`                                   |
+| `permission_revoked`        | `permission_revoked`                         |
+
+El cierre conserva respuestas y evaluaciones aceptadas, termina intervalos abiertos, elimina
+preparaciones pendientes, incrementa una vez la versión y no acredita puntos. Repetir el cierre
+no genera otra transición ni otro evento de auditoría. Las sesiones revocadas anteriormente
+por takeover conservan ese motivo; solo se etiquetan las sesiones todavía activas.
+
+Activación, recuperación, pistas progresivas, Logic Code, Mini Wordle, Word Hashtag y Word
+Search devuelven `session_transferred / 42501` cuando el controlador anterior pierde el control
+por transferencia, incluido si esta ocurre mientras el comando espera el lock del intento.
+Un token desconocido o revocado por cierre continúa devolviendo `session_revoked / 42501`.
+La sesión antigua sigue sin poder escribir ni retomar el control automáticamente.
+
+`take_over_attempt` delega al dispatcher común. El contrato exige `scheduledChallengeId`
+y campos obligatorios no nulos. Los cuatro casos auditados de JSON `null` en
+`scheduledChallengeId`, `attemptId`, `lockVersion` y `newSessionToken` devuelven ahora
+`invalid_command / 22023`. El resultado válido conserva las mismas claves públicas,
+el deadline y un único controlador. Dos transferencias con la misma versión producen un
+ganador y un rechazo `stale_version / 40001`.
+
+Un replay de takeover comprueba identidad y permisos competitivos vigentes antes de devolver
+el resultado almacenado. Retirar la membresía provoca `not_authorized / 42501`; el replay
+exacto de una transferencia anterior a la migración conserva íntegro su resultado cuando
+la cuenta mantiene acceso. No crea sesión, incremento de versión ni auditoría adicionales.
+
+La auditoría conserva `takeover_confirmed` y el `deadlineAt` del payload anterior de transferencia.
+El cierre automático usa `runId:inactivity_timeout:attemptId` como identificador de evento,
+mientras la respuesta de expiración conserva `runId`. Para correlacionar eventos de una misma
+ejecución, debe usarse ese prefijo completo o los identificadores individuales, en lugar de
+comparar `request_id` únicamente por igualdad con `runId`.
+
+## Migración y límites
+
+La [migración nueva](../../supabase/migrations/20261009190015_competitive_command_reconciliation.sql)
+se generó con `supabase:db:schema:sync -- --name competitive_command_reconciliation --no-apply`
+después de editar el esquema declarativo. Se revisó el resultado y se retiró el `DROP FUNCTION`
+que el generador proponía para el cambio de lenguaje de `take_over_attempt`.
+
+La migración abre una transacción, reemplaza once funciones y actualiza el dispatcher antes
+de la fachada de transferencia. Utiliza `CREATE OR REPLACE` para conservar OIDs, dependencias,
+propietarios y ACL. El único cambio de atributo es el lenguaje de la fachada, de PL/pgSQL a SQL.
+Las otras tres diferencias de la [auditoría original](supabase-function-drift-audit.md) eran de
+texto; se alineó el esquema con los cuerpos existentes para evitar reemplazos innecesarios.
+
+No se añaden ni eliminan funciones, tablas o columnas. Las 217 funciones conservan sus firmas
+y retornos; los tipos públicos generados permanecen iguales. El inventario de seguridad no
+necesita entradas nuevas y pasa por ambas vías de carga. Los cambios de mensajes, validación,
+autorización de replay y correlación de auditoría descritos arriba son intencionados.
+
+La migración no reescribe sesiones históricas cuyo motivo sea SQL `NULL`, ni corrige motivos
+incorrectos que un entorno hubiera persistido anteriormente. Esa reparación de datos requiere
+comprobar los hechos de ese entorno y un trabajo separado. La presente actualización conserva
+todos los datos existentes.
+
+La revisión canónica de configuración y los marcadores de health se actualizan conjuntamente.
+Health comprueba la fachada SQL, el nuevo contrato del dispatcher, la condición de cierre y la
+detección de transferencia; la prueba de actualización ejecuta el SQL real de health y demuestra
+que rechaza la revisión anterior y acepta la reconciliada.
+
+## Verificación reproducible
+
+Desde la raíz del repositorio, con Supabase local iniciado:
+
+```bash
+npm run supabase:schema:test
+npm run supabase:schema:test -- --migrations
+npm run supabase:schema:test -- --upgrade-competitive-commands
+npm run supabase:schema:reconciliation:test
+```
+
+Cada herramienta crea y elimina sus propias bases locales desechables. No usa la base de datos
+de la aplicación para ejecutar las fixtures ni aplica esta migración a un entorno remoto.
+
+Resultados locales verificados:
+
+- 55 suites pgTAP por ambas vías de carga, incluidas 39 comprobaciones nuevas de cierre con
+  respuestas aceptadas y una comprobación adicional de motivo de sesión tras expulsar un miembro.
+- 158 casos SQL del corpus compartido y las 904 observaciones de caracterización de validadores
+  mantienen sus expectativas. La concurrencia existente de comandos pasa por ambas vías.
+- Las 217 definiciones efectivas coinciden entre esquema y migraciones: cero diferencias.
+- Los 41 contratos de la auditoría original tienen ahora expectativas obligatorias de errores,
+  estado, sesiones, auditoría y ausencia de puntos; todos pasan en ambas reconstrucciones.
+- Seis carreras entre transferencia y acciones/recuperación, más cinco carreras adicionales:
+  transferencias simultáneas, expiración/pérdida de permisos y transferencia/pérdida de permisos
+  en ambos órdenes. Todas pasan en ambas reconstrucciones.
+- Actualización desde `20261009180205_question_validation_by_format` con un intento completado,
+  respuestas, recepciones, ledger, una preparación de Pirámide y una transferencia cacheada.
+  Las 31 tablas de dominio y los OIDs, atributos y permisos de las 217 funciones se conservan.
+  El replay anterior a la migración devuelve el mismo resultado. Reversión y reaplicación
+  restauran exactamente sus respectivas funciones y conservan las mismas filas.
+- Tipos, arquitectura de tipos, tipos públicos generados y 107 pruebas unitarias de health,
+  adaptador, API de sesión/transferencia, ciclo de vida y motor competitivo pasan.
+- Los 12 E2E existentes de `s03-flash`, `s04-recovery`, `s15-pyramid`, `format-contracts`
+  y `format-contracts-pyramid` pasan. Incluyen transferencia entre dos contextos, rechazo del
+  controlador anterior, confirmaciones HTTP perdidas y evaluación de los siete niveles.
+  Se ejecutaron con `test:e2e:isolated`, una configuración temporal que extiende
+  `playwright.config.ts` y usa `npm run build`/`npm run start`; los specs, las expectativas y
+  los timeouts de los tests permanecieron iguales. El stack aislado se eliminó al terminar.
+- ESLint de los archivos modificados, formato, enlaces documentales y revisión canónica pasan.
+
+La reconciliación se integra en `verify:pilot` mediante
+`supabase:schema:reconciliation:test`, para que un cambio de reglas o una nueva divergencia
+haga fallar la verificación. El informe JSON regenerable queda en
+`output/audits/supabase-function-drift.json`, ignorado por Git.
+
+## Reversión
+
+La prueba `--upgrade-competitive-commands` genera
+`output/audits/competitive-command-reconciliation-rollback.sql` a partir de las definiciones
+efectivas de la revisión anterior, y ejecuta su reversión y reaplicación en la base desechable.
+Ese archivo contiene los once `CREATE OR REPLACE` originales dentro de una transacción,
+incluido el dispatcher y la implementación autónoma de takeover. No elimina funciones ni
+modifica datos. El inventario y los OIDs/ACL se verifican al reaplicar.
+
+Para revertir después de un despliegue, revisar ese SQL y usarlo en una migración posterior;
+no modificar ni retirar migraciones históricas. Restaurar en el esquema declarativo los cuerpos
+anteriores del [inventario auditado](supabase-function-drift-audit.md), manteniendo los mismos
+atributos y permisos. Actualizar la revisión canónica y los marcadores de health de acuerdo con
+la revisión restaurada y ejecutar de nuevo las comprobaciones de carga, seguridad y compatibilidad.
+
+La reversión restaura el comportamiento histórico: mensajes menos específicos en carreras,
+aceptación histórica de `scheduledChallengeId: null`, replay de takeover anterior a la comprobación
+de membresía y sesiones cerradas con motivo `NULL`. Los hechos producidos tras la reconciliación
+permanecen persistidos; no se vuelven a etiquetar ni recalculan puntos.
+
+## Estado de aplicación
+
+La migración está preparada para revisión y aplicación posterior. Solo se ha aplicado, revertido
+y reaplicado en bases desechables de pruebas. La aplicación a la base local de la aplicación
+y la validación en staging quedan pendientes del flujo de despliegue. No se ha aplicado a producción.
