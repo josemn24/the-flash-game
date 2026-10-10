@@ -42,11 +42,27 @@ export const scenario = {
     { label: "frank", displayName: "Frank" },
   ],
 
-  buildDomainSql({ accounts, sqlString, sqlUuid }) {
+  buildDomainSql({
+    accounts,
+    sqlString,
+    sqlUuid,
+    activeCompetitorLabels = ["alice", "carol", "dave", "erin", "frank"],
+  }) {
     const alice = accounts.alice.playerId;
-    const bob = accounts.bob.playerId;
     const dateStart = "2000-01-01T00:00:00Z";
     const dateEnd = "2999-01-01T00:00:00Z";
+    const membershipRows = [
+      ["alice", "owner"],
+      ["bob", "spectator"],
+      ...activeCompetitorLabels
+        .filter((label) => label !== "alice")
+        .map((label) => [label, "member"]),
+    ]
+      .map(
+        ([label, role]) =>
+          `(${sqlUuid(domainIds.room)}, ${sqlString(accounts[label].playerId)}, '${role}', 'active', ${sqlString(dateStart)})`,
+      )
+      .join(",\n  ");
     const questionOne = publicQuestion("s03-question-one", "¿Cuál es la capital de Portugal?", [
       "Lisboa",
       "Oporto",
@@ -66,12 +82,7 @@ insert into public.rooms (id, slug, title, description)
 values (${sqlUuid(domainIds.room)}, 's03-main', 'Sala competitiva S03', 'Flash persistido de dos preguntas');
 insert into public.room_memberships (room_id, player_id, role, status, joined_at)
 values
-  (${sqlUuid(domainIds.room)}, ${sqlString(alice)}, 'owner', 'active', ${sqlString(dateStart)}),
-  (${sqlUuid(domainIds.room)}, ${sqlString(bob)}, 'spectator', 'active', ${sqlString(dateStart)}),
-  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.carol.playerId)}, 'member', 'active', ${sqlString(dateStart)}),
-  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.dave.playerId)}, 'member', 'active', ${sqlString(dateStart)}),
-  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.erin.playerId)}, 'member', 'active', ${sqlString(dateStart)}),
-  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.frank.playerId)}, 'member', 'active', ${sqlString(dateStart)});
+  ${membershipRows};
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
 values (${sqlUuid(domainIds.season)}, ${sqlUuid(domainIds.room)}, 'Temporada S03', 'active',
   ${sqlString(dateStart)}, ${sqlString(dateEnd)});

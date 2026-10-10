@@ -9,6 +9,15 @@ import { APPLICATION_BUCKETS, comparableSize } from "./supabase-provisioning.mjs
 
 const execFileAsync = promisify(execFile);
 const localHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+const environmentTargets = Object.freeze(["local", "staging"]);
+
+export function assertEnvironmentTarget(target, targets = environmentTargets) {
+  const allowedTargets = targets.filter((candidate) => environmentTargets.includes(candidate));
+  if (!allowedTargets.includes(target))
+    throw new Error(
+      `Indica --target ${(allowedTargets.length ? allowedTargets : environmentTargets).join("|")}.`,
+    );
+}
 
 export function localBucketDefinitions(toml) {
   return APPLICATION_BUCKETS.map((fallback) => {
@@ -36,7 +45,7 @@ export function localBucketDefinitions(toml) {
   });
 }
 
-export function parseEnvironmentArgs(args, { targets = ["local", "staging", "production"] } = {}) {
+export function parseEnvironmentArgs(args, { targets = environmentTargets } = {}) {
   const options = { target: null, dryRun: false, envFile: null };
   for (let index = 0; index < args.length; index++) {
     const argument = args[index];
@@ -49,11 +58,12 @@ export function parseEnvironmentArgs(args, { targets = ["local", "staging", "pro
       options[key] = value;
     } else throw new Error(`Argumento desconocido: ${argument}.`);
   }
-  if (!targets.includes(options.target)) throw new Error(`Indica --target ${targets.join("|")}.`);
+  assertEnvironmentTarget(options.target, targets);
   return options;
 }
 
 export function loadOperationalEnv(options) {
+  assertEnvironmentTarget(options.target);
   const file = options.envFile ?? (options.target === "local" ? ".env.local" : null);
   if (!file) return;
   try {
@@ -70,11 +80,9 @@ function required(env, name) {
 }
 
 export function validateRemoteEnvironment(target, env) {
-  if (!["staging", "production"].includes(target)) throw new Error("Destino remoto inválido.");
-  const projectRef = required(env, `${target.toUpperCase()}_PROJECT_REF`);
+  assertEnvironmentTarget(target, ["staging"]);
+  const projectRef = required(env, "STAGING_PROJECT_REF");
   if (!/^[a-z0-9-]+$/.test(projectRef)) throw new Error("Referencia de proyecto inválida.");
-  if (env.STAGING_PROJECT_REF && env.STAGING_PROJECT_REF === env.PRODUCTION_PROJECT_REF)
-    throw new Error("Staging y producción deben ser proyectos distintos.");
   let apiUrl, dbUrl;
   try {
     apiUrl = new URL(required(env, "NEXT_PUBLIC_SUPABASE_URL"));
@@ -118,6 +126,7 @@ export function validateRemoteEnvironment(target, env) {
 }
 
 export async function resolveEnvironment(target, env = process.env) {
+  assertEnvironmentTarget(target);
   if (target !== "local") return validateRemoteEnvironment(target, env);
   const workdir = env.SUPABASE_TEST_WORKDIR ?? process.cwd();
   const toml = await readFile(path.join(workdir, "supabase", "config.toml"), "utf8");
@@ -160,12 +169,14 @@ export async function resolveEnvironment(target, env = process.env) {
 }
 
 export function environmentClient(config, { user = false } = {}) {
+  assertEnvironmentTarget(config.target);
   return createClient(config.supabaseUrl, user ? config.publishableKey : config.serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
   });
 }
 
 export async function withEnvironmentSql(config, callback) {
+  assertEnvironmentTarget(config.target);
   if (config.target === "local")
     return callback(async (statement) =>
       (await dockerSql(statement, config.dbContainer)).stdout.trim(),
@@ -209,6 +220,7 @@ export async function assertEnvironmentRevision(sql) {
 }
 
 export async function resetEnvironmentDatabase(config, env = process.env) {
+  assertEnvironmentTarget(config.target);
   const args = ["supabase", "db", "reset", "--no-seed", "--yes"];
   if (config.target === "local") args.push("--local", "--workdir", config.workdir);
   else {

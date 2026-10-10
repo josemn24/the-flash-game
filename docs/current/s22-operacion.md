@@ -1,11 +1,11 @@
 # S22 — Operación del piloto
 
 > Estado: vigente. La verificación funcional reproducible sigue siendo local/CI; el repositorio declara
-> la integración de producción con Vercel Cron, pero el despliegue y sus logs deben validarse en el
-> proyecto remoto.
+> la integración de Vercel Cron, pero el despliegue y sus logs deben validarse en staging.
+> Los únicos entornos de aplicación admitidos son local y staging.
 
-S22 fija un alcance cerrado para operar localmente y en CI, y deja documentado el scheduler de
-producción sin convertir el entorno remoto en requisito para la verificación reproducible.
+S22 fija un alcance cerrado para operar localmente y en CI, y conserva la integración del
+calendario sin convertir staging en requisito para la verificación reproducible.
 El piloto incluye Flash, Narrative, Supervivencia y Pirámide competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
 Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape, F19 Word-hashtag y E10 Progressive-image,
 además de los formatos F habilitados. Los formatos no migrados, E07–E09 y
@@ -59,10 +59,11 @@ administrativos durante el piloto; no es una garantía de escalado multiinstanci
 PostgreSQL y la revisión indicada por `EXPECTED_SCHEMA_REVISION`. Solo devuelve estado agregado y
 no contiene credenciales, JWT, cookies ni datos de dominio.
 
-El calendar tick de producción se ejecuta mediante Vercel Cron con `GET
-/api/internal/calendar/tick` a las 00:05 UTC y `Authorization: Bearer <CRON_SECRET>`. Vercel solo
-programa cron para despliegues de producción: no se ejecuta en previews y no reintenta una
-invocación fallida. La recuperación manual usa `CALENDAR_TICK_SECRET` y `npm run calendar:tick`,
+El repositorio conserva Vercel Cron con `GET /api/internal/calendar/tick` a las 00:05 UTC y
+`Authorization: Bearer <CRON_SECRET>`. Vercel solo programa cron en despliegues de tipo
+Production: esa etiqueta técnica de la plataforma no añade un entorno de aplicación.
+No se ejecuta en previews ni reintenta una invocación fallida; la ejecución automática de
+staging y sus logs siguen sin verificarse. La recuperación manual usa `CALENDAR_TICK_SECRET` y `npm run calendar:tick`,
 que conserva el `POST` del endpoint. El tick incluye la limpieza global de intentos inactivos y
 devuelve `abandonedAttempts`. La lectura de historial y los comandos de partida ejecutan además una
 reconciliación limitada a la sala o al intento; una partida sin nuevas lecturas ni acciones puede
@@ -191,6 +192,6 @@ npm run test:e2e:isolated -- e2e/pyramid-queens.spec.ts e2e/e05-queens.spec.ts
 ```
 
 La [instalación limpia](supabase-clean-installation.md) define el reinicio completo, el bootstrap
-mínimo y el procedimiento posterior para staging y producción. El alcance ejecutado en este trabajo
+local mínimo y el procedimiento posterior para staging. El alcance ejecutado en este trabajo
 es local. La [reconciliación de comandos](competitive-command-reconciliation.md) incluye una reversión
 de funciones mediante migración posterior; nunca requiere sustituir datos por mocks.

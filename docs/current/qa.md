@@ -117,7 +117,7 @@ históricos siguen siendo evidencia de ejecuciones anteriores. No se repiten ni 
 ejecución completa del piloto en esta fotografía.
 
 La validación local no equivale a
-validación de staging o producción.
+validación de staging.
 
 ## Evidencia funcional vigente
 
@@ -136,7 +136,7 @@ No se debe interpretar la existencia de un test focal histórico como validació
 ## Limitaciones conocidas
 
 - La CLI local tiene staging vinculado, pero no se ha aplicado ni validado S17 en ese proyecto remoto.
-- La validación E2E persistida es local y reproducible; no cubre staging o producción.
+- La validación E2E persistida es local y reproducible; no cubre staging.
 - Prettier no informa archivos pendientes; la salida generada de `supabase/.temp/` está excluida.
 - El gate global de Vitest pasa con 928 tests; la suite SQL también pasa con Supabase local.
 - ESLint y Stylelint no presentan errores ni warnings.

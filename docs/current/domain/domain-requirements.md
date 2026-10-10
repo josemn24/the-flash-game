@@ -54,7 +54,7 @@ aceptación de enlace.
 
 La publicación mínima de contenido, la programación de desafíos y la ejecución del calendario se
 realizan desde ese portal interno para S11/S12. El tick temporal está protegido y se ejecuta mediante
-Vercel Cron en producción, con CLI local para verificación y recuperación. S12 también permite
+la integración existente de Vercel Cron, pendiente de verificar en staging, y CLI para operación manual. S12 también permite
 cancelar de forma lógica y auditada publicaciones futuras antes de abrirlas; la cancelación de
 publicaciones abiertas o cerradas, de temporadas, los schedulers alternativos y las operaciones
 públicas siguen fuera de este alcance.
@@ -168,7 +168,7 @@ No son funciones de la UI pública.
   después de reincorporarse. Se conservan los resultados ya completados. La membresía, el cierre,
   la revocación de sesiones y la auditoría se coordinan en una única transacción.
 - **FR-19 —** El inicio oficial consume el único intento competitivo del jugador para ese desafío.
-  (**Objetivo confirmado para la primera producción**)
+  (**Objetivo confirmado para el piloto**)
 - **FR-20 —** Mientras el intento conserve el estado `inProgress`, una reapertura con la sesión
   controladora autorizada debe reanudar el mismo intento y no crear otro. El servidor debe resolver
   antes cualquier interacción temporal abierta según el modo; cerrar una pestaña o perder conexión
@@ -253,7 +253,7 @@ No son funciones de la UI pública.
 - Mientras la publicación está disponible, no jugar no crea un intento ni concede Flash Points. Si
   la publicación termina antes de iniciar el desafío, el desafío se proyecta como `expired`: el
   jugador no ha jugado, no consume un intento y no genera resultado.
-- Para producción inicial hay un único intento competitivo por jugador y desafío programado.
+- Para el piloto hay un único intento competitivo por jugador y desafío programado.
 - Un intento que sigue `inProgress` puede reanudarse con la sesión controladora; repetir el desafío
   no crea una segunda oportunidad competitiva. Antes de reanudar, el servidor consume la
   interacción abierta según las reglas del modo, sin volver a entregar contenido ya preparado.
@@ -387,8 +387,8 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
 - Las decisiones generales de `docs/decisions/decisions.md` siguen vigentes cuando no contradicen lo
   anterior: competición asíncrona, salas privadas, temporadas por sala, perfiles globales,
   contenido versionado y evaluación autoritativa.
-- Los ejemplos de formatos y los datos simulados no demuestran por sí solos que una regla esté lista
-  para producción.
+- Los ejemplos de formatos y los datos simulados no demuestran por sí solos que una regla esté verificada
+  en staging.
 
 ## 10. Cuestiones todavía abiertas
 

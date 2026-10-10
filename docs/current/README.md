@@ -14,7 +14,7 @@ contenido Flash/Supervivencia y programa su calendario local.
 - [`status.md`](status.md): fotografía breve del producto y de sus limitaciones.
 - [`domain/README.md`](domain/README.md): modelo de dominio, tipos, fixtures y consultas.
 - [`use-cases.md`](use-cases.md): casos de uso funcionales, prioridades, permisos y límites.
-- [`architecture.md`](architecture.md): fronteras, dependencias y evolución hacia producción.
+- [`architecture.md`](architecture.md): fronteras, dependencias y evolución del recorrido persistido.
 - [`data-model.md`](data-model.md): propuesta relacional, integridad, transacciones y mapeo desde
   el dominio.
 - [`architecture/server-client-architecture.md`](architecture/server-client-architecture.md): límites
@@ -22,8 +22,8 @@ contenido Flash/Supervivencia y programa su calendario local.
 - [`design-tokens.md`](design-tokens.md): roles de color, estados, contrastes y equivalencias de migración.
 - [`design-system.md`](design-system.md): catálogo de desarrollo, componentes reales, demos y mantenimiento.
 - [`qa.md`](qa.md): estado vigente de las comprobaciones automatizadas y sus limitaciones.
-- [`supabase-clean-installation.md`](supabase-clean-installation.md): reinicio completo, bootstrap
-  mínimo y procedimiento posterior para staging y producción.
+- [`supabase-clean-installation.md`](supabase-clean-installation.md): guía principal por tareas para
+  preparar local y staging, con datasets, bootstrap, reinicio completo y registros de ejecución.
 - [`local-device-testing.md`](local-device-testing.md): pruebas desde un móvil u otro equipo de la
   red local, configuración de Supabase y resolución de problemas.
 - [`competitive-read-performance.md`](competitive-read-performance.md): contratos de lectura,

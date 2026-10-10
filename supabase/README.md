@@ -3,6 +3,11 @@
 Este directorio contiene la definición, el historial y las herramientas locales de la base de
 datos Supabase.
 
+Los destinos operativos admitidos son `local` y `staging`. El perfil mínimo se prepara con
+`npm run supabase:local:bootstrap -- --target local`; staging conserva su bootstrap BetaVIP.
+La [guía de preparación](../docs/current/supabase-clean-installation.md#qué-necesito-preparar)
+permite elegir el recorrido y documenta ambos procedimientos.
+
 ## Regla principal: schema first
 
 El esquema declarativo es la fuente de verdad:
@@ -157,9 +162,10 @@ supabase/
 └── .gitignore               # Estado local de la CLI y credenciales locales
 ```
 
-Para preparar cuentas y datos de navegador, consulta [`local-development.md`](local-development.md).
-Para reiniciar también Auth y Storage e instalar el perfil mínimo, consulta
-[`supabase-clean-installation.md`](../docs/current/supabase-clean-installation.md).
+Para preparar datasets, fixtures, el perfil mínimo o staging, consulta la
+[guía de preparación de entornos](../docs/current/supabase-clean-installation.md#qué-necesito-preparar).
+Para arrancar el stack y verificar el desarrollo local, consulta
+[`local-development.md`](local-development.md).
 Para los límites de seguridad y el modelo de persistencia, consulta
 [`architecture.md`](architecture.md). El estado funcional y las capacidades pendientes se mantienen
 en [`docs/current/status.md`](../docs/current/status.md).

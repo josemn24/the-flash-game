@@ -412,10 +412,10 @@
 - Los fixtures y seeds tienen IDs y fechas deterministas.
 - La aplicación usa privilegios mínimos y nunca expone credenciales administrativas al navegador.
 
-## 15. Scheduler del calendar tick en producción
+## 15. Scheduler del calendar tick con Vercel Cron
 
 - **Decisión vigente (2026-09-28):** Vercel Cron es el scheduler oficial del calendar tick para el
-  despliegue de producción.
+  tipo de despliegue Production de Vercel.
 - Vercel invoca `GET /api/internal/calendar/tick` diariamente a las 00:05 UTC mediante
   `CRON_SECRET`. La tarea no se ejecuta en previews y Vercel no reintenta automáticamente una
   invocación fallida.
@@ -425,7 +425,10 @@
   retrasarse hasta la siguiente ejecución. El tick sigue siendo idempotente y `start_attempt`
   revalida la ventana temporal antes de iniciar una partida.
 - Esta decisión concreta la automatización remota que S12 dejó pendiente sin introducir una cola ni
-  un worker propio; la validación efectiva del despliegue y sus logs pertenece al entorno Vercel.
+  un worker propio; la validación efectiva del despliegue y sus logs pertenece al proyecto Vercel de staging.
+- **Alcance actual (2026-10-10):** los únicos entornos de aplicación son local y staging.
+  Production es la etiqueta técnica de Vercel que admite cron; no añade un destino operativo.
+  Se conserva la integración y su ejecución automática en staging sigue pendiente de verificar.
 
 ## 16. Incidencias del servicio durante partidas
 

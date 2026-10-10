@@ -153,7 +153,7 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Precondiciones:** sala activa y, para editar, permisos de gestión.
 - **Entrada relevante:** título, `startsAt`, `endsAt` y transición solicitada (`draft`, `scheduled`, `active`, `finished` o `cancelled`).
 - **Flujo principal:** desde el portal local de superadmin, validar fechas y estado; crear o modificar un borrador; activar explícitamente cuando corresponda; consultar total y ranking propios.
-- **Reglas de negocio:** S10 implementa `draft → active` y S12 añade la finalización `active → finished` desde el calendar tick; en producción lo invoca Vercel Cron y localmente puede ejecutarse mediante el CLI; como máximo existe una temporada `active`; las fechas se editan en la zona de la sala y se almacenan en UTC; una temporada empieza con cero Flash Points. En temporadas, `scheduled` y la cancelación siguen siendo responsabilidades posteriores (S19).
+- **Reglas de negocio:** S10 implementa `draft → active` y S12 añade la finalización `active → finished` desde el calendar tick; se conserva la integración de Vercel Cron, pendiente de verificar en staging, y puede ejecutarse mediante el CLI; como máximo existe una temporada `active`; las fechas se editan en la zona de la sala y se almacenan en UTC; una temporada empieza con cero Flash Points. En temporadas, `scheduled` y la cancelación siguen siendo responsabilidades posteriores (S19).
 - **Resultado:** temporada en estado coherente y visible dentro de la sala.
 - **Efectos secundarios:** auditoría y actualización de disponibilidad; al finalizar se cierran nuevas entradas, pero intentos válidos pueden terminar dentro de su plazo.
 - **Errores o impedimentos:** fechas invertidas, solapamiento de temporada activa, transición no permitida o edición de temporada finalizada sin corrección auditada.
@@ -465,7 +465,7 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
   repetición de petición pueda producir duplicados.
 - La implementación actual cubre principalmente CU-05, CU-07 parcialmente, CU-08, CU-12, CU-13,
   CU-14, CU-15/CU-16 de forma local y las consultas de CU-20 a CU-24 mediante mocks. S12 cubre la
-  programación y ejecución local del calendario Flash; Vercel Cron ejecuta el tick en producción y
+  programación y ejecución local del calendario Flash; se conserva Vercel Cron, pendiente de validar en staging, y
   la expiración también se reconcilia bajo demanda. S11 cubre la publicación editorial mínima de Flash y su preview protegido; reemplazar/
   archivar versiones publicadas y la prueba fantasma interactiva siguen pendientes.
 - La expiración usa un umbral fijo de 15 minutos y no requiere heartbeat, lease ni periodo de gracia

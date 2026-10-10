@@ -42,16 +42,9 @@ export function parseArgs(args) {
 }
 
 export function validateBootstrapConfig(env = process.env) {
-  const required = [
-    "STAGING_PROJECT_REF",
-    "NEXT_PUBLIC_SUPABASE_URL",
-    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "SUPABASE_ADMIN_DB_URL",
-    "STAGING_XESMONA_EMAIL",
-    "STAGING_CHES_EMAIL",
-    "STAGING_BOOTSTRAP_CONFIRM",
-  ];
+  const { projectRef, supabaseUrl, publishableKey, serviceRoleKey, adminDbUrl } =
+    validateRemoteEnvironment("staging", env);
+  const required = ["STAGING_XESMONA_EMAIL", "STAGING_CHES_EMAIL", "STAGING_BOOTSTRAP_CONFIRM"];
   for (const name of required) {
     if (!env[name]?.trim()) throw new Error(`${name} es obligatorio.`);
   }
@@ -59,50 +52,21 @@ export function validateBootstrapConfig(env = process.env) {
     throw new Error(`STAGING_BOOTSTRAP_CONFIRM debe ser ${CONFIRMATION_VALUE}.`);
   }
 
-  let supabaseUrl;
-  try {
-    supabaseUrl = new URL(env.NEXT_PUBLIC_SUPABASE_URL);
-  } catch {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL no es una URL válida.");
-  }
-  const projectRef = env.STAGING_PROJECT_REF.trim();
-  const forbiddenHosts = new Set(["localhost", "127.0.0.1", "::1"]);
-  if (forbiddenHosts.has(supabaseUrl.hostname)) {
-    throw new Error("El bootstrap de staging no admite una URL local.");
-  }
-  if (supabaseUrl.protocol !== "https:") {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL debe usar HTTPS para staging.");
-  }
-  if (supabaseUrl.hostname !== `${projectRef}.supabase.co`) {
-    throw new Error("STAGING_PROJECT_REF no coincide con NEXT_PUBLIC_SUPABASE_URL.");
-  }
-  if (
-    env.STAGING_XESMONA_EMAIL.trim().toLowerCase() === env.STAGING_CHES_EMAIL.trim().toLowerCase()
-  ) {
+  const emails = {
+    xesmona: env.STAGING_XESMONA_EMAIL.trim().toLowerCase(),
+    ches: env.STAGING_CHES_EMAIL.trim().toLowerCase(),
+  };
+  if (emails.xesmona === emails.ches) {
     throw new Error("Xesmona y Ches deben utilizar emails diferentes.");
   }
-  let adminDbUrl;
-  try {
-    adminDbUrl = new URL(env.SUPABASE_ADMIN_DB_URL);
-  } catch {
-    throw new Error("SUPABASE_ADMIN_DB_URL no es una URL válida.");
-  }
-  if (forbiddenHosts.has(adminDbUrl.hostname)) {
-    throw new Error("SUPABASE_ADMIN_DB_URL no puede apuntar a localhost.");
-  }
-  // Auth, Storage and owner SQL must all address the same staging project.
-  validateRemoteEnvironment("staging", env);
 
   return {
     projectRef,
-    supabaseUrl: supabaseUrl.toString().replace(/\/$/, ""),
-    publishableKey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-    serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
-    adminDbUrl: env.SUPABASE_ADMIN_DB_URL.trim(),
-    emails: {
-      xesmona: env.STAGING_XESMONA_EMAIL.trim().toLowerCase(),
-      ches: env.STAGING_CHES_EMAIL.trim().toLowerCase(),
-    },
+    supabaseUrl,
+    publishableKey,
+    serviceRoleKey,
+    adminDbUrl,
+    emails,
   };
 }
 

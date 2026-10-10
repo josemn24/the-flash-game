@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { checkInventory } from "./supabase-security-inventory.mjs";
 import {
   assertEnvironmentRevision,
+  assertEnvironmentTarget,
   environmentClient,
   loadOperationalEnv,
   parseEnvironmentArgs,
@@ -59,6 +60,7 @@ export async function assertResetPreconditions(
   env,
   readLinkedRef = () => readFile("supabase/.temp/project-ref", "utf8"),
 ) {
+  assertEnvironmentTarget(config.target);
   if (config.target === "local") return;
   if (env.SUPABASE_RESET_CONFIRM !== `${config.target}:${config.projectRef}`)
     throw new Error("SUPABASE_RESET_CONFIRM debe identificar exactamente el entorno y proyecto.");
@@ -70,6 +72,7 @@ export async function assertResetPreconditions(
 }
 
 export async function clearEnvironmentArtifacts(config) {
+  assertEnvironmentTarget(config.target);
   for (const file of ["bootstrap-credentials.json", "bootstrap-manifest.json"])
     await rm(path.join(config.artifactDirectory, file), { force: true });
   if (config.target === "local") {
@@ -123,6 +126,7 @@ export async function runEnvironmentReset({
 } = {}) {
   const options = parseEnvironmentArgs(args);
   const config = await (dependencies.resolveEnvironment ?? resolveEnvironment)(options.target, env);
+  assertEnvironmentTarget(config.target);
   const plan = {
     target: config.target,
     projectRef: config.projectRef,

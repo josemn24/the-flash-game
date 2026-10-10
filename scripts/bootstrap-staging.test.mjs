@@ -1,9 +1,11 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { describe, expect, it } from "vitest";
+import { createClient } from "@supabase/supabase-js";
+import { Client } from "pg";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildAuthUserPayload,
   bucketMatches,
@@ -21,6 +23,17 @@ import {
 } from "./seed-betavip.mjs";
 
 const execFileAsync = promisify(execFile);
+
+vi.mock("@supabase/supabase-js", () => ({
+  createClient: vi.fn(() => {
+    throw new Error("Unexpected Supabase client creation.");
+  }),
+}));
+vi.mock("pg", () => ({
+  Client: vi.fn(() => {
+    throw new Error("Unexpected SQL client creation.");
+  }),
+}));
 
 const projectRef = "staging-ref";
 const validEnv = {
@@ -42,7 +55,7 @@ describe("staging bootstrap", () => {
     });
     expect(() =>
       validateBootstrapConfig({ ...validEnv, NEXT_PUBLIC_SUPABASE_URL: "http://localhost:54321" }),
-    ).toThrow(/URL local/i);
+    ).toThrow(/no coincide/i);
     expect(() =>
       validateBootstrapConfig({ ...validEnv, STAGING_PROJECT_REF: "other-ref" }),
     ).toThrow(/no coincide/i);
@@ -53,6 +66,96 @@ describe("staging bootstrap", () => {
       validateBootstrapConfig({ ...validEnv, STAGING_CHES_EMAIL: validEnv.STAGING_XESMONA_EMAIL }),
     ).toThrow(/emails diferentes/i);
   });
+
+  it.each([
+    "postgresql://postgres:secret@db.staging-ref.supabase.co:5432/postgres",
+    "postgresql://postgres.staging-ref:secret@aws-1-eu-west-1.pooler.supabase.com:5432/postgres",
+  ])("normalizes the configuration and preserves its fields with %s", (adminDbUrl) => {
+    const paddedEnv = Object.fromEntries(
+      Object.entries({ ...validEnv, SUPABASE_ADMIN_DB_URL: adminDbUrl }).map(([name, value]) => [
+        name,
+        name === "STAGING_BOOTSTRAP_CONFIRM" ? value : ` ${value} `,
+      ]),
+    );
+    const result = validateBootstrapConfig({
+      ...paddedEnv,
+      STAGING_XESMONA_EMAIL: " Xesmona@Example.test ",
+      STAGING_CHES_EMAIL: " CHES@Example.test ",
+    });
+    expect(result).toEqual({
+      projectRef,
+      supabaseUrl: `https://${projectRef}.supabase.co`,
+      publishableKey: validEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+      serviceRoleKey: validEnv.SUPABASE_SERVICE_ROLE_KEY,
+      adminDbUrl,
+      emails: validEnvEmails(),
+    });
+  });
+
+  it.each(Object.keys(validEnv))("requires %s", (name) => {
+    const missingEnv = { ...validEnv };
+    delete missingEnv[name];
+    expect(() => validateBootstrapConfig(missingEnv)).toThrow();
+    expect(() => validateBootstrapConfig({ ...validEnv, [name]: " " })).toThrow();
+  });
+
+  it.each([false, true])(
+    "rejects invalid configuration before creating clients or changing credentials (dry-run: %s)",
+    async (dryRun) => {
+      const directory = await mkdtemp(path.join(os.tmpdir(), "staging-validation-"));
+      const credentialsPath = path.join(directory, "credentials.json");
+      const previous = JSON.stringify({ projectRef: "saved-project", users: {} });
+      const invalidOverrides = [
+        { STAGING_PROJECT_REF: "other-ref" },
+        { NEXT_PUBLIC_SUPABASE_URL: "https://other-ref.supabase.co" },
+        { NEXT_PUBLIC_SUPABASE_URL: "http://staging-ref.supabase.co" },
+        { NEXT_PUBLIC_SUPABASE_URL: "http://localhost:54321" },
+        { NEXT_PUBLIC_SUPABASE_URL: "https://127.0.0.1:54321" },
+        { NEXT_PUBLIC_SUPABASE_URL: "https://user:secret@staging-ref.supabase.co" },
+        { NEXT_PUBLIC_SUPABASE_URL: "https://staging-ref.supabase.co/path" },
+        { NEXT_PUBLIC_SUPABASE_URL: "https://staging-ref.supabase.co?query=value" },
+        { NEXT_PUBLIC_SUPABASE_URL: "https://staging-ref.supabase.co#fragment" },
+        { NEXT_PUBLIC_SUPABASE_URL: "invalid-url" },
+        { SUPABASE_ADMIN_DB_URL: "invalid-url" },
+        { SUPABASE_ADMIN_DB_URL: "postgresql://postgres:secret@localhost:54322/postgres" },
+        {
+          SUPABASE_ADMIN_DB_URL:
+            "postgresql://postgres:secret@db.other-ref.supabase.co:5432/postgres",
+        },
+        {
+          SUPABASE_ADMIN_DB_URL:
+            "postgresql://postgres.other-ref:secret@aws-1-eu-west-1.pooler.supabase.com:5432/postgres",
+        },
+        {
+          SUPABASE_ADMIN_DB_URL:
+            "postgresql://postgres.staging-ref:secret@aws-1-eu-west-1.pooler.supabase.com:6543/postgres",
+        },
+        { STAGING_BOOTSTRAP_CONFIRM: "wrong-confirmation" },
+        { STAGING_BOOTSTRAP_CONFIRM: ` ${validEnv.STAGING_BOOTSTRAP_CONFIRM} ` },
+        { STAGING_CHES_EMAIL: " XESMONA@Example.test " },
+        ...Object.keys(validEnv).map((name) => ({ [name]: "" })),
+      ];
+      vi.clearAllMocks();
+      try {
+        await writeFile(credentialsPath, previous);
+        for (const overrides of invalidOverrides) {
+          await expect(
+            runBootstrap({
+              env: { ...validEnv, ...overrides },
+              args: dryRun ? ["--dry-run"] : [],
+              dependencies: { credentialsPath },
+            }),
+          ).rejects.toThrow();
+          expect(createClient).not.toHaveBeenCalled();
+          expect(Client).not.toHaveBeenCalled();
+          expect(await readFile(credentialsPath, "utf8")).toBe(previous);
+          expect(await readdir(directory)).toEqual(["credentials.json"]);
+        }
+      } finally {
+        await rm(directory, { recursive: true, force: true });
+      }
+    },
+  );
 
   it("supports only the documented dry-run argument", async () => {
     expect(parseArgs(["--dry-run"])).toEqual({ dryRun: true });
@@ -68,8 +171,8 @@ describe("staging bootstrap", () => {
   });
 
   it.each([
-    "postgresql://postgres:secret@db.production-ref.supabase.co:5432/postgres",
-    "postgresql://postgres.production-ref:secret@aws-1-eu-west-1.pooler.supabase.com:5432/postgres",
+    "postgresql://postgres:secret@db.other-ref.supabase.co:5432/postgres",
+    "postgresql://postgres.other-ref:secret@aws-1-eu-west-1.pooler.supabase.com:5432/postgres",
     "postgresql://postgres.staging-ref:secret@aws-1-eu-west-1.pooler.supabase.com:6543/postgres",
   ])("rejects a mismatched or runtime database connection before provisioning: %s", (url) => {
     expect(() => validateBootstrapConfig({ ...validEnv, SUPABASE_ADMIN_DB_URL: url })).toThrow(

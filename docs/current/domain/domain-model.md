@@ -297,7 +297,7 @@ intento en `abandoned`, ni convierte la publicación en `expired`.
 8. Una versión de desafío suma exactamente 100 puntos y su puntuación final está entre 0 y 100.
 9. Una respuesta final pertenece a un intento y a un elemento de la versión jugada, no solo a una
    pregunta global.
-10. Para la primera producción hay como máximo un intento oficial por jugador y publicación.
+10. Para el piloto hay como máximo un intento oficial por jugador y publicación.
 11. Un intento solo puede iniciarlo un miembro con membresía activa y rol `owner`, `admin` o
     `member`; `spectator` no compite.
 12. Solo una sesión puede controlar un intento en progreso; la concurrencia obsoleta debe rechazarse

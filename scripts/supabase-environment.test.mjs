@@ -1,6 +1,8 @@
+import { execFile } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { promisify } from "node:util";
 import { describe, expect, it, vi } from "vitest";
 import {
   assertResetPreconditions,
@@ -12,19 +14,23 @@ import {
 import {
   bootstrapRoleSql,
   ensureAdministrator,
+  minimumBootstrapEmail,
   runMinimumBootstrap,
-} from "./bootstrap-production.mjs";
+} from "./bootstrap-local.mjs";
 import {
+  environmentClient,
+  loadOperationalEnv,
   localBucketDefinitions,
   parseEnvironmentArgs,
+  resetEnvironmentDatabase,
   resolveEnvironment,
   validateRemoteEnvironment,
+  withEnvironmentSql,
 } from "./support/supabase-environment.mjs";
 import { verifyMiniWordleDictionaries } from "./load-mini-wordle-dictionary.mjs";
 
 const env = {
   STAGING_PROJECT_REF: "staging-ref",
-  PRODUCTION_PROJECT_REF: "production-ref",
   NEXT_PUBLIC_SUPABASE_URL: "https://staging-ref.supabase.co",
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "publishable-secret",
   SUPABASE_SERVICE_ROLE_KEY: "service-role-secret",
@@ -32,7 +38,9 @@ const env = {
     "postgresql://postgres:database-secret@db.staging-ref.supabase.co:5432/postgres",
 };
 const config = { ...validateRemoteEnvironment("staging", env), artifactDirectory: "/unused" };
+const localConfig = { ...config, target: "local", projectRef: "local-stack" };
 const uuid = "00000000-0000-4000-8000-000000000001";
+const execFileAsync = promisify(execFile);
 
 function fakeService({ users = [], buckets = [] } = {}) {
   const events = [];
@@ -85,15 +93,112 @@ describe("clean Supabase installation", () => {
   });
   it("requires an explicit target and rejects unsupported or repeated arguments", () => {
     expect(() => parseEnvironmentArgs([])).toThrow(/--target/);
-    expect(() => parseEnvironmentArgs(["--target", "production", "--target", "local"])).toThrow(
+    expect(() => parseEnvironmentArgs(["--target", "staging", "--target", "local"])).toThrow(
       /repetirse/,
     );
     expect(() => parseEnvironmentArgs(["--target", "local", "--force"])).toThrow(/desconocido/);
     expect(() => parseEnvironmentArgs(["--target"])).toThrow(/Falta/);
   });
 
+  it("accepts only local and staging, even if a caller tries to widen the target list", () => {
+    for (const target of ["local", "staging"])
+      expect(parseEnvironmentArgs(["--target", target]).target).toBe(target);
+    expect(() => parseEnvironmentArgs(["--target", "production"])).toThrow(/local\|staging/);
+    expect(() =>
+      parseEnvironmentArgs(["--target", "production"], { targets: ["production"] }),
+    ).toThrow(/local\|staging/);
+  });
+
+  it("rejects an unsupported programmatic target before loading env files or opening connections", async () => {
+    const blockedConfig = { ...config, target: "production" };
+    const callback = vi.fn();
+    expect(() =>
+      loadOperationalEnv({ target: "production", envFile: "must-not-be-loaded.env" }),
+    ).toThrow(/local\|staging/);
+    expect(() => validateRemoteEnvironment("production", {})).toThrow(/--target staging/);
+    await expect(resolveEnvironment("production", {})).rejects.toThrow(/local\|staging/);
+    expect(() => environmentClient(blockedConfig)).toThrow(/local\|staging/);
+    await expect(withEnvironmentSql(blockedConfig, callback)).rejects.toThrow(/local\|staging/);
+    await expect(resetEnvironmentDatabase(blockedConfig)).rejects.toThrow(/local\|staging/);
+    await expect(assertResetPreconditions(blockedConfig, {}, callback)).rejects.toThrow(
+      /local\|staging/,
+    );
+    await expect(clearEnvironmentArtifacts(blockedConfig)).rejects.toThrow(/local\|staging/);
+    expect(callback).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])(
+    "rejects production before resolving a reset or bootstrap (dry-run: %s)",
+    async (dryRun) => {
+      const effect = vi.fn();
+      const args = ["--target", "production", ...(dryRun ? ["--dry-run"] : [])];
+      const dependencies = {
+        resolveEnvironment: effect,
+        environmentClient: effect,
+        writeJsonSecure: effect,
+        resetDatabase: effect,
+        withSql: effect,
+      };
+      await expect(runEnvironmentReset({ args, env: {}, dependencies })).rejects.toThrow(
+        /local\|staging/,
+      );
+      await expect(runMinimumBootstrap({ args, env: {}, dependencies })).rejects.toThrow(
+        /--target local/,
+      );
+      expect(effect).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(
+    [
+      "reset-supabase-environment.mjs",
+      "load-mini-wordle-dictionary.mjs",
+      "bootstrap-local.mjs",
+    ].flatMap((script) => [false, true].map((dryRun) => [script, dryRun])),
+  )(
+    "rejects production in the %s CLI before loading operational credentials (dry-run: %s)",
+    async (script, dryRun) => {
+      await expect(
+        execFileAsync(
+          process.execPath,
+          [
+            "--",
+            `scripts/${script}`,
+            "--target",
+            "production",
+            ...(dryRun ? ["--dry-run"] : []),
+            "--env-file",
+            "must-not-be-loaded.env",
+          ],
+          { env },
+        ),
+      ).rejects.toMatchObject({
+        code: 1,
+        stdout: "",
+        stderr: expect.stringMatching(/Indica --target (local\|staging|local)\./),
+      });
+    },
+  );
+
+  it("keeps the dictionary CLI local by default and supports an explicit staging dry-run", async () => {
+    for (const target of ["local", "staging"]) {
+      const args = ["--", "scripts/load-mini-wordle-dictionary.mjs", "--dry-run"];
+      if (target === "staging") args.push("--target", target);
+      const { stdout } = await execFileAsync(process.execPath, args, {
+        env:
+          target === "local" ? { ...env, NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321" } : env,
+      });
+      expect(JSON.parse(stdout)).toMatchObject({
+        target,
+        dryRun: true,
+        dictionaries: ["es-general-4.v1", "es-general-5.v1"],
+      });
+      expect(stdout).not.toMatch(/publishable-secret|service-role-secret|database-secret/);
+    }
+  });
+
   it.each([
-    ["API host", { NEXT_PUBLIC_SUPABASE_URL: "https://production-ref.supabase.co" }],
+    ["API host", { NEXT_PUBLIC_SUPABASE_URL: "https://other-ref.supabase.co" }],
     ["API HTTP", { NEXT_PUBLIC_SUPABASE_URL: "http://staging-ref.supabase.co" }],
     [
       "API embedded password",
@@ -103,14 +208,14 @@ describe("clean Supabase installation", () => {
       "database host",
       {
         SUPABASE_ADMIN_DB_URL:
-          "postgresql://postgres:secret@db.production-ref.supabase.co:5432/postgres",
+          "postgresql://postgres:secret@db.other-ref.supabase.co:5432/postgres",
       },
     ],
     [
       "database pooler identity",
       {
         SUPABASE_ADMIN_DB_URL:
-          "postgresql://postgres.production-ref:secret@aws-1-eu-west-1.pooler.supabase.com:5432/postgres",
+          "postgresql://postgres.other-ref:secret@aws-1-eu-west-1.pooler.supabase.com:5432/postgres",
       },
     ],
     [
@@ -120,7 +225,11 @@ describe("clean Supabase installation", () => {
           "postgresql://postgres.staging-ref:secret@aws-1-eu-west-1.pooler.supabase.com:6543/postgres",
       },
     ],
-    ["shared project", { PRODUCTION_PROJECT_REF: "staging-ref" }],
+    ["local API", { NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:54321" }],
+    [
+      "local database",
+      { SUPABASE_ADMIN_DB_URL: "postgresql://postgres:secret@localhost:54322/postgres" },
+    ],
   ])("rejects a mismatched %s before creating clients", (_, overrides) => {
     expect(() => validateRemoteEnvironment("staging", { ...env, ...overrides })).toThrow();
   });
@@ -180,9 +289,9 @@ describe("clean Supabase installation", () => {
         async () => "staging-ref",
       ),
     ).rejects.toThrow(/calendario/);
-    await expect(
-      assertResetPreconditions(config, valid, async () => "production-ref"),
-    ).rejects.toThrow(/enlazado/);
+    await expect(assertResetPreconditions(config, valid, async () => "other-ref")).rejects.toThrow(
+      /enlazado/,
+    );
     await expect(
       assertResetPreconditions(config, valid, async () => "staging-ref\n"),
     ).resolves.toBeUndefined();
@@ -271,7 +380,7 @@ describe("clean Supabase installation", () => {
     const result = await runMinimumBootstrap({
       args: ["--target", "local", "--dry-run"],
       dependencies: {
-        resolveEnvironment: async () => ({ ...config, target: "local" }),
+        resolveEnvironment: async () => localConfig,
         environmentClient: create,
       },
     });
@@ -280,24 +389,18 @@ describe("clean Supabase installation", () => {
     expect(JSON.stringify(result)).not.toContain("secret");
   });
 
-  it("requires an explicit production email and project confirmation", async () => {
-    const dependencies = {
-      resolveEnvironment: async () => ({
-        ...config,
-        target: "production",
-        projectRef: "production-ref",
-      }),
-    };
-    await expect(
-      runMinimumBootstrap({ args: ["--target", "production", "--dry-run"], env: {}, dependencies }),
-    ).rejects.toThrow(/EMAIL/);
-    await expect(
-      runMinimumBootstrap({
-        args: ["--target", "production", "--dry-run"],
-        env: { BOOTSTRAP_ADMIN_EMAIL: "admin@example.test" },
-        dependencies,
-      }),
-    ).rejects.toThrow(/CONFIRM/);
+  it("requires an explicit local bootstrap target and allows a custom local administrator email", async () => {
+    await expect(runMinimumBootstrap({ args: [], env: {} })).rejects.toThrow(/--target local/);
+    await expect(runMinimumBootstrap({ args: ["--target", "staging"], env: {} })).rejects.toThrow(
+      /--target local/,
+    );
+    expect(minimumBootstrapEmail(localConfig, {})).toBe("superadmin@the-flash.local");
+    expect(
+      minimumBootstrapEmail(localConfig, { BOOTSTRAP_ADMIN_EMAIL: " Admin@Example.test " }),
+    ).toBe("admin@example.test");
+    expect(() => minimumBootstrapEmail(localConfig, { BOOTSTRAP_ADMIN_EMAIL: "invalid" })).toThrow(
+      /EMAIL/,
+    );
   });
 
   it("does not promote an existing unmanaged Auth account", async () => {
@@ -305,7 +408,7 @@ describe("clean Supabase installation", () => {
       users: [{ id: uuid, email: "admin@example.test", app_metadata: {} }],
     });
     await expect(
-      ensureAdministrator(config, "admin@example.test", {
+      ensureAdministrator(localConfig, "admin@example.test", {
         environmentClient: () => service,
         readJson: async () => null,
       }),
@@ -313,12 +416,82 @@ describe("clean Supabase installation", () => {
     expect(service.auth.admin.createUser).not.toHaveBeenCalled();
   });
 
+  it.each(["staging", "production"])(
+    "rejects a %s administrator bootstrap before reading credentials",
+    async (target) => {
+      const effect = vi.fn();
+      await expect(
+        ensureAdministrator({ ...localConfig, target }, "admin@example.test", {
+          readJson: effect,
+          environmentClient: effect,
+          writeJsonSecure: effect,
+        }),
+      ).rejects.toThrow(/--target local/);
+      expect(effect).not.toHaveBeenCalled();
+    },
+  );
+
+  it("reuses the verified local administrator and password without creating another account", async () => {
+    const account = {
+      email: "admin@example.test",
+      password: "saved-local-password",
+      authUserId: uuid,
+      playerId: uuid,
+    };
+    const service = fakeService({
+      users: [
+        {
+          id: uuid,
+          email: account.email,
+          app_metadata: {
+            environment_bootstrap: {
+              environment: "local",
+              project_ref: localConfig.projectRef,
+              version: 1,
+            },
+          },
+        },
+      ],
+    });
+    const user = {
+      auth: {
+        signInWithPassword: vi.fn(async () => ({ data: { user: { id: uuid } }, error: null })),
+      },
+      rpc: vi.fn(async () => ({ data: { player_id: uuid }, error: null })),
+    };
+    const save = vi.fn();
+    const result = await ensureAdministrator(localConfig, account.email, {
+      readJson: async () => ({
+        target: "local",
+        projectRef: localConfig.projectRef,
+        users: { superadmin: account },
+      }),
+      environmentClient: (_, options) => (options?.user ? user : service),
+      writeJsonSecure: save,
+    });
+    expect(result.account).toEqual(account);
+    expect(service.auth.admin.createUser).not.toHaveBeenCalled();
+    expect(user.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: account.email,
+      password: account.password,
+    });
+    expect(save).toHaveBeenCalledWith(
+      path.join(localConfig.artifactDirectory, "bootstrap-credentials.json"),
+      {
+        version: 1,
+        target: "local",
+        projectRef: localConfig.projectRef,
+        users: { superadmin: account },
+      },
+    );
+  });
+
   it("rejects credentials belonging to another project before any Auth call", async () => {
     const makeClient = vi.fn();
     await expect(
-      ensureAdministrator(config, "admin@example.test", {
+      ensureAdministrator(localConfig, "admin@example.test", {
         environmentClient: makeClient,
-        readJson: async () => ({ projectRef: "production-ref" }),
+        readJson: async () => ({ projectRef: "other-ref" }),
       }),
     ).rejects.toThrow(/otro destino/);
     expect(makeClient).not.toHaveBeenCalled();
@@ -327,11 +500,11 @@ describe("clean Supabase installation", () => {
   it("rejects changing the bootstrap email before creating a second account", async () => {
     const makeClient = vi.fn();
     await expect(
-      ensureAdministrator(config, "new@example.test", {
+      ensureAdministrator(localConfig, "new@example.test", {
         environmentClient: makeClient,
         readJson: async () => ({
-          target: config.target,
-          projectRef: config.projectRef,
+          target: localConfig.target,
+          projectRef: localConfig.projectRef,
           users: { superadmin: { email: "existing@example.test" } },
         }),
       }),
@@ -342,7 +515,7 @@ describe("clean Supabase installation", () => {
   it("does not create a new administrator when Auth already contains another account", async () => {
     const service = fakeService({ users: [{ id: uuid, email: "other@example.test" }] });
     await expect(
-      ensureAdministrator(config, "new@example.test", {
+      ensureAdministrator(localConfig, "new@example.test", {
         environmentClient: () => service,
         readJson: async () => null,
       }),
@@ -351,7 +524,7 @@ describe("clean Supabase installation", () => {
   });
 
   it("prevents invalid player IDs from reaching the role grant", () => {
-    expect(() => bootstrapRoleSql("';select 1;--", config, "revision")).toThrow(/Player/);
+    expect(() => bootstrapRoleSql("';select 1;--", localConfig, "revision")).toThrow(/Player/);
   });
 
   it("validates dictionary counts without relying on JSON object key order", async () => {

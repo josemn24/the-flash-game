@@ -83,7 +83,7 @@ fixtures con versiones publicadas, un intento completado, respuestas, recepcione
 otro intento activo. Aplica únicamente la migración del refactor y compara todas las filas de
 las tablas del dominio. También verifica que ninguna función anterior cambie de OID, firma,
 atributos o permisos, y que solo cambien los cuerpos de las dos fachadas acordadas.
-Los E2E usan un stack separado. Estas comprobaciones no despliegan a staging ni producción.
+Los E2E usan un stack separado. Estas comprobaciones no despliegan a staging.
 
 Validación local del 2026-10-09: pasan las 54 suites pgTAP, el inventario y la concurrencia
 por ambas vías de carga; los 158 casos SQL compartidos, las 904 observaciones originales,
@@ -93,7 +93,7 @@ los tipos públicos generados permanecen iguales.
 
 El 2026-10-10 también se aplicó el historial completo a la base local de la aplicación mediante
 el [procedimiento de instalación limpia](supabase-clean-installation.md), incluida la reconciliación
-posterior de comandos. Staging y producción quedan pendientes.
+posterior de comandos. La ejecución y validación de staging quedan pendientes.
 
 Los E2E de Flash y Pirámide pasan usando `next build` y `next start` en stacks desechables,
 con una configuración temporal fuera del repositorio que solo cambia el arranque del servidor

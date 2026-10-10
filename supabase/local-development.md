@@ -1,7 +1,9 @@
 # Desarrollo local de Supabase
 
-Esta guía describe cómo reconstruir la base local, cargar fixtures y abrir la aplicación con datos
-de prueba. Todos los comandos de esta página están pensados para el entorno local.
+Esta página reúne el arranque, las comprobaciones y los límites del desarrollo local.
+La [guía de preparación de entornos](../docs/current/supabase-clean-installation.md#qué-necesito-preparar)
+es la referencia para elegir un dataset y ejecutar su preparación. Todos los comandos de esta
+página están pensados para el entorno local.
 
 ## Arranque y estado
 
@@ -14,87 +16,33 @@ El stack local debe estar disponible antes de ejecutar las pruebas de esquema, i
 
 ## Reconstruir la base
 
-```bash
-npm run supabase:db:reset
-```
-
-Este comando borra y recrea la base local aplicando las migraciones pendientes. No debe ejecutarse
-contra un entorno con datos que se quieran conservar.
-
-El seed está desactivado en `supabase/config.toml` para que un `db reset` normal no cargue datos de
-aplicación automáticamente. El setup del navegador lo carga de forma explícita y controlada.
+El [recorrido local mínimo](../docs/current/supabase-clean-installation.md#local) reconstruye
+PostgreSQL, Auth y Storage y prepara el administrador, diccionarios y buckets vacíos.
+La [preparación de fixtures](../docs/current/supabase-clean-installation.md#fixtures-de-escenarios)
+distingue el reset de PostgreSQL de esa limpieza completa. Ambos procedimientos son destructivos;
+no ejecutarlos sobre datos que se quieran conservar.
 
 ## Fixtures de escenarios
 
-Los escenarios crean cuentas Auth y datos de dominio temporales; no son seeds globales. El patrón
-general es:
-
-```bash
-npm run supabase:db:reset
-npm run supabase:fixture -- --scenario <scenario>
-npm run test:integration:supabase -- --scenario <scenario>
-npm run test:e2e -- e2e/<scenario>.spec.ts
-```
-
-Para limpiar un escenario:
-
-```bash
-npm run supabase:fixture -- --scenario <scenario> --clean
-```
-
-Los manifiestos se guardan en `output/fixtures/`, una ruta ignorada por Git. Consulta los archivos
-de `scripts/fixtures/scenarios/` y `scripts/integration/scenarios/` para conocer los escenarios
-disponibles y sus pruebas concretas.
+Los [fixtures por escenario](../docs/current/supabase-clean-installation.md#fixtures-de-escenarios)
+crean cuentas y contenido temporal, con manifiestos en `output/fixtures/`. La guía explica su
+preparación y limpieza; `--clean` puede reiniciar toda la base local.
+Las [instrucciones de QA del piloto](../docs/current/s22-operacion.md) conservan los comandos de
+integración y E2E específicos de cada escenario.
 
 ## Dataset para probar el navegador
 
-Para crear una sala persistida, cuentas Auth locales y desafíos preparados:
-
-```bash
-npm run supabase:browser:setup
-npm run dev
-```
-
-Para incluir también resultados históricos:
-
-```bash
-npm run supabase:browser:setup -- --with-history
-```
+El [dataset del navegador](../docs/current/supabase-clean-installation.md#dataset-para-probar-el-navegador)
+prepara cuentas con distintos permisos y desafíos persistidos, con historial opcional.
+El setup reinicia la base y escribe sus credenciales e IDs en `output/fixtures/browser.json`.
 
 ## Alpha local de Tabarnia
 
-Para preparar la sala realista de la alpha con sus doce jugadores, una temporada activa y cuatro
-desafíos competitivos:
-
-```bash
-npm run supabase:start
-npm run supabase:tabarnia:setup
-npm run dev
-```
-
-El setup crea 13 cuentas Auth: `xesmona` como superadmin fuera de la sala, `Ches` como propietario
-y jugador, y otros once miembros jugadores. Programa «Reino de animales» en modo Alphabet (18
-letras, 135 segundos, 100 puntos) como desafío actual; «Biblia y religiones abrahámicas» en La
-Pirámide (7 niveles, 100 puntos), Steel Ball Run (16 retos, 100 puntos) y Supervivencia: España
-(20 preguntas, 3 vidas, 100 puntos) quedan detrás, en ese orden y en ventanas consecutivas de 24
-horas.
-
-Las credenciales fijas y los IDs generados se guardan en `output/fixtures/tabarnia.json`, una ruta
-ignorada por Git. El comando reinicia Supabase local en cada ejecución, carga los diccionarios de
-Mini-Wordle que necesita la Pirámide y no crea intentos ni resultados históricos. Los recursos de
-España se guardan en el bucket privado `question-assets`; el mapa SVG de Canarias se rasteriza a PNG
-durante el setup.
-
-El setup realiza estas operaciones únicamente contra Supabase local:
-
-1. Comprueba que Supabase apunta a localhost y reinicia la base local.
-2. Carga el diccionario de Mini-Wordle.
-3. Crea las 13 cuentas Auth y aprovisiona sus `players`.
-4. Carga los recursos de imagen privados, crea la sala, temporada y publicaciones.
-5. Escribe `output/fixtures/tabarnia.json` con las cuentas y metadatos de los cuatro desafíos.
-
-El comando imprime las credenciales locales y la ruta del desafío que está abierto. No reutilices
-esas credenciales contra un proyecto remoto.
+La [alpha de Tabarnia](../docs/current/supabase-clean-installation.md#alpha-local-de-tabarnia)
+prepara una sala con doce jugadores y cuatro desafíos, reiniciando la base local.
+El [escenario conjunto con BetaVIP](../docs/current/supabase-clean-installation.md#escenario-local-con-tabarnia-y-betavip)
+añade otra sala y tres desafíos. Las recetas, cuentas y recursos de ambos recorridos están en la
+guía principal; las credenciales de ejemplo son exclusivamente locales.
 
 ## Verificación
 
@@ -125,5 +73,5 @@ npm run build
 ## Límites del entorno
 
 No hay un proyecto remoto vinculado desde este entorno. Las pruebas y los datasets descritos aquí
-no validan producción ni staging. Para publicar cambios, primero se revisan las migraciones generadas
+no validan staging. Para publicar cambios, primero se revisan las migraciones generadas
 y después se aplican mediante el proceso de despliegue correspondiente.

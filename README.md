@@ -5,6 +5,11 @@ combina una experiencia de práctica local con recorridos competitivos persistid
 además de consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva
 de 31 formatos.
 
+Los únicos entornos de aplicación admitidos son **local** y **staging**. El aprovisionamiento y
+el reset rechazan cualquier otro destino. `NODE_ENV=production`, las compilaciones optimizadas,
+los archivos `production-*` y el perfil de calendario `production` son nombres técnicos: también
+se utilizan en local o staging y no definen un entorno remoto adicional.
+
 ## Qué incluye
 
 - Una sala demo mock y escenarios Supabase locales con temporada activa, desafíos y publicaciones.
@@ -69,7 +74,8 @@ npm run dev
 
 Abre [http://localhost:3000](http://localhost:3000) en el navegador. Para la experiencia mock no se
 necesita configuración adicional. Para probar las slices persistidas actuales, copia `.env.example` a
-`.env.local`, inicia Supabase local y sigue el workflow de [`supabase/README.md`](supabase/README.md).
+`.env.local` y elige un recorrido en la
+[guía de preparación de entornos](docs/current/supabase-clean-installation.md#qué-necesito-preparar).
 
 Para probar desde un móvil u otro equipo de la red local, consulta la
 [guía de pruebas desde dispositivos externos](docs/current/local-device-testing.md).
@@ -91,6 +97,7 @@ Para probar desde un móvil u otro equipo de la red local, consulta la
 | `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                 |
 | `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares. |
 | `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «La vuelta al mundo».                    |
+| `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.    |
 | `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                        |
 | `npm run supabase:schema:test`       | Verifica esquema, RLS, comandos y concurrencia.                                                          |
 | `npm run schema:revision:check`      | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                |
@@ -98,19 +105,10 @@ Para probar desde un móvil u otro equipo de la red local, consulta la
 | `npm run dictionary:check`           | Comprueba que el vocabulario versionado esté actualizado.                                                |
 | `npm run format:check`               | Comprueba el formato con Prettier.                                                                       |
 
-Para comprobar el escenario conjunto, ejecuta `npm run supabase:betavip:setup` y después
-`npm run test:integration:supabase -- --scenario betavip`. Vuelve a ejecutar el setup antes de
-`npm run test:e2e -- e2e/betavip.spec.ts` para que las pruebas de navegador empiecen sin la partida
-que crea la integración. Repite el setup al terminar: el E2E avanza temporalmente por los tres
-desafíos y crea partidas. Las credenciales locales generadas para Manuel y Genís quedan en
-`output/fixtures/betavip.json`.
-
-En BetaVIP, «La vuelta al mundo» está abierto durante las primeras 24 horas, «Cumbre lógica II» queda
-programado para el segundo día y «Supervivencia: Cultura pop» para el tercero. La temporada dura 72
-horas. El manifiesto lista las tres publicaciones en ese orden: `data.publicationId` apunta a La vuelta
-al mundo, mientras `data.survivalPublicationId`, `data.alphabetPublicationId` y
-`data.pyramidPublicationId` identifican explícitamente cada publicación. `data.questionAssets`
-contiene el recurso propio del casete.
+La [guía de preparación](docs/current/supabase-clean-installation.md#qué-necesito-preparar) reúne
+los requisitos, comandos, efectos destructivos y archivos de cada recorrido. El
+[escenario conjunto Tabarnia y BetaVIP](docs/current/supabase-clean-installation.md#escenario-local-con-tabarnia-y-betavip)
+incluye sus cuentas, publicaciones y la secuencia específica de integración y E2E.
 
 Para recorrer las temporadas locales sin esperar un día entre publicaciones, ambos seeds admiten un
 perfil rápido opcional:
@@ -157,23 +155,11 @@ ejecución única. El ranking puede leerse sin tick cuando la ventana temporal e
 el tick sigue siendo necesario para persistir aperturas, cierres, finalización de temporada y
 expiración de intentos.
 
-Para preparar el staging remoto, aplica antes las migraciones con `supabase db push` y proporciona
-las variables de bootstrap indicadas en `.env.example`. Comprueba el destino sin escribir nada y,
-solo después, ejecuta:
-
-```bash
-npm run supabase:staging:bootstrap -- --dry-run
-npm run supabase:staging:bootstrap
-```
-
-El script no cambia la configuración global de Auth. Escribe las credenciales generadas únicamente
-en `output/staging/bootstrap-credentials.json` con permisos `0600` y el estado no sensible en
-`output/staging/bootstrap-manifest.json`; copia las contraseñas a un gestor seguro y elimina el
-archivo de credenciales después.
-
-Para reiniciar un entorno completo, incluida la limpieza de Auth y Storage, y arrancar con el
-perfil mínimo, sigue la [instalación limpia de Supabase](docs/current/supabase-clean-installation.md).
-El procedimiento remoto queda preparado para una ventana posterior; el alcance actual es local.
+Para staging, elegir entre el
+[bootstrap sobre una base migrada](docs/current/supabase-clean-installation.md#bootstrap-sobre-una-base-migrada)
+y una [reinstalación completa](docs/current/supabase-clean-installation.md#reinstalación-completa).
+La guía conserva las confirmaciones de reset y el manejo de credenciales. La ejecución registrada
+es local; la preparación y validación remotas de staging siguen pendientes.
 
 ## Estructura principal
 

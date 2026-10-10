@@ -41,7 +41,7 @@ servidor decide validez, terminalidad, timeout, evaluación y scoring. La review
 métricas después del cierre; no se añade tabla de eventos.
 S12 añade
 programación/reprogramación de publicaciones Flash y calendario efectivo con tick protegido; la
-verificación local usa el CLI y la integración de producción usa Vercel Cron, con
+verificación local usa el CLI y el repositorio conserva la integración de Vercel Cron, con
 apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
 reutilizables. D08a/D08b/S13 añade los buckets `avatars` y `question-assets`, el registro privado
 `media_assets`, confirmación server-side de avatares y resolución pública de rutas estables. D08b
@@ -52,7 +52,7 @@ en payload v2 y el runtime entrega únicamente `media.src` al jugador autorizado
 
 La CLI local tiene un proyecto de staging vinculado, pero la migración S17 no se ha aplicado ni
 validado allí. El estado verificado corresponde al stack local y no permite afirmar el estado de
-producción o staging. S14 habilita Supervivencia persistida y S15 habilita Pirámide competitiva; ambas
+staging. S14 habilita Supervivencia persistida y S15 habilita Pirámide competitiva; ambas
 están verificadas en Supabase local dentro del runtime `pilot`. Las demos mock no son fallback de las
 rutas competitivas. Consulta
 [`s22-operacion.md`](s22-operacion.md).
@@ -140,10 +140,12 @@ La UI pública no permite crear salas privadas ni gestionar invitaciones. Un por
 superadmin prepara y activa temporadas, publica Flash/Supervivencia/Pirámide y provisiona directamente a los
 usuarios autenticados en las salas, creando o reactivando sus membresías sin flujo de aceptación de
 invitaciones. La superficie `/admin` permite programar y reprogramar publicaciones Flash/Supervivencia/Pirámide futuras;
-el repositorio declara Vercel Cron para ejecutar `GET /api/internal/calendar/tick` a las 00:05 UTC en
-producción y conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` para operación
+el repositorio declara Vercel Cron para ejecutar `GET /api/internal/calendar/tick` a las 00:05 UTC
+y conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` para operación
 local o recuperación manual. La configuración remota y sus logs aún requieren validación en el
-proyecto Vercel; Vercel no ejecuta esta tarea en previews ni reintenta automáticamente fallos.
+proyecto Vercel de staging. Production es la etiqueta técnica del despliegue que admite cron,
+no un entorno adicional de la aplicación; Vercel no ejecuta esta tarea en previews ni reintenta
+automáticamente fallos.
 La superficie ya permite al superadmin crear salas activas y provisionar
 directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capacidad administrativa.
 
@@ -246,7 +248,7 @@ Estado verificado a 2026-09-30:
 - Las validaciones focales S17, la integración Auth/PostgREST/RLS y el E2E del portal que aparecen en
   los registros históricos no se presentan como repetidas en esta comprobación.
 - Aunque la CLI tiene staging vinculado, no se ejecutó `supabase db push` ni una validación remota;
-  ninguna de estas comprobaciones acredita staging o producción.
+  ninguna de estas comprobaciones acredita staging.
 
 ### Registros históricos de slices
 

@@ -66,11 +66,13 @@ invitaciones siguen siendo capacidades del producto para una fase posterior, sin
 versión. La publicación mínima de contenido, la programación de desafíos y la ejecución del
 calendario ya están verificadas localmente en el mismo portal interno para Flash de S11/S12 y
 Supervivencia de S14.
-La ejecución temporal se realiza mediante un Route Handler protegido: Vercel Cron invoca `GET
-/api/internal/calendar/tick` en producción diariamente a las 00:05 UTC con `CRON_SECRET`, mientras
-que el CLI local conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` con
-`CALENDAR_TICK_SECRET`. No hay cola ni worker propio; Vercel Cron no ejecuta previews ni reintenta
-automáticamente una invocación fallida.
+La ejecución temporal conserva el Route Handler protegido: Vercel Cron está configurado para
+invocar `GET /api/internal/calendar/tick` diariamente a las 00:05 UTC con `CRON_SECRET`, mientras
+que el CLI conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` con
+`CALENDAR_TICK_SECRET`. Local y staging son los únicos entornos de aplicación. La etiqueta
+Production de Vercel identifica el tipo de despliegue que admite cron; no define un entorno
+adicional. Su ejecución automática en staging no está verificada. No hay cola ni worker propio;
+Vercel Cron no ejecuta previews ni reintenta automáticamente una invocación fallida.
 
 Cada operación administrativa debe comprobar el privilegio global en servidor, aplicar las
 invariantes de dominio y usar un comando acotado. Las acciones que afecten directamente a una sala
@@ -395,7 +397,7 @@ Los servicios externos se incorporan detrás de adaptadores solo cuando el caso 
   la aplicación persiste referencias estables y resuelve URLs firmadas únicamente en runtime;
 - **correo/notificaciones:** invitaciones y avisos, si se activan;
 - **observabilidad:** errores, auditoría y métricas, sin convertir logs en fuente de verdad;
-- **scheduler:** Vercel Cron ejecuta el calendar tick diario en producción; el tick cierra temporadas,
+- **scheduler:** se conserva Vercel Cron configurado para el calendar tick diario; el tick cierra temporadas,
   actualiza publicaciones y reconcilia intentos inactivos elegibles.
 
 La lógica de The Flash no debe depender de la forma concreta de una respuesta externa. Cada
@@ -422,8 +424,8 @@ Un proceso asíncrono será necesario solo para tareas que no deben bloquear la 
 - recalcular proyecciones materializadas si el volumen lo exige;
 - procesar webhooks externos.
 
-Para S12, Vercel Cron invoca el Route Handler protegido en producción y es suficiente. El CLI local
-conserva la recuperación manual. No se debe introducir event sourcing, una cola propia ni
+Para S12 se conserva la integración de Vercel Cron con el Route Handler protegido, pendiente de
+validación en staging. El CLI conserva la operación manual. No se debe introducir event sourcing, una cola propia ni
 microservicios solo por anticipar estas tareas.
 
 ## 3. Reglas de dependencia

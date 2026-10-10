@@ -553,7 +553,7 @@ Reglas:
 
 Si la primera versión no permite correcciones de puntuación, puede reducirse a una tabla de
 acreditaciones con una fila por intento. El libro append-only es preferible si la operación
-administrativa de corrección entra en producción desde el inicio.
+administrativa de corrección está disponible desde el inicio del piloto.
 
 ### `audit_log`
 

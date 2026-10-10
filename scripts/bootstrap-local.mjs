@@ -8,6 +8,7 @@ import { checkInventory } from "./supabase-security-inventory.mjs";
 import { sqlString } from "./support/supabase-local.mjs";
 import {
   assertEnvironmentRevision,
+  assertEnvironmentTarget,
   environmentClient,
   loadOperationalEnv,
   parseEnvironmentArgs,
@@ -23,22 +24,15 @@ import {
 } from "./support/supabase-provisioning.mjs";
 
 export function minimumBootstrapEmail(config, env) {
-  const email = (
-    env.BOOTSTRAP_ADMIN_EMAIL ?? (config.target === "local" ? "superadmin@the-flash.local" : "")
-  )
-    .trim()
-    .toLowerCase();
+  assertEnvironmentTarget(config.target, ["local"]);
+  const email = (env.BOOTSTRAP_ADMIN_EMAIL ?? "superadmin@the-flash.local").trim().toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     throw new Error("BOOTSTRAP_ADMIN_EMAIL debe ser un email válido.");
-  if (
-    config.target === "production" &&
-    env.PRODUCTION_BOOTSTRAP_CONFIRM !== `production:${config.projectRef}`
-  )
-    throw new Error("PRODUCTION_BOOTSTRAP_CONFIRM debe identificar el proyecto de producción.");
   return email;
 }
 
 export function bootstrapRoleSql(playerId, config, revision) {
+  assertEnvironmentTarget(config.target, ["local"]);
   if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(playerId))
     throw new Error("Player inválido.");
   return `begin;
@@ -111,6 +105,7 @@ async function assertNoContent(sql) {
 }
 
 export async function ensureAdministrator(config, email, dependencies) {
+  assertEnvironmentTarget(config.target, ["local"]);
   const credentialsPath = path.join(config.artifactDirectory, "bootstrap-credentials.json");
   const previous = await (dependencies.readJson ?? readJsonIfPresent)(credentialsPath);
   if (previous && (previous.projectRef !== config.projectRef || previous.target !== config.target))
@@ -183,7 +178,7 @@ export async function runMinimumBootstrap({
   args = [],
   dependencies = {},
 } = {}) {
-  const options = parseEnvironmentArgs(args, { targets: ["local", "production"] });
+  const options = parseEnvironmentArgs(args, { targets: ["local"] });
   const config = await (dependencies.resolveEnvironment ?? resolveEnvironment)(options.target, env);
   const email = minimumBootstrapEmail(config, env);
   const plan = {
@@ -236,7 +231,7 @@ export async function runMinimumBootstrap({
 }
 
 async function main() {
-  const options = parseEnvironmentArgs(process.argv.slice(2), { targets: ["local", "production"] });
+  const options = parseEnvironmentArgs(process.argv.slice(2), { targets: ["local"] });
   loadOperationalEnv(options);
   console.log(JSON.stringify(await runMinimumBootstrap({ args: process.argv.slice(2) }), null, 2));
 }
