@@ -944,6 +944,113 @@ describe("format coordination", () => {
 });
 
 describe("Alphabet atomic finalization", () => {
+  it("retries an uncertain Alphabet pass with the original command", async () => {
+    const { engine, calls } = setup(alphabet);
+    calls.prepare
+      .mockResolvedValueOnce({
+        ...prepared("A", 2, { question: "Letra A" }),
+        progress: { kind: "alphabet", letters: [], round: 1 },
+      })
+      .mockResolvedValue({
+        ...prepared("B", 4, { question: "Letra B" }),
+        progress: { kind: "alphabet", letters: [], round: 1 },
+      });
+    calls.alphabetPass
+      .mockRejectedValueOnce(new CompetitiveCommandError("database_unavailable", 503))
+      .mockResolvedValue({ passed: true, lockVersion: 3 });
+
+    await play(engine);
+    await engine.interactions.pass();
+    const originalCommand = calls.alphabetPass.mock.calls[0]?.[0];
+    expect(engine.getSnapshot().pendingCommand?.operation).toBe("alphabetPass");
+
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(calls.alphabetPass).toHaveBeenCalledTimes(2);
+    expect(calls.alphabetPass.mock.calls[1]?.[0]).toEqual(originalCommand);
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "playing",
+      question: { id: "B" },
+      pendingCommand: null,
+      lifecycleError: undefined,
+    });
+  });
+
+  it("finalizes after a late pass without showing an error or replaying the pass", async () => {
+    const { engine, calls } = setup(alphabet);
+    const answers = [
+      {
+        challengeItemId: "A",
+        answer: "respuesta",
+        status: "correct",
+        points: 10,
+        timeUsedMs: 1000,
+      },
+      { challengeItemId: "B", answer: null, status: "unanswered", points: 0, timeUsedMs: 0 },
+      { challengeItemId: "C", answer: null, status: "unanswered", points: 0, timeUsedMs: 0 },
+    ];
+    calls.prepare.mockResolvedValue({
+      ...prepared("B", 2, { question: "Letra B" }),
+      progress: { kind: "alphabet", letters: [], round: 1 },
+    });
+    calls.alphabetPass.mockRejectedValue(new CompetitiveCommandError("pass_unavailable", 409));
+    calls.complete.mockResolvedValue({ lockVersion: 3, score: 10, review: [], answers });
+
+    await play(engine);
+    await engine.interactions.pass();
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(calls.alphabetPass).toHaveBeenCalledOnce();
+    expect(calls.complete).toHaveBeenCalledOnce();
+    expect(calls.complete.mock.calls[0]?.[0].lockVersion).toBe(2);
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "results",
+      score: 10,
+      pendingCommand: null,
+      lifecycleError: undefined,
+      results: [
+        { questionId: "A", isCorrect: true, points: 10 },
+        { questionId: "B", isCorrect: false, points: 0 },
+        { questionId: "C", isCorrect: false, points: 0 },
+      ],
+    });
+  });
+
+  it("finalizes once when a late pass races the timer callback", async () => {
+    const { engine, calls } = setup(alphabet);
+    calls.prepare.mockResolvedValue({
+      ...prepared("A", 2, { question: "Letra A" }),
+      progress: { kind: "alphabet", letters: [], round: 1 },
+    });
+    calls.complete.mockResolvedValue({ lockVersion: 3, score: 0, review: [], answers: [] });
+    let rejectPass!: (reason: unknown) => void;
+    calls.alphabetPass.mockImplementation(
+      () =>
+        new Promise((_, reject) => {
+          rejectPass = reject;
+        }),
+    );
+
+    await play(engine);
+    const passing = engine.interactions.pass();
+    await drain();
+    const timingOut = engine.interactions.onTimeUp();
+    await drain();
+    expect(engine.getSnapshot()).toMatchObject({ phase: "finalizing", locked: true });
+    expect(calls.complete).not.toHaveBeenCalled();
+
+    rejectPass(new CompetitiveCommandError("pass_unavailable", 409));
+    await Promise.all([passing, timingOut]);
+
+    expect(calls.alphabetPass).toHaveBeenCalledOnce();
+    expect(calls.complete).toHaveBeenCalledOnce();
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "results",
+      pendingCommand: null,
+      lifecycleError: undefined,
+    });
+  });
+
   it.each([1, 5, 18, 20])(
     "closes %i pending letters with one complete and no null answers",
     async (count) => {

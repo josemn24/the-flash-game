@@ -112,6 +112,8 @@ export type SessionEvent =
       feedback?: Feedback;
       definitive?: boolean;
       notice?: string;
+      phase?: SessionPhase;
+      locked?: boolean;
     }
   | { type: "authorization_lost"; error: LifecycleError }
   | { type: "control_required"; transfer: TransferContext }
@@ -247,14 +249,14 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
       return {
         ...state,
         busy: false,
-        locked: !event.definitive,
+        locked: event.locked ?? !event.definitive,
         commandStatus: event.definitive ? "definitive_failure" : "uncertain",
         pendingCommand: event.definitive ? null : state.pendingCommand,
         lifecycleError: event.lifecycleError,
         feedback: event.feedback,
         startNotice: event.notice,
         levelNotice: event.notice,
-        phase: event.definitive && state.question ? "playing" : state.phase,
+        phase: event.phase ?? (event.definitive && state.question ? "playing" : state.phase),
       };
     case "authorization_lost":
       return {

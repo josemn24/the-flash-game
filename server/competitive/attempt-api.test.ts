@@ -176,6 +176,22 @@ describe("competitive HTTP contract", () => {
     expect(response.status).toBe(503);
   });
 
+  it("maps an Alphabet pass rejected at its deadline as a definitive conflict", async () => {
+    expect(mapAttemptError(new AttemptCommandError("pass_unavailable"))).toMatchObject({
+      code: "pass_unavailable",
+      status: 409,
+    });
+    const response = errorResponse(
+      new AttemptCommandError("pass_unavailable"),
+      "late-pass",
+      "competitive.alphabet.pass",
+    );
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error: { code: "pass_unavailable", requestId: "late-pass" },
+    });
+  });
+
   it("maps Queens overflow to a definitive bad request", () => {
     expect(mapAttemptError(new AttemptCommandError("queens_answer_overflow"))).toMatchObject({
       code: "queens_answer_overflow",

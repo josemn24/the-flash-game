@@ -90,6 +90,28 @@ describe("Supabase attempt database connection", () => {
   });
 
   const attemptId = "00000000-0000-4000-8000-000000000003";
+
+  it("preserves the definitive late Alphabet pass error and rolls back", async () => {
+    client.query.mockImplementation(async (sql: string) => {
+      if (sql.includes("private.expire_stale_attempts"))
+        return { rows: [{ result: { abandonedAttempts: 0 } }] };
+      if (sql.includes("private.pass_interaction"))
+        throw Object.assign(new Error("pass_unavailable"), { code: "55000" });
+      return { rows: [] };
+    });
+
+    await expect(
+      callAttemptCommand({ authUserId: attemptId }, "pass_interaction", {
+        attemptId,
+        sessionToken: "session-token",
+        lockVersion: 1,
+        idempotencyKey: "alphabet-pass-1",
+        challengeItemId: "00000000-0000-4000-8000-000000000004",
+      }),
+    ).rejects.toMatchObject({ code: "pass_unavailable" });
+    expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
+  });
+
   it.each(["not_authorized", "session_revoked", "competitive_access_denied"])(
     "preserves domain denial %s even with PostgreSQL permission SQLSTATE",
     async (code) => {

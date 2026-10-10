@@ -106,6 +106,30 @@ select * from test_support.test_alphabet_completion(5);
 select * from test_support.test_alphabet_completion(18);
 select * from test_support.test_alphabet_completion(20);
 
+-- A late pass is rejected without closing its active interval; completion then records the timeout.
+select test_support.as_actor('owner');
+select test_support.run('start_attempt', jsonb_build_object(
+  'scheduledChallengeId', test_support.alphabet_publication('late-alphabet-pass', 2),
+  'sessionToken', repeat('l', 40)
+));
+select test_support.run('prepare_interaction');
+select pg_sleep(0.12);
+select throws_ok($$select test_support.run('pass_interaction')$$,
+  '55000', 'pass_unavailable', 'A pass received after the global deadline is rejected definitively');
+select is((select count(*) from private.interaction_intervals
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)
+    and ended_at is null), 1::bigint, 'A rejected late pass leaves the active interval for timeout completion');
+select test_support.run('complete_attempt', '{"score":0}');
+select is((select count(*) from private.attempt_answers
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)
+    and status = 'unanswered'), 2::bigint, 'Completion records the active and unvisited letters as unanswered');
+select is((select coalesce(sum(points), 0) from private.attempt_answers
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)), 0::bigint,
+  'A late pass and timeout award no points');
+select is((select count(*) from private.interaction_intervals
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)
+    and end_reason = 'pass'), 0::bigint, 'The rejected action is never recorded as a pass');
+
 select test_support.as_actor('member');
 select test_support.run('start_attempt', jsonb_build_object('scheduledChallengeId',test_support.id('sc-alphabet'),'sessionToken',repeat('m',40)));
 select throws_ok($$select test_support.run('complete_attempt','{"score":0}')$$,

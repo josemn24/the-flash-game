@@ -56,6 +56,7 @@ export class CompetitiveSessionEngine {
   private reconciling = false;
   private retryAt = 0;
   private automaticRetries = 0;
+  private alphabetPassExpired = false;
   private abortController = new AbortController();
   private retrying = false;
   private terminalRecoveryAttempted = false;
@@ -238,6 +239,10 @@ export class CompetitiveSessionEngine {
       if (!(error instanceof PendingCommandBlocked)) throw error;
     }
     await this.recoverTerminalIfRequested();
+    if (!accepted && this.finalizeExpiredAlphabetPass()) {
+      await this.lifecycle.finalizeAlphabet();
+      return false;
+    }
     if (accepted && this.active) await step.after?.();
     if (!accepted && this.snapshot.lifecycleError?.code === "stale_version" && !this.reconciling)
       await this.reconcile();
@@ -258,6 +263,24 @@ export class CompetitiveSessionEngine {
   };
   private async failed(command: PendingCommand, step: CommandStep, error: unknown) {
     const code = error instanceof CompetitiveCommandError ? error.code : undefined;
+    if (
+      command.operation === "alphabetPass" &&
+      this.options.challenge.mode === "alphabet" &&
+      code === "pass_unavailable"
+    ) {
+      this.alphabetPassExpired = true;
+      this.pendingStep = undefined;
+      this.retryAt = 0;
+      this.automaticRetries = 0;
+      this.timers.cancel("completion-retry");
+      this.commit({
+        type: "command_failed",
+        definitive: true,
+        phase: "finalizing",
+        locked: true,
+      });
+      return;
+    }
     if (command.operation === "takeover") {
       if (code === "stale_version" || code === "idempotency_conflict") {
         console.info(JSON.stringify({ event: "takeover_conflict", code }));
@@ -443,6 +466,12 @@ export class CompetitiveSessionEngine {
     return false;
   }
 
+  private finalizeExpiredAlphabetPass() {
+    if (!this.alphabetPassExpired) return false;
+    this.alphabetPassExpired = false;
+    return true;
+  }
+
   retry = async (automatic = false) => {
     // React handlers can pass an event; only our internal true means an automatic replay.
     automatic = automatic === true;
@@ -491,6 +520,10 @@ export class CompetitiveSessionEngine {
       this.retrying = false;
     }
     await this.recoverTerminalIfRequested();
+    if (!accepted && this.finalizeExpiredAlphabetPass()) {
+      await this.lifecycle.finalizeAlphabet();
+      return;
+    }
     if (accepted && this.active) await step.after?.();
     if (!accepted && this.snapshot.lifecycleError?.code === "stale_version") await this.reconcile();
   };

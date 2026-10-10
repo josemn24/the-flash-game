@@ -100,6 +100,7 @@ function commandCode(error: unknown) {
     "invalid_command",
     "attempt_terminal",
     "interaction_not_presented",
+    "pass_unavailable",
     "evaluation_pending",
     "publication_cancelled",
     "attempt_not_terminal",
