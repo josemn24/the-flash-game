@@ -134,7 +134,9 @@ describe("ServerQueensQuestion", () => {
     const limited = { ...progress, maxIncorrectValidations: 3 };
     const { rerender } = render(<ServerQueensQuestion {...props} progress={limited} />);
     expect(screen.getByText("3 intentos restantes")).toBeTruthy();
-    expect(screen.getByText(/Tres fallos terminan la partida/)).toBeTruthy();
+    expect(
+      screen.getByText("El tablero se valida automáticamente al completar las 5 coronas."),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole("gridcell", { name: /Fila 5, columna 5/ }));
     expect(screen.getByText("3 intentos restantes")).toBeTruthy();
     rerender(
@@ -179,7 +181,7 @@ describe("ServerQueensQuestion", () => {
     expect(onDraft).not.toHaveBeenCalled();
     rerender(<ServerQueensQuestion {...props} validationState="idle" />);
     fireEvent.click(screen.getByRole("gridcell", { name: /Fila 1, columna 3/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Marcar X/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Marcar casilla con X" }));
     fireEvent.click(screen.getByRole("gridcell", { name: /Fila 1, columna 1/ }));
     expect(onDraft).not.toHaveBeenCalled();
     expect(onValidate).not.toHaveBeenCalled();

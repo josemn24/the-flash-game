@@ -19,7 +19,7 @@ export const guide = {
     "Rondas donde importan precisión y velocidad",
   ],
   avoidWhen: [
-    "Las regiones no pueden distinguirse sin depender del color",
+    "La paleta de colores no permite distinguir claramente las regiones",
     "El tablero no tiene una solución única verificada",
     "El tiempo disponible no permite anotar y corregir candidatos",
   ],
@@ -38,7 +38,7 @@ export const guide = {
     "Evita regiones o soluciones que conviertan el reto en ensayo y error",
   ],
   accessibility: [
-    "Distingue regiones mediante color, patrón y bordes de alto contraste",
+    "Distingue regiones con colores sólidos, diferenciados también por luminosidad, y separaciones claras entre celdas",
     "Etiqueta cada celda con fila, columna, región, estado y conflictos",
     "Ofrece herramientas explícitas, foco móvil y control completo por teclado",
     "Anuncia cada colocación y conflicto sin mover el foco",

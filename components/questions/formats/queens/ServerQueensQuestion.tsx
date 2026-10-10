@@ -132,20 +132,22 @@ export function ServerQueensQuestion({
         <button
           type="button"
           className={tool === "queen" ? styles.toolActive : ""}
+          aria-label="Colocar corona"
           aria-pressed={tool === "queen"}
           onClick={() => setTool("queen")}
           disabled={disabled}
         >
-          <CrownIcon /> Corona <kbd>C</kbd>
+          <CrownIcon /> Colocar
         </button>
         <button
           type="button"
           className={tool === "mark" ? styles.toolActive : ""}
+          aria-label="Marcar casilla con X"
           aria-pressed={tool === "mark"}
           onClick={() => setTool("mark")}
           disabled={disabled}
         >
-          <CrossIcon /> Marcar X <kbd>X</kbd>
+          <CrossIcon /> Marcar
         </button>
       </div>
       <QueensBoard
@@ -178,9 +180,7 @@ export function ServerQueensQuestion({
         </p>
       ) : null}
       <p className={styles.instructions}>
-        La corona marcada como pista es fija. Coloca una por fila, columna y región sin que se
-        toquen. El tablero se valida automáticamente al completar las {targetQueens} coronas.
-        {progress.maxIncorrectValidations !== null ? " Tres fallos terminan la partida." : null}
+        El tablero se valida automáticamente al completar las {targetQueens} coronas.
       </p>
       <ServerOperationStatus
         state={validationState}
