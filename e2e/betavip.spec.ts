@@ -45,7 +45,7 @@ function queensCell(page: Page, index: number, size: number) {
 
 test("BetaVIP muestra La vuelta al mundo como primer desafío", async ({ page }) => {
   const data = await fixture();
-  const [alphabet, pyramid, survival, antiquity, timeTrial] = data.data.publications;
+  const [alphabet, pyramid, timeTrial, survival, antiquity] = data.data.publications;
   expect(data.data.publicationId).toBe(alphabet.id);
   expect(data.data.survivalPublicationId).toBe(survival.id);
   expect(data.data.alphabetPublicationId).toBe(alphabet.id);
@@ -55,9 +55,9 @@ test("BetaVIP muestra La vuelta al mundo como primer desafío", async ({ page })
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
     [1, "La vuelta al mundo", "alphabet"],
     [2, "Cumbre lógica II", "pyramid"],
-    [3, "Supervivencia: Cultura pop", "survival"],
-    [4, "Ecos de la Antigüedad", "pyramid"],
-    [5, "Escalera de coronas", "time-trial"],
+    [3, "Escalera de coronas", "time-trial"],
+    [4, "Supervivencia: Cultura pop", "survival"],
+    [5, "Ecos de la Antigüedad", "pyramid"],
   ]);
 
   await signIn(page, data.users.ches);
@@ -77,16 +77,16 @@ test("BetaVIP muestra La vuelta al mundo como primer desafío", async ({ page })
 test("Ches continúa con Cumbre lógica II en el segundo periodo", async ({ page }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [alphabet, pyramid, survival] = data.data.publications;
+  const [alphabet, pyramid, , survival] = data.data.publications;
   expect(data.data.publicationId).toBe(alphabet.id);
   expect(data.data.survivalPublicationId).toBe(survival.id);
   expect(data.data.alphabetPublicationId).toBe(alphabet.id);
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
     [1, "La vuelta al mundo", "alphabet"],
     [2, "Cumbre lógica II", "pyramid"],
-    [3, "Supervivencia: Cultura pop", "survival"],
-    [4, "Ecos de la Antigüedad", "pyramid"],
-    [5, "Escalera de coronas", "time-trial"],
+    [3, "Escalera de coronas", "time-trial"],
+    [4, "Supervivencia: Cultura pop", "survival"],
+    [5, "Ecos de la Antigüedad", "pyramid"],
   ]);
 
   await dockerSql(`
@@ -135,12 +135,12 @@ commit;
   ).toBe(0);
 });
 
-test("Ches responde la imagen progresiva en el tercer periodo de Supervivencia", async ({
+test("Ches responde la imagen progresiva en el cuarto periodo de Supervivencia", async ({
   page,
 }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [, pyramid, survival] = data.data.publications;
+  const [, pyramid, , survival] = data.data.publications;
 
   await dockerSql(`
 begin;
@@ -207,16 +207,18 @@ commit;
   ).toBe(1);
 });
 
-test("Ches abre Ecos de la Antigüedad en el cuarto periodo", async ({ page }) => {
+test("Ches abre Ecos de la Antigüedad en el quinto periodo", async ({ page }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [alphabet, pyramid, survival, antiquity] = data.data.publications;
+  const [alphabet, pyramid, timeTrial, survival, antiquity] = data.data.publications;
 
   await dockerSql(`
 begin;
 update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
-where id in ('${alphabet.id}', '${pyramid.id}', '${survival.id}') and status <> 'cancelled';
+where id in (
+  '${alphabet.id}', '${pyramid.id}', '${timeTrial.id}', '${survival.id}'
+) and status <> 'cancelled';
 update public.scheduled_challenges
 set opens_at = (select starts_at from public.seasons where id = season_id),
     closes_at = clock_timestamp() + interval '1 hour'
@@ -257,10 +259,10 @@ commit;
   ).toBe(1);
 });
 
-test("Ches completa Escalera de coronas con un único deadline y 100 puntos", async ({ page }) => {
+test("Escalera de coronas: tercer desafío, un deadline y 100 puntos", async ({ page }) => {
   test.setTimeout(120_000);
   const data = await fixture();
-  const [alphabet, pyramid, survival, antiquity, timeTrial] = data.data.publications;
+  const [alphabet, pyramid, timeTrial, survival, antiquity] = data.data.publications;
 
   await dockerSql(`
 begin;

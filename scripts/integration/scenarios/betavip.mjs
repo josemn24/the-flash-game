@@ -15,7 +15,7 @@ export const scenario = {
     const beta = fixture.data;
     const betaSlug = beta.room.slug;
     const tabarniaSlug = beta.tabarnia.room.slug;
-    const [alphabet, pyramid, survival, antiquity, timeTrial] = beta.publications;
+    const [alphabet, pyramid, timeTrial, survival, antiquity] = beta.publications;
     const tabarniaSteel = tabarnia.data.publications.find(
       (publication) => publication.slug === "steel-ball-run",
     );
@@ -27,11 +27,11 @@ export const scenario = {
         JSON.stringify([
           [1, "La vuelta al mundo", "alphabet", "open"],
           [2, "Cumbre lógica II", "pyramid", "scheduled"],
-          [3, "Supervivencia: Cultura pop", "survival", "scheduled"],
-          [4, "Ecos de la Antigüedad", "pyramid", "scheduled"],
-          [5, "Escalera de coronas", "time-trial", "scheduled"],
+          [3, "Escalera de coronas", "time-trial", "scheduled"],
+          [4, "Supervivencia: Cultura pop", "survival", "scheduled"],
+          [5, "Ecos de la Antigüedad", "pyramid", "scheduled"],
         ]),
-      "BetaVIP publica Alphabet, Cumbre lógica II, Survival y Ecos de la Antigüedad en ese orden",
+      "BetaVIP publica Alphabet, Pirámide, Contrarreloj, Survival y Ecos de la Antigüedad en ese orden",
     );
     assert(beta.publicationId === alphabet.id, "El manifiesto apunta al primer desafío");
     assert(beta.challengeId === alphabet.challengeId, "El manifiesto apunta al desafío Alphabet");
@@ -201,7 +201,7 @@ export const scenario = {
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.scheduled_challenges fourth on fourth.season_id = first.season_id join public.scheduled_challenges fifth on fifth.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${alphabet.id}' and second.id = '${pyramid.id}' and third.id = '${survival.id}' and fourth.id = '${antiquity.id}' and fifth.id = '${timeTrial.id}' and first.number = 1 and second.number = 2 and third.number = 3 and fourth.number = 4 and fifth.number = 5 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = fourth.opens_at and fourth.closes_at = fifth.opens_at and fifth.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (fifth.closes_at - fifth.opens_at)) = 86400 and private.publication_is_effectively_open(first.status, season.status, season.starts_at, season.ends_at, first.opens_at, first.closes_at, first.opens_at + interval '1 hour');`,
+        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.scheduled_challenges fourth on fourth.season_id = first.season_id join public.scheduled_challenges fifth on fifth.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${alphabet.id}' and second.id = '${pyramid.id}' and third.id = '${timeTrial.id}' and fourth.id = '${survival.id}' and fifth.id = '${antiquity.id}' and first.number = 1 and second.number = 2 and third.number = 3 and fourth.number = 4 and fifth.number = 5 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = fourth.opens_at and fourth.closes_at = fifth.opens_at and fifth.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (fifth.closes_at - fifth.opens_at)) = 86400 and private.publication_is_effectively_open(first.status, season.status, season.starts_at, season.ends_at, first.opens_at, first.closes_at, first.opens_at + interval '1 hour');`,
         config.dbContainer,
       )) === 1,
       "Las cinco publicaciones quedan disponibles en sus días, sin huecos ni solapes",
@@ -498,7 +498,7 @@ commit;
         target_room_slug: betaSlug,
         target_publication_id: survival.id,
       });
-      assert(playable.length === 20, "Survival se desbloquea como tercer desafío");
+      assert(playable.length === 20, "Survival se desbloquea como cuarto desafío");
       assert(
         !JSON.stringify(playable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
         "La lectura de Survival no expone soluciones",
@@ -526,13 +526,13 @@ commit;
         `select count(*) from public.scheduled_challenges where id = '${timeTrial.id}' and status = 'open';`,
         config.dbContainer,
       )) === 1,
-      "El tick abre Contrarreloj como quinto desafío",
+      "El tick abre Contrarreloj como tercer desafío",
     );
     const timeTrialRows = await rpc(clients.ches, "get_my_time_trial_challenge", {
       target_room_slug: betaSlug,
       target_publication_id: timeTrial.id,
     });
-    assert(timeTrialRows.length === 6, "Ches puede iniciar el quinto desafío Contrarreloj");
+    assert(timeTrialRows.length === 6, "Ches puede iniciar el tercer desafío Contrarreloj");
     assert(
       timeTrialRows.every(
         (row) =>

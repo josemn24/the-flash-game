@@ -183,7 +183,7 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
   };
   const survivalPublication = {
     id: stableId("publication:beta-vip-pop-culture-survival"),
-    number: 3,
+    number: 4,
     slug: BETA_VIP_SURVIVAL.slug,
     title: BETA_VIP_SURVIVAL.title,
     mode: "survival",
@@ -191,12 +191,12 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
     questionCount: survivalItems.length,
     pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[2],
+    ...scheduleData.publications[3],
     status: "scheduled",
   };
   const antiquity = {
     id: stableId("publication:beta-vip-ecos-de-la-antiguedad"),
-    number: 4,
+    number: 5,
     slug: BETA_VIP_ANTIQUITY.slug,
     title: BETA_VIP_ANTIQUITY.title,
     mode: "pyramid",
@@ -204,12 +204,12 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_ANTIQUITY.slug}-v1`),
     questionCount: antiquityItems.length,
     pointsTotal: antiquityItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[3],
+    ...scheduleData.publications[4],
     status: "scheduled",
   };
   const timeTrial = {
     id: stableId("publication:beta-vip-escalera-de-coronas"),
-    number: 5,
+    number: 3,
     slug: BETA_VIP_TIME_TRIAL.slug,
     title: BETA_VIP_TIME_TRIAL.title,
     mode: "time-trial",
@@ -217,7 +217,7 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_TIME_TRIAL.slug}-v1`),
     questionCount: timeTrialItems.length,
     pointsTotal: timeTrialItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[4],
+    ...scheduleData.publications[2],
     status: "scheduled",
   };
   return {
@@ -237,7 +237,7 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     survivalPublicationId: survivalPublication.id,
     antiquityPublicationId: antiquity.id,
     timeTrialPublicationId: timeTrial.id,
-    publications: [alphabet, pyramid, survivalPublication, antiquity, timeTrial],
+    publications: [alphabet, pyramid, timeTrial, survivalPublication, antiquity],
     questionAssets: [
       {
         id: cassetteAssetId,
@@ -564,7 +564,7 @@ export function stagingBetaVipManifest(startsAt = null) {
   };
   const timeTrial = {
     id: stableId("publication:beta-vip-escalera-de-coronas"),
-    number: 5,
+    number: 3,
     slug: BETA_VIP_TIME_TRIAL.slug,
     title: BETA_VIP_TIME_TRIAL.title,
     mode: "time-trial",
@@ -572,13 +572,13 @@ export function stagingBetaVipManifest(startsAt = null) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_TIME_TRIAL.slug}-v1`),
     questionCount: timeTrialItems.length,
     pointsTotal: timeTrialItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 96,
+    opensAfterHours: 48,
     durationHours: 24,
     status: "scheduled",
   };
   const survival = {
     id: stableId("publication:beta-vip-pop-culture-survival"),
-    number: 3,
+    number: 4,
     slug: BETA_VIP_SURVIVAL.slug,
     title: BETA_VIP_SURVIVAL.title,
     mode: "survival",
@@ -586,13 +586,13 @@ export function stagingBetaVipManifest(startsAt = null) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
     questionCount: survivalItems.length,
     pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 48,
+    opensAfterHours: 72,
     durationHours: 24,
     status: "scheduled",
   };
   const antiquity = {
     id: stableId("publication:beta-vip-ecos-de-la-antiguedad"),
-    number: 4,
+    number: 5,
     slug: BETA_VIP_ANTIQUITY.slug,
     title: BETA_VIP_ANTIQUITY.title,
     mode: "pyramid",
@@ -600,7 +600,7 @@ export function stagingBetaVipManifest(startsAt = null) {
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_ANTIQUITY.slug}-v1`),
     questionCount: antiquityItems.length,
     pointsTotal: antiquityItems.reduce((total, item) => total + item.points, 0),
-    opensAfterHours: 72,
+    opensAfterHours: 96,
     durationHours: 24,
     status: "scheduled",
   };
@@ -618,7 +618,7 @@ export function stagingBetaVipManifest(startsAt = null) {
     survivalPublicationId: survival.id,
     antiquityPublicationId: antiquity.id,
     timeTrialPublicationId: timeTrial.id,
-    publications: [alphabet, pyramid, survival, antiquity, timeTrial],
+    publications: [alphabet, pyramid, timeTrial, survival, antiquity],
     questionAssets: [
       {
         id: cassetteAssetId,

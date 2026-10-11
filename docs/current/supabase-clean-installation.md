@@ -28,7 +28,7 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261011092119_short_text_all_modes`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
+La revisión esperada es `20261011105737_time_trial`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
 
 ## Herramientas y garantías
 
@@ -102,16 +102,16 @@ La fecha y hora configuradas se guardan en UTC en el manifiesto. El desafío que
 próximo y se podrá jugar al llegar el inicio; cada persona inicia su propia partida manualmente.
 
 Desde el inicio de temporada, «La vuelta al mundo» está abierto durante las primeras 24 horas,
-«Cumbre lógica II» queda programado para el segundo día, «Supervivencia: Cultura pop» para el
-tercero, «Ecos de la Antigüedad» para el cuarto y «Escalera de coronas» para el quinto. Este último
-es un Contrarreloj Queens de seis tableros, de 4×4 a 7×7, con 100 puntos y un único reloj de tres
-minutos. La tercera validación incorrecta de un tablero termina la partida. La temporada dura 120
-horas. El perfil rápido conserva cinco ventanas consecutivas de cinco minutos (25 minutos en total);
-el calendario normal usa cinco ventanas de 24 horas. El manifiesto lista las publicaciones en ese
-orden; `data.publicationId` apunta a La vuelta al mundo y los campos `data.survivalPublicationId`,
-`data.alphabetPublicationId` y `data.pyramidPublicationId` identifican las tres primeras
-publicaciones; `data.antiquityPublicationId` y `data.timeTrialPublicationId` identifican las dos
-últimas. `data.questionAssets` contiene el recurso del casete. Los
+«Cumbre lógica II» queda programado para el segundo día, «Escalera de coronas» para el tercero,
+«Supervivencia: Cultura pop» para el cuarto y «Ecos de la Antigüedad» para el quinto. «Escalera de
+coronas» es un Contrarreloj Queens de seis tableros, de 4×4 a 7×7, con 100 puntos y un único reloj
+de tres minutos. La tercera validación incorrecta de un tablero termina la partida. La temporada
+dura 120 horas. El perfil rápido conserva cinco ventanas consecutivas de cinco minutos (25 minutos
+en total); el calendario normal usa cinco ventanas de 24 horas. El manifiesto lista las publicaciones
+en ese orden; `data.publicationId` apunta a La vuelta al mundo y los campos
+`data.alphabetPublicationId`, `data.pyramidPublicationId`, `data.timeTrialPublicationId`,
+`data.survivalPublicationId` y `data.antiquityPublicationId` identifican cada publicación.
+`data.questionAssets` contiene el recurso del casete. Los
 [perfiles y comandos de calendario](../../README.md#comandos-disponibles) explican
 cómo recorrer las ventanas localmente.
 
@@ -284,7 +284,7 @@ aplicación. Vercel no programa cron en previews y la ejecución automática de 
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261011092119_short_text_all_modes`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION=20261011105737_time_trial`. El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 

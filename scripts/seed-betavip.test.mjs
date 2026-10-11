@@ -393,9 +393,9 @@ describe("BetaVIP seed", () => {
     ).toEqual([
       [1, "La vuelta al mundo", "alphabet", "open"],
       [2, "Cumbre lógica II", "pyramid", "scheduled"],
-      [3, "Supervivencia: Cultura pop", "survival", "scheduled"],
-      [4, "Ecos de la Antigüedad", "pyramid", "scheduled"],
-      [5, "Escalera de coronas", "time-trial", "scheduled"],
+      [3, "Escalera de coronas", "time-trial", "scheduled"],
+      [4, "Supervivencia: Cultura pop", "survival", "scheduled"],
+      [5, "Ecos de la Antigüedad", "pyramid", "scheduled"],
     ]);
     expect(
       data.publications
@@ -422,22 +422,22 @@ describe("BetaVIP seed", () => {
         ),
       ],
       [
-        deterministicUuid("the-flash-game:betavip", "publication:beta-vip-pop-culture-survival"),
-        deterministicUuid("the-flash-game:betavip", `challenge:${BETA_VIP_SURVIVAL.slug}`),
+        deterministicUuid("the-flash-game:betavip", "publication:beta-vip-escalera-de-coronas"),
+        deterministicUuid("the-flash-game:betavip", `challenge:${BETA_VIP_TIME_TRIAL.slug}`),
         deterministicUuid(
           "the-flash-game:betavip",
-          `challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`,
+          `challenge-version:${BETA_VIP_TIME_TRIAL.slug}-v1`,
         ),
       ],
     ]);
     expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48, 72, 96]);
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 20, 7, 6]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 6, 20, 7]);
     expect(data.alphabetPublicationId).toBe(data.publications[0].id);
     expect(data.pyramidPublicationId).toBe(data.publications[1].id);
-    expect(data.survivalPublicationId).toBe(data.publications[2].id);
-    expect(data.antiquityPublicationId).toBe(data.publications[3].id);
-    expect(data.timeTrialPublicationId).toBe(data.publications[4].id);
+    expect(data.timeTrialPublicationId).toBe(data.publications[2].id);
+    expect(data.survivalPublicationId).toBe(data.publications[3].id);
+    expect(data.antiquityPublicationId).toBe(data.publications[4].id);
     expect(data.publications.some((item) => item.slug === "steel-ball-run")).toBe(false);
     expect(sql).toContain("'BetaVIP'");
     expect(sql).toContain("'Temporada BetaVIP'");

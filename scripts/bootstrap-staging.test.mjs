@@ -288,9 +288,9 @@ describe("staging bootstrap", () => {
     ).toEqual([
       ["La vuelta al mundo", "alphabet", "open", 0],
       ["Cumbre lógica II", "pyramid", "scheduled", 24],
-      ["Supervivencia: Cultura pop", "survival", "scheduled", 48],
-      ["Ecos de la Antigüedad", "pyramid", "scheduled", 72],
-      ["Escalera de coronas", "time-trial", "scheduled", 96],
+      ["Escalera de coronas", "time-trial", "scheduled", 48],
+      ["Supervivencia: Cultura pop", "survival", "scheduled", 72],
+      ["Ecos de la Antigüedad", "pyramid", "scheduled", 96],
     ]);
     expect(content.survival).toHaveLength(20);
     expect(content.alphabet).toHaveLength(18);
@@ -302,8 +302,8 @@ describe("staging bootstrap", () => {
     ]);
     expect(content.timeTrial.map((item) => item.points)).toEqual([10, 12, 14, 16, 20, 28]);
     expect(content.timeTrial.reduce((total, item) => total + item.points, 0)).toBe(100);
-    expect(data.timeTrialPublicationId).toBe(data.publications[4].id);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 20, 7, 6]);
+    expect(data.timeTrialPublicationId).toBe(data.publications[2].id);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 6, 20, 7]);
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100, 100]);
     expect(sql).toContain("now() + interval '120 hours'");
     expect(sql).toContain("'time-trial'");

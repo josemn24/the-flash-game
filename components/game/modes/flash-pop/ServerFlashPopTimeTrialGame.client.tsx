@@ -6,10 +6,10 @@ import {
   ChallengeIntro,
   ChallengeResultScreen,
   ReviewAnswerPanel,
+  ServerFlashQuestionStage,
   StartCountdown,
 } from "@/components/game/shared";
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
-import { ServerQueensQuestion } from "@/components/questions/formats/queens/ServerQueensQuestion";
 import { useCompetitiveSession } from "@/features/game/competitive/core/useCompetitiveSession";
 import { TIME_TRIAL_END_LABELS } from "@/lib/timeTrial";
 import type {
@@ -19,7 +19,7 @@ import type {
 import type { GameRoomContext } from "@/types/view-models/room";
 import { FlashPopGameShell } from "./FlashPopGameShell";
 import { Transition } from "./FlashPopCompetitiveHelpers";
-import styles from "./FlashPopFlashGame.module.css";
+import styles from "./ServerFlashPopTimeTrialGame.module.css";
 
 export function ServerFlashPopTimeTrialGame({
   challenge,
@@ -38,6 +38,8 @@ export function ServerFlashPopTimeTrialGame({
   const endReason = session.timeTrial?.endReason;
   const lastCorrect = session.timeTrial?.lastCorrectElapsedMs;
   const timeLabel = lastCorrect == null ? "Sin aciertos" : `${(lastCorrect / 1000).toFixed(2)} s`;
+  const reviewChallenge =
+    session.reviewChallenge?.mode === "flash" ? session.reviewChallenge : null;
 
   return (
     <FlashPopGameShell
@@ -52,12 +54,9 @@ export function ServerFlashPopTimeTrialGame({
           {running ? (
             <GameHeader
               title="Contrarreloj"
-              left={
-                <p>
-                  Prueba {Math.min(session.questionIndex + 1, challenge.slots.length)} de{" "}
-                  {challenge.slots.length}
-                </p>
-              }
+              mobileLabel={`Contrarreloj · prueba ${Math.min(session.questionIndex + 1, challenge.slots.length)} de ${challenge.slots.length}`}
+              className={styles.timeTrialHeader}
+              actionsClassName={styles.timeTrialActions}
               right={
                 <>
                   <Timer
@@ -127,20 +126,46 @@ export function ServerFlashPopTimeTrialGame({
         ) : null}
         {(session.phase === "playing" || session.phase === "checking") &&
         session.question?.type === "queens" ? (
-          <Card key={session.question.id} className={styles.stageFrame}>
-            <h1>{session.question.question}</h1>
-            <ServerQueensQuestion
-              question={session.question}
-              progress={session.question.progress}
-              locked={session.locked}
-              validationState={session.queensState}
-              validationStatusVisible={session.queensStatusVisible}
-              validationError={session.queensError}
-              onDraft={session.updateQueensDraft}
-              onValidate={session.validateQueensBoard}
-              onRetry={session.retryQueensValidation}
-            />
-          </Card>
+          <ServerFlashQuestionStage
+            key={session.question.id}
+            question={session.question}
+            questionNumber={session.questionIndex + 1}
+            totalQuestions={challenge.slots.length}
+            locked={session.locked}
+            pendingAnswer={session.pendingAnswer}
+            submissionState={session.submissionState}
+            submissionStatusVisible={session.submissionStatusVisible}
+            submissionError={session.submissionError}
+            onRetrySubmission={session.retrySubmit}
+            onSubmit={(answer) => void session.submit(answer)}
+            onProgress={session.updateDraft}
+            onMiniWordleGuess={session.submitMiniWordleGuess}
+            onLogicCodeAttempt={session.submitLogicCodeAttempt}
+            queensState={session.queensState}
+            queensStatusVisible={session.queensStatusVisible}
+            queensError={session.queensError}
+            onQueensDraft={session.updateQueensDraft}
+            onQueensValidate={session.validateQueensBoard}
+            onRetryQueensValidation={session.retryQueensValidation}
+            wordSearchState={session.wordSearchState}
+            wordSearchStatusVisible={session.wordSearchStatusVisible}
+            wordSearchError={session.wordSearchError}
+            lastWordSearchSelection={session.lastWordSearchSelection}
+            onWordSearchSelection={session.submitWordSearchSelection}
+            onRetryWordSearch={session.retryWordSearchSelection}
+            onWordHashtagSwap={session.submitWordHashtagSwap}
+            revealState={session.revealState}
+            revealStatusVisible={session.revealStatusVisible}
+            revealError={session.revealError}
+            onRevealProgressiveClue={session.revealProgressiveClue}
+            onRetryReveal={session.retryReveal}
+            onTimeUp={session.onTimeUp}
+            deadlineAt={session.questionDeadlineAt}
+            presentedAt={session.questionPresentedAt}
+            presentation="time-trial"
+            showHeader={false}
+            showTimer={false}
+          />
         ) : null}
         {session.phase === "transition" ? (
           <Transition
@@ -203,30 +228,40 @@ export function ServerFlashPopTimeTrialGame({
             onReview={session.reviewChallenge ? session.showReview : undefined}
           />
         ) : null}
-        {session.phase === "review" && session.reviewChallenge?.mode === "flash" ? (
+        {session.phase === "review" && reviewChallenge ? (
           <ReviewAnswerPanel
             key="review"
-            title="Historial de pruebas"
+            title="Historial de respuestas"
             countLabel={`${solved} de ${challenge.slots.length} resueltas`}
             progress={{ value: solved, max: challenge.slots.length }}
+            progressLabel="Pruebas resueltas"
+            backAtTop
             onBack={session.showResults}
             entries={challenge.slots.map((slot, index) => {
               const result = session.results.find((item) => item.questionId === slot.id);
+              const question = reviewChallenge.questions.find(
+                (candidate) => candidate.id === slot.id,
+              );
               return {
                 id: slot.id,
                 marker: String(index + 1).padStart(2, "0"),
                 title: `Prueba ${index + 1}`,
-                question:
-                  session.reviewChallenge?.mode === "flash"
-                    ? session.reviewChallenge.questions.find((question) => question.id === slot.id)
-                    : undefined,
+                subtitle:
+                  question?.type === "queens"
+                    ? `Queens · ${question.grid.rows}×${question.grid.columns}`
+                    : "Queens",
+                question,
                 result,
                 status: result?.status ?? "locked",
-                statusLabel: result
-                  ? result.status === "correct"
+                statusLabel: !result
+                  ? "No alcanzada"
+                  : result.status === "correct"
                     ? "Resuelta"
-                    : "Sin resolver"
-                  : "No alcanzada",
+                    : result.status === "unanswered"
+                      ? "Sin responder"
+                      : result.status === "partial"
+                        ? "Parcial"
+                        : "Sin resolver",
                 lockedMessage: "No alcanzada: el desafío terminó antes de entregar esta prueba.",
               };
             })}

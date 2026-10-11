@@ -69,7 +69,7 @@ incrementales vigentes contienen las dos funciones y sus permisos. El inventario
 Supabase y los marcadores del health check están sincronizados.
 
 Reconstruir el entorno desde el historial activo antes de desplegar el código y configurar
-`EXPECTED_SCHEMA_REVISION=20261011092119_short_text_all_modes`. El despliegue remoto queda pendiente
+`EXPECTED_SCHEMA_REVISION=20261011105737_time_trial`. El despliegue remoto queda pendiente
 de una ventana de reinicio.
 
 ## Verificación local y medición

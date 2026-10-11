@@ -67,7 +67,7 @@ versión. La publicación mínima de contenido, la programación de desafíos y 
 calendario ya están verificadas localmente en el mismo portal interno para Flash de S11/S12 y
 Supervivencia de S14.
 La ejecución temporal conserva el Route Handler protegido: Vercel Cron está configurado para
-invocar `GET /api/internal/calendar/tick` diariamente a las 00:05 UTC con `CRON_SECRET`, mientras
+invocar `GET /api/internal/calendar/tick` diariamente a las 13:00 UTC con `CRON_SECRET`, mientras
 que el CLI conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` con
 `CALENDAR_TICK_SECRET`. Local y staging son los únicos entornos de aplicación. La etiqueta
 Production de Vercel identifica el tipo de despliegue que admite cron; no define un entorno

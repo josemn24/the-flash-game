@@ -3,7 +3,7 @@ import { CompetitiveQuestionInput } from "@/features/question-formats/competitiv
 import type { CompetitiveInputProps } from "@/features/question-formats/competitiveInputTypes";
 
 import { GameHeader, Timer } from "@/components/ui";
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import { LifeHearts } from "./LifeHearts";
 import styles from "./QuestionStage.module.css";
 import variantStyles from "./QuestionStageVariants.module.css";
@@ -15,7 +15,9 @@ function splitPrompt(prompt: string) {
     : { title: prompt };
 }
 
-export function ServerFlashQuestionStage(props: CompetitiveInputProps) {
+export function ServerFlashQuestionStage(
+  props: CompetitiveInputProps & { readonly showHeader?: boolean },
+) {
   const {
     question,
     questionNumber,
@@ -27,10 +29,12 @@ export function ServerFlashQuestionStage(props: CompetitiveInputProps) {
     totalLives,
     presentation,
     showTimer = true,
+    showHeader = true,
+    ...inputProps
   } = props;
 
-  const titleId = useId();
   const pyramidPresentation = presentation === "pyramid";
+  const structuredPresentation = pyramidPresentation || presentation === "time-trial";
   const prompt = pyramidPresentation
     ? { title: question.question }
     : splitPrompt(question.question);
@@ -48,57 +52,92 @@ export function ServerFlashQuestionStage(props: CompetitiveInputProps) {
 
   return (
     <div
-      className={`${variantStyles.stageFrame} ${styles.stage} ${pyramidPresentation ? styles.pyramidStage : ""}`}
+      className={`${variantStyles.stageFrame} ${styles.stage} ${structuredPresentation ? styles.embeddedStage : ""}`}
     >
-      {pyramidPresentation ? (
-        <>
-          <GameHeader
-            title="La Pirámide"
-            timer={showTimer ? timer : undefined}
-            mobileLabel={
-              <>
-                Nivel {questionNumber} <span>de {totalQuestions}</span>
-              </>
-            }
-            mobileLabelAriaLabel={`Nivel ${questionNumber} de ${totalQuestions}`}
-          />
-          <p
-            className={variantStyles.pyramidLevelIndicator}
-            aria-label={`Nivel ${questionNumber} de ${totalQuestions}`}
-          >
-            Nivel {questionNumber} <span>de {totalQuestions}</span>
-          </p>
-        </>
-      ) : (
-        <GameHeader
-          left={
+      {showHeader ? (
+        pyramidPresentation ? (
+          <>
+            <GameHeader
+              title="La Pirámide"
+              timer={showTimer ? timer : undefined}
+              mobileLabel={
+                <>
+                  Nivel {questionNumber} <span>de {totalQuestions}</span>
+                </>
+              }
+              mobileLabelAriaLabel={`Nivel ${questionNumber} de ${totalQuestions}`}
+            />
             <p
-              className={variantStyles.questionIndicator}
-              aria-label={`Pregunta ${questionNumber} de ${totalQuestions}`}
+              className={variantStyles.pyramidLevelIndicator}
+              aria-label={`Nivel ${questionNumber} de ${totalQuestions}`}
             >
-              Pregunta {String(questionNumber).padStart(2, "0")}{" "}
-              <span>de {String(totalQuestions).padStart(2, "0")}</span>
+              Nivel {questionNumber} <span>de {totalQuestions}</span>
             </p>
-          }
-          timer={timer}
-          right={
-            typeof livesRemaining === "number" && typeof totalLives === "number" ? (
-              <div className={variantStyles.headerActions}>
-                <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
-                {timer}
-              </div>
-            ) : undefined
-          }
-        />
-      )}
-      <section
-        className={`${styles.questionCard} ${pyramidPresentation ? styles.pyramidQuestionCard : ""}`}
-        aria-labelledby={titleId}
+          </>
+        ) : (
+          <GameHeader
+            left={
+              <p
+                className={variantStyles.questionIndicator}
+                aria-label={`Pregunta ${questionNumber} de ${totalQuestions}`}
+              >
+                Pregunta {String(questionNumber).padStart(2, "0")}{" "}
+                <span>de {String(totalQuestions).padStart(2, "0")}</span>
+              </p>
+            }
+            timer={showTimer ? timer : undefined}
+            right={
+              typeof livesRemaining === "number" && typeof totalLives === "number" ? (
+                <div className={variantStyles.headerActions}>
+                  <LifeHearts livesRemaining={livesRemaining} totalLives={totalLives} />
+                  {showTimer ? timer : null}
+                </div>
+              ) : undefined
+            }
+          />
+        )
+      ) : null}
+      <ServerQuestionPanel
+        title={prompt.title}
+        context={prompt.context}
+        variant={structuredPresentation ? "structured" : "default"}
       >
-        {prompt.context ? <p className={styles.promptContext}>{prompt.context}</p> : null}
-        <h1 id={titleId}>{prompt.title}</h1>
-        {<CompetitiveQuestionInput {...props} />}
-      </section>
+        <CompetitiveQuestionInput
+          {...inputProps}
+          question={question}
+          questionNumber={questionNumber}
+          totalQuestions={totalQuestions}
+          locked={locked}
+          onTimeUp={onTimeUp}
+          deadlineAt={deadlineAt}
+          presentation={presentation}
+          showTimer={showTimer}
+        />
+      </ServerQuestionPanel>
     </div>
+  );
+}
+
+function ServerQuestionPanel({
+  title,
+  context,
+  children,
+  variant = "default",
+}: {
+  title: string;
+  context?: string;
+  children: ReactNode;
+  variant?: "default" | "structured";
+}) {
+  const titleId = useId();
+  return (
+    <section
+      className={`${styles.questionCard} ${variant === "structured" ? styles.structuredQuestionCard : ""}`}
+      aria-labelledby={titleId}
+    >
+      {context ? <p className={styles.promptContext}>{context}</p> : null}
+      <h1 id={titleId}>{title}</h1>
+      {children}
+    </section>
   );
 }

@@ -173,7 +173,7 @@ La UI pública no permite crear salas privadas ni gestionar invitaciones. Un por
 superadmin prepara y activa temporadas, publica Flash/Supervivencia/Pirámide y provisiona directamente a los
 usuarios autenticados en las salas, creando o reactivando sus membresías sin flujo de aceptación de
 invitaciones. La superficie `/admin` permite programar y reprogramar publicaciones Flash/Supervivencia/Pirámide futuras;
-el repositorio declara Vercel Cron para ejecutar `GET /api/internal/calendar/tick` a las 00:05 UTC
+el repositorio declara Vercel Cron para ejecutar `GET /api/internal/calendar/tick` a las 13:00 UTC
 y conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` para operación
 local o recuperación manual. La configuración remota y sus logs aún requieren validación en el
 proyecto Vercel de staging. Production es la etiqueta técnica del despliegue que admite cron,

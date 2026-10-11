@@ -11,6 +11,7 @@ export type GameHeaderProps = {
   mobileLabel?: ReactNode;
   mobileLabelAriaLabel?: string;
   className?: string;
+  actionsClassName?: string;
 };
 
 export function GameHeader({
@@ -22,6 +23,7 @@ export function GameHeader({
   mobileLabel,
   mobileLabelAriaLabel,
   className,
+  actionsClassName,
 }: GameHeaderProps) {
   const branded = !left && Boolean(title);
 
@@ -48,7 +50,7 @@ export function GameHeader({
           {mobileLabel}
         </span>
       ) : null}
-      <div className={styles.actions}>
+      <div className={`${styles.actions} ${actionsClassName ?? ""}`}>
         {right ?? (
           <>
             {timer}
