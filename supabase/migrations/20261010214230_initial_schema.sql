@@ -83,10 +83,12 @@ CREATE TABLE "private"."attempt_sessions" (
   "last_seen_at"       timestamp with time zone NOT NULL DEFAULT now(),
   "expires_at"         timestamp with time zone,
   "revoked_at"         timestamp with time zone,
+  "revocation_reason"  text,
   CONSTRAINT "attempt_sessions_check1" CHECK ((last_seen_at >= created_at)),
   CONSTRAINT "attempt_sessions_check2" CHECK (((revoked_at IS NULL) OR (revoked_at >= created_at))),
   CONSTRAINT "attempt_sessions_check" CHECK ((expires_at > created_at)),
   CONSTRAINT "attempt_sessions_pkey" PRIMARY KEY (id),
+  CONSTRAINT "attempt_sessions_revocation_reason_check" CHECK ((revocation_reason = ANY (ARRAY['takeover'::text, 'terminal'::text, 'permission_revoked'::text]))),
   CONSTRAINT "attempt_sessions_session_token_hash_check" CHECK ((btrim(session_token_hash) <> ''::text)),
   CONSTRAINT "attempt_sessions_session_token_hash_key" UNIQUE (session_token_hash)
 );
@@ -288,37 +290,6 @@ CREATE TABLE "private"."logic_code_attempt_events" (
 ALTER TABLE "private"."logic_code_attempt_events"
   ENABLE ROW LEVEL SECURITY;
 
-CREATE TABLE "private"."matching_pair_events" (
-  "id"                   uuid                     NOT NULL DEFAULT gen_random_uuid(),
-  "attempt_id"           uuid                     NOT NULL,
-  "challenge_item_id"    uuid                     NOT NULL,
-  "challenge_version_id" uuid                     NOT NULL,
-  "sequence"             integer                  NOT NULL,
-  "left_item_id"         text                     NOT NULL,
-  "right_item_id"        text                     NOT NULL,
-  "correct"              boolean                  NOT NULL,
-  "penalty_points"       integer                  NOT NULL,
-  "received_at"          timestamp with time zone NOT NULL,
-  "presented_at"         timestamp with time zone NOT NULL,
-  "time_used_ms"         bigint                   NOT NULL,
-  "idempotency_key"      text                     NOT NULL,
-  CONSTRAINT "matching_pair_events_attempt_id_challenge_item_id_left_item_key" UNIQUE (attempt_id, challenge_item_id, left_item_id, right_item_id),
-  CONSTRAINT "matching_pair_events_attempt_id_challenge_item_id_sequence_key" UNIQUE (attempt_id, challenge_item_id, SEQUENCE),
-  CONSTRAINT "matching_pair_events_attempt_id_idempotency_key_key" UNIQUE (attempt_id, idempotency_key),
-  CONSTRAINT "matching_pair_events_check" CHECK ((received_at >= presented_at)),
-  CONSTRAINT "matching_pair_events_id_attempt_id_challenge_item_id_challe_key" UNIQUE (id, attempt_id, challenge_item_id, challenge_version_id),
-  CONSTRAINT "matching_pair_events_idempotency_key_check" CHECK ((btrim(idempotency_key) <> ''::text)),
-  CONSTRAINT "matching_pair_events_left_item_id_check" CHECK (((btrim(left_item_id) <> ''::text) AND (char_length(left_item_id) <= 120))),
-  CONSTRAINT "matching_pair_events_penalty_points_check" CHECK ((penalty_points >= 0)),
-  CONSTRAINT "matching_pair_events_pkey" PRIMARY KEY (id),
-  CONSTRAINT "matching_pair_events_right_item_id_check" CHECK (((btrim(right_item_id) <> ''::text) AND (char_length(right_item_id) <= 120))),
-  CONSTRAINT "matching_pair_events_sequence_check" CHECK ((sequence > 0)),
-  CONSTRAINT "matching_pair_events_time_used_ms_check" CHECK ((time_used_ms >= 0))
-);
-
-ALTER TABLE "private"."matching_pair_events"
-  ENABLE ROW LEVEL SECURITY;
-
 CREATE TABLE "private"."media_assets" (
   "id"                   uuid                     NOT NULL,
   "bucket_id"            text                     NOT NULL,
@@ -414,6 +385,18 @@ CREATE TABLE "private"."platform_role_assignments" (
 ALTER TABLE "private"."platform_role_assignments"
   ENABLE ROW LEVEL SECURITY;
 
+CREATE TABLE "private"."prepared_interactions" (
+  "attempt_id"           uuid                     NOT NULL,
+  "challenge_version_id" uuid                     NOT NULL,
+  "challenge_item_id"    uuid                     NOT NULL,
+  "prepared_at"          timestamp with time zone NOT NULL DEFAULT clock_timestamp(),
+  CONSTRAINT "prepared_interactions_attempt_id_challenge_item_id_key" UNIQUE (attempt_id, challenge_item_id),
+  CONSTRAINT "prepared_interactions_pkey" PRIMARY KEY (attempt_id)
+);
+
+ALTER TABLE "private"."prepared_interactions"
+  ENABLE ROW LEVEL SECURITY;
+
 CREATE TABLE "private"."progressive_clue_reveal_events" (
   "id"                   uuid                     NOT NULL DEFAULT gen_random_uuid(),
   "attempt_id"           uuid                     NOT NULL,
@@ -468,6 +451,39 @@ CREATE TABLE "private"."queens_placement_events" (
 );
 
 ALTER TABLE "private"."queens_placement_events"
+  ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE "private"."queens_validation_events" (
+  "id"                   uuid                     NOT NULL DEFAULT gen_random_uuid(),
+  "attempt_id"           uuid                     NOT NULL,
+  "challenge_item_id"    uuid                     NOT NULL,
+  "challenge_version_id" uuid                     NOT NULL,
+  "sequence"             integer                  NOT NULL,
+  "queens"               integer[]                NOT NULL,
+  "correct"              boolean                  NOT NULL,
+  "conflicting_queens"   integer                  NOT NULL,
+  "penalty_applied"      boolean                  NOT NULL,
+  "penalty_points"       integer                  NOT NULL,
+  "received_at"          timestamp with time zone NOT NULL,
+  "presented_at"         timestamp with time zone NOT NULL,
+  "time_used_ms"         bigint                   NOT NULL,
+  "idempotency_key"      text                     NOT NULL,
+  CONSTRAINT "queens_validation_events_attempt_id_challenge_item_id_seque_key" UNIQUE (attempt_id, challenge_item_id, SEQUENCE),
+  CONSTRAINT "queens_validation_events_attempt_id_idempotency_key_key" UNIQUE (attempt_id, idempotency_key),
+  CONSTRAINT "queens_validation_events_check1" CHECK (((NOT penalty_applied) OR (NOT correct))),
+  CONSTRAINT "queens_validation_events_check2" CHECK (((NOT penalty_applied) OR (penalty_points > 0))),
+  CONSTRAINT "queens_validation_events_check3" CHECK ((penalty_applied OR (penalty_points = 0))),
+  CONSTRAINT "queens_validation_events_check" CHECK ((received_at >= presented_at)),
+  CONSTRAINT "queens_validation_events_conflicting_queens_check" CHECK ((conflicting_queens >= 0)),
+  CONSTRAINT "queens_validation_events_id_attempt_id_challenge_item_id_ch_key" UNIQUE (id, attempt_id, challenge_item_id, challenge_version_id),
+  CONSTRAINT "queens_validation_events_idempotency_key_check" CHECK ((btrim(idempotency_key) <> ''::text)),
+  CONSTRAINT "queens_validation_events_penalty_points_check" CHECK ((penalty_points >= 0)),
+  CONSTRAINT "queens_validation_events_pkey" PRIMARY KEY (id),
+  CONSTRAINT "queens_validation_events_sequence_check" CHECK ((sequence > 0)),
+  CONSTRAINT "queens_validation_events_time_used_ms_check" CHECK ((time_used_ms >= 0))
+);
+
+ALTER TABLE "private"."queens_validation_events"
   ENABLE ROW LEVEL SECURITY;
 
 CREATE TABLE "private"."question_definitions" (
@@ -613,6 +629,8 @@ CREATE TABLE "public"."attempts" (
   CONSTRAINT "attempts_id_player_id_scheduled_challenge_id_key" UNIQUE (id, player_id, scheduled_challenge_id),
   CONSTRAINT "attempts_kind_check" CHECK ((kind = ANY (ARRAY['competitive'::text, 'test'::text]))),
   CONSTRAINT "attempts_lock_version_check" CHECK ((lock_version > 0)),
+  CONSTRAINT "attempts_outcome_status_check" CHECK (((status <> ALL (ARRAY['in_progress'::text, 'abandoned'::text])) OR (outcome IS NULL))),
+  CONSTRAINT "attempts_outcome_values_check" CHECK (((outcome IS NULL) OR (outcome = ANY (ARRAY['survived'::text, 'eliminated'::text, 'summit'::text, 'failed'::text])))),
   CONSTRAINT "attempts_pkey" PRIMARY KEY (id),
   CONSTRAINT "attempts_player_id_scheduled_challenge_id_kind_attempt_numb_key" UNIQUE (player_id, scheduled_challenge_id, kind, attempt_number),
   CONSTRAINT "attempts_progress_payload_check" CHECK ((jsonb_typeof(progress_payload) = 'object'::text)),
@@ -622,6 +640,8 @@ CREATE TABLE "public"."attempts" (
 
 ALTER TABLE "public"."attempts"
   ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE "public"."attempts" FROM "anon", "authenticated";
 
 CREATE TABLE "public"."players" (
   "id"            uuid                     NOT NULL DEFAULT gen_random_uuid(),
@@ -642,6 +662,8 @@ CREATE TABLE "public"."players" (
 
 ALTER TABLE "public"."players"
   ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE "public"."players" FROM "anon", "authenticated";
 
 CREATE TABLE "public"."room_memberships" (
   "id"         uuid                     NOT NULL DEFAULT gen_random_uuid(),
@@ -665,6 +687,8 @@ CREATE TABLE "public"."room_memberships" (
 ALTER TABLE "public"."room_memberships"
   ENABLE ROW LEVEL SECURITY;
 
+REVOKE ALL ON TABLE "public"."room_memberships" FROM "anon";
+
 CREATE TABLE "public"."rooms" (
   "id"          uuid                     NOT NULL DEFAULT gen_random_uuid(),
   "slug"        text                     NOT NULL,
@@ -685,6 +709,8 @@ CREATE TABLE "public"."rooms" (
 
 ALTER TABLE "public"."rooms"
   ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE "public"."rooms" FROM "anon";
 
 CREATE TABLE "public"."scheduled_challenges" (
   "id"                   uuid                     NOT NULL DEFAULT gen_random_uuid(),
@@ -711,6 +737,8 @@ CREATE TABLE "public"."scheduled_challenges" (
 ALTER TABLE "public"."scheduled_challenges"
   ENABLE ROW LEVEL SECURITY;
 
+REVOKE ALL ON TABLE "public"."scheduled_challenges" FROM "anon";
+
 CREATE TABLE "public"."seasons" (
   "id"         uuid                     NOT NULL DEFAULT gen_random_uuid(),
   "room_id"    uuid                     NOT NULL,
@@ -728,6 +756,8 @@ CREATE TABLE "public"."seasons" (
 
 ALTER TABLE "public"."seasons"
   ENABLE ROW LEVEL SECURITY;
+
+REVOKE ALL ON TABLE "public"."seasons" FROM "anon";
 
 CREATE OR REPLACE FUNCTION private.abandon_attempt (
   input jsonb
@@ -753,9 +783,14 @@ declare
   asset uuid := (input->>'assetId')::uuid;
   row_value private.media_assets%rowtype;
 begin
+  perform 1 from public.players where id = actor and status = 'active' for update;
+  if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
   select * into row_value from private.media_assets
-  where id = asset and owner_player_id = actor for update;
+  where id = asset and owner_player_id = actor and kind = 'avatar' and bucket_id = 'avatars' for update;
   if not found then raise exception 'media_asset_not_found' using errcode = '22023'; end if;
+  if exists(select 1 from public.players where avatar_path = row_value.object_path) then
+    raise exception 'media_asset_in_use' using errcode = '55000';
+  end if;
   if row_value.status = 'pending' then
     update private.media_assets set status = 'deleted', deleted_at = statement_timestamp()
     where id = asset;
@@ -798,6 +833,117 @@ CREATE OR REPLACE FUNCTION private.accept_invitation (
   SET search_path TO ''
   AS $function$
   select private.execute_command('accept_invitation', input)
+$function$;
+
+CREATE OR REPLACE FUNCTION private.activate_interaction (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := private.command_actor();
+  key text := input->>'idempotencyKey';
+  safe_input jsonb := input;
+  cached private.command_requests%rowtype;
+  a public.attempts%rowtype;
+  sc public.scheduled_challenges%rowtype;
+  cv private.challenge_versions%rowtype;
+  session_row private.attempt_sessions%rowtype;
+  prepared private.prepared_interactions%rowtype;
+  segment private.interaction_intervals%rowtype;
+  unit private.attempt_timing_units%rowtype;
+  item private.challenge_items%rowtype;
+  instant timestamptz := clock_timestamp();
+  expected bigint;
+  result jsonb;
+begin
+  if jsonb_typeof(input) is distinct from 'object'
+    or not input ?& array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId']
+    or exists (select 1 from jsonb_object_keys(input) k where k <> all(array[
+      'idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId'])) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+  safe_input := jsonb_set(safe_input, '{sessionToken}', to_jsonb(private.secret_hash(input->>'sessionToken')));
+  perform private.lock_command_key(actor, key);
+  select * into cached from private.command_requests
+  where actor_id = actor and idempotency_key = key;
+  if found then
+    if cached.operation <> 'activate' or cached.input <> safe_input then
+      raise exception 'idempotency_conflict' using errcode = '40001';
+    end if;
+    return cached.result;
+  end if;
+
+  select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
+  select * into sc from public.scheduled_challenges where id = a.scheduled_challenge_id for share;
+  select * into cv from private.challenge_versions where id = a.challenge_version_id;
+  if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
+    or exists (select 1 from private.platform_role_assignments where player_id = actor)
+    or not exists (
+      select 1 from public.seasons s
+      join public.rooms r on r.id = s.room_id
+      join public.room_memberships m on m.room_id = r.id
+      where s.id = sc.season_id and r.status = 'active' and m.player_id = actor
+        and m.status = 'active' and m.role in ('owner','admin','member')) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  select * into session_row from private.attempt_sessions
+  where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
+  expected := (input->>'lockVersion')::bigint;
+  if expected is distinct from a.lock_version then
+    raise exception 'stale_version' using errcode = '40001';
+  end if;
+  if cv.mode <> 'pyramid' then raise exception 'invalid_command' using errcode = '22023'; end if;
+  if sc.status = 'cancelled' then raise exception 'publication_cancelled' using errcode = '55000'; end if;
+
+  select * into segment from private.interaction_intervals
+  where attempt_id = a.id and ended_at is null for update;
+  if found then
+    if segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
+      raise exception 'interaction_not_presented' using errcode = '55000';
+    end if;
+    select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+  else
+    select * into prepared from private.prepared_interactions
+    where attempt_id = a.id and challenge_item_id = (input->>'challengeItemId')::uuid for update;
+    if not found then raise exception 'interaction_not_presented' using errcode = '55000'; end if;
+    select * into item from private.challenge_items where id = prepared.challenge_item_id;
+    insert into private.attempt_timing_units(
+      attempt_id, challenge_version_id, challenge_item_id, scope, started_at, deadline_at)
+    select a.id, a.challenge_version_id, item.id, 'level', instant,
+      instant + q.time_limit_ms * interval '1 millisecond'
+    from private.question_versions q where q.id = item.question_version_id
+    returning * into unit;
+    insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
+      values(a.id, item.id, unit.id, instant) returning * into segment;
+    delete from private.prepared_interactions where attempt_id = a.id;
+  end if;
+
+  update public.attempts
+  set lock_version = lock_version + 1, last_activity_at = instant
+  where id = a.id returning * into a;
+  result := jsonb_build_object(
+    'attemptId', a.id,
+    'lockVersion', a.lock_version,
+    'challengeItemId', segment.challenge_item_id,
+    'presentedAt', segment.started_at,
+    'deadlineAt', unit.deadline_at,
+    'timedOut', instant >= unit.deadline_at);
+  insert into private.audit_log(
+    actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
+  values(actor, 'activate', 'attempt', a.id, key,
+    jsonb_build_object('lockVersion', expected), result);
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+    values(actor, key, 'activate', safe_input, result);
+  return result;
+end;
 $function$;
 
 CREATE OR REPLACE FUNCTION private.activate_season_command (
@@ -1089,6 +1235,131 @@ begin
 end;
 $function$;
 
+CREATE OR REPLACE FUNCTION private.archive_challenge_version_command (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := (select private.current_player_id());
+  key text;
+  reason_value text;
+  challenge_version_id_value uuid;
+  expected_updated_at timestamptz;
+  safe_input jsonb;
+  cached private.command_requests%rowtype;
+  version_row private.challenge_versions%rowtype;
+  definition_row private.challenge_definitions%rowtype;
+  result jsonb;
+begin
+  if actor is null or not exists (
+    select 1 from private.platform_role_assignments assignment
+    where assignment.player_id = actor and assignment.role = 'superadmin'
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  if input is null or jsonb_typeof(input) is distinct from 'object'
+    or not input ?& array['idempotencyKey', 'challengeVersionId', 'expectedUpdatedAt', 'reason']
+    or exists (
+      select 1 from jsonb_object_keys(input) key_name
+      where key_name <> all(array['idempotencyKey', 'challengeVersionId', 'expectedUpdatedAt', 'reason'])
+    )
+    or exists (
+      select 1 from unnest(array['idempotencyKey', 'challengeVersionId', 'expectedUpdatedAt', 'reason']) key_name
+      where input->key_name is null or input->key_name = 'null'::jsonb
+    ) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+
+  key := btrim(input->>'idempotencyKey');
+  reason_value := btrim(input->>'reason');
+  begin
+    challenge_version_id_value := (input->>'challengeVersionId')::uuid;
+    expected_updated_at := (input->>'expectedUpdatedAt')::timestamptz;
+  exception when others then
+    raise exception 'invalid_command' using errcode = '22023';
+  end;
+  if char_length(key) not between 8 and 160 or char_length(reason_value) not between 1 and 500 then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+
+  safe_input := jsonb_build_object(
+    'idempotencyKey', key,
+    'challengeVersionId', challenge_version_id_value,
+    'expectedUpdatedAt', expected_updated_at,
+    'reason', reason_value
+  );
+  perform pg_advisory_xact_lock(hashtextextended('superadmin-editorial-archive:' || actor || ':' || key, 0));
+  select * into cached from private.command_requests request
+  where request.actor_id = actor and request.idempotency_key = key;
+  if found then
+    if cached.operation <> 'archive_challenge_version' or cached.input <> safe_input then
+      raise exception 'idempotency_conflict' using errcode = '40001';
+    end if;
+    return cached.result;
+  end if;
+
+  select * into version_row
+  from private.challenge_versions version
+  where version.id = challenge_version_id_value
+  for update;
+  if not found then
+    raise exception 'content_not_found' using errcode = 'P0002';
+  end if;
+  if version_row.mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
+    raise exception 'unsupported_mode' using errcode = '22023';
+  end if;
+  if version_row.status <> 'published' then
+    raise exception 'content_not_published' using errcode = '55000';
+  end if;
+  if version_row.updated_at <> expected_updated_at then
+    raise exception 'content_conflict' using errcode = '40001';
+  end if;
+  select * into definition_row
+  from private.challenge_definitions definition
+  where definition.id = version_row.challenge_definition_id;
+
+  update private.challenge_versions version
+  set status = 'archived'
+  where version.id = version_row.id;
+
+  select jsonb_build_object(
+    'challengeDefinitionId', definition.id,
+    'challengeVersionId', version.id,
+    'versionNumber', version.version_number,
+    'status', version.status,
+    'slug', definition.slug,
+    'title', version.title,
+    'subtitle', version.subtitle,
+    'description', version.description,
+    'mode', version.mode,
+    'questionCount', (select count(*) from private.challenge_items item where item.challenge_version_id = version.id),
+    'createdAt', version.created_at,
+    'updatedAt', version.updated_at,
+    'publishedAt', version.published_at,
+    'document', null
+  ) into result
+  from private.challenge_definitions definition
+  join private.challenge_versions version on version.challenge_definition_id = definition.id
+  where version.id = version_row.id;
+
+  insert into private.audit_log(
+    actor_player_id, action, entity_type, entity_id, reason, request_id,
+    before_payload, after_payload
+  ) values (
+    actor, 'archive_challenge_version', 'challenge_version', version_row.id, reason_value, key,
+    jsonb_build_object('status', 'published', 'versionNumber', version_row.version_number),
+    jsonb_build_object('status', 'archived', 'versionNumber', version_row.version_number)
+  );
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+  values (actor, key, 'archive_challenge_version', safe_input, result);
+  return result;
+end;
+$function$;
+
 CREATE OR REPLACE FUNCTION private.archive_question_asset_command (
   input jsonb
 )
@@ -1218,7 +1489,7 @@ begin
   if version_status <> 'published' then
     raise exception 'content_not_published' using errcode = '55000';
   end if;
-  if version_mode not in ('flash', 'survival', 'pyramid') then
+  if version_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
     raise exception 'unsupported_content' using errcode = '22023';
   end if;
 
@@ -1229,7 +1500,12 @@ begin
         and item.config_schema_version = 1
         and (version_mode = 'pyramid'
           and private.is_valid_pyramid_level_config(item.mode_config)
-          or version_mode <> 'pyramid' and item.mode_config = '{}'::jsonb)
+          or version_mode = 'narrative'
+          and jsonb_typeof(item.mode_config) = 'object'
+          and jsonb_typeof(item.mode_config->'questionSlug') = 'string'
+          or version_mode = 'alphabet'
+          and jsonb_typeof(item.mode_config->'letter') = 'string'
+          or version_mode not in ('pyramid', 'narrative', 'alphabet') and item.mode_config = '{}'::jsonb)
         and private.is_supported_flash_question(question.id)
     )::integer,
     coalesce(sum(item.points), 0)::integer
@@ -1246,11 +1522,17 @@ begin
 
   if version_schema <> 1 or version_score <> 100
     or (version_mode = 'flash' and version_config <> '{}'::jsonb)
+    or (version_mode = 'alphabet' and version_config <> '{}'::jsonb)
     or (version_mode = 'survival' and (
       (select count(*) from jsonb_object_keys(version_config)) <> 1
       or jsonb_typeof(version_config->'lives') is distinct from 'number'
       or (version_config->>'lives')::numeric <> trunc((version_config->>'lives')::numeric)
       or (version_config->>'lives')::integer not between 1 and item_count
+    ))
+    or (version_mode = 'narrative' and (
+      jsonb_typeof(version_config) is distinct from 'object'
+      or jsonb_typeof(version_config->'prologue') is distinct from 'object'
+      or jsonb_typeof(version_config->'beats') is distinct from 'array'
     ))
     or (version_mode = 'pyramid' and (
       version_config <> '{}'::jsonb or item_count <> 7
@@ -1264,6 +1546,60 @@ begin
     or solution_count <> item_count
     or points_total <> 100 then
     raise exception 'unsupported_content' using errcode = '22023';
+  end if;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.authorize_attempt_replay (
+  target_attempt uuid,
+  token_hash     text
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare revoked_reason text;
+begin
+  if exists (
+    select 1 from public.attempts a
+    where a.id = target_attempt
+      and a.player_id = private.current_player_id()
+      and a.kind = 'competitive'
+      and a.status = 'abandoned'
+      and a.terminal_reason = 'permission_revoked'
+  ) then
+    raise exception 'attempt_permission_revoked' using errcode = '42501';
+  end if;
+  if not exists (
+    select 1
+    from public.attempts a
+    join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+    join public.seasons season on season.id = sc.season_id
+    join public.rooms room on room.id = season.room_id
+    join public.room_memberships m on m.room_id = room.id and m.player_id = a.player_id
+    where a.id = target_attempt and a.player_id = private.current_player_id()
+      and a.kind = 'competitive' and room.status = 'active' and sc.status <> 'cancelled'
+      and m.status = 'active' and m.role in ('owner','admin','member')
+      and not exists (select 1 from private.platform_role_assignments where player_id = a.player_id)
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  select s.revocation_reason into revoked_reason
+  from private.attempt_sessions s
+  where s.attempt_id = target_attempt and s.session_token_hash = token_hash
+    and s.revoked_at is not null
+  order by s.revoked_at desc
+  limit 1;
+  if revoked_reason = 'takeover' then
+    raise exception 'session_transferred' using errcode = '42501';
+  end if;
+  if not exists (
+    select 1 from private.attempt_sessions s
+    where s.attempt_id = target_attempt and s.session_token_hash = token_hash and s.revoked_at is null
+  ) then
+    raise exception 'session_revoked' using errcode = '42501';
   end if;
 end;
 $function$;
@@ -1301,6 +1637,391 @@ CREATE OR REPLACE FUNCTION private.can_read_profile (
     where mine.player_id = (select private.current_player_id()) and mine.status = 'active'
       and peer.player_id = target_player_id and peer.status = 'active' and r.status = 'active'
   )
+$function$;
+
+CREATE OR REPLACE FUNCTION private.can_review_competitive_attempt (
+  target_attempt_id uuid
+)
+  RETURNS boolean
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  with target as (
+    select
+      a.id as attempt_id,
+      a.player_id as target_player_id,
+      a.status as attempt_status,
+      a.scheduled_challenge_id as publication_id,
+      r.id as room_id,
+      private.publication_effective_status(
+        sc.status, s.status, s.starts_at, s.ends_at,
+        sc.opens_at, sc.closes_at, statement_timestamp()
+      ) as publication_status
+    from public.attempts a
+    join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+    join public.seasons s on s.id = sc.season_id
+    join public.rooms r on r.id = s.room_id
+    join private.challenge_versions cv on cv.id = sc.challenge_version_id
+    where a.id = target_attempt_id
+      and a.kind = 'competitive'
+      and a.status in ('completed', 'abandoned')
+      and r.status = 'active'
+      and s.status in ('active', 'finished')
+      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      and cv.status in ('published', 'archived')
+  )
+  select exists (
+    select 1
+    from target t
+    join public.room_memberships viewer_membership
+      on viewer_membership.room_id = t.room_id
+      and viewer_membership.player_id = private.current_player_id()
+      and viewer_membership.status = 'active'
+      and viewer_membership.role in ('owner', 'admin', 'member')
+    where exists (
+      select 1
+      from public.room_memberships historical_membership
+      where historical_membership.room_id = t.room_id
+        and historical_membership.player_id = t.target_player_id
+    )
+      and (
+        (
+          t.target_player_id = private.current_player_id()
+          and t.publication_status in ('available', 'closed')
+        )
+        or (
+          t.target_player_id <> private.current_player_id()
+          and (
+            (
+              t.publication_status = 'available'
+              and t.attempt_status = 'completed'
+              and exists (
+                select 1
+                from public.attempts viewer_completed
+                where viewer_completed.scheduled_challenge_id = t.publication_id
+                  and viewer_completed.player_id = private.current_player_id()
+                  and viewer_completed.kind = 'competitive'
+                  and viewer_completed.status = 'completed'
+              )
+            )
+            or (
+              t.publication_status = 'closed'
+              and not exists (
+                select 1
+                from public.attempts in_progress
+                where in_progress.scheduled_challenge_id = t.publication_id
+                  and in_progress.status = 'in_progress'
+              )
+            )
+          )
+        )
+      )
+  );
+$function$;
+
+CREATE OR REPLACE FUNCTION private.cancel_scheduled_challenge_command (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := (select private.current_player_id());
+  key text;
+  schedule_id_value uuid;
+  expected_updated_at_value timestamptz;
+  reason_value text;
+  now_value timestamptz;
+  cancelled_at_value timestamptz;
+  room_id_value uuid;
+  season_id_value uuid;
+  cached private.command_requests%rowtype;
+  schedule_row public.scheduled_challenges%rowtype;
+  result jsonb;
+  before_payload jsonb;
+  safe_input jsonb;
+begin
+  if actor is null or not exists (
+    select 1 from private.platform_role_assignments assignment
+    where assignment.player_id = actor and assignment.role = 'superadmin'
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  if input is null or jsonb_typeof(input) is distinct from 'object'
+    or not input ?& array['idempotencyKey','scheduledChallengeId','expectedUpdatedAt','reason']
+    or exists (
+      select 1 from jsonb_object_keys(input) key_name
+      where key_name <> all(array['idempotencyKey','scheduledChallengeId','expectedUpdatedAt','reason'])
+    )
+    or exists (
+      select 1 from unnest(array['idempotencyKey','scheduledChallengeId','expectedUpdatedAt','reason']) key_name
+      where input->key_name is null or input->key_name = 'null'::jsonb
+    ) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+
+  key := btrim(input->>'idempotencyKey');
+  reason_value := btrim(input->>'reason');
+  begin
+    schedule_id_value := (input->>'scheduledChallengeId')::uuid;
+    expected_updated_at_value := (input->>'expectedUpdatedAt')::timestamptz;
+  exception when others then
+    raise exception 'invalid_command' using errcode = '22023';
+  end;
+  if char_length(key) not between 8 and 160 or char_length(reason_value) = 0 or char_length(reason_value) > 500 then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+
+  safe_input := jsonb_build_object(
+    'idempotencyKey', key,
+    'scheduledChallengeId', schedule_id_value,
+    'expectedUpdatedAt', expected_updated_at_value,
+    'reason', reason_value
+  );
+  perform pg_advisory_xact_lock(hashtextextended('superadmin-calendar-command:' || actor || ':' || key, 0));
+  select * into cached from private.command_requests request
+  where request.actor_id = actor and request.idempotency_key = key;
+  if found then
+    if cached.operation <> 'cancel_scheduled_challenge' or cached.input <> safe_input then
+      raise exception 'idempotency_conflict' using errcode = '40001';
+    end if;
+    return cached.result;
+  end if;
+
+  select schedule.season_id into season_id_value
+  from public.scheduled_challenges schedule where schedule.id = schedule_id_value;
+  if not found then raise exception 'schedule_not_found' using errcode = '22023'; end if;
+  select season.room_id into room_id_value
+  from public.seasons season where season.id = season_id_value;
+  if not found then raise exception 'season_not_found' using errcode = '22023'; end if;
+  perform 1 from public.rooms room where room.id = room_id_value for update;
+  if not found then raise exception 'room_not_found' using errcode = '22023'; end if;
+  perform 1 from public.seasons season where season.id = season_id_value for update;
+  select schedule.* into schedule_row
+  from public.scheduled_challenges schedule
+  where schedule.id = schedule_id_value for update;
+
+  if schedule_row.status = 'open' then raise exception 'schedule_already_open' using errcode = '55000'; end if;
+  if schedule_row.status <> 'scheduled' then
+    raise exception 'schedule_not_cancellable' using errcode = '55000';
+  end if;
+  if schedule_row.updated_at <> expected_updated_at_value then
+    raise exception 'schedule_conflict' using errcode = '40001';
+  end if;
+  now_value := clock_timestamp();
+  if now_value >= schedule_row.opens_at then
+    raise exception 'schedule_already_open' using errcode = '55000';
+  end if;
+
+  before_payload := jsonb_build_object(
+    'status', schedule_row.status,
+    'number', schedule_row.number,
+    'challengeVersionId', schedule_row.challenge_version_id,
+    'opensAt', schedule_row.opens_at,
+    'closesAt', schedule_row.closes_at
+  );
+  cancelled_at_value := statement_timestamp();
+  update public.scheduled_challenges
+  set status = 'cancelled', cancelled_at = cancelled_at_value
+  where id = schedule_id_value;
+
+  select jsonb_build_object(
+    'scheduledChallengeId', schedule.id,
+    'roomId', season.room_id,
+    'seasonId', schedule.season_id,
+    'challengeVersionId', schedule.challenge_version_id,
+    'number', schedule.number,
+    'status', schedule.status,
+    'opensAt', schedule.opens_at,
+    'closesAt', schedule.closes_at,
+    'updatedAt', schedule.updated_at
+  ) into result
+  from public.scheduled_challenges schedule
+  join public.seasons season on season.id = schedule.season_id
+  where schedule.id = schedule_id_value;
+  insert into private.audit_log(
+    actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
+  ) values (
+    actor, 'cancel_scheduled_challenge', 'scheduled_challenge', schedule_id_value, reason_value, key,
+    before_payload, jsonb_build_object(
+      'status', 'cancelled',
+      'number', schedule_row.number,
+      'challengeVersionId', schedule_row.challenge_version_id,
+      'opensAt', schedule_row.opens_at,
+      'closesAt', schedule_row.closes_at,
+      'cancelledAt', cancelled_at_value
+    )
+  );
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+  values (actor, key, 'cancel_scheduled_challenge', safe_input, result);
+  return result;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.claim_archived_avatar_cleanup (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := private.command_actor();
+  row_value private.media_assets%rowtype;
+begin
+  perform 1 from public.players where id = actor and status = 'active' for update;
+  if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
+  select * into row_value from private.media_assets
+  where object_path = input->>'objectPath' and owner_player_id = actor
+    and kind = 'avatar' and bucket_id = 'avatars' for update;
+  if not found or row_value.status not in ('archived', 'deleted') then return null; end if;
+  if exists(select 1 from public.players where avatar_path = row_value.object_path) then return null; end if;
+  if row_value.status = 'archived' then
+    update private.media_assets set status = 'deleted', archived_at = null, deleted_at = statement_timestamp()
+    where id = row_value.id;
+  end if;
+  return jsonb_build_object('assetId', row_value.id, 'objectPath', row_value.object_path, 'status', 'deleted');
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.close_attempt_as_abandoned (
+  target_attempt        uuid,
+  closed_at             timestamp with time zone,
+  terminal_reason_value text,
+  audit_actor           uuid,
+  audit_request_id      text,
+  audit_reason          text
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  attempt_row public.attempts%rowtype;
+  before_payload jsonb;
+begin
+  if terminal_reason_value not in ('abandon', 'inactivity_timeout', 'permission_revoked')
+    or closed_at is null
+    or audit_request_id is null then
+    raise exception 'invalid_attempt_closure' using errcode = '22023';
+  end if;
+
+  select * into attempt_row
+  from public.attempts
+  where id = target_attempt
+  for update;
+
+  if not found or attempt_row.kind <> 'competitive' or attempt_row.status <> 'in_progress' then
+    return false;
+  end if;
+
+  before_payload := jsonb_build_object(
+    'status', attempt_row.status,
+    'lockVersion', attempt_row.lock_version,
+    'score', attempt_row.score,
+    'lastActivityAt', attempt_row.last_activity_at,
+    'deadlineAt', attempt_row.deadline_at
+  );
+
+  update private.interaction_intervals interval_row
+  set ended_at = greatest(interval_row.started_at, least(closed_at, timing_unit.deadline_at)),
+      end_reason = 'abandon'
+  from private.attempt_timing_units timing_unit
+  where interval_row.attempt_id = attempt_row.id
+    and interval_row.ended_at is null
+    and timing_unit.id = interval_row.timing_unit_id;
+
+  delete from private.prepared_interactions where attempt_id = attempt_row.id;
+
+  update public.attempts
+  set status = 'abandoned',
+      score = null,
+      outcome = null,
+      completed_at = closed_at,
+      progress_payload = null,
+      terminal_reason = terminal_reason_value,
+      lock_version = lock_version + 1
+  where id = attempt_row.id and status = 'in_progress'
+  returning * into attempt_row;
+
+  if not found then return false; end if;
+
+  update private.attempt_sessions
+  set revoked_at = closed_at,
+      revocation_reason = case when terminal_reason_value = 'permission_revoked'
+        then 'permission_revoked' else 'terminal' end
+  where attempt_id = attempt_row.id and revoked_at is null;
+
+  insert into private.audit_log(
+    actor_player_id, action, entity_type, entity_id, reason, request_id,
+    before_payload, after_payload
+  ) values (
+    audit_actor,
+    case when terminal_reason_value = 'inactivity_timeout'
+      then 'expire_stale_attempt'
+      else 'close_attempt_' || terminal_reason_value
+    end,
+    'attempt', attempt_row.id,
+    audit_reason, audit_request_id, before_payload,
+    jsonb_build_object(
+      'status', 'abandoned',
+      'lockVersion', attempt_row.lock_version,
+      'score', null,
+      'completedAt', closed_at,
+      'terminalReason', terminal_reason_value
+    )
+  );
+  return true;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.close_attempts_for_permission_loss (
+  target_player    uuid,
+  target_room      uuid,
+  closed_at        timestamp with time zone,
+  audit_actor      uuid,
+  audit_request_id text
+)
+  RETURNS integer
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  attempt_id uuid;
+  closed_count integer := 0;
+begin
+  for attempt_id in
+    select attempt.id
+    from public.attempts attempt
+    join public.scheduled_challenges schedule on schedule.id = attempt.scheduled_challenge_id
+    join public.seasons season on season.id = schedule.season_id
+    where attempt.player_id = target_player
+      and attempt.kind = 'competitive'
+      and attempt.status = 'in_progress'
+      and season.room_id = target_room
+    order by attempt.id
+    for update of attempt
+  loop
+    if private.close_attempt_as_abandoned(
+      attempt_id,
+      closed_at,
+      'permission_revoked',
+      audit_actor,
+      audit_request_id || ':permission_revoked:' || attempt_id::text,
+      'Competitive permission revoked for the room membership'
+    ) then
+      closed_count := closed_count + 1;
+    end if;
+  end loop;
+  return closed_count;
+end;
 $function$;
 
 CREATE OR REPLACE FUNCTION private.command_actor()
@@ -1382,15 +2103,15 @@ begin
     return cached.result;
   end if;
 
+  select * into player_row from public.players where id = actor and status = 'active' for update;
+  if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
   select * into asset_row from private.media_assets
-  where id = asset and owner_player_id = actor for update;
+  where id = asset and owner_player_id = actor and kind = 'avatar' and bucket_id = 'avatars' for update;
   if not found then raise exception 'media_asset_not_found' using errcode = '22023'; end if;
   if asset_row.status <> 'pending' then
     raise exception 'media_asset_not_pending' using errcode = '55000';
   end if;
 
-  select * into player_row from public.players where id = actor and status = 'active' for update;
-  if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
   old_path := player_row.avatar_path;
   update private.media_assets
   set status = 'ready', mime_type = mime_value, byte_size = bytes_value,
@@ -1471,6 +2192,166 @@ begin
   return result;
 exception when invalid_text_representation or numeric_value_out_of_range then
   raise exception 'invalid_question_asset_upload' using errcode = '22023';
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.create_challenge_revision_command (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := (select private.current_player_id());
+  key text;
+  reason_value text;
+  source_challenge_version_id uuid;
+  target_challenge_version_id uuid := gen_random_uuid();
+  safe_input jsonb;
+  cached private.command_requests%rowtype;
+  source_row private.challenge_versions%rowtype;
+  definition_row private.challenge_definitions%rowtype;
+  next_version integer;
+  result jsonb;
+begin
+  if actor is null or not exists (
+    select 1 from private.platform_role_assignments assignment
+    where assignment.player_id = actor and assignment.role = 'superadmin'
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  if input is null or jsonb_typeof(input) is distinct from 'object'
+    or not input ?& array['idempotencyKey', 'sourceChallengeVersionId', 'reason']
+    or exists (
+      select 1 from jsonb_object_keys(input) key_name
+      where key_name <> all(array['idempotencyKey', 'sourceChallengeVersionId', 'reason'])
+    )
+    or exists (
+      select 1 from unnest(array['idempotencyKey', 'sourceChallengeVersionId', 'reason']) key_name
+      where input->key_name is null or input->key_name = 'null'::jsonb
+    ) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+
+  key := btrim(input->>'idempotencyKey');
+  reason_value := btrim(input->>'reason');
+  begin
+    source_challenge_version_id := (input->>'sourceChallengeVersionId')::uuid;
+  exception when others then
+    raise exception 'invalid_command' using errcode = '22023';
+  end;
+  if char_length(key) not between 8 and 160 or char_length(reason_value) not between 1 and 500 then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+
+  safe_input := jsonb_build_object(
+    'idempotencyKey', key,
+    'sourceChallengeVersionId', source_challenge_version_id,
+    'reason', reason_value
+  );
+  perform pg_advisory_xact_lock(hashtextextended('superadmin-editorial-revision:' || actor || ':' || key, 0));
+  select * into cached from private.command_requests request
+  where request.actor_id = actor and request.idempotency_key = key;
+  if found then
+    if cached.operation <> 'create_challenge_revision' or cached.input <> safe_input then
+      raise exception 'idempotency_conflict' using errcode = '40001';
+    end if;
+    return cached.result;
+  end if;
+
+  select * into source_row
+  from private.challenge_versions version
+  where version.id = source_challenge_version_id
+  for update;
+  if not found then
+    raise exception 'content_not_found' using errcode = 'P0002';
+  end if;
+  if source_row.status not in ('published', 'archived') then
+    raise exception 'content_not_published' using errcode = '55000';
+  end if;
+  if source_row.mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
+    raise exception 'unsupported_mode' using errcode = '22023';
+  end if;
+
+  -- The definition row serializes version-number allocation for all branches
+  -- of the same challenge. The source row is already locked above, so an
+  -- archive/publish race cannot change the graph being copied.
+  select * into definition_row
+  from private.challenge_definitions definition
+  where definition.id = source_row.challenge_definition_id
+  for update;
+  if not found then
+    raise exception 'content_not_found' using errcode = 'P0002';
+  end if;
+  select coalesce(max(version.version_number), 0) + 1 into next_version
+  from private.challenge_versions version
+  where version.challenge_definition_id = definition_row.id;
+
+  insert into private.challenge_versions(
+    id, challenge_definition_id, version_number, config_schema_version, status, mode,
+    title, subtitle, description, global_time_limit_ms, max_score, mode_config,
+    created_by_player_id
+  ) values (
+    target_challenge_version_id, definition_row.id, next_version, source_row.config_schema_version,
+    'draft', source_row.mode, source_row.title, source_row.subtitle, source_row.description,
+    source_row.global_time_limit_ms, source_row.max_score, source_row.mode_config, actor
+  );
+
+  insert into private.challenge_items(
+    id, challenge_version_id, question_version_id, position, points,
+    config_schema_version, mode_config
+  )
+  select
+    gen_random_uuid(), target_challenge_version_id, item.question_version_id, item.position,
+    item.points, item.config_schema_version, item.mode_config
+  from private.challenge_items item
+  where item.challenge_version_id = source_row.id
+  order by item.position;
+
+  select jsonb_build_object(
+    'challengeDefinitionId', definition.id,
+    'challengeVersionId', version.id,
+    'versionNumber', version.version_number,
+    'status', version.status,
+    'slug', definition.slug,
+    'title', version.title,
+    'subtitle', version.subtitle,
+    'description', version.description,
+    'mode', version.mode,
+    'questionCount', (select count(*) from private.challenge_items item where item.challenge_version_id = version.id),
+    'createdAt', version.created_at,
+    'updatedAt', version.updated_at,
+    'publishedAt', version.published_at,
+    'document', null
+  ) into result
+  from private.challenge_definitions definition
+  join private.challenge_versions version on version.challenge_definition_id = definition.id
+  where version.id = target_challenge_version_id;
+
+  insert into private.audit_log(
+    actor_player_id, action, entity_type, entity_id, reason, request_id,
+    before_payload, after_payload
+  ) values (
+    actor, 'create_challenge_revision', 'challenge_version', target_challenge_version_id,
+    reason_value, key,
+    jsonb_build_object(
+      'sourceChallengeVersionId', source_row.id,
+      'sourceVersionNumber', source_row.version_number,
+      'sourceStatus', source_row.status
+    ),
+    jsonb_build_object(
+      'challengeDefinitionId', definition_row.id,
+      'challengeVersionId', target_challenge_version_id,
+      'versionNumber', next_version,
+      'status', 'draft',
+      'questionCount', (select count(*) from private.challenge_items item where item.challenge_version_id = target_challenge_version_id)
+    )
+  );
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+  values (actor, key, 'create_challenge_revision', safe_input, result);
+  return result;
 end;
 $function$;
 
@@ -1691,7 +2572,7 @@ begin
     id, question_definition_id, version_number, payload_schema_version, status,
     type, time_limit_ms, public_payload, created_by_player_id
   ) values (
-    version_id, definition_id, next_version, document_value->>'payloadSchemaVersion', 'draft',
+    version_id, definition_id, next_version, (document_value->>'payloadSchemaVersion')::integer, 'draft',
     document_value->>'type', (document_value->>'timeLimitMs')::integer,
     document_value->'publicPayload', actor
   );
@@ -2574,9 +3455,12 @@ begin
     when 'start' then
       allowed := array['idempotencyKey','scheduledChallengeId','sessionToken']; required := allowed;
     when 'takeover' then
-      allowed := array['idempotencyKey','attemptId','lockVersion','newSessionToken']; required := allowed;
+      allowed := array['idempotencyKey','attemptId','scheduledChallengeId','lockVersion','newSessionToken']; required := allowed;
     when 'prepare' then
       allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
+    when 'activate' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId'];
+      allowed := required;
     when 'receive' then
       required := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','answer'];
       allowed := required || array['clientTimeUsedMs'];
@@ -2587,7 +3471,7 @@ begin
       allowed := required || array['resultDetails'];
     when 'complete' then
       required := array['idempotencyKey','attemptId','lockVersion','sessionToken','score'];
-      allowed := required || array['outcome'];
+      allowed := required || array['outcome','pendingEvaluation'];
     when 'abandon' then
       allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
     when 'accept_invitation' then
@@ -2621,13 +3505,107 @@ begin
   if coalesce((outcome->>'replayed')::boolean, false) then return result; end if;
 
   insert into private.audit_log(actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload)
-  values(actor, op, outcome->>'entityType', (outcome->>'entityId')::uuid, input->>'reason', key,
-    nullif(outcome->'beforePayload', 'null'::jsonb),
+  values(actor, case when op = 'takeover' then 'takeover_confirmed' else op end,
+    outcome->>'entityType', (outcome->>'entityId')::uuid, input->>'reason', key,
+    case when op = 'takeover' then
+      nullif(outcome->'beforePayload', 'null'::jsonb) || jsonb_build_object('deadlineAt', result->'deadlineAt')
+      else nullif(outcome->'beforePayload', 'null'::jsonb) end,
     -- Avoid persisting playable payloads or free-text answers into a second store.
-    result - 'publicPayload');
+    result - 'publicPayload' - 'answers');
   insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
     values(actor, key, op, safe_input, result);
   return result;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.expire_stale_attempts (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  run_id_value text;
+  attempt_id_value uuid;
+  room_slug_value text;
+  now_value timestamptz;
+  attempt_row public.attempts%rowtype;
+  abandoned_count integer := 0;
+begin
+  if coalesce(current_setting('role', true), '') <> 'service_role' then
+    raise exception 'attempt_expiration_unauthorized' using errcode = '42501';
+  end if;
+  if input is null or jsonb_typeof(input) is distinct from 'object'
+    or not input ? 'runId'
+    or exists (
+      select 1 from jsonb_object_keys(input) key_name
+      where key_name <> all(array['runId','attemptId','roomSlug'])
+    )
+    or jsonb_typeof(input->'runId') is distinct from 'string'
+    or (input ? 'attemptId' and jsonb_typeof(input->'attemptId') is distinct from 'string')
+    or (input ? 'roomSlug' and jsonb_typeof(input->'roomSlug') is distinct from 'string')
+    or (input ? 'attemptId' and input ? 'roomSlug') then
+    raise exception 'attempt_expiration_invalid' using errcode = '22023';
+  end if;
+
+  run_id_value := btrim(input->>'runId');
+  if char_length(run_id_value) not between 8 and 160 then
+    raise exception 'attempt_expiration_invalid' using errcode = '22023';
+  end if;
+  if input ? 'attemptId' then
+    begin
+      attempt_id_value := (input->>'attemptId')::uuid;
+    exception when others then
+      raise exception 'attempt_expiration_invalid' using errcode = '22023';
+    end;
+  end if;
+  if input ? 'roomSlug' then
+    room_slug_value := btrim(input->>'roomSlug');
+    if char_length(room_slug_value) = 0 or char_length(room_slug_value) > 160 then
+      raise exception 'attempt_expiration_invalid' using errcode = '22023';
+    end if;
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended('calendar-tick-global', 0));
+  now_value := clock_timestamp();
+
+  for attempt_row in
+    select attempt.*
+    from public.attempts attempt
+    join public.scheduled_challenges schedule on schedule.id = attempt.scheduled_challenge_id
+    join public.seasons season on season.id = schedule.season_id
+    join public.rooms room on room.id = season.room_id
+    where attempt.kind = 'competitive'
+      and attempt.status = 'in_progress'
+      and coalesce(attempt.last_activity_at, attempt.started_at) <= now_value - interval '15 minutes'
+      and (private.publication_effective_status(
+        schedule.status, season.status, season.starts_at, season.ends_at,
+        schedule.opens_at, schedule.closes_at, now_value
+      ) = 'closed' or attempt.deadline_at <= now_value)
+      and (attempt_id_value is null or attempt.id = attempt_id_value)
+      and (room_slug_value is null or room.slug = room_slug_value)
+    order by attempt.id
+    for update of attempt skip locked
+  loop
+    if private.close_attempt_as_abandoned(
+      attempt_row.id,
+      now_value,
+      'inactivity_timeout',
+      null,
+      run_id_value || ':inactivity_timeout:' || attempt_row.id::text,
+      '15 minutes without activity after challenge closure or deadline'
+    ) then
+      abandoned_count := abandoned_count + 1;
+    end if;
+  end loop;
+
+  return jsonb_build_object(
+    'runId', run_id_value,
+    'evaluatedAt', now_value,
+    'abandonedAttempts', abandoned_count
+  );
 end;
 $function$;
 
@@ -2668,6 +3646,7 @@ CREATE OR REPLACE FUNCTION private.guard_attempt()
   LANGUAGE plpgsql
   SET search_path TO ''
   AS $function$
+declare attempt_mode text;
 begin
   if tg_op = 'INSERT' then
     if new.status <> 'in_progress' then raise exception 'An attempt must start in progress'; end if;
@@ -2721,6 +3700,16 @@ begin
     end if;
   elsif new.status = 'invalidated' then
     raise exception 'Complete or abandon before administrative invalidation';
+  end if;
+  if new.status = 'completed' then
+    select cv.mode into attempt_mode from private.challenge_versions cv
+      where cv.id = new.challenge_version_id;
+    if attempt_mode is null
+      or (attempt_mode in ('flash', 'alphabet', 'narrative') and new.outcome is not null)
+      or (attempt_mode = 'survival' and (new.outcome is null or new.outcome not in ('survived', 'eliminated')))
+      or (attempt_mode = 'pyramid' and (new.outcome is null or new.outcome not in ('summit', 'failed'))) then
+      raise exception 'invalid_attempt_lifecycle' using errcode = '23514';
+    end if;
   end if;
   return new;
 end;
@@ -2985,6 +3974,7 @@ declare
   sc public.scheduled_challenges%rowtype;
   unit private.attempt_timing_units%rowtype;
   segment private.interaction_intervals%rowtype;
+  prepared private.prepared_interactions%rowtype;
   receipt private.answer_receipts%rowtype;
   session_row private.attempt_sessions%rowtype;
   item private.challenge_items%rowtype;
@@ -3027,7 +4017,9 @@ begin
       raise exception 'not_authorized' using errcode = '42501';
     end if;
     select * into a from public.attempts where player_id = actor and scheduled_challenge_id = target and kind = 'competitive' for update;
-    if cached_result is not null then return jsonb_build_object(
+    if cached_result is not null then
+      perform private.authorize_attempt_replay(a.id, safe_input->>'sessionToken');
+      return jsonb_build_object(
         'result', cached_result,
         'entityType', 'attempt',
         'entityId', a.id,
@@ -3055,6 +4047,9 @@ begin
     if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
     select * into sc from public.scheduled_challenges where id = a.scheduled_challenge_id for share;
     select * into cv from private.challenge_versions where id = a.challenge_version_id;
+    if op = 'takeover' and a.scheduled_challenge_id <> (input->>'scheduledChallengeId')::uuid then
+      raise exception 'not_authorized' using errcode = '42501';
+    end if;
     if op not in ('invalidate','adjust') then
       if a.player_id <> actor or a.kind <> 'competitive' or is_admin or not exists (
         select 1 from public.seasons s join public.rooms r on r.id = s.room_id
@@ -3065,9 +4060,16 @@ begin
       if op <> 'takeover' then
         select * into session_row from private.attempt_sessions where attempt_id = a.id
           and session_token_hash = safe_input->>'sessionToken';
-        if not found or (session_row.revoked_at is not null and not (
-          op in ('complete','abandon') and cached_result is not null and a.status in ('completed','abandoned')
-        )) then raise exception 'session_revoked' using errcode = '42501'; end if;
+        if not found then
+          raise exception 'session_revoked' using errcode = '42501';
+        elsif session_row.revoked_at is not null then
+          if session_row.revocation_reason = 'takeover' then
+            raise exception 'session_transferred' using errcode = '42501';
+          end if;
+          if not (op in ('complete','abandon') and cached_result is not null and a.status in ('completed','abandoned')) then
+            raise exception 'session_revoked' using errcode = '42501';
+          end if;
+        end if;
         -- The global game deadline stops new gameplay, not authenticated timeout/evaluation cleanup.
       end if;
     end if;
@@ -3091,10 +4093,18 @@ begin
     case op
       when 'takeover' then
         if a.deadline_at is not null and instant >= a.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
-        update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
+        update private.attempt_sessions
+        set revoked_at = instant, revocation_reason = 'takeover'
+        where attempt_id = a.id and revoked_at is null;
         insert into private.attempt_sessions(attempt_id, session_token_hash, expires_at)
           values(a.id, safe_input->>'newSessionToken', a.deadline_at) returning * into session_row;
-        result := jsonb_build_object('sessionId', session_row.id, 'deadlineAt', a.deadline_at);
+        result := jsonb_build_object(
+          'attemptId', a.id,
+          'sessionId', session_row.id,
+          'lockVersion', a.lock_version,
+          'deadlineAt', a.deadline_at,
+          'transferred', true
+        );
       when 'prepare' then
         if cv.mode = 'pyramid' and exists (
           select 1 from private.attempt_answers answer
@@ -3105,40 +4115,59 @@ begin
         if exists (select 1 from private.answer_receipts r where r.attempt_id = a.id and not exists (
           select 1 from private.attempt_answers aa where aa.receipt_id = r.id
         )) then raise exception 'evaluation_pending' using errcode = '55000'; end if;
-        select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
-        if found then
-          select * into item from private.challenge_items where id = segment.challenge_item_id;
-          select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
-        else
-          select * into item from private.challenge_items where id = private.next_attempt_item(a.id);
-          if not found then raise exception 'no_pending_item' using errcode = '55000'; end if;
-          select * into unit from private.attempt_timing_units where attempt_id = a.id and challenge_item_id = item.id;
-          if not found then
-            insert into private.attempt_timing_units(attempt_id, challenge_version_id, challenge_item_id, scope, started_at, deadline_at)
-            select a.id, a.challenge_version_id, item.id,
-              case cv.mode when 'alphabet' then 'attempt' when 'pyramid' then 'level' else 'question' end,
-              case when cv.mode = 'alphabet' then a.started_at else instant end,
-              case when cv.mode = 'alphabet' then a.deadline_at else instant + q.time_limit_ms * interval '1 millisecond' end
-            from private.question_versions q where q.id = item.question_version_id returning * into unit;
+        if cv.mode = 'pyramid' then
+          select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
+          if found then
+            select * into item from private.challenge_items where id = segment.challenge_item_id;
+            select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+          else
+            select * into prepared from private.prepared_interactions where attempt_id = a.id for update;
+            if found then
+              select * into item from private.challenge_items where id = prepared.challenge_item_id;
+            else
+              select * into item from private.challenge_items where id = private.next_attempt_item(a.id);
+              if not found then raise exception 'no_pending_item' using errcode = '55000'; end if;
+              insert into private.prepared_interactions(attempt_id, challenge_version_id, challenge_item_id)
+                values(a.id, a.challenge_version_id, item.id);
+            end if;
           end if;
-          insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
-            values(a.id, item.id, unit.id, least(instant, unit.deadline_at)) returning * into segment;
+        else
+          select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
+          if found then
+            select * into item from private.challenge_items where id = segment.challenge_item_id;
+            select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+          else
+            select * into item from private.challenge_items where id = private.next_attempt_item(a.id);
+            if not found then raise exception 'no_pending_item' using errcode = '55000'; end if;
+            select * into unit from private.attempt_timing_units where attempt_id = a.id and challenge_item_id = item.id;
+            if not found then
+              insert into private.attempt_timing_units(attempt_id, challenge_version_id, challenge_item_id, scope, started_at, deadline_at)
+              select a.id, a.challenge_version_id, item.id,
+                case cv.mode when 'alphabet' then 'attempt' else 'question' end,
+                case when cv.mode = 'alphabet' then a.started_at else instant end,
+                case when cv.mode = 'alphabet' then a.deadline_at else instant + q.time_limit_ms * interval '1 millisecond' end
+              from private.question_versions q where q.id = item.question_version_id returning * into unit;
+            end if;
+            insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
+              values(a.id, item.id, unit.id, least(instant, unit.deadline_at)) returning * into segment;
+          end if;
         end if;
         perform private.ensure_progressive_clue_initial(a.id, item.id, a.challenge_version_id);
         select jsonb_build_object('challengeItemId', item.id, 'questionType', q.type,
           'payloadSchemaVersion', q.payload_schema_version,
           'publicPayload', case
-            when instant >= unit.deadline_at then null
+            when (cv.mode <> 'pyramid' or segment.id is not null) and instant >= unit.deadline_at then null
             when q.type = 'progressive-clues' then private.progressive_clues_public_payload(item.id)
             when q.type = 'matching' then private.matching_public_payload(item.id)
             else q.public_payload
           end,
-          'presentedAt', segment.started_at, 'deadlineAt', unit.deadline_at, 'timedOut', instant >= unit.deadline_at,
+          'presentedAt', case when segment.id is null then null else segment.started_at end,
+          'deadlineAt', case when segment.id is null then null else unit.deadline_at end,
+          'timedOut', case when segment.id is null then false else instant >= unit.deadline_at end,
           'progress', case
             when q.type = 'mini-wordle' then private.mini_wordle_progress(a.id, item.id)
             when q.type = 'logic-code' then private.logic_code_progress(a.id, item.id)
             when q.type = 'progressive-clues' then private.progressive_clues_progress(a.id, item.id)
-            when q.type = 'matching' then private.matching_progress(a.id, item.id)
             when q.type = 'queens' then private.queens_progress(a.id, item.id)
             when q.type = 'word-search' then private.word_search_progress(a.id, item.id)
             when q.type = 'word-hashtag' then private.word_hashtag_progress(a.id, item.id) - 'solved'
@@ -3187,12 +4216,60 @@ begin
             )
             else null end)
           into result from private.question_versions q where q.id = item.question_version_id;
+      when 'activate' then
+        if cv.mode <> 'pyramid' then raise exception 'invalid_command' using errcode = '22023'; end if;
+        select * into segment from private.interaction_intervals
+          where attempt_id = a.id and ended_at is null for update;
+        if found then
+          if segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
+            raise exception 'interaction_not_presented' using errcode = '55000';
+          end if;
+          select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+        else
+          select * into prepared from private.prepared_interactions
+            where attempt_id = a.id and challenge_item_id = (input->>'challengeItemId')::uuid for update;
+          if not found then raise exception 'interaction_not_presented' using errcode = '55000'; end if;
+          select * into item from private.challenge_items where id = prepared.challenge_item_id;
+          insert into private.attempt_timing_units(attempt_id, challenge_version_id, challenge_item_id,
+            scope, started_at, deadline_at)
+          select a.id, a.challenge_version_id, item.id, 'level', instant,
+            instant + q.time_limit_ms * interval '1 millisecond'
+          from private.question_versions q where q.id = item.question_version_id
+          returning * into unit;
+          insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
+            values(a.id, item.id, unit.id, instant) returning * into segment;
+          delete from private.prepared_interactions where attempt_id = a.id;
+        end if;
+        result := jsonb_build_object(
+          'challengeItemId', segment.challenge_item_id,
+          'presentedAt', segment.started_at,
+          'deadlineAt', unit.deadline_at,
+          'timedOut', instant >= unit.deadline_at);
       when 'receive', 'pass' then
         select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
         if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
           raise exception 'interaction_not_presented' using errcode = '55000';
         end if;
         select * into item from private.challenge_items where id = segment.challenge_item_id;
+        select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+        if op = 'receive' and exists (
+          select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'matching'
+        ) and (
+          (instant < unit.deadline_at and not private.matching_answer_valid(
+            (select q.public_payload from private.question_versions q where q.id = item.question_version_id),
+            input->'answer',
+            true
+          ))
+          or (instant >= unit.deadline_at and jsonb_typeof(input->'answer') <> 'null'
+            and not private.matching_answer_valid(
+              (select q.public_payload from private.question_versions q where q.id = item.question_version_id),
+              input->'answer',
+              false
+            ))
+        ) then
+          raise exception 'invalid_matching_answer' using errcode = '22023';
+        end if;
         if op = 'receive' and exists (
           select 1 from private.question_versions q
           where q.id = item.question_version_id and q.type = 'mini-wordle'
@@ -3213,12 +4290,6 @@ begin
         end if;
         if op = 'receive' and exists (
           select 1 from private.question_versions q
-          where q.id = item.question_version_id and q.type = 'matching'
-        ) and jsonb_typeof(input->'answer') <> 'null' then
-          raise exception 'matching_requires_pair_command' using errcode = '22023';
-        end if;
-        if op = 'receive' and exists (
-          select 1 from private.question_versions q
           where q.id = item.question_version_id and q.type = 'word-search'
         ) and jsonb_typeof(input->'answer') <> 'null' then
           raise exception 'word_search_requires_selection_command' using errcode = '22023';
@@ -3229,7 +4300,6 @@ begin
         ) and jsonb_typeof(input->'answer') <> 'null' then
           raise exception 'word_hashtag_requires_swap_command' using errcode = '22023';
         end if;
-        select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
         -- Entry time is captured before locks/evaluation. A stale request cannot predate presentation.
         if received < segment.started_at then raise exception 'request_predates_presentation' using errcode = '40001'; end if;
         late := received >= unit.deadline_at;
@@ -3279,6 +4349,71 @@ begin
             else (input->>'points')::integer end);
       when 'complete', 'abandon' then
         if op = 'complete' then
+          if cv.mode = 'alphabet' then
+            -- Preserve an already received answer using the trusted evaluator's result.
+            -- No evaluator or asset calls are made while this attempt is locked.
+            if input ? 'pendingEvaluation' then
+              if jsonb_typeof(input->'pendingEvaluation') is distinct from 'object'
+                or not (input->'pendingEvaluation') ?& array['receiptId','status','points']
+                or exists (select 1 from jsonb_object_keys(input->'pendingEvaluation') k
+                  where k <> all(array['receiptId','status','points','resultDetails'])) then
+                raise exception 'invalid_command' using errcode = '22023';
+              end if;
+              select * into receipt from private.answer_receipts r
+                where r.id = (input->'pendingEvaluation'->>'receiptId')::uuid and r.attempt_id = a.id
+                  and not exists (select 1 from private.attempt_answers aa where aa.receipt_id = r.id);
+              if not found then raise exception 'receipt_not_found' using errcode = '55000'; end if;
+              insert into private.attempt_answers(attempt_id, challenge_item_id, challenge_version_id,
+                receipt_id, status, answer, result_details, points, presented_at, submitted_at,
+                time_used_ms, idempotency_key)
+              values(a.id, receipt.challenge_item_id, a.challenge_version_id, receipt.id,
+                input->'pendingEvaluation'->>'status', receipt.answer,
+                input->'pendingEvaluation'->'resultDetails', (input->'pendingEvaluation'->>'points')::integer,
+                receipt.presented_at, receipt.effective_submitted_at, receipt.time_used_ms,
+                'complete:evaluation:' || receipt.id);
+            end if;
+            if exists (select 1 from private.answer_receipts r where r.attempt_id = a.id
+              and not exists (select 1 from private.attempt_answers aa where aa.receipt_id = r.id)) then
+              raise exception 'unfinished_interaction' using errcode = '55000';
+            end if;
+            if private.next_attempt_item(a.id) is not null then
+              if instant < a.deadline_at then
+                raise exception 'alphabet_deadline_not_reached' using errcode = '55000',
+                  detail = jsonb_build_object('retryAfterSeconds',
+                    greatest(1, ceil(extract(epoch from (a.deadline_at - instant)))::integer))::text;
+              end if;
+              update private.interaction_intervals x
+                set ended_at = greatest(x.started_at, least(instant, a.deadline_at)), end_reason = 'timeout'
+                where x.attempt_id = a.id and x.ended_at is null;
+              -- Unvisited letters have zero elapsed time and no invented visit.
+              insert into private.answer_receipts(attempt_id, challenge_item_id, challenge_version_id,
+                answer, received_at, presented_at, effective_submitted_at, time_used_ms, timed_out)
+              select a.id, pending.id, a.challenge_version_id, null, a.deadline_at,
+                coalesce(visits.presented_at, a.deadline_at), a.deadline_at,
+                coalesce(visits.time_used_ms, 0), true
+              from private.challenge_items pending
+              left join lateral (
+                select min(x.started_at) as presented_at,
+                  sum(floor(extract(epoch from (x.ended_at - x.started_at)) * 1000))::bigint as time_used_ms
+                from private.interaction_intervals x
+                where x.attempt_id = a.id and x.challenge_item_id = pending.id
+              ) visits on true
+              where pending.challenge_version_id = a.challenge_version_id
+                and not exists (select 1 from private.attempt_answers aa
+                  where aa.attempt_id = a.id and aa.challenge_item_id = pending.id)
+                and not exists (select 1 from private.answer_receipts r
+                  where r.attempt_id = a.id and r.challenge_item_id = pending.id);
+              insert into private.attempt_answers(attempt_id, challenge_item_id, challenge_version_id,
+                receipt_id, status, answer, points, presented_at, submitted_at, time_used_ms, idempotency_key)
+              select a.id, r.challenge_item_id, a.challenge_version_id, r.id, 'unanswered', r.answer, 0,
+                r.presented_at, r.effective_submitted_at, r.time_used_ms,
+                'alphabet:timeout:' || r.challenge_item_id
+              from private.answer_receipts r where r.attempt_id = a.id
+                and not exists (select 1 from private.attempt_answers aa where aa.receipt_id = r.id);
+            end if;
+          elsif input ? 'pendingEvaluation' then
+            raise exception 'invalid_command' using errcode = '22023';
+          end if;
           if exists (select 1 from private.interaction_intervals where attempt_id = a.id and ended_at is null)
             or exists (select 1 from private.answer_receipts r where r.attempt_id = a.id
               and not exists (select 1 from private.attempt_answers aa where aa.receipt_id = r.id)) then
@@ -3291,7 +4426,7 @@ begin
             select count(*)::integer,
               coalesce(sum(case
                 when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
-                when answer_question.type in ('matching', 'queens')
+                when answer_question.type = 'queens'
                   and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
                 else 0
               end), 0)::integer
@@ -3326,29 +4461,45 @@ begin
             end if;
             select coalesce(sum(answer.points), 0)::integer into points
             from private.attempt_answers answer where answer.attempt_id = a.id;
+          elsif cv.mode = 'alphabet' then
+            select coalesce(sum(answer.points), 0)::integer into points
+            from private.attempt_answers answer where answer.attempt_id = a.id;
+            completion_outcome := null;
           else
             if cv.mode in ('flash','alphabet','narrative') and private.next_attempt_item(a.id) is not null then
               raise exception 'incomplete_challenge' using errcode = '55000';
             end if;
             points := (input->>'score')::integer;
-            completion_outcome := input->>'outcome';
+            completion_outcome := null;
           end if;
           target_status := 'completed';
         else
-          target_status := 'abandoned'; points := null;
+          target_status := 'abandoned'; points := null; completion_outcome := null;
           update private.interaction_intervals x set ended_at = greatest(x.started_at, least(instant, u.deadline_at)), end_reason = 'abandon'
             from private.attempt_timing_units u where x.attempt_id = a.id and x.ended_at is null and u.id = x.timing_unit_id;
         end if;
+        delete from private.prepared_interactions where attempt_id = a.id;
         update public.attempts set status = target_status, score = points, completed_at = instant,
           outcome = completion_outcome, progress_payload = null, lock_version = lock_version + 1 where id = a.id returning * into a;
-        update private.attempt_sessions set revoked_at = instant where attempt_id = a.id and revoked_at is null;
+        update private.attempt_sessions
+        set revoked_at = instant, revocation_reason = 'terminal'
+        where attempt_id = a.id and revoked_at is null;
         if op = 'complete' then
           insert into private.flash_point_entries(season_id, player_id, scheduled_challenge_id, attempt_id, entry_type, amount, idempotency_key)
           values(sc.season_id, a.player_id, sc.id, a.id, 'accreditation', points, 'complete:' || a.id);
         end if;
         result := jsonb_build_object('status', a.status, 'score', a.score,
-          'outcome', a.outcome,
+          'outcome', a.outcome, 'challengeMode', cv.mode,
           'livesRemaining', case when cv.mode = 'survival' then survival_lives else null end);
+        if op = 'complete' and cv.mode = 'alphabet' then
+          result := result || jsonb_build_object('answers', coalesce((
+            select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
+              'answer', aa.answer, 'status', aa.status, 'points', aa.points,
+              'timeUsedMs', aa.time_used_ms, 'resultDetails', aa.result_details) order by ci.position)
+            from private.attempt_answers aa join private.challenge_items ci on ci.id = aa.challenge_item_id
+            where aa.attempt_id = a.id
+          ), '[]'::jsonb));
+        end if;
       when 'invalidate', 'adjust' then
         result := private.handle_attempt_admin_command(op, input, actor, a, sc, instant, key);
         select * into a from public.attempts where id = a.id;
@@ -3481,6 +4632,26 @@ CREATE OR REPLACE FUNCTION private.is_room_member (
   )
 $function$;
 
+CREATE OR REPLACE FUNCTION private.is_supported_anagram_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+declare
+  target_question uuid := question.id;
+begin
+  if question.type = 'anagram' and question.payload_schema_version = 1 then
+    perform private.validate_flash_question_document(private.question_version_document(target_question));
+    return true;
+  end if;
+  return false;
+end;
+$function$;
+
 CREATE OR REPLACE FUNCTION private.is_supported_competitive_question_extension (
   target_question uuid
 )
@@ -3501,67 +4672,16 @@ CREATE OR REPLACE FUNCTION private.is_supported_competitive_question_extension (
     or private.is_valid_published_competitive_question_format(target_question, 'connect-pairs')
 $function$;
 
-CREATE OR REPLACE FUNCTION private.is_supported_flash_question (
-  target_question uuid
+CREATE OR REPLACE FUNCTION private.is_supported_estimation_question (
+  question private.question_versions,
+  solution jsonb
 )
   RETURNS boolean
   LANGUAGE plpgsql
   STABLE
-  SECURITY DEFINER
   SET search_path TO ''
   AS $function$
-declare
-  question private.question_versions%rowtype;
-  solution jsonb;
-  expected_word_length integer;
-  max_attempts integer;
-  selected_dictionary_id text;
-  normalized text;
 begin
-  select * into question from private.question_versions where id = target_question;
-  if not found or question.status <> 'published' then return false; end if;
-  select solution_payload into solution from private.question_version_solutions where question_version_id = question.id;
-  if question.type = 'progressive-image' and question.payload_schema_version = 2 then
-    return jsonb_typeof(question.public_payload) = 'object'
-      and jsonb_typeof(question.public_payload->'question') = 'string'
-      and jsonb_typeof(question.public_payload->'surface') = 'object'
-      and question.public_payload->'surface'->>'assetId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      and private.is_usable_question_asset((question.public_payload->'surface'->>'assetId')::uuid)
-      and jsonb_typeof(question.public_payload->'surface'->'alt') = 'string'
-      and jsonb_typeof(question.public_payload->'surface'->'width') = 'number'
-      and jsonb_typeof(question.public_payload->'surface'->'height') = 'number'
-      and (question.public_payload->'surface'->>'width')::integer between 1 and 8192
-      and (question.public_payload->'surface'->>'height')::integer between 1 and 8192
-      and jsonb_typeof(question.public_payload->'revealDurationMs') = 'number'
-      and (question.public_payload->>'revealDurationMs')::integer between 1 and question.time_limit_ms - 1
-      and not private.editorial_has_secret_key(question.public_payload)
-      and jsonb_typeof(solution) = 'object'
-      and jsonb_typeof(solution->'correctAnswer') = 'string'
-      and jsonb_typeof(solution->'acceptedAnswers') = 'array'
-      and jsonb_typeof(solution->'solutionAlt') = 'string'
-      and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
-        where private.mini_wordle_normalize(answer) = private.mini_wordle_normalize(solution->>'correctAnswer'));
-  end if;
-  if question.type = 'multiple-choice' and question.payload_schema_version = 2 then
-    return jsonb_typeof(question.public_payload) = 'object'
-      and jsonb_typeof(question.public_payload->'question') = 'string'
-      and jsonb_typeof(question.public_payload->'options') = 'array'
-      and jsonb_array_length(question.public_payload->'options') >= 2
-      and jsonb_typeof(question.public_payload->'media') = 'object'
-      and question.public_payload->'media'->>'type' = 'image'
-      and question.public_payload->'media'->>'assetId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      and private.is_usable_question_asset((question.public_payload->'media'->>'assetId')::uuid)
-      and jsonb_typeof(question.public_payload->'media'->'alt') = 'string'
-      and jsonb_typeof(question.public_payload->'media'->'width') = 'number'
-      and jsonb_typeof(question.public_payload->'media'->'height') = 'number'
-      and (question.public_payload->'media'->>'width')::integer between 1 and 8192
-      and (question.public_payload->'media'->>'height')::integer between 1 and 8192
-      and not private.editorial_has_secret_key(question.public_payload)
-      and jsonb_typeof(solution) = 'object'
-      and jsonb_typeof(solution->'correctAnswer') = 'string'
-      and exists (select 1 from jsonb_array_elements_text(question.public_payload->'options') value
-        where value = solution->>'correctAnswer');
-  end if;
   if question.type = 'estimation' and question.payload_schema_version = 2 then
     return jsonb_typeof(question.public_payload) = 'object'
       and jsonb_typeof(question.public_payload->'question') = 'string'
@@ -3597,6 +4717,122 @@ begin
       and jsonb_typeof(solution->'tolerance') = 'number'
       and (solution->>'tolerance')::numeric >= 0;
   end if;
+  if question.type = 'estimation' and question.payload_schema_version = 1 then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(question.public_payload->'min') = 'number'
+      and jsonb_typeof(question.public_payload->'max') = 'number'
+      and (question.public_payload->>'min')::numeric < (question.public_payload->>'max')::numeric
+      and jsonb_typeof(question.public_payload->'step') = 'number'
+      and (question.public_payload->>'step')::numeric > 0
+      and jsonb_typeof(question.public_payload->'initialValue') = 'number'
+      and (question.public_payload->>'initialValue')::numeric between
+        (question.public_payload->>'min')::numeric and (question.public_payload->>'max')::numeric
+      and jsonb_typeof(question.public_payload->'unit') = 'string'
+      and char_length(btrim(question.public_payload->>'unit')) between 1 and 100
+      and (not question.public_payload ? 'media' or question.public_payload->'media' = 'null'::jsonb
+        or (jsonb_typeof(question.public_payload->'media') = 'object'
+          and question.public_payload->'media'->>'type' = 'image'
+          and jsonb_typeof(question.public_payload->'media'->'src') = 'string'
+          and jsonb_typeof(question.public_payload->'media'->'alt') = 'string'))
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'number'
+      and (solution->>'correctAnswer')::numeric between
+        (question.public_payload->>'min')::numeric and (question.public_payload->>'max')::numeric
+      and jsonb_typeof(solution->'tolerance') = 'number'
+      and (solution->>'tolerance')::numeric >= 0;
+  end if;
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_flash_question (
+  target_question uuid
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  question private.question_versions%rowtype;
+  solution jsonb;
+begin
+  select * into question from private.question_versions where id = target_question;
+  if not found or question.status <> 'published' then return false; end if;
+  select solution_payload into solution from private.question_version_solutions where question_version_id = question.id;
+  if question.type = 'progressive-image' and question.payload_schema_version = 2 then
+    return private.is_supported_progressive_image_question(question, solution);
+  end if;
+  if question.type = 'multiple-choice' and question.payload_schema_version = 2 then
+    return private.is_supported_multiple_choice_question(question, solution);
+  end if;
+  if question.type = 'estimation' and question.payload_schema_version = 2 then
+    return private.is_supported_estimation_question(question, solution);
+  end if;
+  if question.type = 'heat-map' and question.payload_schema_version = 2 then
+    return private.is_supported_heat_map_question(question, solution);
+  end if;
+  if question.type = 'queens' and question.payload_schema_version = 1 then
+    return private.is_supported_queens_question(question, solution);
+  end if;
+  if question.type = 'word-search' and question.payload_schema_version = 1 then
+    return private.is_supported_word_search_question(question, solution);
+  end if;
+  if question.type in (
+    'true-false', 'ordering', 'classification', 'logic-matrix',
+    'zip', 'escape', 'word-hashtag', 'odd-one-out', 'connect-pairs'
+  ) then
+    return private.is_supported_competitive_question_extension(target_question);
+  end if;
+  -- Versions already declared by the competitive capability contract. Publication
+  -- continues to require v2; these branches only read existing published v1 content.
+  if question.type = 'estimation' and question.payload_schema_version = 1 then
+    return private.is_supported_estimation_question(question, solution);
+  end if;
+  if question.type = 'heat-map' and question.payload_schema_version = 1 then
+    return private.is_supported_heat_map_question(question, solution);
+  end if;
+  if question.type = 'anagram' and question.payload_schema_version = 1 then
+    return private.is_supported_anagram_question(question, solution);
+  end if;
+  if question.payload_schema_version <> 1 then return false; end if;
+  if question.type = 'multiple-choice' then
+    return private.is_supported_multiple_choice_question(question, solution);
+  end if;
+  if question.type = 'short-text' then
+    return private.is_supported_short_text_question(question, solution);
+  end if;
+  if question.type = 'logic-code' then
+    return private.is_supported_logic_code_question(question, solution);
+  end if;
+  if question.type = 'progressive-clues' then
+    return private.is_supported_progressive_clues_question(question, solution);
+  end if;
+  if question.type = 'matching' then
+    return private.is_supported_matching_question(question, solution);
+  end if;
+  if question.type = 'progressive-image' then
+    return private.is_supported_progressive_image_question(question, solution);
+  end if;
+  return private.is_supported_mini_wordle_question(question, solution);
+exception when others then
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_heat_map_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+begin
   if question.type = 'heat-map' and question.payload_schema_version = 2 then
     return jsonb_typeof(question.public_payload) = 'object'
       and jsonb_typeof(question.public_payload->'question') = 'string'
@@ -3622,56 +4858,47 @@ begin
       and jsonb_typeof(solution->'toleranceRadius') = 'number'
       and (solution->>'toleranceRadius')::numeric > (solution->>'fullCreditRadius')::numeric;
   end if;
-  if question.type = 'queens' and question.payload_schema_version = 1 then
-    return private.queens_content_valid(question.public_payload, solution);
-  end if;
-  if question.type = 'word-search' and question.payload_schema_version = 1 then
+  if question.type = 'heat-map' and question.payload_schema_version = 1 then
     return jsonb_typeof(question.public_payload) = 'object'
       and jsonb_typeof(question.public_payload->'question') = 'string'
-      and jsonb_typeof(question.public_payload->'grid') = 'object'
-      and (question.public_payload->'grid'->>'rows')::integer between 6 and 10
-      and (question.public_payload->'grid'->>'columns')::integer between 6 and 10
-      and jsonb_typeof(question.public_payload->'letters') = 'array'
-      and jsonb_array_length(question.public_payload->'letters') =
-        (question.public_payload->'grid'->>'rows')::integer * (question.public_payload->'grid'->>'columns')::integer
-      and jsonb_typeof(question.public_payload->'targets') = 'array'
-      and jsonb_array_length(question.public_payload->'targets') between 2 and 8
       and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(question.public_payload->'targetLabel') = 'string'
+      and char_length(btrim(question.public_payload->>'targetLabel')) between 1 and 500
+      and jsonb_typeof(question.public_payload->'surface') = 'object'
+      and jsonb_typeof(question.public_payload->'surface'->'src') = 'string'
+      and char_length(btrim(question.public_payload->'surface'->>'src')) > 0
+      and jsonb_typeof(question.public_payload->'surface'->'alt') = 'string'
+      and (question.public_payload->'surface'->>'width')::numeric = trunc((question.public_payload->'surface'->>'width')::numeric)
+      and (question.public_payload->'surface'->>'width')::integer between 1 and 8192
+      and (question.public_payload->'surface'->>'height')::numeric = trunc((question.public_payload->'surface'->>'height')::numeric)
+      and (question.public_payload->'surface'->>'height')::integer between 1 and 8192
+      and (question.public_payload->'surface'->>'fit' is null or question.public_payload->'surface'->>'fit' in ('cover','contain'))
+      and (not question.public_payload->'surface' ? 'position' or jsonb_typeof(question.public_payload->'surface'->'position') = 'string')
       and jsonb_typeof(solution) = 'object'
-      and jsonb_typeof(solution->'positionsByTargetId') = 'object';
+      and jsonb_typeof(solution->'target'->'x') = 'number'
+      and (solution->'target'->>'x')::numeric between 0 and 1
+      and jsonb_typeof(solution->'target'->'y') = 'number'
+      and (solution->'target'->>'y')::numeric between 0 and 1
+      and jsonb_typeof(solution->'fullCreditRadius') = 'number'
+      and (solution->>'fullCreditRadius')::numeric >= 0
+      and jsonb_typeof(solution->'toleranceRadius') = 'number'
+      and (solution->>'toleranceRadius')::numeric > (solution->>'fullCreditRadius')::numeric;
   end if;
-  if question.type in (
-    'true-false', 'ordering', 'classification', 'logic-matrix',
-    'zip', 'escape', 'word-hashtag', 'odd-one-out', 'connect-pairs'
-  ) then
-    return private.is_supported_competitive_question_extension(target_question);
-  end if;
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_logic_code_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+begin
   if question.payload_schema_version <> 1 then return false; end if;
-  if question.type = 'multiple-choice' then
-    return jsonb_typeof(question.public_payload) = 'object'
-      and jsonb_typeof(question.public_payload->'question') = 'string'
-      and jsonb_typeof(question.public_payload->'options') = 'array'
-      and jsonb_array_length(question.public_payload->'options') >= 2
-      and not private.editorial_has_secret_key(question.public_payload)
-      and jsonb_typeof(solution) = 'object'
-      and jsonb_typeof(solution->'correctAnswer') = 'string'
-      and exists (select 1 from jsonb_array_elements_text(question.public_payload->'options') value
-        where value = solution->>'correctAnswer');
-  end if;
-  if question.type = 'short-text' then
-    return jsonb_typeof(question.public_payload) = 'object'
-      and jsonb_typeof(question.public_payload->'question') = 'string'
-      and (not question.public_payload ? 'answerPlaceholder'
-        or jsonb_typeof(question.public_payload->'answerPlaceholder') in ('null', 'string'))
-      and not private.editorial_has_secret_key(question.public_payload)
-      and jsonb_typeof(solution) = 'object'
-      and jsonb_typeof(solution->'correctAnswer') = 'string'
-      and jsonb_typeof(solution->'acceptedAnswers') = 'array'
-      and jsonb_array_length(solution->'acceptedAnswers') between 1 and 100
-      and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
-        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
-          regexp_replace(lower(translate(btrim(solution->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'));
-  end if;
   if question.type = 'logic-code' then
     return jsonb_typeof(question.public_payload) = 'object'
       and jsonb_typeof(question.public_payload->'question') = 'string'
@@ -3690,35 +4917,21 @@ begin
       and char_length(solution->>'correctAnswer') = (question.public_payload->>'codeLength')::integer
       and solution->>'correctAnswer' ~ '^[0-9]+$';
   end if;
-  if question.type = 'progressive-clues' then
-    return jsonb_typeof(question.public_payload) = 'object'
-      and jsonb_typeof(question.public_payload->'question') = 'string'
-      and jsonb_typeof(question.public_payload->'clues') = 'array'
-      and jsonb_array_length(question.public_payload->'clues') between 1 and 20
-      and jsonb_typeof(question.public_payload->'cluePenalty') = 'number'
-      and (question.public_payload->>'cluePenalty')::numeric = trunc((question.public_payload->>'cluePenalty')::numeric)
-      and (question.public_payload->>'cluePenalty')::integer between 0 and 50
-      and not private.editorial_has_secret_key(question.public_payload)
-      and not exists (select 1 from jsonb_array_elements(question.public_payload->'clues') clue
-        where jsonb_typeof(clue) is distinct from 'string'
-          or char_length(btrim(clue #>> '{}')) not between 1 and 500)
-      and jsonb_typeof(solution) = 'object'
-      and jsonb_typeof(solution->'correctAnswer') = 'string'
-      and jsonb_typeof(solution->'acceptedAnswers') = 'array'
-      and jsonb_array_length(solution->'acceptedAnswers') between 1 and 100
-      and not exists (select 1 from jsonb_array_elements(solution->'acceptedAnswers') answer
-        where jsonb_typeof(answer) is distinct from 'string'
-          or char_length(btrim(answer #>> '{}')) not between 1 and 500)
-      and not exists (
-        select 1
-        from jsonb_array_elements_text(solution->'acceptedAnswers') answer
-        group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
-        having count(*) > 1
-      )
-      and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
-        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
-          regexp_replace(lower(translate(btrim(solution->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'));
-  end if;
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_matching_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+begin
+  if question.payload_schema_version <> 1 then return false; end if;
   if question.type = 'matching' then
     return jsonb_typeof(question.public_payload) = 'object'
       and jsonb_typeof(question.public_payload->'question') = 'string'
@@ -3772,6 +4985,176 @@ begin
       and (select count(*) from jsonb_each_text(solution->'matches')) =
         (select count(distinct value) from jsonb_each_text(solution->'matches'));
   end if;
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_mini_wordle_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+declare
+  expected_word_length integer;
+  max_attempts integer;
+  selected_dictionary_id text;
+  normalized text;
+begin
+  if question.payload_schema_version <> 1 then return false; end if;
+  if question.type <> 'mini-wordle' or jsonb_typeof(solution) <> 'object' then return false; end if;
+  expected_word_length := (question.public_payload->>'wordLength')::integer;
+  max_attempts := (question.public_payload->>'maxAttempts')::integer;
+  selected_dictionary_id := solution->>'dictionaryId';
+  normalized := private.mini_wordle_normalize(solution->>'correctAnswer');
+  return jsonb_typeof(question.public_payload) = 'object'
+    and jsonb_typeof(question.public_payload->'question') = 'string'
+    and expected_word_length in (4, 5)
+    and max_attempts between 1 and 10
+    and ((expected_word_length = 4 and selected_dictionary_id = 'es-general-4.v1')
+      or (expected_word_length = 5 and selected_dictionary_id = 'es-general-5.v1'))
+    and char_length(normalized) = expected_word_length
+    and normalized ~ '^[A-ZÑ]+$'
+    and jsonb_typeof(solution->'additionalGuesses') = 'array'
+    and jsonb_array_length(solution->'additionalGuesses') <= 1000
+    and not exists (select 1 from jsonb_array_elements(solution->'additionalGuesses') extra
+      where jsonb_typeof(extra) is distinct from 'string')
+    and not exists (select 1 from jsonb_array_elements(solution->'additionalGuesses') extra
+      where char_length(private.mini_wordle_normalize(extra #>> '{}')) <> expected_word_length
+        or private.mini_wordle_normalize(extra #>> '{}') !~ '^[A-ZÑ]+$'
+        or private.mini_wordle_normalize(extra #>> '{}') = normalized
+        or (select count(*) from jsonb_array_elements_text(solution->'additionalGuesses') values(value)
+            where private.mini_wordle_normalize(value) = private.mini_wordle_normalize(extra #>> '{}')) > 1)
+    and not private.editorial_has_secret_key(question.public_payload);
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_multiple_choice_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+begin
+  if question.type = 'multiple-choice' and question.payload_schema_version = 2 then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'options') = 'array'
+      and jsonb_array_length(question.public_payload->'options') >= 2
+      and jsonb_typeof(question.public_payload->'media') = 'object'
+      and question.public_payload->'media'->>'type' = 'image'
+      and question.public_payload->'media'->>'assetId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      and private.is_usable_question_asset((question.public_payload->'media'->>'assetId')::uuid)
+      and jsonb_typeof(question.public_payload->'media'->'alt') = 'string'
+      and jsonb_typeof(question.public_payload->'media'->'width') = 'number'
+      and jsonb_typeof(question.public_payload->'media'->'height') = 'number'
+      and (question.public_payload->'media'->>'width')::integer between 1 and 8192
+      and (question.public_payload->'media'->>'height')::integer between 1 and 8192
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and exists (select 1 from jsonb_array_elements_text(question.public_payload->'options') value
+        where value = solution->>'correctAnswer');
+  end if;
+  if question.payload_schema_version <> 1 then return false; end if;
+  if question.type = 'multiple-choice' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'options') = 'array'
+      and jsonb_array_length(question.public_payload->'options') >= 2
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and exists (select 1 from jsonb_array_elements_text(question.public_payload->'options') value
+        where value = solution->>'correctAnswer');
+  end if;
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_progressive_clues_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+begin
+  if question.payload_schema_version <> 1 then return false; end if;
+  if question.type = 'progressive-clues' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'clues') = 'array'
+      and jsonb_array_length(question.public_payload->'clues') between 1 and 20
+      and jsonb_typeof(question.public_payload->'cluePenalty') = 'number'
+      and (question.public_payload->>'cluePenalty')::numeric = trunc((question.public_payload->>'cluePenalty')::numeric)
+      and (question.public_payload->>'cluePenalty')::integer between 0 and 50
+      and not private.editorial_has_secret_key(question.public_payload)
+      and not exists (select 1 from jsonb_array_elements(question.public_payload->'clues') clue
+        where jsonb_typeof(clue) is distinct from 'string'
+          or char_length(btrim(clue #>> '{}')) not between 1 and 500)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and jsonb_typeof(solution->'acceptedAnswers') = 'array'
+      and jsonb_array_length(solution->'acceptedAnswers') between 1 and 100
+      and not exists (select 1 from jsonb_array_elements(solution->'acceptedAnswers') answer
+        where jsonb_typeof(answer) is distinct from 'string'
+          or char_length(btrim(answer #>> '{}')) not between 1 and 500)
+      and not exists (
+        select 1
+        from jsonb_array_elements_text(solution->'acceptedAnswers') answer
+        group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+        having count(*) > 1
+      )
+      and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
+        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+          regexp_replace(lower(translate(btrim(solution->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'));
+  end if;
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_progressive_image_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+begin
+  if question.type = 'progressive-image' and question.payload_schema_version = 2 then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'surface') = 'object'
+      and question.public_payload->'surface'->>'assetId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      and private.is_usable_question_asset((question.public_payload->'surface'->>'assetId')::uuid)
+      and jsonb_typeof(question.public_payload->'surface'->'alt') = 'string'
+      and jsonb_typeof(question.public_payload->'surface'->'width') = 'number'
+      and jsonb_typeof(question.public_payload->'surface'->'height') = 'number'
+      and (question.public_payload->'surface'->>'width')::integer between 1 and 8192
+      and (question.public_payload->'surface'->>'height')::integer between 1 and 8192
+      and jsonb_typeof(question.public_payload->'revealDurationMs') = 'number'
+      and (question.public_payload->>'revealDurationMs')::integer between 1 and question.time_limit_ms - 1
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and jsonb_typeof(solution->'acceptedAnswers') = 'array'
+      and jsonb_typeof(solution->'solutionAlt') = 'string'
+      and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
+        where private.mini_wordle_normalize(answer) = private.mini_wordle_normalize(solution->>'correctAnswer'));
+  end if;
+  if question.payload_schema_version <> 1 then return false; end if;
   if question.type = 'progressive-image' then
     return jsonb_typeof(question.public_payload) = 'object'
       and jsonb_typeof(question.public_payload->'question') = 'string'
@@ -3807,30 +5190,82 @@ begin
         where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
           regexp_replace(lower(translate(btrim(solution->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'));
   end if;
-  if question.type <> 'mini-wordle' or jsonb_typeof(solution) <> 'object' then return false; end if;
-  expected_word_length := (question.public_payload->>'wordLength')::integer;
-  max_attempts := (question.public_payload->>'maxAttempts')::integer;
-  selected_dictionary_id := solution->>'dictionaryId';
-  normalized := private.mini_wordle_normalize(solution->>'correctAnswer');
-  return jsonb_typeof(question.public_payload) = 'object'
-    and jsonb_typeof(question.public_payload->'question') = 'string'
-    and expected_word_length in (4, 5)
-    and max_attempts between 1 and 10
-    and ((expected_word_length = 4 and selected_dictionary_id = 'es-general-4.v1')
-      or (expected_word_length = 5 and selected_dictionary_id = 'es-general-5.v1'))
-    and char_length(normalized) = expected_word_length
-    and normalized ~ '^[A-ZÑ]+$'
-    and jsonb_typeof(solution->'additionalGuesses') = 'array'
-    and jsonb_array_length(solution->'additionalGuesses') <= 1000
-    and not exists (select 1 from jsonb_array_elements(solution->'additionalGuesses') extra
-      where jsonb_typeof(extra) is distinct from 'string')
-    and not exists (select 1 from jsonb_array_elements(solution->'additionalGuesses') extra
-      where char_length(private.mini_wordle_normalize(extra #>> '{}')) <> expected_word_length
-        or private.mini_wordle_normalize(extra #>> '{}') !~ '^[A-ZÑ]+$'
-        or private.mini_wordle_normalize(extra #>> '{}') = normalized
-        or (select count(*) from jsonb_array_elements_text(solution->'additionalGuesses') values(value)
-            where private.mini_wordle_normalize(value) = private.mini_wordle_normalize(extra #>> '{}')) > 1)
-    and not private.editorial_has_secret_key(question.public_payload);
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_queens_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+begin
+  if question.type = 'queens' and question.payload_schema_version = 1 then
+    return private.queens_content_valid(question.public_payload, solution);
+  end if;
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_short_text_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+begin
+  if question.payload_schema_version <> 1 then return false; end if;
+  if question.type = 'short-text' then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and (not question.public_payload ? 'answerPlaceholder'
+        or jsonb_typeof(question.public_payload->'answerPlaceholder') in ('null', 'string'))
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'correctAnswer') = 'string'
+      and jsonb_typeof(solution->'acceptedAnswers') = 'array'
+      and jsonb_array_length(solution->'acceptedAnswers') between 1 and 100
+      and exists (select 1 from jsonb_array_elements_text(solution->'acceptedAnswers') answer
+        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+          regexp_replace(lower(translate(btrim(solution->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'));
+  end if;
+  return false;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.is_supported_word_search_question (
+  question private.question_versions,
+  solution jsonb
+)
+  RETURNS boolean
+  LANGUAGE plpgsql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+begin
+  if question.type = 'word-search' and question.payload_schema_version = 1 then
+    return jsonb_typeof(question.public_payload) = 'object'
+      and jsonb_typeof(question.public_payload->'question') = 'string'
+      and jsonb_typeof(question.public_payload->'grid') = 'object'
+      and (question.public_payload->'grid'->>'rows')::integer between 6 and 10
+      and (question.public_payload->'grid'->>'columns')::integer between 6 and 10
+      and jsonb_typeof(question.public_payload->'letters') = 'array'
+      and jsonb_array_length(question.public_payload->'letters') =
+        (question.public_payload->'grid'->>'rows')::integer * (question.public_payload->'grid'->>'columns')::integer
+      and jsonb_typeof(question.public_payload->'targets') = 'array'
+      and jsonb_array_length(question.public_payload->'targets') between 2 and 8
+      and not private.editorial_has_secret_key(question.public_payload)
+      and jsonb_typeof(solution) = 'object'
+      and jsonb_typeof(solution->'positionsByTargetId') = 'object';
+  end if;
+  return false;
 end;
 $function$;
 
@@ -3987,6 +5422,8 @@ declare
   before_payload jsonb;
   after_payload jsonb;
   result jsonb;
+  closed_at timestamptz;
+  closed_attempts integer := 0;
 begin
   if jsonb_typeof(input) is distinct from 'object'
     or not input ?& array['idempotencyKey','roomKey','targetPlayerId','action']
@@ -4082,10 +5519,14 @@ begin
     where id = target_membership.id
     returning * into target_membership;
   else
+    closed_at := clock_timestamp();
     update public.room_memberships
-    set status = 'removed', ended_at = clock_timestamp()
+    set status = 'removed', ended_at = closed_at
     where id = target_membership.id
     returning * into target_membership;
+    closed_attempts := private.close_attempts_for_permission_loss(
+      target_player_id, room_row.id, closed_at, actor, key
+    );
   end if;
 
   result := jsonb_build_object(
@@ -4093,7 +5534,8 @@ begin
     'targetPlayerId', target_membership.player_id,
     'action', action_value,
     'role', target_membership.role,
-    'status', target_membership.status
+    'status', target_membership.status,
+    'closedAttemptCount', closed_attempts
   );
   after_payload := jsonb_build_object(
     'playerId', target_membership.player_id,
@@ -4113,33 +5555,75 @@ begin
 end;
 $function$;
 
-CREATE OR REPLACE FUNCTION private.matching_progress (
-  target_attempt uuid,
-  target_item    uuid
+CREATE OR REPLACE FUNCTION private.matching_answer_valid (
+  target_payload   jsonb,
+  target_answer    jsonb,
+  require_complete boolean
 )
-  RETURNS jsonb
-  LANGUAGE sql
+  RETURNS boolean
+  LANGUAGE plpgsql
   STABLE
   SECURITY DEFINER
   SET search_path TO ''
   AS $function$
-  select jsonb_build_object(
-    'kind', 'matching',
-    'matchedPairs', coalesce(jsonb_agg(
-      jsonb_build_object('leftId', e.left_item_id, 'rightId', e.right_item_id)
-      order by e.sequence
-    ) filter (where e.correct), '[]'::jsonb),
-    'matchedCount', count(*) filter (where e.correct)::integer,
-    'totalPairs', jsonb_array_length(q.public_payload->'leftItems'),
-    'incorrectAttempts', count(*) filter (where not e.correct)::integer,
-    'penaltyPoints', coalesce(sum(e.penalty_points) filter (where not e.correct), 0)::integer
-  )
-  from private.challenge_items i
-  join private.question_versions q on q.id = i.question_version_id
-  left join private.matching_pair_events e
-    on e.attempt_id = target_attempt and e.challenge_item_id = target_item
-  where i.id = target_item and q.type = 'matching'
-  group by q.public_payload
+declare
+  left_count integer;
+  right_count integer;
+  pair_count integer;
+  distinct_right_count integer;
+begin
+  if jsonb_typeof(target_answer) is distinct from 'object'
+    or jsonb_typeof(target_payload->'leftItems') is distinct from 'array'
+    or jsonb_typeof(target_payload->'rightItems') is distinct from 'array' then
+    return false;
+  end if;
+
+  select count(*)::integer into left_count
+  from jsonb_array_elements(target_payload->'leftItems');
+  select count(*)::integer into right_count
+  from jsonb_array_elements(target_payload->'rightItems');
+  select count(*)::integer into pair_count
+  from jsonb_each_text(target_answer);
+
+  if left_count <> right_count or pair_count > left_count
+    or (require_complete and pair_count <> left_count) then
+    return false;
+  end if;
+
+  if exists (
+    select 1
+    from jsonb_each_text(target_answer) answer_pair
+    where not exists (
+      select 1 from jsonb_array_elements(target_payload->'leftItems') item
+      where item->>'id' = answer_pair.key
+    )
+    or not exists (
+      select 1 from jsonb_array_elements(target_payload->'rightItems') item
+      where item->>'id' = answer_pair.value
+    )
+  ) then
+    return false;
+  end if;
+
+  select count(distinct answer_pair.value)::integer into distinct_right_count
+  from jsonb_each_text(target_answer) answer_pair;
+  if distinct_right_count <> pair_count then
+    return false;
+  end if;
+
+  if require_complete and exists (
+    select 1
+    from jsonb_array_elements(target_payload->'leftItems') item
+    where not exists (
+      select 1 from jsonb_each_text(target_answer) answer_pair
+      where answer_pair.key = item->>'id'
+    )
+  ) then
+    return false;
+  end if;
+
+  return true;
+end;
 $function$;
 
 CREATE OR REPLACE FUNCTION private.matching_public_payload (
@@ -4279,6 +5763,29 @@ CREATE OR REPLACE FUNCTION private.pass_interaction (
   select private.execute_command('pass', input)
 $function$;
 
+CREATE OR REPLACE FUNCTION private.prepare_attempt_session (
+  target_publication uuid
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+begin
+  if not exists (
+    select 1 from public.scheduled_challenges sc
+    join public.seasons season on season.id = sc.season_id
+    join public.rooms room on room.id = season.room_id
+    join public.room_memberships m on m.room_id = room.id
+    where sc.id = target_publication and room.status = 'active'
+      and m.player_id = private.current_player_id() and m.status = 'active'
+      and m.role in ('owner','admin','member')
+      and not exists (select 1 from private.platform_role_assignments where player_id = m.player_id)
+  ) then raise exception 'not_authorized' using errcode = '42501'; end if;
+end;
+$function$;
+
 CREATE OR REPLACE FUNCTION private.prepare_avatar_upload_command (
   input jsonb
 )
@@ -4326,7 +5833,9 @@ begin
     if cached.operation <> 'prepare_avatar_upload' or cached.input <> safe_input then
       raise exception 'idempotency_conflict' using errcode = '40001';
     end if;
-    return cached.result;
+    return cached.result || jsonb_build_object('status', (
+      select status from private.media_assets where id = asset and owner_player_id = actor
+    ));
   end if;
 
   insert into private.media_assets(
@@ -4357,18 +5866,57 @@ CREATE OR REPLACE FUNCTION private.prepare_interaction (
   SECURITY DEFINER
   SET search_path TO ''
   AS $function$
+declare
+  actor uuid := private.command_actor();
+  mode text;
+  key text := input->>'idempotencyKey';
+  had_open boolean;
+  segment private.interaction_intervals%rowtype;
+  result jsonb;
 begin
-  -- A lost prepare response or a countdown race may leave the interval open.
-  -- Re-reading is safe: execute_command exposes only public payload/progress,
-  -- and an already received answer is still blocked as evaluation_pending.
-  if exists (
-    select 1 from private.command_requests
-    where actor_id = private.command_actor() and idempotency_key = prepare_interaction.input->>'idempotencyKey'
-      and operation = 'prepare'
-  ) then
+  select cv.mode into mode
+  from public.attempts a
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
+  where a.id = (input->>'attemptId')::uuid;
+  if mode <> 'pyramid' then
     return private.execute_command('prepare', input);
   end if;
-  return private.execute_command('prepare', input);
+
+  select exists (
+    select 1 from private.interaction_intervals
+    where attempt_id = (input->>'attemptId')::uuid and ended_at is null
+  ) into had_open;
+  result := private.execute_command('prepare', input);
+
+  -- The current declarative handler already creates a prepared row. This
+  -- branch is only needed when a deployment runs this wrapper over the older
+  -- handler that started the clock during prepare.
+  if result->>'deadlineAt' is not null and not had_open then
+    select * into segment from private.interaction_intervals
+    where attempt_id = (input->>'attemptId')::uuid and ended_at is null
+    for update;
+    if found then
+      insert into private.prepared_interactions(attempt_id, challenge_version_id, challenge_item_id)
+      select segment.attempt_id, unit.challenge_version_id, segment.challenge_item_id
+      from private.attempt_timing_units unit
+      where unit.id = segment.timing_unit_id
+      on conflict (attempt_id) do nothing;
+      delete from private.interaction_intervals where id = segment.id;
+      delete from private.attempt_timing_units where id = segment.timing_unit_id;
+    else
+      insert into private.prepared_interactions(attempt_id, challenge_version_id, challenge_item_id)
+      select (input->>'attemptId')::uuid, a.challenge_version_id, (result->>'challengeItemId')::uuid
+      from public.attempts a where a.id = (input->>'attemptId')::uuid
+      on conflict (attempt_id) do nothing;
+    end if;
+    result := jsonb_set(result, '{presentedAt}', 'null'::jsonb, true);
+    result := jsonb_set(result, '{deadlineAt}', 'null'::jsonb, true);
+    result := jsonb_set(result, '{timedOut}', 'false'::jsonb, true);
+    update private.command_requests
+    set result = prepare_interaction.result
+    where actor_id = actor and idempotency_key = key and operation = 'prepare';
+  end if;
+  return result;
 end;
 $function$;
 
@@ -4815,25 +6363,32 @@ CREATE OR REPLACE FUNCTION private.queens_cell_conflicts (
   queens      integer[]
 )
   RETURNS boolean
-  LANGUAGE sql
+  LANGUAGE plpgsql
   IMMUTABLE
   SET search_path TO ''
   AS $function$
-  with target as (
-    select target_cell / 5 as row_no, target_cell % 5 as column_no,
-      regions->target_cell as region
-  ), others as (
-    select cell, cell / 5 as row_no, cell % 5 as column_no, regions->cell as region
+declare
+  cell_count integer := jsonb_array_length(regions);
+  board_size integer;
+begin
+  if cell_count is null or cell_count = 0 then return false; end if;
+  board_size := sqrt(cell_count::numeric)::integer;
+  if board_size * board_size <> cell_count or target_cell not between 0 and cell_count - 1 then return false; end if;
+  return exists (
+    select 1
     from unnest(queens) cell
     where cell <> target_cell
-  )
-  select exists (
-    select 1 from target t join others o on
-      t.row_no = o.row_no or
-      t.column_no = o.column_no or
-      t.region = o.region or
-      greatest(abs(t.row_no - o.row_no), abs(t.column_no - o.column_no)) = 1
-  )
+      and (
+        target_cell / board_size = cell / board_size
+        or target_cell % board_size = cell % board_size
+        or regions->target_cell = regions->cell
+        or greatest(
+          abs(target_cell / board_size - cell / board_size),
+          abs(target_cell % board_size - cell % board_size)
+        ) = 1
+      )
+  );
+end;
 $function$;
 
 CREATE OR REPLACE FUNCTION private.queens_content_valid (
@@ -4846,6 +6401,8 @@ CREATE OR REPLACE FUNCTION private.queens_content_valid (
   SET search_path TO ''
   AS $function$
 declare
+  board_size integer;
+  cell_count integer;
   regions integer[] := '{}';
   prefilled integer[] := '{}';
   solution integer[] := '{}';
@@ -4863,100 +6420,126 @@ begin
     or jsonb_typeof(public_payload->'grid'->'columns') is distinct from 'number'
     or (public_payload->'grid'->>'rows')::numeric <> trunc((public_payload->'grid'->>'rows')::numeric)
     or (public_payload->'grid'->>'columns')::numeric <> trunc((public_payload->'grid'->>'columns')::numeric)
-    or (public_payload->'grid'->>'rows')::integer <> 5
-    or (public_payload->'grid'->>'columns')::integer <> 5
     or jsonb_typeof(public_payload->'regions') is distinct from 'array'
-    or jsonb_array_length(public_payload->'regions') <> 25
     or jsonb_typeof(public_payload->'prefilledQueens') is distinct from 'array'
     or jsonb_typeof(solution_payload->'solution') is distinct from 'array'
-    or jsonb_array_length(solution_payload->'solution') <> 5
-    or exists (
-      select 1 from jsonb_array_elements(public_payload->'regions') entry
-      where jsonb_typeof(entry) is distinct from 'number'
-        or (entry #>> '{}')::numeric <> trunc((entry #>> '{}')::numeric)
-    )
-    or exists (
-      select 1 from jsonb_array_elements(public_payload->'prefilledQueens') entry
-      where jsonb_typeof(entry) is distinct from 'number'
-        or (entry #>> '{}')::numeric <> trunc((entry #>> '{}')::numeric)
-    )
-    or exists (
-      select 1 from jsonb_array_elements(solution_payload->'solution') entry
-      where jsonb_typeof(entry) is distinct from 'number'
-        or (entry #>> '{}')::numeric <> trunc((entry #>> '{}')::numeric)
-    ) then
+  then
+    return false;
+  end if;
+
+  board_size := (public_payload->'grid'->>'rows')::integer;
+  if board_size not between 4 and 8
+    or (public_payload->'grid'->>'columns')::integer <> board_size then
+    return false;
+  end if;
+  cell_count := board_size * board_size;
+  if jsonb_array_length(public_payload->'regions') <> cell_count
+    or jsonb_array_length(solution_payload->'solution') <> board_size then
+    return false;
+  end if;
+
+  if exists (
+    select 1 from jsonb_array_elements(public_payload->'regions') entry
+    where jsonb_typeof(entry) is distinct from 'number'
+      or (entry #>> '{}')::numeric <> trunc((entry #>> '{}')::numeric)
+  ) or exists (
+    select 1 from jsonb_array_elements(public_payload->'prefilledQueens') entry
+    where jsonb_typeof(entry) is distinct from 'number'
+      or (entry #>> '{}')::numeric <> trunc((entry #>> '{}')::numeric)
+  ) or exists (
+    select 1 from jsonb_array_elements(solution_payload->'solution') entry
+    where jsonb_typeof(entry) is distinct from 'number'
+      or (entry #>> '{}')::numeric <> trunc((entry #>> '{}')::numeric)
+  ) then
     return false;
   end if;
 
   for value in select jsonb_array_elements_text(public_payload->'regions') loop
-    if value !~ '^[0-9]+$' or value::integer not between 0 and 4 then return false; end if;
+    if value !~ '^[0-9]+$' or value::integer not between 0 and board_size - 1 then return false; end if;
     regions := regions || value::integer;
   end loop;
   for value in select jsonb_array_elements_text(public_payload->'prefilledQueens') loop
-    if value !~ '^[0-9]+$' or value::integer not between 0 and 24 then return false; end if;
+    if value !~ '^[0-9]+$' or value::integer not between 0 and cell_count - 1 then return false; end if;
     prefilled := prefilled || value::integer;
   end loop;
   for value in select jsonb_array_elements_text(solution_payload->'solution') loop
-    if value !~ '^[0-9]+$' or value::integer not between 0 and 24 then return false; end if;
+    if value !~ '^[0-9]+$' or value::integer not between 0 and cell_count - 1 then return false; end if;
     solution := solution || value::integer;
   end loop;
-  for index in 0..4 loop
+
+  for index in 0..(board_size - 1) loop
     if not exists (select 1 from unnest(regions) as region_cell where region_cell = index) then return false; end if;
-    if exists (
+    if (
       with recursive walk(cell) as (
         (select min(candidate)::integer
-         from generate_series(0, 24) candidate
+         from generate_series(0, cell_count - 1) candidate
          where regions[candidate + 1] = index)
         union
-        select neighbor::integer
+        select neighbour
         from walk
-        cross join lateral unnest(array[
-          walk.cell - 5, walk.cell + 5, walk.cell - 1, walk.cell + 1
-        ]) neighbor
-        where neighbor between 0 and 24
-          and regions[neighbor + 1] = index
+        cross join lateral (
+          select (walk.cell / board_size - 1) * board_size + walk.cell % board_size as neighbour
+          where walk.cell / board_size > 0
+          union all
+          select (walk.cell / board_size + 1) * board_size + walk.cell % board_size
+          where walk.cell / board_size < board_size - 1
+          union all
+          select (walk.cell / board_size) * board_size + walk.cell % board_size - 1
+          where walk.cell % board_size > 0
+          union all
+          select (walk.cell / board_size) * board_size + walk.cell % board_size + 1
+          where walk.cell % board_size < board_size - 1
+        ) neighbours
+        where regions[neighbour + 1] = index
       )
-      select 1
-      from generate_series(0, 24) candidate
-      where regions[candidate + 1] = index
-        and not exists (select 1 from walk where walk.cell = candidate)
-    ) then return false; end if;
+      select count(*) from walk
+    ) <> (select count(*) from unnest(regions) as region_cell where region_cell = index) then
+      return false;
+    end if;
   end loop;
-  if (select count(distinct solution_cell) from unnest(solution) as solution_cell) <> coalesce(array_length(solution, 1), 0) then return false; end if;
-  if (select count(distinct prefilled_cell) from unnest(prefilled) as prefilled_cell) <> coalesce(array_length(prefilled, 1), 0) then return false; end if;
-  if exists (select 1 from unnest(prefilled) as prefilled_cell where not prefilled_cell = any(solution)) then return false; end if;
+
+  if (select count(distinct solution_cell) from unnest(solution) as solution_cell) <> coalesce(array_length(solution, 1), 0)
+    or (select count(distinct prefilled_cell) from unnest(prefilled) as prefilled_cell) <> coalesce(array_length(prefilled, 1), 0)
+    or exists (select 1 from unnest(prefilled) as prefilled_cell where not prefilled_cell = any(solution)) then
+    return false;
+  end if;
+
   if exists (
     select 1 from unnest(solution) as left_cell cross join unnest(solution) as right_cell
     where left_cell < right_cell
-      and (left_cell / 5 = right_cell / 5
-        or left_cell % 5 = right_cell % 5
+      and (left_cell / board_size = right_cell / board_size
+        or left_cell % board_size = right_cell % board_size
         or regions[left_cell + 1] = regions[right_cell + 1]
-        or greatest(abs(left_cell / 5 - right_cell / 5), abs(left_cell % 5 - right_cell % 5)) = 1)
-  ) then return false; end if;
-  for index in 0..4 loop
-    if (select count(*) from unnest(solution) as solution_cell where solution_cell / 5 = index) <> 1
-      or (select count(*) from unnest(solution) as solution_cell where solution_cell % 5 = index) <> 1
+        or greatest(abs(left_cell / board_size - right_cell / board_size), abs(left_cell % board_size - right_cell % board_size)) = 1)
+  ) then
+    return false;
+  end if;
+
+  for index in 0..(board_size - 1) loop
+    if (select count(*) from unnest(solution) as solution_cell where solution_cell / board_size = index) <> 1
+      or (select count(*) from unnest(solution) as solution_cell where solution_cell % board_size = index) <> 1
       or (select count(*) from unnest(solution) as solution_cell where regions[solution_cell + 1] = index) <> 1 then
       return false;
     end if;
   end loop;
+
   with recursive search(row_no, previous_column, used_columns, used_regions) as (
     select 0, null::integer, '{}'::integer[], '{}'::integer[]
     union all
     select search.row_no + 1,
       candidate,
       search.used_columns || candidate,
-      search.used_regions || regions[search.row_no * 5 + candidate + 1]
+      search.used_regions || regions[search.row_no * board_size + candidate + 1]
     from search
-    cross join generate_series(0, 4) candidate
-    where search.row_no < 5
+    cross join generate_series(0, board_size - 1) candidate
+    where search.row_no < board_size
       and not candidate = any(search.used_columns)
-      and not regions[search.row_no * 5 + candidate + 1] = any(search.used_regions)
+      and not regions[search.row_no * board_size + candidate + 1] = any(search.used_regions)
       and (search.previous_column is null or abs(search.previous_column - candidate) > 1)
   )
-  select count(*)::integer into solution_count from search where row_no = 5;
-  if solution_count <> 1 then return false; end if;
-  return true;
+  select count(*)::integer into solution_count
+  from (select 1 from search where row_no = board_size limit 2) bounded_solutions;
+  return solution_count = 1;
 end;
 $function$;
 
@@ -4972,18 +6555,36 @@ CREATE OR REPLACE FUNCTION private.queens_progress (
   AS $function$
 declare
   regions jsonb;
+  draft jsonb;
   queens integer[];
+  board_size integer;
   conflicting_queens integer;
   completed_rows integer;
   completed_columns integer;
   completed_regions integer;
   solved boolean;
+  incorrect_validations integer;
+  max_incorrect_validations integer;
 begin
-  select q.public_payload->'regions' into regions
-  from private.challenge_items i
+  select q.public_payload->'regions', (q.public_payload->'grid'->>'rows')::integer, a.progress_payload,
+    case when cv.mode = 'pyramid' then 3 else null end
+    into regions, board_size, draft, max_incorrect_validations
+  from public.attempts a
+  join private.challenge_items i on i.id = target_item
   join private.question_versions q on q.id = i.question_version_id
-  where i.id = target_item;
-  queens := private.queens_board(target_attempt, target_item);
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
+  where a.id = target_attempt;
+
+  if jsonb_typeof(draft) = 'object'
+    and draft->>'kind' = 'queens'
+    and (draft->>'challengeItemId')::uuid = target_item
+    and jsonb_typeof(draft->'queens') = 'array' then
+    select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
+      into queens
+    from jsonb_array_elements_text(draft->'queens') value;
+  else
+    queens := private.queens_board(target_attempt, target_item);
+  end if;
 
   with pairs as (
     select left_cell as cell, right_cell
@@ -4993,36 +6594,44 @@ begin
   ), conflicts as (
     select p.cell
     from pairs p
-    where p.cell / 5 = p.right_cell / 5
-       or p.cell % 5 = p.right_cell % 5
+    where p.cell / board_size = p.right_cell / board_size
+       or p.cell % board_size = p.right_cell % board_size
        or regions->p.cell = regions->p.right_cell
-       or greatest(abs(p.cell / 5 - p.right_cell / 5), abs(p.cell % 5 - p.right_cell % 5)) = 1
+       or greatest(abs(p.cell / board_size - p.right_cell / board_size), abs(p.cell % board_size - p.right_cell % board_size)) = 1
     union
     select p.right_cell
     from pairs p
-    where p.cell / 5 = p.right_cell / 5
-       or p.cell % 5 = p.right_cell % 5
+    where p.cell / board_size = p.right_cell / board_size
+       or p.cell % board_size = p.right_cell % board_size
        or regions->p.cell = regions->p.right_cell
-       or greatest(abs(p.cell / 5 - p.right_cell / 5), abs(p.cell % 5 - p.right_cell % 5)) = 1
+       or greatest(abs(p.cell / board_size - p.right_cell / board_size), abs(p.cell % board_size - p.right_cell % board_size)) = 1
   )
   select count(*)::integer into conflicting_queens from conflicts;
 
   select count(*)::integer into completed_rows
-  from generate_series(0, 4) group_no
-  where (select count(*) from unnest(queens) cell where cell / 5 = group_no) = 1;
+  from generate_series(0, board_size - 1) group_no
+  where (select count(*) from unnest(queens) cell where cell / board_size = group_no) = 1;
   select count(*)::integer into completed_columns
-  from generate_series(0, 4) group_no
-  where (select count(*) from unnest(queens) cell where cell % 5 = group_no) = 1;
+  from generate_series(0, board_size - 1) group_no
+  where (select count(*) from unnest(queens) cell where cell % board_size = group_no) = 1;
   select count(*)::integer into completed_regions
-  from generate_series(0, 4) group_no
+  from generate_series(0, board_size - 1) group_no
   where (select count(*) from unnest(queens) cell where (regions->cell)::integer = group_no) = 1;
 
-  solved := coalesce(array_length(queens, 1), 0) = 5
-    and completed_rows = 5 and completed_columns = 5 and completed_regions = 5
+  solved := coalesce(array_length(queens, 1), 0) = board_size
+    and completed_rows = board_size
+    and completed_columns = board_size
+    and completed_regions = board_size
     and conflicting_queens = 0;
+
+  select count(*)::integer into incorrect_validations
+  from private.queens_validation_events e
+  where e.attempt_id = target_attempt and e.challenge_item_id = target_item and not e.correct;
 
   return jsonb_build_object(
     'kind', 'queens',
+    'incorrectValidations', incorrect_validations,
+    'maxIncorrectValidations', max_incorrect_validations,
     'queens', to_jsonb(queens),
     'placedQueens', coalesce(array_length(queens, 1), 0),
     'completedRows', completed_rows,
@@ -5107,6 +6716,109 @@ CREATE OR REPLACE FUNCTION private.question_version_document (
   where version.id = target_question_version;
 $function$;
 
+CREATE OR REPLACE FUNCTION private.raise_if_session_transferred (
+  target_attempt uuid,
+  token_hash     text
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+begin
+  if exists (
+    select 1 from private.attempt_sessions s
+    where s.attempt_id = target_attempt
+      and s.session_token_hash = token_hash
+      and s.revoked_at is not null
+      and s.revocation_reason = 'takeover'
+  ) then
+    raise exception 'session_transferred' using errcode = '42501';
+  end if;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.read_abandoned_attempt (
+  target_attempt uuid
+)
+  RETURNS jsonb
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  select jsonb_build_object(
+    'scheduledChallengeId', a.scheduled_challenge_id,
+    'result', coalesce(command.result, jsonb_strip_nulls(jsonb_build_object(
+      'attemptId', a.id,
+      'lockVersion', a.lock_version,
+      'status', a.status,
+      'score', a.score,
+      'outcome', a.outcome,
+      'terminalReason', a.terminal_reason,
+      'answers', coalesce((
+        select jsonb_agg(jsonb_build_object(
+          'challengeItemId', answer.challenge_item_id,
+          'answer', answer.answer,
+          'status', answer.status,
+          'points', answer.points,
+          'timeUsedMs', answer.time_used_ms,
+          'resultDetails', answer.result_details
+        ) order by item.position)
+        from private.attempt_answers answer
+        join private.challenge_items item on item.id = answer.challenge_item_id
+        where answer.attempt_id = a.id
+      ), '[]'::jsonb)
+    ))) || jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome, 'score', a.score)
+  )
+  from public.attempts a
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
+  join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+  join public.seasons season on season.id = sc.season_id
+  join public.rooms room on room.id = season.room_id
+  left join public.room_memberships m on m.room_id = room.id and m.player_id = a.player_id
+  left join private.command_requests command on command.actor_id = a.player_id
+    and command.operation = 'abandon' and command.input->>'attemptId' = a.id::text
+  where a.id = target_attempt and a.player_id = private.current_player_id()
+    and a.kind = 'competitive' and a.status = 'abandoned'
+    and sc.status <> 'cancelled' and room.status = 'active'
+    and (
+      (a.terminal_reason = 'permission_revoked')
+      or (
+        command.result->>'status' = 'abandoned'
+        and m.status = 'active' and m.role in ('owner','admin','member')
+      )
+    )
+    and not exists (select 1 from private.platform_role_assignments where player_id = a.player_id)
+$function$;
+
+CREATE OR REPLACE FUNCTION private.read_attempt_context (
+  target_attempt uuid,
+  session_token  text
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare actor uuid := private.command_actor(); result jsonb;
+begin
+  perform private.raise_if_session_transferred(target_attempt, private.secret_hash(session_token));
+  select jsonb_build_object('challengeMode', version.mode, 'scheduledChallengeId', attempt.scheduled_challenge_id)
+  into result
+  from public.attempts attempt
+  join private.attempt_sessions session on session.attempt_id = attempt.id
+  join private.challenge_versions version on version.id = attempt.challenge_version_id
+  where attempt.id = target_attempt and attempt.player_id = actor and attempt.kind = 'competitive'
+    and session.revoked_at is null and session.session_token_hash = private.secret_hash(session_token)
+    and not exists (select 1 from private.platform_role_assignments where player_id = actor);
+  if result is null then raise exception 'not_authorized' using errcode = '42501'; end if;
+  return result;
+end;
+$function$;
+
 CREATE OR REPLACE FUNCTION private.read_attempt_recovery (
   target_attempt uuid,
   session_token  text
@@ -5119,12 +6831,31 @@ CREATE OR REPLACE FUNCTION private.read_attempt_recovery (
   AS $function$
 declare actor uuid := private.command_actor(); result jsonb;
 begin
+  perform private.authorize_attempt_replay(target_attempt, private.secret_hash(session_token));
   select jsonb_build_object(
-    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status,
+    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status, 'outcome', a.outcome,
     'lockVersion', a.lock_version,
+    'deadlineAt', a.deadline_at,
+    'deadlineReached', a.deadline_at is not null and clock_timestamp() >= a.deadline_at,
+    'pendingReceiptId', (select receipt.id from private.answer_receipts receipt
+      where receipt.attempt_id = a.id and not exists (
+        select 1 from private.attempt_answers answer where answer.receipt_id = receipt.id
+      ) order by receipt.received_at, receipt.id limit 1),
     'hasStartedInteraction', exists (select 1 from private.attempt_timing_units u where u.attempt_id = a.id),
     'hasOpenInteraction', exists (select 1 from private.interaction_intervals interval_row
       where interval_row.attempt_id = a.id and interval_row.ended_at is null),
+    'narrativeCursor', case when cv.mode = 'narrative' then jsonb_build_object(
+      'currentChallengeItemId', (select interval_row.challenge_item_id
+        from private.interaction_intervals interval_row
+        where interval_row.attempt_id = a.id and interval_row.ended_at is null
+        order by interval_row.started_at desc limit 1),
+      'nextChallengeItemId', (select item.id
+        from private.challenge_items item
+        where item.challenge_version_id = a.challenge_version_id
+          and not exists (select 1 from private.attempt_answers answer
+            where answer.attempt_id = a.id and answer.challenge_item_id = item.id)
+        order by item.position limit 1)
+    ) else null end,
     'allItemsResolved', not exists (select 1 from private.challenge_items i where i.challenge_version_id = a.challenge_version_id
       and not exists (select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id)),
     'challengeMode', cv.mode,
@@ -5132,7 +6863,7 @@ begin
     'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
       select sum(case
         when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
-        when question.type in ('matching', 'queens')
+        when question.type = 'queens'
           and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
         else 0 end)::integer
       from private.attempt_answers answer
@@ -5144,7 +6875,7 @@ begin
       greatest((cv.mode_config->>'lives')::integer - coalesce((
         select sum(case
           when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
-          when question.type in ('matching', 'queens')
+          when question.type = 'queens'
             and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
           else 0 end)::integer
         from private.attempt_answers answer
@@ -5195,10 +6926,49 @@ begin
     'assetId', id, 'objectPath', object_path, 'status', status
   ) into result
   from private.media_assets
-  where id = asset and owner_player_id = actor;
+  where id = asset and owner_player_id = actor and kind = 'avatar' and bucket_id = 'avatars';
   return result;
 exception when invalid_text_representation then
   return null;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.read_avatar_upload_confirmation (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := private.command_actor();
+  asset uuid := (input->>'assetId')::uuid;
+  key text := input->>'idempotencyKey';
+  cached private.command_requests%rowtype;
+  profile jsonb;
+begin
+  if jsonb_typeof(input) is distinct from 'object'
+    or exists(select 1 from jsonb_object_keys(input) k where k <> all(array['assetId','idempotencyKey']))
+    or asset is null or key is null or char_length(key) not between 8 and 160 then
+    raise exception 'invalid_avatar_upload' using errcode = '22023';
+  end if;
+  select jsonb_build_object('playerId', id, 'name', display_name, 'avatarPath', avatar_path)
+    into profile from public.players where id = actor and status = 'active';
+  if profile is null then raise exception 'not_authorized' using errcode = '42501'; end if;
+  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
+  if not found then return null; end if;
+  if cached.operation <> 'confirm_avatar_upload' or cached.input->>'assetId' <> asset::text then
+    raise exception 'idempotency_conflict' using errcode = '40001';
+  end if;
+  if not exists(select 1 from private.media_assets where id = asset and owner_player_id = actor
+      and kind = 'avatar' and bucket_id = 'avatars') then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  return jsonb_build_object('command', cached.result, 'currentProfile', profile);
+exception when invalid_text_representation then
+  raise exception 'invalid_avatar_upload' using errcode = '22023';
 end;
 $function$;
 
@@ -5223,7 +6993,11 @@ begin
     question.public_payload->'media'->>'assetId'
   )::uuid
   where attempt.id = (input->>'attemptId')::uuid
-    and attempt.player_id = actor and attempt.kind = 'competitive'
+    and attempt.kind = 'competitive'
+    and (
+      attempt.player_id = actor
+      or private.can_review_competitive_attempt(attempt.id)
+    )
     and item.question_version_id is not null
     and question.payload_schema_version = 2
     and (
@@ -5240,6 +7014,44 @@ exception when invalid_text_representation then raise exception 'not_authorized'
 end;
 $function$;
 
+CREATE OR REPLACE FUNCTION private.read_completed_attempt (
+  target_attempt uuid
+)
+  RETURNS jsonb
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  select jsonb_build_object('scheduledChallengeId', sc.id, 'result',
+    jsonb_strip_nulls(jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version,
+      'status', a.status, 'score', a.score, 'outcome', a.outcome,
+      'initialLives', case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer end,
+      'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
+        select sum(case when answer.status in ('incorrect','unanswered','timeout') then 1
+          when q.type = 'queens' and coalesce((answer.result_details->>'incorrectAttempts')::integer,0) > 0 then 1 else 0 end)::integer
+        from private.attempt_answers answer
+        join private.challenge_items item on item.id = answer.challenge_item_id
+        join private.question_versions q on q.id = item.question_version_id where answer.attempt_id = a.id
+      ),0),0) end,
+      'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', answer.challenge_item_id,
+        'answer', answer.answer, 'status', answer.status, 'points', answer.points,
+        'timeUsedMs', answer.time_used_ms, 'resultDetails', answer.result_details) order by item.position)
+        from private.attempt_answers answer join private.challenge_items item on item.id = answer.challenge_item_id
+        where answer.attempt_id = a.id), '[]'::jsonb))) ||
+      jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome))
+  from public.attempts a
+  join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+  join public.seasons season on season.id = sc.season_id
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
+  join public.rooms room on room.id = season.room_id
+  join public.room_memberships m on m.room_id = room.id and m.player_id = a.player_id
+  where a.id = target_attempt and a.player_id = private.current_player_id()
+    and a.kind = 'competitive' and a.status = 'completed' and sc.status <> 'cancelled'
+    and room.status = 'active' and m.status = 'active' and m.role in ('owner','admin','member')
+    and not exists (select 1 from private.platform_role_assignments where player_id = a.player_id)
+$function$;
+
 CREATE OR REPLACE FUNCTION private.read_evaluation_context (
   target_receipt uuid,
   session_token  text
@@ -5253,17 +7065,13 @@ CREATE OR REPLACE FUNCTION private.read_evaluation_context (
 declare actor uuid := private.command_actor(); result jsonb;
 begin
   select jsonb_build_object(
-    'receiptId', r.id, 'answer', case when q.type = 'matching' then coalesce((
-      select jsonb_object_agg(e.left_item_id, e.right_item_id)
-      from private.matching_pair_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
-    ), '{}'::jsonb) when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
+    'receiptId', r.id, 'answer', case when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
       select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
       from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
     ), '[]'::jsonb)) else r.answer end, 'receivedAt', r.received_at,
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
-    'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
+    'questionVersionId', q.id, 'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
     'publicPayload', q.public_payload,
     'submittedCodes', case when q.type = 'logic-code' then coalesce((
       select jsonb_agg(e.code order by e.sequence)
@@ -5282,15 +7090,15 @@ begin
       order by e.clue_index desc
       limit 1
     ), i.points) else null end,
-    'matchingIncorrectAttempts', case when q.type = 'matching' then coalesce((
-      select count(*)::integer from private.matching_pair_events e
-      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
-    ), 0) else null end,
     'incorrectAttempts', case when q.type = 'logic-code' then coalesce((
       select count(*)::integer
       from private.logic_code_attempt_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
     ), 0) when q.type = 'queens' then coalesce((
+      select count(*)::integer
+      from private.queens_validation_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
+    ), 0) + coalesce((
       select count(*)::integer
       from private.queens_placement_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.penalty_applied
@@ -5298,6 +7106,7 @@ begin
       select count(*)::integer from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
     ), 0) else null end,
+    'incorrectValidations', case when q.type = 'queens' then (private.queens_progress(r.attempt_id, r.challenge_item_id)->>'incorrectValidations')::integer else null end,
     'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
     'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
     'itemConfig', i.mode_config, 'mode', cv.mode,
@@ -5342,6 +7151,30 @@ begin
     where asset.id = (input->>'assetId')::uuid and asset.kind = 'question-asset';
   return result;
 exception when invalid_text_representation then return null;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.read_recorded_evaluation (
+  target_receipt uuid,
+  session_token  text
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare target_attempt uuid; result jsonb;
+begin
+  select r.attempt_id into target_attempt from private.answer_receipts r where r.id = target_receipt;
+  if target_attempt is null then raise exception 'not_authorized' using errcode = '42501'; end if;
+  perform private.authorize_attempt_replay(target_attempt, private.secret_hash(session_token));
+  select jsonb_strip_nulls(jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version,
+    'receiptId', answer.receipt_id, 'status', answer.status, 'points', answer.points,
+    'details', answer.result_details)) into result
+  from private.attempt_answers answer join public.attempts a on a.id = answer.attempt_id
+  where answer.receipt_id = target_receipt;
+  return result;
 end;
 $function$;
 
@@ -5419,7 +7252,7 @@ begin
       )
       from private.challenge_versions version
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where version.mode in ('flash', 'survival', 'pyramid')
+      where version.mode in ('flash', 'alphabet', 'survival', 'pyramid')
     ), '[]'::jsonb)
   );
 end;
@@ -5566,12 +7399,16 @@ begin
   perform private.lock_command_key(actor, key);
   select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
   if found and (cached.operation <> 'recover' or cached.input <> safe_input) then raise exception 'idempotency_conflict' using errcode = '40001'; end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
   if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
     or exists (select 1 from private.platform_role_assignments where player_id = actor) then raise exception 'not_authorized' using errcode = '42501'; end if;
   select * into s from private.attempt_sessions where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or s.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or s.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into receipt from private.answer_receipts r where r.attempt_id = a.id and not exists (
@@ -5698,6 +7535,7 @@ begin
   if found and (cached.operation <> 'reveal_progressive_clue' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -5708,6 +7546,7 @@ begin
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
   if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
     raise exception 'session_revoked' using errcode = '42501';
   end if;
   expected := (input->>'lockVersion')::bigint;
@@ -5818,6 +7657,8 @@ declare
   opened_count integer := 0;
   closed_count integer := 0;
   finished_count integer := 0;
+  abandoned_count integer := 0;
+  expiration_result jsonb;
 begin
   if coalesce(current_setting('role', true), '') <> 'service_role' then
     raise exception 'calendar_tick_unauthorized' using errcode = '42501';
@@ -5932,10 +7773,139 @@ begin
     end if;
   end loop;
 
+  select private.expire_stale_attempts(jsonb_build_object('runId', run_id_value))
+    into expiration_result;
+  abandoned_count := (expiration_result->>'abandonedAttempts')::integer;
+
   return jsonb_build_object(
     'runId', run_id_value, 'evaluatedAt', now_value,
-    'opened', opened_count, 'closed', closed_count, 'finishedSeasons', finished_count
+    'opened', opened_count, 'closed', closed_count, 'finishedSeasons', finished_count,
+    'abandonedAttempts', abandoned_count
   );
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.save_queens_draft (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := private.command_actor();
+  key text := input->>'idempotencyKey';
+  safe_input jsonb := input;
+  cached private.command_requests%rowtype;
+  a public.attempts%rowtype;
+  session_row private.attempt_sessions%rowtype;
+  segment private.interaction_intervals%rowtype;
+  item private.challenge_items%rowtype;
+  question private.question_versions%rowtype;
+  instant timestamptz := clock_timestamp();
+  expected bigint;
+  candidate integer[];
+  prefilled integer[];
+  normalized integer[];
+  board_size integer;
+  cell_count integer;
+  progress jsonb;
+  result jsonb;
+begin
+  if jsonb_typeof(input) is distinct from 'object'
+    or key is null or btrim(key) = ''
+    or not input ?& array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','queens']
+    or exists (select 1 from jsonb_object_keys(input) k where k <> all(array[
+      'idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','queens'
+    ]))
+    or jsonb_typeof(input->'queens') is distinct from 'array'
+    or jsonb_array_length(input->'queens') > 64
+    or exists (
+      select 1 from jsonb_array_elements(input->'queens') value
+      where jsonb_typeof(value) is distinct from 'number'
+        or (value #>> '{}')::numeric <> trunc((value #>> '{}')::numeric)
+        or (value #>> '{}')::integer not between 0 and 63
+    ) then
+    raise exception 'invalid_queens_answer' using errcode = '22023';
+  end if;
+
+  select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
+    into candidate from jsonb_array_elements_text(input->'queens') value;
+  if (select count(*) from unnest(candidate)) <> (select count(distinct cell) from unnest(candidate) cell) then
+    raise exception 'invalid_queens_answer' using errcode = '22023';
+  end if;
+  safe_input := jsonb_set(safe_input, '{sessionToken}', to_jsonb(private.secret_hash(input->>'sessionToken')));
+  perform pg_advisory_xact_lock(hashtextextended('flash-command:' || actor || ':' || key, 0));
+  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
+  if found and (cached.operation <> 'save_queens_draft' or cached.input <> safe_input) then
+    raise exception 'idempotency_conflict' using errcode = '40001';
+  end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
+  if cached.result is not null then return cached.result; end if;
+
+  select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
+  if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
+    or exists (select 1 from private.platform_role_assignments where player_id = actor) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  select * into session_row from private.attempt_sessions
+    where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
+  expected := (input->>'lockVersion')::bigint;
+  if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
+  select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
+  if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
+    raise exception 'interaction_not_presented' using errcode = '55000';
+  end if;
+  select * into item from private.challenge_items where id = segment.challenge_item_id;
+  select * into question from private.question_versions where id = item.question_version_id;
+  if question.type <> 'queens' or question.payload_schema_version <> 1 then
+    raise exception 'unsupported_question' using errcode = '22023';
+  end if;
+  board_size := (question.public_payload->'grid'->>'rows')::integer;
+  if board_size not between 4 and 8
+    or (question.public_payload->'grid'->>'columns')::integer <> board_size then
+    raise exception 'unsupported_question' using errcode = '22023';
+  end if;
+  cell_count := board_size * board_size;
+  if exists (select 1 from unnest(candidate) cell where cell not between 0 and cell_count - 1) then
+    raise exception 'invalid_queens_answer' using errcode = '22023';
+  end if;
+
+  select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
+    into prefilled from jsonb_array_elements_text(coalesce(question.public_payload->'prefilledQueens', '[]'::jsonb)) value;
+  select coalesce(array_agg(cell order by cell), '{}'::integer[]) into normalized
+  from (
+    select distinct cell from unnest(candidate) cell
+    union
+    select distinct cell from unnest(prefilled) cell
+  ) cells;
+  if coalesce(array_length(normalized, 1), 0) > board_size then
+    raise exception 'queens_answer_overflow' using errcode = '22023';
+  end if;
+  update public.attempts
+    set progress_payload = jsonb_build_object('kind', 'queens', 'challengeItemId', item.id, 'queens', to_jsonb(normalized)),
+        lock_version = lock_version + 1, last_activity_at = instant
+    where id = a.id returning * into a;
+  progress := private.queens_progress(a.id, item.id);
+  result := jsonb_build_object(
+    'attemptId', a.id, 'challengeItemId', item.id, 'lockVersion', a.lock_version,
+    'queens', progress->'queens', 'placedQueens', progress->'placedQueens',
+    'completedRows', progress->'completedRows', 'completedColumns', progress->'completedColumns',
+    'completedRegions', progress->'completedRegions', 'conflictingQueens', progress->'conflictingQueens',
+    'solved', progress->'solved',
+    'incorrectValidations', progress->'incorrectValidations',
+    'maxIncorrectValidations', progress->'maxIncorrectValidations');
+  insert into private.audit_log(actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
+    values(actor, 'save_queens_draft', 'attempt', a.id, key,
+      jsonb_build_object('lockVersion', expected), result);
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+    values(actor, key, 'save_queens_draft', safe_input, result);
+  return result;
 end;
 $function$;
 
@@ -6016,6 +7986,7 @@ begin
   if found and (cached.operation <> 'submit_logic_code_attempt' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -6026,6 +7997,7 @@ begin
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
   if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
     raise exception 'session_revoked' using errcode = '42501';
   end if;
   expected := (input->>'lockVersion')::bigint;
@@ -6118,193 +8090,6 @@ begin
 end;
 $function$;
 
-CREATE OR REPLACE FUNCTION private.submit_matching_pair (
-  input jsonb
-)
-  RETURNS jsonb
-  LANGUAGE plpgsql
-  SECURITY DEFINER
-  SET search_path TO ''
-  AS $function$
-declare
-  actor uuid := private.command_actor();
-  key text := input->>'idempotencyKey';
-  safe_input jsonb := input;
-  cached private.command_requests%rowtype;
-  a public.attempts%rowtype;
-  session_row private.attempt_sessions%rowtype;
-  segment private.interaction_intervals%rowtype;
-  unit private.attempt_timing_units%rowtype;
-  item private.challenge_items%rowtype;
-  question private.question_versions%rowtype;
-  challenge_version private.challenge_versions%rowtype;
-  solution private.question_version_solutions%rowtype;
-  event private.matching_pair_events%rowtype;
-  receipt private.answer_receipts%rowtype;
-  instant timestamptz := clock_timestamp();
-  presented timestamptz;
-  effective timestamptz;
-  used_ms bigint;
-  expected bigint;
-  sequence_no integer;
-  total_pairs integer;
-  penalty integer;
-  solved boolean;
-  terminal boolean;
-  lives_remaining integer;
-  mistakes_before integer;
-  progress jsonb;
-  result jsonb;
-begin
-  if jsonb_typeof(input) is distinct from 'object'
-    or key is null or btrim(key) = ''
-    or not input ?& array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','leftItemId','rightItemId']
-    or exists (select 1 from jsonb_object_keys(input) k where k <> all(array[
-      'idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','leftItemId','rightItemId','clientTimeUsedMs'
-    ]))
-    or input->>'leftItemId' is null or btrim(input->>'leftItemId') = ''
-    or input->>'rightItemId' is null or btrim(input->>'rightItemId') = '' then
-    raise exception 'invalid_command' using errcode = '22023';
-  end if;
-
-  safe_input := jsonb_set(safe_input, '{sessionToken}', to_jsonb(private.secret_hash(input->>'sessionToken')));
-  perform pg_advisory_xact_lock(hashtextextended('flash-command:' || actor || ':' || key, 0));
-  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
-  if found and (cached.operation <> 'submit_matching_pair' or cached.input <> safe_input) then
-    raise exception 'idempotency_conflict' using errcode = '40001';
-  end if;
-  if cached.result is not null then return cached.result; end if;
-
-  select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
-  if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
-    or exists (select 1 from private.platform_role_assignments where player_id = actor) then
-    raise exception 'not_authorized' using errcode = '42501';
-  end if;
-  select * into session_row from private.attempt_sessions
-    where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or session_row.revoked_at is not null then
-    raise exception 'session_revoked' using errcode = '42501';
-  end if;
-  expected := (input->>'lockVersion')::bigint;
-  if expected is distinct from a.lock_version then
-    raise exception 'stale_version' using errcode = '40001';
-  end if;
-  select * into segment from private.interaction_intervals
-    where attempt_id = a.id and ended_at is null for update;
-  if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
-    raise exception 'interaction_not_presented' using errcode = '55000';
-  end if;
-  select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
-  if instant >= unit.deadline_at then
-    raise exception 'deadline_reached' using errcode = '55000';
-  end if;
-  select * into item from private.challenge_items where id = segment.challenge_item_id;
-  select * into challenge_version from private.challenge_versions where id = a.challenge_version_id;
-  select * into question from private.question_versions where id = item.question_version_id;
-  select * into solution from private.question_version_solutions where question_version_id = question.id;
-  if question.type <> 'matching' or question.payload_schema_version <> 1
-    or jsonb_typeof(question.public_payload->'leftItems') is distinct from 'array'
-    or jsonb_typeof(question.public_payload->'rightItems') is distinct from 'array'
-    or jsonb_typeof(solution.solution_payload->'matches') is distinct from 'object' then
-    raise exception 'unsupported_question' using errcode = '22023';
-  end if;
-
-  if not exists (select 1 from jsonb_array_elements(question.public_payload->'leftItems') value
-    where value->>'id' = btrim(input->>'leftItemId'))
-    or not exists (select 1 from jsonb_array_elements(question.public_payload->'rightItems') value
-    where value->>'id' = btrim(input->>'rightItemId')) then
-    raise exception 'invalid_matching_pair' using errcode = '22023';
-  end if;
-  if exists (select 1 from private.matching_pair_events e where e.attempt_id = a.id
-    and e.challenge_item_id = item.id and e.left_item_id = btrim(input->>'leftItemId')
-    and e.right_item_id = btrim(input->>'rightItemId')) then
-    raise exception 'duplicate_matching_pair' using errcode = '55000';
-  end if;
-  if exists (select 1 from private.matching_pair_events e where e.attempt_id = a.id
-    and e.challenge_item_id = item.id and e.correct
-    and (e.left_item_id = btrim(input->>'leftItemId') or e.right_item_id = btrim(input->>'rightItemId'))) then
-    raise exception 'matching_item_already_resolved' using errcode = '55000';
-  end if;
-
-  total_pairs := jsonb_array_length(question.public_payload->'leftItems');
-  solved := solution.solution_payload->'matches'->>btrim(input->>'leftItemId') = btrim(input->>'rightItemId');
-  penalty := case when solved then 0 else round(item.points * 0.10::numeric)::integer end;
-  select coalesce(max(e.sequence), 0) + 1 into sequence_no
-    from private.matching_pair_events e
-    where e.attempt_id = a.id and e.challenge_item_id = item.id;
-  effective := least(instant, unit.deadline_at);
-  if instant < segment.started_at then
-    raise exception 'request_predates_presentation' using errcode = '40001';
-  end if;
-  select min(started_at), coalesce(sum(floor(extract(epoch from (coalesce(ended_at, effective) - started_at)) * 1000)), 0)::bigint
-    into presented, used_ms
-    from private.interaction_intervals
-    where attempt_id = a.id and challenge_item_id = item.id;
-  insert into private.matching_pair_events(
-    attempt_id, challenge_item_id, challenge_version_id, sequence,
-    left_item_id, right_item_id, correct, penalty_points,
-    received_at, presented_at, time_used_ms, idempotency_key
-  ) values (
-    a.id, item.id, a.challenge_version_id, sequence_no,
-    btrim(input->>'leftItemId'), btrim(input->>'rightItemId'), solved, penalty,
-    instant, presented, used_ms, key
-  ) returning * into event;
-
-  progress := private.matching_progress(a.id, item.id);
-  terminal := solved and (progress->>'matchedCount')::integer = total_pairs;
-  if not terminal and not solved and challenge_version.mode = 'survival' then
-    select coalesce(sum(case
-      when answer.status in ('incorrect', 'unanswered', 'timeout') then 1
-      when previous_question.type in ('matching', 'queens')
-        and coalesce((answer.result_details->>'incorrectAttempts')::integer, 0) > 0 then 1
-      else 0 end), 0)::integer
-    into mistakes_before
-    from private.attempt_answers answer
-    join private.challenge_items previous_item on previous_item.id = answer.challenge_item_id
-    join private.question_versions previous_question on previous_question.id = previous_item.question_version_id
-    where answer.attempt_id = a.id;
-    lives_remaining := greatest((challenge_version.mode_config->>'lives')::integer - mistakes_before, 0);
-    terminal := lives_remaining = 1;
-  end if;
-  if terminal then
-    update private.interaction_intervals
-      set ended_at = effective, end_reason = 'answer'
-      where id = segment.id;
-    insert into private.answer_receipts(
-      attempt_id, challenge_item_id, challenge_version_id, answer, received_at,
-      presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms
-    ) values (
-      a.id, item.id, a.challenge_version_id,
-      coalesce((select jsonb_object_agg(e.left_item_id, e.right_item_id)
-        from private.matching_pair_events e where e.attempt_id = a.id and e.challenge_item_id = item.id and e.correct), '{}'::jsonb),
-      instant, presented, effective, used_ms, false, (input->>'clientTimeUsedMs')::bigint
-    ) returning * into receipt;
-  end if;
-
-  update public.attempts set lock_version = lock_version + 1, last_activity_at = instant
-    where id = a.id returning * into a;
-  result := jsonb_build_object(
-    'attemptId', a.id, 'challengeItemId', item.id, 'lockVersion', a.lock_version,
-    'leftItemId', event.left_item_id, 'rightItemId', event.right_item_id,
-    'correct', event.correct, 'terminal', terminal,
-    'matchedPairs', progress->'matchedPairs', 'matchedCount', progress->'matchedCount',
-    'totalPairs', progress->'totalPairs', 'incorrectAttempts', progress->'incorrectAttempts',
-    'penaltyPoints', progress->'penaltyPoints'
-  );
-  if terminal then
-    result := result || jsonb_build_object('receiptId', receipt.id, 'timeUsedMs', used_ms);
-  end if;
-  insert into private.audit_log(actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
-    values(actor, 'submit_matching_pair', 'attempt', a.id, key,
-      jsonb_build_object('lockVersion', expected),
-      jsonb_build_object('lockVersion', a.lock_version, 'leftItemId', event.left_item_id,
-        'rightItemId', event.right_item_id, 'correct', event.correct, 'terminal', terminal));
-  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
-    values(actor, key, 'submit_matching_pair', safe_input, result);
-  return result;
-end;
-$function$;
-
 CREATE OR REPLACE FUNCTION private.submit_mini_wordle_guess (
   input jsonb
 )
@@ -6361,6 +8146,7 @@ begin
   if found and (cached.operation <> 'submit_mini_wordle_guess' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -6370,7 +8156,10 @@ begin
   end if;
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or session_row.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into segment from private.interaction_intervals
@@ -6453,6 +8242,191 @@ begin
 end;
 $function$;
 
+CREATE OR REPLACE FUNCTION private.submit_queens_answer (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := private.command_actor();
+  key text := input->>'idempotencyKey';
+  safe_input jsonb := input;
+  cached private.command_requests%rowtype;
+  a public.attempts%rowtype;
+  session_row private.attempt_sessions%rowtype;
+  segment private.interaction_intervals%rowtype;
+  unit private.attempt_timing_units%rowtype;
+  item private.challenge_items%rowtype;
+  question private.question_versions%rowtype;
+  validation private.queens_validation_events%rowtype;
+  receipt private.answer_receipts%rowtype;
+  instant timestamptz := clock_timestamp();
+  presented timestamptz;
+  effective timestamptz;
+  used_ms bigint;
+  expected bigint;
+  candidate integer[];
+  prefilled integer[];
+  normalized integer[];
+  solution integer[];
+  board_size integer;
+  cell_count integer;
+  progress jsonb;
+  correct boolean;
+  terminal boolean;
+  sequence_no integer;
+  incorrect_attempts integer;
+  penalty_points integer;
+  result jsonb;
+begin
+  if jsonb_typeof(input) is distinct from 'object'
+    or key is null or btrim(key) = ''
+    or not input ?& array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','queens']
+    or exists (select 1 from jsonb_object_keys(input) k where k <> all(array[
+      'idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','queens'
+    ]))
+    or jsonb_typeof(input->'queens') is distinct from 'array'
+    or jsonb_array_length(input->'queens') > 64
+    or exists (
+      select 1 from jsonb_array_elements(input->'queens') value
+      where jsonb_typeof(value) is distinct from 'number'
+        or (value #>> '{}')::numeric <> trunc((value #>> '{}')::numeric)
+        or (value #>> '{}')::integer not between 0 and 63
+    ) then
+    raise exception 'queens_answer_incomplete' using errcode = '22023';
+  end if;
+
+  select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
+    into candidate from jsonb_array_elements_text(input->'queens') value;
+  if (select count(*) from unnest(candidate)) <> (select count(distinct cell) from unnest(candidate) cell) then
+    raise exception 'invalid_queens_answer' using errcode = '22023';
+  end if;
+  safe_input := jsonb_set(safe_input, '{sessionToken}', to_jsonb(private.secret_hash(input->>'sessionToken')));
+  perform pg_advisory_xact_lock(hashtextextended('flash-command:' || actor || ':' || key, 0));
+  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
+  if found and (cached.operation <> 'submit_queens_answer' or cached.input <> safe_input) then
+    raise exception 'idempotency_conflict' using errcode = '40001';
+  end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
+  if cached.result is not null then return cached.result; end if;
+
+  select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
+  if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
+    or exists (select 1 from private.platform_role_assignments where player_id = actor) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  select * into session_row from private.attempt_sessions
+    where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
+  expected := (input->>'lockVersion')::bigint;
+  if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
+  select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
+  if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
+    raise exception 'interaction_not_presented' using errcode = '55000';
+  end if;
+  instant := clock_timestamp();
+  select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+  if instant >= unit.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
+  select * into item from private.challenge_items where id = segment.challenge_item_id;
+  select * into question from private.question_versions where id = item.question_version_id;
+  if question.type <> 'queens' or question.payload_schema_version <> 1 then
+    raise exception 'unsupported_question' using errcode = '22023';
+  end if;
+  board_size := (question.public_payload->'grid'->>'rows')::integer;
+  if board_size not between 4 and 8
+    or (question.public_payload->'grid'->>'columns')::integer <> board_size then
+    raise exception 'unsupported_question' using errcode = '22023';
+  end if;
+  cell_count := board_size * board_size;
+  if coalesce(array_length(candidate, 1), 0) > board_size then
+    raise exception 'queens_answer_overflow' using errcode = '22023';
+  end if;
+  if coalesce(array_length(candidate, 1), 0) < board_size then
+    raise exception 'queens_answer_incomplete' using errcode = '22023';
+  end if;
+  if exists (select 1 from unnest(candidate) cell where cell not between 0 and cell_count - 1) then
+    raise exception 'invalid_queens_answer' using errcode = '22023';
+  end if;
+
+  select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
+    into prefilled from jsonb_array_elements_text(coalesce(question.public_payload->'prefilledQueens', '[]'::jsonb)) value;
+  select coalesce(array_agg(cell order by cell), '{}'::integer[]) into normalized
+  from (
+    select distinct cell from unnest(candidate) cell
+    union
+    select distinct cell from unnest(prefilled) cell
+  ) cells;
+  if coalesce(array_length(normalized, 1), 0) > board_size then
+    raise exception 'queens_answer_overflow' using errcode = '22023';
+  end if;
+  if coalesce(array_length(normalized, 1), 0) < board_size then
+    raise exception 'queens_answer_incomplete' using errcode = '22023';
+  end if;
+  select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
+    into solution
+  from private.question_version_solutions qs
+  cross join jsonb_array_elements_text(qs.solution_payload->'solution') value
+  where qs.question_version_id = question.id;
+  update public.attempts
+    set progress_payload = jsonb_build_object('kind', 'queens', 'challengeItemId', item.id, 'queens', to_jsonb(normalized)),
+        lock_version = lock_version + 1, last_activity_at = instant
+    where id = a.id;
+  progress := private.queens_progress(a.id, item.id);
+  correct := (progress->>'solved')::boolean and normalized = solution;
+  effective := least(instant, unit.deadline_at);
+  if instant < segment.started_at then raise exception 'request_predates_presentation' using errcode = '40001'; end if;
+  select min(started_at), coalesce(sum(floor(extract(epoch from (coalesce(ended_at, effective) - started_at)) * 1000)), 0)::bigint
+    into presented, used_ms from private.interaction_intervals
+    where attempt_id = a.id and challenge_item_id = item.id;
+  select coalesce(max(e.sequence), 0) + 1 into sequence_no
+    from private.queens_validation_events e where e.attempt_id = a.id and e.challenge_item_id = item.id;
+  penalty_points := case when correct then 0 else round(item.points * 0.05)::integer end;
+  insert into private.queens_validation_events(
+    attempt_id, challenge_item_id, challenge_version_id, sequence, queens, correct,
+    conflicting_queens, penalty_applied, penalty_points, received_at, presented_at, time_used_ms, idempotency_key)
+  values(a.id, item.id, a.challenge_version_id, sequence_no, normalized, correct,
+    (progress->>'conflictingQueens')::integer, not correct, penalty_points,
+    instant, presented, used_ms, key)
+  returning * into validation;
+  progress := private.queens_progress(a.id, item.id);
+  incorrect_attempts := (progress->>'incorrectValidations')::integer;
+  terminal := correct or coalesce(incorrect_attempts >= (progress->>'maxIncorrectValidations')::integer, false);
+  if terminal then
+    update private.interaction_intervals set ended_at = effective, end_reason = 'answer' where id = segment.id;
+    insert into private.answer_receipts(
+      attempt_id, challenge_item_id, challenge_version_id, answer, received_at,
+      presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms)
+    values(a.id, item.id, a.challenge_version_id, private.queens_answer(a.id, item.id), instant,
+      presented, effective, used_ms, false, null) returning * into receipt;
+  end if;
+  update public.attempts set lock_version = lock_version + 1, last_activity_at = instant
+    where id = a.id returning * into a;
+  result := jsonb_build_object(
+    'attemptId', a.id, 'challengeItemId', item.id, 'lockVersion', a.lock_version,
+    'correct', correct, 'terminal', terminal, 'queens', progress->'queens',
+    'placedQueens', progress->'placedQueens', 'completedRows', progress->'completedRows',
+    'completedColumns', progress->'completedColumns', 'completedRegions', progress->'completedRegions',
+    'conflictingQueens', progress->'conflictingQueens', 'solved', progress->'solved',
+    'incorrectAttempts', incorrect_attempts,
+    'incorrectValidations', incorrect_attempts,
+    'maxIncorrectValidations', progress->'maxIncorrectValidations');
+  if terminal then result := result || jsonb_build_object('receiptId', receipt.id, 'timeUsedMs', used_ms); end if;
+  insert into private.audit_log(actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
+    values(actor, 'submit_queens_answer', 'attempt', a.id, key,
+      jsonb_build_object('lockVersion', expected, 'queens', to_jsonb(normalized)),
+      jsonb_build_object('lockVersion', a.lock_version, 'correct', correct, 'incorrectAttempts', incorrect_attempts));
+  insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
+    values(actor, key, 'submit_queens_answer', safe_input, result);
+  return result;
+end;
+$function$;
+
 CREATE OR REPLACE FUNCTION private.submit_queens_placement (
   input jsonb
 )
@@ -6512,6 +8486,7 @@ begin
   if found and (cached.operation <> 'submit_queens_placement' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -6521,7 +8496,10 @@ begin
   end if;
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or session_row.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into segment from private.interaction_intervals
@@ -6535,6 +8513,10 @@ begin
   select * into question from private.question_versions where id = item.question_version_id;
   if question.type <> 'queens' or question.payload_schema_version <> 1 then
     raise exception 'unsupported_question' using errcode = '22023';
+  end if;
+
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'pyramid') then
+    raise exception 'queens_requires_board_validation' using errcode = '22023';
   end if;
 
   current_queens := private.queens_board(a.id, item.id);
@@ -6657,6 +8639,7 @@ begin
   if found and (cached.operation <> 'submit_word_hashtag_swap' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -6666,7 +8649,10 @@ begin
   end if;
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or session_row.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
@@ -6826,6 +8812,7 @@ begin
   if found and (cached.operation <> 'submit_word_search_selection' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -6836,6 +8823,7 @@ begin
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
   if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
     raise exception 'session_revoked' using errcode = '42501';
   end if;
   expected := (input->>'lockVersion')::bigint;
@@ -6949,18 +8937,64 @@ begin
 end;
 $function$;
 
+CREATE OR REPLACE FUNCTION private.superadmin_challenge_version_snapshot (
+  target_challenge_version_id uuid
+)
+  RETURNS jsonb
+  LANGUAGE sql
+  STABLE
+  SET search_path TO ''
+  AS $function$
+  select jsonb_build_object(
+    'challengeVersionId', version.id,
+    'versionNumber', version.version_number,
+    'status', version.status,
+    'slug', definition.slug,
+    'title', version.title,
+    'subtitle', version.subtitle,
+    'description', version.description,
+    'mode', version.mode,
+    'configSchemaVersion', version.config_schema_version,
+    'modeConfig', version.mode_config,
+    'globalTimeLimitMs', version.global_time_limit_ms,
+    'items', coalesce((
+      select jsonb_agg(
+        jsonb_build_object(
+          'challengeItemId', item.id,
+          'position', item.position,
+          'questionVersionId', question.id,
+          'questionDefinitionId', question.question_definition_id,
+          'questionVersionNumber', question.version_number,
+          'questionStatus', question.status,
+          'slug', question_definition.slug,
+          'type', question.type,
+          'payloadSchemaVersion', question.payload_schema_version,
+          'timeLimitMs', question.time_limit_ms,
+          'points', item.points,
+          'modeConfig', item.mode_config,
+          'publicPayload', question.public_payload
+        ) order by item.position
+      )
+      from private.challenge_items item
+      join private.question_versions question on question.id = item.question_version_id
+      join private.question_definitions question_definition on question_definition.id = question.question_definition_id
+      where item.challenge_version_id = version.id
+    ), '[]'::jsonb)
+  )
+  from private.challenge_versions version
+  join private.challenge_definitions definition on definition.id = version.challenge_definition_id
+  where version.id = target_challenge_version_id;
+$function$;
+
 CREATE OR REPLACE FUNCTION private.take_over_attempt (
   input jsonb
 )
   RETURNS jsonb
-  LANGUAGE plpgsql
+  LANGUAGE sql
   SECURITY DEFINER
   SET search_path TO ''
   AS $function$
-begin
-  -- Cross-device control transfer is deliberately deferred for the MVP.
-  raise exception 'takeover_disabled' using errcode = '55000';
-end;
+  select private.execute_command('takeover', input)
 $function$;
 
 CREATE OR REPLACE FUNCTION private.touch_updated_at()
@@ -7583,6 +9617,330 @@ begin
 end;
 $function$;
 
+CREATE OR REPLACE FUNCTION private.validate_anagram_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'tiles']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'tiles', 'hint'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'tiles') is distinct from 'array'
+    or jsonb_array_length(public_payload->'tiles') not between 3 and 10
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'tiles') tile
+      where jsonb_typeof(tile) is distinct from 'object'
+        or not tile ?& array['id', 'value']
+        or exists (select 1 from jsonb_object_keys(tile) key_name where key_name <> all(array['id', 'value']))
+        or jsonb_typeof(tile->'id') is distinct from 'string'
+        or char_length(btrim(tile->>'id')) not between 1 and 120
+        or jsonb_typeof(tile->'value') is distinct from 'string'
+        or char_length(tile->>'value') <> 1
+        or char_length(btrim(tile->>'value')) <> 1
+    )
+    or exists (select 1 from (
+      select tile->>'id' as id from jsonb_array_elements(public_payload->'tiles') tile
+      group by tile->>'id' having count(*) > 1
+    ) duplicate_id)
+    or (public_payload ? 'hint' and jsonb_typeof(public_payload->'hint') not in ('null', 'string'))
+    or (public_payload ? 'hint' and jsonb_typeof(public_payload->'hint') = 'string' and char_length(public_payload->>'hint') > 500) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'correctAnswer'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'correctAnswer', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
+    or char_length(btrim(solution_payload->>'correctAnswer')) not between 3 and 120
+    or solution_payload->>'correctAnswer' ~ '\s'
+    or char_length(solution_payload->>'correctAnswer') <> jsonb_array_length(public_payload->'tiles')
+    or (select string_agg(lower(translate(tile->>'value', 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '' order by lower(translate(tile->>'value', 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')))
+        from jsonb_array_elements(public_payload->'tiles') tile) <>
+      (select string_agg(lower(translate(letter, 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '' order by lower(translate(letter, 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')))
+        from regexp_split_to_table(solution_payload->>'correctAnswer', '') letter)
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_classification_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'items', 'categories']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'items', 'categories'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'items') is distinct from 'array'
+    or jsonb_array_length(public_payload->'items') not between 2 and 20
+    or jsonb_typeof(public_payload->'categories') is distinct from 'array'
+    or jsonb_array_length(public_payload->'categories') not between 2 and 8
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'items') item
+      where jsonb_typeof(item) is distinct from 'object'
+        or not item ? 'label'
+        or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> 'label')
+        or jsonb_typeof(item->'label') is distinct from 'string'
+        or char_length(btrim(item->>'label')) not between 1 and 500
+    )
+    or exists (select 1 from (
+      select item->>'label' as label from jsonb_array_elements(public_payload->'items') item
+      group by item->>'label' having count(*) > 1
+    ) duplicate_label)
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'categories') category
+      where jsonb_typeof(category) is distinct from 'string'
+        or char_length(btrim(category #>> '{}')) not between 1 and 120
+    )
+    or exists (select 1 from (
+      select value from jsonb_array_elements_text(public_payload->'categories') group by value having count(*) > 1
+    ) duplicate_category) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'categoriesByItem'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'categoriesByItem', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'categoriesByItem') is distinct from 'object'
+    or (select count(*) from jsonb_object_keys(solution_payload->'categoriesByItem')) <> jsonb_array_length(public_payload->'items')
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'items') item
+      where not (solution_payload->'categoriesByItem' ? (item->>'label'))
+        or jsonb_typeof(solution_payload->'categoriesByItem'->(item->>'label')) is distinct from 'string'
+        or not exists (
+          select 1 from jsonb_array_elements_text(public_payload->'categories') category
+          where category = solution_payload->'categoriesByItem'->>(item->>'label')
+        )
+    )
+    or exists (
+      select 1 from jsonb_object_keys(solution_payload->'categoriesByItem') key_name
+      where not exists (select 1 from jsonb_array_elements(public_payload->'items') item where item->>'label' = key_name)
+    )
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_connect_pairs_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'grid', 'pairs', 'requireFullCoverage']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'grid', 'pairs', 'requireFullCoverage'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'grid') is distinct from 'object'
+    or public_payload->'grid'->>'rows' <> '5'
+    or public_payload->'grid'->>'columns' <> '5'
+    or jsonb_typeof(public_payload->'pairs') is distinct from 'array'
+    or jsonb_array_length(public_payload->'pairs') not between 3 and 5
+    or public_payload->>'requireFullCoverage' <> 'true'
+    or exists (select 1 from jsonb_array_elements(public_payload->'pairs') pair
+      where jsonb_typeof(pair) is distinct from 'object'
+        or not pair ?& array['id', 'label', 'symbol', 'endpoints']
+        or exists (select 1 from jsonb_object_keys(pair) key_name where key_name <> all(array['id', 'label', 'symbol', 'endpoints', 'color']))
+        or jsonb_typeof(pair->'id') is distinct from 'string'
+        or char_length(btrim(pair->>'id')) not between 1 and 120
+        or jsonb_typeof(pair->'label') is distinct from 'string'
+        or char_length(btrim(pair->>'label')) not between 1 and 500
+        or jsonb_typeof(pair->'symbol') is distinct from 'string'
+        or char_length(btrim(pair->>'symbol')) not between 1 and 32
+        or jsonb_typeof(pair->'endpoints') is distinct from 'array'
+        or jsonb_array_length(pair->'endpoints') <> 2
+        or exists (select 1 from jsonb_array_elements(pair->'endpoints') endpoint
+          where jsonb_typeof(endpoint) is distinct from 'number'
+            or (endpoint #>> '{}')::numeric <> trunc((endpoint #>> '{}')::numeric)
+            or (endpoint #>> '{}')::integer not between 0 and 24)
+        or (pair ? 'color' and jsonb_typeof(pair->'color') is distinct from 'string'))
+    or (select count(distinct pair->>'id') from jsonb_array_elements(public_payload->'pairs') pair)
+       <> jsonb_array_length(public_payload->'pairs')
+    or (select count(distinct endpoint #>> '{}') from jsonb_array_elements(public_payload->'pairs') pair, jsonb_array_elements(pair->'endpoints') endpoint)
+       <> jsonb_array_length(public_payload->'pairs') * 2 then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'paths'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['paths', 'explanation']))
+    or jsonb_typeof(solution_payload->'paths') is distinct from 'object'
+    or (select count(*) from jsonb_object_keys(solution_payload->'paths')) <> jsonb_array_length(public_payload->'pairs')
+    or exists (select 1 from jsonb_array_elements(public_payload->'pairs') pair
+      where not solution_payload->'paths' ? (pair->>'id')
+        or jsonb_typeof(solution_payload->'paths'->(pair->>'id')) is distinct from 'array')
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_escape_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'grid', 'initialBlocks', 'instruction', 'hideInstruction',
+      'objectiveLabel', 'hideObjectiveLabel', 'completionMessage', 'boardLabel'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+    or (public_payload ? 'instruction' and (jsonb_typeof(public_payload->'instruction') is distinct from 'string'
+      or char_length(btrim(public_payload->>'instruction')) not between 1 and 500))
+    or (public_payload ? 'objectiveLabel' and (jsonb_typeof(public_payload->'objectiveLabel') is distinct from 'string'
+      or char_length(btrim(public_payload->>'objectiveLabel')) not between 1 and 500))
+    or (public_payload ? 'completionMessage' and (jsonb_typeof(public_payload->'completionMessage') is distinct from 'string'
+      or char_length(btrim(public_payload->>'completionMessage')) not between 1 and 500))
+    or (public_payload ? 'boardLabel' and (jsonb_typeof(public_payload->'boardLabel') is distinct from 'string'
+      or char_length(btrim(public_payload->>'boardLabel')) not between 1 and 500))
+    or (public_payload ? 'hideInstruction' and jsonb_typeof(public_payload->'hideInstruction') is distinct from 'boolean')
+    or (public_payload ? 'hideObjectiveLabel' and jsonb_typeof(public_payload->'hideObjectiveLabel') is distinct from 'boolean')
+    or jsonb_typeof(solution_payload) is distinct from 'object'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['referenceSolution', 'optimalMoves', 'explanation']))
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string')
+    or not private.escape_content_valid(public_payload, solution_payload) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_estimation_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'min', 'max', 'step', 'initialValue', 'unit', 'media']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'min', 'max', 'step', 'initialValue', 'unit', 'media'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'min') is distinct from 'number'
+    or jsonb_typeof(public_payload->'max') is distinct from 'number'
+    or jsonb_typeof(public_payload->'step') is distinct from 'number'
+    or jsonb_typeof(public_payload->'initialValue') is distinct from 'number'
+    or (public_payload->>'min')::numeric >= (public_payload->>'max')::numeric
+    or (public_payload->>'step')::numeric <= 0
+    or (public_payload->>'initialValue')::numeric < (public_payload->>'min')::numeric
+    or (public_payload->>'initialValue')::numeric > (public_payload->>'max')::numeric
+    or abs(
+      ((public_payload->>'initialValue')::numeric - (public_payload->>'min')::numeric) /
+      (public_payload->>'step')::numeric - round(
+        ((public_payload->>'initialValue')::numeric - (public_payload->>'min')::numeric) /
+        (public_payload->>'step')::numeric
+      )
+    ) > 0.000000001
+    or jsonb_typeof(public_payload->'unit') is distinct from 'string'
+    or char_length(btrim(public_payload->>'unit')) not between 1 and 120
+    or jsonb_typeof(public_payload->'media') not in ('null', 'object')
+    or (jsonb_typeof(public_payload->'media') = 'object' and (
+      not public_payload->'media' ?& array['type', 'assetId', 'alt', 'width', 'height']
+      or exists (select 1 from jsonb_object_keys(public_payload->'media') key_name where key_name <> all(array[
+        'type', 'assetId', 'alt', 'width', 'height', 'fit', 'position'
+      ]))
+      or public_payload->'media'->>'type' <> 'image'
+      or public_payload->'media'->>'assetId' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      or not private.is_ready_question_asset((public_payload->'media'->>'assetId')::uuid)
+      or jsonb_typeof(public_payload->'media'->'alt') is distinct from 'string'
+      or char_length(btrim(public_payload->'media'->>'alt')) not between 1 and 500
+      or jsonb_typeof(public_payload->'media'->'width') is distinct from 'number'
+      or (public_payload->'media'->>'width')::numeric <> trunc((public_payload->'media'->>'width')::numeric)
+      or (public_payload->'media'->>'width')::integer not between 1 and 8192
+      or jsonb_typeof(public_payload->'media'->'height') is distinct from 'number'
+      or (public_payload->'media'->>'height')::numeric <> trunc((public_payload->'media'->>'height')::numeric)
+      or (public_payload->'media'->>'height')::integer not between 1 and 8192
+      or (public_payload->'media' ? 'fit' and public_payload->'media'->>'fit' not in ('cover', 'contain'))
+      or (public_payload->'media' ? 'position' and (
+        jsonb_typeof(public_payload->'media'->'position') is distinct from 'string'
+        or char_length(public_payload->'media'->>'position') > 100
+      ))
+    )) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ?& array['correctAnswer', 'tolerance']
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'correctAnswer', 'tolerance', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'number'
+    or (solution_payload->>'correctAnswer')::numeric < (public_payload->>'min')::numeric
+    or (solution_payload->>'correctAnswer')::numeric > (public_payload->>'max')::numeric
+    or jsonb_typeof(solution_payload->'tolerance') is distinct from 'number'
+    or (solution_payload->>'tolerance')::numeric < 0
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
 CREATE OR REPLACE FUNCTION private.validate_flash_editorial_document (
   document jsonb
 )
@@ -7625,7 +9983,7 @@ begin
     or char_length(challenge->>'subtitle') > 300
     or jsonb_typeof(challenge->'description') is distinct from 'string'
     or char_length(challenge->>'description') > 2000
-    or challenge->>'mode' not in ('flash', 'alphabet', 'survival', 'pyramid')
+    or challenge->>'mode' not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     or challenge->'configSchemaVersion' <> '1'::jsonb
     or jsonb_typeof(challenge->'modeConfig') is distinct from 'object'
     or (challenge->>'mode' = 'alphabet' and (
@@ -7707,7 +10065,7 @@ begin
         where key_name <> all(array['slug', 'type', 'payloadSchemaVersion', 'timeLimitMs', 'points', 'publicPayload', 'solutionPayload', 'modeConfig'])
       )
       or (challenge->>'mode' = 'pyramid' and not private.is_valid_pyramid_level_config(question->'modeConfig'))
-      or (challenge->>'mode' <> 'pyramid' and question ? 'modeConfig') then
+      or (challenge->>'mode' not in ('pyramid', 'narrative') and question ? 'modeConfig') then
       raise exception 'invalid_content' using errcode = '22023';
     end if;
 
@@ -7784,85 +10142,13 @@ CREATE OR REPLACE FUNCTION private.validate_flash_question_document (
   AS $function$
 declare
   question jsonb;
-  public_payload jsonb;
-  solution_payload jsonb;
-  option jsonb;
   question_slug text;
-  option_count integer;
-  expected_word_length integer;
-  max_attempts integer;
-  code_length integer;
-  selected_dictionary_id text;
-  solution_word text;
-  guess_word text;
-  grid_rows integer;
-  grid_columns integer;
-  target_id text;
-  target_word text;
-  target_pos jsonb;
-  start_cell_i integer;
-  end_cell_i integer;
-  start_row_i integer;
-  start_col_i integer;
-  end_row_i integer;
-  end_col_i integer;
-  row_step_i integer;
-  col_step_i integer;
-  word_length_i integer;
-  path_cell_i integer;
-  path_offset_i integer;
-  occurrence_count_i integer;
-  candidate_word text;
-  candidate_segment text;
-  target_segment text;
-  check_start integer;
-  direction_row integer;
-  direction_col integer;
-  cell_row integer;
-  cell_col integer;
-  seen_ids text[] := array[]::text[];
-  seen_words text[] := array[]::text[];
-  seen_segments text[] := array[]::text[];
 begin
   if document is null or jsonb_typeof(document) is distinct from 'object' or document ? 'points' then
     raise exception 'invalid_question_document' using errcode = '22023';
   end if;
   if document->>'type' = 'short-text' then
-    if exists (select 1 from jsonb_object_keys(document) key_name where key_name <> all(array[
-      'slug', 'type', 'payloadSchemaVersion', 'timeLimitMs', 'publicPayload', 'solutionPayload'
-    ]))
-      or jsonb_typeof(document->'slug') is distinct from 'string'
-      or char_length(btrim(document->>'slug')) not between 1 and 120
-      or document->'payloadSchemaVersion' <> '1'::jsonb
-      or jsonb_typeof(document->'timeLimitMs') is distinct from 'number'
-      or (document->>'timeLimitMs')::numeric <> trunc((document->>'timeLimitMs')::numeric)
-      or (document->>'timeLimitMs')::integer <= 0
-      or jsonb_typeof(document->'publicPayload') is distinct from 'object'
-      or not document->'publicPayload' ? 'question'
-      or exists (select 1 from jsonb_object_keys(document->'publicPayload') key_name
-        where key_name <> all(array['category', 'tags', 'question', 'answerPlaceholder']))
-      or private.editorial_has_secret_key(document->'publicPayload')
-      or jsonb_typeof(document->'publicPayload'->'question') is distinct from 'string'
-      or char_length(btrim(document->'publicPayload'->>'question')) not between 1 and 2000
-      or (document->'publicPayload' ? 'category' and jsonb_typeof(document->'publicPayload'->'category') is distinct from 'string')
-      or (document->'publicPayload' ? 'tags' and jsonb_typeof(document->'publicPayload'->'tags') is distinct from 'object')
-      or (document->'publicPayload' ? 'answerPlaceholder' and jsonb_typeof(document->'publicPayload'->'answerPlaceholder') not in ('null', 'string'))
-      or jsonb_typeof(document->'solutionPayload') is distinct from 'object'
-      or not document->'solutionPayload' ?& array['correctAnswer', 'acceptedAnswers']
-      or exists (select 1 from jsonb_object_keys(document->'solutionPayload') key_name
-        where key_name <> all(array['correctAnswer', 'acceptedAnswers', 'explanation']))
-      or jsonb_typeof(document->'solutionPayload'->'correctAnswer') is distinct from 'string'
-      or char_length(btrim(document->'solutionPayload'->>'correctAnswer')) not between 1 and 500
-      or jsonb_typeof(document->'solutionPayload'->'acceptedAnswers') is distinct from 'array'
-      or jsonb_array_length(document->'solutionPayload'->'acceptedAnswers') not between 1 and 100
-      or exists (select 1 from jsonb_array_elements(document->'solutionPayload'->'acceptedAnswers') answer
-        where jsonb_typeof(answer) is distinct from 'string'
-          or char_length(btrim(answer #>> '{}')) not between 1 and 500)
-      or not exists (select 1 from jsonb_array_elements_text(document->'solutionPayload'->'acceptedAnswers') answer
-        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
-          regexp_replace(lower(translate(btrim(document->'solutionPayload'->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')) then
-      raise exception 'invalid_question_document' using errcode = '22023';
-    end if;
+    perform private.validate_short_text_question_document(document);
     return;
   end if;
 
@@ -7886,1041 +10172,470 @@ begin
     or (question->>'timeLimitMs')::numeric <= 0 then
     raise exception 'invalid_content' using errcode = '22023';
   end if;
-  public_payload := question->'publicPayload';
-  solution_payload := question->'solutionPayload';
-  seen_ids := array[]::text[];
-  seen_words := array[]::text[];
-  seen_segments := array[]::text[];
 
   if question->>'type' = 'estimation' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'min', 'max', 'step', 'initialValue', 'unit', 'media']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'min', 'max', 'step', 'initialValue', 'unit', 'media'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'min') is distinct from 'number'
-      or jsonb_typeof(public_payload->'max') is distinct from 'number'
-      or jsonb_typeof(public_payload->'step') is distinct from 'number'
-      or jsonb_typeof(public_payload->'initialValue') is distinct from 'number'
-      or (public_payload->>'min')::numeric >= (public_payload->>'max')::numeric
-      or (public_payload->>'step')::numeric <= 0
-      or (public_payload->>'initialValue')::numeric < (public_payload->>'min')::numeric
-      or (public_payload->>'initialValue')::numeric > (public_payload->>'max')::numeric
-      or abs(
-        ((public_payload->>'initialValue')::numeric - (public_payload->>'min')::numeric) /
-        (public_payload->>'step')::numeric - round(
-          ((public_payload->>'initialValue')::numeric - (public_payload->>'min')::numeric) /
-          (public_payload->>'step')::numeric
-        )
-      ) > 0.000000001
-      or jsonb_typeof(public_payload->'unit') is distinct from 'string'
-      or char_length(btrim(public_payload->>'unit')) not between 1 and 120
-      or jsonb_typeof(public_payload->'media') not in ('null', 'object')
-      or (jsonb_typeof(public_payload->'media') = 'object' and (
-        not public_payload->'media' ?& array['type', 'assetId', 'alt', 'width', 'height']
-        or exists (select 1 from jsonb_object_keys(public_payload->'media') key_name where key_name <> all(array[
-          'type', 'assetId', 'alt', 'width', 'height', 'fit', 'position'
-        ]))
-        or public_payload->'media'->>'type' <> 'image'
-        or public_payload->'media'->>'assetId' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-        or not private.is_ready_question_asset((public_payload->'media'->>'assetId')::uuid)
-        or jsonb_typeof(public_payload->'media'->'alt') is distinct from 'string'
-        or char_length(btrim(public_payload->'media'->>'alt')) not between 1 and 500
-        or jsonb_typeof(public_payload->'media'->'width') is distinct from 'number'
-        or (public_payload->'media'->>'width')::numeric <> trunc((public_payload->'media'->>'width')::numeric)
-        or (public_payload->'media'->>'width')::integer not between 1 and 8192
-        or jsonb_typeof(public_payload->'media'->'height') is distinct from 'number'
-        or (public_payload->'media'->>'height')::numeric <> trunc((public_payload->'media'->>'height')::numeric)
-        or (public_payload->'media'->>'height')::integer not between 1 and 8192
-        or (public_payload->'media' ? 'fit' and public_payload->'media'->>'fit' not in ('cover', 'contain'))
-        or (public_payload->'media' ? 'position' and (
-          jsonb_typeof(public_payload->'media'->'position') is distinct from 'string'
-          or char_length(public_payload->'media'->>'position') > 100
-        ))
-      )) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ?& array['correctAnswer', 'tolerance']
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'correctAnswer', 'tolerance', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'number'
-      or (solution_payload->>'correctAnswer')::numeric < (public_payload->>'min')::numeric
-      or (solution_payload->>'correctAnswer')::numeric > (public_payload->>'max')::numeric
-      or jsonb_typeof(solution_payload->'tolerance') is distinct from 'number'
-      or (solution_payload->>'tolerance')::numeric < 0
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_estimation_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'heat-map' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'surface', 'targetLabel']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'surface', 'targetLabel'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'targetLabel') is distinct from 'string'
-      or char_length(btrim(public_payload->>'targetLabel')) not between 1 and 500
-      or jsonb_typeof(public_payload->'surface') is distinct from 'object'
-      or not public_payload->'surface' ?& array['assetId', 'alt', 'width', 'height']
-      or exists (select 1 from jsonb_object_keys(public_payload->'surface') key_name where key_name <> all(array[
-        'assetId', 'alt', 'width', 'height', 'fit', 'position'
-      ]))
-      or public_payload->'surface'->>'assetId' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-      or not private.is_ready_question_asset((public_payload->'surface'->>'assetId')::uuid)
-      or jsonb_typeof(public_payload->'surface'->'alt') is distinct from 'string'
-      or char_length(btrim(public_payload->'surface'->>'alt')) not between 1 and 500
-      or jsonb_typeof(public_payload->'surface'->'width') is distinct from 'number'
-      or (public_payload->'surface'->>'width')::numeric <> trunc((public_payload->'surface'->>'width')::numeric)
-      or (public_payload->'surface'->>'width')::integer not between 1 and 8192
-      or jsonb_typeof(public_payload->'surface'->'height') is distinct from 'number'
-      or (public_payload->'surface'->>'height')::numeric <> trunc((public_payload->'surface'->>'height')::numeric)
-      or (public_payload->'surface'->>'height')::integer not between 1 and 8192
-      or (public_payload->'surface' ? 'fit' and public_payload->'surface'->>'fit' not in ('cover', 'contain'))
-      or (public_payload->'surface' ? 'position' and (
-        jsonb_typeof(public_payload->'surface'->'position') is distinct from 'string'
-        or char_length(public_payload->'surface'->>'position') > 100
-      )) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ?& array['target', 'fullCreditRadius', 'toleranceRadius']
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'target', 'fullCreditRadius', 'toleranceRadius', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'target') is distinct from 'object'
-      or not solution_payload->'target' ?& array['x', 'y']
-      or exists (select 1 from jsonb_object_keys(solution_payload->'target') key_name where key_name <> all(array['x', 'y']))
-      or jsonb_typeof(solution_payload->'target'->'x') is distinct from 'number'
-      or (solution_payload->'target'->>'x')::numeric not between 0 and 1
-      or jsonb_typeof(solution_payload->'target'->'y') is distinct from 'number'
-      or (solution_payload->'target'->>'y')::numeric not between 0 and 1
-      or jsonb_typeof(solution_payload->'fullCreditRadius') is distinct from 'number'
-      or (solution_payload->>'fullCreditRadius')::numeric < 0
-      or jsonb_typeof(solution_payload->'toleranceRadius') is distinct from 'number'
-      or (solution_payload->>'toleranceRadius')::numeric <= (solution_payload->>'fullCreditRadius')::numeric
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_heat_map_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'mini-wordle' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'wordLength', 'maxAttempts']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'hint', 'wordLength', 'maxAttempts'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'wordLength') is distinct from 'number'
-      or (public_payload->>'wordLength')::integer not in (4, 5)
-      or jsonb_typeof(public_payload->'maxAttempts') is distinct from 'number'
-      or (public_payload->>'maxAttempts')::integer not between 1 and 10
-      or (public_payload ? 'hint' and jsonb_typeof(public_payload->'hint') not in ('null', 'string'))
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object') then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ?& array['correctAnswer', 'additionalGuesses', 'dictionaryId']
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'correctAnswer', 'additionalGuesses', 'dictionaryId', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
-      or jsonb_typeof(solution_payload->'additionalGuesses') is distinct from 'array'
-      or jsonb_typeof(solution_payload->'dictionaryId') is distinct from 'string'
-      or solution_payload->>'dictionaryId' not in ('es-general-4.v1', 'es-general-5.v1')
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
-    expected_word_length := (public_payload->>'wordLength')::integer;
-    max_attempts := (public_payload->>'maxAttempts')::integer;
-    selected_dictionary_id := solution_payload->>'dictionaryId';
-    if (expected_word_length = 4 and selected_dictionary_id <> 'es-general-4.v1')
-      or (expected_word_length = 5 and selected_dictionary_id <> 'es-general-5.v1')
-      or char_length(private.mini_wordle_normalize(solution_payload->>'correctAnswer')) <> expected_word_length
-      or private.mini_wordle_normalize(solution_payload->>'correctAnswer') !~ '^[A-ZÑ]+$'
-      or jsonb_array_length(solution_payload->'additionalGuesses') > 1000
-      or exists (select 1 from jsonb_array_elements(solution_payload->'additionalGuesses') extra
-        where jsonb_typeof(extra) is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
-    solution_word := private.mini_wordle_normalize(solution_payload->>'correctAnswer');
-    for guess_word in select value from jsonb_array_elements_text(solution_payload->'additionalGuesses') loop
-      if char_length(private.mini_wordle_normalize(guess_word)) <> expected_word_length
-        or private.mini_wordle_normalize(guess_word) !~ '^[A-ZÑ]+$'
-        or private.mini_wordle_normalize(guess_word) = solution_word
-        or (select count(*) from jsonb_array_elements_text(solution_payload->'additionalGuesses') values(value)
-            where private.mini_wordle_normalize(value) = private.mini_wordle_normalize(guess_word)) > 1 then
-        raise exception 'invalid_solution_payload' using errcode = '22023';
-      end if;
-    end loop;
+    perform private.validate_mini_wordle_question_document(document);
     return;
   end if;
-
-if question->>'type' = 'logic-code' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'clues', 'codeLength']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'clues', 'codeLength'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'clues') is distinct from 'array'
-      or jsonb_array_length(public_payload->'clues') not between 1 and 20
-      or jsonb_typeof(public_payload->'codeLength') is distinct from 'number'
-      or (public_payload->>'codeLength')::integer not between 1 and 12
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
-      or exists (
-        select 1
-        from jsonb_array_elements(public_payload->'clues') clue
-        where jsonb_typeof(clue) is distinct from 'object'
-          or not clue ?& array['code', 'hint']
-          or exists (select 1 from jsonb_object_keys(clue) key_name where key_name <> all(array['code', 'hint']))
-          or jsonb_typeof(clue->'code') is distinct from 'string'
-          or char_length(clue->>'code') <> (public_payload->>'codeLength')::integer
-          or clue->>'code' !~ '^[0-9]+$'
-          or jsonb_typeof(clue->'hint') is distinct from 'string'
-          or char_length(btrim(clue->>'hint')) not between 1 and 500
-      )
-      or (select count(distinct clue->>'code') from jsonb_array_elements(public_payload->'clues') clue)
-         <> jsonb_array_length(public_payload->'clues') then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'correctAnswer'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'correctAnswer', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
-      or char_length(solution_payload->>'correctAnswer') <> (public_payload->>'codeLength')::integer
-      or solution_payload->>'correctAnswer' !~ '^[0-9]+$'
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+  if question->>'type' = 'logic-code' then
+    perform private.validate_logic_code_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'logic-matrix' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'pieces', 'cells', 'optionIds']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'pieces', 'cells', 'optionIds', 'showPieceLabels'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'pieces') is distinct from 'array'
-      or jsonb_array_length(public_payload->'pieces') not between 4 and 20
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'pieces') piece
-        where jsonb_typeof(piece) is distinct from 'object'
-          or not piece ?& array['id', 'symbol', 'label']
-          or exists (select 1 from jsonb_object_keys(piece) key_name where key_name <> all(array['id', 'symbol', 'label']))
-          or jsonb_typeof(piece->'id') is distinct from 'string'
-          or char_length(btrim(piece->>'id')) not between 1 and 120
-          or jsonb_typeof(piece->'symbol') is distinct from 'string'
-          or char_length(btrim(piece->>'symbol')) not between 1 and 120
-          or jsonb_typeof(piece->'label') is distinct from 'string'
-          or char_length(btrim(piece->>'label')) not between 1 and 500
-      )
-      or (select count(*) from jsonb_array_elements(public_payload->'pieces') piece)
-        <> (select count(distinct piece->>'id') from jsonb_array_elements(public_payload->'pieces') piece)
-      or jsonb_typeof(public_payload->'cells') is distinct from 'array'
-      or jsonb_array_length(public_payload->'cells') <> 9
-      or (select count(*) from jsonb_array_elements(public_payload->'cells') cell where jsonb_typeof(cell) = 'null') <> 1
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'cells') cell
-        where jsonb_typeof(cell) not in ('null', 'string')
-          or (jsonb_typeof(cell) = 'string' and not exists (
-            select 1 from jsonb_array_elements(public_payload->'pieces') piece where piece->>'id' = cell #>> '{}'
-          ))
-      )
-      or jsonb_typeof(public_payload->'optionIds') is distinct from 'array'
-      or jsonb_array_length(public_payload->'optionIds') <> 4
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'optionIds') option_id
-        where jsonb_typeof(option_id) is distinct from 'string'
-          or not exists (
-            select 1 from jsonb_array_elements(public_payload->'pieces') piece where piece->>'id' = option_id #>> '{}'
-          )
-      )
-      or (select count(*) from jsonb_array_elements_text(public_payload->'optionIds'))
-        <> (select count(distinct value) from jsonb_array_elements_text(public_payload->'optionIds') value)
-      or (public_payload ? 'showPieceLabels' and jsonb_typeof(public_payload->'showPieceLabels') not in ('null', 'boolean'))
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object') then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'correctOptionId'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['correctOptionId', 'explanation']))
-      or jsonb_typeof(solution_payload->'correctOptionId') is distinct from 'string'
-      or not exists (
-        select 1 from jsonb_array_elements_text(public_payload->'optionIds') option_id
-        where option_id = solution_payload->>'correctOptionId'
-      )
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_logic_matrix_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'progressive-clues' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'clues', 'cluePenalty']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'clues', 'cluePenalty'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'clues') is distinct from 'array'
-      or jsonb_array_length(public_payload->'clues') not between 1 and 20
-      or jsonb_typeof(public_payload->'cluePenalty') is distinct from 'number'
-      or (public_payload->>'cluePenalty')::numeric <> trunc((public_payload->>'cluePenalty')::numeric)
-      or (public_payload->>'cluePenalty')::integer not between 0 and 50
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'clues') clue
-        where jsonb_typeof(clue) is distinct from 'string'
-          or char_length(btrim(clue #>> '{}')) not between 1 and 500
-      ) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ?& array['correctAnswer', 'acceptedAnswers']
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'correctAnswer', 'acceptedAnswers', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
-      or char_length(btrim(solution_payload->>'correctAnswer')) not between 1 and 500
-      or jsonb_typeof(solution_payload->'acceptedAnswers') is distinct from 'array'
-      or jsonb_array_length(solution_payload->'acceptedAnswers') not between 1 and 100
-      or exists (
-        select 1 from jsonb_array_elements(solution_payload->'acceptedAnswers') answer
-        where jsonb_typeof(answer) is distinct from 'string'
-          or char_length(btrim(answer #>> '{}')) not between 1 and 500
-      )
-      or exists (
-        select 1
-        from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
-        group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
-        having count(*) > 1
-      )
-      or not exists (
-        select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
-        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
-          regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
-      )
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_progressive_clues_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'true-false' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ? 'question'
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object') then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'correctAnswer'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'correctAnswer', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'boolean'
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_true_false_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'odd-one-out' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'items']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'items'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'items') is distinct from 'array'
-      or jsonb_array_length(public_payload->'items') not between 3 and 8
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'items') item
-        where jsonb_typeof(item) is distinct from 'object'
-          or not item ?& array['id', 'label']
-          or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'label', 'media']))
-          or jsonb_typeof(item->'id') is distinct from 'string'
-          or char_length(btrim(item->>'id')) not between 1 and 120
-          or jsonb_typeof(item->'label') is distinct from 'string'
-          or char_length(btrim(item->>'label')) not between 1 and 500
-          or (item ? 'media' and jsonb_typeof(item->'media') not in ('null', 'object'))
-      )
-      or exists (select 1 from (
-        select item->>'id' as id from jsonb_array_elements(public_payload->'items') item
-        group by item->>'id' having count(*) > 1
-      ) duplicate_id) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'correctAnswer'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'correctAnswer', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
-      or not exists (
-        select 1 from jsonb_array_elements(public_payload->'items') item
-        where item->>'id' = solution_payload->>'correctAnswer'
-      )
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_odd_one_out_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'connect-pairs' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'grid', 'pairs', 'requireFullCoverage']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'grid', 'pairs', 'requireFullCoverage'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'grid') is distinct from 'object'
-      or public_payload->'grid'->>'rows' <> '5'
-      or public_payload->'grid'->>'columns' <> '5'
-      or jsonb_typeof(public_payload->'pairs') is distinct from 'array'
-      or jsonb_array_length(public_payload->'pairs') not between 3 and 5
-      or public_payload->>'requireFullCoverage' <> 'true'
-      or exists (select 1 from jsonb_array_elements(public_payload->'pairs') pair
-        where jsonb_typeof(pair) is distinct from 'object'
-          or not pair ?& array['id', 'label', 'symbol', 'endpoints']
-          or exists (select 1 from jsonb_object_keys(pair) key_name where key_name <> all(array['id', 'label', 'symbol', 'endpoints', 'color']))
-          or jsonb_typeof(pair->'id') is distinct from 'string'
-          or char_length(btrim(pair->>'id')) not between 1 and 120
-          or jsonb_typeof(pair->'label') is distinct from 'string'
-          or char_length(btrim(pair->>'label')) not between 1 and 500
-          or jsonb_typeof(pair->'symbol') is distinct from 'string'
-          or char_length(btrim(pair->>'symbol')) not between 1 and 32
-          or jsonb_typeof(pair->'endpoints') is distinct from 'array'
-          or jsonb_array_length(pair->'endpoints') <> 2
-          or exists (select 1 from jsonb_array_elements(pair->'endpoints') endpoint
-            where jsonb_typeof(endpoint) is distinct from 'number'
-              or (endpoint #>> '{}')::numeric <> trunc((endpoint #>> '{}')::numeric)
-              or (endpoint #>> '{}')::integer not between 0 and 24)
-          or (pair ? 'color' and jsonb_typeof(pair->'color') is distinct from 'string'))
-      or (select count(distinct pair->>'id') from jsonb_array_elements(public_payload->'pairs') pair)
-         <> jsonb_array_length(public_payload->'pairs')
-      or (select count(distinct endpoint #>> '{}') from jsonb_array_elements(public_payload->'pairs') pair, jsonb_array_elements(pair->'endpoints') endpoint)
-         <> jsonb_array_length(public_payload->'pairs') * 2 then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'paths'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['paths', 'explanation']))
-      or jsonb_typeof(solution_payload->'paths') is distinct from 'object'
-      or (select count(*) from jsonb_object_keys(solution_payload->'paths')) <> jsonb_array_length(public_payload->'pairs')
-      or exists (select 1 from jsonb_array_elements(public_payload->'pairs') pair
-        where not solution_payload->'paths' ? (pair->>'id')
-          or jsonb_typeof(solution_payload->'paths'->(pair->>'id')) is distinct from 'array')
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_connect_pairs_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'ordering' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'items']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'items', 'directionLabels'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'items') is distinct from 'array'
-      or jsonb_array_length(public_payload->'items') not between 2 and 8
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'items') item
-        where jsonb_typeof(item) is distinct from 'string'
-          or char_length(btrim(item #>> '{}')) not between 1 and 500
-      )
-      or exists (select 1 from (
-        select value from jsonb_array_elements_text(public_payload->'items') group by value having count(*) > 1
-      ) duplicate_item)
-      or (public_payload ? 'directionLabels' and jsonb_typeof(public_payload->'directionLabels') not in ('null', 'object'))
-      or (jsonb_typeof(public_payload->'directionLabels') = 'object' and (
-        exists (select 1 from jsonb_object_keys(public_payload->'directionLabels') key_name where key_name not in ('start', 'end'))
-        or not (public_payload->'directionLabels' ?& array['start', 'end'])
-        or jsonb_typeof(public_payload->'directionLabels'->'start') is distinct from 'string'
-        or char_length(btrim(public_payload->'directionLabels'->>'start')) not between 1 and 120
-        or jsonb_typeof(public_payload->'directionLabels'->'end') is distinct from 'string'
-        or char_length(btrim(public_payload->'directionLabels'->>'end')) not between 1 and 120
-      ))
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object') then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'correctOrder'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'correctOrder', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'correctOrder') is distinct from 'array'
-      or jsonb_array_length(solution_payload->'correctOrder') <> jsonb_array_length(public_payload->'items')
-      or exists (
-        select 1 from jsonb_array_elements(solution_payload->'correctOrder') item
-        where jsonb_typeof(item) is distinct from 'string'
-      )
-      or exists (
-        select 1 from jsonb_array_elements_text(solution_payload->'correctOrder') item
-        where not exists (select 1 from jsonb_array_elements_text(public_payload->'items') public_item where public_item = item)
-      )
-      or (select count(*) from jsonb_array_elements_text(solution_payload->'correctOrder')) <> (
-        select count(distinct value) from jsonb_array_elements_text(solution_payload->'correctOrder') value
-      )
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_ordering_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'anagram' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'tiles']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'tiles', 'hint'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'tiles') is distinct from 'array'
-      or jsonb_array_length(public_payload->'tiles') not between 3 and 10
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'tiles') tile
-        where jsonb_typeof(tile) is distinct from 'object'
-          or not tile ?& array['id', 'value']
-          or exists (select 1 from jsonb_object_keys(tile) key_name where key_name <> all(array['id', 'value']))
-          or jsonb_typeof(tile->'id') is distinct from 'string'
-          or char_length(btrim(tile->>'id')) not between 1 and 120
-          or jsonb_typeof(tile->'value') is distinct from 'string'
-          or char_length(tile->>'value') <> 1
-          or char_length(btrim(tile->>'value')) <> 1
-      )
-      or exists (select 1 from (
-        select tile->>'id' as id from jsonb_array_elements(public_payload->'tiles') tile
-        group by tile->>'id' having count(*) > 1
-      ) duplicate_id)
-      or (public_payload ? 'hint' and jsonb_typeof(public_payload->'hint') not in ('null', 'string'))
-      or (public_payload ? 'hint' and jsonb_typeof(public_payload->'hint') = 'string' and char_length(public_payload->>'hint') > 500) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'correctAnswer'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'correctAnswer', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
-      or char_length(btrim(solution_payload->>'correctAnswer')) not between 3 and 120
-      or solution_payload->>'correctAnswer' ~ '\s'
-      or char_length(solution_payload->>'correctAnswer') <> jsonb_array_length(public_payload->'tiles')
-      or (select string_agg(lower(translate(tile->>'value', 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '' order by lower(translate(tile->>'value', 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')))
-          from jsonb_array_elements(public_payload->'tiles') tile) <>
-        (select string_agg(lower(translate(letter, 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '' order by lower(translate(letter, 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')))
-          from regexp_split_to_table(solution_payload->>'correctAnswer', '') letter)
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_anagram_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'classification' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'items', 'categories']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'items', 'categories'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'items') is distinct from 'array'
-      or jsonb_array_length(public_payload->'items') not between 2 and 20
-      or jsonb_typeof(public_payload->'categories') is distinct from 'array'
-      or jsonb_array_length(public_payload->'categories') not between 2 and 8
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'items') item
-        where jsonb_typeof(item) is distinct from 'object'
-          or not item ? 'label'
-          or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> 'label')
-          or jsonb_typeof(item->'label') is distinct from 'string'
-          or char_length(btrim(item->>'label')) not between 1 and 500
-      )
-      or exists (select 1 from (
-        select item->>'label' as label from jsonb_array_elements(public_payload->'items') item
-        group by item->>'label' having count(*) > 1
-      ) duplicate_label)
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'categories') category
-        where jsonb_typeof(category) is distinct from 'string'
-          or char_length(btrim(category #>> '{}')) not between 1 and 120
-      )
-      or exists (select 1 from (
-        select value from jsonb_array_elements_text(public_payload->'categories') group by value having count(*) > 1
-      ) duplicate_category) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'categoriesByItem'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'categoriesByItem', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'categoriesByItem') is distinct from 'object'
-      or (select count(*) from jsonb_object_keys(solution_payload->'categoriesByItem')) <> jsonb_array_length(public_payload->'items')
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'items') item
-        where not (solution_payload->'categoriesByItem' ? (item->>'label'))
-          or jsonb_typeof(solution_payload->'categoriesByItem'->(item->>'label')) is distinct from 'string'
-          or not exists (
-            select 1 from jsonb_array_elements_text(public_payload->'categories') category
-            where category = solution_payload->'categoriesByItem'->>(item->>'label')
-          )
-      )
-      or exists (
-        select 1 from jsonb_object_keys(solution_payload->'categoriesByItem') key_name
-        where not exists (select 1 from jsonb_array_elements(public_payload->'items') item where item->>'label' = key_name)
-      )
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_classification_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'matching' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'leftItems', 'rightItems']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'leftItems', 'rightItems'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'leftItems') is distinct from 'array'
-      or jsonb_typeof(public_payload->'rightItems') is distinct from 'array'
-      or jsonb_array_length(public_payload->'leftItems') not between 3 and 6
-      or jsonb_array_length(public_payload->'rightItems') <> jsonb_array_length(public_payload->'leftItems')
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'leftItems') item
-        where jsonb_typeof(item) is distinct from 'object'
-          or not item ?& array['id', 'label']
-          or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'label', 'icon', 'media']))
-          or jsonb_typeof(item->'id') is distinct from 'string'
-          or char_length(btrim(item->>'id')) not between 1 and 120
-          or jsonb_typeof(item->'label') is distinct from 'string'
-          or char_length(btrim(item->>'label')) not between 1 and 500
-          or (item ? 'icon' and (jsonb_typeof(item->'icon') is distinct from 'string' or char_length(item->>'icon') > 32))
-          or (item ? 'media' and jsonb_typeof(item->'media') not in ('null', 'object'))
-      )
-      or exists (
-        select 1 from jsonb_array_elements(public_payload->'rightItems') item
-        where jsonb_typeof(item) is distinct from 'object'
-          or not item ?& array['id', 'label']
-          or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'label', 'icon', 'media']))
-          or jsonb_typeof(item->'id') is distinct from 'string'
-          or char_length(btrim(item->>'id')) not between 1 and 120
-          or jsonb_typeof(item->'label') is distinct from 'string'
-          or char_length(btrim(item->>'label')) not between 1 and 500
-          or (item ? 'icon' and (jsonb_typeof(item->'icon') is distinct from 'string' or char_length(item->>'icon') > 32))
-          or (item ? 'media' and jsonb_typeof(item->'media') not in ('null', 'object'))
-      )
-      or exists (select 1 from (
-        select item->>'id' as id from jsonb_array_elements(public_payload->'leftItems') item
-        group by item->>'id' having count(*) > 1
-      ) duplicate_id)
-      or exists (select 1 from (
-        select item->>'id' as id from jsonb_array_elements(public_payload->'rightItems') item
-        group by item->>'id' having count(*) > 1
-      ) duplicate_id)
-      or exists (select 1 from (
-        select regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') as label
-        from jsonb_array_elements(public_payload->'leftItems') item
-        group by regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') having count(*) > 1
-      ) duplicate)
-      or exists (select 1 from (
-        select regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') as label
-        from jsonb_array_elements(public_payload->'rightItems') item
-        group by regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') having count(*) > 1
-      ) duplicate) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'matches'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['matches', 'explanation']))
-      or jsonb_typeof(solution_payload->'matches') is distinct from 'object'
-      or (select count(*) from jsonb_object_keys(solution_payload->'matches')) <> jsonb_array_length(public_payload->'leftItems')
-      or exists (select 1 from jsonb_array_elements(public_payload->'leftItems') item where not (solution_payload->'matches' ? (item->>'id')))
-      or exists (select 1 from jsonb_each_text(solution_payload->'matches') match where not exists (
-        select 1 from jsonb_array_elements(public_payload->'rightItems') item where item->>'id' = match.value
-      ))
-      or (select count(*) from jsonb_each_text(solution_payload->'matches')) <> (select count(distinct value) from jsonb_each_text(solution_payload->'matches'))
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
+    perform private.validate_matching_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'word-search' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'grid', 'letters', 'targets']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'grid', 'letters', 'targets'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
-      or jsonb_typeof(public_payload->'grid') is distinct from 'object'
-      or exists (select 1 from jsonb_object_keys(public_payload->'grid') key_name where key_name <> all(array['rows', 'columns']))
-      or not public_payload->'grid' ?& array['rows', 'columns']
-      or jsonb_typeof(public_payload->'grid'->'rows') is distinct from 'number'
-      or jsonb_typeof(public_payload->'grid'->'columns') is distinct from 'number'
-      or (public_payload->'grid'->>'rows')::numeric <> trunc((public_payload->'grid'->>'rows')::numeric)
-      or (public_payload->'grid'->>'columns')::numeric <> trunc((public_payload->'grid'->>'columns')::numeric)
-      or (public_payload->'grid'->>'rows')::integer not between 6 and 10
-      or (public_payload->'grid'->>'columns')::integer not between 6 and 10
-      or jsonb_typeof(public_payload->'letters') is distinct from 'array'
-      or jsonb_array_length(public_payload->'letters') <> (public_payload->'grid'->>'rows')::integer * (public_payload->'grid'->>'columns')::integer
-      or exists (select 1 from jsonb_array_elements_text(public_payload->'letters') letter
-        where char_length(upper(btrim(letter))) <> 1 or upper(btrim(letter)) !~ '^[A-ZÁÉÍÓÚÜÑ]$')
-      or jsonb_typeof(public_payload->'targets') is distinct from 'array'
-      or jsonb_array_length(public_payload->'targets') not between 2 and 8
-      or exists (select 1 from jsonb_array_elements(public_payload->'targets') item
-        where jsonb_typeof(item) is distinct from 'object'
-          or not item ?& array['id', 'word']
-          or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'word']))
-          or jsonb_typeof(item->'id') is distinct from 'string'
-          or char_length(btrim(item->>'id')) not between 1 and 120
-          or jsonb_typeof(item->'word') is distinct from 'string'
-          or char_length(btrim(item->>'word')) not between 1 and 120
-          or upper(btrim(item->>'word')) !~ '^[A-ZÁÉÍÓÚÜÑ]+$')
-      or exists (select 1 from (
-        select btrim(item->>'id') value from jsonb_array_elements(public_payload->'targets') item
-        group by btrim(item->>'id') having count(*) > 1
-      ) duplicate)
-      or exists (select 1 from (
-        select upper(btrim(item->>'word')) value from jsonb_array_elements(public_payload->'targets') item
-        group by upper(btrim(item->>'word')) having count(*) > 1
-      ) duplicate) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ? 'positionsByTargetId'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['positionsByTargetId', 'explanation']))
-      or jsonb_typeof(solution_payload->'positionsByTargetId') is distinct from 'object'
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string')
-      or (select count(*) from jsonb_object_keys(solution_payload->'positionsByTargetId')) <> jsonb_array_length(public_payload->'targets')
-      or exists (select 1 from jsonb_array_elements(public_payload->'targets') item
-        where not solution_payload->'positionsByTargetId' ? (item->>'id')) then
-      raise exception 'invalid_solution_payload' using errcode = '22023';
-    end if;
-
-    grid_rows := (public_payload->'grid'->>'rows')::integer;
-    grid_columns := (public_payload->'grid'->>'columns')::integer;
-    for target_id, target_word in
-      select btrim(item->>'id'), upper(btrim(item->>'word'))
-      from jsonb_array_elements(public_payload->'targets') item
-    loop
-      target_pos := solution_payload->'positionsByTargetId'->target_id;
-      if jsonb_typeof(target_pos) is distinct from 'object'
-        or not target_pos ?& array['startCell', 'endCell']
-        or exists (select 1 from jsonb_object_keys(target_pos) key_name where key_name <> all(array['startCell', 'endCell']))
-        or jsonb_typeof(target_pos->'startCell') is distinct from 'number'
-        or jsonb_typeof(target_pos->'endCell') is distinct from 'number'
-        or (target_pos->>'startCell')::numeric <> trunc((target_pos->>'startCell')::numeric)
-        or (target_pos->>'endCell')::numeric <> trunc((target_pos->>'endCell')::numeric) then
-        raise exception 'invalid_solution_payload' using errcode = '22023';
-      end if;
-      start_cell_i := (target_pos->>'startCell')::integer;
-      end_cell_i := (target_pos->>'endCell')::integer;
-      start_row_i := floor(start_cell_i / grid_columns);
-      start_col_i := start_cell_i % grid_columns;
-      end_row_i := floor(end_cell_i / grid_columns);
-      end_col_i := end_cell_i % grid_columns;
-      if start_cell_i not between 0 and grid_rows * grid_columns - 1
-        or end_cell_i not between 0 and grid_rows * grid_columns - 1
-        or start_cell_i = end_cell_i
-        or not (start_row_i = end_row_i or start_col_i = end_col_i or abs(start_row_i - end_row_i) = abs(start_col_i - end_col_i)) then
-        raise exception 'invalid_solution_payload' using errcode = '22023';
-      end if;
-      word_length_i := char_length(target_word);
-      if array_length(seen_ids, 1) is not null and target_id = any(seen_ids)
-        or array_length(seen_words, 1) is not null and target_word = any(seen_words) then
-        raise exception 'invalid_solution_payload' using errcode = '22023';
-      end if;
-      seen_ids := seen_ids || target_id;
-      seen_words := seen_words || target_word;
-      target_segment := least(start_cell_i, end_cell_i)::text || ':' || greatest(start_cell_i, end_cell_i)::text;
-      if array_length(seen_segments, 1) is not null and target_segment = any(seen_segments) then
-        raise exception 'invalid_solution_payload' using errcode = '22023';
-      end if;
-      seen_segments := seen_segments || target_segment;
-      row_step_i := sign(end_row_i - start_row_i);
-      col_step_i := sign(end_col_i - start_col_i);
-      candidate_word := '';
-      for path_offset_i in 0..word_length_i - 1 loop
-        path_cell_i := (start_row_i + row_step_i * path_offset_i) * grid_columns + start_col_i + col_step_i * path_offset_i;
-        if path_cell_i < 0 or path_cell_i >= grid_rows * grid_columns then
-          raise exception 'invalid_solution_payload' using errcode = '22023';
-        end if;
-        candidate_word := candidate_word || upper(btrim(public_payload->'letters'->>path_cell_i));
-      end loop;
-      if candidate_word <> target_word then
-        raise exception 'invalid_solution_payload' using errcode = '22023';
-      end if;
-
-      occurrence_count_i := 0;
-      for check_start in 0..grid_rows * grid_columns - 1 loop
-        for direction_row in -1..1 loop
-          for direction_col in -1..1 loop
-            if direction_row = 0 and direction_col = 0 then continue; end if;
-            candidate_word := '';
-            candidate_segment := null;
-            for path_offset_i in 0..word_length_i - 1 loop
-              cell_row := floor(check_start / grid_columns) + direction_row * path_offset_i;
-              cell_col := (check_start % grid_columns) + direction_col * path_offset_i;
-              if cell_row < 0 or cell_row >= grid_rows or cell_col < 0 or cell_col >= grid_columns then
-                candidate_word := null;
-                exit;
-              end if;
-              path_cell_i := cell_row * grid_columns + cell_col;
-              candidate_word := candidate_word || upper(btrim(public_payload->'letters'->>path_cell_i));
-            end loop;
-            if candidate_word = target_word then
-              candidate_segment := least(check_start, path_cell_i)::text || ':' || greatest(check_start, path_cell_i)::text;
-              occurrence_count_i := occurrence_count_i + 1;
-              if candidate_segment = target_segment then
-                -- Both directions describe one undirected occurrence.
-                occurrence_count_i := occurrence_count_i - 1;
-              end if;
-            end if;
-          end loop;
-        end loop;
-      end loop;
-      if occurrence_count_i <> 0 then
-        raise exception 'invalid_solution_payload' using errcode = '22023';
-      end if;
-    end loop;
+    perform private.validate_word_search_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'word-hashtag' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or jsonb_typeof(solution_payload) is distinct from 'object'
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string')
-      or not private.word_hashtag_content_valid(public_payload, solution_payload) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
+    perform private.validate_word_hashtag_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'zip' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'grid', 'checkpoints', 'instruction', 'mapNote', 'boardLabel'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
-      or (public_payload ? 'instruction' and (jsonb_typeof(public_payload->'instruction') is distinct from 'string'
-        or char_length(btrim(public_payload->>'instruction')) not between 1 and 500))
-      or (public_payload ? 'mapNote' and (jsonb_typeof(public_payload->'mapNote') is distinct from 'string'
-        or char_length(btrim(public_payload->>'mapNote')) not between 1 and 500))
-      or (public_payload ? 'boardLabel' and (jsonb_typeof(public_payload->'boardLabel') is distinct from 'string'
-        or char_length(btrim(public_payload->>'boardLabel')) not between 1 and 500))
-      or jsonb_typeof(solution_payload) is distinct from 'object'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['solution', 'explanation']))
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string')
-      or not private.zip_content_valid(public_payload, solution_payload) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
+    perform private.validate_zip_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'queens' then
-    if exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name not in ('category', 'tags', 'question', 'grid', 'regions', 'prefilledQueens'))
-      or private.editorial_has_secret_key(public_payload)
-      or not private.queens_content_valid(public_payload, solution_payload)
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
+    perform private.validate_queens_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'escape' then
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'grid', 'initialBlocks', 'instruction', 'hideInstruction',
-        'objectiveLabel', 'hideObjectiveLabel', 'completionMessage', 'boardLabel'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
-      or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
-      or (public_payload ? 'instruction' and (jsonb_typeof(public_payload->'instruction') is distinct from 'string'
-        or char_length(btrim(public_payload->>'instruction')) not between 1 and 500))
-      or (public_payload ? 'objectiveLabel' and (jsonb_typeof(public_payload->'objectiveLabel') is distinct from 'string'
-        or char_length(btrim(public_payload->>'objectiveLabel')) not between 1 and 500))
-      or (public_payload ? 'completionMessage' and (jsonb_typeof(public_payload->'completionMessage') is distinct from 'string'
-        or char_length(btrim(public_payload->>'completionMessage')) not between 1 and 500))
-      or (public_payload ? 'boardLabel' and (jsonb_typeof(public_payload->'boardLabel') is distinct from 'string'
-        or char_length(btrim(public_payload->>'boardLabel')) not between 1 and 500))
-      or (public_payload ? 'hideInstruction' and jsonb_typeof(public_payload->'hideInstruction') is distinct from 'boolean')
-      or (public_payload ? 'hideObjectiveLabel' and jsonb_typeof(public_payload->'hideObjectiveLabel') is distinct from 'boolean')
-      or jsonb_typeof(solution_payload) is distinct from 'object'
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['referenceSolution', 'optimalMoves', 'explanation']))
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string')
-      or not private.escape_content_valid(public_payload, solution_payload) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
+    perform private.validate_escape_question_document(document);
     return;
   end if;
-
   if question->>'type' = 'progressive-image' then
-    if question->>'payloadSchemaVersion' = '2' then
-      if jsonb_typeof(public_payload) is distinct from 'object'
-        or not public_payload ?& array['question', 'surface', 'revealDurationMs']
-        or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-          'category', 'tags', 'question', 'surface', 'revealDurationMs', 'answerLabel', 'answerPlaceholder'
-        ]))
-        or private.editorial_has_secret_key(public_payload)
-        or jsonb_typeof(public_payload->'surface') is distinct from 'object'
-        or not public_payload->'surface' ?& array['assetId', 'alt', 'width', 'height']
-        or exists (select 1 from jsonb_object_keys(public_payload->'surface') key_name where key_name <> all(array[
-          'assetId', 'alt', 'width', 'height', 'fit', 'position'
-        ]))
-        or public_payload->'surface'->>'assetId' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
-        or not private.is_ready_question_asset((public_payload->'surface'->>'assetId')::uuid)
-        or jsonb_typeof(public_payload->'surface'->'alt') is distinct from 'string'
-        or char_length(btrim(public_payload->'surface'->>'alt')) not between 1 and 500
-        or jsonb_typeof(public_payload->'surface'->'width') is distinct from 'number'
-        or (public_payload->'surface'->>'width')::numeric <> trunc((public_payload->'surface'->>'width')::numeric)
-        or (public_payload->'surface'->>'width')::integer not between 1 and 8192
-        or jsonb_typeof(public_payload->'surface'->'height') is distinct from 'number'
-        or (public_payload->'surface'->>'height')::numeric <> trunc((public_payload->'surface'->>'height')::numeric)
-        or (public_payload->'surface'->>'height')::integer not between 1 and 8192
-        or (public_payload->'surface' ? 'fit' and public_payload->'surface'->>'fit' not in ('cover', 'contain'))
-        or (public_payload->'surface' ? 'position' and (jsonb_typeof(public_payload->'surface'->'position') is distinct from 'string'
-          or char_length(public_payload->'surface'->>'position') > 100))
-        or jsonb_typeof(public_payload->'revealDurationMs') is distinct from 'number'
-        or (public_payload->>'revealDurationMs')::numeric <> trunc((public_payload->>'revealDurationMs')::numeric)
-        or (public_payload->>'revealDurationMs')::integer <= 0
-        or (public_payload->>'revealDurationMs')::integer >= (question->>'timeLimitMs')::numeric
-        or (public_payload ? 'answerLabel' and jsonb_typeof(public_payload->'answerLabel') not in ('null', 'string'))
-        or (public_payload ? 'answerPlaceholder' and jsonb_typeof(public_payload->'answerPlaceholder') not in ('null', 'string')) then
-        raise exception 'invalid_public_payload' using errcode = '22023';
-      end if;
-    else
-    if jsonb_typeof(public_payload) is distinct from 'object'
-      or not public_payload ?& array['question', 'surface', 'revealDurationMs']
-      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
-        'category', 'tags', 'question', 'surface', 'revealDurationMs', 'answerLabel', 'answerPlaceholder'
-      ]))
-      or private.editorial_has_secret_key(public_payload)
-      or jsonb_typeof(public_payload->'question') is distinct from 'string'
-      or char_length(btrim(public_payload->>'question')) not between 1 and 2000
-      or jsonb_typeof(public_payload->'surface') is distinct from 'object'
-      or not public_payload->'surface' ?& array['src', 'alt', 'width', 'height']
-      or exists (select 1 from jsonb_object_keys(public_payload->'surface') key_name where key_name <> all(array[
-        'src', 'alt', 'width', 'height', 'fit', 'position'
-      ]))
-      or jsonb_typeof(public_payload->'surface'->'src') is distinct from 'string'
-      or char_length(btrim(public_payload->'surface'->>'src')) not between 10 and 1000
-      or left(public_payload->'surface'->>'src', 9) <> '/visuals/'
-      or public_payload->'surface'->>'src' ~ '\s'
-      or jsonb_typeof(public_payload->'surface'->'alt') is distinct from 'string'
-      or char_length(btrim(public_payload->'surface'->>'alt')) not between 1 and 500
-      or jsonb_typeof(public_payload->'surface'->'width') is distinct from 'number'
-      or (public_payload->'surface'->>'width')::numeric <> trunc((public_payload->'surface'->>'width')::numeric)
-      or (public_payload->'surface'->>'width')::integer <= 0
-      or jsonb_typeof(public_payload->'surface'->'height') is distinct from 'number'
-      or (public_payload->'surface'->>'height')::numeric <> trunc((public_payload->'surface'->>'height')::numeric)
-      or (public_payload->'surface'->>'height')::integer <= 0
-      or (public_payload->'surface' ? 'fit' and public_payload->'surface'->>'fit' not in ('cover', 'contain'))
-      or (public_payload->'surface' ? 'position' and (jsonb_typeof(public_payload->'surface'->'position') is distinct from 'string'
-        or char_length(public_payload->'surface'->>'position') > 100))
-      or jsonb_typeof(public_payload->'revealDurationMs') is distinct from 'number'
-      or (public_payload->>'revealDurationMs')::numeric <> trunc((public_payload->>'revealDurationMs')::numeric)
-      or (public_payload->>'revealDurationMs')::integer <= 0
-      or (public_payload->>'revealDurationMs')::integer >= (question->>'timeLimitMs')::numeric
-      or (public_payload ? 'answerLabel' and jsonb_typeof(public_payload->'answerLabel') not in ('null', 'string'))
-      or (public_payload ? 'answerPlaceholder' and jsonb_typeof(public_payload->'answerPlaceholder') not in ('null', 'string')) then
-      raise exception 'invalid_public_payload' using errcode = '22023';
-    end if;
-    end if;
-    if jsonb_typeof(solution_payload) is distinct from 'object'
-      or not solution_payload ?& array['correctAnswer', 'acceptedAnswers', 'solutionAlt']
-      or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
-        'correctAnswer', 'acceptedAnswers', 'solutionAlt', 'explanation'
-      ]))
-      or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
-      or char_length(btrim(solution_payload->>'correctAnswer')) not between 1 and 500
-      or jsonb_typeof(solution_payload->'acceptedAnswers') is distinct from 'array'
-      or jsonb_array_length(solution_payload->'acceptedAnswers') not between 1 and 100
-      or exists (select 1 from jsonb_array_elements(solution_payload->'acceptedAnswers') answer
-        where jsonb_typeof(answer) is distinct from 'string'
-          or char_length(btrim(answer #>> '{}')) not between 1 and 500)
-      or exists (select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
-        group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
-        having count(*) > 1)
-      or not exists (select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
-        where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
-          regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'))
-      or position(
-        regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') in
-        regexp_replace(lower(translate(btrim(public_payload->'surface'->>'alt'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
-      ) > 0
-      or jsonb_typeof(solution_payload->'solutionAlt') is distinct from 'string'
-      or char_length(btrim(solution_payload->>'solutionAlt')) not between 1 and 500
-      or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    perform private.validate_progressive_image_question_document(document);
+    return;
+  end if;
+  -- Preserve the original residual path, including a JSON null type.
+  perform private.validate_multiple_choice_question_document(document);
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_heat_map_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'surface', 'targetLabel']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'surface', 'targetLabel'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'targetLabel') is distinct from 'string'
+    or char_length(btrim(public_payload->>'targetLabel')) not between 1 and 500
+    or jsonb_typeof(public_payload->'surface') is distinct from 'object'
+    or not public_payload->'surface' ?& array['assetId', 'alt', 'width', 'height']
+    or exists (select 1 from jsonb_object_keys(public_payload->'surface') key_name where key_name <> all(array[
+      'assetId', 'alt', 'width', 'height', 'fit', 'position'
+    ]))
+    or public_payload->'surface'->>'assetId' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+    or not private.is_ready_question_asset((public_payload->'surface'->>'assetId')::uuid)
+    or jsonb_typeof(public_payload->'surface'->'alt') is distinct from 'string'
+    or char_length(btrim(public_payload->'surface'->>'alt')) not between 1 and 500
+    or jsonb_typeof(public_payload->'surface'->'width') is distinct from 'number'
+    or (public_payload->'surface'->>'width')::numeric <> trunc((public_payload->'surface'->>'width')::numeric)
+    or (public_payload->'surface'->>'width')::integer not between 1 and 8192
+    or jsonb_typeof(public_payload->'surface'->'height') is distinct from 'number'
+    or (public_payload->'surface'->>'height')::numeric <> trunc((public_payload->'surface'->>'height')::numeric)
+    or (public_payload->'surface'->>'height')::integer not between 1 and 8192
+    or (public_payload->'surface' ? 'fit' and public_payload->'surface'->>'fit' not in ('cover', 'contain'))
+    or (public_payload->'surface' ? 'position' and (
+      jsonb_typeof(public_payload->'surface'->'position') is distinct from 'string'
+      or char_length(public_payload->'surface'->>'position') > 100
+    )) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ?& array['target', 'fullCreditRadius', 'toleranceRadius']
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'target', 'fullCreditRadius', 'toleranceRadius', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'target') is distinct from 'object'
+    or not solution_payload->'target' ?& array['x', 'y']
+    or exists (select 1 from jsonb_object_keys(solution_payload->'target') key_name where key_name <> all(array['x', 'y']))
+    or jsonb_typeof(solution_payload->'target'->'x') is distinct from 'number'
+    or (solution_payload->'target'->>'x')::numeric not between 0 and 1
+    or jsonb_typeof(solution_payload->'target'->'y') is distinct from 'number'
+    or (solution_payload->'target'->>'y')::numeric not between 0 and 1
+    or jsonb_typeof(solution_payload->'fullCreditRadius') is distinct from 'number'
+    or (solution_payload->>'fullCreditRadius')::numeric < 0
+    or jsonb_typeof(solution_payload->'toleranceRadius') is distinct from 'number'
+    or (solution_payload->>'toleranceRadius')::numeric <= (solution_payload->>'fullCreditRadius')::numeric
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_logic_code_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'clues', 'codeLength']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'clues', 'codeLength'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'clues') is distinct from 'array'
+    or jsonb_array_length(public_payload->'clues') not between 1 and 20
+    or jsonb_typeof(public_payload->'codeLength') is distinct from 'number'
+    or (public_payload->>'codeLength')::integer not between 1 and 12
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+    or exists (
+      select 1
+      from jsonb_array_elements(public_payload->'clues') clue
+      where jsonb_typeof(clue) is distinct from 'object'
+        or not clue ?& array['code', 'hint']
+        or exists (select 1 from jsonb_object_keys(clue) key_name where key_name <> all(array['code', 'hint']))
+        or jsonb_typeof(clue->'code') is distinct from 'string'
+        or char_length(clue->>'code') <> (public_payload->>'codeLength')::integer
+        or clue->>'code' !~ '^[0-9]+$'
+        or jsonb_typeof(clue->'hint') is distinct from 'string'
+        or char_length(btrim(clue->>'hint')) not between 1 and 500
+    )
+    or (select count(distinct clue->>'code') from jsonb_array_elements(public_payload->'clues') clue)
+       <> jsonb_array_length(public_payload->'clues') then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'correctAnswer'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'correctAnswer', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
+    or char_length(solution_payload->>'correctAnswer') <> (public_payload->>'codeLength')::integer
+    or solution_payload->>'correctAnswer' !~ '^[0-9]+$'
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_logic_matrix_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'pieces', 'cells', 'optionIds']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'pieces', 'cells', 'optionIds', 'showPieceLabels'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'pieces') is distinct from 'array'
+    or jsonb_array_length(public_payload->'pieces') not between 4 and 20
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'pieces') piece
+      where jsonb_typeof(piece) is distinct from 'object'
+        or not piece ?& array['id', 'symbol', 'label']
+        or exists (select 1 from jsonb_object_keys(piece) key_name where key_name <> all(array['id', 'symbol', 'label']))
+        or jsonb_typeof(piece->'id') is distinct from 'string'
+        or char_length(btrim(piece->>'id')) not between 1 and 120
+        or jsonb_typeof(piece->'symbol') is distinct from 'string'
+        or char_length(btrim(piece->>'symbol')) not between 1 and 120
+        or jsonb_typeof(piece->'label') is distinct from 'string'
+        or char_length(btrim(piece->>'label')) not between 1 and 500
+    )
+    or (select count(*) from jsonb_array_elements(public_payload->'pieces') piece)
+      <> (select count(distinct piece->>'id') from jsonb_array_elements(public_payload->'pieces') piece)
+    or jsonb_typeof(public_payload->'cells') is distinct from 'array'
+    or jsonb_array_length(public_payload->'cells') <> 9
+    or (select count(*) from jsonb_array_elements(public_payload->'cells') cell where jsonb_typeof(cell) = 'null') <> 1
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'cells') cell
+      where jsonb_typeof(cell) not in ('null', 'string')
+        or (jsonb_typeof(cell) = 'string' and not exists (
+          select 1 from jsonb_array_elements(public_payload->'pieces') piece where piece->>'id' = cell #>> '{}'
+        ))
+    )
+    or jsonb_typeof(public_payload->'optionIds') is distinct from 'array'
+    or jsonb_array_length(public_payload->'optionIds') <> 4
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'optionIds') option_id
+      where jsonb_typeof(option_id) is distinct from 'string'
+        or not exists (
+          select 1 from jsonb_array_elements(public_payload->'pieces') piece where piece->>'id' = option_id #>> '{}'
+        )
+    )
+    or (select count(*) from jsonb_array_elements_text(public_payload->'optionIds'))
+      <> (select count(distinct value) from jsonb_array_elements_text(public_payload->'optionIds') value)
+    or (public_payload ? 'showPieceLabels' and jsonb_typeof(public_payload->'showPieceLabels') not in ('null', 'boolean'))
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object') then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'correctOptionId'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['correctOptionId', 'explanation']))
+    or jsonb_typeof(solution_payload->'correctOptionId') is distinct from 'string'
+    or not exists (
+      select 1 from jsonb_array_elements_text(public_payload->'optionIds') option_id
+      where option_id = solution_payload->>'correctOptionId'
+    )
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_matching_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'leftItems', 'rightItems']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'leftItems', 'rightItems'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'leftItems') is distinct from 'array'
+    or jsonb_typeof(public_payload->'rightItems') is distinct from 'array'
+    or jsonb_array_length(public_payload->'leftItems') not between 3 and 6
+    or jsonb_array_length(public_payload->'rightItems') <> jsonb_array_length(public_payload->'leftItems')
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'leftItems') item
+      where jsonb_typeof(item) is distinct from 'object'
+        or not item ?& array['id', 'label']
+        or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'label', 'icon', 'media']))
+        or jsonb_typeof(item->'id') is distinct from 'string'
+        or char_length(btrim(item->>'id')) not between 1 and 120
+        or jsonb_typeof(item->'label') is distinct from 'string'
+        or char_length(btrim(item->>'label')) not between 1 and 500
+        or (item ? 'icon' and (jsonb_typeof(item->'icon') is distinct from 'string' or char_length(item->>'icon') > 32))
+        or (item ? 'media' and jsonb_typeof(item->'media') not in ('null', 'object'))
+    )
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'rightItems') item
+      where jsonb_typeof(item) is distinct from 'object'
+        or not item ?& array['id', 'label']
+        or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'label', 'icon', 'media']))
+        or jsonb_typeof(item->'id') is distinct from 'string'
+        or char_length(btrim(item->>'id')) not between 1 and 120
+        or jsonb_typeof(item->'label') is distinct from 'string'
+        or char_length(btrim(item->>'label')) not between 1 and 500
+        or (item ? 'icon' and (jsonb_typeof(item->'icon') is distinct from 'string' or char_length(item->>'icon') > 32))
+        or (item ? 'media' and jsonb_typeof(item->'media') not in ('null', 'object'))
+    )
+    or exists (select 1 from (
+      select item->>'id' as id from jsonb_array_elements(public_payload->'leftItems') item
+      group by item->>'id' having count(*) > 1
+    ) duplicate_id)
+    or exists (select 1 from (
+      select item->>'id' as id from jsonb_array_elements(public_payload->'rightItems') item
+      group by item->>'id' having count(*) > 1
+    ) duplicate_id)
+    or exists (select 1 from (
+      select regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') as label
+      from jsonb_array_elements(public_payload->'leftItems') item
+      group by regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') having count(*) > 1
+    ) duplicate)
+    or exists (select 1 from (
+      select regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') as label
+      from jsonb_array_elements(public_payload->'rightItems') item
+      group by regexp_replace(lower(btrim(item->>'label')), '\\s+', ' ', 'g') having count(*) > 1
+    ) duplicate) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'matches'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['matches', 'explanation']))
+    or jsonb_typeof(solution_payload->'matches') is distinct from 'object'
+    or (select count(*) from jsonb_object_keys(solution_payload->'matches')) <> jsonb_array_length(public_payload->'leftItems')
+    or exists (select 1 from jsonb_array_elements(public_payload->'leftItems') item where not (solution_payload->'matches' ? (item->>'id')))
+    or exists (select 1 from jsonb_each_text(solution_payload->'matches') match where not exists (
+      select 1 from jsonb_array_elements(public_payload->'rightItems') item where item->>'id' = match.value
+    ))
+    or (select count(*) from jsonb_each_text(solution_payload->'matches')) <> (select count(distinct value) from jsonb_each_text(solution_payload->'matches'))
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_mini_wordle_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+  expected_word_length integer;
+  max_attempts integer;
+  selected_dictionary_id text;
+  solution_word text;
+  guess_word text;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'wordLength', 'maxAttempts']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'hint', 'wordLength', 'maxAttempts'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'wordLength') is distinct from 'number'
+    or (public_payload->>'wordLength')::integer not in (4, 5)
+    or jsonb_typeof(public_payload->'maxAttempts') is distinct from 'number'
+    or (public_payload->>'maxAttempts')::integer not between 1 and 10
+    or (public_payload ? 'hint' and jsonb_typeof(public_payload->'hint') not in ('null', 'string'))
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object') then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ?& array['correctAnswer', 'additionalGuesses', 'dictionaryId']
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'correctAnswer', 'additionalGuesses', 'dictionaryId', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
+    or jsonb_typeof(solution_payload->'additionalGuesses') is distinct from 'array'
+    or jsonb_typeof(solution_payload->'dictionaryId') is distinct from 'string'
+    or solution_payload->>'dictionaryId' not in ('es-general-4.v1', 'es-general-5.v1')
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  expected_word_length := (public_payload->>'wordLength')::integer;
+  max_attempts := (public_payload->>'maxAttempts')::integer;
+  selected_dictionary_id := solution_payload->>'dictionaryId';
+  if (expected_word_length = 4 and selected_dictionary_id <> 'es-general-4.v1')
+    or (expected_word_length = 5 and selected_dictionary_id <> 'es-general-5.v1')
+    or char_length(private.mini_wordle_normalize(solution_payload->>'correctAnswer')) <> expected_word_length
+    or private.mini_wordle_normalize(solution_payload->>'correctAnswer') !~ '^[A-ZÑ]+$'
+    or jsonb_array_length(solution_payload->'additionalGuesses') > 1000
+    or exists (select 1 from jsonb_array_elements(solution_payload->'additionalGuesses') extra
+      where jsonb_typeof(extra) is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  solution_word := private.mini_wordle_normalize(solution_payload->>'correctAnswer');
+  for guess_word in select value from jsonb_array_elements_text(solution_payload->'additionalGuesses') loop
+    if char_length(private.mini_wordle_normalize(guess_word)) <> expected_word_length
+      or private.mini_wordle_normalize(guess_word) !~ '^[A-ZÑ]+$'
+      or private.mini_wordle_normalize(guess_word) = solution_word
+      or (select count(*) from jsonb_array_elements_text(solution_payload->'additionalGuesses') values(value)
+          where private.mini_wordle_normalize(value) = private.mini_wordle_normalize(guess_word)) > 1 then
       raise exception 'invalid_solution_payload' using errcode = '22023';
     end if;
-    return;
-  end if;
+  end loop;
+  return;
+end;
+$function$;
 
+CREATE OR REPLACE FUNCTION private.validate_multiple_choice_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  question jsonb;
+  public_payload jsonb;
+  solution_payload jsonb;
+  option jsonb;
+  option_count integer;
+begin
+  question := document;
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
   if jsonb_typeof(public_payload) is distinct from 'object'
     or not public_payload ?& array['question', 'options']
     or exists (
@@ -8988,6 +10703,675 @@ if question->>'type' = 'logic-code' then
     where value = solution_payload->>'correctAnswer'
   ) then
     raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_odd_one_out_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'items']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'items'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'items') is distinct from 'array'
+    or jsonb_array_length(public_payload->'items') not between 3 and 8
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'items') item
+      where jsonb_typeof(item) is distinct from 'object'
+        or not item ?& array['id', 'label']
+        or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'label', 'media']))
+        or jsonb_typeof(item->'id') is distinct from 'string'
+        or char_length(btrim(item->>'id')) not between 1 and 120
+        or jsonb_typeof(item->'label') is distinct from 'string'
+        or char_length(btrim(item->>'label')) not between 1 and 500
+        or (item ? 'media' and jsonb_typeof(item->'media') not in ('null', 'object'))
+    )
+    or exists (select 1 from (
+      select item->>'id' as id from jsonb_array_elements(public_payload->'items') item
+      group by item->>'id' having count(*) > 1
+    ) duplicate_id) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'correctAnswer'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'correctAnswer', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
+    or not exists (
+      select 1 from jsonb_array_elements(public_payload->'items') item
+      where item->>'id' = solution_payload->>'correctAnswer'
+    )
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_ordering_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'items']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'items', 'directionLabels'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'items') is distinct from 'array'
+    or jsonb_array_length(public_payload->'items') not between 2 and 8
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'items') item
+      where jsonb_typeof(item) is distinct from 'string'
+        or char_length(btrim(item #>> '{}')) not between 1 and 500
+    )
+    or exists (select 1 from (
+      select value from jsonb_array_elements_text(public_payload->'items') group by value having count(*) > 1
+    ) duplicate_item)
+    or (public_payload ? 'directionLabels' and jsonb_typeof(public_payload->'directionLabels') not in ('null', 'object'))
+    or (jsonb_typeof(public_payload->'directionLabels') = 'object' and (
+      exists (select 1 from jsonb_object_keys(public_payload->'directionLabels') key_name where key_name not in ('start', 'end'))
+      or not (public_payload->'directionLabels' ?& array['start', 'end'])
+      or jsonb_typeof(public_payload->'directionLabels'->'start') is distinct from 'string'
+      or char_length(btrim(public_payload->'directionLabels'->>'start')) not between 1 and 120
+      or jsonb_typeof(public_payload->'directionLabels'->'end') is distinct from 'string'
+      or char_length(btrim(public_payload->'directionLabels'->>'end')) not between 1 and 120
+    ))
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object') then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'correctOrder'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'correctOrder', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'correctOrder') is distinct from 'array'
+    or jsonb_array_length(solution_payload->'correctOrder') <> jsonb_array_length(public_payload->'items')
+    or exists (
+      select 1 from jsonb_array_elements(solution_payload->'correctOrder') item
+      where jsonb_typeof(item) is distinct from 'string'
+    )
+    or exists (
+      select 1 from jsonb_array_elements_text(solution_payload->'correctOrder') item
+      where not exists (select 1 from jsonb_array_elements_text(public_payload->'items') public_item where public_item = item)
+    )
+    or (select count(*) from jsonb_array_elements_text(solution_payload->'correctOrder')) <> (
+      select count(distinct value) from jsonb_array_elements_text(solution_payload->'correctOrder') value
+    )
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_progressive_clues_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'clues', 'cluePenalty']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'clues', 'cluePenalty'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'clues') is distinct from 'array'
+    or jsonb_array_length(public_payload->'clues') not between 1 and 20
+    or jsonb_typeof(public_payload->'cluePenalty') is distinct from 'number'
+    or (public_payload->>'cluePenalty')::numeric <> trunc((public_payload->>'cluePenalty')::numeric)
+    or (public_payload->>'cluePenalty')::integer not between 0 and 50
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+    or exists (
+      select 1 from jsonb_array_elements(public_payload->'clues') clue
+      where jsonb_typeof(clue) is distinct from 'string'
+        or char_length(btrim(clue #>> '{}')) not between 1 and 500
+    ) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ?& array['correctAnswer', 'acceptedAnswers']
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'correctAnswer', 'acceptedAnswers', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
+    or char_length(btrim(solution_payload->>'correctAnswer')) not between 1 and 500
+    or jsonb_typeof(solution_payload->'acceptedAnswers') is distinct from 'array'
+    or jsonb_array_length(solution_payload->'acceptedAnswers') not between 1 and 100
+    or exists (
+      select 1 from jsonb_array_elements(solution_payload->'acceptedAnswers') answer
+      where jsonb_typeof(answer) is distinct from 'string'
+        or char_length(btrim(answer #>> '{}')) not between 1 and 500
+    )
+    or exists (
+      select 1
+      from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
+      group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+      having count(*) > 1
+    )
+    or not exists (
+      select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
+      where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+        regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+    )
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_progressive_image_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  question jsonb;
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  question := document;
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if question->>'payloadSchemaVersion' = '2' then
+    if jsonb_typeof(public_payload) is distinct from 'object'
+      or not public_payload ?& array['question', 'surface', 'revealDurationMs']
+      or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+        'category', 'tags', 'question', 'surface', 'revealDurationMs', 'answerLabel', 'answerPlaceholder'
+      ]))
+      or private.editorial_has_secret_key(public_payload)
+      or jsonb_typeof(public_payload->'surface') is distinct from 'object'
+      or not public_payload->'surface' ?& array['assetId', 'alt', 'width', 'height']
+      or exists (select 1 from jsonb_object_keys(public_payload->'surface') key_name where key_name <> all(array[
+        'assetId', 'alt', 'width', 'height', 'fit', 'position'
+      ]))
+      or public_payload->'surface'->>'assetId' !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+      or not private.is_ready_question_asset((public_payload->'surface'->>'assetId')::uuid)
+      or jsonb_typeof(public_payload->'surface'->'alt') is distinct from 'string'
+      or char_length(btrim(public_payload->'surface'->>'alt')) not between 1 and 500
+      or jsonb_typeof(public_payload->'surface'->'width') is distinct from 'number'
+      or (public_payload->'surface'->>'width')::numeric <> trunc((public_payload->'surface'->>'width')::numeric)
+      or (public_payload->'surface'->>'width')::integer not between 1 and 8192
+      or jsonb_typeof(public_payload->'surface'->'height') is distinct from 'number'
+      or (public_payload->'surface'->>'height')::numeric <> trunc((public_payload->'surface'->>'height')::numeric)
+      or (public_payload->'surface'->>'height')::integer not between 1 and 8192
+      or (public_payload->'surface' ? 'fit' and public_payload->'surface'->>'fit' not in ('cover', 'contain'))
+      or (public_payload->'surface' ? 'position' and (jsonb_typeof(public_payload->'surface'->'position') is distinct from 'string'
+        or char_length(public_payload->'surface'->>'position') > 100))
+      or jsonb_typeof(public_payload->'revealDurationMs') is distinct from 'number'
+      or (public_payload->>'revealDurationMs')::numeric <> trunc((public_payload->>'revealDurationMs')::numeric)
+      or (public_payload->>'revealDurationMs')::integer <= 0
+      or (public_payload->>'revealDurationMs')::integer >= (question->>'timeLimitMs')::numeric
+      or (public_payload ? 'answerLabel' and jsonb_typeof(public_payload->'answerLabel') not in ('null', 'string'))
+      or (public_payload ? 'answerPlaceholder' and jsonb_typeof(public_payload->'answerPlaceholder') not in ('null', 'string')) then
+      raise exception 'invalid_public_payload' using errcode = '22023';
+    end if;
+  else
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'surface', 'revealDurationMs']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'surface', 'revealDurationMs', 'answerLabel', 'answerPlaceholder'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or jsonb_typeof(public_payload->'surface') is distinct from 'object'
+    or not public_payload->'surface' ?& array['src', 'alt', 'width', 'height']
+    or exists (select 1 from jsonb_object_keys(public_payload->'surface') key_name where key_name <> all(array[
+      'src', 'alt', 'width', 'height', 'fit', 'position'
+    ]))
+    or jsonb_typeof(public_payload->'surface'->'src') is distinct from 'string'
+    or char_length(btrim(public_payload->'surface'->>'src')) not between 10 and 1000
+    or left(public_payload->'surface'->>'src', 9) <> '/visuals/'
+    or public_payload->'surface'->>'src' ~ '\s'
+    or jsonb_typeof(public_payload->'surface'->'alt') is distinct from 'string'
+    or char_length(btrim(public_payload->'surface'->>'alt')) not between 1 and 500
+    or jsonb_typeof(public_payload->'surface'->'width') is distinct from 'number'
+    or (public_payload->'surface'->>'width')::numeric <> trunc((public_payload->'surface'->>'width')::numeric)
+    or (public_payload->'surface'->>'width')::integer <= 0
+    or jsonb_typeof(public_payload->'surface'->'height') is distinct from 'number'
+    or (public_payload->'surface'->>'height')::numeric <> trunc((public_payload->'surface'->>'height')::numeric)
+    or (public_payload->'surface'->>'height')::integer <= 0
+    or (public_payload->'surface' ? 'fit' and public_payload->'surface'->>'fit' not in ('cover', 'contain'))
+    or (public_payload->'surface' ? 'position' and (jsonb_typeof(public_payload->'surface'->'position') is distinct from 'string'
+      or char_length(public_payload->'surface'->>'position') > 100))
+    or jsonb_typeof(public_payload->'revealDurationMs') is distinct from 'number'
+    or (public_payload->>'revealDurationMs')::numeric <> trunc((public_payload->>'revealDurationMs')::numeric)
+    or (public_payload->>'revealDurationMs')::integer <= 0
+    or (public_payload->>'revealDurationMs')::integer >= (question->>'timeLimitMs')::numeric
+    or (public_payload ? 'answerLabel' and jsonb_typeof(public_payload->'answerLabel') not in ('null', 'string'))
+    or (public_payload ? 'answerPlaceholder' and jsonb_typeof(public_payload->'answerPlaceholder') not in ('null', 'string')) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ?& array['correctAnswer', 'acceptedAnswers', 'solutionAlt']
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'correctAnswer', 'acceptedAnswers', 'solutionAlt', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'string'
+    or char_length(btrim(solution_payload->>'correctAnswer')) not between 1 and 500
+    or jsonb_typeof(solution_payload->'acceptedAnswers') is distinct from 'array'
+    or jsonb_array_length(solution_payload->'acceptedAnswers') not between 1 and 100
+    or exists (select 1 from jsonb_array_elements(solution_payload->'acceptedAnswers') answer
+      where jsonb_typeof(answer) is distinct from 'string'
+        or char_length(btrim(answer #>> '{}')) not between 1 and 500)
+    or exists (select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
+      group by regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+      having count(*) > 1)
+    or not exists (select 1 from jsonb_array_elements_text(solution_payload->'acceptedAnswers') answer
+      where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+        regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g'))
+    or position(
+      regexp_replace(lower(translate(btrim(solution_payload->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') in
+      regexp_replace(lower(translate(btrim(public_payload->'surface'->>'alt'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')
+    ) > 0
+    or jsonb_typeof(solution_payload->'solutionAlt') is distinct from 'string'
+    or char_length(btrim(solution_payload->>'solutionAlt')) not between 1 and 500
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_queens_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name not in ('category', 'tags', 'question', 'grid', 'regions', 'prefilledQueens'))
+    or private.editorial_has_secret_key(public_payload)
+    or not private.queens_content_valid(public_payload, solution_payload)
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_short_text_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+begin
+  if exists (select 1 from jsonb_object_keys(document) key_name where key_name <> all(array[
+    'slug', 'type', 'payloadSchemaVersion', 'timeLimitMs', 'publicPayload', 'solutionPayload'
+  ]))
+    or jsonb_typeof(document->'slug') is distinct from 'string'
+    or char_length(btrim(document->>'slug')) not between 1 and 120
+    or document->'payloadSchemaVersion' <> '1'::jsonb
+    or jsonb_typeof(document->'timeLimitMs') is distinct from 'number'
+    or (document->>'timeLimitMs')::numeric <> trunc((document->>'timeLimitMs')::numeric)
+    or (document->>'timeLimitMs')::integer <= 0
+    or jsonb_typeof(document->'publicPayload') is distinct from 'object'
+    or not document->'publicPayload' ? 'question'
+    or exists (select 1 from jsonb_object_keys(document->'publicPayload') key_name
+      where key_name <> all(array['category', 'tags', 'question', 'answerPlaceholder']))
+    or private.editorial_has_secret_key(document->'publicPayload')
+    or jsonb_typeof(document->'publicPayload'->'question') is distinct from 'string'
+    or char_length(btrim(document->'publicPayload'->>'question')) not between 1 and 2000
+    or (document->'publicPayload' ? 'category' and jsonb_typeof(document->'publicPayload'->'category') is distinct from 'string')
+    or (document->'publicPayload' ? 'tags' and jsonb_typeof(document->'publicPayload'->'tags') is distinct from 'object')
+    or (document->'publicPayload' ? 'answerPlaceholder' and jsonb_typeof(document->'publicPayload'->'answerPlaceholder') not in ('null', 'string'))
+    or jsonb_typeof(document->'solutionPayload') is distinct from 'object'
+    or not document->'solutionPayload' ?& array['correctAnswer', 'acceptedAnswers']
+    or exists (select 1 from jsonb_object_keys(document->'solutionPayload') key_name
+      where key_name <> all(array['correctAnswer', 'acceptedAnswers', 'explanation']))
+    or jsonb_typeof(document->'solutionPayload'->'correctAnswer') is distinct from 'string'
+    or char_length(btrim(document->'solutionPayload'->>'correctAnswer')) not between 1 and 500
+    or jsonb_typeof(document->'solutionPayload'->'acceptedAnswers') is distinct from 'array'
+    or jsonb_array_length(document->'solutionPayload'->'acceptedAnswers') not between 1 and 100
+    or exists (select 1 from jsonb_array_elements(document->'solutionPayload'->'acceptedAnswers') answer
+      where jsonb_typeof(answer) is distinct from 'string'
+        or char_length(btrim(answer #>> '{}')) not between 1 and 500)
+    or not exists (select 1 from jsonb_array_elements_text(document->'solutionPayload'->'acceptedAnswers') answer
+      where regexp_replace(lower(translate(btrim(answer), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g') =
+        regexp_replace(lower(translate(btrim(document->'solutionPayload'->>'correctAnswer'), 'ÁÉÍÓÚÜáéíóúü', 'AEIOUUAEIOUU')), '\s+', '', 'g')) then
+    raise exception 'invalid_question_document' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_true_false_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ? 'question'
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object') then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'correctAnswer'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array[
+      'correctAnswer', 'explanation'
+    ]))
+    or jsonb_typeof(solution_payload->'correctAnswer') is distinct from 'boolean'
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string') then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_word_hashtag_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or jsonb_typeof(solution_payload) is distinct from 'object'
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string')
+    or not private.word_hashtag_content_valid(public_payload, solution_payload) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_word_search_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+  grid_rows integer;
+  grid_columns integer;
+  target_id text;
+  target_word text;
+  target_pos jsonb;
+  start_cell_i integer;
+  end_cell_i integer;
+  start_row_i integer;
+  start_col_i integer;
+  end_row_i integer;
+  end_col_i integer;
+  row_step_i integer;
+  col_step_i integer;
+  word_length_i integer;
+  path_cell_i integer;
+  path_offset_i integer;
+  occurrence_count_i integer;
+  candidate_word text;
+  candidate_segment text;
+  target_segment text;
+  check_start integer;
+  direction_row integer;
+  direction_col integer;
+  cell_row integer;
+  cell_col integer;
+  seen_ids text[] := array[]::text[];
+  seen_words text[] := array[]::text[];
+  seen_segments text[] := array[]::text[];
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or not public_payload ?& array['question', 'grid', 'letters', 'targets']
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'grid', 'letters', 'targets'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+    or jsonb_typeof(public_payload->'grid') is distinct from 'object'
+    or exists (select 1 from jsonb_object_keys(public_payload->'grid') key_name where key_name <> all(array['rows', 'columns']))
+    or not public_payload->'grid' ?& array['rows', 'columns']
+    or jsonb_typeof(public_payload->'grid'->'rows') is distinct from 'number'
+    or jsonb_typeof(public_payload->'grid'->'columns') is distinct from 'number'
+    or (public_payload->'grid'->>'rows')::numeric <> trunc((public_payload->'grid'->>'rows')::numeric)
+    or (public_payload->'grid'->>'columns')::numeric <> trunc((public_payload->'grid'->>'columns')::numeric)
+    or (public_payload->'grid'->>'rows')::integer not between 6 and 10
+    or (public_payload->'grid'->>'columns')::integer not between 6 and 10
+    or jsonb_typeof(public_payload->'letters') is distinct from 'array'
+    or jsonb_array_length(public_payload->'letters') <> (public_payload->'grid'->>'rows')::integer * (public_payload->'grid'->>'columns')::integer
+    or exists (select 1 from jsonb_array_elements_text(public_payload->'letters') letter
+      where char_length(upper(btrim(letter))) <> 1 or upper(btrim(letter)) !~ '^[A-ZÁÉÍÓÚÜÑ]$')
+    or jsonb_typeof(public_payload->'targets') is distinct from 'array'
+    or jsonb_array_length(public_payload->'targets') not between 2 and 8
+    or exists (select 1 from jsonb_array_elements(public_payload->'targets') item
+      where jsonb_typeof(item) is distinct from 'object'
+        or not item ?& array['id', 'word']
+        or exists (select 1 from jsonb_object_keys(item) key_name where key_name <> all(array['id', 'word']))
+        or jsonb_typeof(item->'id') is distinct from 'string'
+        or char_length(btrim(item->>'id')) not between 1 and 120
+        or jsonb_typeof(item->'word') is distinct from 'string'
+        or char_length(btrim(item->>'word')) not between 1 and 120
+        or upper(btrim(item->>'word')) !~ '^[A-ZÁÉÍÓÚÜÑ]+$')
+    or exists (select 1 from (
+      select btrim(item->>'id') value from jsonb_array_elements(public_payload->'targets') item
+      group by btrim(item->>'id') having count(*) > 1
+    ) duplicate)
+    or exists (select 1 from (
+      select upper(btrim(item->>'word')) value from jsonb_array_elements(public_payload->'targets') item
+      group by upper(btrim(item->>'word')) having count(*) > 1
+    ) duplicate) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
+  end if;
+  if jsonb_typeof(solution_payload) is distinct from 'object'
+    or not solution_payload ? 'positionsByTargetId'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['positionsByTargetId', 'explanation']))
+    or jsonb_typeof(solution_payload->'positionsByTargetId') is distinct from 'object'
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string')
+    or (select count(*) from jsonb_object_keys(solution_payload->'positionsByTargetId')) <> jsonb_array_length(public_payload->'targets')
+    or exists (select 1 from jsonb_array_elements(public_payload->'targets') item
+      where not solution_payload->'positionsByTargetId' ? (item->>'id')) then
+    raise exception 'invalid_solution_payload' using errcode = '22023';
+  end if;
+
+  grid_rows := (public_payload->'grid'->>'rows')::integer;
+  grid_columns := (public_payload->'grid'->>'columns')::integer;
+  for target_id, target_word in
+    select btrim(item->>'id'), upper(btrim(item->>'word'))
+    from jsonb_array_elements(public_payload->'targets') item
+  loop
+    target_pos := solution_payload->'positionsByTargetId'->target_id;
+    if jsonb_typeof(target_pos) is distinct from 'object'
+      or not target_pos ?& array['startCell', 'endCell']
+      or exists (select 1 from jsonb_object_keys(target_pos) key_name where key_name <> all(array['startCell', 'endCell']))
+      or jsonb_typeof(target_pos->'startCell') is distinct from 'number'
+      or jsonb_typeof(target_pos->'endCell') is distinct from 'number'
+      or (target_pos->>'startCell')::numeric <> trunc((target_pos->>'startCell')::numeric)
+      or (target_pos->>'endCell')::numeric <> trunc((target_pos->>'endCell')::numeric) then
+      raise exception 'invalid_solution_payload' using errcode = '22023';
+    end if;
+    start_cell_i := (target_pos->>'startCell')::integer;
+    end_cell_i := (target_pos->>'endCell')::integer;
+    start_row_i := floor(start_cell_i / grid_columns);
+    start_col_i := start_cell_i % grid_columns;
+    end_row_i := floor(end_cell_i / grid_columns);
+    end_col_i := end_cell_i % grid_columns;
+    if start_cell_i not between 0 and grid_rows * grid_columns - 1
+      or end_cell_i not between 0 and grid_rows * grid_columns - 1
+      or start_cell_i = end_cell_i
+      or not (start_row_i = end_row_i or start_col_i = end_col_i or abs(start_row_i - end_row_i) = abs(start_col_i - end_col_i)) then
+      raise exception 'invalid_solution_payload' using errcode = '22023';
+    end if;
+    word_length_i := char_length(target_word);
+    if array_length(seen_ids, 1) is not null and target_id = any(seen_ids)
+      or array_length(seen_words, 1) is not null and target_word = any(seen_words) then
+      raise exception 'invalid_solution_payload' using errcode = '22023';
+    end if;
+    seen_ids := seen_ids || target_id;
+    seen_words := seen_words || target_word;
+    target_segment := least(start_cell_i, end_cell_i)::text || ':' || greatest(start_cell_i, end_cell_i)::text;
+    if array_length(seen_segments, 1) is not null and target_segment = any(seen_segments) then
+      raise exception 'invalid_solution_payload' using errcode = '22023';
+    end if;
+    seen_segments := seen_segments || target_segment;
+    row_step_i := sign(end_row_i - start_row_i);
+    col_step_i := sign(end_col_i - start_col_i);
+    candidate_word := '';
+    for path_offset_i in 0..word_length_i - 1 loop
+      path_cell_i := (start_row_i + row_step_i * path_offset_i) * grid_columns + start_col_i + col_step_i * path_offset_i;
+      if path_cell_i < 0 or path_cell_i >= grid_rows * grid_columns then
+        raise exception 'invalid_solution_payload' using errcode = '22023';
+      end if;
+      candidate_word := candidate_word || upper(btrim(public_payload->'letters'->>path_cell_i));
+    end loop;
+    if candidate_word <> target_word then
+      raise exception 'invalid_solution_payload' using errcode = '22023';
+    end if;
+
+    occurrence_count_i := 0;
+    for check_start in 0..grid_rows * grid_columns - 1 loop
+      for direction_row in -1..1 loop
+        for direction_col in -1..1 loop
+          if direction_row = 0 and direction_col = 0 then continue; end if;
+          candidate_word := '';
+          candidate_segment := null;
+          for path_offset_i in 0..word_length_i - 1 loop
+            cell_row := floor(check_start / grid_columns) + direction_row * path_offset_i;
+            cell_col := (check_start % grid_columns) + direction_col * path_offset_i;
+            if cell_row < 0 or cell_row >= grid_rows or cell_col < 0 or cell_col >= grid_columns then
+              candidate_word := null;
+              exit;
+            end if;
+            path_cell_i := cell_row * grid_columns + cell_col;
+            candidate_word := candidate_word || upper(btrim(public_payload->'letters'->>path_cell_i));
+          end loop;
+          if candidate_word = target_word then
+            candidate_segment := least(check_start, path_cell_i)::text || ':' || greatest(check_start, path_cell_i)::text;
+            occurrence_count_i := occurrence_count_i + 1;
+            if candidate_segment = target_segment then
+              -- Both directions describe one undirected occurrence.
+              occurrence_count_i := occurrence_count_i - 1;
+            end if;
+          end if;
+        end loop;
+      end loop;
+    end loop;
+    if occurrence_count_i <> 0 then
+      raise exception 'invalid_solution_payload' using errcode = '22023';
+    end if;
+  end loop;
+  return;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.validate_zip_question_document (
+  document jsonb
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare
+  public_payload jsonb;
+  solution_payload jsonb;
+begin
+  public_payload := document->'publicPayload';
+  solution_payload := document->'solutionPayload';
+  if jsonb_typeof(public_payload) is distinct from 'object'
+    or exists (select 1 from jsonb_object_keys(public_payload) key_name where key_name <> all(array[
+      'category', 'tags', 'question', 'grid', 'checkpoints', 'instruction', 'mapNote', 'boardLabel'
+    ]))
+    or private.editorial_has_secret_key(public_payload)
+    or jsonb_typeof(public_payload->'question') is distinct from 'string'
+    or char_length(btrim(public_payload->>'question')) not between 1 and 2000
+    or (public_payload ? 'category' and jsonb_typeof(public_payload->'category') is distinct from 'string')
+    or (public_payload ? 'tags' and jsonb_typeof(public_payload->'tags') is distinct from 'object')
+    or (public_payload ? 'instruction' and (jsonb_typeof(public_payload->'instruction') is distinct from 'string'
+      or char_length(btrim(public_payload->>'instruction')) not between 1 and 500))
+    or (public_payload ? 'mapNote' and (jsonb_typeof(public_payload->'mapNote') is distinct from 'string'
+      or char_length(btrim(public_payload->>'mapNote')) not between 1 and 500))
+    or (public_payload ? 'boardLabel' and (jsonb_typeof(public_payload->'boardLabel') is distinct from 'string'
+      or char_length(btrim(public_payload->>'boardLabel')) not between 1 and 500))
+    or jsonb_typeof(solution_payload) is distinct from 'object'
+    or exists (select 1 from jsonb_object_keys(solution_payload) key_name where key_name <> all(array['solution', 'explanation']))
+    or (solution_payload ? 'explanation' and jsonb_typeof(solution_payload->'explanation') is distinct from 'string')
+    or not private.zip_content_valid(public_payload, solution_payload) then
+    raise exception 'invalid_public_payload' using errcode = '22023';
   end if;
   return;
 end;
@@ -9350,6 +11734,8 @@ CREATE OR REPLACE FUNCTION public.activate_superadmin_season (
   select private.activate_season_command(input);
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."activate_superadmin_season"(jsonb) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.add_superadmin_room_member (
   input jsonb
 )
@@ -9361,6 +11747,21 @@ CREATE OR REPLACE FUNCTION public.add_superadmin_room_member (
   select private.add_superadmin_room_member_command(input);
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."add_superadmin_room_member"(jsonb) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.archive_superadmin_challenge_version (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE sql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  select private.archive_challenge_version_command(input);
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."archive_superadmin_challenge_version"(jsonb) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.archive_superadmin_question (
   input jsonb
 )
@@ -9369,6 +11770,34 @@ CREATE OR REPLACE FUNCTION public.archive_superadmin_question (
   SECURITY DEFINER
   SET search_path TO ''
   AS $function$ select private.archive_question_command(input); $function$;
+
+REVOKE ALL ON FUNCTION "public"."archive_superadmin_question"(jsonb) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.cancel_superadmin_scheduled_challenge (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE sql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  select private.cancel_scheduled_challenge_command(input);
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."cancel_superadmin_scheduled_challenge"(jsonb) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.create_superadmin_challenge_revision (
+  input jsonb
+)
+  RETURNS jsonb
+  LANGUAGE sql
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  select private.create_challenge_revision_command(input);
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."create_superadmin_challenge_revision"(jsonb) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.create_superadmin_flash_draft (
   input jsonb
@@ -9381,6 +11810,8 @@ CREATE OR REPLACE FUNCTION public.create_superadmin_flash_draft (
   select private.create_flash_draft_command(input);
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."create_superadmin_flash_draft"(jsonb) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.create_superadmin_player (
   input jsonb
 )
@@ -9392,6 +11823,8 @@ CREATE OR REPLACE FUNCTION public.create_superadmin_player (
   select private.create_superadmin_player_command(input);
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."create_superadmin_player"(jsonb) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.create_superadmin_question_draft (
   input jsonb
 )
@@ -9400,6 +11833,8 @@ CREATE OR REPLACE FUNCTION public.create_superadmin_question_draft (
   SECURITY DEFINER
   SET search_path TO ''
   AS $function$ select private.create_question_draft_command(input); $function$;
+
+REVOKE ALL ON FUNCTION "public"."create_superadmin_question_draft"(jsonb) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.create_superadmin_room (
   input jsonb
@@ -9412,6 +11847,8 @@ CREATE OR REPLACE FUNCTION public.create_superadmin_room (
   select private.create_room_command(input);
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."create_superadmin_room"(jsonb) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.create_superadmin_scheduled_challenge (
   input jsonb
 )
@@ -9423,6 +11860,8 @@ CREATE OR REPLACE FUNCTION public.create_superadmin_scheduled_challenge (
   select private.create_scheduled_challenge_command(input);
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."create_superadmin_scheduled_challenge"(jsonb) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.create_superadmin_season (
   input jsonb
 )
@@ -9433,6 +11872,8 @@ CREATE OR REPLACE FUNCTION public.create_superadmin_season (
   AS $function$
   select private.create_season_command(input);
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."create_superadmin_season"(jsonb) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_challenge_ranking (
   target_publication_id uuid
@@ -9457,281 +11898,7 @@ CREATE OR REPLACE FUNCTION public.get_challenge_ranking (
   order by "position", e.player_id
 $function$;
 
-CREATE OR REPLACE FUNCTION public.get_flash_history (
-  target_room_slug      text,
-  target_publication_id uuid DEFAULT NULL::uuid
-)
-  RETURNS TABLE (
-    room_id               uuid,
-    room_slug             text,
-    room_title            text,
-    viewer_role           text,
-    season_id             uuid,
-    season_title          text,
-    publication_id        uuid,
-    publication_number    integer,
-    publication_status    text,
-    publication_opens_at  timestamp with time zone,
-    publication_closes_at timestamp with time zone,
-    challenge_id          uuid,
-    challenge_slug        text,
-    challenge_version_id  uuid,
-    challenge_title       text,
-    challenge_subtitle    text,
-    challenge_description text,
-    challenge_mode        text,
-    challenge_max_score   integer,
-    question_count        bigint,
-    played_at             timestamp with time zone,
-    player_count          bigint,
-    player_id             uuid,
-    display_name          text,
-    avatar_path           text,
-    flash_points          bigint,
-    duration_ms           bigint,
-    started_at            timestamp with time zone,
-    "position"            bigint
-  )
-  LANGUAGE sql
-  STABLE
-  SECURITY DEFINER
-  SET search_path TO ''
-  AS $function$
-  with viewer as (
-    select p.id as player_id, m.role as viewer_role
-    from public.rooms r
-    join public.room_memberships m on m.room_id = r.id
-    join public.players p on p.id = private.current_player_id()
-      and p.id = m.player_id
-    where r.slug = target_room_slug
-      and r.status = 'active'
-      and m.status = 'active'
-  ), eligible_publications as (
-    select
-      r.id as room_id,
-      r.slug as room_slug,
-      r.title as room_title,
-      v.viewer_role,
-      s.id as season_id,
-      s.title as season_title,
-      sc.id as publication_id,
-      sc.number as publication_number,
-      sc.status as publication_status,
-      sc.opens_at as publication_opens_at,
-      sc.closes_at as publication_closes_at,
-      cd.id as challenge_id,
-      cd.slug as challenge_slug,
-      cv.id as challenge_version_id,
-      cv.title as challenge_title,
-      cv.subtitle as challenge_subtitle,
-      cv.description as challenge_description,
-      cv.mode as challenge_mode,
-      cv.max_score as challenge_max_score,
-      (select count(*)::bigint
-         from private.challenge_items i
-        where i.challenge_version_id = cv.id) as question_count,
-      coalesce((
-        select max(a.completed_at)
-        from public.attempts a
-        where a.scheduled_challenge_id = sc.id
-          and a.kind = 'competitive'
-          and a.status in ('completed', 'abandoned')
-      ), sc.closes_at) as played_at,
-      coalesce((
-        select count(distinct a.player_id)::bigint
-        from public.attempts a
-        where a.scheduled_challenge_id = sc.id
-          and a.kind = 'competitive'
-          and a.status in ('completed', 'abandoned')
-      ), 0::bigint) as player_count
-    from public.rooms r
-    join public.seasons s on s.room_id = r.id and s.status <> 'draft'
-    join public.scheduled_challenges sc on sc.season_id = s.id
-    join private.challenge_versions cv on cv.id = sc.challenge_version_id
-    join private.challenge_definitions cd on cd.id = cv.challenge_definition_id
-    cross join viewer v
-    where r.slug = target_room_slug
-      and sc.id = coalesce(target_publication_id, sc.id)
-      and sc.status = 'closed'
-      and cv.mode = 'flash'
-      and cv.status in ('published', 'archived')
-      and not exists (
-        select 1 from public.attempts in_progress
-        where in_progress.scheduled_challenge_id = sc.id
-          and in_progress.status = 'in_progress'
-      )
-  ), ranked_results as (
-    select
-      e.scheduled_challenge_id as publication_id,
-      e.player_id,
-      p.display_name,
-      p.avatar_path,
-      e.flash_points,
-      e.duration_ms,
-      e.started_at,
-      rank() over (
-        partition by e.scheduled_challenge_id
-        order by e.flash_points desc, e.duration_ms, e.started_at
-      ) as "position"
-    from private.effective_results e
-    join eligible_publications h on h.publication_id = e.scheduled_challenge_id
-    join public.players p on p.id = e.player_id
-  )
-  select
-    h.room_id, h.room_slug, h.room_title, h.viewer_role,
-    h.season_id, h.season_title, h.publication_id, h.publication_number,
-    h.publication_status, h.publication_opens_at, h.publication_closes_at,
-    h.challenge_id, h.challenge_slug, h.challenge_version_id, h.challenge_title,
-    h.challenge_subtitle, h.challenge_description, h.challenge_mode,
-    h.challenge_max_score, h.question_count, h.played_at, h.player_count,
-    r.player_id, r.display_name, r.avatar_path, r.flash_points, r.duration_ms,
-    r.started_at, r."position"
-  from eligible_publications h
-  left join ranked_results r on r.publication_id = h.publication_id
-  order by h.played_at desc, h.publication_number desc, h.publication_id,
-    r."position" nulls last, r.player_id
-$function$;
-
-CREATE OR REPLACE FUNCTION public.get_flash_member_review (
-  target_room_slug      text,
-  target_publication_id uuid,
-  target_player_id      uuid
-)
-  RETURNS TABLE (
-    room_id                uuid,
-    room_slug              text,
-    room_title             text,
-    viewer_role            text,
-    publication_id         uuid,
-    publication_status     text,
-    publication_closes_at  timestamp with time zone,
-    challenge_id           uuid,
-    challenge_slug         text,
-    challenge_version_id   uuid,
-    challenge_title        text,
-    challenge_subtitle     text,
-    challenge_description  text,
-    challenge_mode         text,
-    challenge_max_score    integer,
-    player_id              uuid,
-    display_name           text,
-    avatar_path            text,
-    attempt_id             uuid,
-    attempt_status         text,
-    attempt_score          integer,
-    attempt_started_at     timestamp with time zone,
-    attempt_completed_at   timestamp with time zone,
-    attempt_lock_version   bigint,
-    challenge_item_id      uuid,
-    item_position          integer,
-    question_version_id    uuid,
-    question_type          text,
-    payload_schema_version integer,
-    time_limit_ms          integer,
-    public_payload         jsonb,
-    solution_payload       jsonb,
-    answer                 jsonb,
-    answer_status          text,
-    points                 integer,
-    result_details         jsonb,
-    presented_at           timestamp with time zone,
-    submitted_at           timestamp with time zone,
-    time_used_ms           bigint,
-    item_points            integer
-  )
-  LANGUAGE sql
-  STABLE
-  SECURITY DEFINER
-  SET search_path TO ''
-  AS $function$
-  with viewer as (
-    select p.id as player_id, m.role as viewer_role, r.id as room_id
-    from public.rooms r
-    join public.room_memberships m on m.room_id = r.id
-    join public.players p on p.id = private.current_player_id()
-      and p.id = m.player_id
-    where r.slug = target_room_slug
-      and r.status = 'active'
-      and m.status = 'active'
-  ), authorized_attempt as (
-    select
-      r.id as room_id,
-      r.slug as room_slug,
-      r.title as room_title,
-      v.viewer_role,
-      sc.id as publication_id,
-      sc.status as publication_status,
-      sc.closes_at as publication_closes_at,
-      cd.id as challenge_id,
-      cd.slug as challenge_slug,
-      cv.id as challenge_version_id,
-      cv.title as challenge_title,
-      cv.subtitle as challenge_subtitle,
-      cv.description as challenge_description,
-      cv.mode as challenge_mode,
-      cv.max_score as challenge_max_score,
-      a.id as attempt_id,
-      a.status as attempt_status,
-      a.score as attempt_score,
-      a.started_at as attempt_started_at,
-      a.completed_at as attempt_completed_at,
-      a.lock_version as attempt_lock_version,
-      v.player_id as viewer_player_id
-    from viewer v
-    join public.rooms r on r.id = v.room_id
-    join public.seasons s on s.room_id = r.id and s.status <> 'draft'
-    join public.scheduled_challenges sc on sc.id = target_publication_id
-      and sc.season_id = s.id
-    join private.challenge_versions cv on cv.id = sc.challenge_version_id
-    join private.challenge_definitions cd on cd.id = cv.challenge_definition_id
-    join public.attempts a on a.scheduled_challenge_id = sc.id
-      and a.player_id = target_player_id
-      and a.kind = 'competitive'
-      and a.status in ('completed', 'abandoned')
-    where cv.mode = 'flash'
-      and cv.status in ('published', 'archived')
-      and exists (
-        select 1 from public.room_memberships historical_membership
-        where historical_membership.room_id = r.id
-          and historical_membership.player_id = target_player_id
-      )
-      and (
-        (
-          target_player_id = v.player_id
-          and sc.status in ('open', 'closed')
-        )
-        or (
-          target_player_id <> v.player_id
-          and v.viewer_role in ('owner', 'admin', 'member')
-          and sc.status = 'closed'
-          and not exists (
-            select 1 from public.attempts in_progress
-            where in_progress.scheduled_challenge_id = sc.id
-              and in_progress.status = 'in_progress'
-          )
-        )
-      )
-  )
-  select
-    a.room_id, a.room_slug, a.room_title, a.viewer_role,
-    a.publication_id, a.publication_status, a.publication_closes_at,
-    a.challenge_id, a.challenge_slug, a.challenge_version_id, a.challenge_title,
-    a.challenge_subtitle, a.challenge_description, a.challenge_mode,
-    a.challenge_max_score, target_player_id, p.display_name, p.avatar_path,
-    a.attempt_id, a.attempt_status, a.attempt_score, a.attempt_started_at,
-    a.attempt_completed_at, a.attempt_lock_version, i.id, i.position,
-    q.id, q.type, q.payload_schema_version, q.time_limit_ms, q.public_payload, qs.solution_payload,
-    aa.answer, aa.status, aa.points, aa.result_details, aa.presented_at,
-    aa.submitted_at, aa.time_used_ms, i.points
-  from authorized_attempt a
-  join public.players p on p.id = target_player_id
-  join private.challenge_items i on i.challenge_version_id = a.challenge_version_id
-  join private.question_versions q on q.id = i.question_version_id
-  join private.question_version_solutions qs on qs.question_version_id = q.id
-  left join private.attempt_answers aa on aa.attempt_id = a.attempt_id
-    and aa.challenge_item_id = i.id
-  order by i.position
-$function$;
+REVOKE ALL ON FUNCTION "public"."get_challenge_ranking"(uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_my_alphabet_challenge (
   target_room_slug      text,
@@ -9824,6 +11991,8 @@ CREATE OR REPLACE FUNCTION public.get_my_alphabet_challenge (
   order by i.position
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."get_my_alphabet_challenge"(text, uuid) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.get_my_alphabet_result (
   target_attempt_id uuid
 )
@@ -9885,6 +12054,54 @@ CREATE OR REPLACE FUNCTION public.get_my_alphabet_result (
     and m.role in ('owner', 'admin', 'member')
   order by i.position
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_alphabet_result"(uuid) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.get_my_competitive_challenge (
+  target_room_slug      text,
+  target_publication_id uuid
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare challenge_mode text; challenge_rows jsonb;
+begin
+  select version.mode into challenge_mode
+  from public.scheduled_challenges publication
+  join public.seasons season on season.id = publication.season_id
+  join public.rooms room on room.id = season.room_id
+  join private.challenge_versions version on version.id = publication.challenge_version_id
+  where publication.id = target_publication_id and room.slug = target_room_slug;
+
+  case challenge_mode
+    when 'flash' then
+      select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
+      from public.get_my_flash_challenge(target_room_slug, target_publication_id) row;
+    when 'alphabet' then
+      select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
+      from public.get_my_alphabet_challenge(target_room_slug, target_publication_id) row;
+    when 'survival' then
+      select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
+      from public.get_my_survival_challenge(target_room_slug, target_publication_id) row;
+    when 'pyramid' then
+      select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
+      from public.get_my_pyramid_challenge(target_room_slug, target_publication_id) row;
+    when 'narrative' then
+      select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
+      from public.get_my_narrative_challenge(target_room_slug, target_publication_id) row;
+    else return null;
+  end case;
+
+  -- Never disclose even the mode for an absent/inaccessible projection.
+  if challenge_rows is null then return null; end if;
+  return jsonb_build_object('mode', challenge_mode, 'rows', challenge_rows);
+end;
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_competitive_challenge"(text, uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_my_flash_challenge (
   target_room_slug      text,
@@ -9976,7 +12193,7 @@ CREATE OR REPLACE FUNCTION public.get_my_flash_challenge (
         )
         or a.id is not null
       )
-      and cv.status = 'published'
+      and cv.status in ('published', 'archived')
       and cv.mode = 'flash'
   )
   select
@@ -9994,6 +12211,8 @@ CREATE OR REPLACE FUNCTION public.get_my_flash_challenge (
   join private.question_versions q on q.id = i.question_version_id
   order by i.position
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_flash_challenge"(text, uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_my_flash_result (
   target_attempt_id uuid
@@ -10057,6 +12276,236 @@ CREATE OR REPLACE FUNCTION public.get_my_flash_result (
     and m.role in ('owner', 'admin', 'member')
   order by i.position
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_flash_result"(uuid) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.get_my_narrative_challenge (
+  target_room_slug      text,
+  target_publication_id uuid
+)
+  RETURNS TABLE (
+    room_id                  uuid,
+    room_slug                text,
+    room_title               text,
+    publication_id           uuid,
+    publication_status       text,
+    publication_opens_at     timestamp with time zone,
+    publication_closes_at    timestamp with time zone,
+    challenge_id             uuid,
+    challenge_slug           text,
+    challenge_version_id     uuid,
+    challenge_title          text,
+    challenge_subtitle       text,
+    challenge_description    text,
+    challenge_mode           text,
+    challenge_max_score      integer,
+    challenge_mode_config    jsonb,
+    question_count           bigint,
+    own_attempt_id           uuid,
+    own_attempt_status       text,
+    own_attempt_score        integer,
+    own_attempt_started_at   timestamp with time zone,
+    own_attempt_completed_at timestamp with time zone,
+    own_attempt_deadline_at  timestamp with time zone,
+    own_attempt_lock_version bigint,
+    challenge_item_id        uuid,
+    item_position            integer,
+    item_mode_config         jsonb,
+    question_version_id      uuid,
+    question_slug            text,
+    question_type            text,
+    payload_schema_version   integer,
+    time_limit_ms            integer,
+    item_points              integer
+  )
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  with viewer as (
+    select private.current_player_id() as player_id
+  ), authorized_publication as (
+    select
+      room.id as room_id,
+      room.slug as room_slug,
+      room.title as room_title,
+      schedule.id as publication_id,
+      schedule.status as publication_status,
+      schedule.opens_at as publication_opens_at,
+      schedule.closes_at as publication_closes_at,
+      definition.id as challenge_id,
+      definition.slug as challenge_slug,
+      version.id as challenge_version_id,
+      version.title as challenge_title,
+      version.subtitle as challenge_subtitle,
+      version.description as challenge_description,
+      version.mode as challenge_mode,
+      version.max_score as challenge_max_score,
+      version.mode_config as challenge_mode_config,
+      attempt.id as own_attempt_id,
+      attempt.status as own_attempt_status,
+      attempt.score as own_attempt_score,
+      attempt.started_at as own_attempt_started_at,
+      attempt.completed_at as own_attempt_completed_at,
+      attempt.deadline_at as own_attempt_deadline_at,
+      attempt.lock_version as own_attempt_lock_version
+    from public.rooms room
+    join public.room_memberships membership on membership.room_id = room.id
+    join public.seasons season on season.room_id = room.id and season.status in ('active', 'finished')
+    join public.scheduled_challenges schedule on schedule.season_id = season.id
+    join private.challenge_versions version on version.id = schedule.challenge_version_id
+    join private.challenge_definitions definition on definition.id = version.challenge_definition_id
+    cross join viewer
+    left join public.attempts attempt on attempt.scheduled_challenge_id = schedule.id
+      and attempt.player_id = viewer.player_id and attempt.kind = 'competitive'
+    where room.slug = target_room_slug
+      and schedule.id = target_publication_id
+      and room.status = 'active'
+      and membership.player_id = viewer.player_id
+      and membership.status = 'active'
+      and membership.role in ('owner', 'admin', 'member')
+      and (
+        private.publication_is_effectively_open(
+          schedule.status, season.status, season.starts_at, season.ends_at,
+          schedule.opens_at, schedule.closes_at, statement_timestamp()
+        )
+        or attempt.id is not null
+      )
+      and version.status in ('published', 'archived')
+      and version.mode = 'narrative'
+      and jsonb_typeof(version.mode_config->'prologue') = 'object'
+      and jsonb_typeof(version.mode_config->'beats') = 'array'
+  )
+  select
+    publication.room_id,
+    publication.room_slug,
+    publication.room_title,
+    publication.publication_id,
+    publication.publication_status,
+    publication.publication_opens_at,
+    publication.publication_closes_at,
+    publication.challenge_id,
+    publication.challenge_slug,
+    publication.challenge_version_id,
+    publication.challenge_title,
+    publication.challenge_subtitle,
+    publication.challenge_description,
+    publication.challenge_mode,
+    publication.challenge_max_score,
+    publication.challenge_mode_config,
+    count(item.id) over (partition by publication.challenge_version_id),
+    publication.own_attempt_id,
+    publication.own_attempt_status,
+    publication.own_attempt_score,
+    publication.own_attempt_started_at,
+    publication.own_attempt_completed_at,
+    publication.own_attempt_deadline_at,
+    publication.own_attempt_lock_version,
+    item.id,
+    item.position,
+    item.mode_config,
+    question.id,
+    definition.slug,
+    question.type,
+    question.payload_schema_version,
+    question.time_limit_ms,
+    item.points
+  from authorized_publication publication
+  join private.challenge_items item on item.challenge_version_id = publication.challenge_version_id
+  join private.question_versions question on question.id = item.question_version_id
+  join private.question_definitions definition on definition.id = question.question_definition_id
+  where question.status = 'published'
+  order by item.position
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_narrative_challenge"(text, uuid) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.get_my_narrative_result (
+  target_attempt_id uuid
+)
+  RETURNS TABLE (
+    attempt_id             uuid,
+    scheduled_challenge_id uuid,
+    challenge_item_id      uuid,
+    item_position          integer,
+    question_version_id    uuid,
+    question_type          text,
+    payload_schema_version integer,
+    public_payload         jsonb,
+    solution_payload       jsonb,
+    answer                 jsonb,
+    answer_status          text,
+    points                 integer,
+    result_details         jsonb,
+    presented_at           timestamp with time zone,
+    submitted_at           timestamp with time zone,
+    time_used_ms           bigint,
+    attempt_status         text,
+    attempt_score          integer,
+    attempt_started_at     timestamp with time zone,
+    attempt_completed_at   timestamp with time zone,
+    attempt_lock_version   bigint,
+    challenge_title        text,
+    challenge_subtitle     text,
+    challenge_description  text,
+    challenge_max_score    integer
+  )
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  select
+    attempt.id,
+    attempt.scheduled_challenge_id,
+    item.id,
+    item.position,
+    question.id,
+    question.type,
+    question.payload_schema_version,
+    question.public_payload,
+    solution.solution_payload,
+    answer.answer,
+    answer.status,
+    coalesce(answer.points, 0),
+    answer.result_details,
+    answer.presented_at,
+    answer.submitted_at,
+    coalesce(answer.time_used_ms, 0),
+    attempt.status,
+    attempt.score,
+    attempt.started_at,
+    attempt.completed_at,
+    attempt.lock_version,
+    version.title,
+    version.subtitle,
+    version.description,
+    version.max_score
+  from public.attempts attempt
+  join public.scheduled_challenges schedule on schedule.id = attempt.scheduled_challenge_id
+  join public.seasons season on season.id = schedule.season_id
+  join public.rooms room on room.id = season.room_id
+  join public.room_memberships membership on membership.room_id = room.id
+  join private.challenge_versions version on version.id = attempt.challenge_version_id
+  join private.challenge_items item on item.challenge_version_id = version.id
+  join private.question_versions question on question.id = item.question_version_id
+  join private.question_version_solutions solution on solution.question_version_id = question.id
+  left join private.attempt_answers answer
+    on answer.attempt_id = attempt.id and answer.challenge_item_id = item.id
+  where attempt.id = target_attempt_id
+    and attempt.player_id = private.current_player_id()
+    and attempt.kind = 'competitive'
+    and attempt.status = 'completed'
+    and version.mode = 'narrative'
+    and room.status = 'active'
+    and membership.player_id = private.current_player_id()
+    and membership.status = 'active'
+    and membership.role in ('owner', 'admin', 'member')
+  order by item.position
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_narrative_result"(uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_my_pyramid_challenge (
   target_room_slug      text,
@@ -10136,7 +12585,7 @@ CREATE OR REPLACE FUNCTION public.get_my_pyramid_challenge (
       and (private.publication_is_effectively_open(
         schedule.status, season.status, season.starts_at, season.ends_at,
         schedule.opens_at, schedule.closes_at, statement_timestamp()) or attempt.id is not null)
-      and version.status = 'published' and version.mode = 'pyramid'
+      and version.status in ('published', 'archived') and version.mode = 'pyramid'
       and version.config_schema_version = 1 and version.mode_config = '{}'::jsonb
       and version.max_score = 100
       and (select count(*) from private.challenge_items item where item.challenge_version_id = version.id) = 7
@@ -10166,6 +12615,8 @@ CREATE OR REPLACE FUNCTION public.get_my_pyramid_challenge (
   join private.question_versions question on question.id = item.question_version_id
   order by item.position
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_pyramid_challenge"(text, uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_my_pyramid_result (
   target_attempt_id uuid
@@ -10229,6 +12680,8 @@ CREATE OR REPLACE FUNCTION public.get_my_pyramid_result (
     and membership.status = 'active' and membership.role in ('owner', 'admin', 'member')
   order by item.position
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_pyramid_result"(uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_my_room_cards()
   RETURNS TABLE (
@@ -10348,17 +12801,22 @@ CREATE OR REPLACE FUNCTION public.get_my_room_cards()
         where items.challenge_version_id = cv.id
       ) as question_count,
       (
-        select (count(*) between 2 and 20 and cv.mode in ('flash', 'survival')
+        select (count(*) between 2 and 20 and cv.mode in ('flash', 'alphabet', 'survival', 'narrative')
             or count(*) = 7 and cv.mode = 'pyramid')
           and bool_and(private.is_supported_flash_question(q.id))
           and (cv.mode = 'flash' and cv.mode_config = '{}'::jsonb
+            or cv.mode = 'alphabet' and cv.mode_config = '{}'::jsonb
+              and bool_and(jsonb_typeof(items.mode_config->'letter') = 'string')
             or cv.mode = 'survival'
               and jsonb_typeof(cv.mode_config->'lives') = 'number'
               and (cv.mode_config->>'lives')::integer between 1 and count(*)
               and (select count(*) from jsonb_object_keys(cv.mode_config)) = 1
             or cv.mode = 'pyramid' and cv.mode_config = '{}'::jsonb
               and bool_and(private.is_valid_pyramid_level_config(items.mode_config))
-              and count(distinct items.mode_config->>'levelId') = 7)
+              and count(distinct items.mode_config->>'levelId') = 7
+            or cv.mode = 'narrative'
+              and jsonb_typeof(cv.mode_config->'prologue') = 'object'
+              and jsonb_typeof(cv.mode_config->'beats') = 'array')
         from private.challenge_items items
         join private.question_versions q on q.id = items.question_version_id
         where items.challenge_version_id = cv.id
@@ -10370,12 +12828,14 @@ CREATE OR REPLACE FUNCTION public.get_my_room_cards()
         sc.status, season.status, season.starts_at, season.ends_at,
         sc.opens_at, sc.closes_at, statement_timestamp()
       )
-      and cv.status = 'published'
+      and cv.status in ('published', 'archived')
     order by sc.number
     limit 1
   ) publication on true
   order by r.title, r.id
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_room_cards"() FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_my_survival_challenge (
   target_room_slug      text,
@@ -10450,7 +12910,7 @@ CREATE OR REPLACE FUNCTION public.get_my_survival_challenge (
       and (private.publication_is_effectively_open(
         schedule.status, season.status, season.starts_at, season.ends_at,
         schedule.opens_at, schedule.closes_at, statement_timestamp()) or attempt.id is not null)
-      and version.status = 'published' and version.mode = 'survival'
+      and version.status in ('published', 'archived') and version.mode = 'survival'
       and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
       and jsonb_typeof(version.mode_config->'lives') = 'number'
       and (version.mode_config->>'lives')::integer between 1 and 20
@@ -10472,6 +12932,8 @@ CREATE OR REPLACE FUNCTION public.get_my_survival_challenge (
   join private.question_versions question on question.id = item.question_version_id
   order by item.position
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_survival_challenge"(text, uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_my_survival_result (
   target_attempt_id uuid
@@ -10535,6 +12997,8 @@ CREATE OR REPLACE FUNCTION public.get_my_survival_result (
   order by item.position
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."get_my_survival_result"(uuid) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.get_room_calendar (
   target_room_slug text
 )
@@ -10580,12 +13044,17 @@ CREATE OR REPLACE FUNCTION public.get_room_calendar (
     attempt.status,
     membership.role <> 'spectator' and (
       version.mode = 'flash' and version.mode_config = '{}'::jsonb
+      or version.mode = 'alphabet' and version.mode_config = '{}'::jsonb
       or version.mode = 'survival'
         and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
         and jsonb_typeof(version.mode_config->'lives') = 'number'
         and (version.mode_config->>'lives')::integer between 1 and compatibility.question_count
       or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
         and compatibility.question_count = 7
+      or version.mode = 'narrative'
+        and jsonb_typeof(version.mode_config) = 'object'
+        and jsonb_typeof(version.mode_config->'prologue') = 'object'
+        and jsonb_typeof(version.mode_config->'beats') = 'array'
     ) and compatibility.is_supported and private.publication_is_effectively_open(
       schedule.status, season.status, season.starts_at, season.ends_at,
       schedule.opens_at, schedule.closes_at, statement_timestamp()
@@ -10599,13 +13068,19 @@ CREATE OR REPLACE FUNCTION public.get_room_calendar (
   join lateral (
     select
       count(*)::bigint as question_count,
-      (count(*) between 2 and 20 and version.mode in ('flash', 'survival')
+      (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative')
         or count(*) = 7 and version.mode = 'pyramid')
         and coalesce(bool_and(item.position between 1 and case when version.mode = 'pyramid' then 7 else 20 end), false)
         and coalesce(bool_and(item.points > 0), false)
         and coalesce(bool_and(item.config_schema_version = 1 and (
           version.mode = 'pyramid' and private.is_valid_pyramid_level_config(item.mode_config)
-          or version.mode <> 'pyramid' and item.mode_config = '{}'::jsonb
+          or version.mode = 'narrative'
+            and jsonb_typeof(item.mode_config) = 'object'
+            and jsonb_typeof(item.mode_config->'questionSlug') = 'string'
+          or version.mode = 'alphabet'
+            and jsonb_typeof(item.mode_config->'letter') = 'string'
+          or version.mode not in ('pyramid', 'narrative', 'alphabet')
+            and item.mode_config = '{}'::jsonb
         )), false)
         and (version.mode <> 'pyramid' or count(distinct item.mode_config->>'levelId') = 7)
         and count(*) filter (where private.is_supported_flash_question(question.id)) = count(*)
@@ -10620,12 +13095,14 @@ CREATE OR REPLACE FUNCTION public.get_room_calendar (
     and room.status = 'active'
     and membership.player_id = private.current_player_id()
     and membership.status = 'active'
-    and version.status = 'published'
-    and version.mode in ('flash', 'survival', 'pyramid')
+    and version.status in ('published', 'archived')
+    and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     and version.config_schema_version = 1
     and version.max_score = 100
   order by schedule.number
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_room_calendar"(text) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_room_detail (
   target_room_slug text
@@ -10665,6 +13142,148 @@ CREATE OR REPLACE FUNCTION public.get_room_detail (
   from public.get_my_room_cards() cards
   where cards.room_slug = target_room_slug
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_room_detail"(text) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.get_room_history (
+  target_room_slug      text,
+  target_publication_id uuid DEFAULT NULL::uuid
+)
+  RETURNS TABLE (
+    room_id               uuid,
+    room_slug             text,
+    room_title            text,
+    viewer_role           text,
+    season_id             uuid,
+    season_title          text,
+    publication_id        uuid,
+    publication_number    integer,
+    publication_status    text,
+    publication_opens_at  timestamp with time zone,
+    publication_closes_at timestamp with time zone,
+    challenge_id          uuid,
+    challenge_slug        text,
+    challenge_version_id  uuid,
+    challenge_title       text,
+    challenge_subtitle    text,
+    challenge_description text,
+    challenge_mode        text,
+    challenge_max_score   integer,
+    question_count        bigint,
+    played_at             timestamp with time zone,
+    player_count          bigint,
+    player_id             uuid,
+    display_name          text,
+    avatar_path           text,
+    flash_points          bigint,
+    duration_ms           bigint,
+    started_at            timestamp with time zone,
+    "position"            bigint
+  )
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  with viewer as (
+    select p.id as player_id, m.role as viewer_role
+    from public.rooms r
+    join public.room_memberships m on m.room_id = r.id
+    join public.players p on p.id = private.current_player_id()
+      and p.id = m.player_id
+    where r.slug = target_room_slug
+      and r.status = 'active'
+      and m.status = 'active'
+  ), eligible_publications as (
+    select
+      r.id as room_id,
+      r.slug as room_slug,
+      r.title as room_title,
+      v.viewer_role,
+      s.id as season_id,
+      s.title as season_title,
+      sc.id as publication_id,
+      sc.number as publication_number,
+      'closed'::text as publication_status,
+      sc.opens_at as publication_opens_at,
+      sc.closes_at as publication_closes_at,
+      cd.id as challenge_id,
+      cd.slug as challenge_slug,
+      cv.id as challenge_version_id,
+      cv.title as challenge_title,
+      cv.subtitle as challenge_subtitle,
+      cv.description as challenge_description,
+      cv.mode as challenge_mode,
+      cv.max_score as challenge_max_score,
+      (select count(*)::bigint
+         from private.challenge_items i
+        where i.challenge_version_id = cv.id) as question_count,
+      coalesce((
+        select max(a.completed_at)
+        from public.attempts a
+        where a.scheduled_challenge_id = sc.id
+          and a.kind = 'competitive'
+          and a.status in ('completed', 'abandoned')
+      ), sc.closes_at) as played_at,
+      coalesce((
+        select count(distinct a.player_id)::bigint
+        from public.attempts a
+        where a.scheduled_challenge_id = sc.id
+          and a.kind = 'competitive'
+          and a.status in ('completed', 'abandoned')
+      ), 0::bigint) as player_count
+    from public.rooms r
+    join public.seasons s on s.room_id = r.id and s.status in ('active', 'finished')
+    join public.scheduled_challenges sc on sc.season_id = s.id
+    join private.challenge_versions cv on cv.id = sc.challenge_version_id
+    join private.challenge_definitions cd on cd.id = cv.challenge_definition_id
+    cross join viewer v
+    where r.slug = target_room_slug
+      and sc.id = coalesce(target_publication_id, sc.id)
+      and private.publication_effective_status(
+        sc.status, s.status, s.starts_at, s.ends_at,
+        sc.opens_at, sc.closes_at, statement_timestamp()
+      ) = 'closed'
+      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      and cv.status in ('published', 'archived')
+      and not exists (
+        select 1 from public.attempts in_progress
+        where in_progress.scheduled_challenge_id = sc.id
+          and in_progress.status = 'in_progress'
+      )
+  ), ranked_results as (
+    select
+      e.scheduled_challenge_id as publication_id,
+      e.player_id,
+      p.display_name,
+      p.avatar_path,
+      e.flash_points,
+      e.duration_ms,
+      e.started_at,
+      rank() over (
+        partition by e.scheduled_challenge_id
+        order by e.flash_points desc, e.duration_ms, e.started_at
+      ) as "position"
+    from private.effective_results e
+    join eligible_publications h on h.publication_id = e.scheduled_challenge_id
+    join public.players p on p.id = e.player_id
+  )
+  select
+    h.room_id, h.room_slug, h.room_title, h.viewer_role,
+    h.season_id, h.season_title, h.publication_id, h.publication_number,
+    h.publication_status, h.publication_opens_at, h.publication_closes_at,
+    h.challenge_id, h.challenge_slug, h.challenge_version_id, h.challenge_title,
+    h.challenge_subtitle, h.challenge_description, h.challenge_mode,
+    h.challenge_max_score, h.question_count, h.played_at, h.player_count,
+    r.player_id, r.display_name, r.avatar_path, r.flash_points, r.duration_ms,
+    r.started_at, r."position"
+  from eligible_publications h
+  left join ranked_results r on r.publication_id = h.publication_id
+  order by h.played_at desc, h.publication_number desc, h.publication_id,
+    r."position" nulls last, r.player_id
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."get_room_history"(text, uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_room_introduction (
   target_room_slug      text,
@@ -10707,17 +13326,22 @@ CREATE OR REPLACE FUNCTION public.get_room_introduction (
     version.mode,
     version.max_score,
     (select count(*)::bigint from private.challenge_items item where item.challenge_version_id = version.id),
-    (select (count(*) between 2 and 20 and version.mode in ('flash', 'survival')
+    (select (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative')
           or count(*) = 7 and version.mode = 'pyramid')
         and bool_and(private.is_supported_flash_question(question.id))
         and (version.mode = 'flash' and version.mode_config = '{}'::jsonb
+          or version.mode = 'alphabet' and version.mode_config = '{}'::jsonb
+            and bool_and(jsonb_typeof(item.mode_config->'letter') = 'string')
           or version.mode = 'survival'
             and jsonb_typeof(version.mode_config->'lives') = 'number'
             and (version.mode_config->>'lives')::integer between 1 and count(*)
             and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
           or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
             and bool_and(private.is_valid_pyramid_level_config(item.mode_config))
-            and count(distinct item.mode_config->>'levelId') = 7)
+            and count(distinct item.mode_config->>'levelId') = 7
+          or version.mode = 'narrative'
+            and jsonb_typeof(version.mode_config->'prologue') = 'object'
+            and jsonb_typeof(version.mode_config->'beats') = 'array')
        from private.challenge_items item
        join private.question_versions question on question.id = item.question_version_id
       where item.challenge_version_id = version.id),
@@ -10739,9 +13363,177 @@ CREATE OR REPLACE FUNCTION public.get_room_introduction (
     and room.status = 'active'
     and membership.player_id = private.current_player_id()
     and membership.status = 'active'
-    and version.status = 'published'
+    and version.status in ('published', 'archived')
   order by season.starts_at desc, schedule.number
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_room_introduction"(text, uuid) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.get_room_member_review (
+  target_room_slug      text,
+  target_publication_id uuid,
+  target_player_id      uuid
+)
+  RETURNS TABLE (
+    room_id                uuid,
+    room_slug              text,
+    room_title             text,
+    viewer_role            text,
+    season_id              uuid,
+    season_title           text,
+    publication_id         uuid,
+    publication_status     text,
+    publication_closes_at  timestamp with time zone,
+    challenge_id           uuid,
+    challenge_slug         text,
+    challenge_version_id   uuid,
+    challenge_title        text,
+    challenge_subtitle     text,
+    challenge_description  text,
+    challenge_mode         text,
+    challenge_max_score    integer,
+    question_count         bigint,
+    initial_lives          integer,
+    player_id              uuid,
+    display_name           text,
+    avatar_path            text,
+    attempt_id             uuid,
+    attempt_status         text,
+    attempt_score          integer,
+    attempt_outcome        text,
+    attempt_started_at     timestamp with time zone,
+    attempt_completed_at   timestamp with time zone,
+    attempt_duration_ms    bigint,
+    attempt_lock_version   bigint,
+    challenge_item_id      uuid,
+    item_position          integer,
+    question_version_id    uuid,
+    question_type          text,
+    payload_schema_version integer,
+    time_limit_ms          integer,
+    public_payload         jsonb,
+    solution_payload       jsonb,
+    answer                 jsonb,
+    answer_status          text,
+    points                 integer,
+    result_details         jsonb,
+    presented_at           timestamp with time zone,
+    submitted_at           timestamp with time zone,
+    time_used_ms           bigint,
+    item_points            integer,
+    has_persisted_answer   boolean,
+    level_id               text,
+    level_label            text,
+    briefing_title         text,
+    briefing_format        text,
+    briefing_description   text,
+    global_time_limit_ms   integer,
+    alphabet_letter        text
+  )
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  with viewer as (
+    select p.id as player_id, m.role as viewer_role, r.id as room_id
+    from public.rooms r
+    join public.room_memberships m on m.room_id = r.id
+    join public.players p on p.id = private.current_player_id()
+      and p.id = m.player_id
+    where r.slug = target_room_slug
+      and r.status = 'active'
+      and m.status = 'active'
+  ), authorized_attempt as (
+    select
+      r.id as room_id,
+      r.slug as room_slug,
+      r.title as room_title,
+      v.viewer_role,
+      s.id as season_id,
+      s.title as season_title,
+      sc.id as publication_id,
+      case when availability.status = 'available' then 'open' else availability.status end
+        as publication_status,
+      sc.closes_at as publication_closes_at,
+      cd.id as challenge_id,
+      cd.slug as challenge_slug,
+      cv.id as challenge_version_id,
+      cv.title as challenge_title,
+      cv.subtitle as challenge_subtitle,
+      cv.description as challenge_description,
+      cv.mode as challenge_mode,
+      cv.max_score as challenge_max_score,
+      case when cv.mode = 'alphabet' then cv.global_time_limit_ms end as global_time_limit_ms,
+      (select count(*)::bigint from private.challenge_items item
+        where item.challenge_version_id = cv.id) as question_count,
+      case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer end as initial_lives,
+      a.id as attempt_id,
+      a.status as attempt_status,
+      a.score as attempt_score,
+      a.outcome as attempt_outcome,
+      a.started_at as attempt_started_at,
+      a.completed_at as attempt_completed_at,
+      (extract(epoch from (coalesce(a.completed_at, a.started_at) - a.started_at)) * 1000)::bigint
+        as attempt_duration_ms,
+      a.lock_version as attempt_lock_version,
+      v.player_id as viewer_player_id
+    from viewer v
+    join public.rooms r on r.id = v.room_id
+    join public.seasons s on s.room_id = r.id and s.status in ('active', 'finished')
+    join public.scheduled_challenges sc on sc.id = target_publication_id
+      and sc.season_id = s.id
+    join private.challenge_versions cv on cv.id = sc.challenge_version_id
+    join private.challenge_definitions cd on cd.id = cv.challenge_definition_id
+    join public.attempts a on a.scheduled_challenge_id = sc.id
+      and a.player_id = target_player_id
+      and a.kind = 'competitive'
+      and a.status in ('completed', 'abandoned')
+    cross join lateral (
+      select private.publication_effective_status(
+        sc.status, s.status, s.starts_at, s.ends_at,
+        sc.opens_at, sc.closes_at, statement_timestamp()
+      ) as status
+    ) availability
+    where cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      and cv.status in ('published', 'archived')
+      and private.can_review_competitive_attempt(a.id)
+  )
+  select
+    a.room_id, a.room_slug, a.room_title, a.viewer_role,
+    a.season_id, a.season_title, a.publication_id, a.publication_status,
+    a.publication_closes_at,
+    a.challenge_id, a.challenge_slug, a.challenge_version_id, a.challenge_title,
+    a.challenge_subtitle, a.challenge_description, a.challenge_mode,
+    a.challenge_max_score, a.question_count, a.initial_lives, target_player_id,
+    p.display_name, p.avatar_path,
+    a.attempt_id, a.attempt_status, a.attempt_score, a.attempt_outcome,
+    a.attempt_started_at, a.attempt_completed_at, a.attempt_duration_ms,
+    a.attempt_lock_version, i.id, i.position,
+    q.id, q.type, q.payload_schema_version, q.time_limit_ms,
+    case when a.challenge_mode = 'pyramid' and aa.id is null then null else q.public_payload end,
+    case when a.challenge_mode = 'pyramid' and aa.id is null then null else qs.solution_payload end,
+    aa.answer, aa.status, aa.points, aa.result_details, aa.presented_at,
+    aa.submitted_at, aa.time_used_ms, i.points, aa.id is not null,
+    case when a.challenge_mode = 'pyramid' then i.mode_config->>'levelId' end,
+    case when a.challenge_mode = 'pyramid' then i.mode_config->>'label' end,
+    case when a.challenge_mode = 'pyramid' then i.mode_config->'briefing'->>'title' end,
+    case when a.challenge_mode = 'pyramid' then i.mode_config->'briefing'->>'format' end,
+    case when a.challenge_mode = 'pyramid' then i.mode_config->'briefing'->>'description' end,
+    a.global_time_limit_ms,
+    case when a.challenge_mode = 'alphabet' then i.mode_config->>'letter' end
+  from authorized_attempt a
+  join public.players p on p.id = target_player_id
+  join private.challenge_items i on i.challenge_version_id = a.challenge_version_id
+  join private.question_versions q on q.id = i.question_version_id
+  join private.question_version_solutions qs on qs.question_version_id = q.id
+  left join private.attempt_answers aa on aa.attempt_id = a.attempt_id
+    and aa.challenge_item_id = i.id
+  where a.challenge_mode <> 'survival' or aa.id is not null
+  order by i.position
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."get_room_member_review"(text, uuid, uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_season_ranking (
   target_season_id uuid
@@ -10782,6 +13574,8 @@ CREATE OR REPLACE FUNCTION public.get_season_ranking (
   left join totals t on t.player_id = c.player_id
   order by "position", c.player_id
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_season_ranking"(uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_attempt_inspection (
   target_room_id                uuid,
@@ -10914,12 +13708,14 @@ begin
     and attempt.kind = 'competitive'
     and room.id = target_room_id
     and room.status = 'active'
-    and version.status = 'published'
+    and version.status in ('published', 'archived')
     and version.mode in ('flash', 'alphabet', 'survival', 'pyramid');
 
   return inspection_payload;
 end;
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_attempt_inspection"(uuid, uuid, uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_attempt_publications (
   target_room_id uuid
@@ -10976,12 +13772,14 @@ begin
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
       where room.id = target_room_id
         and room.status = 'active'
-        and version.status = 'published'
+        and version.status in ('published', 'archived')
         and version.mode in ('flash', 'alphabet', 'survival', 'pyramid')
     ), '[]'::jsonb)
   );
 end;
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_attempt_publications"(uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_calendar_context()
   RETURNS jsonb
@@ -11027,11 +13825,13 @@ begin
       join public.rooms room on room.id = season.room_id
       join private.challenge_versions version on version.id = schedule.challenge_version_id
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where room.status = 'active' and version.status = 'published' and version.mode in ('flash', 'survival', 'pyramid')
+      where room.status = 'active' and version.status in ('published', 'archived') and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     ), '[]'::jsonb)
   );
 end;
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_calendar_context"() FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_challenge_catalog()
   RETURNS jsonb
@@ -11065,13 +13865,13 @@ begin
           'versionCount', (
             select count(*)
             from private.challenge_versions version_count
-            where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'pyramid')
+            where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
           ),
           'status', latest.status,
           'statusCounts', jsonb_build_object(
-            'draft', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'pyramid') and version_count.status = 'draft'),
-            'published', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'pyramid') and version_count.status = 'published'),
-            'archived', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'survival', 'pyramid') and version_count.status = 'archived')
+            'draft', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') and version_count.status = 'draft'),
+            'published', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') and version_count.status = 'published'),
+            'archived', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') and version_count.status = 'archived')
           ),
           'updatedAt', latest.updated_at,
           'latestVersion', jsonb_build_object(
@@ -11088,7 +13888,7 @@ begin
       join lateral (
         select version.*
         from private.challenge_versions version
-        where version.challenge_definition_id = definition.id and version.mode in ('flash', 'survival', 'pyramid')
+        where version.challenge_definition_id = definition.id and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
         order by version.updated_at desc, version.id
         limit 1
       ) latest on true
@@ -11096,6 +13896,8 @@ begin
   );
 end;
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_challenge_catalog"() FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_challenge_detail (
   target_challenge_definition_id uuid
@@ -11148,7 +13950,13 @@ begin
             ),
             'questions', coalesce((
               select jsonb_agg(
-                jsonb_build_object(
+                case when question.status <> 'draft' then jsonb_build_object(
+                  'source', 'library',
+                  'questionVersionId', question.id,
+                  'points', item.points,
+                  'modeConfig', item.mode_config,
+                  'challengeItemId', item.id
+                ) else jsonb_build_object(
                   'slug', question_definition.slug,
                   'type', question.type,
                   'payloadSchemaVersion', question.payload_schema_version,
@@ -11157,7 +13965,7 @@ begin
                   'publicPayload', question.public_payload,
                   'solutionPayload', solution.solution_payload
                 ) || case when version.mode = 'pyramid'
-                  then jsonb_build_object('modeConfig', item.mode_config) else '{}'::jsonb end
+                  then jsonb_build_object('modeConfig', item.mode_config) else '{}'::jsonb end end
                 order by item.position
               )
               from private.challenge_items item
@@ -11170,7 +13978,7 @@ begin
         ) order by version.updated_at desc, version.id
       )
       from private.challenge_versions version
-      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'survival', 'pyramid')
+      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     ), '[]'::jsonb)
   )
   into challenge_payload
@@ -11179,12 +13987,72 @@ begin
     and exists (
       select 1
       from private.challenge_versions version
-      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'survival', 'pyramid')
+      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     );
 
   return challenge_payload;
 end;
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_challenge_detail"(uuid) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.get_superadmin_challenge_version_comparison (
+  from_challenge_version_id uuid,
+  to_challenge_version_id   uuid
+)
+  RETURNS jsonb
+  LANGUAGE plpgsql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+declare
+  actor uuid := (select private.current_player_id());
+  from_definition_id uuid;
+  to_definition_id uuid;
+  from_mode text;
+  to_mode text;
+begin
+  if actor is null or not exists (
+    select 1 from private.platform_role_assignments assignment
+    where assignment.player_id = actor and assignment.role = 'superadmin'
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  if from_challenge_version_id is null or to_challenge_version_id is null then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+
+  select version.challenge_definition_id, version.mode
+    into from_definition_id, from_mode
+  from private.challenge_versions version
+  where version.id = from_challenge_version_id;
+  if not found then
+    raise exception 'content_not_found' using errcode = 'P0002';
+  end if;
+  select version.challenge_definition_id, version.mode
+    into to_definition_id, to_mode
+  from private.challenge_versions version
+  where version.id = to_challenge_version_id;
+  if not found then
+    raise exception 'content_not_found' using errcode = 'P0002';
+  end if;
+  if from_definition_id <> to_definition_id then
+    raise exception 'invalid_comparison' using errcode = '22023';
+  end if;
+  if from_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') or to_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
+    raise exception 'unsupported_mode' using errcode = '22023';
+  end if;
+
+  return jsonb_build_object(
+    'challengeDefinitionId', from_definition_id,
+    'from', private.superadmin_challenge_version_snapshot(from_challenge_version_id),
+    'to', private.superadmin_challenge_version_snapshot(to_challenge_version_id)
+  );
+end;
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_challenge_version_comparison"(uuid, uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_dashboard_context()
   RETURNS jsonb
@@ -11240,7 +14108,7 @@ begin
       'editorialDrafts', (
         select count(*)
         from private.challenge_versions version
-        where version.mode in ('flash', 'survival', 'pyramid') and version.status = 'draft'
+        where version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') and version.status = 'draft'
       ),
       'upcomingChallenges', (
         select count(*)
@@ -11250,8 +14118,8 @@ begin
         join private.challenge_versions version on version.id = schedule.challenge_version_id
         where room.status = 'active'
           and season.status = 'active'
-          and version.mode in ('flash', 'survival', 'pyramid')
-          and version.status = 'published'
+          and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+          and version.status in ('published', 'archived')
           and schedule.status in ('scheduled', 'open')
           and schedule.closes_at >= now()
       )
@@ -11321,8 +14189,8 @@ begin
         join private.challenge_versions version on version.id = schedule.challenge_version_id
         where room.status = 'active'
           and season.status = 'active'
-          and version.mode in ('flash', 'survival', 'pyramid')
-          and version.status = 'published'
+          and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+          and version.status in ('published', 'archived')
           and schedule.status in ('scheduled', 'open')
           and schedule.closes_at >= now()
         order by schedule.opens_at, schedule.id
@@ -11333,6 +14201,8 @@ begin
 end;
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."get_superadmin_dashboard_context"() FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.get_superadmin_editorial_context()
   RETURNS jsonb
   LANGUAGE sql
@@ -11342,6 +14212,8 @@ CREATE OR REPLACE FUNCTION public.get_superadmin_editorial_context()
   AS $function$
   select private.read_superadmin_editorial_context();
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_editorial_context"() FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_portal_context()
   RETURNS jsonb
@@ -11406,6 +14278,8 @@ begin
 end;
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."get_superadmin_portal_context"() FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.get_superadmin_question_library (
   input jsonb DEFAULT '{}'::jsonb
 )
@@ -11415,6 +14289,8 @@ CREATE OR REPLACE FUNCTION public.get_superadmin_question_library (
   SECURITY DEFINER
   SET search_path TO ''
   AS $function$ select private.read_superadmin_question_library(input); $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_question_library"(jsonb) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_question_version (
   question_version_id uuid
@@ -11427,6 +14303,8 @@ CREATE OR REPLACE FUNCTION public.get_superadmin_question_version (
   AS $function$
   select private.question_version_detail(question_version_id);
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_question_version"(uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_room_attempts (
   target_room_id                uuid,
@@ -11486,7 +14364,7 @@ begin
   where schedule.id = target_scheduled_challenge_id
     and room.id = target_room_id
     and room.status = 'active'
-    and version.status = 'published'
+    and version.status in ('published', 'archived')
     and version.mode in ('flash', 'alphabet', 'survival', 'pyramid');
 
   if publication_payload is null then return null; end if;
@@ -11565,6 +14443,8 @@ begin
 end;
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."get_superadmin_room_attempts"(uuid, uuid, timestamp WITH time zone, uuid, integer) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.get_superadmin_room_calendar_context (
   target_room_id uuid
 )
@@ -11613,12 +14493,14 @@ begin
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
       where room.id = target_room_id
         and room.status = 'active'
-        and version.status = 'published'
-        and version.mode in ('flash', 'survival', 'pyramid')
+        and version.status in ('published', 'archived')
+        and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
     ), '[]'::jsonb)
   );
 end;
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."get_superadmin_room_calendar_context"(uuid) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.get_superadmin_room_detail (
   target_room_id uuid
@@ -11689,6 +14571,8 @@ begin
 end;
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."get_superadmin_room_detail"(uuid) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.lookup_superadmin_players (
   target_emails text[]
 )
@@ -11720,6 +14604,8 @@ begin
 end;
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."lookup_superadmin_players"(text[]) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.manage_room_member (
   input jsonb
 )
@@ -11730,6 +14616,8 @@ CREATE OR REPLACE FUNCTION public.manage_room_member (
   AS $function$
   select private.manage_room_member_command(input);
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."manage_room_member"(jsonb) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.provision_player()
   RETURNS TABLE (
@@ -11772,6 +14660,8 @@ begin
 end;
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."provision_player"() FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.publish_superadmin_flash (
   input jsonb
 )
@@ -11783,6 +14673,8 @@ CREATE OR REPLACE FUNCTION public.publish_superadmin_flash (
   select private.publish_flash_command(input);
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."publish_superadmin_flash"(jsonb) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.publish_superadmin_question (
   input jsonb
 )
@@ -11791,6 +14683,8 @@ CREATE OR REPLACE FUNCTION public.publish_superadmin_question (
   SECURITY DEFINER
   SET search_path TO ''
   AS $function$ select private.publish_question_command(input); $function$;
+
+REVOKE ALL ON FUNCTION "public"."publish_superadmin_question"(jsonb) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.update_superadmin_flash_draft (
   input jsonb
@@ -11803,6 +14697,8 @@ CREATE OR REPLACE FUNCTION public.update_superadmin_flash_draft (
   select private.update_flash_draft_command(input);
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."update_superadmin_flash_draft"(jsonb) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.update_superadmin_question_draft (
   input jsonb
 )
@@ -11811,6 +14707,8 @@ CREATE OR REPLACE FUNCTION public.update_superadmin_question_draft (
   SECURITY DEFINER
   SET search_path TO ''
   AS $function$ select private.update_question_draft_command(input); $function$;
+
+REVOKE ALL ON FUNCTION "public"."update_superadmin_question_draft"(jsonb) FROM PUBLIC, "anon", "service_role";
 
 CREATE OR REPLACE FUNCTION public.update_superadmin_scheduled_challenge (
   input jsonb
@@ -11823,6 +14721,8 @@ CREATE OR REPLACE FUNCTION public.update_superadmin_scheduled_challenge (
   select private.update_scheduled_challenge_command(input);
 $function$;
 
+REVOKE ALL ON FUNCTION "public"."update_superadmin_scheduled_challenge"(jsonb) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.update_superadmin_season (
   input jsonb
 )
@@ -11833,6 +14733,8 @@ CREATE OR REPLACE FUNCTION public.update_superadmin_season (
   AS $function$
   select private.update_season_command(input);
 $function$;
+
+REVOKE ALL ON FUNCTION "public"."update_superadmin_season"(jsonb) FROM PUBLIC, "anon", "service_role";
 
 ALTER TABLE "private"."attempt_answers"
   ADD CONSTRAINT "answers_receipt_fk" FOREIGN KEY (receipt_id, attempt_id, challenge_item_id, challenge_version_id)
@@ -11864,13 +14766,13 @@ ALTER TABLE "private"."logic_code_attempt_events"
   ADD CONSTRAINT "logic_code_attempt_events_challenge_item_id_challenge_vers_fkey" FOREIGN KEY (challenge_item_id, challenge_version_id)
     REFERENCES private.challenge_items(id, challenge_version_id);
 
-ALTER TABLE "private"."matching_pair_events"
-  ADD CONSTRAINT "matching_pair_events_challenge_item_id_challenge_version_i_fkey" FOREIGN KEY (challenge_item_id, challenge_version_id)
-    REFERENCES private.challenge_items(id, challenge_version_id) ON DELETE RESTRICT;
-
 ALTER TABLE "private"."mini_wordle_guess_events"
   ADD CONSTRAINT "mini_wordle_guess_events_challenge_item_id_challenge_versi_fkey" FOREIGN KEY (challenge_item_id, challenge_version_id)
     REFERENCES private.challenge_items(id, challenge_version_id) ON DELETE RESTRICT;
+
+ALTER TABLE "private"."prepared_interactions"
+  ADD CONSTRAINT "prepared_interactions_challenge_item_id_challenge_version__fkey" FOREIGN KEY (challenge_item_id, challenge_version_id)
+    REFERENCES private.challenge_items(id, challenge_version_id);
 
 ALTER TABLE "private"."progressive_clue_reveal_events"
   ADD CONSTRAINT "progressive_clue_reveal_event_challenge_item_id_challenge__fkey" FOREIGN KEY (challenge_item_id, challenge_version_id)
@@ -11878,6 +14780,10 @@ ALTER TABLE "private"."progressive_clue_reveal_events"
 
 ALTER TABLE "private"."queens_placement_events"
   ADD CONSTRAINT "queens_placement_events_challenge_item_id_challenge_versio_fkey" FOREIGN KEY (challenge_item_id, challenge_version_id)
+    REFERENCES private.challenge_items(id, challenge_version_id) ON DELETE RESTRICT;
+
+ALTER TABLE "private"."queens_validation_events"
+  ADD CONSTRAINT "queens_validation_events_challenge_item_id_challenge_versi_fkey" FOREIGN KEY (challenge_item_id, challenge_version_id)
     REFERENCES private.challenge_items(id, challenge_version_id) ON DELETE RESTRICT;
 
 ALTER TABLE "private"."challenge_items"
@@ -11907,13 +14813,12 @@ ALTER TABLE "private"."logic_code_attempt_events"
   ADD CONSTRAINT "logic_code_attempt_events_attempt_id_challenge_version_id_fkey" FOREIGN KEY (attempt_id, challenge_version_id)
     REFERENCES public.attempts(id, challenge_version_id);
 
-ALTER TABLE "private"."matching_pair_events"
-  ADD CONSTRAINT "matching_pair_events_attempt_id_challenge_version_id_fkey" FOREIGN KEY (attempt_id, challenge_version_id) REFERENCES public.attempts(id, challenge_version_id)
-    ON DELETE RESTRICT;
-
 ALTER TABLE "private"."mini_wordle_guess_events"
   ADD CONSTRAINT "mini_wordle_guess_events_attempt_id_challenge_version_id_fkey" FOREIGN KEY (attempt_id, challenge_version_id) REFERENCES public.attempts(id, challenge_version_id)
     ON DELETE RESTRICT;
+
+ALTER TABLE "private"."prepared_interactions"
+  ADD CONSTRAINT "prepared_interactions_attempt_id_challenge_version_id_fkey" FOREIGN KEY (attempt_id, challenge_version_id) REFERENCES public.attempts(id, challenge_version_id);
 
 ALTER TABLE "private"."progressive_clue_reveal_events"
   ADD CONSTRAINT "progressive_clue_reveal_event_attempt_id_challenge_version_fkey" FOREIGN KEY (attempt_id, challenge_version_id)
@@ -11921,6 +14826,10 @@ ALTER TABLE "private"."progressive_clue_reveal_events"
 
 ALTER TABLE "private"."queens_placement_events"
   ADD CONSTRAINT "queens_placement_events_attempt_id_challenge_version_id_fkey" FOREIGN KEY (attempt_id, challenge_version_id) REFERENCES public.attempts(id, challenge_version_id)
+    ON DELETE RESTRICT;
+
+ALTER TABLE "private"."queens_validation_events"
+  ADD CONSTRAINT "queens_validation_events_attempt_id_challenge_version_id_fkey" FOREIGN KEY (attempt_id, challenge_version_id) REFERENCES public.attempts(id, challenge_version_id)
     ON DELETE RESTRICT;
 
 ALTER TABLE "private"."word_search_selection_events"
@@ -12065,29 +14974,21 @@ CREATE INDEX items_question_version_idx ON private.challenge_items USING btree (
 
 CREATE INDEX logic_code_events_item_idx ON private.logic_code_attempt_events USING btree (attempt_id, challenge_item_id, SEQUENCE);
 
-CREATE UNIQUE INDEX matching_pair_events_correct_left_idx ON private.matching_pair_events USING btree (attempt_id, challenge_item_id, left_item_id)
-  WHERE correct;
-
-CREATE UNIQUE INDEX matching_pair_events_correct_right_idx ON private.matching_pair_events USING btree (attempt_id, challenge_item_id, right_item_id)
-  WHERE correct;
-
-CREATE INDEX matching_pair_events_item_idx ON private.matching_pair_events USING btree (attempt_id, challenge_item_id, SEQUENCE);
-
-CREATE INDEX matching_pair_events_left_idx ON private.matching_pair_events USING btree (attempt_id, challenge_item_id, left_item_id);
-
-CREATE INDEX matching_pair_events_right_idx ON private.matching_pair_events USING btree (attempt_id, challenge_item_id, right_item_id);
-
 CREATE INDEX media_assets_bucket_path_idx ON private.media_assets USING btree (bucket_id, object_path);
 
 CREATE INDEX media_assets_owner_status_idx ON private.media_assets USING btree (owner_player_id, status, updated_at DESC);
 
 CREATE INDEX mini_wordle_dictionary_lookup_idx ON private.mini_wordle_dictionary_words USING btree (dictionary_id, word_length, word);
 
+CREATE INDEX prepared_item_idx ON private.prepared_interactions USING btree (challenge_item_id, challenge_version_id);
+
 CREATE INDEX progressive_clue_events_item_idx ON private.progressive_clue_reveal_events USING btree (attempt_id, challenge_item_id, clue_index);
 
 CREATE INDEX queens_placement_events_cell_idx ON private.queens_placement_events USING btree (attempt_id, challenge_item_id, cell, SEQUENCE DESC);
 
 CREATE INDEX queens_placement_events_item_idx ON private.queens_placement_events USING btree (attempt_id, challenge_item_id, SEQUENCE);
+
+CREATE INDEX queens_validation_events_item_idx ON private.queens_validation_events USING btree (attempt_id, challenge_item_id, SEQUENCE);
 
 CREATE INDEX question_definitions_author_idx ON private.question_definitions USING btree (created_by_player_id);
 
@@ -12111,6 +15012,12 @@ CREATE INDEX word_search_selection_events_item_idx ON private.word_search_select
 
 CREATE INDEX word_search_selection_events_target_idx ON private.word_search_selection_events USING btree (attempt_id, challenge_item_id, matched_target_id)
   WHERE correct;
+
+CREATE INDEX attempts_active_player_idx ON public.attempts USING btree (player_id, scheduled_challenge_id)
+  WHERE ((kind = 'competitive'::text) AND (status = 'in_progress'::text));
+
+CREATE INDEX attempts_inactivity_candidates_idx ON public.attempts USING btree (last_activity_at, started_at, scheduled_challenge_id)
+  WHERE ((kind = 'competitive'::text) AND (status = 'in_progress'::text));
 
 CREATE UNIQUE INDEX attempts_one_competitive_idx ON public.attempts USING btree (player_id, scheduled_challenge_id)
   WHERE (kind = 'competitive'::text);
@@ -12387,6 +15294,10 @@ REVOKE ALL ON FUNCTION "private"."accept_invitation"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."accept_invitation"(jsonb) TO "postgres", "service_role";
 
+REVOKE ALL ON FUNCTION "private"."activate_interaction"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."activate_interaction"(jsonb) TO "postgres", "service_role";
+
 REVOKE ALL ON FUNCTION "private"."activate_season_command"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."activate_season_command"(jsonb) TO "postgres";
@@ -12398,6 +15309,10 @@ GRANT EXECUTE ON FUNCTION "private"."add_superadmin_room_member_command"(jsonb) 
 REVOKE ALL ON FUNCTION "private"."adjust_result"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."adjust_result"(jsonb) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."archive_challenge_version_command"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."archive_challenge_version_command"(jsonb) TO "postgres";
 
 REVOKE ALL ON FUNCTION "private"."archive_question_asset_command"(jsonb) FROM PUBLIC;
 
@@ -12411,6 +15326,10 @@ REVOKE ALL ON FUNCTION "private"."assert_supported_calendar_content"(uuid) FROM 
 
 GRANT EXECUTE ON FUNCTION "private"."assert_supported_calendar_content"(uuid) TO "postgres";
 
+REVOKE ALL ON FUNCTION "private"."authorize_attempt_replay"(uuid, text) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."authorize_attempt_replay"(uuid, text) TO "postgres";
+
 REVOKE ALL ON FUNCTION "private"."can_read_own_attempt"(uuid, uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."can_read_own_attempt"(uuid, uuid) TO "authenticated", "postgres";
@@ -12418,6 +15337,26 @@ GRANT EXECUTE ON FUNCTION "private"."can_read_own_attempt"(uuid, uuid) TO "authe
 REVOKE ALL ON FUNCTION "private"."can_read_profile"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."can_read_profile"(uuid) TO "authenticated", "postgres";
+
+REVOKE ALL ON FUNCTION "private"."can_review_competitive_attempt"(uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."can_review_competitive_attempt"(uuid) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."cancel_scheduled_challenge_command"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."cancel_scheduled_challenge_command"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."claim_archived_avatar_cleanup"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."claim_archived_avatar_cleanup"(jsonb) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."close_attempt_as_abandoned"(uuid, timestamp WITH time zone, text, uuid, text, text) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."close_attempt_as_abandoned"(uuid, timestamp WITH time zone, text, uuid, text, text) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."close_attempts_for_permission_loss"(uuid, uuid, timestamp WITH time zone, uuid, text) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."close_attempts_for_permission_loss"(uuid, uuid, timestamp WITH time zone, uuid, text) TO "postgres";
 
 REVOKE ALL ON FUNCTION "private"."command_actor"() FROM PUBLIC;
 
@@ -12434,6 +15373,10 @@ GRANT EXECUTE ON FUNCTION "private"."confirm_avatar_upload_command"(jsonb) TO "p
 REVOKE ALL ON FUNCTION "private"."confirm_question_asset_upload_command"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."confirm_question_asset_upload_command"(jsonb) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."create_challenge_revision_command"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."create_challenge_revision_command"(jsonb) TO "postgres";
 
 REVOKE ALL ON FUNCTION "private"."create_flash_draft_command"(jsonb) FROM PUBLIC;
 
@@ -12478,6 +15421,10 @@ GRANT EXECUTE ON FUNCTION "private"."escape_content_valid"(jsonb, jsonb) TO "pos
 REVOKE ALL ON FUNCTION "private"."execute_command"(text, jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."execute_command"(text, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."expire_stale_attempts"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."expire_stale_attempts"(jsonb) TO "postgres", "service_role";
 
 REVOKE ALL ON FUNCTION "private"."guard_answer"() FROM PUBLIC;
 
@@ -12539,13 +15486,61 @@ REVOKE ALL ON FUNCTION "private"."is_room_member"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."is_room_member"(uuid) TO "authenticated", "postgres";
 
+REVOKE ALL ON FUNCTION "private"."is_supported_anagram_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_anagram_question"(private.question_versions, jsonb) TO "postgres";
+
 REVOKE ALL ON FUNCTION "private"."is_supported_competitive_question_extension"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."is_supported_competitive_question_extension"(uuid) TO "postgres";
 
+REVOKE ALL ON FUNCTION "private"."is_supported_estimation_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_estimation_question"(private.question_versions, jsonb) TO "postgres";
+
 REVOKE ALL ON FUNCTION "private"."is_supported_flash_question"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."is_supported_flash_question"(uuid) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_heat_map_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_heat_map_question"(private.question_versions, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_logic_code_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_logic_code_question"(private.question_versions, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_matching_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_matching_question"(private.question_versions, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_mini_wordle_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_mini_wordle_question"(private.question_versions, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_multiple_choice_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_multiple_choice_question"(private.question_versions, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_progressive_clues_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_progressive_clues_question"(private.question_versions, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_progressive_image_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_progressive_image_question"(private.question_versions, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_queens_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_queens_question"(private.question_versions, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_short_text_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_short_text_question"(private.question_versions, jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."is_supported_word_search_question"(private.question_versions, jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."is_supported_word_search_question"(private.question_versions, jsonb) TO "postgres";
 
 REVOKE ALL ON FUNCTION "private"."is_usable_question_asset"(uuid) FROM PUBLIC;
 
@@ -12575,9 +15570,9 @@ REVOKE ALL ON FUNCTION "private"."manage_room_member_command"(jsonb) FROM PUBLIC
 
 GRANT EXECUTE ON FUNCTION "private"."manage_room_member_command"(jsonb) TO "postgres";
 
-REVOKE ALL ON FUNCTION "private"."matching_progress"(uuid, uuid) FROM PUBLIC;
+REVOKE ALL ON FUNCTION "private"."matching_answer_valid"(jsonb, jsonb, boolean) FROM PUBLIC;
 
-GRANT EXECUTE ON FUNCTION "private"."matching_progress"(uuid, uuid) TO "postgres";
+GRANT EXECUTE ON FUNCTION "private"."matching_answer_valid"(jsonb, jsonb, boolean) TO "postgres";
 
 REVOKE ALL ON FUNCTION "private"."matching_public_payload"(uuid) FROM PUBLIC;
 
@@ -12602,6 +15597,10 @@ GRANT EXECUTE ON FUNCTION "private"."next_attempt_item"(uuid) TO "postgres";
 REVOKE ALL ON FUNCTION "private"."pass_interaction"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."pass_interaction"(jsonb) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."prepare_attempt_session"(uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."prepare_attempt_session"(uuid) TO "postgres", "service_role";
 
 REVOKE ALL ON FUNCTION "private"."prepare_avatar_upload_command"(jsonb) FROM PUBLIC;
 
@@ -12683,6 +15682,18 @@ REVOKE ALL ON FUNCTION "private"."question_version_document"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."question_version_document"(uuid) TO "postgres";
 
+REVOKE ALL ON FUNCTION "private"."raise_if_session_transferred"(uuid, text) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."raise_if_session_transferred"(uuid, text) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."read_abandoned_attempt"(uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."read_abandoned_attempt"(uuid) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."read_attempt_context"(uuid, text) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."read_attempt_context"(uuid, text) TO "postgres", "service_role";
+
 REVOKE ALL ON FUNCTION "private"."read_attempt_recovery"(uuid, text) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."read_attempt_recovery"(uuid, text) TO "postgres", "service_role";
@@ -12691,9 +15702,17 @@ REVOKE ALL ON FUNCTION "private"."read_avatar_upload_asset"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."read_avatar_upload_asset"(jsonb) TO "postgres", "service_role";
 
+REVOKE ALL ON FUNCTION "private"."read_avatar_upload_confirmation"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."read_avatar_upload_confirmation"(jsonb) TO "postgres", "service_role";
+
 REVOKE ALL ON FUNCTION "private"."read_competitive_question_asset"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."read_competitive_question_asset"(jsonb) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."read_completed_attempt"(uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."read_completed_attempt"(uuid) TO "postgres", "service_role";
 
 REVOKE ALL ON FUNCTION "private"."read_evaluation_context"(uuid, text) FROM PUBLIC;
 
@@ -12702,6 +15721,10 @@ GRANT EXECUTE ON FUNCTION "private"."read_evaluation_context"(uuid, text) TO "po
 REVOKE ALL ON FUNCTION "private"."read_question_asset_upload"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."read_question_asset_upload"(jsonb) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."read_recorded_evaluation"(uuid, text) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."read_recorded_evaluation"(uuid, text) TO "postgres", "service_role";
 
 REVOKE ALL ON FUNCTION "private"."read_superadmin_editorial_context"() FROM PUBLIC;
 
@@ -12743,6 +15766,10 @@ REVOKE ALL ON FUNCTION "private"."run_calendar_tick_command"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."run_calendar_tick_command"(jsonb) TO "postgres", "service_role";
 
+REVOKE ALL ON FUNCTION "private"."save_queens_draft"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."save_queens_draft"(jsonb) TO "postgres", "service_role";
+
 REVOKE ALL ON FUNCTION "private"."secret_hash"(text) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."secret_hash"(text) TO "postgres";
@@ -12755,13 +15782,13 @@ REVOKE ALL ON FUNCTION "private"."submit_logic_code_attempt"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."submit_logic_code_attempt"(jsonb) TO "postgres", "service_role";
 
-REVOKE ALL ON FUNCTION "private"."submit_matching_pair"(jsonb) FROM PUBLIC;
-
-GRANT EXECUTE ON FUNCTION "private"."submit_matching_pair"(jsonb) TO "postgres", "service_role";
-
 REVOKE ALL ON FUNCTION "private"."submit_mini_wordle_guess"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."submit_mini_wordle_guess"(jsonb) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."submit_queens_answer"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."submit_queens_answer"(jsonb) TO "postgres", "service_role";
 
 REVOKE ALL ON FUNCTION "private"."submit_queens_placement"(jsonb) FROM PUBLIC;
 
@@ -12774,6 +15801,10 @@ GRANT EXECUTE ON FUNCTION "private"."submit_word_hashtag_swap"(jsonb) TO "postgr
 REVOKE ALL ON FUNCTION "private"."submit_word_search_selection"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."submit_word_search_selection"(jsonb) TO "postgres", "service_role";
+
+REVOKE ALL ON FUNCTION "private"."superadmin_challenge_version_snapshot"(uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."superadmin_challenge_version_snapshot"(uuid) TO "postgres";
 
 REVOKE ALL ON FUNCTION "private"."take_over_attempt"(jsonb) FROM PUBLIC;
 
@@ -12799,6 +15830,26 @@ REVOKE ALL ON FUNCTION "private"."update_season_command"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."update_season_command"(jsonb) TO "postgres";
 
+REVOKE ALL ON FUNCTION "private"."validate_anagram_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_anagram_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_classification_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_classification_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_connect_pairs_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_connect_pairs_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_escape_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_escape_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_estimation_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_estimation_question_document"(jsonb) TO "postgres";
+
 REVOKE ALL ON FUNCTION "private"."validate_flash_editorial_document"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."validate_flash_editorial_document"(jsonb) TO "postgres";
@@ -12806,6 +15857,70 @@ GRANT EXECUTE ON FUNCTION "private"."validate_flash_editorial_document"(jsonb) T
 REVOKE ALL ON FUNCTION "private"."validate_flash_question_document"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."validate_flash_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_heat_map_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_heat_map_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_logic_code_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_logic_code_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_logic_matrix_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_logic_matrix_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_matching_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_matching_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_mini_wordle_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_mini_wordle_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_multiple_choice_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_multiple_choice_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_odd_one_out_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_odd_one_out_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_ordering_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_ordering_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_progressive_clues_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_progressive_clues_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_progressive_image_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_progressive_image_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_queens_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_queens_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_short_text_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_short_text_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_true_false_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_true_false_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_word_hashtag_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_word_hashtag_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_word_search_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_word_search_question_document"(jsonb) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."validate_zip_question_document"(jsonb) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."validate_zip_question_document"(jsonb) TO "postgres";
 
 REVOKE ALL ON FUNCTION "private"."word_hashtag_content_valid"(jsonb, jsonb) FROM PUBLIC;
 
@@ -12827,191 +15942,111 @@ REVOKE ALL ON FUNCTION "private"."zip_content_valid"(jsonb, jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."zip_content_valid"(jsonb, jsonb) TO "postgres";
 
-REVOKE ALL ON FUNCTION "public"."activate_superadmin_season"(jsonb) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."activate_superadmin_season"(jsonb) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."add_superadmin_room_member"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."add_superadmin_room_member"(jsonb) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."archive_superadmin_question"(jsonb) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION "public"."archive_superadmin_challenge_version"(jsonb) TO "authenticated", "postgres";
 
 GRANT EXECUTE ON FUNCTION "public"."archive_superadmin_question"(jsonb) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."create_superadmin_flash_draft"(jsonb) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION "public"."cancel_superadmin_scheduled_challenge"(jsonb) TO "authenticated", "postgres";
+
+GRANT EXECUTE ON FUNCTION "public"."create_superadmin_challenge_revision"(jsonb) TO "authenticated", "postgres";
 
 GRANT EXECUTE ON FUNCTION "public"."create_superadmin_flash_draft"(jsonb) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."create_superadmin_player"(jsonb) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."create_superadmin_player"(jsonb) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."create_superadmin_question_draft"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."create_superadmin_question_draft"(jsonb) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."create_superadmin_room"(jsonb) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."create_superadmin_room"(jsonb) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."create_superadmin_scheduled_challenge"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."create_superadmin_scheduled_challenge"(jsonb) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."create_superadmin_season"(jsonb) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."create_superadmin_season"(jsonb) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_challenge_ranking"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_challenge_ranking"(uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_flash_history"(text, uuid) FROM PUBLIC;
-
-GRANT EXECUTE ON FUNCTION "public"."get_flash_history"(text, uuid) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_flash_member_review"(text, uuid, uuid) FROM PUBLIC;
-
-GRANT EXECUTE ON FUNCTION "public"."get_flash_member_review"(text, uuid, uuid) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_my_alphabet_challenge"(text, uuid) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_my_alphabet_challenge"(text, uuid) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_my_alphabet_result"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_my_alphabet_result"(uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_my_flash_challenge"(text, uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION "public"."get_my_competitive_challenge"(text, uuid) TO "authenticated", "postgres";
 
 GRANT EXECUTE ON FUNCTION "public"."get_my_flash_challenge"(text, uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_my_flash_result"(uuid) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_my_flash_result"(uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_my_pyramid_challenge"(text, uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION "public"."get_my_narrative_challenge"(text, uuid) TO "authenticated", "postgres";
+
+GRANT EXECUTE ON FUNCTION "public"."get_my_narrative_result"(uuid) TO "authenticated", "postgres";
 
 GRANT EXECUTE ON FUNCTION "public"."get_my_pyramid_challenge"(text, uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_my_pyramid_result"(uuid) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_my_pyramid_result"(uuid) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_my_room_cards"() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_my_room_cards"() TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_my_survival_challenge"(text, uuid) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_my_survival_challenge"(text, uuid) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_my_survival_result"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_my_survival_result"(uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_room_calendar"(text) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_room_calendar"(text) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_room_detail"(text) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_room_detail"(text) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_room_introduction"(text, uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION "public"."get_room_history"(text, uuid) TO "authenticated", "postgres";
 
 GRANT EXECUTE ON FUNCTION "public"."get_room_introduction"(text, uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_season_ranking"(uuid) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION "public"."get_room_member_review"(text, uuid, uuid) TO "authenticated", "postgres";
 
 GRANT EXECUTE ON FUNCTION "public"."get_season_ranking"(uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_superadmin_attempt_inspection"(uuid, uuid, uuid) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_attempt_inspection"(uuid, uuid, uuid) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_superadmin_attempt_publications"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_attempt_publications"(uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_superadmin_calendar_context"() FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_calendar_context"() TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_superadmin_challenge_catalog"() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_challenge_catalog"() TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_superadmin_challenge_detail"(uuid) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_challenge_detail"(uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_superadmin_dashboard_context"() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION "public"."get_superadmin_challenge_version_comparison"(uuid, uuid) TO "authenticated", "postgres";
 
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_dashboard_context"() TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_superadmin_editorial_context"() FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_editorial_context"() TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_superadmin_portal_context"() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_portal_context"() TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_superadmin_question_library"(jsonb) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_question_library"(jsonb) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_superadmin_question_version"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_question_version"(uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_superadmin_room_attempts"(uuid, uuid, timestamp WITH time zone, uuid, integer) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_room_attempts"(uuid, uuid, timestamp WITH time zone, uuid, integer) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."get_superadmin_room_calendar_context"(uuid) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_room_calendar_context"(uuid) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."get_superadmin_room_detail"(uuid) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."get_superadmin_room_detail"(uuid) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."lookup_superadmin_players"(text[]) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."lookup_superadmin_players"(text[]) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."manage_room_member"(jsonb) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."manage_room_member"(jsonb) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."provision_player"() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."provision_player"() TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."publish_superadmin_flash"(jsonb) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."publish_superadmin_flash"(jsonb) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."publish_superadmin_question"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."publish_superadmin_question"(jsonb) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."update_superadmin_flash_draft"(jsonb) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."update_superadmin_flash_draft"(jsonb) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."update_superadmin_question_draft"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."update_superadmin_question_draft"(jsonb) TO "authenticated", "postgres";
 
-REVOKE ALL ON FUNCTION "public"."update_superadmin_scheduled_challenge"(jsonb) FROM PUBLIC;
-
 GRANT EXECUTE ON FUNCTION "public"."update_superadmin_scheduled_challenge"(jsonb) TO "authenticated", "postgres";
-
-REVOKE ALL ON FUNCTION "public"."update_superadmin_season"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "public"."update_superadmin_season"(jsonb) TO "authenticated", "postgres";
 
@@ -13059,8 +16094,6 @@ GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."logic_code_attempt_events" TO "postgres";
 
-GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."matching_pair_events" TO "postgres";
-
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."media_assets" TO "postgres";
 
 GRANT SELECT ON TABLE "private"."media_assets" TO "service_role";
@@ -13077,9 +16110,13 @@ GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON
 
 GRANT SELECT ON TABLE "private"."platform_role_assignments" TO "service_role";
 
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."prepared_interactions" TO "postgres";
+
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."progressive_clue_reveal_events" TO "postgres";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."queens_placement_events" TO "postgres";
+
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."queens_validation_events" TO "postgres";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."question_definitions" TO "postgres";
 
@@ -13099,59 +16136,103 @@ GRANT SELECT ON TABLE "private"."room_invitations" TO "service_role";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."word_search_selection_events" TO "postgres";
 
+REVOKE ALL ("completed_at") ON TABLE "public"."attempts" FROM "authenticated";
+
 GRANT SELECT ("completed_at") ON TABLE "public"."attempts" TO "authenticated";
+
+REVOKE ALL ("deadline_at") ON TABLE "public"."attempts" FROM "authenticated";
 
 GRANT SELECT ("deadline_at") ON TABLE "public"."attempts" TO "authenticated";
 
+REVOKE ALL ("id") ON TABLE "public"."attempts" FROM "authenticated";
+
 GRANT SELECT ("id") ON TABLE "public"."attempts" TO "authenticated";
+
+REVOKE ALL ("player_id") ON TABLE "public"."attempts" FROM "authenticated";
 
 GRANT SELECT ("player_id") ON TABLE "public"."attempts" TO "authenticated";
 
+REVOKE ALL ("scheduled_challenge_id") ON TABLE "public"."attempts" FROM "authenticated";
+
 GRANT SELECT ("scheduled_challenge_id") ON TABLE "public"."attempts" TO "authenticated";
+
+REVOKE ALL ("score") ON TABLE "public"."attempts" FROM "authenticated";
 
 GRANT SELECT ("score") ON TABLE "public"."attempts" TO "authenticated";
 
+REVOKE ALL ("started_at") ON TABLE "public"."attempts" FROM "authenticated";
+
 GRANT SELECT ("started_at") ON TABLE "public"."attempts" TO "authenticated";
+
+REVOKE ALL ("status") ON TABLE "public"."attempts" FROM "authenticated";
 
 GRANT SELECT ("status") ON TABLE "public"."attempts" TO "authenticated";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."attempts" TO "postgres";
 
+REVOKE ALL ON TABLE "public"."attempts" FROM "service_role";
+
 GRANT SELECT ON TABLE "public"."attempts" TO "service_role";
+
+REVOKE ALL ("avatar_path") ON TABLE "public"."players" FROM "authenticated";
 
 GRANT SELECT ("avatar_path") ON TABLE "public"."players" TO "authenticated";
 
+REVOKE ALL ("display_name") ON TABLE "public"."players" FROM "authenticated";
+
 GRANT SELECT ("display_name"), UPDATE ("display_name") ON TABLE "public"."players" TO "authenticated";
 
+REVOKE ALL ("id") ON TABLE "public"."players" FROM "authenticated";
+
 GRANT SELECT ("id") ON TABLE "public"."players" TO "authenticated";
+
+REVOKE ALL ("status") ON TABLE "public"."players" FROM "authenticated";
 
 GRANT SELECT ("status") ON TABLE "public"."players" TO "authenticated";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."players" TO "postgres";
 
+REVOKE ALL ON TABLE "public"."players" FROM "service_role";
+
 GRANT SELECT ON TABLE "public"."players" TO "service_role";
+
+REVOKE ALL ON TABLE "public"."room_memberships" FROM "authenticated";
 
 GRANT SELECT ON TABLE "public"."room_memberships" TO "authenticated";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."room_memberships" TO "postgres";
 
+REVOKE ALL ON TABLE "public"."room_memberships" FROM "service_role";
+
 GRANT SELECT ON TABLE "public"."room_memberships" TO "service_role";
+
+REVOKE ALL ON TABLE "public"."rooms" FROM "authenticated";
 
 GRANT SELECT ON TABLE "public"."rooms" TO "authenticated";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."rooms" TO "postgres";
 
+REVOKE ALL ON TABLE "public"."rooms" FROM "service_role";
+
 GRANT SELECT ON TABLE "public"."rooms" TO "service_role";
+
+REVOKE ALL ON TABLE "public"."scheduled_challenges" FROM "authenticated";
 
 GRANT SELECT ON TABLE "public"."scheduled_challenges" TO "authenticated";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."scheduled_challenges" TO "postgres";
 
+REVOKE ALL ON TABLE "public"."scheduled_challenges" FROM "service_role";
+
 GRANT SELECT ON TABLE "public"."scheduled_challenges" TO "service_role";
+
+REVOKE ALL ON TABLE "public"."seasons" FROM "authenticated";
 
 GRANT SELECT ON TABLE "public"."seasons" TO "authenticated";
 
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "public"."seasons" TO "postgres";
+
+REVOKE ALL ON TABLE "public"."seasons" FROM "service_role";
 
 GRANT SELECT ON TABLE "public"."seasons" TO "service_role";
 

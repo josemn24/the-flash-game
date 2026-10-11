@@ -1,7 +1,7 @@
 # Modo, estado y resultado de los intentos
 
 Estado: vigente. Contrato implementado en TypeScript y PostgreSQL; despliegue conjunto tras el
-reinicio de datos acordado. Revisión: `20261007180832_attempt_lifecycle_contracts`.
+reinicio local de datos acordado. Revisión activa: `20261010214230_initial_schema`.
 
 `status` describe el ciclo de vida. `outcome` conserva el desenlace oficial y no determina los
 puntos. El modo procede de la versión inmutable del desafío, sin una columna adicional en
@@ -44,11 +44,10 @@ la inmutabilidad y la acreditación idempotente.
 
 ## Despliegue y verificación
 
-La [migración incremental](../../supabase/migrations/20261007180832_attempt_lifecycle_contracts.sql)
-se generó después de actualizar el esquema declarativo. Se omitió del SQL generado la deriva
-preexistente de funciones ajenas a este cambio; no se reescribieron migraciones anteriores.
-No incluye backfills ni compatibilidad histórica. Aplicar ambas entregas juntas sobre la base
-reiniciada acordada; esta implementación no ejecuta reinicios remotos.
+El contrato está incluido en el [baseline activo](../../supabase/migrations/20261010214230_initial_schema.sql),
+generado desde el esquema declarativo. No incluye backfills ni compatibilidad histórica; aplicar
+el baseline y el código sobre la base reiniciada acordada. Esta implementación no ejecuta
+reinicios remotos.
 
 La revisión esperada está sincronizada en `.env.example`, el health check y el verificador del
 piloto. Las firmas públicas y el tipo `text` de `outcome` se conservan, por lo que no cambia el
@@ -59,4 +58,4 @@ La matriz se prueba en TypeScript y en
 junto con cierres de cero puntos, invalidación, recuperación, repetición y lecturas sin cookie.
 `npm run supabase:schema:test` crea y elimina una base temporal para comprobar seguridad,
 pgTAP y concurrencia. `npm run supabase:schema:test -- --migrations` repite esas comprobaciones
-cargando toda la cadena incremental sobre otra base limpia. `npm run test:e2e:isolated` comprueba los flujos en un stack independiente.
+cargando el baseline sobre otra base limpia. `npm run test:e2e:isolated` comprueba los flujos en un stack independiente.

@@ -1,9 +1,10 @@
 # Reconciliación de comandos competitivos
 
-> Estado: vigente. Aplicada y verificada en la base local de la aplicación. La ejecución y validación de staging quedan pendientes.
+> Estado: comportamiento vigente, integrado en el baseline inicial local. La ejecución y validación de staging quedan pendientes.
 
-Fecha: 2026-10-09. Revisión:
-`20261009190015_competitive_command_reconciliation`.
+Fecha: 2026-10-09. Revisión incremental original:
+`20261009190015_competitive_command_reconciliation`. Ahora forma parte de
+`20261010214230_initial_schema`; el historial anterior permanece en Git.
 
 ## Comportamiento resultante
 
@@ -44,12 +45,13 @@ mientras la respuesta de expiración conserva `runId`. Para correlacionar evento
 ejecución, debe usarse ese prefijo completo o los identificadores individuales, en lugar de
 comparar `request_id` únicamente por igualdad con `runId`.
 
-## Migración y límites
+## Baseline y límites
 
-La [migración nueva](../../supabase/migrations/20261009190015_competitive_command_reconciliation.sql)
-se generó con `supabase:db:schema:sync -- --name competitive_command_reconciliation --no-apply`
-después de editar el esquema declarativo. Se revisó el resultado y se retiró el `DROP FUNCTION`
-que el generador proponía para el cambio de lenguaje de `take_over_attempt`.
+La migración incremental original (`20261009190015_competitive_command_reconciliation.sql`) quedó
+consolidada en el [baseline activo](../../supabase/migrations/20261010214230_initial_schema.sql),
+generado desde los schemas declarativos. Su SQL anterior sigue disponible en Git. En la revisión
+original se retiró el `DROP FUNCTION` que el generador proponía para el cambio de lenguaje de
+`take_over_attempt`.
 
 La migración abre una transacción, reemplaza once funciones y actualiza el dispatcher antes
 de la fachada de transferencia. Utiliza `CREATE OR REPLACE` para conservar OIDs, dependencias,
@@ -67,10 +69,10 @@ incorrectos que un entorno hubiera persistido anteriormente. Esa reparación de 
 comprobar los hechos de ese entorno y un trabajo separado. La presente actualización conserva
 todos los datos existentes.
 
-La revisión canónica de configuración y los marcadores de health se actualizan conjuntamente.
-Health comprueba la fachada SQL, el nuevo contrato del dispatcher, la condición de cierre y la
-detección de transferencia; la prueba de actualización ejecuta el SQL real de health y demuestra
-que rechaza la revisión anterior y acepta la reconciliada.
+La revisión canónica de configuración y los marcadores de health se actualizaron al baseline.
+Health comprueba la fachada SQL, el contrato del dispatcher, la condición de cierre y la detección
+de transferencia. Las pruebas de actualización entre revisiones se retiraron al reiniciar la base;
+las comprobaciones actuales validan la reconstrucción limpia y los contratos vigentes.
 
 ## Verificación reproducible
 
@@ -79,12 +81,11 @@ Desde la raíz del repositorio, con Supabase local iniciado:
 ```bash
 npm run supabase:schema:test
 npm run supabase:schema:test -- --migrations
-npm run supabase:schema:test -- --upgrade-competitive-commands
 npm run supabase:schema:reconciliation:test
 ```
 
 Cada herramienta crea y elimina sus propias bases locales desechables. No usa la base de datos
-de la aplicación para ejecutar las fixtures ni aplica esta migración a un entorno remoto.
+de la aplicación para ejecutar las fixtures ni aplica migraciones a un entorno remoto.
 
 Resultados locales verificados:
 
@@ -98,11 +99,8 @@ Resultados locales verificados:
 - Seis carreras entre transferencia y acciones/recuperación, más cinco carreras adicionales:
   transferencias simultáneas, expiración/pérdida de permisos y transferencia/pérdida de permisos
   en ambos órdenes. Todas pasan en ambas reconstrucciones.
-- Actualización desde `20261009180205_question_validation_by_format` con un intento completado,
-  respuestas, recepciones, ledger, una preparación de Pirámide y una transferencia cacheada.
-  Las 31 tablas de dominio y los OIDs, atributos y permisos de las 217 funciones se conservan.
-  El replay anterior a la migración devuelve el mismo resultado. Reversión y reaplicación
-  restauran exactamente sus respectivas funciones y conservan las mismas filas.
+- La prueba histórica de actualización/reversión se retiró junto con las migraciones incrementales;
+  las garantías actuales se prueban directamente desde schemas y desde el baseline.
 - Tipos, arquitectura de tipos, tipos públicos generados y 107 pruebas unitarias de health,
   adaptador, API de sesión/transferencia, ciclo de vida y motor competitivo pasan.
 - Los 12 E2E existentes de `s03-flash`, `s04-recovery`, `s15-pyramid`, `format-contracts`
@@ -118,31 +116,25 @@ La reconciliación se integra en `verify:pilot` mediante
 haga fallar la verificación. El informe JSON regenerable queda en
 `output/audits/supabase-function-drift.json`, ignorado por Git.
 
-## Reversión
+## Reversión de la migración incremental original
 
-La prueba `--upgrade-competitive-commands` genera
-`output/audits/competitive-command-reconciliation-rollback.sql` a partir de las definiciones
-efectivas de la revisión anterior, y ejecuta su reversión y reaplicación en la base desechable.
-Ese archivo contiene los once `CREATE OR REPLACE` originales dentro de una transacción,
-incluido el dispatcher y la implementación autónoma de takeover. No elimina funciones ni
-modifica datos. El inventario y los OIDs/ACL se verifican al reaplicar.
+La prueba de upgrade que generaba
+`output/audits/competitive-command-reconciliation-rollback.sql` se retiró al reemplazar el
+historial activo. El SQL de rollback puede recuperarse del historial Git si se necesita para
+investigar una revisión anterior.
 
-Para revertir después de un despliegue, revisar ese SQL y usarlo en una migración posterior;
-no modificar ni retirar migraciones históricas. Restaurar en el esquema declarativo los cuerpos
-anteriores del [inventario auditado](supabase-function-drift-audit.md), manteniendo los mismos
-atributos y permisos. Actualizar la revisión canónica y los marcadores de health de acuerdo con
-la revisión restaurada y ejecutar de nuevo las comprobaciones de carga, seguridad y compatibilidad.
+Tras desplegar el baseline, revertir cambios mediante una migración posterior y avanzar la
+revisión canónica. No volver a aplicar la cadena incremental anterior sobre una base inicializada
+con el baseline.
 
-La reversión restaura el comportamiento histórico: mensajes menos específicos en carreras,
-aceptación histórica de `scheduledChallengeId: null`, replay de takeover anterior a la comprobación
-de membresía y sesiones cerradas con motivo `NULL`. Los hechos producidos tras la reconciliación
-permanecen persistidos; no se vuelven a etiquetar ni recalculan puntos.
+La reversión de la migración incremental original restauraba los mensajes, la aceptación de
+`scheduledChallengeId: null`, el replay de takeover y los motivos `NULL` previos a la reconciliación.
 
 ## Estado de aplicación
 
-El 2026-10-10 se reconstruyó la base local de la aplicación con el historial completo, incluida
-esta migración. El bootstrap mínimo y health reconocen la revisión reconciliada. La reversión
-y reaplicación siguen verificándose en bases desechables.
+El 2026-10-10 la base local se reconstruyó primero con 33 migraciones y después con el baseline
+único. La validación del baseline y su estado final se registran en
+[la guía de instalación limpia](supabase-clean-installation.md). No se ha accedido a staging.
 
 El [procedimiento de instalación limpia](supabase-clean-installation.md) registra el estado local
 y deja definida la ejecución posterior de staging. Ningún entorno remoto se ha

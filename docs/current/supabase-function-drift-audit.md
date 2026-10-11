@@ -1,15 +1,15 @@
-# Auditoría de las 14 funciones SQL pendientes de sincronizar
+# Auditoría histórica de las 14 funciones SQL
 
-> Estado: auditoría histórica completada; diferencias reconciliadas localmente mediante una migración posterior.
+> Estado: auditoría histórica completada. Las diferencias se reconciliaron y quedaron incluidas en el baseline actual.
 
-Este documento conserva los resultados anteriores a la corrección. La
-[reconciliación implementada](competitive-command-reconciliation.md) registra las decisiones,
-la migración, sus pruebas y el estado de aplicación.
+Este documento conserva los resultados anteriores a la reconciliación. La
+[reconciliación implementada](competitive-command-reconciliation.md) registra las decisiones y
+las pruebas vigentes; su migración incremental original está disponible en Git.
 
-Fecha: 2026-10-09. Revisión reconstruida:
+Fecha: 2026-10-09. Revisión reconstruida antes de reconciliar:
 `20261009180205_question_validation_by_format`.
 
-## Resultado y recomendación
+## Resultado histórico
 
 El historial de migraciones y el esquema declarativo construyen las mismas 217 funciones,
 pero conservan 14 diferencias en sus definiciones efectivas. Tres son exclusivamente comentarios
@@ -17,19 +17,18 @@ o formato; once cambian código ejecutable. Las firmas, retornos, propietarios y
 coinciden. `take_over_attempt` también cambia de lenguaje: PL/pgSQL en las migraciones y SQL
 en el esquema declarativo.
 
-Conviene preparar una migración posterior de reconciliación después de corregir el motivo de
-revocación en `close_attempt_as_abandoned` y fijar las expectativas de transferencia. Una
-sincronización automática sin revisar incluiría cambios de errores, autorización y auditoría,
-además de una eliminación/recreación de `take_over_attempt` que se puede evitar.
+La reconciliación posterior corrigió el motivo de revocación y fijó las expectativas de
+transferencia. El SQL incremental se consolidó después en el baseline inicial; las decisiones
+y contratos vigentes se documentan en la reconciliación implementada.
 
-Esta auditoría añade un informe y una herramienta reproducible. Las definiciones SQL y el
-historial de migraciones conservan su comportamiento previo. Todo el SQL de observación se
-ejecutó en bases locales desechables, que se eliminaron al finalizar.
+Esta auditoría registró el informe previo a la reconciliación. Su herramienta reproducible sigue
+comparando el baseline activo con los schemas. Todo el SQL de observación se ejecutó en bases
+locales desechables, que se eliminaron al finalizar.
 
 ## Método y evidencia
 
 La [herramienta de auditoría](../../scripts/audit-supabase-function-drift.mjs) reconstruye dos
-bases desde cero: una con los 32 archivos de migraciones y otra con los 80 archivos declarativos.
+bases desde cero: una con el baseline activo y otra con los 80 archivos declarativos.
 Carga cada directorio en orden lexicográfico, comprueba el inventario de seguridad y consulta
 `pg_proc` para comparar las definiciones finales, incluidas las funciones sustituidas varias
 veces. Esto evita atribuir a una declaración antigua un comportamiento que otra posterior
@@ -65,22 +64,22 @@ las entradas posibles.
 Todas las funciones de esta tabla pertenecen a `private`. La columna de migración identifica
 su última declaración efectiva, no necesariamente la migración más reciente del repositorio.
 
-| Función                        | Declaración efectiva del esquema                                                                               | Última migración que la declara                                                                                                                     | Diferencia y decisión recomendada                                                                                                                                                                                  |
-| ------------------------------ | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `activate_interaction`         | [99_pyramid_activation.sql](../../supabase/schemas/99_pyramid_activation.sql), línea 65                        | [20260928193000_pyramid_level_activation.sql](../../supabase/migrations/20260928193000_pyramid_level_activation.sql), línea 76                      | Añade comprobación de transferencia antes de `session_revoked`. Adoptar la versión declarativa; el cambio de mensaje se reproduce con una sesión ya transferida.                                                   |
-| `authorize_attempt_replay`     | [88_command_support.sql](../../supabase/schemas/88_command_support.sql), línea 32                              | [20261007130000_attempt_control_transfer.sql](../../supabase/migrations/20261007130000_attempt_control_transfer.sql), línea 33                      | Solo espacios y saltos de línea. Alinear el texto con el historial si se quiere eliminar ruido del generador.                                                                                                      |
-| `close_attempt_as_abandoned`   | [35_authoritative_state.sql](../../supabase/schemas/35_authoritative_state.sql), línea 97                      | [20261007120000_permission_revoked_attempt_closure.sql](../../supabase/migrations/20261007120000_permission_revoked_attempt_closure.sql), línea 49  | Añade `permission_revoked` a todas las sesiones cerradas, incluso por abandono e inactividad. Corregir esa asignación antes de migrar.                                                                             |
-| `execute_command`              | [90_commands.sql](../../supabase/schemas/90_commands.sql), línea 5                                             | [20261004141603_alphabet_atomic_completion.sql](../../supabase/migrations/20261004141603_alphabet_atomic_completion.sql), línea 551                 | Exige `scheduledChallengeId` para takeover y usa `takeover_confirmed` en auditoría. Migrar junto con `take_over_attempt`.                                                                                          |
-| `expire_stale_attempts`        | [59_superadmin_calendar_commands.sql](../../supabase/schemas/59_superadmin_calendar_commands.sql), línea 517   | [20261003222852_room_history_effective_alphabet.sql](../../supabase/migrations/20261003222852_room_history_effective_alphabet.sql), línea 5         | Delega el cierre al helper y cambia `request_id`. Adoptar la delegación tras corregir el helper y acordar la correlación de auditoría.                                                                             |
-| `manage_room_member_command`   | [91_room_membership_commands.sql](../../supabase/schemas/91_room_membership_commands.sql), línea 5             | [20261007120000_permission_revoked_attempt_closure.sql](../../supabase/migrations/20261007120000_permission_revoked_attempt_closure.sql), línea 220 | Solo cambia la presentación de una llamada. Sin diferencia de reglas ni permisos.                                                                                                                                  |
-| `publish_flash_command`        | [59_superadmin_editorial_commands.sql](../../supabase/schemas/59_superadmin_editorial_commands.sql), línea 400 | [20260926080239_initial_schema.sql](../../supabase/migrations/20260926080239_initial_schema.sql), línea 4558                                        | Solo añade un comentario sobre Alfabeto. Sin diferencia ejecutable.                                                                                                                                                |
-| `recover_attempt`              | [91_attempt_recovery.sql](../../supabase/schemas/91_attempt_recovery.sql), línea 79                            | [20261006110000_competitive_command_recovery.sql](../../supabase/migrations/20261006110000_competitive_command_recovery.sql), línea 87              | Añade comprobación de transferencia después del lock. Adoptar la versión declarativa; la diferencia se reproduce en concurrencia.                                                                                  |
-| `reveal_progressive_clue`      | [94_progressive_clues.sql](../../supabase/schemas/94_progressive_clues.sql), línea 3                           | [20261006110000_competitive_command_recovery.sql](../../supabase/migrations/20261006110000_competitive_command_recovery.sql), línea 543             | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
-| `submit_logic_code_attempt`    | [93_logic_code.sql](../../supabase/schemas/93_logic_code.sql), línea 46                                        | [20261006110000_competitive_command_recovery.sql](../../supabase/migrations/20261006110000_competitive_command_recovery.sql), línea 394             | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
-| `submit_mini_wordle_guess`     | [92_mini_wordle_commands.sql](../../supabase/schemas/92_mini_wordle_commands.sql), línea 3                     | [20261006110000_competitive_command_recovery.sql](../../supabase/migrations/20261006110000_competitive_command_recovery.sql), línea 251             | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
-| `submit_word_hashtag_swap`     | [99_word_hashtag.sql](../../supabase/schemas/99_word_hashtag.sql), línea 179                                   | [20261006110000_competitive_command_recovery.sql](../../supabase/migrations/20261006110000_competitive_command_recovery.sql), línea 1071            | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
-| `submit_word_search_selection` | [99_word_search.sql](../../supabase/schemas/99_word_search.sql), línea 60                                      | [20261006110000_competitive_command_recovery.sql](../../supabase/migrations/20261006110000_competitive_command_recovery.sql), línea 1236            | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
-| `take_over_attempt`            | [90_commands.sql](../../supabase/schemas/90_commands.sql), línea 90                                            | [20261007130000_attempt_control_transfer.sql](../../supabase/migrations/20261007130000_attempt_control_transfer.sql), línea 127                     | Sustituye una implementación autónoma por una fachada SQL. Cambia validación, autorización de replays y metadatos de auditoría. Reconciliar con el dispatcher mediante `CREATE OR REPLACE`, conservando OID y ACL. |
+| Función                        | Declaración efectiva del esquema                                                                               | Última migración que la declara                                    | Diferencia y decisión recomendada                                                                                                                                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `activate_interaction`         | [99_pyramid_activation.sql](../../supabase/schemas/99_pyramid_activation.sql), línea 65                        | `20260928193000_pyramid_level_activation.sql`, línea 76            | Añade comprobación de transferencia antes de `session_revoked`. Adoptar la versión declarativa; el cambio de mensaje se reproduce con una sesión ya transferida.                                                   |
+| `authorize_attempt_replay`     | [88_command_support.sql](../../supabase/schemas/88_command_support.sql), línea 32                              | `20261007130000_attempt_control_transfer.sql`, línea 33            | Solo espacios y saltos de línea. Alinear el texto con el historial si se quiere eliminar ruido del generador.                                                                                                      |
+| `close_attempt_as_abandoned`   | [35_authoritative_state.sql](../../supabase/schemas/35_authoritative_state.sql), línea 97                      | `20261007120000_permission_revoked_attempt_closure.sql`, línea 49  | Añade `permission_revoked` a todas las sesiones cerradas, incluso por abandono e inactividad. Corregir esa asignación antes de migrar.                                                                             |
+| `execute_command`              | [90_commands.sql](../../supabase/schemas/90_commands.sql), línea 5                                             | `20261004141603_alphabet_atomic_completion.sql`, línea 551         | Exige `scheduledChallengeId` para takeover y usa `takeover_confirmed` en auditoría. Migrar junto con `take_over_attempt`.                                                                                          |
+| `expire_stale_attempts`        | [59_superadmin_calendar_commands.sql](../../supabase/schemas/59_superadmin_calendar_commands.sql), línea 517   | `20261003222852_room_history_effective_alphabet.sql`, línea 5      | Delega el cierre al helper y cambia `request_id`. Adoptar la delegación tras corregir el helper y acordar la correlación de auditoría.                                                                             |
+| `manage_room_member_command`   | [91_room_membership_commands.sql](../../supabase/schemas/91_room_membership_commands.sql), línea 5             | `20261007120000_permission_revoked_attempt_closure.sql`, línea 220 | Solo cambia la presentación de una llamada. Sin diferencia de reglas ni permisos.                                                                                                                                  |
+| `publish_flash_command`        | [59_superadmin_editorial_commands.sql](../../supabase/schemas/59_superadmin_editorial_commands.sql), línea 400 | `20260926080239_initial_schema.sql`, línea 4558                    | Solo añade un comentario sobre Alfabeto. Sin diferencia ejecutable.                                                                                                                                                |
+| `recover_attempt`              | [91_attempt_recovery.sql](../../supabase/schemas/91_attempt_recovery.sql), línea 79                            | `20261006110000_competitive_command_recovery.sql`, línea 87        | Añade comprobación de transferencia después del lock. Adoptar la versión declarativa; la diferencia se reproduce en concurrencia.                                                                                  |
+| `reveal_progressive_clue`      | [94_progressive_clues.sql](../../supabase/schemas/94_progressive_clues.sql), línea 3                           | `20261006110000_competitive_command_recovery.sql`, línea 543       | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
+| `submit_logic_code_attempt`    | [93_logic_code.sql](../../supabase/schemas/93_logic_code.sql), línea 46                                        | `20261006110000_competitive_command_recovery.sql`, línea 394       | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
+| `submit_mini_wordle_guess`     | [92_mini_wordle_commands.sql](../../supabase/schemas/92_mini_wordle_commands.sql), línea 3                     | `20261006110000_competitive_command_recovery.sql`, línea 251       | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
+| `submit_word_hashtag_swap`     | [99_word_hashtag.sql](../../supabase/schemas/99_word_hashtag.sql), línea 179                                   | `20261006110000_competitive_command_recovery.sql`, línea 1071      | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
+| `submit_word_search_selection` | [99_word_search.sql](../../supabase/schemas/99_word_search.sql), línea 60                                      | `20261006110000_competitive_command_recovery.sql`, línea 1236      | Misma comprobación después del lock. Adoptar la versión declarativa y conservar el caso concurrente.                                                                                                               |
+| `take_over_attempt`            | [90_commands.sql](../../supabase/schemas/90_commands.sql), línea 90                                            | `20261007130000_attempt_control_transfer.sql`, línea 127           | Sustituye una implementación autónoma por una fachada SQL. Cambia validación, autorización de replays y metadatos de auditoría. Reconciliar con el dispatcher mediante `CREATE OR REPLACE`, conservando OID y ACL. |
 
 ## Transferencia: siete comprobaciones pendientes
 
@@ -206,10 +205,10 @@ observaciones de los 41 casos. Puede elegirse otra ruta con `--output=ruta.json`
 Resultado observado en esta revisión:
 
 ```text
-migrations: 32 files, 217 functions; security inventory passed.
+migrations: 1 file, 217 functions; security inventory passed.
 schemas: 80 files, 217 functions; security inventory passed.
-14 definition differences: 3 cosmetic.
-41 behavior probes: 20 differing outcomes.
+0 definition differences: 0 cosmetic.
+41 behavior probes: 0 differing outcomes.
 ```
 
 La herramienta es una auditoría diferencial: tener diferencias no provoca fallo de salida.
@@ -217,22 +216,12 @@ Fallan la carga, el inventario, una discrepancia en las firmas o la barrera de c
 Al reconciliar las funciones, los casos intencionadamente modificados deben convertirse en
 pruebas con expectativas del contrato elegido, para que una regresión sí falle.
 
-## Siguiente trabajo concreto
+## Cierre
 
-1. Corregir en el esquema declarativo el motivo de revocación del helper de cierre y decidir
-   los metadatos de auditoría de expiración y takeover. Añadir expectativas para los tres
-   motivos de cierre y los cuatro campos nulos de transferencia.
-2. Incorporar las siete comprobaciones de transferencia y reconciliar conjuntamente dispatcher
-   y fachada. Alinear las tres diferencias de texto si se quiere una generación sin ruido.
-3. Generar una migración incremental posterior con `supabase:db:schema:sync --no-apply`.
-   Revisar el SQL generado, sustituir la eliminación/recreación por `CREATE OR REPLACE` y
-   comprobar que no modifica tablas, datos existentes ni firmas públicas.
-4. Probar actualización desde esta revisión con fixtures de intentos y respuestas; comprobar
-   preservación de hechos, sesiones, puntos, auditoría, permisos y tipos. Ejecutar las suites
-   SQL por ambas vías y las carreras de transferencia/acciones, transferencia/recuperación,
-   cierre/inactividad y pérdida de permisos; verificar contratos HTTP y revisión de esquema.
-5. Documentar los cambios intencionados de errores y preparar una reversión conjunta de los
-   cuerpos anteriores. La validación en staging será una fase posterior al cambio local.
+La reconciliación se completó el 2026-10-09 y se incorporó al baseline generado el 2026-10-10.
+Las dos vías de carga conservan las mismas 217 funciones y el mismo inventario de seguridad;
+los 41 contratos y las carreras de transferencia no muestran diferencias de comportamiento.
+La validación de staging sigue pendiente.
 
 Estos cambios pertenecen a una reconciliación del motor competitivo, separada del
 [refactor de validadores por formato](sql-question-validation-refactor.md).

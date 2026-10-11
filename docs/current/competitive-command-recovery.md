@@ -102,13 +102,10 @@ ni un registro alternativo de respuestas/puntos.
 
 ## Despliegue
 
-1. Aplicar las migraciones pendientes del historial hasta `20261009190015_competitive_command_reconciliation`,
-   incluidas las [de recuperación](../../supabase/migrations/20261006110000_competitive_command_recovery.sql),
-   [de cierre por permisos](../../supabase/migrations/20261007120000_permission_revoked_attempt_closure.sql),
-   [de transferencia](../../supabase/migrations/20261007130000_attempt_control_transfer.sql)
-   y [de reconciliación](../../supabase/migrations/20261009190015_competitive_command_reconciliation.sql) antes del cliente;
-   verificar la revisión `20261009190015_competitive_command_reconciliation`.
-   Mantiene datos existentes; no recalcula puntos, añade tablas ni purga claves.
+1. Tras el reset acordado, reconstruir la base con el [baseline activo](../../supabase/migrations/20261010214230_initial_schema.sql)
+   antes del cliente y verificar la revisión `20261010214230_initial_schema`. El baseline incluye
+   recuperación, cierre por permisos, transferencia y reconciliación. El reset elimina los datos
+   anteriores; no se migran intentos ni sesiones entre revisiones.
    La [reconciliación](competitive-command-reconciliation.md) documenta errores de transferencia,
    validación de campos nulos y permisos vigentes en replays; las transferencias ya confirmadas
    conservan su resultado y su deadline cuando la cuenta mantiene acceso.

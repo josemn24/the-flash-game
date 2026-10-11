@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-10-01.
+Última actualización documental: 2026-10-11.
 
 # Estado actual del proyecto
 
@@ -227,9 +227,10 @@ directamente a usuarios Auth existentes. La UI pública no ofrece ninguna capaci
 - La Fase 3 retira la compatibilidad productiva: los barrels y aliases legacy quedan limitados a
   adaptadores mock y tests, y `npm run type-architecture` bloquea nuevas dependencias cruzadas.
 
-## Verificación actual
+## Verificación anterior al baseline — 2026-09-30
 
-Estado verificado a 2026-09-30:
+Esta fotografía corresponde al historial incremental que precedió al baseline. Sus comprobaciones
+no describen la revisión activa actual:
 
 - `npm run schema:revision:check`: correcto; migración, health check, `.env.example` y piloto usan
   `20260929210000_remove_legacy_flash_history_wrappers`.

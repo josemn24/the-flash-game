@@ -2,8 +2,9 @@
 
 # Validación SQL por formato
 
-La revisión `20261009180205_question_validation_by_format` divide las reglas antes concentradas
-en `54_question_validation.sql`. Conserva la aceptación, el rechazo, la compatibilidad histórica,
+La migración incremental original `20261009180205_question_validation_by_format` dividió las
+reglas antes concentradas en `54_question_validation.sql`. El refactor está integrado en el
+baseline activo `20261010214230_initial_schema`. Conserva la aceptación, el rechazo, la compatibilidad histórica,
 los errores y los permisos de la implementación del commit
 `eddd90c80acf5fff7d2e8180b137826385176ab7`.
 
@@ -45,8 +46,9 @@ search path y volatilidad de estos validadores, tanto desde el esquema como desd
 Las pruebas cargan archivos planos en orden lexicográfico: `53_*`, `54_*`, `54z_*` y los
 helpers posteriores. Los archivos declaran `set local check_function_bodies = off` para resolver
 las referencias diferidas después de la carga completa, siguiendo la convención existente.
-La migración crea y protege los helpers antes de sustituir las dos fachadas. No elimina
-funciones existentes ni modifica tablas, datos, RPCs públicas o tipos públicos generados.
+El SQL del baseline crea y protege los helpers antes de sustituir las dos fachadas. No elimina
+funciones existentes ni modifica tablas, RPCs públicas o tipos públicos generados. El backfill
+histórico no forma parte de la instalación limpia.
 
 ## Pruebas de compatibilidad
 
@@ -65,7 +67,6 @@ No se regeneran expectativas para hacer pasar un movimiento de código.
 ```bash
 npm run supabase:schema:test
 npm run supabase:schema:test -- --migrations
-npm run supabase:schema:test -- --upgrade-question-validation
 npm test -- lib/question-formats/conformance.test.ts
 npm run test:e2e:isolated -- e2e/format-contracts.spec.ts e2e/format-contracts-pyramid.spec.ts
 npm run typecheck
@@ -76,13 +77,9 @@ npm run docs:check
 npm run supabase:types:check
 ```
 
-Las dos primeras vías ejecutan contratos, pgTAP, inventario y concurrencia en bases desechables.
-La prueba de actualización carga las migraciones hasta
-`20261009172416_queens_pyramid_validation_limit`, comprueba la referencia original y guarda
-fixtures con versiones publicadas, un intento completado, respuestas, recepciones, puntos y
-otro intento activo. Aplica únicamente la migración del refactor y compara todas las filas de
-las tablas del dominio. También verifica que ninguna función anterior cambie de OID, firma,
-atributos o permisos, y que solo cambien los cuerpos de las dos fachadas acordadas.
+Las dos vías ejecutan contratos, pgTAP, inventario y concurrencia en bases desechables. La prueba
+de upgrade que dependía de una revisión incremental concreta se retiró al reemplazar el historial;
+el corpus de 904 observaciones y las suites SQL comprueban las garantías vigentes desde ambos orígenes.
 Los E2E usan un stack separado. Estas comprobaciones no despliegan a staging.
 
 Validación local del 2026-10-09: pasan las 54 suites pgTAP, el inventario y la concurrencia
@@ -91,9 +88,9 @@ los 160 tests de conformance TypeScript y los tres tests de health. La actualiza
 las 31 tablas del dominio. Pasan tipos, arquitectura, revisión de esquema, enlaces y formato;
 los tipos públicos generados permanecen iguales.
 
-El 2026-10-10 también se aplicó el historial completo a la base local de la aplicación mediante
-el [procedimiento de instalación limpia](supabase-clean-installation.md), incluida la reconciliación
-posterior de comandos. La ejecución y validación de staging quedan pendientes.
+El 2026-10-10 se instaló primero el historial incremental y después el baseline único en la base
+local de la aplicación mediante el [procedimiento de instalación limpia](supabase-clean-installation.md).
+La ejecución y validación de staging quedan pendientes.
 
 Los E2E de Flash y Pirámide pasan usando `next build` y `next start` en stacks desechables,
 con una configuración temporal fuera del repositorio que solo cambia el arranque del servidor
@@ -121,18 +118,18 @@ Para revertir tras un despliegue, crear una migración posterior; no editar el h
 5. Repetir las pruebas de contratos, errores, seguridad, migraciones y E2E antes del despliegue.
    La reversión no necesita reescribir datos.
 
-## Diferencias previas fuera del alcance
+## Diferencias fuera del alcance del refactor original
 
 El workflow `supabase:db:schema:sync -- --name question_validation_by_format --no-apply`
 también detectó divergencias anteriores entre el historial y el esquema declarativo en
 14 funciones: activación, recuperación y abandono de intentos, dispatcher de comandos,
 expiración, gestión de miembros, publicación y varios comandos de formatos. Incluía una
 eliminación/recreación de `take_over_attempt`. Esas operaciones se excluyeron de la migración
-generada para mantener el alcance acordado. No se han corregido como parte de este refactor;
-la prueba de actualización exige que sus definiciones anteriores permanezcan intactas.
+original para mantener el alcance acordado. Se reconciliaron después y quedaron incorporadas en
+el baseline activo; la auditoría enlazada documenta las decisiones y sus contratos.
 
-La [auditoría posterior de estas 14 funciones](supabase-function-drift-audit.md) distingue
-diferencias de formato, errores bajo concurrencia y cambios de autorización y auditoría.
+La [auditoría posterior de estas 14 funciones](supabase-function-drift-audit.md) registra las
+diferencias históricas de formato, errores bajo concurrencia y cambios de autorización y auditoría.
 
 El lint global también encuentra dos avisos anteriores de variables sin uso en
 [betavip.spec.ts](../../e2e/betavip.spec.ts) (`alphabet`) y

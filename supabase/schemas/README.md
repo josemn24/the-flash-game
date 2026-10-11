@@ -1,10 +1,11 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 80 archivos y su revisión canónica es
-`20261009190015_competitive_command_reconciliation`. Las migraciones incrementales corresponden a esos archivos;
-la rama de respaldo conserva el historial incremental anterior. La validación
+`20261010214230_initial_schema`. El historial activo contiene un baseline generado desde esos
+archivos; las migraciones incrementales anteriores permanecen únicamente en Git. La validación
 local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
-pasan en esa ejecución. La CLI tiene staging vinculado, aunque esta revisión aún no se ha aplicado allí.
+pasan en esa ejecución. El baseline se aplicó a Supabase local en un reset limpio; esta actualización
+no ejecutó comandos ni validaciones remotas.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
@@ -15,7 +16,7 @@ La organización, las comprobaciones y la reversión se describen en
 [validación SQL por formato](../../docs/current/sql-question-validation-refactor.md).
 La [reconciliación de comandos](../../docs/current/competitive-command-reconciliation.md) sustituye
 once cuerpos, conserva OIDs y permisos, y distingue cierres normales de pérdida de permisos.
-Su aplicación se ha verificado en bases desechables; sigue pendiente en la base de la aplicación.
+Su aplicación se verificó en bases desechables y forma parte del baseline aplicado localmente.
 **31 tablas**, una vista
 interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S15, S17a, S18b parcial, S05-Alphabet, F* y E* conectan
@@ -53,15 +54,16 @@ sin solución pública y evaluación binaria. E05 añade Queens con borradores l
 validación server-side del tablero completo, eventos privados de validación, penalización del 5%,
 recuperación del tablero y resolución terminal server-side. E06 añade Word-search
 con soluciones privadas, selecciones server-side, errores persistidos, recuperación e idempotencia. S05 añade Alphabet
-con referencias publicadas `short-text`, reloj global, pases y lecturas terminales autorizadas. Las migraciones están versionadas;
-no hay seed global; la CLI local mantiene un enlace de staging sin que esta revisión se haya desplegado.
+con referencias publicadas `short-text`, reloj global, pases y lecturas terminales autorizadas.
+El baseline está aplicado en local; no hay seed global y esta validación no ejecutó operaciones remotas.
 
-La revisión `20261007180832_attempt_lifecycle_contracts` limita el resultado persistido a
+La revisión histórica `20261007180832_attempt_lifecycle_contracts`, hoy incluida en el baseline,
+limita el resultado persistido a
 `survived`, `eliminated`, `summit`, `failed` o `null`. Dos CHECK y `guard_attempt` exigen
 combinaciones válidas según el modo de la versión; invalidar conserva los hechos originales.
 Cierres y lecturas terminales proyectan `challengeMode` y `outcome` explícitos. La recuperación
 mantiene `terminalOutcome` derivado como señal independiente. No hay backfills ni traducciones
-históricas; el despliegue requiere la base reiniciada acordada. Véase
+históricas; cualquier despliegue remoto requiere seguir el procedimiento de reset aprobado. Véase
 [el contrato completo](../../docs/current/attempt-lifecycle.md).
 
 La revisión `20261004141603_alphabet_atomic_completion` cierra Alphabet competitivo en una
@@ -396,7 +398,7 @@ Los tests de defaults, DML y respuesta sin presentación fallan con el diseño a
 provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
 semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
 
-Última validación local completa registrada (expiración de intentos inactivos, 2026-09-29): `check-supabase-schema` cargó **54 archivos declarativos**
+Validación histórica del 2026-09-29 (expiración de intentos inactivos): `check-supabase-schema` cargó **54 archivos declarativos**
 y el inventario de seguridad; pasan las suites existentes, S20 (21 checks) y S21 (14 checks), además de las carreras
 las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
 **26 checks pgTAP de E01, 24 de E02, 28 de E03,

@@ -63,15 +63,14 @@ el rango más próximo. Los artefactos en `output/performance/` están ignorados
 
 ## Migración y reversión
 
-El cambio sigue el flujo declarativo de [Supabase](../../supabase/schemas/README.md). La migración
-aditiva [20261002131451_competitive-read-projections.sql](../../supabase/migrations/20261002131451_competitive-read-projections.sql)
-crea las dos funciones y fija sus permisos. El inventario de seguridad, los tipos públicos
+El cambio sigue el flujo declarativo de [Supabase](../../supabase/schemas/README.md). El
+[baseline activo](../../supabase/migrations/20261010214230_initial_schema.sql) contiene las dos
+funciones y sus permisos. El inventario de seguridad, los tipos públicos
 Supabase y los marcadores del health check están sincronizados.
 
-Aplicar la migración antes del código y configurar
-`EXPECTED_SCHEMA_REVISION=20261002131451_competitive-read-projections`. Las funciones anteriores se
-conservan: se puede revertir el código sin retirar la migración. La aplicación local de la migración
-está verificada; el despliegue remoto queda fuera de este cambio.
+Reconstruir el entorno desde el baseline antes de desplegar el código y configurar
+`EXPECTED_SCHEMA_REVISION=20261010214230_initial_schema`. El despliegue remoto queda pendiente
+de una ventana de reinicio.
 
 ## Verificación local y medición
 

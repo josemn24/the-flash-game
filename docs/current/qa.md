@@ -1,7 +1,23 @@
-> Estado: vigente. Fotografía de las comprobaciones automatizadas del repositorio a 2026-09-30;
+> Estado: vigente. La sección de baseline registra las comprobaciones de 2026-10-10; las secciones
+> fechadas mantienen sus resultados históricos y no sustituyen esa verificación actual.
 > no sustituye una auditoría manual de accesibilidad o interacción.
 
 # QA actual
+
+## Baseline inicial de Supabase — 2026-10-11
+
+El baseline `20261010214230_initial_schema` se probó desde cero en Supabase local. Pasan las 55
+suites SQL, inventario y concurrencia al cargar `supabase/schemas/` y al aplicar la única migración;
+la reconciliación informa cero diferencias de definición y comportamiento. Pasan también las 158
+comprobaciones SQL compartidas, las 904 observaciones de validación, los contratos concurrentes,
+`schema:revision:check`, `supabase:types:check`, `docs:check` y `verify:pilot` completo, incluidos
+unit tests, typecheck, arquitectura, lint, build, integración, E2E, diccionario y backup/restore.
+
+El reset local final confirma una sola revisión aplicada, cero usuarios de Auth, cero filas en las
+tablas de `public` y `private`, cero objetos de Storage y únicamente los buckets locales configurados
+vacíos. No se hicieron operaciones ni validaciones en staging.
+
+Las secciones fechadas a continuación conservan el contexto de comprobaciones anteriores.
 
 ## Extracción de renderizadores por formato — 2026-10-03
 
@@ -89,12 +105,13 @@ Narrativa, E07–E09, takeover, `results_locked_at`, pruebas fantasma y anonimiz
 la expiración por inactividad de intentos competitivos ya está implementada mediante tick y
 reconciliación bajo demanda; S20 ya cubre las correcciones administrativas de resultados.
 
-El esquema declarativo vigente contiene 54 archivos y la revisión canónica es
-`20260929210000_remove_legacy_flash_history_wrappers`. El historial local incluye además las revisiones declarativas de S17 y S15;
-hay 30 tablas, una vista interna y un inventario de seguridad registrado. La CLI local tiene un proyecto
-de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
+El esquema declarativo vigente contiene 80 archivos y la revisión activa es
+`20261010214230_initial_schema`, un baseline generado desde esos archivos. El historial incremental
+anterior se conserva en Git. El esquema contiene 31 tablas, una vista interna y un inventario de
+seguridad registrado. La validación del baseline se ejecuta en local; staging queda fuera de esta
+fotografía.
 
-## Comprobaciones ejecutadas actualmente
+## Comprobaciones ejecutadas — fotografía anterior al baseline
 
 - `npm run schema:revision:check`: correcto.
 - `npm run docs:check`: correcto; 65 archivos Markdown comprobados.
@@ -109,7 +126,7 @@ de staging vinculado, pero S17 todavía no se ha aplicado ni validado allí.
 - `npm run stylelint`: correcto; no informa errores.
 - `npm run test:pwa:worker`: correcto; el service worker es JavaScript válido.
 - `npm run dictionary:check`: correcto; los diccionarios de 4 y 5 letras están actualizados.
-- `npm run supabase:schema:test`: correcto; 54 archivos declarativos, inventario de seguridad y la
+- `npm run supabase:schema:test`: correcto; 80 archivos declarativos, inventario de seguridad y la
   suite nueva `s21_attempt_expiration.test.sql` pasan, incluidas las pruebas concurrentes.
 
 Las validaciones focales de S17, la integración Auth/PostgREST/RLS y los E2E descritos en los registros

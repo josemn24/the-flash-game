@@ -181,8 +181,9 @@ termina el ascenso con cero puntos para Queens y conserva los niveles anteriores
 comando idempotente y no consumen otra oportunidad. La UI permite editar entre validaciones y se
 bloquea mientras espera confirmación. Se conserva la política de timeout y recuperación de Pirámide.
 
-La migración `20261009172416_queens_pyramid_validation_limit` actualiza funciones existentes, sin
-añadir tablas ni contadores persistidos ni migrar partidas anteriores. Para comprobar un esquema
+La migración histórica `20261009172416_queens_pyramid_validation_limit` quedó consolidada en el
+baseline activo; actualiza funciones existentes, sin añadir tablas ni contadores persistidos ni
+migrar partidas anteriores. Para comprobar un esquema
 limpio y el flujo de navegador sin reiniciar la base habitual:
 
 ```bash

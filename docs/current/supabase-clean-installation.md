@@ -2,9 +2,10 @@
 
 > Estado: vigente. Entornos admitidos: local y staging. La instalación registrada es local; la ejecución y validación de staging quedan pendientes de una ventana posterior.
 
-Esta es la guía principal para elegir y preparar un entorno. Se mantienen los proyectos existentes
-y el historial completo de migraciones. Un reinicio completo elimina datos de aplicación, usuarios
-de Auth y archivos de Storage; debe hacerse únicamente cuando esos datos sean prescindibles.
+Esta es la guía principal para elegir y preparar un entorno. La migración activa es un baseline
+generado desde `supabase/schemas/`; el historial incremental anterior permanece en Git. Un reinicio
+completo elimina datos de aplicación, usuarios de Auth y archivos de Storage; debe hacerse
+únicamente cuando esos datos sean prescindibles.
 
 ## Qué necesito preparar
 
@@ -27,11 +28,11 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261009190015_competitive_command_reconciliation`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
+La revisión esperada es `20261010214230_initial_schema`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
 
 ## Herramientas y garantías
 
-- `supabase:environment:reset` exige `--target local|staging`. Cualquier otro destino se rechaza antes de cargar el archivo de entorno o ejecutar operaciones, incluso con `--dry-run`. Elimina archivos y buckets por la API de Storage, elimina usuarios por Auth Admin y reconstruye PostgreSQL con todas las migraciones, sin seed. No borra archivos mediante SQL.
+- `supabase:environment:reset` exige `--target local|staging`. Cualquier otro destino se rechaza antes de cargar el archivo de entorno o ejecutar operaciones, incluso con `--dry-run`. Elimina archivos y buckets por la API de Storage, elimina usuarios por Auth Admin y reconstruye PostgreSQL con la migración activa, sin seed. No borra archivos mediante SQL.
 - El destino local comprueba URL, puerto y contenedor frente a `supabase/config.toml`. El remoto comprueba la referencia, URL de API, conexión administrativa y proyecto enlazado en la CLI antes de borrar nada. La CLI recibe también la referencia explícita.
 - Un reinicio remoto requiere `SUPABASE_RESET_CONFIRM=<entorno>:<project-ref>` y `FLASH_WRITES_PAUSED=true`, después de detener acceso y calendario. Estas variables documentan la intervención del operador; el script no bloquea Vercel ni desactiva su cron automáticamente.
 - `--dry-run` muestra destino y operaciones. No crea clientes de API, escribe manifiestos ni ejecuta migraciones. Puede consultar el estado de la CLI local si faltan sus parámetros en el entorno.
@@ -165,15 +166,21 @@ datos que se quieran conservar. El fixture sin `--clean` no ejecuta un reset aut
 Consultar los escenarios y sus pruebas concretas en `scripts/fixtures/scenarios/`,
 `scripts/integration/scenarios/` y la [operación del piloto](s22-operacion.md).
 
-## Registro de la instalación mínima local
+## Registro de instalaciones locales
 
-### Ejecución local — 2026-10-10
+### Instalación anterior con bootstrap — 2026-10-10 (histórica)
 
-Se reiniciaron PostgreSQL, Auth y Storage del stack `the-flash-game` y se aplicaron las 33 migraciones. El estado verificado contiene un superadmin y su jugador, un único evento de asignación, 2.433 palabras de cuatro letras y 8.774 de cinco letras, y dos buckets vacíos. No hay salas, temporadas, preguntas, desafíos, intentos ni puntos.
+Antes de consolidar el historial se reiniciaron PostgreSQL, Auth y Storage del stack `the-flash-game` y se aplicaron las 33 migraciones. El estado verificado contiene un superadmin y su jugador, un único evento de asignación, 2.433 palabras de cuatro letras y 8.774 de cinco letras, y dos buckets vacíos. No hay salas, temporadas, preguntas, desafíos, intentos ni puntos.
 
 Repetir el bootstrap conserva la cuenta, la contraseña y el evento de asignación. Se comprobó el acceso a `/admin` desde el navegador y health en un build de producción con alcance `pilot`: `401` sin secreto y `200` con `auth`, `database` y `schema` en `true`. Las credenciales tienen permisos `0600`. La evidencia sin contraseñas queda en `output/local/installation-verification.json`.
 
-Los 12 E2E existentes de Flash, recuperación, Pirámide y contratos por formato pasan usando un stack local aislado y el arranque `next build`/`next start`. Se mantienen los specs, las aserciones y los tiempos de espera. Pasan las 2.007 pruebas unitarias y las 55 suites SQL, inventario y concurrencia tanto desde el esquema declarativo como desde las migraciones; la auditoría de reconciliación y las pruebas de reversión también pasan. Tipos, tipos públicos generados, arquitectura, lint, build, formato y enlaces documentales pasan. La ejecución remota queda pendiente.
+Los 12 E2E existentes de Flash, recuperación, Pirámide y contratos por formato pasan usando un stack local aislado y el arranque `next build`/`next start`. Se mantienen los specs, las aserciones y los tiempos de espera. Pasan las 2.007 pruebas unitarias y las 55 suites SQL, inventario y concurrencia tanto desde el esquema declarativo como desde las migraciones; la auditoría de reconciliación y las pruebas de reversión también pasan. Tipos, tipos públicos generados, arquitectura, lint, build, formato y enlaces documentales pasan. La validación remota quedó pendiente.
+
+### Baseline inicial limpio — 2026-10-11
+
+`npm run verify:pilot` terminó correctamente contra Supabase local: pasó la reconciliación, las 55 suites SQL por `schemas/` y por migraciones, las 158 comprobaciones SQL compartidas, las 904 observaciones de validación, los contratos concurrentes, las pruebas unitarias, typecheck, arquitectura, lint, documentación, build, integración, E2E, diccionario y backup/restore. También pasó `npm run supabase:types:check`.
+
+Al terminar el piloto se simuló y ejecutó `npm run supabase:environment:reset -- --target local`. El ledger local contiene únicamente `20261010214230_initial_schema`. Auth tiene cero usuarios; las tablas de `public` y `private` suman cero filas; Storage tiene cero objetos. La CLI local recreó solo los buckets configurados y vacíos `avatars` y `question-assets`. No se ejecutaron bootstrap ni carga de diccionarios después del reset. No se ejecutaron comandos ni validaciones contra staging.
 
 ## Staging — ejecución posterior
 
@@ -251,7 +258,7 @@ aplicación. Vercel no programa cron en previews y la ejecución automática de 
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261009190015_competitive_command_reconciliation`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION=20261010214230_initial_schema`. El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 

@@ -22,10 +22,9 @@ El esquema declarativo es la fuente de verdad:
 La configuración de Supabase usa `pg-delta` con `declarative_schema_path = "./schemas"`. El detalle
 de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/README.md).
 
-El historial activo parte de `20260926080239_initial_schema.sql` y conserva sus
-migraciones incrementales posteriores. La revisión canónica vigente es
-`20261009190015_competitive_command_reconciliation`, con 80 archivos declarativos. La rama de
-respaldo conserva el historial incremental anterior.
+El historial activo consta de `20261010214230_initial_schema.sql`, un baseline generado desde los
+80 archivos declarativos vigentes. Las migraciones incrementales anteriores permanecen en Git,
+pero ya no forman parte del historial activo.
 
 La [validación SQL por formato](../docs/current/sql-question-validation-refactor.md) documenta
 los helpers privados, las pruebas de compatibilidad y la reversión del último refactor.

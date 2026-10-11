@@ -53,19 +53,14 @@ decisiones y después los documentos afectados.
 
 ## Estado de la última revisión
 
-- Fecha: 2026-09-30.
+- Revisión funcional general: 2026-09-30; actualización de Supabase local: 2026-10-11.
 - 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
   y E01–E06/E10 sobre Supabase local.
-- La revisión declarativa canónica es `20260927172602_cancel-scheduled-challenge`; el repositorio contiene
-  53 archivos declarativos de esquema, además de 30 tablas, una vista,
+- La revisión activa es `20261010214230_initial_schema`, un baseline generado desde 80 archivos
+  declarativos de esquema, además de 31 tablas, una vista,
   funciones públicas/privadas y políticas RLS.
-- `npm run typecheck`, `npm run docs:check`, `npm run schema:revision:check`, `npm test`, `npm run lint`,
-  `npm run stylelint` y `npm run build` pasan en la comprobación actual; el build se ejecutó en un
-  checkout aislado porque el workspace principal mantiene `.next/lock`. El detalle completo está en
-  [`current/qa.md`](current/qa.md).
-- `npm run format:check` pasa; `supabase/.temp/` queda excluido por ser salida generada de la CLI.
-- `npm run supabase:schema:test` no se pudo verificar en esta ejecución porque el daemon de Docker no
-  estaba disponible; la validación remota sigue pendiente y sus límites están documentados en
-  [`supabase/schemas/README.md`](../supabase/schemas/README.md).
-- La CLI tiene un proyecto de staging vinculado; las validaciones remotas siguen pendientes.
+- El baseline local pasó `supabase:schema:test`, la validación por migraciones, reconciliación,
+  `schema:revision:check`, `supabase:types:check`, `docs:check` y `verify:pilot`; el detalle y el
+  estado limpio posterior al reset están en [`current/qa.md`](current/qa.md).
+- La validación del baseline se limitó a Supabase local. No se ejecutaron operaciones remotas.

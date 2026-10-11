@@ -37,7 +37,7 @@ const values = {
   ),
   verifyPilot: requiredValue(
     pilotSource,
-    /EXPECTED_SCHEMA_REVISION:\s*\n\s*process\.env\.EXPECTED_SCHEMA_REVISION\s*\|\|\s*["']([^"']+)["']/,
+    /EXPECTED_SCHEMA_REVISION:\s*(?:\n\s*)?process\.env\.EXPECTED_SCHEMA_REVISION\s*\|\|\s*["']([^"']+)["']/,
     "valor por defecto de verify-pilot",
   ),
 };
