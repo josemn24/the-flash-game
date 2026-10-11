@@ -101,7 +101,7 @@ export const betaVipTimeTrialQuestions = [
     position: 3,
     points: 14,
     regions: [0, 0, 0, 1, 1, 0, 1, 1, 1, 2, 0, 3, 2, 2, 2, 3, 3, 3, 2, 4, 3, 4, 4, 4, 4],
-    prefilledQueens: [0, 16],
+    prefilledQueens: [0],
     solution: [0, 7, 14, 16, 23],
   }),
   question({

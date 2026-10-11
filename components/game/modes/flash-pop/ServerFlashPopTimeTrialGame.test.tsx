@@ -135,9 +135,11 @@ it("renders Queens in the shared question stage and shows only the global timer"
 
   expect(
     screen.getByRole("heading", {
-      name: "Tablero 1 de 6. Coloca una corona por fila, columna y región.",
+      name: "Coloca una corona por fila, columna y región",
     }),
   ).toBeTruthy();
+  expect(screen.getByText("Las coronas no pueden tocarse entre sí.")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Abandonar" })).toBeNull();
   expect(screen.getByRole("grid", { name: "Tablero Queens de 4 por 4" })).toBeTruthy();
   expect(screen.getAllByRole("timer")).toHaveLength(1);
 });

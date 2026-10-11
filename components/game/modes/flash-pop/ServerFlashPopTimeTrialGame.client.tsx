@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Button, Card, Chip, GameHeader, Timer } from "@/components/ui";
+import { Card, Chip, GameHeader, Timer } from "@/components/ui";
 import {
   ChallengeIntro,
   ChallengeResultScreen,
@@ -38,6 +38,10 @@ export function ServerFlashPopTimeTrialGame({
   const endReason = session.timeTrial?.endReason;
   const lastCorrect = session.timeTrial?.lastCorrectElapsedMs;
   const timeLabel = lastCorrect == null ? "Sin aciertos" : `${(lastCorrect / 1000).toFixed(2)} s`;
+  const progressLabel = `Contrarreloj · prueba ${Math.min(
+    session.questionIndex + 1,
+    challenge.slots.length,
+  )} de ${challenge.slots.length}`;
   const reviewChallenge =
     session.reviewChallenge?.mode === "flash" ? session.reviewChallenge : null;
 
@@ -53,8 +57,8 @@ export function ServerFlashPopTimeTrialGame({
           />
           {running ? (
             <GameHeader
-              title="Contrarreloj"
-              mobileLabel={`Contrarreloj · prueba ${Math.min(session.questionIndex + 1, challenge.slots.length)} de ${challenge.slots.length}`}
+              title={progressLabel}
+              mobileLabel={progressLabel}
               className={styles.timeTrialHeader}
               actionsClassName={styles.timeTrialActions}
               right={
@@ -70,14 +74,6 @@ export function ServerFlashPopTimeTrialGame({
                   <Chip tone="social">
                     {solved} resueltas · {earned} FP
                   </Chip>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    disabled={session.busy || session.phase === "finalizing"}
-                    onClick={() => void session.abandon()}
-                  >
-                    Abandonar
-                  </Button>
                 </>
               }
             />
@@ -129,6 +125,8 @@ export function ServerFlashPopTimeTrialGame({
           <ServerFlashQuestionStage
             key={session.question.id}
             question={session.question}
+            titleOverride="Coloca una corona por fila, columna y región"
+            supportingText="Las coronas no pueden tocarse entre sí."
             questionNumber={session.questionIndex + 1}
             totalQuestions={challenge.slots.length}
             locked={session.locked}

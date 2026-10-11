@@ -16,7 +16,11 @@ function splitPrompt(prompt: string) {
 }
 
 export function ServerFlashQuestionStage(
-  props: CompetitiveInputProps & { readonly showHeader?: boolean },
+  props: CompetitiveInputProps & {
+    readonly showHeader?: boolean;
+    readonly titleOverride?: string;
+    readonly supportingText?: string;
+  },
 ) {
   const {
     question,
@@ -30,6 +34,8 @@ export function ServerFlashQuestionStage(
     presentation,
     showTimer = true,
     showHeader = true,
+    titleOverride,
+    supportingText,
     ...inputProps
   } = props;
 
@@ -98,8 +104,9 @@ export function ServerFlashQuestionStage(
         )
       ) : null}
       <ServerQuestionPanel
-        title={prompt.title}
+        title={titleOverride ?? prompt.title}
         context={prompt.context}
+        supportingText={supportingText}
         variant={structuredPresentation ? "structured" : "default"}
       >
         <CompetitiveQuestionInput
@@ -121,11 +128,13 @@ export function ServerFlashQuestionStage(
 function ServerQuestionPanel({
   title,
   context,
+  supportingText,
   children,
   variant = "default",
 }: {
   title: string;
   context?: string;
+  supportingText?: string;
   children: ReactNode;
   variant?: "default" | "structured";
 }) {
@@ -137,6 +146,7 @@ function ServerQuestionPanel({
     >
       {context ? <p className={styles.promptContext}>{context}</p> : null}
       <h1 id={titleId}>{title}</h1>
+      {supportingText ? <p className={styles.promptSupportingText}>{supportingText}</p> : null}
       {children}
     </section>
   );

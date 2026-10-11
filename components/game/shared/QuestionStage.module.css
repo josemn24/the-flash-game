@@ -73,6 +73,13 @@
     text-transform: uppercase;
   }
 
+  .promptSupportingText {
+    margin: 12px 0 0;
+    color: var(--ds-color-fg-secondary);
+    font-size: clamp(0.9rem, 2.2vw, 1rem);
+    line-height: 1.45;
+  }
+
   .questionMedia {
     margin: 24px auto 4px;
     overflow: hidden;
