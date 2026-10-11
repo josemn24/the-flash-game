@@ -268,7 +268,7 @@ describe("staging bootstrap", () => {
     ).toBe(false);
   });
 
-  it("contains the four BetaVIP challenges and canonical content counts", () => {
+  it("contains the five BetaVIP challenges and canonical content counts", () => {
     const data = stagingBetaVipManifest();
     const content = stagingBetaVipExpectedContent();
     const sql = buildStagingBetaVipDomainSql({
@@ -290,14 +290,24 @@ describe("staging bootstrap", () => {
       ["Cumbre lógica II", "pyramid", "scheduled", 24],
       ["Supervivencia: Cultura pop", "survival", "scheduled", 48],
       ["Ecos de la Antigüedad", "pyramid", "scheduled", 72],
+      ["Escalera de coronas", "time-trial", "scheduled", 96],
     ]);
     expect(content.survival).toHaveLength(20);
     expect(content.alphabet).toHaveLength(18);
     expect(content.pyramid).toHaveLength(7);
     expect(content.antiquity).toHaveLength(7);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 20, 7]);
-    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100]);
-    expect(sql).toContain("now() + interval '96 hours'");
+    expect(content.timeTrial).toHaveLength(6);
+    expect(content.timeTrial.map((item) => item.publicPayload.grid.rows)).toEqual([
+      4, 5, 5, 6, 6, 7,
+    ]);
+    expect(content.timeTrial.map((item) => item.points)).toEqual([10, 12, 14, 16, 20, 28]);
+    expect(content.timeTrial.reduce((total, item) => total + item.points, 0)).toBe(100);
+    expect(data.timeTrialPublicationId).toBe(data.publications[4].id);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 20, 7, 6]);
+    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100, 100]);
+    expect(sql).toContain("now() + interval '120 hours'");
+    expect(sql).toContain("'time-trial'");
+    expect(sql).toContain("180000");
     expect(sql).toContain('"title":"Identifica al personaje"');
     expect(sql).toContain("¿Quién gobernó Egipto?");
     expect(sql.toLowerCase()).not.toContain("tabarnia");

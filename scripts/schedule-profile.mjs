@@ -5,7 +5,7 @@ export const SCHEDULE_PROFILES = Object.freeze({
     windowStep: 24,
     windowUnit: "hours",
     tabarniaSeasonEnd: "17 days",
-    betaVipSeasonEnd: "96 hours",
+    betaVipSeasonEnd: "120 hours",
   }),
   fast: Object.freeze({
     name: "fast",
@@ -13,7 +13,7 @@ export const SCHEDULE_PROFILES = Object.freeze({
     windowStep: 5,
     windowUnit: "minutes",
     tabarniaSeasonEnd: "20 minutes",
-    betaVipSeasonEnd: "20 minutes",
+    betaVipSeasonEnd: "25 minutes",
   }),
 });
 

@@ -26,6 +26,14 @@ function formatEstimatedMinutes(seconds: number) {
   return `${minutes} min`;
 }
 
+function formatGlobalDuration(milliseconds: number) {
+  const seconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (minutes === 0) return `${seconds} s`;
+  return remainingSeconds === 0 ? `${minutes} min` : `${minutes} min ${remainingSeconds} s`;
+}
+
 function getQuestionFormats(challenge: Challenge) {
   if (challenge.mode === "alphabet") {
     return challenge.entries.map((entry) => QUESTION_FORMAT_LABELS[entry.question.type]);
@@ -69,18 +77,21 @@ function getModeLabelForMode(mode: GameMode) {
 
 function buildSafeRules(
   mode: GameMode,
+  timeLimitMs?: number,
 ): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   switch (mode) {
     case "time-trial":
       return [
         {
-          title: "Un solo reloj",
-          description: "Resuelve Queens en orden. Validaciones y transiciones consumen tiempo.",
+          title: "Un solo reloj compartido",
+          description: timeLimitMs
+            ? `El reloj de ${formatGlobalDuration(timeLimitMs)} es único para todas las pruebas. Validaciones y transiciones también consumen tiempo.`
+            : "El mismo reloj global corre durante todas las pruebas. Validaciones y transiciones consumen tiempo.",
         },
         {
-          title: "Tres validaciones",
+          title: "Tercer error",
           description:
-            "La tercera validación completa incorrecta termina el desafío. Los movimientos no consumen oportunidades.",
+            "La tercera validación completa incorrecta de un tablero termina el desafío. Los movimientos no consumen oportunidades.",
         },
         {
           title: "Conserva tus aciertos",
@@ -123,11 +134,11 @@ export function buildSafeChallengeIntroModel(
         label: introduction.mode === "time-trial" ? "Pruebas" : "Preguntas",
       },
       ...(introduction.mode === "time-trial" && introduction.timeLimitMs
-        ? [{ value: `${introduction.timeLimitMs / 1000} s`, label: "Tiempo global" }]
+        ? [{ value: formatGlobalDuration(introduction.timeLimitMs), label: "Tiempo global" }]
         : []),
       { value: introduction.maxScore, label: "Puntos" },
     ],
-    rules: buildSafeRules(introduction.mode),
+    rules: buildSafeRules(introduction.mode, introduction.timeLimitMs),
   };
 }
 

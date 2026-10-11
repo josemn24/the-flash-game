@@ -119,7 +119,7 @@ npm run supabase:betavip:setup -- --schedule fast
 ```
 
 El perfil predeterminado `production` conserva las ventanas de 24 horas. `fast` usa ventanas reales
-de cinco minutos: Tabarnia y BetaVIP recorren sus cuatro desafíos en 20 minutos. Se acorta
+de cinco minutos: Tabarnia recorre sus cuatro desafíos en 20 minutos y BetaVIP sus cinco en 25 minutos. Se acorta
 únicamente la ventana de publicación; los límites internos de preguntas,
 vidas, puntuación y deadlines no cambian. El manifiesto generado incluye `scheduleProfile` y la
 duración de la ventana para identificar el perfil utilizado.
@@ -134,6 +134,7 @@ duración de la ventana para identificar el perfil utilizado.
 | BetaVIP, desafío 2  | 24–48 h      | 5–10 min  |
 | BetaVIP, desafío 3  | 48–72 h      | 10–15 min |
 | BetaVIP, desafío 4  | 72–96 h      | 15–20 min |
+| BetaVIP, desafío 5  | 96–120 h     | 20–25 min |
 
 El seed no ejecuta automáticamente el calendario. Tras alcanzar cada límite temporal, ejecuta el
 tick local con `npm run calendar:tick` mientras la aplicación y Supabase estén activos.

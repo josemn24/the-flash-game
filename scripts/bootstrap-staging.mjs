@@ -230,7 +230,13 @@ async function prepareAndUploadCassette(client) {
 
 function expectedQuestionRows() {
   const content = stagingBetaVipExpectedContent();
-  return [...content.alphabet, ...content.survival, ...content.pyramid, ...content.antiquity];
+  return [
+    ...content.alphabet,
+    ...content.survival,
+    ...content.pyramid,
+    ...content.antiquity,
+    ...content.timeTrial,
+  ];
 }
 
 function stableJson(value) {
@@ -269,7 +275,7 @@ async function validateDomain(client, accounts, assetMetadata) {
     !season ||
     season.room_id !== data.room.id ||
     season.status !== "active" ||
-    season.duration_seconds !== 96 * 60 * 60
+    season.duration_seconds !== 120 * 60 * 60
   ) {
     throw new Error("La temporada BetaVIP no coincide con lo esperado.");
   }
@@ -344,7 +350,9 @@ async function validateDomain(client, accounts, assetMetadata) {
   const challengeRows = (
     await client.query(
       `select version.id::text as version_id, version.title, version.mode, version.status,
-            count(item.id)::integer as item_count
+            version.max_score, version.global_time_limit_ms,
+            count(item.id)::integer as item_count,
+            coalesce(sum(item.points), 0)::integer as points_total
        from private.challenge_versions version
        left join private.challenge_items item on item.challenge_version_id = version.id
       where version.id = any($1::uuid[])
@@ -360,7 +368,10 @@ async function validateDomain(client, accounts, assetMetadata) {
       row.title !== publication.title ||
       row.mode !== publication.mode ||
       row.status !== "published" ||
-      row.item_count !== publication.questionCount
+      row.item_count !== publication.questionCount ||
+      row.points_total !== publication.pointsTotal ||
+      (publication.mode === "time-trial" &&
+        (row.max_score !== 100 || row.global_time_limit_ms !== 180000))
     ) {
       throw new Error(`El desafío ${publication.title} no coincide con lo esperado.`);
     }
@@ -378,7 +389,7 @@ async function validateDomain(client, accounts, assetMetadata) {
       [data.seasonId],
     )
   ).rows;
-  assertEqual(scheduleRows.length, 4, "La temporada BetaVIP debe tener cuatro desafíos.");
+  assertEqual(scheduleRows.length, 5, "La temporada BetaVIP debe tener cinco desafíos.");
   assertEqual(
     scheduleRows.map((row) => [row.status, row.opens_after, row.duration]),
     [
@@ -386,6 +397,7 @@ async function validateDomain(client, accounts, assetMetadata) {
       ["scheduled", 24 * 60 * 60, 24 * 60 * 60],
       ["scheduled", 48 * 60 * 60, 24 * 60 * 60],
       ["scheduled", 72 * 60 * 60, 24 * 60 * 60],
+      ["scheduled", 96 * 60 * 60, 24 * 60 * 60],
     ],
     "El calendario BetaVIP no coincide con lo esperado.",
   );
