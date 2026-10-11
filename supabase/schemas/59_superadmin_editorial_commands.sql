@@ -504,10 +504,8 @@ begin
     ) then
       raise exception 'question_not_published' using errcode = '55000';
     end if;
-    if challenge_row.mode in ('flash', 'survival', 'pyramid') and (
-      not private.is_supported_flash_question(question_row.id)
-      or (challenge_row.mode = 'survival' and question_row.type = 'short-text')
-    ) then
+    if challenge_row.mode in ('flash', 'survival', 'narrative', 'pyramid')
+      and not private.is_supported_flash_question(question_row.id) then
       raise exception 'unsupported_question' using errcode = '22023';
     end if;
   end loop;

@@ -14,7 +14,8 @@ const pilotEnv = {
   FLASH_RUNTIME_SCOPE: "pilot",
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
-  EXPECTED_SCHEMA_REVISION: process.env.EXPECTED_SCHEMA_REVISION || "20261010214230_initial_schema",
+  EXPECTED_SCHEMA_REVISION:
+    process.env.EXPECTED_SCHEMA_REVISION || "20261011092119_short_text_all_modes",
 };
 
 async function run(label, command, args, options = {}) {

@@ -13,6 +13,9 @@ test("Flash evalúa short-text y recupera una respuesta aceptada cuya respuesta 
   await page.getByRole("link", { name: /Abrir sala Sala format-contracts/ }).click();
   await page.getByRole("link", { name: "Jugar" }).click();
   await page.getByRole("button", { name: "Empezar desafío" }).click();
+  await expect(page.getByRole("heading", { name: "Capital de Portugal 1" })).toBeVisible({
+    timeout: 15000,
+  });
   await expect(page.getByRole("timer")).toBeVisible();
   const requests: unknown[] = [];
   let lost = true;

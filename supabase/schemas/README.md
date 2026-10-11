@@ -1,11 +1,11 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 80 archivos y su revisión canónica es
-`20261010214230_initial_schema`. El historial activo contiene un baseline generado desde esos
-archivos; las migraciones incrementales anteriores permanecen únicamente en Git. La validación
-local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
-pasan en esa ejecución. El baseline se aplicó a Supabase local en un reset limpio; esta actualización
-no ejecutó comandos ni validaciones remotas.
+`20261011092119_short_text_all_modes`. El historial activo parte del baseline
+`20261010214230_initial_schema` y continúa con esa migración incremental. La validación local
+corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP, la conformidad y la
+concurrencia pasan desde schemas y desde el historial de migraciones. No se ejecutaron comandos ni
+validaciones remotas.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.

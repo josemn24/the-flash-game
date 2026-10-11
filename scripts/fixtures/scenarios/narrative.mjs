@@ -54,11 +54,11 @@ export const scenario = {
       "¿Qué continente rodea el Polo Sur?",
       ["África", "Antártida", "Europa", "Oceanía"],
     );
-    const questionTwo = publicQuestion(
-      "narrative-question-two",
-      "¿Qué instrumento registra la temperatura?",
-      ["Termómetro", "Barómetro", "Anemómetro", "Sismógrafo"],
-    );
+    const questionTwo = {
+      id: "narrative-question-two",
+      question: "¿Qué instrumento registra la temperatura?",
+      answerPlaceholder: "Instrumento",
+    };
     const modeConfig = {
       prologue: narrativeScene(
         "narrative-prologue",
@@ -132,7 +132,7 @@ values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlUuid(domainIds.questionOne)}, 1, 1,
     'multiple-choice', 15000, ${sqlString(JSON.stringify(questionOne))}, ${sqlString(alice)}),
   (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlUuid(domainIds.questionTwo)}, 1, 1,
-    'multiple-choice', 15000, ${sqlString(JSON.stringify(questionTwo))}, ${sqlString(alice)});
+    'short-text', 15000, ${sqlString(JSON.stringify(questionTwo))}, ${sqlString(alice)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(
@@ -144,6 +144,7 @@ values
   (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(
     JSON.stringify({
       correctAnswer: "Termómetro",
+      acceptedAnswers: ["Termómetro"],
       explanation: "NARRATIVE_PRIVATE_TWO: El termómetro registra la temperatura.",
     }),
   )});

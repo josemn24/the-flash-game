@@ -54,7 +54,8 @@ la versión, la idempotencia, los reintentos, el estado y los temporizadores.
 
 `multiple-choice` v1 y v2 se admiten en Flash, Supervivencia, Pirámide y Narrative. La variante v2
 conserva referencias privadas de imagen y su resolución autorizada. `short-text` utiliza una
-entrada de texto competitiva en Flash y Pirámide, y una base pública común con Alfabeto.
+entrada de texto competitiva en Flash, Supervivencia, Pirámide y Narrative, y conserva su
+adaptador especializado de Alfabeto.
 
 Las versiones publicadas v1 de Estimation y Heat Map tienen conversiones explícitas de lectura;
 la publicación nueva continúa exigiendo v2. Anagram utiliza su evaluador existente también en el
@@ -89,6 +90,7 @@ fija 904 resultados, incluidos `NULL`, SQLSTATE y mensajes de error. Véase
 la prueba de actualización con datos y la reversión.
 
 `npm run test:e2e:isolated` ejecuta los escenarios competitivos en un stack local separado. Incluye
-Flash y Pirámide con `short-text`, pérdida de una respuesta HTTP ya aceptada y una pregunta
+partidas con `short-text` en Flash, Supervivencia, Narrative, Alfabeto y Pirámide, pérdida de una
+respuesta HTTP ya aceptada y una pregunta
 `multiple-choice` v2 con imagen privada, además de formatos, recuperación, ranking, historial y
 publicación editorial existentes.

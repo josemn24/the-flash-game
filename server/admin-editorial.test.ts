@@ -40,7 +40,7 @@ describe("publishSuperadminFlash", () => {
         entries: [
           {
             challengeVersionId: input.challengeVersionId,
-            document: draftDocument("short-text"),
+            document: draftDocument("flash-memory"),
           },
         ],
       }),
@@ -52,7 +52,7 @@ describe("publishSuperadminFlash", () => {
     expect(publish).not.toHaveBeenCalled();
   });
 
-  it("delegates when the manifest accepts the draft", async () => {
+  it("delegates when the manifest admits short-text in Survival", async () => {
     const result = { challengeVersionId: input.challengeVersionId };
     const publish = vi.fn().mockResolvedValue(result);
     const commands = { publishFlash: publish } as never;
@@ -62,7 +62,7 @@ describe("publishSuperadminFlash", () => {
         entries: [
           {
             challengeVersionId: input.challengeVersionId,
-            document: draftDocument("multiple-choice"),
+            document: draftDocument("short-text"),
           },
         ],
       }),

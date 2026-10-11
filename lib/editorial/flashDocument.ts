@@ -187,14 +187,6 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
     }
     return parseQuestion(question, index);
   });
-  if (
-    challenge.mode === "survival" &&
-    parsedQuestions.some((question) => !("source" in question) && question.type === "short-text")
-  ) {
-    throw new FlashEditorialValidationError([
-      "Supervivencia requiere formatos con evaluación competitiva de Flash.",
-    ]);
-  }
   if (challenge.mode === "pyramid") {
     const levelIds = parsedQuestions.map((question) =>
       "modeConfig" in question ? question.modeConfig?.levelId : undefined,

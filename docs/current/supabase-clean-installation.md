@@ -2,8 +2,8 @@
 
 > Estado: vigente. Entornos admitidos: local y staging. La instalación registrada es local; la ejecución y validación de staging quedan pendientes de una ventana posterior.
 
-Esta es la guía principal para elegir y preparar un entorno. La migración activa es un baseline
-generado desde `supabase/schemas/`; el historial incremental anterior permanece en Git. Un reinicio
+Esta es la guía principal para elegir y preparar un entorno. El historial activo parte de un baseline
+generado desde `supabase/schemas/` y continúa con migraciones incrementales. Un reinicio
 completo elimina datos de aplicación, usuarios de Auth y archivos de Storage; debe hacerse
 únicamente cuando esos datos sean prescindibles.
 
@@ -28,7 +28,7 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261010214230_initial_schema`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
+La revisión esperada es `20261011092119_short_text_all_modes`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
 
 ## Herramientas y garantías
 
@@ -281,7 +281,7 @@ aplicación. Vercel no programa cron en previews y la ejecución automática de 
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261010214230_initial_schema`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION=20261011092119_short_text_all_modes`. El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 

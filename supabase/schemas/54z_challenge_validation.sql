@@ -106,7 +106,6 @@ begin
       if challenge->>'mode' in ('survival', 'pyramid') and not exists (
         select 1 from private.question_versions supported
         where supported.id = (question->>'questionVersionId')::uuid
-          and supported.type <> 'short-text'
           and private.is_supported_flash_question(supported.id)
       ) then
         raise exception 'unsupported_question' using errcode = '22023';
@@ -123,10 +122,6 @@ begin
       or (challenge->>'mode' = 'pyramid' and not private.is_valid_pyramid_level_config(question->'modeConfig'))
       or (challenge->>'mode' not in ('pyramid', 'narrative') and question ? 'modeConfig') then
       raise exception 'invalid_content' using errcode = '22023';
-    end if;
-
-    if challenge->>'mode' = 'survival' and question->>'type' = 'short-text' then
-      raise exception 'unsupported_question' using errcode = '22023';
     end if;
 
     perform private.validate_flash_question_document(question - 'points' - 'modeConfig');
@@ -171,17 +166,6 @@ begin
     ) then
       raise exception 'duplicate_alphabet_letter' using errcode = '22023';
     end if;
-  elsif exists (
-    select 1
-    from jsonb_array_elements(document->'questions') question_row
-    where question_row->>'type' = 'short-text'
-      or (question_row->>'source' = 'library' and exists (
-        select 1 from private.question_versions version
-        where version.id = (question_row->>'questionVersionId')::uuid
-          and version.type = 'short-text'
-      ))
-  ) then
-    raise exception 'short_text_requires_alphabet' using errcode = '22023';
   end if;
   if total_points <> 100 then
     raise exception 'points_total_invalid' using errcode = '22023';

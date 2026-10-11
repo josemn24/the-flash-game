@@ -17,18 +17,16 @@ select set_config('s14.document', jsonb_build_object(
   ),
   'questions', jsonb_build_array(
     jsonb_build_object(
-      'slug', 's14-survival-q1', 'type', 'multiple-choice', 'payloadSchemaVersion', 1,
+      'slug', 's14-survival-q1', 'type', 'short-text', 'payloadSchemaVersion', 1,
       'timeLimitMs', 15000, 'points', 50,
-      'publicPayload', jsonb_build_object('category', 'Cultura', 'tags', '{}'::jsonb, 'question', '¿Cuál es la capital de Portugal?',
-        'options', jsonb_build_array('Lisboa', 'Oporto'), 'media', null, 'promptVisual', null),
-      'solutionPayload', jsonb_build_object('correctAnswer', 'Lisboa', 'explanation', 'Lisboa es la capital.')
+      'publicPayload', jsonb_build_object('question', '¿Cuál es la capital de Portugal?',
+        'answerPlaceholder', 'Ciudad'),
+      'solutionPayload', jsonb_build_object('correctAnswer', 'Lisboa',
+        'acceptedAnswers', jsonb_build_array('Lisboa'), 'explanation', 'Lisboa es la capital.')
     ),
     jsonb_build_object(
-      'slug', 's14-survival-q2', 'type', 'multiple-choice', 'payloadSchemaVersion', 1,
-      'timeLimitMs', 15000, 'points', 50,
-      'publicPayload', jsonb_build_object('category', 'Ciencia', 'tags', '{}'::jsonb, 'question', '¿Qué planeta es conocido como el planeta rojo?',
-        'options', jsonb_build_array('Marte', 'Venus'), 'media', null, 'promptVisual', null),
-      'solutionPayload', jsonb_build_object('correctAnswer', 'Marte', 'explanation', 'Marte es rojo.')
+      'source', 'library', 'questionVersionId', test_support.id('qv-alphabet-1')::text,
+      'points', 50, 'modeConfig', '{}'::jsonb
     )
   )
 )::text, true);
@@ -48,17 +46,6 @@ select throws_ok($$select public.create_superadmin_flash_draft(jsonb_build_objec
   'document', jsonb_set(current_setting('s14.document')::jsonb, '{challenge,modeConfig}', '{"lives":1,"other":true}'::jsonb),
   'reason', 'Invalid config'
 ))$$, '22023', 'invalid_content', 'Survival accepts only its lives mode configuration');
-select throws_ok($$select public.create_superadmin_flash_draft(jsonb_build_object(
-  'idempotencyKey', 's14-editorial-short-text',
-  'document', jsonb_set(current_setting('s14.document')::jsonb, '{questions,0}', jsonb_build_object(
-    'slug', 's14-survival-short-text', 'type', 'short-text', 'payloadSchemaVersion', 1,
-    'timeLimitMs', 15000, 'points', 50,
-    'publicPayload', jsonb_build_object('category', 'Cultura', 'tags', '{}'::jsonb, 'question', '¿Capital?', 'answerPlaceholder', 'Ciudad'),
-    'solutionPayload', jsonb_build_object('correctAnswer', 'Lisboa', 'acceptedAnswers', jsonb_build_array('Lisboa'), 'explanation', 'Lisboa.')
-  )),
-  'reason', 'Unsupported format'
-))$$, '22023', 'unsupported_question', 'Survival rejects short-text, which has no server evaluator in the pilot');
-
 select is((public.create_superadmin_flash_draft(jsonb_build_object(
   'idempotencyKey', 's14-editorial-create', 'document', current_setting('s14.document')::jsonb,
   'reason', 'Preparar Survival'
@@ -67,11 +54,27 @@ reset role;
 select set_config('s14.version_id', (
   select id::text from private.challenge_versions where title = 'Supervivencia S14'
 ), true);
+select is((select count(*) from private.challenge_items item
+  join private.question_versions question on question.id = item.question_version_id
+  where item.challenge_version_id = current_setting('s14.version_id')::uuid and question.type = 'short-text'), 2::bigint,
+  'Survival persists both inline and library short-text items');
+select set_config('s14.expected_updated_at', (
+  select updated_at::text from private.challenge_versions where id = current_setting('s14.version_id')::uuid
+), true);
+select set_config('s14.updated_document', jsonb_set(current_setting('s14.document')::jsonb,
+  '{challenge,title}', '"Supervivencia S14 editada"'::jsonb)::text, true);
+set local role authenticated;
+select is((public.update_superadmin_flash_draft(jsonb_build_object(
+  'idempotencyKey', 's14-editorial-update', 'challengeVersionId', current_setting('s14.version_id')::uuid,
+  'expectedUpdatedAt', current_setting('s14.expected_updated_at')::timestamptz,
+  'document', current_setting('s14.updated_document')::jsonb, 'reason', 'Editar Survival short-text'
+))->>'title'), 'Supervivencia S14 editada', 'A Survival short-text draft can be edited');
+reset role;
 select set_config('s14.question_versions', (
   select coalesce(jsonb_agg(jsonb_build_object('id', item.question_version_id, 'updatedAt', question.updated_at) order by item.position), '[]'::jsonb)
   from private.challenge_items item
   join private.question_versions question on question.id = item.question_version_id
-  where item.challenge_version_id = current_setting('s14.version_id')::uuid
+  where item.challenge_version_id = current_setting('s14.version_id')::uuid and question.status = 'draft'
 )::text, true);
 
 set local role authenticated;

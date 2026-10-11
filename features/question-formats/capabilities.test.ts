@@ -74,9 +74,12 @@ describe("format capability manifest", () => {
   });
 
   it("declares the existing mode boundaries", () => {
-    expect(competitiveQuestionTypesFor("alphabet")).toEqual(["short-text"]);
-    expect(competitiveQuestionTypesFor("survival")).not.toContain("short-text");
-    expect(competitiveQuestionTypesFor("narrative")).not.toContain("short-text");
+    for (const mode of ["flash", "alphabet", "survival", "narrative", "pyramid"] as const) {
+      expect(competitiveQuestionTypesFor(mode)).toContain("short-text");
+    }
+    expect(QUESTION_FORMAT_CAPABILITIES["short-text"].competitive.alphabet?.transport).toBe(
+      "specialized",
+    );
     expect(competitiveQuestionTypesFor("narrative")).toContain("mini-wordle");
     expect(QUESTION_FORMAT_CAPABILITIES["mini-wordle"].competitive.flash?.transport).toBe(
       "specialized",
