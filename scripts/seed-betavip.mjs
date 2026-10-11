@@ -48,6 +48,12 @@ function stableId(label) {
   return deterministicUuid(namespace, label);
 }
 
+function antiquityBriefingTitle(item) {
+  return item.type === "progressive-clues"
+    ? "Identifica al personaje"
+    : item.publicPayload.question;
+}
+
 const alphabetItems = BETA_VIP_ALPHABET.entries.map((entry, index) => {
   const slug = `alphabet-betavip-world-${entry.letter.toLowerCase()}`;
   return {
@@ -337,8 +343,8 @@ export function buildBetaVipDomainSql({
   const antiquityLabels = [
     "Entrada",
     "Adivinanza",
-    "Cronología",
     "Nombre",
+    "Cronología",
     "Búsqueda",
     "Civilizaciones",
     "Cima",
@@ -346,7 +352,7 @@ export function buildBetaVipDomainSql({
   const antiquityChallengeItems = antiquityItems
     .map(
       (item) =>
-        `(${sqlString(item.itemId)}, ${sqlString(antiquity.challengeVersionId)}, ${sqlString(item.versionId)}, ${item.position}, ${item.points}, 1, ${sqlString(JSON.stringify({ levelId: `ecos-antiguedad-${item.position}`, label: antiquityLabels[item.position - 1], briefing: { title: item.publicPayload.question, format: item.type, description: "Resuelve este tramo y desbloquea el siguiente." } }))})`,
+        `(${sqlString(item.itemId)}, ${sqlString(antiquity.challengeVersionId)}, ${sqlString(item.versionId)}, ${item.position}, ${item.points}, 1, ${sqlString(JSON.stringify({ levelId: `ecos-antiguedad-${item.position}`, label: antiquityLabels[item.position - 1], briefing: { title: antiquityBriefingTitle(item), format: item.type, description: "Resuelve este tramo y desbloquea el siguiente." } }))})`,
     )
     .join(",\n");
 
@@ -654,8 +660,8 @@ export function buildStagingBetaVipDomainSql({
   const antiquityLabels = [
     "Entrada",
     "Adivinanza",
-    "Cronología",
     "Nombre",
+    "Cronología",
     "Búsqueda",
     "Civilizaciones",
     "Cima",
@@ -663,7 +669,7 @@ export function buildStagingBetaVipDomainSql({
   const antiquityChallengeItems = antiquityItems
     .map(
       (item) =>
-        `(${sqlString(item.itemId)}, ${sqlString(antiquity.challengeVersionId)}, ${sqlString(item.versionId)}, ${item.position}, ${item.points}, 1, ${sqlString(JSON.stringify({ levelId: `ecos-antiguedad-${item.position}`, label: antiquityLabels[item.position - 1], briefing: { title: item.publicPayload.question, format: item.type, description: "Resuelve este tramo y desbloquea el siguiente." } }))})`,
+        `(${sqlString(item.itemId)}, ${sqlString(antiquity.challengeVersionId)}, ${sqlString(item.versionId)}, ${item.position}, ${item.points}, 1, ${sqlString(JSON.stringify({ levelId: `ecos-antiguedad-${item.position}`, label: antiquityLabels[item.position - 1], briefing: { title: antiquityBriefingTitle(item), format: item.type, description: "Resuelve este tramo y desbloquea el siguiente." } }))})`,
     )
     .join(",\n");
   const questionIds = allItems.map((item) => sqlString(item.versionId)).join(", ");

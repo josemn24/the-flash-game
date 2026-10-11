@@ -215,14 +215,62 @@ describe("BetaVIP seed", () => {
     expect(betaVipAntiquityQuestions.map((item) => item.type)).toEqual([
       "matching",
       "progressive-clues",
-      "ordering",
       "mini-wordle",
+      "ordering",
       "word-search",
       "classification",
       "word-hashtag",
     ]);
     expect(betaVipAntiquityQuestions.reduce((total, item) => total + item.points, 0)).toBe(100);
     expect(BETA_VIP_ANTIQUITY.title).toBe("Ecos de la Antigüedad");
+    const riddle = betaVipAntiquityQuestions.find((item) => item.type === "progressive-clues");
+    expect(riddle.slug).toBe("betavip-ecos-antiguedad-cleopatra");
+    expect(riddle.publicPayload.question).toBe("¿Quién gobernó Egipto?");
+    expect(riddle.publicPayload.clues).toEqual([
+      "Goberné Egipto desde Alejandría.",
+      "Tuve alianzas con Julio César y Marco Antonio.",
+      "Fui la última gobernante del Egipto ptolemaico.",
+    ]);
+    expect(riddle.solutionPayload.correctAnswer).toBe("Cleopatra");
+    expect(riddle.solutionPayload.acceptedAnswers).toContain("Cleopatra VII");
+    const miniWordle = betaVipAntiquityQuestions.find((item) => item.type === "mini-wordle");
+    expect(miniWordle.publicPayload).not.toHaveProperty("hint");
+    const wordSearch = betaVipAntiquityQuestions.find((item) => item.type === "word-search");
+    expect(wordSearch.publicPayload.question).toBe(
+      "Encuentra cinco personajes conocidos de la Antigüedad ocultos en la cuadrícula.",
+    );
+    expect(wordSearch.publicPayload.targets.map((target) => target.word)).toEqual([
+      "TUTANKAMON",
+      "RAMSES",
+      "CESAR",
+      "AUGUSTO",
+      "SOCRATES",
+    ]);
+    const chronology = betaVipAntiquityQuestions.find((item) => item.type === "ordering");
+    expect(chronology.publicPayload.items).toEqual([
+      "Inauguración del Coliseo",
+      "Construcción del Partenón",
+      "Estela de Hammurabi",
+      "Construcción de la Gran Pirámide de Guiza",
+    ]);
+    expect(chronology.publicPayload.items.join(" ")).not.toMatch(/\b\d{3,4}\b|a\. C\.|d\. C\./i);
+    expect(chronology.solutionPayload.correctOrder).toEqual([
+      "Construcción de la Gran Pirámide de Guiza",
+      "Estela de Hammurabi",
+      "Construcción del Partenón",
+      "Inauguración del Coliseo",
+    ]);
+    const classification = betaVipAntiquityQuestions.find((item) => item.type === "classification");
+    expect(classification.publicPayload.items.map((item) => item.label)).toEqual([
+      "Pirámides",
+      "Ágora",
+      "Latín",
+      "Cuneiforme",
+      "Partenón",
+      "Zigurats",
+      "Jeroglíficos",
+      "Acueductos",
+    ]);
     expect(
       betaVipAntiquityQuestions.every(
         (item) => validateQuestionTags(item.publicPayload.tags).valid,
@@ -242,6 +290,9 @@ describe("BetaVIP seed", () => {
     }
 
     const hashtag = betaVipAntiquityQuestions.find((item) => item.type === "word-hashtag");
+    expect(hashtag.publicPayload.question).toBe(
+      "Intercambia las letras para formar cuatro palabras",
+    );
     const solution = buildWordHashtagSolution(hashtag.solutionPayload.words);
     expect(
       isValidWordHashtagConfiguration({
@@ -286,7 +337,7 @@ describe("BetaVIP seed", () => {
     expect(BETA_VIP_PYRAMID.modeConfig).toEqual({});
     expect(betaVipAntiquityQuestions).toHaveLength(7);
     expect(betaVipAntiquityQuestions.map((item) => item.points)).toEqual([
-      10, 12, 13, 14, 15, 17, 19,
+      10, 12, 14, 13, 15, 17, 19,
     ]);
     expect(betaVipAntiquityQuestions.reduce((total, item) => total + item.points, 0)).toBe(100);
     expect(
@@ -351,6 +402,8 @@ describe("BetaVIP seed", () => {
     expect(sql).toContain("'scheduled', now() + interval '72 hours', now() + interval '96 hours'");
     expect(sql).toContain("'Cumbre lógica II'");
     expect(sql).toContain("'Ecos de la Antigüedad'");
+    expect(sql).toContain('"title":"Identifica al personaje"');
+    expect(sql).toContain("¿Quién gobernó Egipto?");
     expect(sql).toContain("'pyramid'");
     expect(sql).toContain("'connect-pairs'");
     for (const [publication, status, start, end] of [

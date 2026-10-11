@@ -158,7 +158,7 @@ export const scenario = {
           config.dbContainer,
         )
       ).stdout.trim() ===
-        "matching,progressive-clues,ordering,mini-wordle,word-search,classification,word-hashtag",
+        "matching,progressive-clues,mini-wordle,ordering,word-search,classification,word-hashtag",
       "Ecos de la Antigüedad conserva los siete formatos y su orden",
     );
     assert(

@@ -298,6 +298,8 @@ describe("staging bootstrap", () => {
     expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 20, 7]);
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100]);
     expect(sql).toContain("now() + interval '96 hours'");
+    expect(sql).toContain('"title":"Identifica al personaje"');
+    expect(sql).toContain("¿Quién gobernó Egipto?");
     expect(sql.toLowerCase()).not.toContain("tabarnia");
     expect(sql).not.toContain("Manuel");
     expect(sql).not.toContain("Genís");
