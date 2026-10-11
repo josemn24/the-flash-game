@@ -29,10 +29,13 @@ import {
   writeFixture,
 } from "./support/supabase-local.mjs";
 import {
+  normalizeStartAt,
   parseScheduleArgs,
   resolveScheduleProfile,
+  scheduleStartExpression,
   scheduleInterval,
   scheduleManifest,
+  validateFutureStartAt,
 } from "./schedule-profile.mjs";
 import { setupTabarniaDataset } from "./seed-tabarnia.mjs";
 
@@ -131,10 +134,16 @@ function steelBallRun(tabarniaFixture) {
   return publication;
 }
 
-export function betaVipManifest(tabarniaFixture, schedule = "production") {
+export function betaVipManifest(tabarniaFixture, schedule = "production", startsAt = null) {
   const profile = resolveScheduleProfile(schedule);
+  const normalizedStartAt = normalizeStartAt(startsAt);
   const steel = steelBallRun(tabarniaFixture);
-  const scheduleData = scheduleManifest(profile, 4, profile.name === "fast" ? 20 : 96 * 60);
+  const scheduleData = scheduleManifest(
+    profile,
+    4,
+    profile.name === "fast" ? 20 : 96 * 60,
+    normalizedStartAt,
+  );
   const alphabet = {
     id: stableId("publication:beta-vip-la-vuelta-al-mundo"),
     number: 1,
@@ -192,6 +201,7 @@ export function betaVipManifest(tabarniaFixture, schedule = "production") {
     scheduleProfile: scheduleData.scheduleProfile,
     scheduleWindowMinutes: scheduleData.scheduleWindowMinutes,
     seasonDurationMinutes: scheduleData.seasonDurationMinutes,
+    ...(normalizedStartAt ? { seasonStartsAt: normalizedStartAt } : {}),
     seasonId: stableId("season:beta-vip"),
     publicationId: alphabet.id,
     challengeId: alphabet.challengeId,
@@ -224,9 +234,12 @@ export function buildBetaVipDomainSql({
   accounts,
   cassetteAssetMetadata,
   schedule = "production",
+  startsAt = null,
 }) {
   const profile = resolveScheduleProfile(schedule);
-  const data = betaVipManifest(tabarniaFixture, profile.name);
+  const normalizedStartAt = normalizeStartAt(startsAt);
+  const seasonStart = scheduleStartExpression(normalizedStartAt);
+  const data = betaVipManifest(tabarniaFixture, profile.name, normalizedStartAt);
   const players = {
     ches: tabarniaFixture.users.ches?.playerId,
     dark: tabarniaFixture.users.dark?.playerId,
@@ -370,7 +383,7 @@ values
   (${sqlString(data.room.id)}, ${sqlString(players.dark)}, 'member', 'active', now());
 
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
-values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', now(), now() + interval '${profile.betaVipSeasonEnd}');
+values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', ${seasonStart}, ${seasonStart} + interval '${profile.betaVipSeasonEnd}');
 
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
@@ -449,19 +462,20 @@ insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
   (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1,
-   'open', now(), ${scheduleInterval(profile, 1)}),
+   'open', ${seasonStart}, ${scheduleInterval(profile, 1, normalizedStartAt)}),
   (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2,
-   'scheduled', ${scheduleInterval(profile, 1)}, ${scheduleInterval(profile, 2)}),
+   'scheduled', ${scheduleInterval(profile, 1, normalizedStartAt)}, ${scheduleInterval(profile, 2, normalizedStartAt)}),
   (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 3,
-   'scheduled', ${scheduleInterval(profile, 2)}, ${scheduleInterval(profile, 3)}),
+   'scheduled', ${scheduleInterval(profile, 2, normalizedStartAt)}, ${scheduleInterval(profile, 3, normalizedStartAt)}),
   (${sqlString(antiquity.id)}, ${sqlString(data.seasonId)}, ${sqlString(antiquity.challengeVersionId)}, 4,
-   'scheduled', ${scheduleInterval(profile, 3)}, ${scheduleInterval(profile, 4)});
+   'scheduled', ${scheduleInterval(profile, 3, normalizedStartAt)}, ${scheduleInterval(profile, 4, normalizedStartAt)});
 set constraints all immediate;
 commit;
 `;
 }
 
-export function stagingBetaVipManifest() {
+export function stagingBetaVipManifest(startsAt = null) {
+  const normalizedStartAt = normalizeStartAt(startsAt);
   const alphabet = {
     id: stableId("publication:beta-vip-la-vuelta-al-mundo"),
     number: 1,
@@ -520,6 +534,7 @@ export function stagingBetaVipManifest() {
   };
   return {
     room: { id: stableId("room:beta-vip"), slug: "beta-vip" },
+    ...(normalizedStartAt ? { seasonStartsAt: normalizedStartAt } : {}),
     seasonId: stableId("season:beta-vip"),
     publicationId: alphabet.id,
     challengeId: alphabet.challengeId,
@@ -576,8 +591,14 @@ export function buildStagingBetaVipDomainSql({
   xesmonaPlayerId,
   chesPlayerId,
   cassetteAssetMetadata,
+  startsAt = null,
 }) {
-  const data = stagingBetaVipManifest();
+  const normalizedStartAt = normalizeStartAt(startsAt);
+  const seasonStart = scheduleStartExpression(normalizedStartAt);
+  const data = stagingBetaVipManifest(normalizedStartAt);
+  const persistedSeasonStart = `(select starts_at from public.seasons where id = ${sqlString(data.seasonId)})`;
+  const publicationStartAfterHours = (hours) =>
+    `${persistedSeasonStart} + interval '${hours} hours'`;
   if (!xesmonaPlayerId || !chesPlayerId) throw new Error("Faltan los players de staging.");
   if (!cassetteAssetMetadata) throw new Error("Faltan metadatos del recurso de imagen de BetaVIP.");
   const alphabet = data.publications.find((publication) => publication.mode === "alphabet");
@@ -691,7 +712,7 @@ values (${sqlString(data.room.id)}, ${sqlString(chesPlayerId)}, 'owner', 'active
 on conflict (room_id, player_id) do nothing;
 
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
-values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', now(), now() + interval '96 hours')
+values (${sqlString(data.seasonId)}, ${sqlString(data.room.id)}, 'Temporada BetaVIP', 'active', ${seasonStart}, ${seasonStart} + interval '96 hours')
 on conflict (id) do nothing;
 
 insert into private.media_assets
@@ -759,16 +780,21 @@ select private.assert_supported_calendar_content(${sqlString(antiquity.challenge
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1, 'open', (select starts_at from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '24 hours' from public.seasons where id = ${sqlString(data.seasonId)})),
-  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2, 'scheduled', (select starts_at + interval '24 hours' from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '48 hours' from public.seasons where id = ${sqlString(data.seasonId)})),
-  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 3, 'scheduled', (select starts_at + interval '48 hours' from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '72 hours' from public.seasons where id = ${sqlString(data.seasonId)})),
-  (${sqlString(antiquity.id)}, ${sqlString(data.seasonId)}, ${sqlString(antiquity.challengeVersionId)}, 4, 'scheduled', (select starts_at + interval '72 hours' from public.seasons where id = ${sqlString(data.seasonId)}), (select starts_at + interval '96 hours' from public.seasons where id = ${sqlString(data.seasonId)}))
+  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1, 'open', ${persistedSeasonStart}, ${publicationStartAfterHours(24)}),
+  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2, 'scheduled', ${publicationStartAfterHours(24)}, ${publicationStartAfterHours(48)}),
+  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 3, 'scheduled', ${publicationStartAfterHours(48)}, ${publicationStartAfterHours(72)}),
+  (${sqlString(antiquity.id)}, ${sqlString(data.seasonId)}, ${sqlString(antiquity.challengeVersionId)}, 4, 'scheduled', ${publicationStartAfterHours(72)}, ${publicationStartAfterHours(96)})
 on conflict (id) do nothing;
 `;
 }
 
-export async function setupBetaVipDataset({ schedule = "production", dependencies = {} } = {}) {
+export async function setupBetaVipDataset({
+  schedule = "production",
+  startsAt = null,
+  dependencies = {},
+} = {}) {
   const profile = resolveScheduleProfile(schedule);
+  const normalizedStartAt = validateFutureStartAt(startsAt);
   const seedTabarnia = dependencies.setupTabarniaDataset ?? setupTabarniaDataset;
   const loadConfig = dependencies.localSupabaseConfig ?? localSupabaseConfig;
   const loadFixture = dependencies.readFixture ?? readFixture;
@@ -779,7 +805,10 @@ export async function setupBetaVipDataset({ schedule = "production", dependencie
   const uploadAsset = dependencies.uploadStorageObject ?? uploadStorageObject;
   const removeAsset = dependencies.removeStorageObject ?? removeStorageObject;
 
-  await seedTabarnia({ schedule: profile.name });
+  await seedTabarnia({
+    schedule: profile.name,
+    ...(normalizedStartAt ? { startsAt: normalizedStartAt } : {}),
+  });
   const tabarniaFixture = await loadFixture("tabarnia");
   const config = await loadConfig({ requireServiceRole: true });
   const accounts = await createAccounts({ id: "betavip", users: newUsers }, config);
@@ -792,12 +821,14 @@ export async function setupBetaVipDataset({ schedule = "production", dependencie
   };
   try {
     await uploadAsset(config, { ...storageObject, upsert: false });
+    validateFutureStartAt(normalizedStartAt);
     await runSql(
       buildBetaVipDomainSql({
         tabarniaFixture,
         accounts,
         cassetteAssetMetadata: preparedAsset.metadata,
         schedule: profile.name,
+        startsAt: normalizedStartAt,
       }),
       config.dbContainer,
     );
@@ -812,7 +843,7 @@ export async function setupBetaVipDataset({ schedule = "production", dependencie
     await preparedAsset.cleanup();
   }
 
-  const data = betaVipManifest(tabarniaFixture, profile.name);
+  const data = betaVipManifest(tabarniaFixture, profile.name, normalizedStartAt);
   const users = {
     xesmona: tabarniaFixture.users.xesmona,
     ches: tabarniaFixture.users.ches,
@@ -831,13 +862,14 @@ export async function setupBetaVipDataset({ schedule = "production", dependencie
 }
 
 async function main() {
-  const { schedule } = parseScheduleArgs(
+  const { schedule, startsAt } = parseScheduleArgs(
     process.argv.slice(2),
-    "Uso: npm run supabase:betavip:setup -- --schedule <production|fast>",
+    "Uso: npm run supabase:betavip:setup -- [--schedule <production|fast>] [--starts-at <ISO-8601-con-zona-horaria>]",
   );
-  const data = await setupBetaVipDataset({ schedule });
+  const data = await setupBetaVipDataset({ schedule, startsAt });
   console.log("Datasets Tabarnia y BetaVIP creados en output/fixtures/.");
   console.log(`Perfil de calendario: ${data.scheduleProfile}.`);
+  if (data.seasonStartsAt) console.log(`Inicio de temporada: ${data.seasonStartsAt}.`);
   console.log(`Salas: /salas/tabarnia y /salas/${data.room.slug}`);
   console.log(`/desafios/${data.publicationId}?roomId=${data.room.slug}`);
 }

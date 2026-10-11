@@ -91,7 +91,18 @@ del casete. Las cuentas y los IDs quedan en `output/fixtures/tabarnia.json` y
 `output/fixtures/betavip.json`; este último incluye las credenciales locales de Manuel y Genís.
 Las credenciales de ejemplo son exclusivamente locales.
 
-«La vuelta al mundo» está abierto durante las primeras 24 horas, «Cumbre lógica II» queda
+Por defecto, ambas temporadas empiezan al ejecutar el setup. Para programarlas más tarde, pasar una
+fecha y hora ISO 8601 con zona horaria; la opción también está disponible en `supabase:tabarnia:setup`:
+
+```bash
+npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
+```
+
+La fecha y hora configuradas se guardan en UTC en el manifiesto. El desafío queda visible como
+próximo y se podrá jugar al llegar el inicio; cada persona inicia su propia partida manualmente.
+
+Desde el inicio de temporada, «La vuelta al mundo» está abierto durante las primeras 24 horas,
+«Cumbre lógica II» queda
 programado para el segundo día, «Supervivencia: Cultura pop» para el tercero y «Ecos de la
 Antigüedad» para el cuarto. La temporada dura 96 horas. El manifiesto lista las publicaciones en
 ese orden; `data.publicationId` apunta a
@@ -212,6 +223,18 @@ Las contraseñas aleatorias quedan en `output/staging/bootstrap-credentials.json
 `0600`, y el estado sin contraseñas en `output/staging/bootstrap-manifest.json`. Guardar las
 contraseñas en un gestor seguro y retirar el archivo después de completar la preparación y
 verificación; conservarlo durante una recuperación parcial del bootstrap.
+
+Para programar el inicio de una temporada BetaVIP nueva, pasar `--starts-at` al dry-run y al
+bootstrap real. Usa una fecha y hora ISO 8601 con zona horaria; por ejemplo, las 19:00 en Madrid:
+
+```bash
+node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs --dry-run --starts-at "2026-10-20T19:00:00+02:00"
+node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs --starts-at "2026-10-20T19:00:00+02:00"
+```
+
+El manifiesto registra la fecha convertida a UTC. El bootstrap no cambia temporadas ya creadas: si
+se indica una fecha distinta de la existente, falla con una instrucción para usar el procedimiento
+de reinstalación completa.
 
 ### Reinstalación completa
 

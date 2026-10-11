@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { Client } from "pg";
 import { createClient } from "@supabase/supabase-js";
 import { validateRemoteEnvironment } from "./support/supabase-environment.mjs";
+import { normalizeStartAt, validateFutureStartAt } from "./schedule-profile.mjs";
 import {
   buildStagingBetaVipDomainSql,
   prepareCassetteAsset,
@@ -31,12 +32,26 @@ const ACCOUNT_DEFINITIONS = [
 
 export function parseArgs(args) {
   const options = { dryRun: false };
-  for (const argument of args) {
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
     if (argument === "--dry-run") {
       options.dryRun = true;
       continue;
     }
-    throw new Error(`Argumento desconocido: ${argument}. Usa --dry-run o sin argumentos.`);
+    if (argument === "--starts-at") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error(
+          "Falta la fecha de --starts-at. Usa ISO 8601 con zona horaria, por ejemplo 2026-10-20T19:00:00+02:00.",
+        );
+      }
+      options.startsAt = normalizeStartAt(value);
+      index += 1;
+      continue;
+    }
+    throw new Error(
+      `Argumento desconocido: ${argument}. Usa --dry-run, --starts-at <ISO-8601-con-zona-horaria> o sin argumentos.`,
+    );
   }
   return options;
 }
@@ -376,7 +391,9 @@ async function validateDomain(client, accounts, assetMetadata) {
   );
 }
 
-async function applyDomain(config, accounts, assetMetadata) {
+async function applyDomain(config, accounts, assetMetadata, startsAt = null) {
+  const normalizedStartAt = normalizeStartAt(startsAt);
+  const data = stagingBetaVipManifest(normalizedStartAt);
   const client = new Client({
     connectionString: config.adminDbUrl,
     application_name: "the-flash-game-staging-bootstrap",
@@ -385,13 +402,40 @@ async function applyDomain(config, accounts, assetMetadata) {
   try {
     await client.query("begin");
     await client.query("set local statement_timeout = '30000ms'");
+    if (normalizedStartAt) {
+      const existingSeason = await client.query(
+        "select starts_at = $2::timestamptz as matches from public.seasons where id = $1 for update",
+        [data.seasonId, normalizedStartAt],
+      );
+      if (existingSeason.rows[0]) {
+        if (existingSeason.rows[0].matches !== true) {
+          throw new Error(
+            "La temporada BetaVIP ya existe con otra fecha de inicio. El bootstrap conserva las temporadas existentes; para cambiar la fecha, prepara una base vacía siguiendo el procedimiento de reinstalación de staging.",
+          );
+        }
+      } else {
+        validateFutureStartAt(normalizedStartAt);
+      }
+    }
     await client.query(
       buildStagingBetaVipDomainSql({
         xesmonaPlayerId: accounts.xesmona.playerId,
         chesPlayerId: accounts.ches.playerId,
         cassetteAssetMetadata: assetMetadata,
+        startsAt: normalizedStartAt,
       }),
     );
+    if (normalizedStartAt) {
+      const persistedSeason = await client.query(
+        "select starts_at = $2::timestamptz as matches from public.seasons where id = $1",
+        [data.seasonId, normalizedStartAt],
+      );
+      if (persistedSeason.rows[0]?.matches !== true) {
+        throw new Error(
+          "La temporada BetaVIP ya existe con otra fecha de inicio. El bootstrap conserva las temporadas existentes; para cambiar la fecha, prepara una base vacía siguiendo el procedimiento de reinstalación de staging.",
+        );
+      }
+    }
     await validateDomain(client, accounts, assetMetadata);
     await client.query("commit");
   } catch (error) {
@@ -402,7 +446,7 @@ async function applyDomain(config, accounts, assetMetadata) {
   }
 }
 
-async function writeManifest(accounts, config) {
+async function writeManifest(accounts, config, startsAt = null) {
   await writeJsonSecure(DEFAULT_MANIFEST_PATH, {
     version: 1,
     projectRef: config.projectRef,
@@ -418,7 +462,7 @@ async function writeManifest(accounts, config) {
         },
       ]),
     ),
-    data: stagingBetaVipManifest(),
+    data: stagingBetaVipManifest(startsAt),
   });
 }
 
@@ -444,8 +488,11 @@ function credentialsDocument(accounts, config) {
 export async function runBootstrap({ env = process.env, args = [], dependencies = {} } = {}) {
   const options = parseArgs(args);
   const config = validateBootstrapConfig(env);
-  if (options.dryRun)
-    return { dryRun: true, config: { projectRef: config.projectRef, emails: config.emails } };
+  if (options.dryRun) {
+    const result = { dryRun: true, config: { projectRef: config.projectRef, emails: config.emails } };
+    if (options.startsAt) result.seasonStartsAt = options.startsAt;
+    return result;
+  }
 
   const credentialsPath = dependencies.credentialsPath ?? DEFAULT_CREDENTIALS_PATH;
   const previousCredentials = await readJsonIfPresent(credentialsPath);
@@ -464,8 +511,8 @@ export async function runBootstrap({ env = process.env, args = [], dependencies 
   await ensureBuckets(service);
   const asset = await prepareAndUploadCassette(service);
   try {
-    await applyDomain(config, accounts, asset.metadata);
-    await writeManifest(accounts, config);
+    await applyDomain(config, accounts, asset.metadata, options.startsAt);
+    await writeManifest(accounts, config, options.startsAt);
   } catch (error) {
     if (asset.uploaded) {
       await service.storage
@@ -478,6 +525,7 @@ export async function runBootstrap({ env = process.env, args = [], dependencies 
   return {
     dryRun: false,
     projectRef: config.projectRef,
+    ...(options.startsAt ? { seasonStartsAt: options.startsAt } : {}),
     credentialsPath,
     manifestPath: DEFAULT_MANIFEST_PATH,
   };
@@ -487,9 +535,11 @@ async function main() {
   const result = await runBootstrap({ args: process.argv.slice(2) });
   if (result.dryRun) {
     console.log(`Dry-run correcto para ${result.config.projectRef}. No se ha escrito nada.`);
+    if (result.seasonStartsAt) console.log(`Inicio de temporada: ${result.seasonStartsAt}.`);
     return;
   }
   console.log("Bootstrap de staging completado.");
+  if (result.seasonStartsAt) console.log(`Inicio de temporada: ${result.seasonStartsAt}.`);
   console.log(`Credenciales: ${result.credentialsPath}`);
   console.log(`Manifiesto: ${result.manifestPath}`);
 }
