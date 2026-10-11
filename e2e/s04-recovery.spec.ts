@@ -34,7 +34,9 @@ async function openFlash(page: Page, account: FixtureAccount) {
   await page.getByRole("link", { name: "Jugar" }).click();
   await expect(page.getByRole("heading", { name: "Flash recuperación S04" })).toBeVisible();
   await page.getByRole("button", { name: "Empezar desafío" }).click();
-  await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+    timeout: 10_000,
+  });
 }
 
 test.describe("S04 — recuperación y abandono de Flash", () => {

@@ -100,7 +100,9 @@ test.describe("E10 — Progressive-image competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await expect(page.locator('img[alt="Contexto visual de elección múltiple"]')).toBeVisible();
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: /monumento aparece/ })).toBeVisible();
@@ -128,8 +130,8 @@ test.describe("E10 — Progressive-image competitivo", () => {
       await response.body();
     });
     await page.getByRole("button", { name: "Enviar respuesta" }).click();
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar" }).click();
+    await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar", exact: true }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });

@@ -127,8 +127,10 @@ test("una confirmación de acierto perdida se concilia sin puntuar dos veces", a
     } else await route.fulfill({ response });
   });
   for (const index of [10, 18, 21]) await cell(page, index).click();
-  await expect(page.getByRole("button", { name: "Reintentar validación" })).toBeVisible();
-  await page.getByRole("button", { name: "Reintentar validación" }).click();
+  await expect(
+    page.getByRole("button", { name: "Reintentar validación", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Reintentar validación", exact: true }).click();
   await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
   expect(requests[1]).toEqual(requests[0]);
   for (const index of [9, 10, 18, 21]) await cell(page, index).click();

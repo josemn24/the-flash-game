@@ -76,11 +76,13 @@ test("el tercer fallo termina el ascenso; perder la confirmación no descuenta o
   ).toBeVisible();
   await cell(page, 24).click();
   await cell(page, 21).click();
-  await expect(page.getByRole("button", { name: "Reintentar validación" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Reintentar validación", exact: true }),
+  ).toBeVisible();
   await expect(
     page.getByText("1 intento restante · Último intento", { exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Reintentar validación" }).click();
+  await page.getByRole("button", { name: "Reintentar validación", exact: true }).click();
   await expect(
     page.getByText("Has agotado los tres intentos. El ascenso termina en este nivel."),
   ).toBeVisible();

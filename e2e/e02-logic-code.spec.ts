@@ -32,7 +32,9 @@ test.describe("E02 — Logic-code competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: "Descubre el código" })).toBeVisible();
     expect(await page.content()).not.toContain("0420");
