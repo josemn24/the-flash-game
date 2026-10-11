@@ -15,7 +15,7 @@ export const scenario = {
     const beta = fixture.data;
     const betaSlug = beta.room.slug;
     const tabarniaSlug = beta.tabarnia.room.slug;
-    const [alphabet, pyramid, survival] = beta.publications;
+    const [alphabet, pyramid, survival, antiquity] = beta.publications;
     const tabarniaSteel = tabarnia.data.publications.find(
       (publication) => publication.slug === "steel-ball-run",
     );
@@ -28,8 +28,9 @@ export const scenario = {
           [1, "La vuelta al mundo", "alphabet", "open"],
           [2, "Cumbre lógica II", "pyramid", "scheduled"],
           [3, "Supervivencia: Cultura pop", "survival", "scheduled"],
+          [4, "Ecos de la Antigüedad", "pyramid", "scheduled"],
         ]),
-      "BetaVIP publica Alphabet, Cumbre lógica II y Survival en ese orden",
+      "BetaVIP publica Alphabet, Cumbre lógica II, Survival y Ecos de la Antigüedad en ese orden",
     );
     assert(beta.publicationId === alphabet.id, "El manifiesto apunta al primer desafío");
     assert(beta.challengeId === alphabet.challengeId, "El manifiesto apunta al desafío Alphabet");
@@ -48,6 +49,10 @@ export const scenario = {
     assert(beta.survivalPublicationId === survival.id, "Survival tiene ID propio");
     assert(beta.alphabetPublicationId === alphabet.id, "El Alphabet tiene ID explícito");
     assert(beta.pyramidPublicationId === pyramid.id, "La Pirámide tiene ID explícito");
+    assert(
+      beta.antiquityPublicationId === antiquity.id,
+      "Ecos de la Antigüedad tiene ID explícito",
+    );
 
     assert(fixture.users.ches.playerId === tabarnia.users.ches.playerId, "Ches conserva su Player");
     assert(fixture.users.dark.playerId === tabarnia.users.dark.playerId, "Dark conserva su Player");
@@ -147,6 +152,16 @@ export const scenario = {
       "Cumbre lógica II conserva el orden de formatos acordado",
     );
     assert(
+      (
+        await dockerSql(
+          `select string_agg(question.type, ',' order by item.position) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${antiquity.challengeVersionId}';`,
+          config.dbContainer,
+        )
+      ).stdout.trim() ===
+        "matching,progressive-clues,ordering,mini-wordle,word-search,classification,word-hashtag",
+      "Ecos de la Antigüedad conserva los siete formatos y su orden",
+    );
+    assert(
       (await sqlCount(
         `select count(*) from private.challenge_items where challenge_version_id = '${survival.challengeVersionId}';`,
         config.dbContainer,
@@ -172,22 +187,22 @@ export const scenario = {
       config.dbContainer,
     );
     assert(
-      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled",
-      "Las tres publicaciones de BetaVIP están en orden y estado correctos",
+      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled,4:scheduled",
+      "Las cuatro publicaciones de BetaVIP están en orden y estado correctos",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '72 hours';`,
+        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '96 hours';`,
         config.dbContainer,
       )) === 1,
-      "La temporada BetaVIP cubre exactamente tres ventanas de 24 horas",
+      "La temporada BetaVIP cubre exactamente cuatro ventanas de 24 horas",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${alphabet.id}' and second.id = '${pyramid.id}' and third.id = '${survival.id}' and first.number = 1 and second.number = 2 and third.number = 3 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (third.closes_at - third.opens_at)) = 86400 and private.publication_is_effectively_open(first.status, season.status, season.starts_at, season.ends_at, first.opens_at, first.closes_at, first.opens_at + interval '1 hour');`,
+        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.scheduled_challenges fourth on fourth.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${alphabet.id}' and second.id = '${pyramid.id}' and third.id = '${survival.id}' and fourth.id = '${antiquity.id}' and first.number = 1 and second.number = 2 and third.number = 3 and fourth.number = 4 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = fourth.opens_at and fourth.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (fourth.closes_at - fourth.opens_at)) = 86400 and private.publication_is_effectively_open(first.status, season.status, season.starts_at, season.ends_at, first.opens_at, first.closes_at, first.opens_at + interval '1 hour');`,
         config.dbContainer,
       )) === 1,
-      "Las tres publicaciones quedan disponibles en sus días, sin huecos ni solapes",
+      "Las cuatro publicaciones quedan disponibles en sus días, sin huecos ni solapes",
     );
     assert(
       (await sqlCount(

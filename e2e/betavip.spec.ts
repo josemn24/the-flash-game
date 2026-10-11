@@ -19,6 +19,7 @@ type Fixture = {
     pyramidPublicationId: string;
     alphabetPublicationId: string;
     survivalPublicationId: string;
+    antiquityPublicationId: string;
     publications: Publication[];
   };
 };
@@ -37,15 +38,17 @@ async function signIn(page: Page, account: Account) {
 
 test("BetaVIP muestra La vuelta al mundo como primer desafío", async ({ page }) => {
   const data = await fixture();
-  const [alphabet, pyramid, survival] = data.data.publications;
+  const [alphabet, pyramid, survival, antiquity] = data.data.publications;
   expect(data.data.publicationId).toBe(alphabet.id);
   expect(data.data.survivalPublicationId).toBe(survival.id);
   expect(data.data.alphabetPublicationId).toBe(alphabet.id);
   expect(data.data.pyramidPublicationId).toBe(pyramid.id);
+  expect(data.data.antiquityPublicationId).toBe(antiquity.id);
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
     [1, "La vuelta al mundo", "alphabet"],
     [2, "Cumbre lógica II", "pyramid"],
     [3, "Supervivencia: Cultura pop", "survival"],
+    [4, "Ecos de la Antigüedad", "pyramid"],
   ]);
 
   await signIn(page, data.users.ches);
@@ -57,7 +60,7 @@ test("BetaVIP muestra La vuelta al mundo como primer desafío", async ({ page })
   await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
   expect(
     await sqlCount(
-      `select count(*) from public.attempts where scheduled_challenge_id in ('${survival.id}', '${alphabet.id}', '${pyramid.id}');`,
+      `select count(*) from public.attempts where scheduled_challenge_id in ('${survival.id}', '${alphabet.id}', '${pyramid.id}', '${antiquity.id}');`,
     ),
   ).toBe(0);
 });
@@ -73,6 +76,7 @@ test("Ches continúa con Cumbre lógica II en el segundo periodo", async ({ page
     [1, "La vuelta al mundo", "alphabet"],
     [2, "Cumbre lógica II", "pyramid"],
     [3, "Supervivencia: Cultura pop", "survival"],
+    [4, "Ecos de la Antigüedad", "pyramid"],
   ]);
 
   await dockerSql(`
@@ -189,6 +193,56 @@ commit;
   expect(
     await sqlCount(
       `select count(*) from private.attempt_answers answer join public.attempts attempt on attempt.id = answer.attempt_id join private.challenge_items item on item.id = answer.challenge_item_id where attempt.player_id = '${data.users.ches.playerId}' and attempt.scheduled_challenge_id = '${survival.id}' and item.position = 1 and answer.status = 'correct';`,
+    ),
+  ).toBe(1);
+});
+
+test("Ches abre Ecos de la Antigüedad en el cuarto periodo", async ({ page }) => {
+  test.setTimeout(90_000);
+  const data = await fixture();
+  const [alphabet, pyramid, survival, antiquity] = data.data.publications;
+
+  await dockerSql(`
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where id in ('${alphabet.id}', '${pyramid.id}', '${survival.id}') and status <> 'cancelled';
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${antiquity.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-e2e-antiquity"}'::jsonb);
+commit;
+`);
+
+  expect(
+    await sqlCount(
+      `select count(*) from public.scheduled_challenges where id = '${antiquity.id}' and status = 'open';`,
+    ),
+  ).toBe(1);
+  await signIn(page, data.users.ches);
+  await page.getByRole("link", { name: /Abrir sala BetaVIP/ }).click();
+  await page.getByRole("link", { name: "Jugar" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Ecos de la Antigüedad", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
+  await expect(page.getByRole("list", { name: "Niveles de La Pirámide" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "Relaciona cada monumento con la civilización que lo construyó.",
+    }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Empezar nivel" }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Relaciona cada monumento con la civilización que lo construyó.",
+    }),
+  ).toBeVisible();
+  expect(
+    await sqlCount(
+      `select count(*) from public.attempts where player_id = '${data.users.ches.playerId}' and scheduled_challenge_id = '${antiquity.id}' and challenge_version_id = '${antiquity.challengeVersionId}';`,
     ),
   ).toBe(1);
 });

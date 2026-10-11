@@ -215,7 +215,7 @@ async function prepareAndUploadCassette(client) {
 
 function expectedQuestionRows() {
   const content = stagingBetaVipExpectedContent();
-  return [...content.alphabet, ...content.survival, ...content.pyramid];
+  return [...content.alphabet, ...content.survival, ...content.pyramid, ...content.antiquity];
 }
 
 function stableJson(value) {
@@ -254,7 +254,7 @@ async function validateDomain(client, accounts, assetMetadata) {
     !season ||
     season.room_id !== data.room.id ||
     season.status !== "active" ||
-    season.duration_seconds !== 72 * 60 * 60
+    season.duration_seconds !== 96 * 60 * 60
   ) {
     throw new Error("La temporada BetaVIP no coincide con lo esperado.");
   }
@@ -363,13 +363,14 @@ async function validateDomain(client, accounts, assetMetadata) {
       [data.seasonId],
     )
   ).rows;
-  assertEqual(scheduleRows.length, 3, "La temporada BetaVIP debe tener tres desafíos.");
+  assertEqual(scheduleRows.length, 4, "La temporada BetaVIP debe tener cuatro desafíos.");
   assertEqual(
     scheduleRows.map((row) => [row.status, row.opens_after, row.duration]),
     [
       ["open", 0, 24 * 60 * 60],
       ["scheduled", 24 * 60 * 60, 24 * 60 * 60],
       ["scheduled", 48 * 60 * 60, 24 * 60 * 60],
+      ["scheduled", 72 * 60 * 60, 24 * 60 * 60],
     ],
     "El calendario BetaVIP no coincide con lo esperado.",
   );

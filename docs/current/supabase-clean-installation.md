@@ -85,23 +85,25 @@ npm run supabase:betavip:setup
 npm run dev
 ```
 
-El setup reinicia la base local, prepara Tabarnia y añade BetaVIP con sus tres desafíos y el asset
+El setup reinicia la base local, prepara Tabarnia y añade BetaVIP con sus cuatro desafíos y el asset
 del casete. Las cuentas y los IDs quedan en `output/fixtures/tabarnia.json` y
 `output/fixtures/betavip.json`; este último incluye las credenciales locales de Manuel y Genís.
 Las credenciales de ejemplo son exclusivamente locales.
 
 «La vuelta al mundo» está abierto durante las primeras 24 horas, «Cumbre lógica II» queda
-programado para el segundo día y «Supervivencia: Cultura pop» para el tercero. La temporada dura
-72 horas. El manifiesto lista las publicaciones en ese orden; `data.publicationId` apunta a
+programado para el segundo día, «Supervivencia: Cultura pop» para el tercero y «Ecos de la
+Antigüedad» para el cuarto. La temporada dura 96 horas. El manifiesto lista las publicaciones en
+ese orden; `data.publicationId` apunta a
 La vuelta al mundo y los campos `data.survivalPublicationId`, `data.alphabetPublicationId` y
-`data.pyramidPublicationId` identifican cada publicación. `data.questionAssets` contiene el recurso
-del casete. Los [perfiles y comandos de calendario](../../README.md#comandos-disponibles) explican
+`data.pyramidPublicationId` identifican las tres primeras publicaciones; `data.antiquityPublicationId`
+identifica Ecos de la Antigüedad. `data.questionAssets` contiene el recurso del casete. Los
+[perfiles y comandos de calendario](../../README.md#comandos-disponibles) explican
 cómo recorrer las ventanas localmente.
 
 Para verificar el escenario, ejecutar `npm run test:integration:supabase -- --scenario betavip`.
 Volver a ejecutar el setup antes de `npm run test:e2e -- e2e/betavip.spec.ts` para que el navegador
 empiece sin la partida creada por la integración. Repetir el setup al terminar: el E2E avanza por
-los tres desafíos y crea partidas.
+los desafíos y crea partidas.
 
 ## Alpha local de Tabarnia
 
@@ -260,7 +262,7 @@ Antes de abrir cada entorno:
 1. Confirmar que el manifiesto del reset está completo y que el bootstrap corresponde al mismo proyecto y revisión.
 2. Solicitar `GET /api/internal/health` con el secreto del entorno: `200`, con `auth`, `database` y `schema` en `true`. Comprobar también `supabase migration list`: health valida atributos y marcadores, no sustituye al historial aplicado.
 3. Iniciar sesión con el superadmin y comprobar `/admin`. Una cuenta sin ese rol no debe obtener acceso al portal.
-4. En local, comprobar el perfil mínimo con una identidad y jugador, buckets vacíos y diccionarios completos. En staging, comprobar Xesmona como superadmin, Ches como owner de BetaVIP, sus tres desafíos, el asset y los diccionarios.
+4. En local, comprobar el perfil mínimo con una identidad y jugador, buckets vacíos y diccionarios completos. En staging, comprobar Xesmona como superadmin, Ches como owner de BetaVIP, sus cuatro desafíos, el asset y los diccionarios.
 5. Abrir acceso y reactivar calendario. Registrar commit, revisión, bootstrap y health en un informe sin credenciales.
 
 Las puertas locales/CI incluyen esquema declarativo, migraciones, reconciliación, contratos, permisos y concurrencia; tipos públicos, arquitectura, documentación, lint, unitarias, build y E2E. Las pruebas de actualización histórica se conservan, pero este despliegue no requiere migrar partidas anteriores.

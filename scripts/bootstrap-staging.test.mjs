@@ -268,7 +268,7 @@ describe("staging bootstrap", () => {
     ).toBe(false);
   });
 
-  it("contains only the three BetaVIP challenges and canonical content counts", () => {
+  it("contains the four BetaVIP challenges and canonical content counts", () => {
     const data = stagingBetaVipManifest();
     const content = stagingBetaVipExpectedContent();
     const sql = buildStagingBetaVipDomainSql({
@@ -289,10 +289,15 @@ describe("staging bootstrap", () => {
       ["La vuelta al mundo", "alphabet", "open", 0],
       ["Cumbre lógica II", "pyramid", "scheduled", 24],
       ["Supervivencia: Cultura pop", "survival", "scheduled", 48],
+      ["Ecos de la Antigüedad", "pyramid", "scheduled", 72],
     ]);
     expect(content.survival).toHaveLength(20);
     expect(content.alphabet).toHaveLength(18);
     expect(content.pyramid).toHaveLength(7);
+    expect(content.antiquity).toHaveLength(7);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 20, 7]);
+    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100]);
+    expect(sql).toContain("now() + interval '96 hours'");
     expect(sql.toLowerCase()).not.toContain("tabarnia");
     expect(sql).not.toContain("Manuel");
     expect(sql).not.toContain("Genís");
