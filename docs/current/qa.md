@@ -4,9 +4,9 @@
 
 # QA actual
 
-## Baseline inicial de Supabase — 2026-10-11
+## Primer baseline de Supabase — 2026-10-11 (histórico)
 
-El baseline `20261010214230_initial_schema` se probó desde cero en Supabase local. Pasan las 55
+El baseline anterior `20261010214230_initial_schema` se probó desde cero en Supabase local. Pasan las 55
 suites SQL, inventario y concurrencia al cargar `supabase/schemas/` y al aplicar la única migración;
 la reconciliación informa cero diferencias de definición y comportamiento. Pasan también las 158
 comprobaciones SQL compartidas, las 904 observaciones de validación, los contratos concurrentes,
@@ -18,6 +18,29 @@ tablas de `public` y `private`, cero objetos de Storage y únicamente los bucket
 vacíos. No se hicieron operaciones ni validaciones en staging.
 
 Las secciones fechadas a continuación conservan el contexto de comprobaciones anteriores.
+
+## Baseline regenerado desde schemas — 2026-10-11
+
+La revisión activa `20261011180045_initial_schema` contiene el estado de los 82 archivos
+declarativos. Las tres migraciones que estaban activas antes de esta regeneración se conservan en
+Git. No contenían DML ni backfills que deban repetirse después del reset.
+
+Las 55 suites SQL, el inventario de seguridad, 158 casos compartidos de conformidad, 904
+observaciones de validación y las pruebas concurrentes pasan tanto desde `schemas/` como desde el
+baseline. La reconciliación confirma 222 funciones, 41 contratos, cinco carreras adicionales y
+cero diferencias de definición o comportamiento. Pasan `schema:revision:check`, `supabase:types:check`,
+`docs:check`, typecheck, arquitectura de tipos y estilos, ESLint, formato y build.
+
+`verify:pilot` se detuvo en Vitest: la aserción de agenda de
+`scripts/seed-betavip.test.mjs` no coincide con el SQL que genera el seed. La prueba de arquitectura
+que falló en esa ejecución por una colisión de archivo temporal pasa aislada. En una ejecución
+serial, las otras 225 suites (2.060 pruebas) pasan; el seed conserva un fallo aislado (10/11).
+Por ese corte no se ejecutaron las etapas de integración y E2E de `verify:pilot`.
+
+Tras el reset final local, el ledger contiene solo `20261011180045`, Auth tiene cero usuarios, las
+tablas de `public` y `private` suman cero filas y Storage no tiene objetos. Los buckets locales
+`avatars` y `question-assets` están vacíos. No se cargaron fixtures, bootstrap ni diccionarios y no
+se ejecutaron operaciones contra staging.
 
 ## Extracción de renderizadores por formato — 2026-10-03
 
@@ -105,11 +128,11 @@ Narrativa, E07–E09, takeover, `results_locked_at`, pruebas fantasma y anonimiz
 la expiración por inactividad de intentos competitivos ya está implementada mediante tick y
 reconciliación bajo demanda; S20 ya cubre las correcciones administrativas de resultados.
 
-El esquema declarativo vigente contiene 80 archivos y la revisión activa es
-`20261010214230_initial_schema`, un baseline generado desde esos archivos. El historial incremental
-anterior se conserva en Git. El esquema contiene 31 tablas, una vista interna y un inventario de
-seguridad registrado. La validación del baseline se ejecuta en local; staging queda fuera de esta
-fotografía.
+El esquema declarativo vigente contiene 82 archivos y la revisión activa es
+`20261011180045_initial_schema`, un baseline generado desde esos archivos. Las 33 migraciones
+incrementales anteriores se conservan en Git. El esquema contiene 31 tablas, dos vistas internas y un
+inventario de seguridad registrado. La validación del baseline se ejecuta en local; staging queda
+fuera de esta fotografía.
 
 ## Comprobaciones ejecutadas — fotografía anterior al baseline
 

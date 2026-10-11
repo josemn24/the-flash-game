@@ -303,23 +303,20 @@ commit;
   await page.getByRole("button", { name: "Empezar desafío" }).click();
 
   const boards = [
-    { size: 4, title: /Tablero 1 de 6/, clicks: [7, 8, 14] },
-    { size: 5, title: /Tablero 2 de 6/, clicks: [13, 16, 24] },
-    { size: 5, title: /Tablero 3 de 6/, clicks: [7, 14, 23] },
-    { size: 6, title: /Tablero 4 de 6/, clicks: [9, 22, 26] },
-    { size: 6, title: /Tablero 5 de 6/, clicks: [8, 16, 27, 30] },
-    { size: 7, title: /Tablero 6 de 6/, clicks: [9, 22, 31, 35] },
+    { size: 4, progress: "Prueba 1 de 6", clicks: [7, 8, 14] },
+    { size: 5, progress: "Prueba 2 de 6", clicks: [13, 16, 24] },
+    { size: 5, progress: "Prueba 3 de 6", clicks: [7, 14, 23] },
+    { size: 6, progress: "Prueba 4 de 6", clicks: [9, 22, 26] },
+    { size: 6, progress: "Prueba 5 de 6", clicks: [8, 16, 27, 30] },
+    { size: 7, progress: "Prueba 6 de 6", clicks: [9, 22, 31, 35] },
   ];
   for (const [index, board] of boards.entries()) {
-    await expect(page.getByRole("heading", { name: board.title })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(board.progress, { exact: true })).toBeVisible({ timeout: 15_000 });
     for (const position of board.clicks) {
       await queensCell(page, position, board.size).click();
     }
-    if (index === 4) {
-      await expect(page.getByText("5 resueltas · 72 FP", { exact: true })).toBeVisible();
-    }
     if (index < boards.length - 1) {
-      await expect(page.getByRole("heading", { name: boards[index + 1].title })).toBeVisible({
+      await expect(page.getByText(boards[index + 1].progress, { exact: true })).toBeVisible({
         timeout: 15_000,
       });
     }

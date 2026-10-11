@@ -102,9 +102,8 @@ ni un registro alternativo de respuestas/puntos.
 
 ## Despliegue
 
-1. Tras el reset acordado, reconstruir la base con el [baseline activo](../../supabase/migrations/20261010214230_initial_schema.sql)
-   y las migraciones incrementales vigentes antes del cliente; verificar la revisión
-   `20261011105737_time_trial`. El baseline incluye
+1. Tras el reset acordado, reconstruir la base con el [baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql)
+   antes del cliente; verificar la revisión `20261011180045_initial_schema`. El baseline incluye
    recuperación, cierre por permisos, transferencia y reconciliación. El reset elimina los datos
    anteriores; no se migran intentos ni sesiones entre revisiones.
    La [reconciliación](competitive-command-reconciliation.md) documenta errores de transferencia,

@@ -28,7 +28,7 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261011105737_time_trial`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
+La revisión esperada es `20261011180045_initial_schema`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
 
 ## Herramientas y garantías
 
@@ -196,6 +196,12 @@ Los 12 E2E existentes de Flash, recuperación, Pirámide y contratos por formato
 
 Al terminar el piloto se simuló y ejecutó `npm run supabase:environment:reset -- --target local`. El ledger local contiene únicamente `20261010214230_initial_schema`. Auth tiene cero usuarios; las tablas de `public` y `private` suman cero filas; Storage tiene cero objetos. La CLI local recreó solo los buckets configurados y vacíos `avatars` y `question-assets`. No se ejecutaron bootstrap ni carga de diccionarios después del reset. No se ejecutaron comandos ni validaciones contra staging.
 
+### Baseline regenerado — 2026-10-11
+
+El historial activo se consolidó en `20261011180045_initial_schema`, generado desde los 82 schemas declarativos. Las tres migraciones activas anteriores se conservaron en Git; no contenían DML ni backfills necesarios tras el reset. Pasan las 55 suites SQL desde schemas y desde el baseline, la reconciliación, los tipos, la documentación y los gates estáticos. `verify:pilot` se detuvo en una aserción del test del seed BetaVIP; por ello, sus etapas de integración y E2E no se ejecutaron.
+
+El reset final local dejó únicamente la revisión `20261011180045` en el ledger, cero usuarios de Auth, cero filas en las tablas de `public` y `private`, cero objetos de Storage y dos buckets locales vacíos: `avatars` y `question-assets`. No se ejecutaron bootstrap, carga de diccionarios ni operaciones contra staging.
+
 ## Staging — ejecución posterior
 
 Preparar `.env.staging.operations`, excluido de Git, con `STAGING_PROJECT_REF`,
@@ -284,7 +290,7 @@ aplicación. Vercel no programa cron en previews y la ejecución automática de 
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261011105737_time_trial`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION=20261011180045_initial_schema`. El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 

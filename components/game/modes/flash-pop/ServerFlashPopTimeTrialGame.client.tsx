@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "motion/react";
-import { Card, Chip, GameHeader, Timer } from "@/components/ui";
+import { Card, GameHeader, Timer } from "@/components/ui";
 import {
   ChallengeIntro,
   ChallengeResultScreen,
@@ -32,13 +32,12 @@ export function ServerFlashPopTimeTrialGame({
 }) {
   const session = useCompetitiveSession({ challenge, roomContext, terminalReview });
   const solved = session.results.filter((result) => result.status === "correct").length;
-  const earned = session.results.reduce((sum, result) => sum + result.points, 0);
   const running =
     session.deadlineAt !== null && session.phase !== "results" && session.phase !== "review";
   const endReason = session.timeTrial?.endReason;
   const lastCorrect = session.timeTrial?.lastCorrectElapsedMs;
   const timeLabel = lastCorrect == null ? "Sin aciertos" : `${(lastCorrect / 1000).toFixed(2)} s`;
-  const progressLabel = `Contrarreloj · prueba ${Math.min(
+  const progressLabel = `Prueba ${Math.min(
     session.questionIndex + 1,
     challenge.slots.length,
   )} de ${challenge.slots.length}`;
@@ -57,24 +56,18 @@ export function ServerFlashPopTimeTrialGame({
           />
           {running ? (
             <GameHeader
-              title={progressLabel}
-              mobileLabel={progressLabel}
+              left={<p className={styles.progressLabel}>{progressLabel}</p>}
               className={styles.timeTrialHeader}
               actionsClassName={styles.timeTrialActions}
               right={
-                <>
-                  <Timer
-                    duration={challenge.timeLimitMs / 1000}
-                    active
-                    deadlineAt={session.deadlineAt!}
-                    onTimeUp={session.onTimeUp}
-                    resetKey={challenge.id}
-                    size="compact"
-                  />
-                  <Chip tone="social">
-                    {solved} resueltas · {earned} FP
-                  </Chip>
-                </>
+                <Timer
+                  duration={challenge.timeLimitMs / 1000}
+                  active
+                  deadlineAt={session.deadlineAt!}
+                  onTimeUp={session.onTimeUp}
+                  resetKey={challenge.id}
+                  size="compact"
+                />
               }
             />
           ) : null}

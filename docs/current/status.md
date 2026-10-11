@@ -70,8 +70,8 @@ verificación en staging siguen siendo requisitos antes de habilitar publicacion
 
 Verificación local de implementación (2026-10-11):
 
-- Migración incremental `20261011105737_time_trial` aplicada localmente y tipos Supabase
-  regenerados; no se reescribieron migraciones anteriores ni se realizaron operaciones remotas.
+- Baseline `20261011180045_initial_schema` generado desde los 82 schemas y aplicado localmente;
+  no se realizaron operaciones remotas.
 - 226 suites unitarias, 2.067 pruebas aprobadas. Incluyen el reloj persistente, la referencia
   horaria del servidor con desfase del dispositivo y revisión histórica sin respuestas ficticias.
 - 59 suites SQL y 1.547 comprobaciones aprobadas tanto desde `schemas` como desde `migrations`.

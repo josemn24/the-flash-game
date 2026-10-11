@@ -1,7 +1,7 @@
 # Modo, estado y resultado de los intentos
 
 Estado: vigente. Contrato implementado en TypeScript y PostgreSQL; despliegue conjunto tras el
-reinicio local de datos acordado. Revisión activa: `20261010214230_initial_schema`.
+reinicio local de datos acordado. Revisión activa: `20261011180045_initial_schema`.
 
 `status` describe el ciclo de vida. `outcome` conserva el desenlace oficial y no determina los
 puntos. El modo procede de la versión inmutable del desafío, sin una columna adicional en
@@ -44,7 +44,7 @@ la inmutabilidad y la acreditación idempotente.
 
 ## Despliegue y verificación
 
-El contrato está incluido en el [baseline activo](../../supabase/migrations/20261010214230_initial_schema.sql),
+El contrato está incluido en el [baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql),
 generado desde el esquema declarativo. No incluye backfills ni compatibilidad histórica; aplicar
 el baseline y el código sobre la base reiniciada acordada. Esta implementación no ejecuta
 reinicios remotos.

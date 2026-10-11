@@ -188,12 +188,14 @@ CREATE TABLE "private"."challenge_versions" (
   "created_at"              timestamp with time zone NOT NULL DEFAULT now(),
   "updated_at"              timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT "challenge_versions_challenge_definition_id_version_number_key" UNIQUE (challenge_definition_id, version_number),
-  CONSTRAINT "challenge_versions_check1" CHECK (((status = 'draft'::text) = (published_at IS NULL))),
-  CONSTRAINT "challenge_versions_check" CHECK (((status = 'draft'::text) OR ((mode = 'alphabet'::text) = (global_time_limit_ms IS NOT NULL)))),
+  CONSTRAINT "challenge_versions_check1" CHECK (((mode <> 'time-trial'::text) OR (global_time_limit_ms IS NULL) OR ((global_time_limit_ms % 1000) = 0))),
+  CONSTRAINT "challenge_versions_check2" CHECK (((status = 'draft'::text) = (published_at IS NULL))),
+  CONSTRAINT "challenge_versions_check" CHECK (((status = 'draft'::text) OR ((mode = ANY (ARRAY['alphabet'::text, 'time-trial'::text])) = (global_time_limit_ms IS NOT NULL)))),
   CONSTRAINT "challenge_versions_config_schema_version_check" CHECK ((config_schema_version > 0)),
   CONSTRAINT "challenge_versions_global_time_limit_ms_check" CHECK ((global_time_limit_ms > 0)),
   CONSTRAINT "challenge_versions_max_score_check" CHECK ((max_score = 100)),
-  CONSTRAINT "challenge_versions_mode_check" CHECK ((mode = ANY (ARRAY['flash'::text, 'alphabet'::text, 'survival'::text, 'narrative'::text, 'pyramid'::text]))),
+  CONSTRAINT "challenge_versions_mode_check"
+    CHECK ((mode = ANY (ARRAY['flash'::text, 'alphabet'::text, 'survival'::text, 'narrative'::text, 'pyramid'::text, 'time-trial'::text]))),
   CONSTRAINT "challenge_versions_mode_config_check" CHECK ((jsonb_typeof(mode_config) = 'object'::text)),
   CONSTRAINT "challenge_versions_pkey" PRIMARY KEY (id),
   CONSTRAINT "challenge_versions_status_check" CHECK ((status = ANY (ARRAY['draft'::text, 'published'::text, 'archived'::text]))),
@@ -1309,7 +1311,7 @@ begin
   if not found then
     raise exception 'content_not_found' using errcode = 'P0002';
   end if;
-  if version_row.mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
+  if version_row.mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') then
     raise exception 'unsupported_mode' using errcode = '22023';
   end if;
   if version_row.status <> 'published' then
@@ -1489,7 +1491,7 @@ begin
   if version_status <> 'published' then
     raise exception 'content_not_published' using errcode = '55000';
   end if;
-  if version_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
+  if version_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') then
     raise exception 'unsupported_content' using errcode = '22023';
   end if;
 
@@ -1546,6 +1548,36 @@ begin
     or solution_count <> item_count
     or points_total <> 100 then
     raise exception 'unsupported_content' using errcode = '22023';
+  end if;
+end;
+$function$;
+
+CREATE OR REPLACE FUNCTION private.assert_time_trial_content (
+  target_version uuid
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare version private.challenge_versions%rowtype;
+begin
+  select * into version from private.challenge_versions where id = target_version;
+  if version.mode <> 'time-trial' then return; end if;
+  if version.config_schema_version <> 1 or version.mode_config <> '{}'::jsonb
+    or version.global_time_limit_ms is null or version.global_time_limit_ms <= 0
+    or version.global_time_limit_ms % 1000 <> 0
+    or (select count(*) from private.challenge_items where challenge_version_id = target_version) not between 2 and 20
+    or (select coalesce(sum(points),0) from private.challenge_items where challenge_version_id = target_version) <> 100
+    or exists (
+      select 1 from private.challenge_items i join private.question_versions q on q.id = i.question_version_id
+      where i.challenge_version_id = target_version and (
+        i.points <= 0 or i.config_schema_version <> 1 or i.mode_config <> '{}'::jsonb
+        or q.type <> 'queens' or q.payload_schema_version <> 1
+        or not private.is_supported_flash_question(q.id)
+      )
+    ) or (select max(position) from private.challenge_items where challenge_version_id = target_version)
+      <> (select count(*) from private.challenge_items where challenge_version_id = target_version) then
+    raise exception 'invalid_time_trial_content' using errcode = '22023';
   end if;
 end;
 $function$;
@@ -1669,7 +1701,7 @@ CREATE OR REPLACE FUNCTION private.can_review_competitive_attempt (
       and a.status in ('completed', 'abandoned')
       and r.status = 'active'
       and s.status in ('active', 'finished')
-      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
       and cv.status in ('published', 'archived')
   )
   select exists (
@@ -2024,6 +2056,30 @@ begin
 end;
 $function$;
 
+CREATE OR REPLACE FUNCTION private.close_time_trial_interaction (
+  target_attempt uuid,
+  closed_at      timestamp with time zone,
+  reason         text
+)
+  RETURNS void
+  LANGUAGE plpgsql
+  SET search_path TO ''
+  AS $function$
+declare segment private.interaction_intervals%rowtype; receipt private.answer_receipts%rowtype; version_id uuid;
+begin
+  select * into segment from private.interaction_intervals where attempt_id = target_attempt and ended_at is null for update;
+  if not found then return; end if;
+  select challenge_version_id into version_id from public.attempts where id = target_attempt;
+  update private.interaction_intervals set ended_at = greatest(started_at,closed_at), end_reason = reason where id = segment.id;
+  insert into private.answer_receipts(attempt_id,challenge_item_id,challenge_version_id,answer,received_at,presented_at,effective_submitted_at,time_used_ms,timed_out)
+  values(target_attempt,segment.challenge_item_id,version_id,null,clock_timestamp(),segment.started_at,
+    greatest(segment.started_at,closed_at),greatest(0,floor(extract(epoch from (closed_at - segment.started_at))*1000))::bigint,true)
+  returning * into receipt;
+  insert into private.attempt_answers(attempt_id,challenge_item_id,challenge_version_id,receipt_id,status,answer,points,presented_at,submitted_at,time_used_ms,idempotency_key)
+  values(target_attempt,segment.challenge_item_id,version_id,receipt.id,'unanswered',null,0,receipt.presented_at,receipt.effective_submitted_at,receipt.time_used_ms,'time-trial:timeout:' || receipt.id);
+end;
+$function$;
+
 CREATE OR REPLACE FUNCTION private.command_actor()
   RETURNS uuid
   LANGUAGE plpgsql
@@ -2271,7 +2327,7 @@ begin
   if source_row.status not in ('published', 'archived') then
     raise exception 'content_not_published' using errcode = '55000';
   end if;
-  if source_row.mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
+  if source_row.mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') then
     raise exception 'unsupported_mode' using errcode = '22023';
   end if;
 
@@ -3636,6 +3692,11 @@ begin
     raise exception 'Publication cancelled';
   end if;
   select points into item_points from private.challenge_items where id = new.challenge_item_id;
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial')
+    and (new.status = 'partial' or new.points <> case when new.status = 'correct' then item_points else 0 end
+      or (new.status = 'correct' and (r.timed_out or r.received_at >= a.deadline_at))) then
+    raise exception 'Invalid Contrarreloj score';
+  end if;
   if new.points > item_points then raise exception 'Points exceed item allocation'; end if;
   return new;
 end;
@@ -3684,10 +3745,23 @@ begin
     return new;
   end if;
   if (new.id, new.player_id, new.scheduled_challenge_id, new.challenge_version_id, new.kind,
-      new.attempt_number, new.started_at, new.deadline_at) is distinct from
+      new.attempt_number, new.started_at) is distinct from
      (old.id, old.player_id, old.scheduled_challenge_id, old.challenge_version_id, old.kind,
-      old.attempt_number, old.started_at, old.deadline_at) then
+      old.attempt_number, old.started_at) then
     raise exception 'Attempt context is immutable';
+  end if;
+  if new.deadline_at is distinct from old.deadline_at then
+    if old.deadline_at is not null or old.status <> 'in_progress' or new.status <> 'in_progress'
+      or not exists (
+        select 1 from private.challenge_versions cv
+        join private.attempt_timing_units u on u.attempt_id = old.id
+        join private.challenge_items i on i.id = u.challenge_item_id
+        where cv.id = old.challenge_version_id and cv.mode = 'time-trial'
+          and i.position = 1 and u.scope = 'attempt'
+          and u.deadline_at = new.deadline_at
+          and u.deadline_at = u.started_at + cv.global_time_limit_ms * interval '1 millisecond'
+          and (select count(*) from private.attempt_timing_units other_unit where other_unit.attempt_id = old.id) = 1
+      ) then raise exception 'Attempt deadline is immutable'; end if;
   end if;
   if new.lock_version <> old.lock_version + 1 then raise exception 'Expected next lock_version'; end if;
   if old.status <> 'in_progress' then
@@ -3705,7 +3779,7 @@ begin
     select cv.mode into attempt_mode from private.challenge_versions cv
       where cv.id = new.challenge_version_id;
     if attempt_mode is null
-      or (attempt_mode in ('flash', 'alphabet', 'narrative') and new.outcome is not null)
+      or (attempt_mode in ('flash', 'alphabet', 'narrative', 'time-trial') and new.outcome is not null)
       or (attempt_mode = 'survival' and (new.outcome is null or new.outcome not in ('survived', 'eliminated')))
       or (attempt_mode = 'pyramid' and (new.outcome is null or new.outcome not in ('summit', 'failed'))) then
       raise exception 'invalid_attempt_lifecycle' using errcode = '23514';
@@ -3891,6 +3965,9 @@ begin
       if (select coalesce(sum(points), 0) from private.challenge_items where challenge_version_id = new.id) <> 100 then
         raise exception 'Challenge items must sum to 100 points';
       end if;
+      if new.mode = 'time-trial' then
+        perform private.assert_time_trial_content(new.id);
+      end if;
       if exists (select 1 from private.challenge_items i join private.question_versions q on q.id = i.question_version_id
         where i.challenge_version_id = new.id and q.status <> 'published') then
         raise exception 'Publish every question before its challenge';
@@ -3993,6 +4070,7 @@ declare
   clear_progress boolean := false;
   target_status text;
   completion_outcome text;
+  time_trial_reason text;
   survival_lives integer;
   survival_mistakes integer;
   survival_resolved integer;
@@ -4040,7 +4118,8 @@ begin
     end if;
     target := a.id;
     result := jsonb_build_object('attemptId', a.id, 'sessionId', session_row.id, 'resumed', resumed,
-      'controlRequired', control_required, 'deadlineAt', a.deadline_at, 'lockVersion', a.lock_version);
+      'controlRequired', control_required, 'deadlineAt', a.deadline_at, 'lockVersion', a.lock_version,
+      'timeTrial', case when (select mode from private.challenge_versions where id = a.challenge_version_id) = 'time-trial' then private.time_trial_progress(a.id) end);
   else
     target := (input->>'attemptId')::uuid;
     select * into a from public.attempts where id = target for update;
@@ -4106,6 +4185,11 @@ begin
           'transferred', true
         );
       when 'prepare' then
+        if cv.mode = 'time-trial' then
+          if (private.time_trial_progress(a.id)->>'endReason') is not null then
+            raise exception 'time_trial_terminal' using errcode = '55000';
+          end if;
+        end if;
         if cv.mode = 'pyramid' and exists (
           select 1 from private.attempt_answers answer
           where answer.attempt_id = a.id and answer.status <> 'correct'
@@ -4143,10 +4227,15 @@ begin
             if not found then
               insert into private.attempt_timing_units(attempt_id, challenge_version_id, challenge_item_id, scope, started_at, deadline_at)
               select a.id, a.challenge_version_id, item.id,
-                case cv.mode when 'alphabet' then 'attempt' else 'question' end,
+                case when cv.mode in ('alphabet','time-trial') then 'attempt' else 'question' end,
                 case when cv.mode = 'alphabet' then a.started_at else instant end,
-                case when cv.mode = 'alphabet' then a.deadline_at else instant + q.time_limit_ms * interval '1 millisecond' end
+                case when cv.mode = 'alphabet' then a.deadline_at when cv.mode = 'time-trial' then coalesce(a.deadline_at, instant + cv.global_time_limit_ms * interval '1 millisecond') else instant + q.time_limit_ms * interval '1 millisecond' end
               from private.question_versions q where q.id = item.question_version_id returning * into unit;
+            end if;
+            if cv.mode = 'time-trial' and a.deadline_at is null then
+              update public.attempts set deadline_at = unit.deadline_at, lock_version = lock_version + 1
+                where id = a.id returning * into a;
+              update private.attempt_sessions set expires_at = a.deadline_at where attempt_id = a.id and revoked_at is null;
             end if;
             insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
               values(a.id, item.id, unit.id, least(instant, unit.deadline_at)) returning * into segment;
@@ -4246,6 +4335,12 @@ begin
           'deadlineAt', unit.deadline_at,
           'timedOut', instant >= unit.deadline_at);
       when 'receive', 'pass' then
+        if cv.mode = 'time-trial' then
+          received := clock_timestamp();
+          if op = 'pass' or received < a.deadline_at then
+            raise exception 'queens_requires_validation_command' using errcode = '22023';
+          end if;
+        end if;
         select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
         if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
           raise exception 'interaction_not_presented' using errcode = '55000';
@@ -4341,15 +4436,15 @@ begin
           status, answer, result_details, points, presented_at, submitted_at, time_used_ms, idempotency_key)
         values(a.id, receipt.challenge_item_id, receipt.challenge_version_id, receipt.id,
           input->>'status', receipt.answer, input->'resultDetails',
-          case when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
+          case when cv.mode = 'time-trial' then case when input->>'status' = 'correct' then (select allocated.points from private.challenge_items allocated where allocated.id = receipt.challenge_item_id) else 0 end when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
             else (input->>'points')::integer end,
           receipt.presented_at, receipt.effective_submitted_at, receipt.time_used_ms, key);
         result := jsonb_build_object('receiptId', receipt.id, 'status', input->>'status',
-          'points', case when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
+          'points', case when cv.mode = 'time-trial' then case when input->>'status' = 'correct' then (select allocated.points from private.challenge_items allocated where allocated.id = receipt.challenge_item_id) else 0 end when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
             else (input->>'points')::integer end);
       when 'complete', 'abandon' then
         if op = 'complete' then
-          if cv.mode = 'alphabet' then
+          if cv.mode in ('alphabet', 'time-trial') then
             -- Preserve an already received answer using the trusted evaluator's result.
             -- No evaluator or asset calls are made while this attempt is locked.
             if input ? 'pendingEvaluation' then
@@ -4376,7 +4471,13 @@ begin
               and not exists (select 1 from private.attempt_answers aa where aa.receipt_id = r.id)) then
               raise exception 'unfinished_interaction' using errcode = '55000';
             end if;
-            if private.next_attempt_item(a.id) is not null then
+            if cv.mode = 'time-trial' then
+              time_trial_reason := private.time_trial_progress(a.id)->>'endReason';
+              if time_trial_reason is null then raise exception 'time_trial_not_terminal' using errcode = '55000'; end if;
+              if time_trial_reason = 'time_limit' then
+                perform private.close_time_trial_interaction(a.id, a.deadline_at, 'timeout');
+              end if;
+            elsif private.next_attempt_item(a.id) is not null then
               if instant < a.deadline_at then
                 raise exception 'alphabet_deadline_not_reached' using errcode = '55000',
                   detail = jsonb_build_object('retryAfterSeconds',
@@ -4461,7 +4562,7 @@ begin
             end if;
             select coalesce(sum(answer.points), 0)::integer into points
             from private.attempt_answers answer where answer.attempt_id = a.id;
-          elsif cv.mode = 'alphabet' then
+          elsif cv.mode in ('alphabet', 'time-trial') then
             select coalesce(sum(answer.points), 0)::integer into points
             from private.attempt_answers answer where answer.attempt_id = a.id;
             completion_outcome := null;
@@ -4480,6 +4581,7 @@ begin
         end if;
         delete from private.prepared_interactions where attempt_id = a.id;
         update public.attempts set status = target_status, score = points, completed_at = instant,
+          terminal_reason = case when cv.mode = 'time-trial' and op = 'complete' then time_trial_reason else terminal_reason end,
           outcome = completion_outcome, progress_payload = null, lock_version = lock_version + 1 where id = a.id returning * into a;
         update private.attempt_sessions
         set revoked_at = instant, revocation_reason = 'terminal'
@@ -4491,7 +4593,7 @@ begin
         result := jsonb_build_object('status', a.status, 'score', a.score,
           'outcome', a.outcome, 'challengeMode', cv.mode,
           'livesRemaining', case when cv.mode = 'survival' then survival_lives else null end);
-        if op = 'complete' and cv.mode = 'alphabet' then
+        if op = 'complete' and cv.mode in ('alphabet', 'time-trial') then
           result := result || jsonb_build_object('answers', coalesce((
             select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
               'answer', aa.answer, 'status', aa.status, 'points', aa.points,
@@ -4512,6 +4614,9 @@ begin
         where id = a.id returning * into a;
     end if;
     result := result || jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version);
+    if cv.mode = 'time-trial' then
+      result := result || jsonb_build_object('timeTrial', private.time_trial_progress(a.id), 'terminalReason', a.terminal_reason);
+    end if;
   end if;
 
   return jsonb_build_object(
@@ -6216,10 +6321,8 @@ begin
     ) then
       raise exception 'question_not_published' using errcode = '55000';
     end if;
-    if challenge_row.mode in ('flash', 'survival', 'pyramid') and (
-      not private.is_supported_flash_question(question_row.id)
-      or (challenge_row.mode = 'survival' and question_row.type = 'short-text')
-    ) then
+    if challenge_row.mode in ('flash', 'survival', 'narrative', 'pyramid', 'time-trial')
+      and not private.is_supported_flash_question(question_row.id) then
       raise exception 'unsupported_question' using errcode = '22023';
     end if;
   end loop;
@@ -6567,7 +6670,7 @@ declare
   max_incorrect_validations integer;
 begin
   select q.public_payload->'regions', (q.public_payload->'grid'->>'rows')::integer, a.progress_payload,
-    case when cv.mode = 'pyramid' then 3 else null end
+    case when cv.mode in ('pyramid', 'time-trial') then 3 else null end
     into regions, board_size, draft, max_incorrect_validations
   from public.attempts a
   join private.challenge_items i on i.id = target_item
@@ -6859,6 +6962,7 @@ begin
     'allItemsResolved', not exists (select 1 from private.challenge_items i where i.challenge_version_id = a.challenge_version_id
       and not exists (select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id)),
     'challengeMode', cv.mode,
+    'timeTrial', case when cv.mode = 'time-trial' then private.time_trial_progress(a.id) end,
     'initialLives', case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer else null end,
     'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
       select sum(case
@@ -7039,7 +7143,8 @@ CREATE OR REPLACE FUNCTION private.read_completed_attempt (
         'timeUsedMs', answer.time_used_ms, 'resultDetails', answer.result_details) order by item.position)
         from private.attempt_answers answer join private.challenge_items item on item.id = answer.challenge_item_id
         where answer.attempt_id = a.id), '[]'::jsonb))) ||
-      jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome))
+      jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome, 'terminalReason', a.terminal_reason,
+        'timeTrial', case when cv.mode = 'time-trial' then private.time_trial_progress(a.id) end))
   from public.attempts a
   join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
   join public.seasons season on season.id = sc.season_id
@@ -7065,7 +7170,7 @@ CREATE OR REPLACE FUNCTION private.read_evaluation_context (
 declare actor uuid := private.command_actor(); result jsonb;
 begin
   select jsonb_build_object(
-    'receiptId', r.id, 'answer', case when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
+    'receiptId', r.id, 'answer', case when cv.mode = 'time-trial' and (r.answer is null or r.answer = 'null'::jsonb) then null when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
       select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
       from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
@@ -7220,7 +7325,7 @@ begin
               'mode', version.mode,
               'configSchemaVersion', version.config_schema_version,
               'modeConfig', version.mode_config
-            ),
+            ) || case when version.mode in ('alphabet','time-trial') then jsonb_build_object('globalTimeLimitMs', version.global_time_limit_ms) else '{}'::jsonb end,
             'questions', coalesce((
               select jsonb_agg(
                 case when question.status <> 'draft' then jsonb_build_object(
@@ -7252,7 +7357,7 @@ begin
       )
       from private.challenge_versions version
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where version.mode in ('flash', 'alphabet', 'survival', 'pyramid')
+      where version.mode in ('flash', 'alphabet', 'survival', 'pyramid', 'time-trial')
     ), '[]'::jsonb)
   );
 end;
@@ -7409,6 +7514,7 @@ begin
     perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
     raise exception 'session_revoked' using errcode = '42501';
   end if;
+  instant := clock_timestamp();
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into receipt from private.answer_receipts r where r.attempt_id = a.id and not exists (
@@ -7430,7 +7536,7 @@ begin
         where id = segment.id;
         result := jsonb_build_object('receiptId', null, 'recovered', true,
           'recoveryInterrupted', true, 'challengeItemId', segment.challenge_item_id);
-      elsif cv.mode <> 'pyramid'
+      elsif cv.mode not in ('pyramid', 'time-trial')
         and question.type in ('mini-wordle', 'logic-code', 'logic-matrix', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'word-search', 'word-hashtag', 'zip', 'escape')
         and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
@@ -7861,6 +7967,10 @@ begin
   if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
     raise exception 'interaction_not_presented' using errcode = '55000';
   end if;
+  instant := clock_timestamp();
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial') and instant >= a.deadline_at then
+    raise exception 'deadline_reached' using errcode = '55000';
+  end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
   select * into question from private.question_versions where id = item.question_version_id;
   if question.type <> 'queens' or question.payload_schema_version <> 1 then
@@ -8280,6 +8390,7 @@ declare
   sequence_no integer;
   incorrect_attempts integer;
   penalty_points integer;
+  challenge_mode text;
   result jsonb;
 begin
   if jsonb_typeof(input) is distinct from 'object'
@@ -8333,6 +8444,10 @@ begin
   instant := clock_timestamp();
   select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
   if instant >= unit.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
+  instant := clock_timestamp();
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial') and instant >= a.deadline_at then
+    raise exception 'deadline_reached' using errcode = '55000';
+  end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
   select * into question from private.question_versions where id = item.question_version_id;
   if question.type <> 'queens' or question.payload_schema_version <> 1 then
@@ -8386,12 +8501,13 @@ begin
     where attempt_id = a.id and challenge_item_id = item.id;
   select coalesce(max(e.sequence), 0) + 1 into sequence_no
     from private.queens_validation_events e where e.attempt_id = a.id and e.challenge_item_id = item.id;
-  penalty_points := case when correct then 0 else round(item.points * 0.05)::integer end;
+  select mode into challenge_mode from private.challenge_versions where id = a.challenge_version_id;
+  penalty_points := case when correct or challenge_mode = 'time-trial' then 0 else round(item.points * 0.05)::integer end;
   insert into private.queens_validation_events(
     attempt_id, challenge_item_id, challenge_version_id, sequence, queens, correct,
     conflicting_queens, penalty_applied, penalty_points, received_at, presented_at, time_used_ms, idempotency_key)
   values(a.id, item.id, a.challenge_version_id, sequence_no, normalized, correct,
-    (progress->>'conflictingQueens')::integer, not correct, penalty_points,
+    (progress->>'conflictingQueens')::integer, not correct and challenge_mode <> 'time-trial', penalty_points,
     instant, presented, used_ms, key)
   returning * into validation;
   progress := private.queens_progress(a.id, item.id);
@@ -8417,6 +8533,7 @@ begin
     'incorrectValidations', incorrect_attempts,
     'maxIncorrectValidations', progress->'maxIncorrectValidations');
   if terminal then result := result || jsonb_build_object('receiptId', receipt.id, 'timeUsedMs', used_ms); end if;
+  if challenge_mode = 'time-trial' then result := result || jsonb_build_object('timeTrial', private.time_trial_progress(a.id)); end if;
   insert into private.audit_log(actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
     values(actor, 'submit_queens_answer', 'attempt', a.id, key,
       jsonb_build_object('lockVersion', expected, 'queens', to_jsonb(normalized)),
@@ -8515,7 +8632,7 @@ begin
     raise exception 'unsupported_question' using errcode = '22023';
   end if;
 
-  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'pyramid') then
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode in ('pyramid','time-trial')) then
     raise exception 'queens_requires_board_validation' using errcode = '22023';
   end if;
 
@@ -8995,6 +9112,45 @@ CREATE OR REPLACE FUNCTION private.take_over_attempt (
   SET search_path TO ''
   AS $function$
   select private.execute_command('takeover', input)
+$function$;
+
+CREATE OR REPLACE FUNCTION private.time_trial_progress (
+  target_attempt uuid
+)
+  RETURNS jsonb
+  LANGUAGE sql
+  SET search_path TO ''
+  AS $function$
+  with facts as (
+    select a.*, cv.global_time_limit_ms,
+      (select count(*)::integer from private.challenge_items i where i.challenge_version_id = a.challenge_version_id) as total,
+      (select count(*)::integer from private.attempt_answers aa where aa.attempt_id = a.id and aa.status = 'correct') as solved,
+      (select max(r.effective_submitted_at) from private.attempt_answers aa
+        join private.answer_receipts r on r.id = aa.receipt_id
+        where aa.attempt_id = a.id and aa.status = 'correct' and not r.timed_out and r.received_at < a.deadline_at) as last_correct,
+      (select coalesce(sum(points),0)::integer from private.attempt_answers aa where aa.attempt_id = a.id) as earned
+    from public.attempts a join private.challenge_versions cv on cv.id = a.challenge_version_id
+    where a.id = target_attempt and cv.mode = 'time-trial'
+  )
+  select jsonb_build_object(
+    'kind','time-trial','currentIndex', least(solved,total - 1),
+    'solvedCount',solved,'totalCount',total,'points',earned,
+    'clockStartedAt',deadline_at - global_time_limit_ms * interval '1 millisecond',
+    'deadlineAt',deadline_at,'serverNow',clock_timestamp(),
+    'elapsedTimeMs',case when deadline_at is null then 0 else greatest(0,floor(extract(epoch from (
+      (case when solved = total then last_correct
+        when status = 'completed' and exists (select 1 from private.attempt_answers aa where aa.attempt_id = facts.id and aa.status = 'incorrect') then (select max(aa.submitted_at) from private.attempt_answers aa where aa.attempt_id = facts.id)
+        else least(coalesce(completed_at,clock_timestamp()),deadline_at) end)
+      - (deadline_at - global_time_limit_ms * interval '1 millisecond')))*1000))::bigint end,
+    'lastCorrectElapsedMs',floor(extract(epoch from (last_correct - (deadline_at - global_time_limit_ms * interval '1 millisecond'))) * 1000)::bigint,
+    'endReason',case
+      when terminal_reason in ('all_solved','validation_limit','time_limit','recovery_interrupted') then terminal_reason
+      when solved = total then 'all_solved'
+      when exists (select 1 from private.attempt_answers aa where aa.attempt_id = facts.id and aa.status = 'incorrect') then 'validation_limit'
+      when deadline_at is not null and clock_timestamp() >= deadline_at then 'time_limit'
+      when exists (select 1 from private.attempt_answers aa where aa.attempt_id = facts.id and aa.status <> 'correct') then 'recovery_interrupted'
+      else null end
+  ) from facts
 $function$;
 
 CREATE OR REPLACE FUNCTION private.touch_updated_at()
@@ -9983,22 +10139,22 @@ begin
     or char_length(challenge->>'subtitle') > 300
     or jsonb_typeof(challenge->'description') is distinct from 'string'
     or char_length(challenge->>'description') > 2000
-    or challenge->>'mode' not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+    or challenge->>'mode' not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     or challenge->'configSchemaVersion' <> '1'::jsonb
     or jsonb_typeof(challenge->'modeConfig') is distinct from 'object'
-    or (challenge->>'mode' = 'alphabet' and (
+    or (challenge->>'mode' in ('alphabet', 'time-trial') and (
       jsonb_typeof(challenge->'globalTimeLimitMs') is distinct from 'number'
       or (challenge->>'globalTimeLimitMs')::numeric <> trunc((challenge->>'globalTimeLimitMs')::numeric)
       or (challenge->>'globalTimeLimitMs')::integer <= 0
     ))
-    or (challenge->>'mode' <> 'alphabet' and challenge ? 'globalTimeLimitMs')
+    or (challenge->>'mode' not in ('alphabet', 'time-trial') and challenge ? 'globalTimeLimitMs')
     or (challenge->>'mode' = 'survival' and (
       (select count(*) from jsonb_object_keys(challenge->'modeConfig')) <> 1
       or jsonb_typeof(challenge->'modeConfig'->'lives') is distinct from 'number'
       or (challenge->'modeConfig'->>'lives')::numeric <> trunc((challenge->'modeConfig'->>'lives')::numeric)
       or (challenge->'modeConfig'->>'lives')::integer not between 1 and 20
     ))
-    or (challenge->>'mode' = 'pyramid' and challenge->'modeConfig' <> '{}'::jsonb) then
+    or (challenge->>'mode' in ('pyramid', 'time-trial') and challenge->'modeConfig' <> '{}'::jsonb) then
     raise exception 'invalid_content' using errcode = '22023';
   end if;
 
@@ -10013,6 +10169,9 @@ begin
     raise exception 'invalid_content' using errcode = '22023';
   end if;
 
+  if challenge->>'mode' = 'time-trial' and (challenge->>'globalTimeLimitMs')::integer % 1000 <> 0 then
+    raise exception 'invalid_content' using errcode = '22023';
+  end if;
   for question, question_index in
     select value, ordinality::integer
     from jsonb_array_elements(document->'questions') with ordinality
@@ -10046,11 +10205,14 @@ begin
         or question->>'questionVersionId' = any(seen_question_versions) then
         raise exception 'invalid_question_reference' using errcode = '22023';
       end if;
+      if challenge->>'mode' = 'time-trial' and not exists (
+        select 1 from private.question_versions q where q.id = (question->>'questionVersionId')::uuid
+          and q.status = 'published' and q.type = 'queens' and private.is_supported_flash_question(q.id)
+      ) then raise exception 'unsupported_question' using errcode = '22023'; end if;
       seen_question_versions := seen_question_versions || (question->>'questionVersionId');
       if challenge->>'mode' in ('survival', 'pyramid') and not exists (
         select 1 from private.question_versions supported
         where supported.id = (question->>'questionVersionId')::uuid
-          and supported.type <> 'short-text'
           and private.is_supported_flash_question(supported.id)
       ) then
         raise exception 'unsupported_question' using errcode = '22023';
@@ -10069,10 +10231,9 @@ begin
       raise exception 'invalid_content' using errcode = '22023';
     end if;
 
-    if challenge->>'mode' = 'survival' and question->>'type' = 'short-text' then
+    if challenge->>'mode' = 'time-trial' and question->>'type' <> 'queens' then
       raise exception 'unsupported_question' using errcode = '22023';
     end if;
-
     perform private.validate_flash_question_document(question - 'points' - 'modeConfig');
     question_slug := btrim(question->>'slug');
     if question_slug = any(seen_slugs) then
@@ -10115,17 +10276,6 @@ begin
     ) then
       raise exception 'duplicate_alphabet_letter' using errcode = '22023';
     end if;
-  elsif exists (
-    select 1
-    from jsonb_array_elements(document->'questions') question_row
-    where question_row->>'type' = 'short-text'
-      or (question_row->>'source' = 'library' and exists (
-        select 1 from private.question_versions version
-        where version.id = (question_row->>'questionVersionId')::uuid
-          and version.type = 'short-text'
-      ))
-  ) then
-    raise exception 'short_text_requires_alphabet' using errcode = '22023';
   end if;
   if total_points <> 100 then
     raise exception 'points_total_invalid' using errcode = '22023';
@@ -11879,12 +12029,14 @@ CREATE OR REPLACE FUNCTION public.get_challenge_ranking (
   target_publication_id uuid
 )
   RETURNS TABLE (
-    player_id    uuid,
-    display_name text,
-    avatar_path  text,
-    flash_points bigint,
-    duration_ms  bigint,
-    "position"   bigint
+    player_id               uuid,
+    display_name            text,
+    avatar_path             text,
+    flash_points            bigint,
+    duration_ms             bigint,
+    "position"              bigint,
+    solved_count            integer,
+    last_correct_elapsed_ms bigint
   )
   LANGUAGE sql
   STABLE
@@ -11892,8 +12044,8 @@ CREATE OR REPLACE FUNCTION public.get_challenge_ranking (
   SET search_path TO ''
   AS $function$
   select e.player_id, p.display_name, p.avatar_path, e.flash_points, e.duration_ms,
-    rank() over (order by e.flash_points desc, e.duration_ms, e.started_at) as "position"
-  from private.effective_results e join public.players p on p.id = e.player_id
+    e.position, e.solved_count, e.last_correct_elapsed_ms
+  from private.ranked_challenge_results e join public.players p on p.id = e.player_id
   where e.scheduled_challenge_id = target_publication_id and private.is_room_member(e.room_id)
   order by "position", e.player_id
 $function$;
@@ -12077,6 +12229,9 @@ begin
   where publication.id = target_publication_id and room.slug = target_room_slug;
 
   case challenge_mode
+    when 'time-trial' then
+      select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
+      from public.get_my_time_trial_challenge(target_room_slug, target_publication_id) row;
     when 'flash' then
       select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
       from public.get_my_flash_challenge(target_room_slug, target_publication_id) row;
@@ -12801,10 +12956,11 @@ CREATE OR REPLACE FUNCTION public.get_my_room_cards()
         where items.challenge_version_id = cv.id
       ) as question_count,
       (
-        select (count(*) between 2 and 20 and cv.mode in ('flash', 'alphabet', 'survival', 'narrative')
+        select (count(*) between 2 and 20 and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'time-trial')
             or count(*) = 7 and cv.mode = 'pyramid')
           and bool_and(private.is_supported_flash_question(q.id))
-          and (cv.mode = 'flash' and cv.mode_config = '{}'::jsonb
+          and (cv.mode = 'time-trial' and cv.mode_config = '{}'::jsonb and cv.global_time_limit_ms > 0 and bool_and(q.type = 'queens')
+            or cv.mode = 'flash' and cv.mode_config = '{}'::jsonb
             or cv.mode = 'alphabet' and cv.mode_config = '{}'::jsonb
               and bool_and(jsonb_typeof(items.mode_config->'letter') = 'string')
             or cv.mode = 'survival'
@@ -12999,6 +13155,185 @@ $function$;
 
 REVOKE ALL ON FUNCTION "public"."get_my_survival_result"(uuid) FROM PUBLIC, "anon", "service_role";
 
+CREATE OR REPLACE FUNCTION public.get_my_time_trial_challenge (
+  target_room_slug      text,
+  target_publication_id uuid
+)
+  RETURNS TABLE (
+    room_id                  uuid,
+    room_slug                text,
+    room_title               text,
+    publication_id           uuid,
+    publication_status       text,
+    publication_opens_at     timestamp with time zone,
+    publication_closes_at    timestamp with time zone,
+    challenge_id             uuid,
+    challenge_slug           text,
+    challenge_version_id     uuid,
+    challenge_title          text,
+    challenge_subtitle       text,
+    challenge_description    text,
+    challenge_mode           text,
+    challenge_max_score      integer,
+    question_count           bigint,
+    own_attempt_id           uuid,
+    own_attempt_status       text,
+    own_attempt_score        integer,
+    own_attempt_started_at   timestamp with time zone,
+    own_attempt_completed_at timestamp with time zone,
+    own_attempt_deadline_at  timestamp with time zone,
+    own_attempt_lock_version bigint,
+    challenge_item_id        uuid,
+    item_position            integer,
+    question_version_id      uuid,
+    question_type            text,
+    payload_schema_version   integer,
+    time_limit_ms            integer,
+    item_points              integer,
+    global_time_limit_ms     integer
+  )
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  with viewer as (
+    select private.current_player_id() as player_id
+  ), authorized_publication as (
+    select
+      r.id as room_id,
+      r.slug as room_slug,
+      r.title as room_title,
+      sc.id as publication_id,
+      sc.status as publication_status,
+      sc.opens_at as publication_opens_at,
+      sc.closes_at as publication_closes_at,
+      cd.id as challenge_id,
+      cd.slug as challenge_slug,
+      cv.id as challenge_version_id,
+      cv.title as challenge_title,
+      cv.subtitle as challenge_subtitle,
+      cv.description as challenge_description,
+      cv.mode as challenge_mode,
+      cv.max_score as challenge_max_score,
+      a.id as own_attempt_id,
+      a.status as own_attempt_status,
+      a.score as own_attempt_score,
+      a.started_at as own_attempt_started_at,
+      a.completed_at as own_attempt_completed_at,
+      a.deadline_at as own_attempt_deadline_at,
+      a.lock_version as own_attempt_lock_version,
+      cv.global_time_limit_ms,
+      cv.id as version_id
+    from public.rooms r
+    join public.room_memberships m on m.room_id = r.id
+    join public.seasons s on s.room_id = r.id and s.status in ('active', 'finished')
+    join public.scheduled_challenges sc on sc.season_id = s.id
+    join private.challenge_versions cv on cv.id = sc.challenge_version_id
+    join private.challenge_definitions cd on cd.id = cv.challenge_definition_id
+    cross join viewer
+    left join public.attempts a on a.scheduled_challenge_id = sc.id
+      and a.player_id = viewer.player_id and a.kind = 'competitive'
+    where r.slug = target_room_slug
+      and sc.id = target_publication_id
+      and r.status = 'active'
+      and m.player_id = viewer.player_id
+      and m.status = 'active'
+      and m.role in ('owner', 'admin', 'member')
+      and (
+        private.publication_is_effectively_open(
+          sc.status, s.status, s.starts_at, s.ends_at,
+          sc.opens_at, sc.closes_at, statement_timestamp()
+        )
+        or a.id is not null
+      )
+      and cv.status in ('published', 'archived')
+      and cv.mode = 'time-trial'
+  )
+  select
+    p.room_id, p.room_slug, p.room_title, p.publication_id, p.publication_status,
+    p.publication_opens_at, p.publication_closes_at, p.challenge_id, p.challenge_slug,
+    p.challenge_version_id, p.challenge_title, p.challenge_subtitle, p.challenge_description,
+    p.challenge_mode, p.challenge_max_score,
+    count(i.id) over (partition by p.challenge_version_id),
+    p.own_attempt_id, p.own_attempt_status, p.own_attempt_score, p.own_attempt_started_at,
+    p.own_attempt_completed_at, p.own_attempt_deadline_at, p.own_attempt_lock_version,
+    i.id, i.position, q.id, q.type, q.payload_schema_version,
+    q.time_limit_ms, i.points, p.global_time_limit_ms
+  from authorized_publication p
+  join private.challenge_items i on i.challenge_version_id = p.version_id
+  join private.question_versions q on q.id = i.question_version_id
+  order by i.position
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_time_trial_challenge"(text, uuid) FROM PUBLIC, "anon", "service_role";
+
+CREATE OR REPLACE FUNCTION public.get_my_time_trial_result (
+  target_attempt_id uuid
+)
+  RETURNS TABLE (
+    attempt_id             uuid,
+    scheduled_challenge_id uuid,
+    challenge_item_id      uuid,
+    item_position          integer,
+    question_version_id    uuid,
+    question_type          text,
+    payload_schema_version integer,
+    public_payload         jsonb,
+    solution_payload       jsonb,
+    answer                 jsonb,
+    answer_status          text,
+    points                 integer,
+    result_details         jsonb,
+    presented_at           timestamp with time zone,
+    submitted_at           timestamp with time zone,
+    time_used_ms           bigint,
+    attempt_status         text,
+    attempt_score          integer,
+    attempt_started_at     timestamp with time zone,
+    attempt_completed_at   timestamp with time zone,
+    attempt_lock_version   bigint,
+    challenge_title        text,
+    challenge_subtitle     text,
+    challenge_description  text,
+    challenge_max_score    integer,
+    time_trial             jsonb
+  )
+  LANGUAGE sql
+  STABLE
+  SECURITY DEFINER
+  SET search_path TO ''
+  AS $function$
+  select
+    a.id, a.scheduled_challenge_id, i.id, i.position, q.id,
+    q.type, q.payload_schema_version, case when aa.id is not null then q.public_payload end, case when aa.id is not null then qs.solution_payload end, aa.answer,
+    aa.status, aa.points, aa.result_details, aa.presented_at, aa.submitted_at, aa.time_used_ms,
+    a.status, a.score, a.started_at, a.completed_at, a.lock_version,
+    cv.title, cv.subtitle, cv.description, cv.max_score, private.time_trial_progress(a.id)
+  from public.attempts a
+  join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
+  join public.seasons s on s.id = sc.season_id
+  join public.rooms r on r.id = s.room_id
+  join public.room_memberships m on m.room_id = r.id
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
+  join private.challenge_items i on i.challenge_version_id = cv.id
+  join private.question_versions q on q.id = i.question_version_id
+  join private.question_version_solutions qs on qs.question_version_id = q.id
+  left join private.attempt_answers aa on aa.attempt_id = a.id and aa.challenge_item_id = i.id
+  where a.id = target_attempt_id
+    and a.player_id = private.current_player_id()
+    and a.kind = 'competitive'
+    and a.status = 'completed'
+    and cv.mode = 'time-trial'
+    and r.status = 'active'
+    and m.player_id = private.current_player_id()
+    and m.status = 'active'
+    and m.role in ('owner', 'admin', 'member')
+  order by i.position
+$function$;
+
+REVOKE ALL ON FUNCTION "public"."get_my_time_trial_result"(uuid) FROM PUBLIC, "anon", "service_role";
+
 CREATE OR REPLACE FUNCTION public.get_room_calendar (
   target_room_slug text
 )
@@ -13096,7 +13431,7 @@ CREATE OR REPLACE FUNCTION public.get_room_calendar (
     and membership.player_id = private.current_player_id()
     and membership.status = 'active'
     and version.status in ('published', 'archived')
-    and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+    and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     and version.config_schema_version = 1
     and version.max_score = 100
   order by schedule.number
@@ -13244,7 +13579,7 @@ CREATE OR REPLACE FUNCTION public.get_room_history (
         sc.status, s.status, s.starts_at, s.ends_at,
         sc.opens_at, sc.closes_at, statement_timestamp()
       ) = 'closed'
-      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
       and cv.status in ('published', 'archived')
       and not exists (
         select 1 from public.attempts in_progress
@@ -13260,11 +13595,8 @@ CREATE OR REPLACE FUNCTION public.get_room_history (
       e.flash_points,
       e.duration_ms,
       e.started_at,
-      rank() over (
-        partition by e.scheduled_challenge_id
-        order by e.flash_points desc, e.duration_ms, e.started_at
-      ) as "position"
-    from private.effective_results e
+      e.position
+    from private.ranked_challenge_results e
     join eligible_publications h on h.publication_id = e.scheduled_challenge_id
     join public.players p on p.id = e.player_id
   )
@@ -13326,10 +13658,11 @@ CREATE OR REPLACE FUNCTION public.get_room_introduction (
     version.mode,
     version.max_score,
     (select count(*)::bigint from private.challenge_items item where item.challenge_version_id = version.id),
-    (select (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative')
+    (select (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'time-trial')
           or count(*) = 7 and version.mode = 'pyramid')
         and bool_and(private.is_supported_flash_question(question.id))
-        and (version.mode = 'flash' and version.mode_config = '{}'::jsonb
+        and (version.mode = 'time-trial' and version.mode_config = '{}'::jsonb and version.global_time_limit_ms > 0 and bool_and(question.type = 'queens')
+        or version.mode = 'flash' and version.mode_config = '{}'::jsonb
           or version.mode = 'alphabet' and version.mode_config = '{}'::jsonb
             and bool_and(jsonb_typeof(item.mode_config->'letter') = 'string')
           or version.mode = 'survival'
@@ -13464,7 +13797,7 @@ CREATE OR REPLACE FUNCTION public.get_room_member_review (
       cv.description as challenge_description,
       cv.mode as challenge_mode,
       cv.max_score as challenge_max_score,
-      case when cv.mode = 'alphabet' then cv.global_time_limit_ms end as global_time_limit_ms,
+      case when cv.mode in ('alphabet','time-trial') then cv.global_time_limit_ms end as global_time_limit_ms,
       (select count(*)::bigint from private.challenge_items item
         where item.challenge_version_id = cv.id) as question_count,
       case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer end as initial_lives,
@@ -13474,7 +13807,7 @@ CREATE OR REPLACE FUNCTION public.get_room_member_review (
       a.outcome as attempt_outcome,
       a.started_at as attempt_started_at,
       a.completed_at as attempt_completed_at,
-      (extract(epoch from (coalesce(a.completed_at, a.started_at) - a.started_at)) * 1000)::bigint
+      (extract(epoch from (coalesce(a.completed_at, a.started_at) - case when cv.mode = 'time-trial' and a.deadline_at is not null then a.deadline_at - cv.global_time_limit_ms * interval '1 millisecond' else a.started_at end)) * 1000)::bigint
         as attempt_duration_ms,
       a.lock_version as attempt_lock_version,
       v.player_id as viewer_player_id
@@ -13495,7 +13828,7 @@ CREATE OR REPLACE FUNCTION public.get_room_member_review (
         sc.opens_at, sc.closes_at, statement_timestamp()
       ) as status
     ) availability
-    where cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+    where cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
       and cv.status in ('published', 'archived')
       and private.can_review_competitive_attempt(a.id)
   )
@@ -13511,8 +13844,8 @@ CREATE OR REPLACE FUNCTION public.get_room_member_review (
     a.attempt_started_at, a.attempt_completed_at, a.attempt_duration_ms,
     a.attempt_lock_version, i.id, i.position,
     q.id, q.type, q.payload_schema_version, q.time_limit_ms,
-    case when a.challenge_mode = 'pyramid' and aa.id is null then null else q.public_payload end,
-    case when a.challenge_mode = 'pyramid' and aa.id is null then null else qs.solution_payload end,
+    case when a.challenge_mode in ('pyramid','time-trial') and aa.id is null then null else q.public_payload end,
+    case when a.challenge_mode in ('pyramid','time-trial') and aa.id is null then null else qs.solution_payload end,
     aa.answer, aa.status, aa.points, aa.result_details, aa.presented_at,
     aa.submitted_at, aa.time_used_ms, i.points, aa.id is not null,
     case when a.challenge_mode = 'pyramid' then i.mode_config->>'levelId' end,
@@ -13709,7 +14042,7 @@ begin
     and room.id = target_room_id
     and room.status = 'active'
     and version.status in ('published', 'archived')
-    and version.mode in ('flash', 'alphabet', 'survival', 'pyramid');
+    and version.mode in ('flash', 'alphabet', 'survival', 'pyramid', 'time-trial');
 
   return inspection_payload;
 end;
@@ -13773,7 +14106,7 @@ begin
       where room.id = target_room_id
         and room.status = 'active'
         and version.status in ('published', 'archived')
-        and version.mode in ('flash', 'alphabet', 'survival', 'pyramid')
+        and version.mode in ('flash', 'alphabet', 'survival', 'pyramid', 'time-trial')
     ), '[]'::jsonb)
   );
 end;
@@ -13825,7 +14158,7 @@ begin
       join public.rooms room on room.id = season.room_id
       join private.challenge_versions version on version.id = schedule.challenge_version_id
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where room.status = 'active' and version.status in ('published', 'archived') and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      where room.status = 'active' and version.status in ('published', 'archived') and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     ), '[]'::jsonb)
   );
 end;
@@ -13865,13 +14198,13 @@ begin
           'versionCount', (
             select count(*)
             from private.challenge_versions version_count
-            where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+            where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
           ),
           'status', latest.status,
           'statusCounts', jsonb_build_object(
-            'draft', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') and version_count.status = 'draft'),
-            'published', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') and version_count.status = 'published'),
-            'archived', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') and version_count.status = 'archived')
+            'draft', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') and version_count.status = 'draft'),
+            'published', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') and version_count.status = 'published'),
+            'archived', (select count(*) from private.challenge_versions version_count where version_count.challenge_definition_id = definition.id and version_count.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') and version_count.status = 'archived')
           ),
           'updatedAt', latest.updated_at,
           'latestVersion', jsonb_build_object(
@@ -13888,7 +14221,7 @@ begin
       join lateral (
         select version.*
         from private.challenge_versions version
-        where version.challenge_definition_id = definition.id and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+        where version.challenge_definition_id = definition.id and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
         order by version.updated_at desc, version.id
         limit 1
       ) latest on true
@@ -13978,7 +14311,7 @@ begin
         ) order by version.updated_at desc, version.id
       )
       from private.challenge_versions version
-      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     ), '[]'::jsonb)
   )
   into challenge_payload
@@ -13987,7 +14320,7 @@ begin
     and exists (
       select 1
       from private.challenge_versions version
-      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      where version.challenge_definition_id = definition.id and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     );
 
   return challenge_payload;
@@ -14040,7 +14373,7 @@ begin
   if from_definition_id <> to_definition_id then
     raise exception 'invalid_comparison' using errcode = '22023';
   end if;
-  if from_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') or to_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') then
+  if from_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') or to_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') then
     raise exception 'unsupported_mode' using errcode = '22023';
   end if;
 
@@ -14108,7 +14441,7 @@ begin
       'editorialDrafts', (
         select count(*)
         from private.challenge_versions version
-        where version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid') and version.status = 'draft'
+        where version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') and version.status = 'draft'
       ),
       'upcomingChallenges', (
         select count(*)
@@ -14118,7 +14451,7 @@ begin
         join private.challenge_versions version on version.id = schedule.challenge_version_id
         where room.status = 'active'
           and season.status = 'active'
-          and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+          and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
           and version.status in ('published', 'archived')
           and schedule.status in ('scheduled', 'open')
           and schedule.closes_at >= now()
@@ -14189,7 +14522,7 @@ begin
         join private.challenge_versions version on version.id = schedule.challenge_version_id
         where room.status = 'active'
           and season.status = 'active'
-          and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+          and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
           and version.status in ('published', 'archived')
           and schedule.status in ('scheduled', 'open')
           and schedule.closes_at >= now()
@@ -14365,7 +14698,7 @@ begin
     and room.id = target_room_id
     and room.status = 'active'
     and version.status in ('published', 'archived')
-    and version.mode in ('flash', 'alphabet', 'survival', 'pyramid');
+    and version.mode in ('flash', 'alphabet', 'survival', 'pyramid', 'time-trial');
 
   if publication_payload is null then return null; end if;
 
@@ -14494,7 +14827,7 @@ begin
       where room.id = target_room_id
         and room.status = 'active'
         and version.status in ('published', 'archived')
-        and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+        and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     ), '[]'::jsonb)
   );
 end;
@@ -14919,10 +15252,22 @@ CREATE VIEW "private"."effective_results" WITH (security_invoker=true) AS  SELEC
     s.room_id,
     a.started_at,
     points.flash_points,
-    duration.duration_ms
-   FROM ((((public.attempts a
+        CASE
+            WHEN (cv.mode = 'time-trial'::text) THEN COALESCE(((trial.progress ->> 'lastCorrectElapsedMs'::text))::bigint, (0)::bigint)
+            ELSE duration.duration_ms
+        END AS duration_ms,
+    cv.mode AS challenge_mode,
+    ((trial.progress ->> 'solvedCount'::text))::integer AS solved_count,
+    ((trial.progress ->> 'lastCorrectElapsedMs'::text))::bigint AS last_correct_elapsed_ms
+   FROM ((((((public.attempts a
      JOIN public.scheduled_challenges sc ON ((sc.id = a.scheduled_challenge_id)))
      JOIN public.seasons s ON ((s.id = sc.season_id)))
+     JOIN private.challenge_versions cv ON ((cv.id = a.challenge_version_id)))
+     CROSS JOIN LATERAL ( SELECT
+                CASE
+                    WHEN (cv.mode = 'time-trial'::text) THEN private.time_trial_progress(a.id)
+                    ELSE NULL::jsonb
+                END AS progress) trial)
      JOIN LATERAL ( SELECT sum(e.amount) AS flash_points
            FROM private.flash_point_entries e
           WHERE (e.attempt_id = a.id)
@@ -14931,6 +15276,32 @@ CREATE VIEW "private"."effective_results" WITH (security_invoker=true) AS  SELEC
            FROM private.attempt_answers aa
           WHERE (aa.attempt_id = a.id)) duration)
   WHERE ((a.kind = 'competitive'::text) AND (a.status = 'completed'::text) AND (sc.status <> 'cancelled'::text));
+
+CREATE VIEW "private"."ranked_challenge_results" WITH (security_invoker=true) AS  SELECT attempt_id,
+    player_id,
+    scheduled_challenge_id,
+    season_id,
+    room_id,
+    started_at,
+    flash_points,
+    duration_ms,
+    challenge_mode,
+    solved_count,
+    last_correct_elapsed_ms,
+    rank() OVER (PARTITION BY scheduled_challenge_id ORDER BY
+        CASE
+            WHEN (challenge_mode = 'time-trial'::text) THEN (solved_count)::bigint
+            ELSE flash_points
+        END DESC,
+        CASE
+            WHEN (challenge_mode = 'time-trial'::text) THEN last_correct_elapsed_ms
+            ELSE duration_ms
+        END,
+        CASE
+            WHEN (challenge_mode <> 'time-trial'::text) THEN started_at
+            ELSE NULL::timestamp with time zone
+        END) AS "position"
+   FROM private.effective_results e;
 
 CREATE INDEX answers_attempt_time_idx ON private.attempt_answers USING btree (attempt_id, submitted_at);
 
@@ -15326,6 +15697,10 @@ REVOKE ALL ON FUNCTION "private"."assert_supported_calendar_content"(uuid) FROM 
 
 GRANT EXECUTE ON FUNCTION "private"."assert_supported_calendar_content"(uuid) TO "postgres";
 
+REVOKE ALL ON FUNCTION "private"."assert_time_trial_content"(uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."assert_time_trial_content"(uuid) TO "postgres";
+
 REVOKE ALL ON FUNCTION "private"."authorize_attempt_replay"(uuid, text) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."authorize_attempt_replay"(uuid, text) TO "postgres";
@@ -15357,6 +15732,10 @@ GRANT EXECUTE ON FUNCTION "private"."close_attempt_as_abandoned"(uuid, timestamp
 REVOKE ALL ON FUNCTION "private"."close_attempts_for_permission_loss"(uuid, uuid, timestamp WITH time zone, uuid, text) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."close_attempts_for_permission_loss"(uuid, uuid, timestamp WITH time zone, uuid, text) TO "postgres";
+
+REVOKE ALL ON FUNCTION "private"."close_time_trial_interaction"(uuid, timestamp WITH time zone, text) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."close_time_trial_interaction"(uuid, timestamp WITH time zone, text) TO "postgres";
 
 REVOKE ALL ON FUNCTION "private"."command_actor"() FROM PUBLIC;
 
@@ -15810,6 +16189,10 @@ REVOKE ALL ON FUNCTION "private"."take_over_attempt"(jsonb) FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."take_over_attempt"(jsonb) TO "postgres", "service_role";
 
+REVOKE ALL ON FUNCTION "private"."time_trial_progress"(uuid) FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION "private"."time_trial_progress"(uuid) TO "postgres";
+
 REVOKE ALL ON FUNCTION "private"."touch_updated_at"() FROM PUBLIC;
 
 GRANT EXECUTE ON FUNCTION "private"."touch_updated_at"() TO "postgres";
@@ -15991,6 +16374,10 @@ GRANT EXECUTE ON FUNCTION "public"."get_my_room_cards"() TO "authenticated", "po
 GRANT EXECUTE ON FUNCTION "public"."get_my_survival_challenge"(text, uuid) TO "authenticated", "postgres";
 
 GRANT EXECUTE ON FUNCTION "public"."get_my_survival_result"(uuid) TO "authenticated", "postgres";
+
+GRANT EXECUTE ON FUNCTION "public"."get_my_time_trial_challenge"(text, uuid) TO "authenticated", "postgres";
+
+GRANT EXECUTE ON FUNCTION "public"."get_my_time_trial_result"(uuid) TO "authenticated", "postgres";
 
 GRANT EXECUTE ON FUNCTION "public"."get_room_calendar"(text) TO "authenticated", "postgres";
 
@@ -16239,5 +16626,9 @@ GRANT SELECT ON TABLE "public"."seasons" TO "service_role";
 GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."effective_results" TO "postgres";
 
 GRANT SELECT ON TABLE "private"."effective_results" TO "service_role";
+
+GRANT DELETE, INSERT, MAINTAIN, REFERENCES, SELECT, TRIGGER, TRUNCATE, UPDATE ON TABLE "private"."ranked_challenge_results" TO "postgres";
+
+GRANT SELECT ON TABLE "private"."ranked_challenge_results" TO "service_role";
 
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" REVOKE ALL ON FUNCTIONS FROM PUBLIC;

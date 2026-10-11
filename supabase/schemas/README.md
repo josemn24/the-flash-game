@@ -1,9 +1,8 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 82 archivos y su revisión canónica es
-`20261011105737_time_trial`. El historial activo parte del baseline
-`20261010214230_initial_schema` y continúa con las migraciones incrementales de Short-text y
-Contrarreloj. La validación local
+`20261011180045_initial_schema`. El historial activo consta de un único baseline generado desde
+estos schemas; las migraciones anteriores permanecen en Git, fuera del historial activo. La validación local
 corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP, la conformidad y la
 concurrencia pasan desde schemas y desde el historial de migraciones. No se ejecutaron comandos ni
 validaciones remotas.
@@ -19,7 +18,7 @@ La [reconciliación de comandos](../../docs/current/competitive-command-reconcil
 once cuerpos, conserva OIDs y permisos, y distingue cierres normales de pérdida de permisos.
 Su aplicación se verificó en bases desechables y forma parte del baseline aplicado localmente.
 **31 tablas**, dos vistas
-interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
+internas, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S15, S17a, S18b parcial, S05-Alphabet, F* y E* conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas, Flash, Supervivencia y Pirámide
 competitivos; S15 está validada sobre el stack local,

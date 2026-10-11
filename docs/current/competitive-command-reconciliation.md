@@ -4,7 +4,7 @@
 
 Fecha: 2026-10-09. Revisión incremental original:
 `20261009190015_competitive_command_reconciliation`. Ahora forma parte de
-`20261010214230_initial_schema`; el historial anterior permanece en Git.
+`20261011180045_initial_schema`; el historial anterior permanece en Git.
 
 ## Comportamiento resultante
 
@@ -48,7 +48,7 @@ comparar `request_id` únicamente por igualdad con `runId`.
 ## Baseline y límites
 
 La migración incremental original (`20261009190015_competitive_command_reconciliation.sql`) quedó
-consolidada en el [baseline activo](../../supabase/migrations/20261010214230_initial_schema.sql),
+consolidada en el [baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql),
 generado desde los schemas declarativos. Su SQL anterior sigue disponible en Git. En la revisión
 original se retiró el `DROP FUNCTION` que el generador proponía para el cambio de lenguaje de
 `take_over_attempt`.

@@ -20,7 +20,7 @@ function cell(page: Page, index: number) {
 async function start(page: Page, player: string) {
   await intro(page, player);
   await page.getByRole("button", { name: "Empezar desafío" }).click();
-  await expect(page.getByRole("heading", { name: "Prueba Queens 1" })).toBeVisible({
+  await expect(page.getByText("Prueba 1 de 2", { exact: true })).toBeVisible({
     timeout: 15000,
   });
 }
@@ -44,15 +44,14 @@ test("la intro y cuenta atrás no crean intento; el reloj continúa al cambiar d
   await page.getByRole("button", { name: "Empezar desafío" }).click();
   await expect(page.getByText("Prepárate", { exact: true })).toBeVisible();
   expect(starts).toBe(0);
-  await expect(page.getByRole("heading", { name: "Prueba Queens 1" })).toBeVisible({
+  await expect(page.getByText("Prueba 1 de 2", { exact: true })).toBeVisible({
     timeout: 15000,
   });
   await page.waitForTimeout(1200);
   // One-second question clocks do not end a Contrarreloj board.
   await expect(cell(page, 10)).toBeEnabled();
   for (const index of [10, 18, 21]) await cell(page, index).click();
-  await expect(page.getByRole("heading", { name: "Prueba Queens 2" })).toBeVisible();
-  await expect(page.getByText("1 resueltas · 30 FP")).toBeVisible();
+  await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
   expect(preparations).toHaveLength(2);
   expect(preparations[1].deadlineAt).toBe(preparations[0].deadlineAt);
   expect(JSON.stringify(preparations)).not.toMatch(/solutionPayload|"solution"/);
@@ -130,9 +129,8 @@ test("una confirmación de acierto perdida se concilia sin puntuar dos veces", a
   for (const index of [10, 18, 21]) await cell(page, index).click();
   await expect(page.getByRole("button", { name: "Reintentar validación" })).toBeVisible();
   await page.getByRole("button", { name: "Reintentar validación" }).click();
-  await expect(page.getByRole("heading", { name: "Prueba Queens 2" })).toBeVisible();
+  await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
   expect(requests[1]).toEqual(requests[0]);
-  await expect(page.getByText("1 resueltas · 30 FP")).toBeVisible();
   for (const index of [9, 10, 18, 21]) await cell(page, index).click();
   await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible();
 });

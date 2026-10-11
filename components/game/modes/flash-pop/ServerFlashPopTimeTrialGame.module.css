@@ -3,55 +3,22 @@
     width: min(100%, 680px);
     min-width: 0;
     margin-inline: auto;
+    gap: var(--space-2);
+  }
+
+  .progressLabel {
+    margin: 0;
+    color: var(--ds-color-fg-primary);
+    font-family: var(--type-mono);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .timeTrialActions {
     min-width: 0;
-  }
-
-  @media (max-width: 700px) {
-    .timeTrialHeader {
-      flex-wrap: wrap;
-      gap: var(--space-2);
-    }
-
-    .timeTrialActions {
-      width: 100%;
-      flex: 1 1 100%;
-      justify-content: space-between;
-      flex-wrap: wrap;
-    }
-  }
-
-  @media (max-width: 520px) {
-    .timeTrialActions {
-      display: grid;
-      width: 100%;
-      min-width: 0;
-      flex: 1 1 100%;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: center;
-      gap: var(--space-2);
-    }
-
-    .timeTrialActions > :first-child {
-      grid-row: 1;
-      grid-column: 2;
-      justify-self: end;
-    }
-
-    .timeTrialActions > :nth-child(2) {
-      min-width: 0;
-      max-width: 100%;
-      overflow: hidden;
-      grid-row: 1;
-      grid-column: 1;
-      justify-self: start;
-    }
-
-    .timeTrialActions > :nth-child(2) > span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    justify-content: flex-end;
   }
 }
