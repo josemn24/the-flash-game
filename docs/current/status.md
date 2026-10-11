@@ -57,6 +57,16 @@ están verificadas en Supabase local dentro del runtime `pilot`. Las demos mock 
 rutas competitivas. Consulta
 [`s22-operacion.md`](s22-operacion.md).
 
+## Diseño acordado pendiente de implementación
+
+**Contrarreloj** es un modo nuevo e independiente de **Flash**, con secuencia homogénea de dificultad
+creciente, reloj global y cierre por fallo definitivo, tiempo agotado o resolución completa. Tiene
+[especificación funcional y recorrido E2E previsto](domain/contrarreloj.md),
+[guía editorial](../content/guidelines/contrarreloj.md) y
+[decisiones CT-01 a CT-05 pendientes](../decisions/open-questions.md#contrarreloj-decisiones-pendientes).
+Esta documentación no añade el modo al runtime ni declara pruebas de su implementación. El catálogo
+actual sigue teniendo los cinco modos indicados a continuación.
+
 ## Capacidades actuales
 
 - 31 formatos de pregunta nativos, con ejemplos jugables en la biblioteca.

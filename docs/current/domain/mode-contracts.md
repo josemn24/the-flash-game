@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Última actualización: 2026-09-23.
+Última actualización: 2026-10-11.
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -10,6 +10,10 @@ implementación. Cuando una regla aparece como **Recomendación**, debe consider
 comportamiento y no una decisión irreversible hasta confirmarla en `docs/decisions/decisions.md`.
 La política de recuperación de interacción iniciada que figura en este documento ya está confirmada
 por la decisión y ADR de 2026-09-15.
+
+Los cinco modos actuales se describen en las secciones 1 a 5. La sección 6 resume Contrarreloj como
+modo futuro con reglas acordadas; no declara una capacidad implementada. El modo existente se
+denomina únicamente **Flash**.
 
 La jerarquía documental aplicable es la descrita en [`README.md`](README.md): los ADR y las
 decisiones generales prevalecen sobre este documento; este documento prevalece sobre descripciones
@@ -108,6 +112,10 @@ Si los tres valores coinciden, se comparte posición con ranking de competición
 absoluta de finalización (`completedAt`) y métricas como `lastCorrectAt` siguen disponibles para
 historial y análisis, pero no son criterios competitivos. El ranking de temporada solo usa Flash
 Points acumulados.
+
+Contrarreloj tendrá un comparador específico: pruebas resueltas y tiempo global hasta el último
+acierto. La [decisión del modo](../../decisions/decisions.md#21-contrarreloj-reglas-acordadas)
+no cambia el comparador de los cinco modos actuales ni el ranking de temporada.
 
 ## 1. Flash (`flash`)
 
@@ -319,6 +327,33 @@ intento. Los roles autorizados pueden leer el resultado terminal y la revisión;
 muestra los siete niveles y bloquea los no alcanzados sin payload. El
 editor/calendario y rankings existentes incluyen `pyramid`; no se añaden tablas. La migración,
 pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se validó despliegue remoto.
+
+## 6. Contrarreloj (pendiente de implementación)
+
+### Reglas acordadas
+
+- **Identidad:** secuencia finita de un único formato, con dificultad creciente y el mismo contenido
+  y orden para todos los participantes. Es un modo independiente de Flash.
+- **Duración y progreso:** reloj global al comenzar la primera prueba; cada acierto suma puntos y
+  permite avanzar automáticamente. Las transiciones conservan el mismo deadline; no se añade tiempo
+  por acertar ni hay límite independiente por prueba.
+- **Finalización:** fallo definitivo, reloj agotado o todas las pruebas resueltas producen
+  `completed`, conservando los puntos de los aciertos anteriores. Resolver todo detiene el reloj y
+  concede 100 Flash Points.
+- **Errores internos:** movimientos y oportunidades permitidos por el formato no equivalen por sí
+  solos a fallo definitivo. El límite y la señal terminal deben aprobarse por formato.
+- **Ranking:** más pruebas resueltas; después, menor tiempo global hasta el último acierto. Los
+  empates completos comparten posición. La temporada sigue sumando Flash Points.
+- **Recuperación y abandono:** conservar el mismo intento, deadline y hechos aceptados; aplicar las
+  políticas comunes de sesión, terminalidad y pérdida de permisos. La consecuencia de una prueba
+  abierta sin recepción requiere cierre normativo previo; no se autoriza replay de contenido visto.
+
+La [especificación de Contrarreloj](contrarreloj.md) contiene el recorrido E2E, experiencia y escenarios
+de aceptación. La [guía editorial](../../content/guidelines/contrarreloj.md) trata la progresión.
+La fórmula, los límites, las reglas terminales por formato, la recuperación, las esperas de carga y
+las carreras con el deadline quedan en
+[CT-01 a CT-05](../../decisions/open-questions.md#contrarreloj-decisiones-pendientes).
+Este resumen no añade soporte al runtime, editor ni allowlists.
 
 ## Matriz de estados y consulta
 

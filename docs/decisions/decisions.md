@@ -5,6 +5,8 @@
 - Estado: aprobado.
 - Versión: 1.2.
 - Fecha: 2026-09-15.
+- Última actualización: 2026-10-11; reglas de Contrarreloj aprobadas para trabajo futuro, con
+  implementación y detalles específicos pendientes.
 - Este documento define comportamiento e invariantes, no tablas SQL concretas.
 
 ## 1. Producto y participación
@@ -355,6 +357,9 @@
   aplican allí.
 - Un modo futuro podrá sustituir esta regla mediante una decisión específica del modo, sin modificar
   este comparador común ni los contratos de los demás modos.
+- Contrarreloj ya tiene aprobado su comparador propio en la
+  [sección 21](#21-contrarreloj-reglas-acordadas), pendiente de implementación. No modifica los
+  criterios competitivos de los cinco modos actuales.
 - En la temporada manda la suma de Flash Points. Los empates comparten posición y cualquier orden adicional
   es únicamente visual.
 - Los miembros y espectadores pueden consultar los rankings de su sala.
@@ -534,3 +539,39 @@
   responder/finalizar/transferir tras expulsión no muta progreso; completar antes de expulsar conserva
   puntos; competir finalización y expulsión produce un solo resultado según el orden confirmado;
   reincorporarse no reabre el intento; revocar solo admin manteniendo permiso competitivo no lo cierra.
+
+## 21. Contrarreloj: reglas acordadas
+
+Aprobadas el 2026-10-11 para un modo pendiente de implementación. La
+[especificación funcional](../current/domain/contrarreloj.md) desarrolla estos acuerdos y el
+recorrido E2E previsto. El catálogo implementado conserva cinco modos.
+
+- El modo existente se llama **Flash**. **Contrarreloj** es un modo nuevo e independiente.
+- Cada desafío contiene una secuencia finita de pruebas de un único formato, ordenadas por dificultad
+  creciente. Todos los participantes reciben las mismas versiones y el mismo orden.
+- El reloj es global y empieza al comenzar la primera prueba, tras la introducción y cuenta atrás.
+  Los aciertos permiten avanzar automáticamente y conceden puntos; no reinician ni amplían el tiempo.
+  Las transiciones conservan el reloj global y no existe un límite independiente por prueba.
+- La partida termina por fallo definitivo de una prueba, agotamiento del reloj o resolución de toda
+  la secuencia. Los tres son finales reglamentarios con intento `completed`, incluso con cero aciertos.
+- Un movimiento exploratorio o una oportunidad interna permitida no constituye por sí sola un fallo
+  definitivo. Su señal y los límites concretos deben aprobarse por formato antes de habilitarlo.
+- Los finales reglamentarios conservan los puntos obtenidos en pruebas resueltas. La prueba no resuelta
+  no concede puntos. El total es un entero entre 0 y 100; resolver todo concede 100 y detiene el reloj
+  inmediatamente. La fórmula exacta sigue pendiente.
+- El ranking del desafío prioriza el número de pruebas resueltas y después el menor tiempo global
+  hasta el último acierto aceptado. El tiempo del fallo final y `startedAt` como fecha absoluta no
+  añaden un desempate. La igualdad completa comparte posición (`1, 1, 3`); con cero aciertos se comparte
+  posición sin inventar un tiempo de último acierto.
+- Los Flash Points acreditados una sola vez al cierre se suman al ranking de temporada de la sala.
+  El ranking de temporada conserva sus reglas; no se crea un ranking global entre salas.
+- Se conserva el intento único y, al recuperar, su identidad, deadline y hechos aceptados. Se aplican
+  los ADR vigentes de recuperación y transferencia; la consecuencia para la prueba abierta requiere
+  definición previa sin aprobar implícitamente una reentrega de contenido visto.
+- Abandono, pérdida de permisos, invalidación, revisión y publicación siguen las políticas comunes.
+  Conservar hechos aceptados de un intento abandonado no implica acreditar sus puntos.
+
+La fórmula proporcional, los límites editoriales, las reglas terminales por formato, la recuperación,
+las esperas técnicas y la concurrencia con el deadline están pendientes en
+[CT-01 a CT-05](open-questions.md#contrarreloj-decisiones-pendientes). Cualquier excepción a una
+decisión o ADR vigente debe aprobarse en la fuente normativa antes de implementar el modo.

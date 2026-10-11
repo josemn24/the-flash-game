@@ -18,6 +18,7 @@ capacidades aún pendientes no deben interpretarse como funcionalidades ya dispo
 | Cómo funcionan las fronteras servidor/cliente   | [`current/architecture/server-client-architecture.md`](current/architecture/server-client-architecture.md) |
 | Qué decisiones son normativas                   | [`decisions/README.md`](decisions/README.md)                                                               |
 | Cómo se crean formatos y desafíos               | [`content/README.md`](content/README.md)                                                                   |
+| Cómo se ha definido el futuro modo Contrarreloj | [`current/domain/contrarreloj.md`](current/domain/contrarreloj.md)                                         |
 | Qué estrategia e hipótesis siguen activas       | [`product/README.md`](product/README.md)                                                                   |
 | Cómo utilizar los colores y estados de la UI    | [`current/design-tokens.md`](current/design-tokens.md)                                                     |
 | Cómo consultar y ampliar el design system       | [`current/design-system.md`](current/design-system.md)                                                     |
@@ -57,6 +58,10 @@ decisiones y después los documentos afectados.
 - 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
   y E01–E06/E10 sobre Supabase local.
+- Contrarreloj tiene [reglas acordadas y un diseño previo a implementación](current/domain/contrarreloj.md).
+  No forma parte de los cinco modos implementados. La [guía editorial](content/guidelines/contrarreloj.md)
+  y las [decisiones pendientes](decisions/open-questions.md#contrarreloj-decisiones-pendientes)
+  delimitan su preparación.
 - La revisión activa es `20261010214230_initial_schema`, un baseline generado desde 80 archivos
   declarativos de esquema, además de 31 tablas, una vista,
   funciones públicas/privadas y políticas RLS.

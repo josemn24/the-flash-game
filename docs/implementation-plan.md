@@ -1103,6 +1103,35 @@ de Matching ajena a esta slice.
 - **Terminada:** la identidad personal deja de dar acceso y los resultados permanecen coherentes,
   sin assets personales accesibles ni operaciones parciales sin vía de recuperación.
 
+### Contrarreloj — Ficha futura pendiente de diseño técnico e implementación
+
+- **Estado y prioridad:** reglas funcionales acordadas el 2026-10-11; sin fecha comprometida ni cambios
+  en el orden de las slices anteriores. El catálogo implementado conserva cinco modos.
+- **Fuentes:** [especificación funcional y recorrido E2E](current/domain/contrarreloj.md),
+  [guía editorial](content/guidelines/contrarreloj.md) y
+  [decisiones CT-01 a CT-05](decisions/open-questions.md#contrarreloj-decisiones-pendientes).
+- **Objetivo:** publicar y jugar una secuencia homogénea de dificultad creciente con reloj global;
+  finalizar por fallo definitivo, timeout o secuencia completa y acreditar Flash Points una sola vez.
+- **UI/editor:** autoría con formato único, orden y tiempo total; introducción y cuenta atrás, prueba
+  activa, reloj global, validación y avance automático; cierre confirmado, ranking, historial y revisión.
+- **Backend/dominio:** admitir el modo en capacidades y contratos, mantener el deadline global,
+  evaluar privadamente oportunidades y respuestas, resolver recuperación y carreras temporales,
+  y aplicar el comparador de pruebas resueltas y tiempo hasta el último acierto.
+- **Persistencia y consultas:** revisar restricciones de modo y reloj global, versionado, progreso,
+  recepciones, tiempos, motivo de cierre y ledger. Concretar el almacenamiento después de cerrar las
+  decisiones; no se aprueban tablas o endpoints nuevos por esta ficha.
+- **Dependencias:** CT-01 a CT-05, S03/S04, S06/S07, S11/S12 y las capacidades server-backed de cada
+  formato elegido. Respetar los ADR de contenido inmutable, puntuación, recuperación y transferencia.
+  La disponibilidad de un formato en otro modo no verifica Contrarreloj.
+- **Pruebas futuras:** los escenarios de la especificación cubren acierto, oportunidad interna,
+  fallo definitivo, timeout, secuencia completa, cero aciertos, desempates, recuperación, permisos y
+  comandos duplicados. Verificar respuesta concurrente con cierre y una sola acreditación mediante
+  pruebas de dominio, PostgreSQL, integración y E2E del recorrido elegido.
+- **Terminada:** contenido publicable y capacidad habilitada tras verificación del recorrido completo,
+  mismo intento/deadline tras recuperar, evaluación autoritativa, resultado y rankings coherentes,
+  acreditación única y revisión protegida. Actualizar documentación técnica, estado y QA con evidencia
+  del entorno verificado. Esta ficha no declara pruebas del modo ya ejecutadas.
+
 ## 8. Contrato técnico del primer loop y recuperación
 
 S03/S04 deben implementar esta secuencia; no concentrar todo el juego en una transacción larga:

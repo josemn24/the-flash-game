@@ -40,6 +40,29 @@ Cada modo debe declarar explícitamente:
 11. Cuándo puede mostrarse la solución completa.
 12. Qué eventos intermedios deben conservarse para evaluación o auditoría.
 
+## Contrarreloj: decisiones pendientes
+
+Las [reglas de producto](decisions.md#21-contrarreloj-reglas-acordadas) están acordadas. Contrarreloj
+es independiente de Flash, mantiene un formato con dificultad creciente y termina por fallo
+definitivo, reloj agotado o secuencia completa. El reloj global, el máximo de 100 puntos, la
+conservación de puntos en finales reglamentarios y el comparador del desafío no vuelven a estar abiertos.
+El modo todavía no está implementado; la [especificación](../current/domain/contrarreloj.md) describe
+su recorrido E2E y los escenarios futuros de aceptación.
+
+| ID    | Decisión pendiente                                                                                            | Criterio para cerrarla                                                                                                                                                                                                                                                                                 |
+| ----- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| CT-01 | Fórmula exacta de puntuación y redondeo. `round(100 × pruebas resueltas / total)` sigue siendo una propuesta. | Definir diferencias acumuladas por acierto, convención de redondeo y configuración publicada que sume 100. Asegurar puntos enteros por acierto y revisar crédito parcial o penalizaciones heredadas de otros modos.                                                                                    |
+| CT-02 | Fallo definitivo y oportunidades internas para cada formato habilitado.                                       | Especificar qué movimiento, validación o agotamiento termina la prueba, qué acciones permiten continuar y qué feedback se muestra. No trasladar automáticamente los límites de Queens en Pirámide ni las penalizaciones existentes.                                                                    |
+| CT-03 | Duración global, número de pruebas y límites editoriales.                                                     | Calibrar secuencias completas y dispositivos previstos; elegir límites compatibles con la puntuación entera y progresión real de dificultad. Los tamaños y cantidades de los ejemplos no son defaults aprobados.                                                                                       |
+| CT-04 | Recuperación de la prueba abierta, checkpoints y tratamiento de carga/esperas técnicas.                       | Definir el inicio autoritativo con la primera prueba disponible, la consecuencia de recuperar sin recepción y el cierre tras vencimiento; distinguir progreso aceptado de borradores locales. Resolver esperas conforme a las políticas vigentes, sin reiniciar el reloj ni permitir replay implícito. |
+| CT-05 | Respuesta o evento concurrente con el vencimiento del deadline.                                               | Definir el instante server-side válido, el límite exacto y el orden entre recepción, evaluación y cierre; contemplar el último acierto y confirmaciones perdidas con un único resultado y acreditación.                                                                                                |
+
+Al cerrar una decisión, actualizar la especificación, el contrato resumido y la guía editorial;
+trasladar los acuerdos normativos a `decisions.md`. Una excepción a la recuperación del ADR-0003,
+la transferencia del ADR-0006 o el guardado común requiere resolver primero su fuente normativa.
+La implementación posterior concretará tipos, almacenamiento, capacidades y contratos, sin tratarlos
+como ya habilitados por esta documentación.
+
 ## Operación y políticas pendientes
 
 - Duración exacta y número de usos de las invitaciones.
