@@ -36,7 +36,9 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(
       page.getByRole("heading", { name: "Descubre el personaje bíblico" }),

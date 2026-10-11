@@ -197,6 +197,20 @@ describe("clean Supabase installation", () => {
     }
   });
 
+  it("does not load workspace credentials for an isolated local stack", () => {
+    const previousWorkdir = process.env.SUPABASE_TEST_WORKDIR;
+    const loadEnvFile = vi.spyOn(process, "loadEnvFile").mockImplementation(() => {});
+    process.env.SUPABASE_TEST_WORKDIR = "/tmp/isolated-supabase";
+    try {
+      loadOperationalEnv({ target: "local" });
+      expect(loadEnvFile).not.toHaveBeenCalled();
+    } finally {
+      loadEnvFile.mockRestore();
+      if (previousWorkdir === undefined) delete process.env.SUPABASE_TEST_WORKDIR;
+      else process.env.SUPABASE_TEST_WORKDIR = previousWorkdir;
+    }
+  });
+
   it.each([
     ["API host", { NEXT_PUBLIC_SUPABASE_URL: "https://other-ref.supabase.co" }],
     ["API HTTP", { NEXT_PUBLIC_SUPABASE_URL: "http://staging-ref.supabase.co" }],
