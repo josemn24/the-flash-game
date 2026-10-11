@@ -11,6 +11,7 @@ export const definition = {
     ...baseValidation,
   },
   competitive: {
+    "time-trial": specialized("queens"),
     flash: specialized("queens"),
     survival: specialized("queens"),
     pyramid: specialized("queens"),

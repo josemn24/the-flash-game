@@ -576,7 +576,25 @@ export type FlashEditorialEscapeQuestion = {
   readonly solutionPayload: FlashEditorialEscapeSolutionPayload;
 };
 
+export type FlashEditorialQueensQuestion = {
+  readonly slug: string;
+  readonly type: "queens";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: {
+    readonly question: string;
+    readonly category?: string;
+    readonly tags?: EditorialJsonObject;
+    readonly grid: { readonly rows: 4 | 5 | 6 | 7 | 8; readonly columns: 4 | 5 | 6 | 7 | 8 };
+    readonly regions: readonly number[];
+    readonly prefilledQueens: readonly number[];
+  };
+  readonly solutionPayload: { readonly solution: readonly number[]; readonly explanation?: string };
+};
+
 export type FlashEditorialQuestion =
+  | FlashEditorialQueensQuestion
   | FlashEditorialMultipleChoiceQuestion
   | FlashEditorialEstimationQuestion
   | FlashEditorialHeatMapQuestion
@@ -610,6 +628,7 @@ export type FlashEditorialQuestion =
  * to the challenge item that uses a published question version.
  */
 export type FlashEditorialQuestionDocument =
+  | Omit<FlashEditorialQueensQuestion, "points">
   | Omit<FlashEditorialMultipleChoiceQuestion, "points">
   | Omit<FlashEditorialEstimationQuestion, "points">
   | Omit<FlashEditorialHeatMapQuestion, "points">

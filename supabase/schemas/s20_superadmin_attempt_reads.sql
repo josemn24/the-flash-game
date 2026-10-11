@@ -55,7 +55,7 @@ begin
       where room.id = target_room_id
         and room.status = 'active'
         and version.status in ('published', 'archived')
-        and version.mode in ('flash', 'alphabet', 'survival', 'pyramid')
+        and version.mode in ('flash', 'alphabet', 'survival', 'pyramid', 'time-trial')
     ), '[]'::jsonb)
   );
 end;
@@ -116,7 +116,7 @@ begin
     and room.id = target_room_id
     and room.status = 'active'
     and version.status in ('published', 'archived')
-    and version.mode in ('flash', 'alphabet', 'survival', 'pyramid');
+    and version.mode in ('flash', 'alphabet', 'survival', 'pyramid', 'time-trial');
 
   if publication_payload is null then return null; end if;
 
@@ -322,7 +322,7 @@ begin
     and room.id = target_room_id
     and room.status = 'active'
     and version.status in ('published', 'archived')
-    and version.mode in ('flash', 'alphabet', 'survival', 'pyramid');
+    and version.mode in ('flash', 'alphabet', 'survival', 'pyramid', 'time-trial');
 
   return inspection_payload;
 end;

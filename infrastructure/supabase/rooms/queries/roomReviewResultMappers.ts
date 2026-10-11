@@ -36,6 +36,7 @@ export function toHistoricalResult(rows: RoomMemberReviewReadRow[]) {
   const answers: AnswerReview[] = rows
     .slice()
     .sort((left, right) => left.item_position - right.item_position)
+    .filter((row) => row.challenge_mode !== "time-trial" || row.has_persisted_answer)
     .map(toHistoricalAnswerReview);
   const durationMs = rows.reduce((total, row) => total + (row.time_used_ms ?? 0), 0);
   const completed = first.attempt_status === "completed";

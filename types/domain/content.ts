@@ -11,7 +11,7 @@ import type {
 import type { EntityTimestamps, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 export type { QuestionTagSet } from "@/types/domain/tags";
 
-export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
+export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid" | "time-trial";
 export type ContentStatus = "draft" | "published" | "archived";
 export type PublicationStatus = "scheduled" | "open" | "closed" | "cancelled";
 

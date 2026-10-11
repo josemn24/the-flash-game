@@ -39,22 +39,22 @@ begin
     or char_length(challenge->>'subtitle') > 300
     or jsonb_typeof(challenge->'description') is distinct from 'string'
     or char_length(challenge->>'description') > 2000
-    or challenge->>'mode' not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+    or challenge->>'mode' not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     or challenge->'configSchemaVersion' <> '1'::jsonb
     or jsonb_typeof(challenge->'modeConfig') is distinct from 'object'
-    or (challenge->>'mode' = 'alphabet' and (
+    or (challenge->>'mode' in ('alphabet', 'time-trial') and (
       jsonb_typeof(challenge->'globalTimeLimitMs') is distinct from 'number'
       or (challenge->>'globalTimeLimitMs')::numeric <> trunc((challenge->>'globalTimeLimitMs')::numeric)
       or (challenge->>'globalTimeLimitMs')::integer <= 0
     ))
-    or (challenge->>'mode' <> 'alphabet' and challenge ? 'globalTimeLimitMs')
+    or (challenge->>'mode' not in ('alphabet', 'time-trial') and challenge ? 'globalTimeLimitMs')
     or (challenge->>'mode' = 'survival' and (
       (select count(*) from jsonb_object_keys(challenge->'modeConfig')) <> 1
       or jsonb_typeof(challenge->'modeConfig'->'lives') is distinct from 'number'
       or (challenge->'modeConfig'->>'lives')::numeric <> trunc((challenge->'modeConfig'->>'lives')::numeric)
       or (challenge->'modeConfig'->>'lives')::integer not between 1 and 20
     ))
-    or (challenge->>'mode' = 'pyramid' and challenge->'modeConfig' <> '{}'::jsonb) then
+    or (challenge->>'mode' in ('pyramid', 'time-trial') and challenge->'modeConfig' <> '{}'::jsonb) then
     raise exception 'invalid_content' using errcode = '22023';
   end if;
 
@@ -69,6 +69,9 @@ begin
     raise exception 'invalid_content' using errcode = '22023';
   end if;
 
+  if challenge->>'mode' = 'time-trial' and (challenge->>'globalTimeLimitMs')::integer % 1000 <> 0 then
+    raise exception 'invalid_content' using errcode = '22023';
+  end if;
   for question, question_index in
     select value, ordinality::integer
     from jsonb_array_elements(document->'questions') with ordinality
@@ -102,6 +105,10 @@ begin
         or question->>'questionVersionId' = any(seen_question_versions) then
         raise exception 'invalid_question_reference' using errcode = '22023';
       end if;
+      if challenge->>'mode' = 'time-trial' and not exists (
+        select 1 from private.question_versions q where q.id = (question->>'questionVersionId')::uuid
+          and q.status = 'published' and q.type = 'queens' and private.is_supported_flash_question(q.id)
+      ) then raise exception 'unsupported_question' using errcode = '22023'; end if;
       seen_question_versions := seen_question_versions || (question->>'questionVersionId');
       if challenge->>'mode' in ('survival', 'pyramid') and not exists (
         select 1 from private.question_versions supported
@@ -124,6 +131,9 @@ begin
       raise exception 'invalid_content' using errcode = '22023';
     end if;
 
+    if challenge->>'mode' = 'time-trial' and question->>'type' <> 'queens' then
+      raise exception 'unsupported_question' using errcode = '22023';
+    end if;
     perform private.validate_flash_question_document(question - 'points' - 'modeConfig');
     question_slug := btrim(question->>'slug');
     if question_slug = any(seen_slugs) then

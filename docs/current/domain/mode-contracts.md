@@ -11,8 +11,8 @@ comportamiento y no una decisión irreversible hasta confirmarla en `docs/decisi
 La política de recuperación de interacción iniciada que figura en este documento ya está confirmada
 por la decisión y ADR de 2026-09-15.
 
-Los cinco modos actuales se describen en las secciones 1 a 5. La sección 6 resume Contrarreloj como
-modo futuro con reglas acordadas; no declara una capacidad implementada. El modo existente se
+Los cinco modos anteriores se describen en las secciones 1 a 5. La sección 6 describe Contrarreloj,
+implementado inicialmente para Queens. El modo existente se
 denomina únicamente **Flash**.
 
 La jerarquía documental aplicable es la descrita en [`README.md`](README.md): los ADR y las
@@ -113,7 +113,7 @@ absoluta de finalización (`completedAt`) y métricas como `lastCorrectAt` sigue
 historial y análisis, pero no son criterios competitivos. El ranking de temporada solo usa Flash
 Points acumulados.
 
-Contrarreloj tendrá un comparador específico: pruebas resueltas y tiempo global hasta el último
+Contrarreloj tiene un comparador específico: pruebas resueltas y tiempo global hasta el último
 acierto. La [decisión del modo](../../decisions/decisions.md#21-contrarreloj-reglas-acordadas)
 no cambia el comparador de los cinco modos actuales ni el ranking de temporada.
 
@@ -328,32 +328,28 @@ muestra los siete niveles y bloquea los no alcanzados sin payload. El
 editor/calendario y rankings existentes incluyen `pyramid`; no se añaden tablas. La migración,
 pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se validó despliegue remoto.
 
-## 6. Contrarreloj (pendiente de implementación)
+## 6. Contrarreloj
 
-### Reglas acordadas
+- **Identificador y contenido:** `time-trial`; 2–20 Queens 4×4 a 8×8 en orden fijo creciente.
+- **Duración:** segundos enteros positivos obligatorios, sin default. La primera preparación posterior
+  a la cuenta atrás fija el deadline una sola vez; intro y cuenta atrás no crean intento.
+  Todas las pruebas comparten reloj, incluidas validaciones, cargas y transiciones de 1,1 segundos.
+- **Puntuación:** pesos enteros positivos que suman 100; acierto completo sin bonus, parcial ni penalización.
+- **Oportunidades:** dos validaciones completas incorrectas permiten continuar; la tercera termina.
+  Movimientos exploratorios y solicitudes inválidas no consumen oportunidades.
+- **Finalización:** `completed`, `outcome = null`; `all_solved`, `validation_limit`, `time_limit` o
+  `recovery_interrupted`. Conservar puntos previos; conciliar recepciones aceptadas antes de cerrar.
+  Una recepción debe ocurrir después de bloqueos y estrictamente antes del deadline.
+- **Ranking:** más pruebas resueltas y menor tiempo global hasta último acierto. Empates `1,1,3`;
+  cero aciertos empatados sin tiempo inventado. Temporada conserva Flash Points acumulados.
+- **Recuperación:** conciliar recepción existente primero; una prueba activa sin recepción termina
+  sin respuesta ni replay. Con deadline vencido prevalece `time_limit`. Transferencia conserva reglas.
+- **Revisión:** pruebas alcanzadas con revisión autorizada; las no alcanzadas solo metadatos.
+- **Abandono y permisos:** contrato común, sin acreditación.
 
-- **Identidad:** secuencia finita de un único formato, con dificultad creciente y el mismo contenido
-  y orden para todos los participantes. Es un modo independiente de Flash.
-- **Duración y progreso:** reloj global al comenzar la primera prueba; cada acierto suma puntos y
-  permite avanzar automáticamente. Las transiciones conservan el mismo deadline; no se añade tiempo
-  por acertar ni hay límite independiente por prueba.
-- **Finalización:** fallo definitivo, reloj agotado o todas las pruebas resueltas producen
-  `completed`, conservando los puntos de los aciertos anteriores. Resolver todo detiene el reloj y
-  concede 100 Flash Points.
-- **Errores internos:** movimientos y oportunidades permitidos por el formato no equivalen por sí
-  solos a fallo definitivo. El límite y la señal terminal deben aprobarse por formato.
-- **Ranking:** más pruebas resueltas; después, menor tiempo global hasta el último acierto. Los
-  empates completos comparten posición. La temporada sigue sumando Flash Points.
-- **Recuperación y abandono:** conservar el mismo intento, deadline y hechos aceptados; aplicar las
-  políticas comunes de sesión, terminalidad y pérdida de permisos. La consecuencia de una prueba
-  abierta sin recepción requiere cierre normativo previo; no se autoriza replay de contenido visto.
-
-La [especificación de Contrarreloj](contrarreloj.md) contiene el recorrido E2E, experiencia y escenarios
-de aceptación. La [guía editorial](../../content/guidelines/contrarreloj.md) trata la progresión.
-La fórmula, los límites, las reglas terminales por formato, la recuperación, las esperas de carga y
-las carreras con el deadline quedan en
-[CT-01 a CT-05](../../decisions/open-questions.md#contrarreloj-decisiones-pendientes).
-Este resumen no añade soporte al runtime, editor ni allowlists.
+La [especificación E2E](contrarreloj.md) y la [guía editorial](../../content/guidelines/contrarreloj.md)
+desarrollan el contrato aprobado. CT-01 a CT-05 están cerradas para Queens; nuevos formatos requieren
+su propia verificación.
 
 ## Matriz de estados y consulta
 

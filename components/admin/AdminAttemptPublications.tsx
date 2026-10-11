@@ -12,6 +12,7 @@ function modeLabel(mode: SuperadminAttemptPublication["mode"]) {
     survival: "Supervivencia",
     narrative: "Narrativa",
     pyramid: "Pirámide",
+    "time-trial": "Contrarreloj",
   }[mode];
 }
 

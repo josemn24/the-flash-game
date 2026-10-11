@@ -166,6 +166,7 @@ declare
   clear_progress boolean := false;
   target_status text;
   completion_outcome text;
+  time_trial_reason text;
   survival_lives integer;
   survival_mistakes integer;
   survival_resolved integer;
@@ -213,7 +214,8 @@ begin
     end if;
     target := a.id;
     result := jsonb_build_object('attemptId', a.id, 'sessionId', session_row.id, 'resumed', resumed,
-      'controlRequired', control_required, 'deadlineAt', a.deadline_at, 'lockVersion', a.lock_version);
+      'controlRequired', control_required, 'deadlineAt', a.deadline_at, 'lockVersion', a.lock_version,
+      'timeTrial', case when (select mode from private.challenge_versions where id = a.challenge_version_id) = 'time-trial' then private.time_trial_progress(a.id) end);
   else
     target := (input->>'attemptId')::uuid;
     select * into a from public.attempts where id = target for update;
@@ -279,6 +281,11 @@ begin
           'transferred', true
         );
       when 'prepare' then
+        if cv.mode = 'time-trial' then
+          if (private.time_trial_progress(a.id)->>'endReason') is not null then
+            raise exception 'time_trial_terminal' using errcode = '55000';
+          end if;
+        end if;
         if cv.mode = 'pyramid' and exists (
           select 1 from private.attempt_answers answer
           where answer.attempt_id = a.id and answer.status <> 'correct'
@@ -316,10 +323,15 @@ begin
             if not found then
               insert into private.attempt_timing_units(attempt_id, challenge_version_id, challenge_item_id, scope, started_at, deadline_at)
               select a.id, a.challenge_version_id, item.id,
-                case cv.mode when 'alphabet' then 'attempt' else 'question' end,
+                case when cv.mode in ('alphabet','time-trial') then 'attempt' else 'question' end,
                 case when cv.mode = 'alphabet' then a.started_at else instant end,
-                case when cv.mode = 'alphabet' then a.deadline_at else instant + q.time_limit_ms * interval '1 millisecond' end
+                case when cv.mode = 'alphabet' then a.deadline_at when cv.mode = 'time-trial' then coalesce(a.deadline_at, instant + cv.global_time_limit_ms * interval '1 millisecond') else instant + q.time_limit_ms * interval '1 millisecond' end
               from private.question_versions q where q.id = item.question_version_id returning * into unit;
+            end if;
+            if cv.mode = 'time-trial' and a.deadline_at is null then
+              update public.attempts set deadline_at = unit.deadline_at, lock_version = lock_version + 1
+                where id = a.id returning * into a;
+              update private.attempt_sessions set expires_at = a.deadline_at where attempt_id = a.id and revoked_at is null;
             end if;
             insert into private.interaction_intervals(attempt_id, challenge_item_id, timing_unit_id, started_at)
               values(a.id, item.id, unit.id, least(instant, unit.deadline_at)) returning * into segment;
@@ -419,6 +431,12 @@ begin
           'deadlineAt', unit.deadline_at,
           'timedOut', instant >= unit.deadline_at);
       when 'receive', 'pass' then
+        if cv.mode = 'time-trial' then
+          received := clock_timestamp();
+          if op = 'pass' or received < a.deadline_at then
+            raise exception 'queens_requires_validation_command' using errcode = '22023';
+          end if;
+        end if;
         select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
         if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
           raise exception 'interaction_not_presented' using errcode = '55000';
@@ -514,15 +532,15 @@ begin
           status, answer, result_details, points, presented_at, submitted_at, time_used_ms, idempotency_key)
         values(a.id, receipt.challenge_item_id, receipt.challenge_version_id, receipt.id,
           input->>'status', receipt.answer, input->'resultDetails',
-          case when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
+          case when cv.mode = 'time-trial' then case when input->>'status' = 'correct' then (select allocated.points from private.challenge_items allocated where allocated.id = receipt.challenge_item_id) else 0 end when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
             else (input->>'points')::integer end,
           receipt.presented_at, receipt.effective_submitted_at, receipt.time_used_ms, key);
         result := jsonb_build_object('receiptId', receipt.id, 'status', input->>'status',
-          'points', case when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
+          'points', case when cv.mode = 'time-trial' then case when input->>'status' = 'correct' then (select allocated.points from private.challenge_items allocated where allocated.id = receipt.challenge_item_id) else 0 end when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
             else (input->>'points')::integer end);
       when 'complete', 'abandon' then
         if op = 'complete' then
-          if cv.mode = 'alphabet' then
+          if cv.mode in ('alphabet', 'time-trial') then
             -- Preserve an already received answer using the trusted evaluator's result.
             -- No evaluator or asset calls are made while this attempt is locked.
             if input ? 'pendingEvaluation' then
@@ -549,7 +567,13 @@ begin
               and not exists (select 1 from private.attempt_answers aa where aa.receipt_id = r.id)) then
               raise exception 'unfinished_interaction' using errcode = '55000';
             end if;
-            if private.next_attempt_item(a.id) is not null then
+            if cv.mode = 'time-trial' then
+              time_trial_reason := private.time_trial_progress(a.id)->>'endReason';
+              if time_trial_reason is null then raise exception 'time_trial_not_terminal' using errcode = '55000'; end if;
+              if time_trial_reason = 'time_limit' then
+                perform private.close_time_trial_interaction(a.id, a.deadline_at, 'timeout');
+              end if;
+            elsif private.next_attempt_item(a.id) is not null then
               if instant < a.deadline_at then
                 raise exception 'alphabet_deadline_not_reached' using errcode = '55000',
                   detail = jsonb_build_object('retryAfterSeconds',
@@ -634,7 +658,7 @@ begin
             end if;
             select coalesce(sum(answer.points), 0)::integer into points
             from private.attempt_answers answer where answer.attempt_id = a.id;
-          elsif cv.mode = 'alphabet' then
+          elsif cv.mode in ('alphabet', 'time-trial') then
             select coalesce(sum(answer.points), 0)::integer into points
             from private.attempt_answers answer where answer.attempt_id = a.id;
             completion_outcome := null;
@@ -653,6 +677,7 @@ begin
         end if;
         delete from private.prepared_interactions where attempt_id = a.id;
         update public.attempts set status = target_status, score = points, completed_at = instant,
+          terminal_reason = case when cv.mode = 'time-trial' and op = 'complete' then time_trial_reason else terminal_reason end,
           outcome = completion_outcome, progress_payload = null, lock_version = lock_version + 1 where id = a.id returning * into a;
         update private.attempt_sessions
         set revoked_at = instant, revocation_reason = 'terminal'
@@ -664,7 +689,7 @@ begin
         result := jsonb_build_object('status', a.status, 'score', a.score,
           'outcome', a.outcome, 'challengeMode', cv.mode,
           'livesRemaining', case when cv.mode = 'survival' then survival_lives else null end);
-        if op = 'complete' and cv.mode = 'alphabet' then
+        if op = 'complete' and cv.mode in ('alphabet', 'time-trial') then
           result := result || jsonb_build_object('answers', coalesce((
             select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
               'answer', aa.answer, 'status', aa.status, 'points', aa.points,
@@ -685,6 +710,9 @@ begin
         where id = a.id returning * into a;
     end if;
     result := result || jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version);
+    if cv.mode = 'time-trial' then
+      result := result || jsonb_build_object('timeTrial', private.time_trial_progress(a.id), 'terminalReason', a.terminal_reason);
+    end if;
   end if;
 
   return jsonb_build_object(

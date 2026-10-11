@@ -42,74 +42,17 @@ Cada modo debe declarar explícitamente:
 
 ## Contrarreloj: decisiones pendientes
 
-Las [reglas de producto](decisions.md#21-contrarreloj-reglas-acordadas) están acordadas. Contrarreloj
-es independiente de Flash, mantiene un formato con dificultad creciente y termina por fallo
-definitivo, reloj agotado o secuencia completa. El reloj global, el máximo de 100 puntos, la
-conservación de puntos en finales reglamentarios y el comparador del desafío no vuelven a estar abiertos.
-El modo todavía no está implementado; la [especificación](../current/domain/contrarreloj.md) describe
-su recorrido E2E y los escenarios futuros de aceptación.
+CT-01 a CT-05 están cerradas el 2026-10-11 para la primera versión Queens. Se conserva este
+encabezado para los enlaces históricos. Las [decisiones normativas](decisions.md#21-contrarreloj-reglas-acordadas)
+y la [especificación implementada](../current/domain/contrarreloj.md) contienen el detalle.
 
-| ID    | Decisión pendiente                                                                                            | Criterio para cerrarla                                                                                                                                                                                                                                                                                 |
-| ----- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| CT-01 | Fórmula exacta de puntuación y redondeo. `round(100 × pruebas resueltas / total)` sigue siendo una propuesta. | Definir diferencias acumuladas por acierto, convención de redondeo y configuración publicada que sume 100. Asegurar puntos enteros por acierto y revisar crédito parcial o penalizaciones heredadas de otros modos.                                                                                    |
-| CT-02 | Fallo definitivo y oportunidades internas para cada formato habilitado.                                       | Especificar qué movimiento, validación o agotamiento termina la prueba, qué acciones permiten continuar y qué feedback se muestra. No trasladar automáticamente los límites de Queens en Pirámide ni las penalizaciones existentes.                                                                    |
-| CT-03 | Duración global, número de pruebas y límites editoriales.                                                     | Calibrar secuencias completas y dispositivos previstos; elegir límites compatibles con la puntuación entera y progresión real de dificultad. Los tamaños y cantidades de los ejemplos no son defaults aprobados.                                                                                       |
-| CT-04 | Recuperación de la prueba abierta, checkpoints y tratamiento de carga/esperas técnicas.                       | Definir el inicio autoritativo con la primera prueba disponible, la consecuencia de recuperar sin recepción y el cierre tras vencimiento; distinguir progreso aceptado de borradores locales. Resolver esperas conforme a las políticas vigentes, sin reiniciar el reloj ni permitir replay implícito. |
-| CT-05 | Respuesta o evento concurrente con el vencimiento del deadline.                                               | Definir el instante server-side válido, el límite exacto y el orden entre recepción, evaluación y cierre; contemplar el último acierto y confirmaciones perdidas con un único resultado y acreditación.                                                                                                |
+| ID    | Resolución vigente                                                                                                |
+| ----- | ----------------------------------------------------------------------------------------------------------------- |
+| CT-01 | Pesos editoriales enteros positivos con suma 100; acierto completo, sin parcial, bonus ni penalización.           |
+| CT-02 | Queens: dos validaciones completas incorrectas permiten continuar; la tercera termina.                            |
+| CT-03 | 2–20 pruebas, Queens 4×4–8×8; segundos enteros positivos obligatorios, sin default.                               |
+| CT-04 | Primera preparación inicia reloj; esperas sin compensación; recuperación activa sin recepción termina sin replay. |
+| CT-05 | Recepción BD después de bloqueos, estrictamente antes del deadline; conciliación previa a cierre.                 |
 
-Al cerrar una decisión, actualizar la especificación, el contrato resumido y la guía editorial;
-trasladar los acuerdos normativos a `decisions.md`. Una excepción a la recuperación del ADR-0003,
-la transferencia del ADR-0006 o el guardado común requiere resolver primero su fuente normativa.
-La implementación posterior concretará tipos, almacenamiento, capacidades y contratos, sin tratarlos
-como ya habilitados por esta documentación.
-
-## Operación y políticas pendientes
-
-- Duración exacta y número de usos de las invitaciones.
-- Periodo de recuperación antes de purgar una sala eliminada.
-- Periodo de conservación de eventos técnicos y datos antifraude.
-- Procedimiento concreto para conceder y retirar el rol global `superadmin`.
-- Interfaz y flujo de auditoría para correcciones de puntuación.
-- Límites de frecuencia por operación competitiva.
-- Validación operativa del [bloqueo inmediato aprobado](decisions.md#20-pérdida-del-permiso-para-jugar):
-  la implementación local ya cierra idempotentemente el intento como no completado, registra el
-  motivo, coordina la membresía con respuestas/finalización, revoca la sesión y actualiza la UI.
-  Quedan staging, la reconciliación de datos preexistentes y las carreras de despliegue; permitir
-  terminar tras perder el permiso ya no es una cuestión abierta.
-- Política de borradores de formularios administrativos y de perfil: alcance, duración, identidad
-  y tratamiento de información sensible. El guardado de partidas ya está aprobado; no incluye
-  guardar respuestas sin enviar ni aprobar autosave para estos formularios.
-- Implementación de los [timeouts y reintentos aprobados](request-retries.md): mapear comandos a
-  categorías, coordinar presupuestos/cancelación y garantizar idempotencia. Quedan por definir
-  valores para logout, administración, assets, diccionario y tareas operativas; los cuatro límites
-  aprobados no se mantienen como preguntas abiertas.
-- Implementación de la [transferencia explícita aprobada](adr/0006-explicit-attempt-control-transfer.md):
-  contrato, revocación y resultado idempotente, aviso en la sesión anterior, concurrencia entre
-  transferencias, auditoría y límites. El runtime todavía bloquea la segunda sesión.
-- Intervalo del heartbeat, duración del lease y periodo de gracia para confirmar un abandono por
-  cierre de pestaña, pérdida de conexión o ausencia de actividad.
-- Momento en que un antiguo miembro deja de aparecer en listados no históricos.
-- Criterios para materializar rankings si el cálculo dinámico deja de ser suficiente.
-- Política de moderación para nombres visibles y avatares.
-- Requisitos legales definitivos de exportación, anonimización y eliminación de datos.
-
-## Incidencias durante partidas: detalles pendientes
-
-La política general está [aprobada desde el 2026-10-06](service-incidents.md). Antes de implementarla
-deben concretarse los umbrales de duración/impacto, las evidencias para confirmar una incidencia,
-la marca persistida y el tratamiento del intento mientras se revisa, las resoluciones individuales,
-la cancelación de publicaciones ya abiertas y sus efectos auditados sobre puntos, y la programación
-y comunicación del desafío de reemplazo. Estas cuestiones no reabren el acuerdo de recuperación,
-revisión individual y cancelación general.
-
-## Fuera del alcance inicial
-
-- Invitados o jugadores sin cuenta.
-- Perfiles distintos por sala.
-- Salas públicas.
-- Equipos y juego cooperativo.
-- Partidas sincronizadas en tiempo real.
-- Ranking global entre salas.
-- Internacionalización del contenido.
-- Monetización o recompensas distintas de Flash Points.
-- Feed social completo y notificaciones.
+Sigue pendiente habilitar otros formatos y calibrar contenido real en staging. Los fixtures técnicos
+no son una secuencia editorial validada para publicación real.

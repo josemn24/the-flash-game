@@ -348,7 +348,7 @@ begin
     raise exception 'unsupported_question' using errcode = '22023';
   end if;
 
-  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'pyramid') then
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode in ('pyramid','time-trial')) then
     raise exception 'queens_requires_board_validation' using errcode = '22023';
   end if;
 
@@ -799,7 +799,7 @@ language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.command_actor(); result jsonb;
 begin
   select jsonb_build_object(
-    'receiptId', r.id, 'answer', case when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
+    'receiptId', r.id, 'answer', case when cv.mode = 'time-trial' and (r.answer is null or r.answer = 'null'::jsonb) then null when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
       select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
       from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct

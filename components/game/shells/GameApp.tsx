@@ -7,6 +7,7 @@ import type {
   ServerNarrativeChallenge,
   ServerSurvivalChallenge,
   ServerPyramidChallenge,
+  ServerTimeTrialChallenge,
 } from "@/types/gameplay/challenge";
 import type { ChallengeCompletionResult } from "@/types/gameplay";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
@@ -20,13 +21,20 @@ type GameAppProps = {
     | ServerAlphabetChallenge
     | ServerSurvivalChallenge
     | ServerPyramidChallenge
-    | ServerNarrativeChallenge;
+    | ServerNarrativeChallenge
+    | ServerTimeTrialChallenge;
   roomContext?: GameRoomContext;
   onComplete?: (result: ChallengeCompletionResult) => void;
   socialSnapshot: FlashPopSocialSnapshot;
   persistence?: GameplayPersistence;
   terminalReview?: readonly ServerFlashTerminalReview[];
 };
+
+const ServerFlashPopTimeTrialGame = dynamic(() =>
+  import("@/components/game/modes/flash-pop/ServerFlashPopTimeTrialGame.client").then(
+    (module) => module.ServerFlashPopTimeTrialGame,
+  ),
+);
 
 const FlashPopAlphabetGame = dynamic(() =>
   import("@/components/game/modes/flash-pop/FlashPopAlphabetGame.client").then(
@@ -101,6 +109,17 @@ export function GameApp({
   persistence = "mock",
   terminalReview,
 }: GameAppProps) {
+  if (challenge.mode === "time-trial") {
+    return persistence === "server" && roomContext ? (
+      <ServerFlashPopTimeTrialGame
+        challenge={challenge}
+        roomContext={roomContext}
+        terminalReview={terminalReview}
+      />
+    ) : (
+      <CompetitiveChallengeUnavailable mode="Contrarreloj" />
+    );
+  }
   if (challenge.mode === "alphabet") {
     if (persistence === "server" && roomContext && "timeLimitMs" in challenge) {
       return (

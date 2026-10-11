@@ -30,6 +30,7 @@ import {
   FlashEditorialValidationError,
   formatFlashEditorialDocument,
   parseFlashEditorialJson,
+  parseEditableEditorialJson,
 } from "@/lib/editorial/flashDocument";
 import type {
   FlashEditorialDocument,
@@ -49,6 +50,9 @@ import { EditorialVersionHistory } from "./editorial/EditorialVersionHistory";
 
 import {
   changeEditorialLives,
+  changeEditorialGlobalDuration,
+  changeEditorialQuestionPoints,
+  moveEditorialQuestion,
   changeEditorialMode,
   replaceEditorialLibraryQuestion,
 } from "@/lib/editorial/draftTransforms";
@@ -143,13 +147,21 @@ export function EditorialManagement({
     }
   }, [documentText]);
 
+  const editableDocument = useMemo(() => {
+    try {
+      return parseEditableEditorialJson(documentText);
+    } catch {
+      return null;
+    }
+  }, [documentText]);
+
   const documentSummary = parsedDocument
-    ? `${parsedDocument.challenge.mode === "survival" ? "Supervivencia" : parsedDocument.challenge.mode === "alphabet" ? "Alphabet" : parsedDocument.challenge.mode === "narrative" ? "Narrativa" : parsedDocument.challenge.mode === "pyramid" ? "La Pirámide" : "Flash"} · ${parsedDocument.challenge.mode === "pyramid" ? `${parsedDocument.questions.length}/7 niveles` : `${parsedDocument.questions.length} preguntas`} · ${parsedDocument.questions.reduce((total, question) => total + question.points, 0)} puntos`
+    ? `${parsedDocument.challenge.mode === "survival" ? "Supervivencia" : parsedDocument.challenge.mode === "alphabet" ? "Alphabet" : parsedDocument.challenge.mode === "narrative" ? "Narrativa" : parsedDocument.challenge.mode === "pyramid" ? "La Pirámide" : parsedDocument.challenge.mode === "time-trial" ? "Contrarreloj" : "Flash"} · ${parsedDocument.challenge.mode === "pyramid" ? `${parsedDocument.questions.length}/7 niveles` : `${parsedDocument.questions.length} preguntas`} · ${parsedDocument.questions.reduce((total, question) => total + question.points, 0)} puntos`
     : `Flash · ${FLASH_MIN_QUESTIONS}–${FLASH_MAX_QUESTIONS} preguntas · ${FLASH_TOTAL_POINTS} puntos`;
 
   function updateMode(mode: FlashEditorialDocument["challenge"]["mode"]) {
-    if (!parsedDocument) return;
-    setDocumentText(formatFlashEditorialDocument(changeEditorialMode(parsedDocument, mode)));
+    if (!editableDocument) return;
+    setDocumentText(formatFlashEditorialDocument(changeEditorialMode(editableDocument, mode)));
     setPreviewError("");
   }
 
@@ -191,12 +203,15 @@ export function EditorialManagement({
   }
 
   function selectLibraryQuestion() {
-    const entry = publishedLibraryEntries.find(
-      (candidate) => candidate.questionVersionId === libraryQuestionId,
+    const compatible = publishedLibraryEntries.filter(
+      (entry) => editableDocument?.challenge.mode !== "time-trial" || entry.type === "queens",
     );
+    const entry =
+      compatible.find((candidate) => candidate.questionVersionId === libraryQuestionId) ??
+      compatible[0];
     if (!entry) return;
     try {
-      const document = parseFlashEditorialJson(documentText);
+      const document = parseEditableEditorialJson(documentText);
       const index = Number(replaceIndex);
       setDocumentText(
         formatFlashEditorialDocument(replaceEditorialLibraryQuestion(document, index, entry)),
@@ -248,18 +263,46 @@ export function EditorialManagement({
 
             <EditorialLibrarySelector
               fieldId={fieldId}
-              entries={publishedLibraryEntries}
+              entries={
+                editableDocument?.challenge.mode === "time-trial"
+                  ? publishedLibraryEntries.filter((entry) => entry.type === "queens")
+                  : publishedLibraryEntries
+              }
               selectedId={libraryQuestionId}
               onSelect={setLibraryQuestionId}
               replaceIndex={replaceIndex}
               onReplaceIndex={setReplaceIndex}
-              questionCount={parsedDocument?.questions.length ?? 0}
+              questionCount={editableDocument?.questions.length ?? 0}
               onUseVersion={selectLibraryQuestion}
             />
 
             <EditorialModeSettings
               fieldId={fieldId}
-              document={parsedDocument}
+              document={editableDocument}
+              onGlobalDurationChange={(seconds) => {
+                if (editableDocument)
+                  setDocumentText(
+                    formatFlashEditorialDocument(
+                      changeEditorialGlobalDuration(editableDocument, seconds),
+                    ),
+                  );
+              }}
+              onQuestionPointsChange={(index, points) => {
+                if (editableDocument)
+                  setDocumentText(
+                    formatFlashEditorialDocument(
+                      changeEditorialQuestionPoints(editableDocument, index, points),
+                    ),
+                  );
+              }}
+              onQuestionMove={(index, offset) => {
+                if (editableDocument)
+                  setDocumentText(
+                    formatFlashEditorialDocument(
+                      moveEditorialQuestion(editableDocument, index, offset),
+                    ),
+                  );
+              }}
               onModeChange={updateMode}
               onLivesChange={updateLives}
             />

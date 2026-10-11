@@ -179,7 +179,7 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
   async recover(input: RecoverAttemptInput): Promise<RecoveryUseCaseResult> {
     this.performanceObserver?.recordRecovery?.("recovery_requested");
     const initial = await this.commands.readRecovery(input.attemptId, input.sessionToken);
-    if (initial.challengeMode === "alphabet" && initial.deadlineReached) {
+    if (["alphabet", "time-trial"].includes(initial.challengeMode) && initial.deadlineReached) {
       const { result: completed } = await this.complete(input);
       return {
         recovery: {
@@ -220,6 +220,7 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
     if (
       snapshot.allItemsResolved ||
       (snapshot.challengeMode === "alphabet" && snapshot.deadlineReached) ||
+      (snapshot.challengeMode === "time-trial" && snapshot.timeTrial?.endReason != null) ||
       snapshot.terminalOutcome === "eliminated" ||
       snapshot.terminalOutcome === "failed"
     ) {
@@ -252,10 +253,9 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
       this.commands.readAttemptContext(input.attemptId, input.sessionToken),
     );
     this.performanceObserver?.setMode(context.challengeMode);
-    const snapshot =
-      context.challengeMode === "alphabet"
-        ? await this.commands.readRecovery(input.attemptId, input.sessionToken)
-        : undefined;
+    const snapshot = ["alphabet", "time-trial"].includes(context.challengeMode)
+      ? await this.commands.readRecovery(input.attemptId, input.sessionToken)
+      : undefined;
     const pending = snapshot?.pendingReceiptId;
     const evaluation = pending
       ? await this.scoreReceipt({ ...input, receiptId: pending })
@@ -439,6 +439,7 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
       lockVersion: evaluated.lockVersion,
       status: evaluated.status,
       points: evaluated.points,
+      ...(evaluated.timeTrial ? { timeTrial: evaluated.timeTrial } : {}),
       ...(evaluated.details ? { details: evaluated.details } : {}),
     } as Result;
   }

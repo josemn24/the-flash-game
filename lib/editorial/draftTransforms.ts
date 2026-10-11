@@ -29,6 +29,9 @@ export function changeEditorialMode(
       mode,
       modeConfig: mode === "survival" ? { lives: Math.min(3, document.questions.length) } : {},
       ...(mode === "alphabet" ? { globalTimeLimitMs: previousLimit ?? 300000 } : {}),
+      ...(mode === "time-trial" && previousLimit !== undefined
+        ? { globalTimeLimitMs: previousLimit }
+        : {}),
     },
     questions: document.questions.map((question, index) => {
       if (mode === "pyramid") {
@@ -46,6 +49,46 @@ export function changeEditorialMode(
       return standaloneQuestion;
     }),
   };
+}
+
+export function changeEditorialGlobalDuration(
+  document: FlashEditorialDocument,
+  seconds: string,
+): FlashEditorialDocument {
+  const challenge = { ...document.challenge };
+  Reflect.deleteProperty(challenge, "globalTimeLimitMs");
+  return {
+    ...document,
+    challenge: {
+      ...challenge,
+      ...(seconds !== "" ? { globalTimeLimitMs: Number(seconds) * 1000 } : {}),
+    },
+  };
+}
+
+export function changeEditorialQuestionPoints(
+  document: FlashEditorialDocument,
+  index: number,
+  points: number,
+): FlashEditorialDocument {
+  return {
+    ...document,
+    questions: document.questions.map((question, position) =>
+      position === index ? { ...question, points } : question,
+    ),
+  };
+}
+
+export function moveEditorialQuestion(
+  document: FlashEditorialDocument,
+  index: number,
+  offset: -1 | 1,
+): FlashEditorialDocument {
+  const destination = index + offset;
+  if (destination < 0 || destination >= document.questions.length) return document;
+  const questions = [...document.questions];
+  [questions[index], questions[destination]] = [questions[destination], questions[index]];
+  return { ...document, questions };
 }
 
 export function changeEditorialLives(

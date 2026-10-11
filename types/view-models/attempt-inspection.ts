@@ -1,7 +1,8 @@
 import type { AttemptOutcome, AttemptStatus } from "@/types/domain/attempt";
 import type { JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 
-export type SuperadminCompetitiveMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
+export type SuperadminCompetitiveMode =
+  "flash" | "alphabet" | "survival" | "narrative" | "pyramid" | "time-trial";
 export type SuperadminAttemptStatus = AttemptStatus;
 
 export type SuperadminAttemptPublication = {

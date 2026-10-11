@@ -13,6 +13,7 @@ export type SurvivalAttemptOutcome = "survived" | "eliminated";
 export type PyramidAttemptOutcome = "summit" | "failed";
 export type AttemptOutcome = SurvivalAttemptOutcome | PyramidAttemptOutcome | null;
 export type AttemptOutcomeByMode = {
+  readonly "time-trial": null;
   readonly flash: null;
   readonly alphabet: null;
   readonly narrative: null;

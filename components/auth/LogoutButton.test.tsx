@@ -42,6 +42,8 @@ describe("LogoutButton", () => {
       expect(screen.getByRole("status").textContent).toBe("No se ha podido cerrar la sesión."),
     );
     expect(screen.queryByText("private provider error")).toBeNull();
-    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Salir" }).disabled).toBe(false);
+    await waitFor(() =>
+      expect(screen.getByRole<HTMLButtonElement>("button", { name: "Salir" }).disabled).toBe(false),
+    );
   });
 });

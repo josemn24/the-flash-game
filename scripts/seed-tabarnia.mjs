@@ -693,7 +693,12 @@ commit;
 `;
 }
 
-export function tabarniaManifest(accounts, avatarMetadata, schedule = "production", startsAt = null) {
+export function tabarniaManifest(
+  accounts,
+  avatarMetadata,
+  schedule = "production",
+  startsAt = null,
+) {
   const profile = resolveScheduleProfile(schedule);
   const normalizedStartAt = normalizeStartAt(startsAt);
   const challenges = tabarniaChallenges();

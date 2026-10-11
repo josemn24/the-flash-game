@@ -16,6 +16,14 @@ export function toRoomMemberReviewProgress(
     outcome: first.attempt_outcome,
   });
   const orderedRows = rows.slice().sort((left, right) => left.item_position - right.item_position);
+  if (first.challenge_mode === "time-trial") {
+    return {
+      mode: "time-trial",
+      answeredCount: orderedRows.filter((row) => row.has_persisted_answer).length,
+      correctCount: orderedRows.filter((row) => row.answer_status === "correct").length,
+      totalQuestionCount: first.question_count,
+    };
+  }
   if (first.challenge_mode === "alphabet") {
     return {
       mode: "alphabet",

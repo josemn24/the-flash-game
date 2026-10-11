@@ -542,36 +542,39 @@
 
 ## 21. Contrarreloj: reglas acordadas
 
-Aprobadas el 2026-10-11 para un modo pendiente de implementación. La
-[especificación funcional](../current/domain/contrarreloj.md) desarrolla estos acuerdos y el
-recorrido E2E previsto. El catálogo implementado conserva cinco modos.
+Aprobadas el 2026-10-11. Identificador `time-trial`, como modo competitivo independiente de Flash.
+La [especificación funcional](../current/domain/contrarreloj.md) desarrolla el recorrido completo.
 
-- El modo existente se llama **Flash**. **Contrarreloj** es un modo nuevo e independiente.
-- Cada desafío contiene una secuencia finita de pruebas de un único formato, ordenadas por dificultad
-  creciente. Todos los participantes reciben las mismas versiones y el mismo orden.
-- El reloj es global y empieza al comenzar la primera prueba, tras la introducción y cuenta atrás.
-  Los aciertos permiten avanzar automáticamente y conceden puntos; no reinician ni amplían el tiempo.
-  Las transiciones conservan el reloj global y no existe un límite independiente por prueba.
-- La partida termina por fallo definitivo de una prueba, agotamiento del reloj o resolución de toda
-  la secuencia. Los tres son finales reglamentarios con intento `completed`, incluso con cero aciertos.
-- Un movimiento exploratorio o una oportunidad interna permitida no constituye por sí sola un fallo
-  definitivo. Su señal y los límites concretos deben aprobarse por formato antes de habilitarlo.
-- Los finales reglamentarios conservan los puntos obtenidos en pruebas resueltas. La prueba no resuelta
-  no concede puntos. El total es un entero entre 0 y 100; resolver todo concede 100 y detiene el reloj
-  inmediatamente. La fórmula exacta sigue pendiente.
-- El ranking del desafío prioriza el número de pruebas resueltas y después el menor tiempo global
-  hasta el último acierto aceptado. El tiempo del fallo final y `startedAt` como fecha absoluta no
-  añaden un desempate. La igualdad completa comparte posición (`1, 1, 3`); con cero aciertos se comparte
-  posición sin inventar un tiempo de último acierto.
-- Los Flash Points acreditados una sola vez al cierre se suman al ranking de temporada de la sala.
-  El ranking de temporada conserva sus reglas; no se crea un ranking global entre salas.
-- Se conserva el intento único y, al recuperar, su identidad, deadline y hechos aceptados. Se aplican
-  los ADR vigentes de recuperación y transferencia; la consecuencia para la prueba abierta requiere
-  definición previa sin aprobar implícitamente una reentrega de contenido visto.
-- Abandono, pérdida de permisos, invalidación, revisión y publicación siguen las políticas comunes.
-  Conservar hechos aceptados de un intento abandonado no implica acreditar sus puntos.
+- V1: entre 2 y 20 Queens compatibles de 4×4 a 8×8, en un orden fijo de dificultad creciente.
+  Todos juegan las mismas versiones. Otros formatos quedan para ampliaciones.
+- Duración global obligatoria, sin default, en segundos enteros positivos almacenados como
+  milisegundos dentro del rango integer existente. Los límites por pregunta no se aplican.
+- Pesos editoriales enteros positivos, suma exacta 100. Cada acierto concede todo su peso, sin
+  crédito parcial, bonus de velocidad ni penalización por validaciones incorrectas.
+- Cada tablero permite dos validaciones completas incorrectas; la tercera termina el desafío.
+  Movimientos exploratorios, solicitudes inválidas e idempotencia no consumen oportunidades.
+- Intro y cuenta atrás no crean intento ni entregan tableros. `start` crea el intento sin deadline;
+  la primera preparación fija atómicamente inicio, deadline e intervalo y libera el tablero.
+  `started_at` sigue siendo creación; el reloj se deriva del deadline y duración publicada.
+- El reloj corre durante validaciones, cargas y transiciones sin compensaciones ni reinicios.
+  El feedback de acierto intermedio dura 1,1 segundos; el último acierto solicita cierre inmediato.
+- La recepción se fecha después de adquirir bloqueos en PostgreSQL. Debe ser estrictamente anterior
+  al deadline; la igualdad es tardía. Antes de cerrar se concilian recepciones pendientes.
+  Una última solución aceptada a tiempo deriva `all_solved`; una tercera validación incorrecta
+  aceptada a tiempo deriva `validation_limit`, incluso si la evaluación acaba después del límite.
+  Un acierto intermedio seguido del vencimiento conserva puntos y cierra por `time_limit`.
+- Una prueba activa sin recepción final se cierra sin respuesta y termina por `recovery_interrupted`;
+  si el reloj ya venció, prevalece `time_limit`. Los borradores no sustituyen recepciones.
+  Recuperación y transferencia conservan identidad, deadline y hechos, sin reentregar pruebas vistas.
+  Un intento sin prueba entregada puede preparar; entre pruebas puede avanzar si aún tiene tiempo.
+- Los cierres reglamentarios usan `completed`, `outcome = null` y los motivos anteriores, conservando
+  puntos. Finalización y acreditación son idempotentes. Las pruebas no entregadas no reciben respuestas
+  o tiempos ficticios; revisión solo muestra sus metadatos, sin tablero ni solución.
+- Ranking de publicación e historial: resueltas descendente, luego milisegundos hasta último acierto
+  ascendente, derivados de recepciones aceptadas e incluyendo transiciones. Empates `1,1,3`; cero
+  aciertos comparten posición sin tiempo inventado. El orden visual estable no desempata.
+- La temporada continúa sumando Flash Points. Abandono, pérdida de permisos, invalidación y acceso
+  a revisión mantienen el contrato común; abandonar no acredita puntos.
 
-La fórmula proporcional, los límites editoriales, las reglas terminales por formato, la recuperación,
-las esperas técnicas y la concurrencia con el deadline están pendientes en
-[CT-01 a CT-05](open-questions.md#contrarreloj-decisiones-pendientes). Cualquier excepción a una
-decisión o ADR vigente debe aprobarse en la fuente normativa antes de implementar el modo.
+CT-01 a CT-05 quedan cerradas para Queens. Antes de publicar contenido real se exige calibración
+mediante resoluciones completas y un recorrido de staging. Migración compatible antes de aplicación.

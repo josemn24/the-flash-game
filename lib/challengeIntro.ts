@@ -52,6 +52,8 @@ function getModeLabel(challenge: Challenge) {
 
 function getModeLabelForMode(mode: GameMode) {
   switch (mode) {
+    case "time-trial":
+      return "Contrarreloj";
     case "flash":
       return "Flash";
     case "survival":
@@ -69,6 +71,23 @@ function buildSafeRules(
   mode: GameMode,
 ): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   switch (mode) {
+    case "time-trial":
+      return [
+        {
+          title: "Un solo reloj",
+          description: "Resuelve Queens en orden. Validaciones y transiciones consumen tiempo.",
+        },
+        {
+          title: "Tres validaciones",
+          description:
+            "La tercera validación completa incorrecta termina el desafío. Los movimientos no consumen oportunidades.",
+        },
+        {
+          title: "Conserva tus aciertos",
+          description:
+            "Cada prueba resuelta suma sus puntos. Recuperar una prueba activa sin respuesta recibida termina la partida.",
+        },
+      ];
     case "flash":
       return buildFlashRules();
     case "survival":
@@ -87,6 +106,7 @@ export type SafeChallengeIntroduction = {
   mode: GameMode;
   questionCount: number;
   maxScore: number;
+  timeLimitMs?: number;
 };
 
 export function buildSafeChallengeIntroModel(
@@ -98,7 +118,13 @@ export function buildSafeChallengeIntroModel(
     contextLabel: `Reto de hoy · ${modeLabel}`,
     title: getChallengeDisplayTitle(introduction.title, introduction.mode),
     metrics: [
-      { value: introduction.questionCount, label: "Preguntas" },
+      {
+        value: introduction.questionCount,
+        label: introduction.mode === "time-trial" ? "Pruebas" : "Preguntas",
+      },
+      ...(introduction.mode === "time-trial" && introduction.timeLimitMs
+        ? [{ value: `${introduction.timeLimitMs / 1000} s`, label: "Tiempo global" }]
+        : []),
       { value: introduction.maxScore, label: "Puntos" },
     ],
     rules: buildSafeRules(introduction.mode),

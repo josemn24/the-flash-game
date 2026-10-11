@@ -27,7 +27,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     });
   };
   const complete = async () => {
-    if (runtime.challenge.mode === "alphabet") {
+    if (["alphabet", "time-trial"].includes(runtime.challenge.mode)) {
       finalizationRequested = true;
       runtime.commit({ type: "phase", phase: "finalizing" });
     }
@@ -55,10 +55,14 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
           runtime.commit(preparedEvent(runtime, response));
           timedOut =
             response.timedOut === true &&
-            (runtime.challenge.mode === "alphabet" || response.deadlineAt != null);
+            (["alphabet", "time-trial"].includes(runtime.challenge.mode) ||
+              response.deadlineAt != null);
         },
         after: async () => {
-          if (runtime.challenge.mode === "alphabet" && (timedOut || finalizationRequested))
+          if (
+            ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
+            (timedOut || finalizationRequested)
+          )
             await finalizeAlphabet();
           else if (timedOut) await timeoutAnswer();
         },
@@ -84,7 +88,10 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
         },
         after: async () => {
           if (!snapshot || snapshot.phase === "results") return;
-          if (runtime.challenge.mode === "alphabet" && finalizationRequested) {
+          if (
+            ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
+            finalizationRequested
+          ) {
             await finalizeAlphabet();
             return;
           }
@@ -108,6 +115,10 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
   };
   const begin = async () => {
     if (runtime.state().busy || runtime.state().pendingCommand) return;
+    if (runtime.challenge.mode === "time-trial") {
+      runtime.commit({ type: "phase", phase: "countdown", clearQuestion: true });
+      return;
+    }
     await runtime.run(
       "prepareSession",
       { scheduledChallengeId: runtime.challenge.id },
@@ -146,9 +157,12 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
             { scheduledChallengeId: runtime.challenge.id },
             {
               accept: (response) => {
-                const deadline = timestamp(response.deadlineAt);
+                const deadline =
+                  runtime.challenge.mode === "time-trial"
+                    ? runtime.state().deadlineAt
+                    : timestamp(response.deadlineAt);
                 if (
-                  runtime.challenge.mode === "alphabet" &&
+                  ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
                   deadline !== null &&
                   deadline <= Date.now()
                 ) {
@@ -225,7 +239,34 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
       },
     );
   };
+  const startTimeTrial = async () => {
+    await runtime.run(
+      "prepareSession",
+      { scheduledChallengeId: runtime.challenge.id },
+      {
+        accept: () => {},
+        after: async () => {
+          let resumed = false;
+          await runtime.run(
+            "start",
+            { scheduledChallengeId: runtime.challenge.id },
+            {
+              accept: (response) => {
+                resumed = response.resumed === true;
+                runtime.commit({ type: "phase", phase: "preparing", clearQuestion: true });
+              },
+              after: async () => {
+                if (resumed) await recoverCurrent();
+                else await prepare();
+              },
+            },
+          );
+        },
+      },
+    );
+  };
   return {
+    startTimeTrial,
     reloadResult: () => runtime.run("recover", {}, { accept: finish }),
     begin,
     prepare,

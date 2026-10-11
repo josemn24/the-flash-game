@@ -14,6 +14,7 @@ export function isAttemptOutcomeForMode(
   outcome: unknown,
 ): outcome is AttemptOutcome {
   switch (mode) {
+    case "time-trial":
     case "flash":
     case "alphabet":
     case "narrative":

@@ -194,6 +194,13 @@
       "authenticated": {
         "table": ["SELECT"]
       }
+    },
+    "private.ranked_challenge_results": {
+      "kind": "v",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "boundary": "Internal invoker view; service SELECT only. Public ranking functions enforce active room membership and project social fields."
     }
   },
   "functions": {
@@ -1317,6 +1324,34 @@
       "securityDefiner": false,
       "executeRoles": [],
       "volatility": "s"
+    },
+    "private.assert_time_trial_content": {
+      "arguments": "target_version uuid",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.time_trial_progress": {
+      "arguments": "target_attempt uuid",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.close_time_trial_interaction": {
+      "arguments": "target_attempt uuid, closed_at timestamp with time zone, reason text",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "public.get_my_time_trial_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_time_trial_result": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
     }
   }
 }

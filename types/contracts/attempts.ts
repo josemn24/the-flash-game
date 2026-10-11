@@ -17,6 +17,12 @@ import type { AnswerValueOfType, QuestionType } from "@/types/contracts/question
 import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
 import type { AnswerResultDetails } from "@/types/contracts/result-details";
 
+import type {
+  TimeTrialEndReason,
+  TimeTrialProgress,
+  TimeTrialResult,
+} from "@/types/domain/time-trial";
+
 /** Caller identity always comes from the verified server session, never this input. */
 export type StartAttemptInput = {
   readonly scheduledChallengeId: ScheduledChallengeId;
@@ -31,6 +37,7 @@ export type StartAttemptResult = {
   readonly controlRequired: boolean;
   readonly deadlineAt: UtcIsoDateTime | null;
   readonly lockVersion: number;
+  readonly timeTrial?: TimeTrialProgress | null;
 };
 export type AttemptCommandInput = {
   readonly attemptId: AttemptId;
@@ -41,6 +48,7 @@ export type AttemptCommandInput = {
 export type AttemptCommandResult = {
   readonly attemptId: AttemptId;
   readonly lockVersion: number;
+  readonly timeTrial?: TimeTrialProgress | null;
 };
 export type PrepareInteractionInput = AttemptCommandInput;
 export type PrepareInteractionResult = AttemptCommandResult & {
@@ -279,6 +287,7 @@ export type AttemptRecoverySnapshot = AttemptLifecycle & {
   readonly attemptId: AttemptId;
   readonly scheduledChallengeId: ScheduledChallengeId;
   readonly lockVersion: number;
+  readonly timeTrial?: TimeTrialProgress | null;
   readonly hasStartedInteraction: boolean;
   readonly hasOpenInteraction?: boolean;
   readonly narrativeCursor?: {
@@ -302,6 +311,14 @@ export type FinishAttemptResult = AttemptCommandResult &
     readonly livesRemaining?: number | null;
     readonly answers?: readonly AttemptRecoveryAnswer[];
   };
+export type TimeTrialCompletedAttemptResult = FinishAttemptResult & {
+  readonly mode: "time-trial";
+  readonly status: "completed";
+  readonly outcome: null;
+  readonly score: number;
+  readonly terminalReason: TimeTrialEndReason;
+  readonly timeTrial: TimeTrialResult;
+};
 /** Persisted completion without controller cookies, assets or solutions. */
 export type SavedAttemptResult = {
   readonly scheduledChallengeId: ScheduledChallengeId;

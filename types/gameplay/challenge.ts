@@ -14,7 +14,7 @@ import type {
 import type { PracticeQuestion } from "@/types/gameplay/practice";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
 
-export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
+export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid" | "time-trial";
 export type ChallengeImplementationStatus = "prototype" | "complete";
 
 /** @deprecated ID legible de los mocks; usa `ChallengeDefinitionId` de `@/types/domain`. */
@@ -194,6 +194,11 @@ export type ServerFlashChallenge = ChallengeBase & {
     points: number;
   }[];
   maxScore: number;
+};
+
+export type ServerTimeTrialChallenge = Omit<ServerFlashChallenge, "mode"> & {
+  readonly mode: "time-trial";
+  readonly timeLimitMs: number;
 };
 
 export type ServerSurvivalChallenge = Omit<ServerFlashChallenge, "mode"> & {

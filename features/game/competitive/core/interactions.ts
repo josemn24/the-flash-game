@@ -72,7 +72,10 @@ export function createInteractions(
           }
         },
         after: async () => {
-          if (runtime.challenge.mode === "alphabet" && lifecycle.finalizationRequested())
+          if (
+            ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
+            lifecycle.finalizationRequested()
+          )
             await lifecycle.finalizeAlphabet();
           else if (
             runtime.state().phase === "transition" ||
@@ -158,6 +161,11 @@ export function createInteractions(
   };
   const onTimeUp = async (expectedItemId?: string) => {
     const state = runtime.state();
+    if (runtime.challenge.mode === "time-trial") {
+      if (!alphabetTimeout.claim()) return;
+      await lifecycle.finalizeAlphabet();
+      return;
+    }
     if (!state.question || (state.phase !== "playing" && state.phase !== "checking")) return;
     if (
       runtime.challenge.mode !== "alphabet" &&

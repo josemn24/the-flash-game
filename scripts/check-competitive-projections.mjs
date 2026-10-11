@@ -10,7 +10,7 @@ import {
   rpc,
 } from "./support/supabase-local.mjs";
 
-const modes = ["flash", "alphabet", "survival", "pyramid", "narrative"];
+const modes = ["flash", "alphabet", "survival", "pyramid", "narrative", "time-trial"];
 const { scenarioId } = parseScenarioArgs(process.argv.slice(2));
 const fixture = await readFixture(scenarioId);
 const config = await localSupabaseConfig();
@@ -33,7 +33,7 @@ for (const args of publications) {
     const client = await createAuthenticatedClient(config, account);
     const originals = [];
     for (const mode of modes) {
-      const rows = await rpc(client, `get_my_${mode}_challenge`, args);
+      const rows = await rpc(client, `get_my_${mode.replaceAll("-", "_")}_challenge`, args);
       if (rows.length) originals.push({ mode, rows });
     }
     assert(originals.length <= 1, "Una publicación solo proyecta un modo", scenarioId);

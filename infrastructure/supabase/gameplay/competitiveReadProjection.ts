@@ -6,7 +6,8 @@ export function isGameMode(value: unknown): value is GameMode {
     value === "alphabet" ||
     value === "survival" ||
     value === "pyramid" ||
-    value === "narrative"
+    value === "narrative" ||
+    value === "time-trial"
   );
 }
 

@@ -11,6 +11,7 @@ import { supabaseFlashQueries } from "@/infrastructure/supabase/gameplay/flashQu
 import { supabaseAlphabetQueries } from "@/infrastructure/supabase/gameplay/alphabetQueries";
 import { supabaseSurvivalQueries } from "@/infrastructure/supabase/gameplay/survivalQueries";
 import { supabasePyramidQueries } from "@/infrastructure/supabase/gameplay/pyramidQueries";
+import { supabaseTimeTrialQueries } from "@/infrastructure/supabase/gameplay/timeTrialQueries";
 import { supabaseNarrativeQueries } from "@/infrastructure/supabase/gameplay/narrativeQueries";
 
 export async function readTerminalFlashReview(attemptId: string) {
@@ -27,7 +28,9 @@ export async function readTerminalFlashReview(attemptId: string) {
   if (survivalReview.length) return survivalReview;
   const pyramidReview = await supabasePyramidQueries.getTerminalReview(attemptId);
   if (pyramidReview.length) return pyramidReview;
-  return supabaseNarrativeQueries.getTerminalReview(attemptId);
+  const narrativeReview = await supabaseNarrativeQueries.getTerminalReview(attemptId);
+  if (narrativeReview.length) return narrativeReview;
+  return supabaseTimeTrialQueries.getTerminalReview(attemptId);
 }
 
 /** Safe completion projection independent of controller cookies and review assets. */

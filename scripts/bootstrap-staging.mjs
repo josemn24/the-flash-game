@@ -489,7 +489,10 @@ export async function runBootstrap({ env = process.env, args = [], dependencies 
   const options = parseArgs(args);
   const config = validateBootstrapConfig(env);
   if (options.dryRun) {
-    const result = { dryRun: true, config: { projectRef: config.projectRef, emails: config.emails } };
+    const result = {
+      dryRun: true,
+      config: { projectRef: config.projectRef, emails: config.emails },
+    };
     if (options.startsAt) result.seasonStartsAt = options.startsAt;
     return result;
   }

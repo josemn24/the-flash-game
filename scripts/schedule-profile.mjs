@@ -35,9 +35,10 @@ export function normalizeStartAt(value) {
     throw new Error("La fecha de inicio debe ser una fecha y hora ISO 8601 con zona horaria.");
   }
 
-  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(Z|([+-])(\d{2}):(\d{2}))$/.exec(
-    value,
-  );
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?(Z|([+-])(\d{2}):(\d{2}))$/.exec(
+      value,
+    );
   if (!match) {
     throw new Error(
       "La fecha de inicio debe usar ISO 8601 e incluir zona horaria, por ejemplo 2026-10-20T19:00:00+02:00.",
@@ -108,10 +109,9 @@ export function parseScheduleArgs(args, usage) {
       try {
         startsAt = validateFutureStartAt(value);
       } catch (error) {
-        throw new Error(
-          `${error instanceof Error ? error.message : String(error)}\n${usage}`,
-          { cause: error },
-        );
+        throw new Error(`${error instanceof Error ? error.message : String(error)}\n${usage}`, {
+          cause: error,
+        });
       }
       index += 1;
       continue;

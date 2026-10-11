@@ -11,6 +11,7 @@ const sourceDirectory = process.argv.includes("--migrations")
   ? "supabase/migrations"
   : "supabase/schemas";
 const database = `flash_schema_check_${randomUUID().replaceAll("-", "")}`;
+const requestedTest = process.argv.find((argument) => argument.startsWith("--test="))?.slice(7);
 function docker(args, input = "") {
   return new Promise((resolve, reject) => {
     const child = spawn("docker", ["exec", "-i", container, ...args], {
@@ -47,10 +48,10 @@ try {
   await checkInventory(sql);
   console.log(`Loaded ${files.length} files from ${sourceDirectory}; security inventory verified.`);
   for (const file of (await readdir("supabase/tests"))
-    .filter((name) => name.endsWith(".test.sql"))
+    .filter((name) => name.endsWith(".test.sql") && (!requestedTest || name === requestedTest))
     .sort()) {
     let source = await readFile(`supabase/tests/${file}`, "utf8");
-    for (const name of ["command", "pyramid-queens"]) {
+    for (const name of ["command", "pyramid-queens", "time-trial"]) {
       if (source.includes(`-- @${name}-fixtures`)) {
         const fixtures = await readFile(`supabase/tests/support/${name}-fixtures.sql`, "utf8");
         source = source.replace(`-- @${name}-fixtures`, () => fixtures);

@@ -851,4 +851,50 @@ export async function testConcurrentCommands(sql) {
   );
   assert.equal(timedContext.timedOut, true);
   assert.equal(timedContext.incorrectValidations, 0);
+  await sql(
+    `begin; ${await readFile("supabase/tests/support/time-trial-fixtures.sql", "utf8")} commit;`,
+  );
+  const ctSession = "concurrent-time-trial-session-token";
+  const ctStarted = await run("owner", "start_attempt", {
+    scheduledChallengeId: id("ct-sc-4"),
+    sessionToken: ctSession,
+    idempotencyKey: "ct-concurrent-start",
+  });
+  const ctPrepared = await invoke(
+    "owner",
+    "prepare_interaction",
+    {
+      attemptId: ctStarted.attemptId,
+      sessionToken: ctSession,
+      lockVersion: ctStarted.lockVersion,
+      idempotencyKey: "ct-concurrent-prepare",
+    },
+    true,
+  );
+  const blockedValidation = await invoke("owner", "submit_queens_answer", {
+    attemptId: ctStarted.attemptId,
+    sessionToken: ctSession,
+    lockVersion: ctStarted.lockVersion + 2,
+    challengeItemId: id("ct-item-2-1"),
+    queens: [2, 9, 10, 18, 21],
+    idempotencyKey: "ct-blocked-validation",
+  });
+  const lockedOutcomes = await Promise.allSettled([ctPrepared.done, blockedValidation.done]);
+  assert.equal(lockedOutcomes[0].status, "fulfilled");
+  assert.equal(lockedOutcomes[1].status, "rejected");
+  assert.match(
+    lockedOutcomes[1].reason.message,
+    /deadline_reached/,
+    "A request arriving before the deadline but acquiring the attempt lock afterwards is late",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.queens_validation_events where attempt_id=${quote(ctStarted.attemptId)};`,
+      )
+    ).trim(),
+    "0",
+    "A blocked late validation consumes no opportunity and accepts no receipt",
+  );
+  console.log("Contrarreloj post-lock deadline race passed.");
 }

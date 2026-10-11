@@ -1,3 +1,4 @@
+import type { TimeTrialProgress } from "@/types/domain/time-trial";
 import type { SurvivalAttemptOutcome, PyramidAttemptOutcome } from "@/types/domain/attempt";
 import type { Challenge, ChallengeAvailabilityStatus, GameMode } from "@/types/gameplay/challenge";
 import type { AnswerReview, RoomChallengeResult } from "@/types/gameplay/completion";
@@ -38,6 +39,12 @@ export type RoomMemberReviewItem = {
 
 export type RoomMemberReviewProgress =
   | {
+      mode: "time-trial";
+      answeredCount: number;
+      correctCount: number;
+      totalQuestionCount: number;
+    }
+  | {
       mode: "alphabet";
       answeredCount: number;
       correctCount: number;
@@ -70,6 +77,7 @@ export type RoomMemberReviewProgress =
     };
 
 export type GameRoomContext = {
+  timeTrial?: TimeTrialProgress;
   roomId: string;
   roomTitle: string;
   returnTo: string;

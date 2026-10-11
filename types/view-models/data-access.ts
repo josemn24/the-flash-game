@@ -7,6 +7,7 @@ import type {
   ServerNarrativeChallenge,
   ServerPyramidChallenge,
   ServerSurvivalChallenge,
+  ServerTimeTrialChallenge,
 } from "@/types/gameplay";
 import type {
   GameRoomContext,
@@ -106,7 +107,8 @@ export type CompetitiveChallengePageModel = {
     | ServerAlphabetChallenge
     | ServerSurvivalChallenge
     | ServerPyramidChallenge
-    | ServerNarrativeChallenge;
+    | ServerNarrativeChallenge
+    | ServerTimeTrialChallenge;
   readonly roomContext?: GameRoomContext;
   readonly socialSnapshot: FlashPopSocialSnapshot;
   readonly gameplayPersistence?: "mock" | "server";
