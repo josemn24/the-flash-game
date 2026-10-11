@@ -305,6 +305,16 @@ describe("staging bootstrap", () => {
     expect(data.timeTrialPublicationId).toBe(data.publications[2].id);
     expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 6, 20, 7]);
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100, 100]);
+    const seasonStart = `(select starts_at from public.seasons where id = '${data.seasonId}')`;
+    for (const publication of data.publications) {
+      const opensAt = publication.opensAfterHours === 0
+        ? seasonStart
+        : `${seasonStart} + interval '${publication.opensAfterHours} hours'`;
+      const closesAt = `${seasonStart} + interval '${publication.opensAfterHours + 24} hours'`;
+      expect(sql).toContain(
+        `('${publication.id}', '${data.seasonId}', '${publication.challengeVersionId}', ${publication.number}, '${publication.status}', ${opensAt}, ${closesAt})`,
+      );
+    }
     expect(sql).toContain("now() + interval '120 hours'");
     expect(sql).toContain("'time-trial'");
     expect(sql).toContain("180000");

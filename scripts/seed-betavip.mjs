@@ -521,11 +521,11 @@ values
    'open', ${seasonStart}, ${scheduleInterval(profile, 1, normalizedStartAt)}),
   (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2,
    'scheduled', ${scheduleInterval(profile, 1, normalizedStartAt)}, ${scheduleInterval(profile, 2, normalizedStartAt)}),
-  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 3,
+  (${sqlString(timeTrial.id)}, ${sqlString(data.seasonId)}, ${sqlString(timeTrial.challengeVersionId)}, 3,
    'scheduled', ${scheduleInterval(profile, 2, normalizedStartAt)}, ${scheduleInterval(profile, 3, normalizedStartAt)}),
-  (${sqlString(antiquity.id)}, ${sqlString(data.seasonId)}, ${sqlString(antiquity.challengeVersionId)}, 4,
+  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 4,
    'scheduled', ${scheduleInterval(profile, 3, normalizedStartAt)}, ${scheduleInterval(profile, 4, normalizedStartAt)}),
-  (${sqlString(timeTrial.id)}, ${sqlString(data.seasonId)}, ${sqlString(timeTrial.challengeVersionId)}, 5,
+  (${sqlString(antiquity.id)}, ${sqlString(data.seasonId)}, ${sqlString(antiquity.challengeVersionId)}, 5,
    'scheduled', ${scheduleInterval(profile, 4, normalizedStartAt)}, ${scheduleInterval(profile, 5, normalizedStartAt)});
 set constraints all immediate;
 commit;
@@ -888,9 +888,9 @@ insert into public.scheduled_challenges
 values
   (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1, 'open', ${persistedSeasonStart}, ${publicationStartAfterHours(24)}),
   (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2, 'scheduled', ${publicationStartAfterHours(24)}, ${publicationStartAfterHours(48)}),
-  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 3, 'scheduled', ${publicationStartAfterHours(48)}, ${publicationStartAfterHours(72)}),
-  (${sqlString(antiquity.id)}, ${sqlString(data.seasonId)}, ${sqlString(antiquity.challengeVersionId)}, 4, 'scheduled', ${publicationStartAfterHours(72)}, ${publicationStartAfterHours(96)}),
-  (${sqlString(timeTrial.id)}, ${sqlString(data.seasonId)}, ${sqlString(timeTrial.challengeVersionId)}, 5, 'scheduled', ${publicationStartAfterHours(96)}, ${publicationStartAfterHours(120)})
+  (${sqlString(timeTrial.id)}, ${sqlString(data.seasonId)}, ${sqlString(timeTrial.challengeVersionId)}, 3, 'scheduled', ${publicationStartAfterHours(48)}, ${publicationStartAfterHours(72)}),
+  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 4, 'scheduled', ${publicationStartAfterHours(72)}, ${publicationStartAfterHours(96)}),
+  (${sqlString(antiquity.id)}, ${sqlString(data.seasonId)}, ${sqlString(antiquity.challengeVersionId)}, 5, 'scheduled', ${publicationStartAfterHours(96)}, ${publicationStartAfterHours(120)})
 on conflict (id) do nothing;
 `;
 }
