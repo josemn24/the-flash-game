@@ -256,7 +256,7 @@ function assertEqual(actual, expected, message) {
     throw new Error(message);
 }
 
-async function validateDomain(client, accounts, assetMetadata) {
+async function validateDomain(client, accounts, assetMetadata, startsAt = null) {
   const data = stagingBetaVipManifest();
   const room = (
     await client.query("select id::text, slug, title from public.rooms where id = $1", [
@@ -393,7 +393,7 @@ async function validateDomain(client, accounts, assetMetadata) {
   assertEqual(
     scheduleRows.map((row) => [row.status, row.opens_after, row.duration]),
     [
-      ["open", 0, 24 * 60 * 60],
+      [startsAt ? "scheduled" : "open", 0, 24 * 60 * 60],
       ["scheduled", 24 * 60 * 60, 24 * 60 * 60],
       ["scheduled", 48 * 60 * 60, 24 * 60 * 60],
       ["scheduled", 72 * 60 * 60, 24 * 60 * 60],
@@ -448,7 +448,7 @@ async function applyDomain(config, accounts, assetMetadata, startsAt = null) {
         );
       }
     }
-    await validateDomain(client, accounts, assetMetadata);
+    await validateDomain(client, accounts, assetMetadata, normalizedStartAt);
     await client.query("commit");
   } catch (error) {
     await client.query("rollback").catch(() => undefined);
