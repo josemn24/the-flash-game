@@ -6,6 +6,10 @@ select no_plan();
 
 -- @time-trial-fixtures
 select test_support.as_actor('owner');
+set local role authenticated;
+select is((select can_start from public.get_room_calendar('ct-room-1')), true,
+  'The room calendar allows a valid open Contrarreloj publication to start');
+reset role;
 set local role service_role;
 select test_support.start_ct(1,false);
 select is((select last_result->'timeTrial'->'deadlineAt' from test_support.runtime),'null'::jsonb,'Start has no global clock');

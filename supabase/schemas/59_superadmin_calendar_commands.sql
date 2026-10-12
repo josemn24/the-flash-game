@@ -875,6 +875,9 @@ language sql stable security definer set search_path = '' as $$
         and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
         and jsonb_typeof(version.mode_config->'lives') = 'number'
         and (version.mode_config->>'lives')::integer between 1 and compatibility.question_count
+      or version.mode = 'time-trial'
+        and version.mode_config = '{}'::jsonb
+        and version.global_time_limit_ms > 0
       or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
         and compatibility.question_count = 7
       or version.mode = 'narrative'
@@ -894,7 +897,7 @@ language sql stable security definer set search_path = '' as $$
   join lateral (
     select
       count(*)::bigint as question_count,
-      (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative')
+      (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'time-trial')
         or count(*) = 7 and version.mode = 'pyramid')
         and coalesce(bool_and(item.position between 1 and case when version.mode = 'pyramid' then 7 else 20 end), false)
         and coalesce(bool_and(item.points > 0), false)
@@ -905,7 +908,12 @@ language sql stable security definer set search_path = '' as $$
             and jsonb_typeof(item.mode_config->'questionSlug') = 'string'
           or version.mode = 'alphabet'
             and jsonb_typeof(item.mode_config->'letter') = 'string'
-          or version.mode not in ('pyramid', 'narrative', 'alphabet')
+          or version.mode = 'time-trial'
+            and version.mode_config = '{}'::jsonb
+            and version.global_time_limit_ms > 0
+            and question.type = 'queens'
+            and item.mode_config = '{}'::jsonb
+          or version.mode not in ('pyramid', 'narrative', 'alphabet', 'time-trial')
             and item.mode_config = '{}'::jsonb
         )), false)
         and (version.mode <> 'pyramid' or count(distinct item.mode_config->>'levelId') = 7)
