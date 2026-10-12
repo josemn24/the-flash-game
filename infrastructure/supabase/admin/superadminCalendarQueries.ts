@@ -23,10 +23,19 @@ import type {
   SuperadminCalendarContext,
   SuperadminCalendarEntry,
 } from "@/types/view-models";
+import type { GameMode } from "@/types/domain/content";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const statuses = new Set(["scheduled", "open", "closed", "cancelled"]);
 const seasonStatuses = new Set(["draft", "scheduled", "active", "finished", "cancelled"]);
+const gameModes = new Set<GameMode>([
+  "flash",
+  "alphabet",
+  "survival",
+  "narrative",
+  "pyramid",
+  "time-trial",
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -34,6 +43,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function iso(value: unknown) {
   return typeof value === "string" && !Number.isNaN(Date.parse(value));
+}
+
+function isGameMode(value: unknown): value is GameMode {
+  return typeof value === "string" && gameModes.has(value as GameMode);
 }
 
 function isCalendarEntry(value: unknown): value is SuperadminCalendarEntry {
@@ -60,10 +73,7 @@ function isCalendarEntry(value: unknown): value is SuperadminCalendarEntry {
     value.versionNumber > 0 &&
     typeof value.challengeTitle === "string" &&
     typeof value.challengeSubtitle === "string" &&
-    (value.mode === "flash" ||
-      value.mode === "survival" ||
-      value.mode === "narrative" ||
-      value.mode === "pyramid") &&
+    isGameMode(value.mode) &&
     typeof value.number === "number" &&
     Number.isSafeInteger(value.number) &&
     value.number > 0 &&

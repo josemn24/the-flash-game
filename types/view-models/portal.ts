@@ -1,3 +1,4 @@
+import type { GameMode } from "@/types/domain/content";
 import type { SeasonStatus } from "@/types/domain/season";
 import type {
   SuperadminEditorialContext,
@@ -18,7 +19,7 @@ export type SuperadminCalendarEntry = {
   readonly versionNumber: number;
   readonly challengeTitle: string;
   readonly challengeSubtitle: string;
-  readonly mode: "flash" | "survival" | "narrative" | "pyramid" | "time-trial";
+  readonly mode: GameMode;
   readonly number: number;
   readonly status: "scheduled" | "open" | "closed" | "cancelled";
   readonly opensAt: string;
