@@ -26,6 +26,7 @@ select jsonb_build_object(
   'functions', (select coalesce(jsonb_agg(jsonb_build_object(
     'name', n.nspname||'.'||p.proname, 'arguments', pg_get_function_identity_arguments(p.oid),
     'owner', pg_get_userbyid(p.proowner), 'securityDefiner',p.prosecdef, 'aclExplicit',p.proacl is not null,
+    'volatility',p.provolatile,
     'searchPath',coalesce(p.proconfig @> array['search_path=""'],false),
     'executeRoles',(select coalesce(jsonb_agg(r order by r),'[]') from unnest(array['anon','authenticated','service_role']) r where has_function_privilege(r,p.oid,'EXECUTE')),
     'publicExecute',exists(select 1 from aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) x where x.grantee=0 and x.privilege_type='EXECUTE'),
@@ -71,10 +72,12 @@ function verify(actual, expected) {
     "Unregistered/missing/overloaded function",
   );
   for (const fn of actual.functions) {
+    const { volatility, ...attributes } = fn;
+    const { volatility: expectedVolatility, ...expectedAttributes } = expected.functions[fn.name];
     assert.deepEqual(
-      fn,
+      attributes,
       {
-        ...expected.functions[fn.name],
+        ...expectedAttributes,
         name: fn.name,
         owner: "postgres",
         searchPath: true,
@@ -84,12 +87,15 @@ function verify(actual, expected) {
       },
       `${fn.name}: function ACL/ownership/search_path`,
     );
+    if (expectedVolatility !== undefined)
+      assert.equal(volatility, expectedVolatility, `${fn.name}: volatility`);
   }
 }
 
-export async function checkInventory(sql) {
+export async function checkInventory(sql, { mutationTests = true } = {}) {
   const expected = JSON.parse(await readFile("supabase/security-inventory.json", "utf8"));
   verify(JSON.parse(await sql(snapshotQuery)), expected);
+  if (!mutationTests) return;
   // Mutation tests: a harmless new object must still require an explicit inventory decision.
   for (const ddl of [
     "create table public.unreviewed_probe(id uuid); alter table public.unreviewed_probe enable row level security;",
@@ -120,5 +126,14 @@ export async function checkInventory(sql) {
     () => verify(columnDelegation, expected),
     /delegation/,
     "Column grant options must fail inventory",
+  );
+  const wrongVolatility = JSON.parse(
+    await sql(`begin; alter function private.validate_multiple_choice_question_document(jsonb) stable;
+      ${snapshotQuery} rollback;`),
+  );
+  assert.throws(
+    () => verify(wrongVolatility, expected),
+    /volatility/,
+    "Unreviewed validator volatility must fail inventory",
   );
 }

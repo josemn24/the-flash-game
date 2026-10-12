@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { getRuntimeScope, isPilotRuntime, mocksEnabled } from "@/server/runtime-scope";
+import { getRuntimeScope, isPilotRuntime } from "@/server/runtime-scope";
 
 const originalScope = process.env.FLASH_RUNTIME_SCOPE;
 const originalNodeEnv = process.env.NODE_ENV;
@@ -21,14 +21,12 @@ describe("runtime scope", () => {
 
     expect(getRuntimeScope()).toBe("pilot");
     expect(isPilotRuntime()).toBe(true);
-    expect(mocksEnabled()).toBe(false);
   });
 
-  it("allows explicit demo mocks only outside pilot", () => {
+  it("preserves the explicit development scope", () => {
     process.env.FLASH_RUNTIME_SCOPE = "development";
 
     expect(getRuntimeScope()).toBe("development");
-    expect(mocksEnabled()).toBe(true);
   });
 
   it("rejects an unknown scope instead of silently falling back", () => {

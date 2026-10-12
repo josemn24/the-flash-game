@@ -53,6 +53,7 @@ test.describe("SBR — fixture persistido con mapa privado", () => {
       await page.getByRole("button", { name: left, exact: true }).click();
       await page.getByRole("button", { name: right, exact: true }).click();
     }
+    await page.getByRole("button", { name: "Comprobar parejas" }).click();
 
     await waitForQuestion(page, "Ordena estas ciudades de oeste a este.");
     await page.getByRole("button", { name: "Mover San Diego arriba" }).click();

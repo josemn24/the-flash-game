@@ -20,8 +20,10 @@ select set_config('request.jwt.claims', jsonb_build_object(
 )::text, true);
 set local role authenticated;
 
-select is(jsonb_array_length(public.get_superadmin_challenge_catalog()->'entries'), 4,
-  'The catalog contains the pilot Flash, Survival and Pyramid challenge definitions');
+select is(jsonb_array_length(public.get_superadmin_challenge_catalog()->'entries'), 7,
+  'The catalog contains Flash, Alphabet, Survival, Narrative and Pyramid challenge definitions');
+select is((public.get_superadmin_dashboard_context()->'metrics'->>'upcomingChallenges')::integer, 7,
+  'The dashboard counts Alphabet publications among upcoming challenges');
 select is((select count(*) from jsonb_array_elements(public.get_superadmin_challenge_catalog()->'entries') entry
   where entry->>'mode' = 'survival'), 1::bigint,
   'The catalog includes Survival editorial content');
@@ -32,12 +34,14 @@ select ok(not (public.get_superadmin_challenge_catalog()->'entries'->0 ? 'docume
   'The catalog does not expose editorial documents or private solutions');
 select is(jsonb_array_length(public.get_superadmin_challenge_detail(test_support.id('cd-flash'))->'entries'), 1,
   'The detail returns all versions for one Flash definition');
-select is(public.get_superadmin_challenge_detail(test_support.id('cd-alphabet')), null::jsonb,
-  'Modes outside the pilot editor are not available in the challenge detail');
+select is(public.get_superadmin_challenge_detail(test_support.id('cd-alphabet'))->'entries'->0->>'mode', 'alphabet',
+  'The Alphabet detail exposes its configured editorial mode');
 select is(public.get_superadmin_challenge_detail(test_support.id('cd-survival'))->'entries'->0->>'mode', 'survival',
   'The Survival detail exposes its configured editorial mode');
 select is(public.get_superadmin_challenge_detail(test_support.id('cd-pyramid'))->'entries'->0->>'mode', 'pyramid',
   'The Pyramid detail exposes its configured editorial mode');
+select is(public.get_superadmin_challenge_detail(test_support.id('cd-narrative'))->'entries'->0->>'mode', 'narrative',
+  'The Narrative detail exposes its configured editorial mode');
 
 select set_config('request.jwt.claims', jsonb_build_object(
   'sub', test_support.id('auth-member'), 'role', 'authenticated', 'is_anonymous', false

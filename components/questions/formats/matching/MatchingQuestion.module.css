@@ -60,7 +60,7 @@
     background: var(--format-selected-surface);
   }
   .card:focus-visible {
-    outline: 3px solid var(--format-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
   .cardMatched {
@@ -237,8 +237,8 @@
     margin-top: 0.1rem;
     border: var(--border-flash);
     border-radius: var(--radius-control);
-    color: var(--color-ink);
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
     font-size: 0.78rem;
     font-weight: 900;
@@ -250,7 +250,7 @@
   }
 
   .checkButton:hover:not(:disabled) {
-    background: var(--color-brand-hover);
+    background: var(--ds-color-bg-brand-hover);
     transform: translateY(-1px);
     box-shadow: 0 5px 0 rgb(23 23 32 / 18%);
   }
@@ -266,7 +266,7 @@
   }
 
   .checkButton:focus-visible {
-    outline: 3px solid var(--format-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
 
@@ -287,29 +287,29 @@
     flex: 1;
     min-width: 0;
     flex-direction: column;
-    --format-ink: var(--color-ink);
-    --format-muted: var(--color-ink-muted);
-    --format-surface: var(--color-surface-raised);
-    --format-soft-surface: var(--color-surface-soft);
-    --format-border: var(--color-border);
-    --format-hover-border: var(--color-social);
-    --format-hover-ink: var(--color-ink);
-    --format-hover-surface: var(--color-surface);
-    --format-selected-border: var(--color-social);
-    --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
-    --format-matched-border: var(--color-success);
-    --format-matched-surface: color-mix(in srgb, var(--color-success) 12%, transparent);
-    --format-invalid-border: var(--color-danger);
-    --format-invalid-surface: color-mix(in srgb, var(--color-danger) 12%, transparent);
-    --format-accent: var(--color-brand);
-    --format-icon-ink: var(--color-ink);
-    --format-icon-surface: var(--color-surface-soft);
-    --format-state-ink: var(--color-ink);
-    --format-state-surface: var(--color-brand);
-    --format-matched-state-ink: var(--color-surface);
-    --format-matched-state-surface: var(--color-success);
-    --format-invalid-state-ink: var(--color-ink);
-    --format-invalid-state-surface: var(--color-danger);
+    --format-ink: var(--ds-color-fg-primary);
+    --format-muted: var(--ds-color-fg-secondary);
+    --format-surface: var(--ds-color-bg-surface-raised);
+    --format-soft-surface: var(--ds-color-bg-surface-soft);
+    --format-border: var(--ds-color-border-default);
+    --format-hover-border: var(--ds-color-border-selected);
+    --format-hover-ink: var(--ds-color-fg-primary);
+    --format-hover-surface: var(--ds-color-bg-surface);
+    --format-selected-border: var(--ds-color-border-selected);
+    --format-selected-surface: color-mix(in srgb, var(--ds-color-bg-selected) 10%, transparent);
+    --format-matched-border: var(--ds-color-border-success);
+    --format-matched-surface: color-mix(in srgb, var(--ds-color-bg-success) 12%, transparent);
+    --format-invalid-border: var(--ds-color-border-error);
+    --format-invalid-surface: color-mix(in srgb, var(--ds-color-bg-error) 12%, transparent);
+    --format-accent: var(--ds-color-bg-brand);
+    --format-icon-ink: var(--ds-color-fg-primary);
+    --format-icon-surface: var(--ds-color-bg-surface-soft);
+    --format-state-ink: var(--ds-color-fg-on-brand);
+    --format-state-surface: var(--ds-color-bg-brand);
+    --format-matched-state-ink: var(--ds-color-fg-on-success);
+    --format-matched-state-surface: var(--ds-color-bg-success);
+    --format-invalid-state-ink: var(--ds-color-fg-on-error);
+    --format-invalid-state-surface: var(--ds-color-bg-error);
     --format-pair-border: var(--format-pair-violet-border);
     --format-pair-surface: var(--format-pair-violet-surface);
     --format-pair-ink: var(--format-pair-violet-ink);
@@ -331,7 +331,7 @@
     --format-pair-orange-border: #c95d2e;
     --format-pair-orange-surface: color-mix(in srgb, #c95d2e 12%, var(--format-surface));
     --format-pair-orange-ink: #a3451f;
-    --format-focus: var(--color-focus);
+    --format-focus: var(--ds-color-focus-ring);
     margin-top: var(--space-5);
   }
   @media (min-width: 640px) {

@@ -36,7 +36,7 @@ export async function POST(
     if (typeof body.code !== "string" || body.code.trim().length === 0 || body.code.length > 32) {
       throw new AttemptApiError("invalid_logic_code", 400);
     }
-    const result = await commandsFor(identity).submitLogicCodeAttempt({
+    const result = await commandsFor(identity, requestId).submitLogicCodeAttempt({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),

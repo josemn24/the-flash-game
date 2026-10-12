@@ -1,5 +1,11 @@
-import type { QueensAnswer, QueensBoardSize, QueensGrid, QueensQuestion } from "@/types/question";
+import type {
+  QueensAnswer,
+  QueensBoardSize,
+  QueensGrid,
+  QueensQuestion,
+} from "@/types/gameplay/practice";
 
+export const QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS = 3;
 export const QUEENS_MIN_SIZE = 4;
 export const QUEENS_MAX_SIZE = 8;
 export const QUEENS_MAX_CELL_COUNT = QUEENS_MAX_SIZE * QUEENS_MAX_SIZE;

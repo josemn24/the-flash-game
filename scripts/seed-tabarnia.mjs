@@ -8,6 +8,15 @@ import TABARNIA_ALPHABET_CONTENT from "./fixtures/scenarios/tabarnia-alphabet.js
 import { SBR_QUESTIONS } from "./fixtures/scenarios/sbr.mjs";
 import { loadMiniWordleDictionary } from "./load-mini-wordle-dictionary.mjs";
 import {
+  normalizeStartAt,
+  parseScheduleArgs,
+  resolveScheduleProfile,
+  scheduleStartExpression,
+  scheduleInterval,
+  scheduleManifest,
+  validateFutureStartAt,
+} from "./schedule-profile.mjs";
+import {
   createFixedAuthAccounts,
   deterministicUuid,
   dockerSql,
@@ -447,7 +456,13 @@ export function buildTabarniaDomainSql({
   sbrAssetMetadata,
   spainAssets = {},
   avatarMetadata,
+  schedule = "production",
+  startsAt = null,
 }) {
+  const profile = resolveScheduleProfile(schedule);
+  const normalizedStartAt = normalizeStartAt(startsAt);
+  const seasonStart = scheduleStartExpression(normalizedStartAt);
+  const seasonEnd = `${seasonStart} + interval '${profile.tabarniaSeasonEnd}'`;
   const xesmona = accounts.xesmona.playerId;
   const roomId = stableId("room:tabarnia");
   const seasonId = stableId("season:tabarnia-alpha");
@@ -594,8 +609,8 @@ export function buildTabarniaDomainSql({
     .join(",\n");
   const scheduledSql = challenges
     .map((challenge, index) => {
-      const start = index === 0 ? "now()" : `now() + interval '${index * 24} hours'`;
-      const end = `now() + interval '${(index + 1) * 24} hours'`;
+      const start = index === 0 ? seasonStart : scheduleInterval(profile, index, normalizedStartAt);
+      const end = scheduleInterval(profile, index + 1, normalizedStartAt);
       const status = index === 0 ? "open" : "scheduled";
       return `(${sqlString(publicationId(challenge.slug))}, ${sqlString(seasonId)}, ${sqlString(challenge.versionId)}, ${index + 1}, '${status}', ${start}, ${end})`;
     })
@@ -616,7 +631,7 @@ values
 ${memberships};
 
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
-values (${sqlString(seasonId)}, ${sqlString(roomId)}, 'Temporada Alpha de Tabarnia', 'active', now(), now() + interval '17 days');
+values (${sqlString(seasonId)}, ${sqlString(roomId)}, 'Temporada Alpha de Tabarnia', 'active', ${seasonStart}, ${seasonEnd});
 
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
@@ -678,7 +693,14 @@ commit;
 `;
 }
 
-export function tabarniaManifest(accounts, avatarMetadata) {
+export function tabarniaManifest(
+  accounts,
+  avatarMetadata,
+  schedule = "production",
+  startsAt = null,
+) {
+  const profile = resolveScheduleProfile(schedule);
+  const normalizedStartAt = normalizeStartAt(startsAt);
   const challenges = tabarniaChallenges();
   const firstChallenge = challenges[0];
   const avatars = TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => ({
@@ -691,12 +713,19 @@ export function tabarniaManifest(accounts, avatarMetadata) {
       avatarMetadata[user.label].extension,
     ),
   }));
+  const scheduleData = scheduleManifest(
+    profile,
+    challenges.length,
+    profile.name === "fast" ? 20 : 17 * 24 * 60,
+    normalizedStartAt,
+  );
   return {
     room: { id: stableId("room:tabarnia"), slug: "tabarnia" },
     seasonId: stableId("season:tabarnia-alpha"),
     challengeId: firstChallenge.id,
     challengeVersionId: firstChallenge.versionId,
     publicationId: publicationId(firstChallenge.slug),
+    ...scheduleData,
     publications: challenges.map((challenge, index) => ({
       id: publicationId(challenge.slug),
       number: index + 1,
@@ -707,8 +736,7 @@ export function tabarniaManifest(accounts, avatarMetadata) {
       challengeVersionId: challenge.versionId,
       questionCount: challenge.items.length,
       pointsTotal: challenge.items.reduce((total, item) => total + item.points, 0),
-      opensAfterHours: index * 24,
-      durationHours: 24,
+      ...scheduleData.publications[index],
       status: index === 0 ? "open" : "scheduled",
     })),
     questionAssets: questionAssetDefinitions.map((asset) => ({
@@ -729,7 +757,13 @@ export function tabarniaManifest(accounts, avatarMetadata) {
   };
 }
 
-export async function setupTabarniaDataset({ dependencies = {} } = {}) {
+export async function setupTabarniaDataset({
+  schedule = "production",
+  startsAt = null,
+  dependencies = {},
+} = {}) {
+  const profile = resolveScheduleProfile(schedule);
+  const normalizedStartAt = validateFutureStartAt(startsAt);
   const loadConfig = dependencies.localSupabaseConfig ?? localSupabaseConfig;
   const reset = dependencies.resetLocalDatabase ?? resetLocalDatabase;
   const removeStaleFixture = dependencies.removeFixture ?? removeFixture;
@@ -791,17 +825,20 @@ export async function setupTabarniaDataset({ dependencies = {} } = {}) {
       seededStorageObjects.push(storageObject);
       await uploadAsset(config, { ...storageObject, upsert: false });
     }
+    validateFutureStartAt(normalizedStartAt);
     await runSql(
       buildTabarniaDomainSql({
         accounts,
         sbrAssetMetadata,
         spainAssets: preparedAssets.assets,
         avatarMetadata,
+        schedule: profile.name,
+        startsAt: normalizedStartAt,
       }),
       config.dbContainer,
     );
 
-    const output = tabarniaManifest(accounts, avatarMetadata);
+    const output = tabarniaManifest(accounts, avatarMetadata, profile.name, normalizedStartAt);
     await saveFixture("tabarnia", {
       version: 1,
       scenario: "tabarnia",
@@ -834,8 +871,14 @@ export async function setupTabarniaDataset({ dependencies = {} } = {}) {
 }
 
 async function main() {
-  const output = await setupTabarniaDataset();
+  const { schedule, startsAt } = parseScheduleArgs(
+    process.argv.slice(2),
+    "Uso: npm run supabase:tabarnia:setup -- [--schedule <production|fast>] [--starts-at <ISO-8601-con-zona-horaria>]",
+  );
+  const output = await setupTabarniaDataset({ schedule, startsAt });
   console.log("Dataset Tabarnia creado en output/fixtures/tabarnia.json.");
+  console.log(`Perfil de calendario: ${output.scheduleProfile}.`);
+  if (output.seasonStartsAt) console.log(`Inicio de temporada: ${output.seasonStartsAt}.`);
   console.log("Sala: /salas/tabarnia");
   console.log(`/desafios/${output.publicationId}?roomId=tabarnia`);
   console.log("Credenciales locales:");

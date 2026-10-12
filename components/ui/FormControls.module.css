@@ -1,0 +1,106 @@
+@layer app-components {
+  .field {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+    gap: var(--space-2);
+  }
+
+  .field[data-density="compact"] {
+    gap: var(--space-1);
+  }
+
+  .label {
+    color: var(--ds-color-fg-primary);
+    font: 800 13px/1.5 var(--type-ui);
+    overflow-wrap: anywhere;
+  }
+
+  .description,
+  .error {
+    margin: 0;
+    font: 500 12px/1.5 var(--type-ui);
+    overflow-wrap: anywhere;
+  }
+
+  .description {
+    color: var(--ds-color-fg-secondary);
+  }
+
+  .error {
+    color: var(--ds-color-fg-error);
+    font-weight: 700;
+  }
+
+  .control {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: var(--control-height);
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--ds-color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--ds-color-bg-surface);
+    color: var(--ds-color-fg-primary);
+    font: 500 16px/1.5 var(--type-ui);
+    transition: border-color var(--motion-press-out) var(--ease-out);
+  }
+
+  .control[data-density="compact"] {
+    min-height: var(--control-height-compact);
+    padding-inline: var(--space-3);
+  }
+
+  .control::placeholder {
+    color: var(--ds-color-fg-secondary);
+    opacity: 1;
+  }
+
+  .control:hover:not(:disabled):not([readonly]) {
+    border-color: var(--ds-color-border-action);
+  }
+
+  .control:focus-visible {
+    outline: 2px solid var(--ds-color-focus-ring);
+    outline-offset: 3px;
+  }
+
+  .control[aria-invalid="true"] {
+    border-color: var(--ds-color-border-error);
+  }
+
+  .control:disabled {
+    cursor: not-allowed;
+    opacity: var(--ds-opacity-disabled);
+  }
+
+  .control[readonly] {
+    background: var(--ds-color-bg-surface-raised);
+  }
+
+  .control::file-selector-button {
+    max-width: 100%;
+    margin-right: var(--space-3);
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--ds-color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--ds-color-bg-surface-raised);
+    color: var(--ds-color-fg-primary);
+    font: inherit;
+    white-space: normal;
+    cursor: pointer;
+  }
+
+  .control:disabled::file-selector-button {
+    cursor: not-allowed;
+  }
+
+  .textarea {
+    resize: vertical;
+  }
+
+  .textarea[data-font="mono"] {
+    font-family: var(--type-mono);
+  }
+}

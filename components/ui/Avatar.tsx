@@ -1,3 +1,5 @@
+import { shouldBypassImageOptimization } from "@/lib/media/imageOptimization";
+
 import Image from "next/image";
 import styles from "./Avatar.module.css";
 
@@ -43,7 +45,7 @@ export function Avatar({
           fill
           sizes="56px"
           className={styles.image}
-          unoptimized={src.startsWith("data:") || /^https?:\/\//.test(src)}
+          unoptimized={shouldBypassImageOptimization(src)}
         />
       ) : (
         <span aria-hidden="true">{initials ?? getInitials(name)}</span>

@@ -52,7 +52,10 @@ set local role service_role;
 select test_support.run('start_attempt', jsonb_build_object(
   'scheduledChallengeId', test_support.id('e02-sc'), 'sessionToken', repeat('e', 40)));
 select test_support.run('prepare_interaction');
-select ok(not ((select last_result from test_support.runtime)::text like '%0420%'), 'Prepare no expone la solución');
+-- Compare JSON values: a random UUID or timestamp can contain the same digits.
+select ok(not jsonb_path_exists((select last_result from test_support.runtime), '$.** ? (@ == "0420")')
+  and not jsonb_path_exists((select last_result from test_support.runtime), '$.**.correctAnswer'),
+  'Prepare no expone la solución');
 select is((select last_result->'progress'->'submittedCodes' from test_support.runtime), '[]'::jsonb,
   'El progreso Logic-code empieza vacío');
 select throws_ok($$select test_support.run('receive_answer', '{"answer":"0420"}')$$,

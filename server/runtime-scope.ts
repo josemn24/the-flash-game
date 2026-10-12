@@ -25,10 +25,6 @@ export function getRuntimeScope(): RuntimeScope {
   return "development";
 }
 
-export function mocksEnabled(): boolean {
-  return getRuntimeScope() !== "pilot";
-}
-
 export function isPilotRuntime(): boolean {
   return getRuntimeScope() === "pilot";
 }

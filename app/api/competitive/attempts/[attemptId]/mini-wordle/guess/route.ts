@@ -33,10 +33,14 @@ export async function POST(
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
-    if (typeof body.guess !== "string" || body.guess.trim().length === 0 || body.guess.length > 32) {
+    if (
+      typeof body.guess !== "string" ||
+      body.guess.trim().length === 0 ||
+      body.guess.length > 32
+    ) {
       throw new AttemptApiError("invalid_guess", 400);
     }
-    const result = await commandsFor(identity).submitMiniWordleGuess({
+    const result = await commandsFor(identity, requestId).submitMiniWordleGuess({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import styles from "@/components/library/FormatLibrary.module.css";
-import { PlayableFormatExample } from "@/components/game";
+import { PlayableFormatExample } from "@/components/game/practice";
 import { SiteHeader } from "@/components/navigation";
 import { SpeedBackground } from "@/components/effects";
 import { getQuestionFormatBySlug, questionFormats } from "@/features/question-formats/catalog";
@@ -50,7 +50,7 @@ export default async function FormatDetailPage({ params }: Props) {
   const next = questionFormats[(index + 1) % questionFormats.length];
 
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)]">
+    <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ds-color-bg-canvas)] text-[var(--ds-color-fg-primary)]">
       <SpeedBackground />
       <div className={styles.page}>
         <SiteHeader />

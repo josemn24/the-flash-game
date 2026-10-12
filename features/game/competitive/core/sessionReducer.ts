@@ -1,0 +1,426 @@
+import type { TimeTrialProgress } from "@/types/domain/time-trial";
+import type { AnswerValue } from "@/types/contracts";
+import type { AnswerResult } from "@/types/gameplay/result";
+import type {
+  AlphabetChallenge,
+  FlashChallenge,
+  PyramidChallenge,
+  ServerAlphabetProgress,
+  ServerAlphabetQuestion,
+  ServerFlashQuestion,
+} from "@/types/gameplay/challenge";
+import type { CompetitiveAttemptClient } from "../attemptClient";
+
+export type SessionPhase =
+  | "intro"
+  | "recovering"
+  | "countdown"
+  | "briefing"
+  | "scene"
+  | "preparing"
+  | "playing"
+  | "checking"
+  | "finalizing"
+  | "answer-reveal"
+  | "transition"
+  | "results"
+  | "review";
+export type Attempt = { readonly id: string; readonly lockVersion: number };
+export type TransferContext = {
+  readonly attemptId: string;
+  readonly lockVersion: number;
+  readonly deadlineAt: string | null;
+  readonly scheduledChallengeId: string;
+  readonly idempotencyKey: string;
+};
+export type SessionQuestion = ServerFlashQuestion | ServerAlphabetQuestion;
+export type SessionReview = FlashChallenge | PyramidChallenge | AlphabetChallenge;
+export type Operation = keyof CompetitiveAttemptClient;
+export type PendingCommand = {
+  [K in Operation]: {
+    readonly operation: K;
+    readonly input: Parameters<CompetitiveAttemptClient[K]>[0];
+  };
+}[Operation];
+export type FeedbackChannel =
+  "submission" | "answerVerification" | "reveal" | "queens" | "wordSearch";
+export type Feedback = {
+  channel: FeedbackChannel;
+  state: "idle" | "submitting" | "error";
+  visible: boolean;
+  message?: string;
+};
+/**
+ * Transport state for the current command. This is deliberately separate from
+ * the domain attempt status: a command can be uncertain while the attempt is
+ * still in progress, and a replay can confirm it without applying a second
+ * mutation.
+ */
+export type CommandStatus =
+  "idle" | "submitting" | "uncertain" | "reconciling" | "confirmed" | "definitive_failure";
+export type LifecycleError = {
+  readonly operation: Operation | "projection";
+  readonly message: string;
+  readonly code?: string;
+  readonly retryAt?: number;
+  readonly retryable?: boolean;
+};
+export type SessionState = {
+  phase: SessionPhase;
+  attempt: Attempt | null;
+  question: SessionQuestion | null;
+  questionIndex: number;
+  stepIndex: number;
+  questionPresentedAt: number | null;
+  questionDeadlineAt: number | null;
+  deadlineAt: number | null;
+  progress: ServerAlphabetProgress | null;
+  timeTrial: TimeTrialProgress | null;
+  terminalReason: string | null;
+  results: AnswerResult[];
+  lastResult?: AnswerResult;
+  score: number;
+  reviewChallenge: SessionReview | null;
+  locked: boolean;
+  busy: boolean;
+  commandStatus: CommandStatus;
+  completionRetryScheduled: boolean;
+  attemptExpired: boolean;
+  pendingCommand: PendingCommand | null;
+  transfer: TransferContext | null;
+  lifecycleError?: LifecycleError;
+  feedback?: Feedback;
+  pendingAnswer: AnswerValue | null;
+  startNotice?: string;
+  levelNotice?: string;
+  lastWordSearchSelection?: {
+    readonly startCell: number;
+    readonly endCell: number;
+    readonly correct: boolean;
+  };
+};
+export type SessionEvent =
+  | { type: "time_trial"; progress: TimeTrialProgress }
+  | {
+      type: "phase";
+      phase: SessionPhase;
+      stepIndex?: number;
+      questionIndex?: number;
+      clearQuestion?: boolean;
+    }
+  | { type: "command_started"; command: PendingCommand; feedback?: FeedbackChannel }
+  | { type: "command_succeeded"; attempt: Attempt | null }
+  | {
+      type: "command_failed";
+      lifecycleError?: LifecycleError;
+      feedback?: Feedback;
+      definitive?: boolean;
+      notice?: string;
+      phase?: SessionPhase;
+      locked?: boolean;
+    }
+  | { type: "authorization_lost"; error: LifecycleError }
+  | { type: "control_required"; transfer: TransferContext }
+  | { type: "control_cancelled" }
+  | { type: "feedback_visible" }
+  | {
+      type: "prepared";
+      attempt: Attempt;
+      question: SessionQuestion | null;
+      questionIndex: number;
+      stepIndex: number;
+      presentedAt: number | null;
+      deadlineAt: number | null;
+      progress?: ServerAlphabetProgress;
+      phase: SessionPhase;
+      locked: boolean;
+    }
+  | {
+      type: "progress";
+      question: SessionQuestion;
+      selection?: SessionState["lastWordSearchSelection"];
+      message?: string;
+    }
+  | {
+      type: "answer_accepted";
+      result: AnswerResult;
+      phase: SessionPhase;
+      question?: SessionQuestion;
+    }
+  | { type: "recovered"; attempt: Attempt; results: AnswerResult[] }
+  | {
+      type: "completed";
+      reviewPending?: boolean;
+      score: number;
+      reviewChallenge: SessionReview | null;
+      results?: AnswerResult[];
+      terminalReason?: string | null;
+    }
+  | { type: "completion_retry"; scheduled: boolean }
+  | { type: "expired" }
+  | { type: "draft"; answer: AnswerValue | null };
+
+export function initialSessionState(
+  phase: SessionPhase,
+  results: AnswerResult[] = [],
+  score = 0,
+  reviewChallenge: SessionReview | null = null,
+): SessionState {
+  return {
+    phase,
+    attempt: null,
+    question: null,
+    questionIndex: 0,
+    stepIndex: 0,
+    questionPresentedAt: null,
+    questionDeadlineAt: null,
+    deadlineAt: null,
+    progress: null,
+    timeTrial: null,
+    terminalReason: null,
+    results,
+    score,
+    reviewChallenge,
+    locked: phase === "results" || phase === "recovering",
+    busy: false,
+    commandStatus: phase === "recovering" ? "reconciling" : "idle",
+    completionRetryScheduled: false,
+    attemptExpired: false,
+    pendingCommand: null,
+    transfer: null,
+    pendingAnswer: null,
+  };
+}
+export function sessionReducer(state: SessionState, event: SessionEvent): SessionState {
+  switch (event.type) {
+    case "time_trial":
+      return {
+        ...state,
+        timeTrial: event.progress,
+        deadlineAt: event.progress.deadlineAt
+          ? state.timeTrial?.deadlineAt === event.progress.deadlineAt && state.deadlineAt !== null
+            ? state.deadlineAt
+            : Date.now() +
+              Date.parse(event.progress.deadlineAt) -
+              Date.parse(event.progress.serverNow)
+          : null,
+      };
+    case "phase":
+      return {
+        ...state,
+        phase: event.phase,
+        stepIndex: event.stepIndex ?? state.stepIndex,
+        questionIndex: event.questionIndex ?? state.questionIndex,
+        busy: false,
+        locked: event.phase !== "playing",
+        commandStatus:
+          event.phase === "recovering"
+            ? "reconciling"
+            : state.commandStatus === "reconciling"
+              ? "confirmed"
+              : state.commandStatus,
+        ...(event.clearQuestion
+          ? {
+              question: null,
+              questionPresentedAt: null,
+              questionDeadlineAt: null,
+              pendingAnswer: null,
+              feedback: undefined,
+            }
+          : {}),
+      };
+    case "command_started":
+      return {
+        ...state,
+        pendingCommand: event.command,
+        completionRetryScheduled: false,
+        busy: event.command.operation !== "queensDraft",
+        commandStatus: "submitting",
+        locked: event.command.operation === "queensDraft" ? state.locked : true,
+        lifecycleError: undefined,
+        startNotice: undefined,
+        levelNotice: undefined,
+        feedback: event.feedback
+          ? { channel: event.feedback, state: "submitting", visible: false }
+          : undefined,
+        phase:
+          event.command.operation === "answer" && state.phase === "playing"
+            ? "checking"
+            : state.phase,
+      };
+    case "command_succeeded":
+      return {
+        ...state,
+        attempt: event.attempt,
+        transfer: state.pendingCommand?.operation === "takeover" ? null : state.transfer,
+        pendingCommand: null,
+        busy: false,
+        commandStatus: "confirmed",
+        lifecycleError:
+          state.lifecycleError?.code === "review_pending" ||
+          state.lifecycleError?.code === "attempt_permission_revoked"
+            ? state.lifecycleError
+            : undefined,
+        feedback: state.feedback?.state === "submitting" ? undefined : state.feedback,
+      };
+    case "command_failed":
+      return {
+        ...state,
+        busy: false,
+        locked: event.locked ?? !event.definitive,
+        commandStatus: event.definitive ? "definitive_failure" : "uncertain",
+        pendingCommand: event.definitive ? null : state.pendingCommand,
+        lifecycleError: event.lifecycleError,
+        feedback: event.feedback,
+        startNotice: event.notice,
+        levelNotice: event.notice,
+        phase: event.phase ?? (event.definitive && state.question ? "playing" : state.phase),
+      };
+    case "authorization_lost":
+      return {
+        ...initialSessionState("recovering"),
+        locked: true,
+        commandStatus: "definitive_failure",
+        lifecycleError: event.error,
+      };
+    case "control_required":
+      return {
+        ...state,
+        transfer: event.transfer,
+        pendingCommand: null,
+        busy: false,
+        locked: false,
+        commandStatus: "definitive_failure",
+        lifecycleError: {
+          operation: "start",
+          code: "attempt_control_required",
+          retryable: false,
+          message: "Existe una sesión activa en otro dispositivo.",
+        },
+        startNotice: "Existe una sesión activa en otro dispositivo.",
+        phase: "intro",
+      };
+    case "control_cancelled":
+      return {
+        ...state,
+        transfer: null,
+        lifecycleError: undefined,
+        startNotice: undefined,
+        pendingCommand: null,
+        busy: false,
+        locked: false,
+        commandStatus: "idle",
+      };
+    case "feedback_visible":
+      return {
+        ...state,
+        feedback: state.feedback ? { ...state.feedback, visible: true } : undefined,
+      };
+    case "prepared":
+      return {
+        ...state,
+        attempt: event.attempt,
+        question: event.question,
+        questionIndex: event.questionIndex,
+        stepIndex: event.stepIndex,
+        questionPresentedAt: event.presentedAt,
+        questionDeadlineAt: event.deadlineAt,
+        deadlineAt: event.progress ? event.deadlineAt : state.deadlineAt,
+        progress: event.progress ?? state.progress,
+        phase: event.phase,
+        locked: event.locked,
+        busy: false,
+        commandStatus: "confirmed",
+        pendingAnswer: null,
+        feedback: undefined,
+        lastWordSearchSelection: undefined,
+      };
+    case "progress":
+      return {
+        ...state,
+        commandStatus: "confirmed",
+        question: event.question,
+        lastWordSearchSelection: event.selection ?? state.lastWordSearchSelection,
+        locked: false,
+        busy: false,
+        feedback: event.message
+          ? { channel: "queens", state: "idle", visible: true, message: event.message }
+          : undefined,
+      };
+    case "answer_accepted": {
+      if (state.results.some((answer) => answer.questionId === event.result.questionId))
+        return state;
+      return {
+        ...state,
+        results: [...state.results, event.result],
+        lastResult: event.result,
+        phase: event.phase,
+        question: event.question ?? state.question,
+        questionDeadlineAt: event.phase === "answer-reveal" ? null : state.questionDeadlineAt,
+        pendingAnswer: null,
+        locked: true,
+        busy: false,
+        commandStatus: "confirmed",
+        feedback: undefined,
+      };
+    }
+    case "recovered":
+      return {
+        ...state,
+        attempt: event.attempt,
+        results: event.results,
+        lastResult: event.results.at(-1),
+        pendingCommand: null,
+        lifecycleError: undefined,
+        commandStatus: "confirmed",
+        feedback: undefined,
+        pendingAnswer: null,
+      };
+    case "completed":
+      return {
+        ...state,
+        phase: "results",
+        results: event.results ?? state.results,
+        completionRetryScheduled: false,
+        score: event.score,
+        reviewChallenge: event.reviewChallenge,
+        question: null,
+        questionPresentedAt: null,
+        questionDeadlineAt: null,
+        progress: null,
+        timeTrial: state.timeTrial,
+        terminalReason: event.terminalReason ?? state.terminalReason,
+        pendingCommand: null,
+        lifecycleError: event.reviewPending
+          ? {
+              operation: "projection",
+              code: "review_pending",
+              message: "Revisión temporalmente no disponible. Puedes volver a cargarla.",
+            }
+          : event.terminalReason === "permission_revoked"
+            ? {
+                operation: "projection",
+                code: "attempt_permission_revoked",
+                retryable: false,
+                message:
+                  "Esta partida se cerró porque ya no tienes permiso para competir en esta sala.",
+              }
+            : undefined,
+        feedback: undefined,
+        locked: true,
+        busy: false,
+        commandStatus: "confirmed",
+      };
+    case "completion_retry":
+      return { ...state, completionRetryScheduled: event.scheduled };
+    case "expired":
+      return {
+        ...initialSessionState("results", state.results),
+        locked: true,
+        commandStatus: "confirmed",
+        attemptExpired: true,
+      };
+    case "draft":
+      return { ...state, pendingAnswer: event.answer };
+  }
+}

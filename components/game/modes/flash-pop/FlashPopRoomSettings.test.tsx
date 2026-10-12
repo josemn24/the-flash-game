@@ -1,11 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
 import { FlashPopRoomSettings } from "./FlashPopRoomSettings";
 
 describe("FlashPopRoomSettings", () => {
   it("renders the room identity and members without the deferred actions section", async () => {
-    const model = await mockRoomQueries.getSettings("tabarnia-room", mockQueryContext());
+    const model = await mockRoomReadCapabilities.getSettings("tabarnia-room", mockQueryContext());
     if (!model) throw new Error("Expected room settings model");
 
     const markup = renderToStaticMarkup(<FlashPopRoomSettings model={model} />);

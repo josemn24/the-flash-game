@@ -74,4 +74,16 @@ describe("ChallengeResultScreen", () => {
     expect(markup).toContain("Volver");
     expect(markup).not.toContain("Clasificación");
   });
+
+  it("renders an inactive attempt as abandoned without a review action", () => {
+    const markup = renderToStaticMarkup(
+      <ChallengeResultScreen model={getModel()} expired returnTo="/sala/demo" />,
+    );
+
+    expect(markup).toContain("No completado");
+    expect(markup).toContain("Partida cerrada por inactividad");
+    expect(markup).toContain("No se han concedido puntos");
+    expect(markup).toContain(">0</strong>");
+    expect(markup).not.toContain("Ver respuestas");
+  });
 });

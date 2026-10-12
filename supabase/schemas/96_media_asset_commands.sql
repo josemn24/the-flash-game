@@ -44,7 +44,9 @@ begin
     if cached.operation <> 'prepare_avatar_upload' or cached.input <> safe_input then
       raise exception 'idempotency_conflict' using errcode = '40001';
     end if;
-    return cached.result;
+    return cached.result || jsonb_build_object('status', (
+      select status from private.media_assets where id = asset and owner_player_id = actor
+    ));
   end if;
 
   insert into private.media_assets(
@@ -78,7 +80,7 @@ begin
     'assetId', id, 'objectPath', object_path, 'status', status
   ) into result
   from private.media_assets
-  where id = asset and owner_player_id = actor;
+  where id = asset and owner_player_id = actor and kind = 'avatar' and bucket_id = 'avatars';
   return result;
 exception when invalid_text_representation then
   return null;
@@ -133,15 +135,15 @@ begin
     return cached.result;
   end if;
 
+  select * into player_row from public.players where id = actor and status = 'active' for update;
+  if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
   select * into asset_row from private.media_assets
-  where id = asset and owner_player_id = actor for update;
+  where id = asset and owner_player_id = actor and kind = 'avatar' and bucket_id = 'avatars' for update;
   if not found then raise exception 'media_asset_not_found' using errcode = '22023'; end if;
   if asset_row.status <> 'pending' then
     raise exception 'media_asset_not_pending' using errcode = '55000';
   end if;
 
-  select * into player_row from public.players where id = actor and status = 'active' for update;
-  if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
   old_path := player_row.avatar_path;
   update private.media_assets
   set status = 'ready', mime_type = mime_value, byte_size = bytes_value,
@@ -177,9 +179,14 @@ declare
   asset uuid := (input->>'assetId')::uuid;
   row_value private.media_assets%rowtype;
 begin
+  perform 1 from public.players where id = actor and status = 'active' for update;
+  if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
   select * into row_value from private.media_assets
-  where id = asset and owner_player_id = actor for update;
+  where id = asset and owner_player_id = actor and kind = 'avatar' and bucket_id = 'avatars' for update;
   if not found then raise exception 'media_asset_not_found' using errcode = '22023'; end if;
+  if exists(select 1 from public.players where avatar_path = row_value.object_path) then
+    raise exception 'media_asset_in_use' using errcode = '55000';
+  end if;
   if row_value.status = 'pending' then
     update private.media_assets set status = 'deleted', deleted_at = statement_timestamp()
     where id = asset;
@@ -188,5 +195,62 @@ begin
   return jsonb_build_object('assetId', row_value.id, 'objectPath', row_value.object_path, 'status', row_value.status);
 exception when invalid_text_representation then
   raise exception 'invalid_avatar_upload' using errcode = '22023';
+end;
+$$;
+
+-- Recovery uses the original public command identity, without requiring Storage.
+-- The historical command remains immutable; currentProfile reflects later replacements.
+create function private.read_avatar_upload_confirmation(input jsonb) returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+declare
+  actor uuid := private.command_actor();
+  asset uuid := (input->>'assetId')::uuid;
+  key text := input->>'idempotencyKey';
+  cached private.command_requests%rowtype;
+  profile jsonb;
+begin
+  if jsonb_typeof(input) is distinct from 'object'
+    or exists(select 1 from jsonb_object_keys(input) k where k <> all(array['assetId','idempotencyKey']))
+    or asset is null or key is null or char_length(key) not between 8 and 160 then
+    raise exception 'invalid_avatar_upload' using errcode = '22023';
+  end if;
+  select jsonb_build_object('playerId', id, 'name', display_name, 'avatarPath', avatar_path)
+    into profile from public.players where id = actor and status = 'active';
+  if profile is null then raise exception 'not_authorized' using errcode = '42501'; end if;
+  select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
+  if not found then return null; end if;
+  if cached.operation <> 'confirm_avatar_upload' or cached.input->>'assetId' <> asset::text then
+    raise exception 'idempotency_conflict' using errcode = '40001';
+  end if;
+  if not exists(select 1 from private.media_assets where id = asset and owner_player_id = actor
+      and kind = 'avatar' and bucket_id = 'avatars') then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  return jsonb_build_object('command', cached.result, 'currentProfile', profile);
+exception when invalid_text_representation then
+  raise exception 'invalid_avatar_upload' using errcode = '22023';
+end;
+$$;
+
+-- Claim an archived object before any external deletion. A committed deleted
+-- state is also returned on replay so failed Storage removal can be retried safely.
+create function private.claim_archived_avatar_cleanup(input jsonb) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare
+  actor uuid := private.command_actor();
+  row_value private.media_assets%rowtype;
+begin
+  perform 1 from public.players where id = actor and status = 'active' for update;
+  if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
+  select * into row_value from private.media_assets
+  where object_path = input->>'objectPath' and owner_player_id = actor
+    and kind = 'avatar' and bucket_id = 'avatars' for update;
+  if not found or row_value.status not in ('archived', 'deleted') then return null; end if;
+  if exists(select 1 from public.players where avatar_path = row_value.object_path) then return null; end if;
+  if row_value.status = 'archived' then
+    update private.media_assets set status = 'deleted', archived_at = null, deleted_at = statement_timestamp()
+    where id = row_value.id;
+  end if;
+  return jsonb_build_object('assetId', row_value.id, 'objectPath', row_value.object_path, 'status', 'deleted');
 end;
 $$;

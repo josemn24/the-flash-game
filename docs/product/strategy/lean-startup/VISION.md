@@ -44,16 +44,19 @@ La PoC actual permite jugar en solitario dentro de una sala y temporada demo loc
 
 ## Fuentes críticas consultadas
 
-- `README.md` — alcance técnico actual y ausencia de backend, usuarios y persistencia.
+- `README.md` — alcance técnico actual, separación entre recorridos mock y persistidos, y límites de
+  la beta cerrada.
 - `../../../archive/the-flash-poc.md` — propósito y límites históricos de la PoC.
 - `../../../archive/salas-y-temporadas.md` — loop social y competitivo previsto; es una afirmación documentada, no evidencia de uso.
 - Contexto del proyecto proporcionado para esta intervención — objetivo de producto y responsable.
 
 ## Hechos observados
 
-- El repositorio declara una aplicación 100 % frontend sin backend, base de datos, autenticación ni servicios externos. Fuente: `README.md`.
-- La aplicación actual ofrece un jugador fijo, estado de sesión en memoria, una sala demo, una
-  temporada activa, miembros y rankings simulados. Fuente: `../../../current/status.md`.
+- El repositorio combina una experiencia mock/práctica con recorridos persistidos sobre Supabase,
+  Auth, PostgreSQL y un portal privado de superadministración. Fuente: `README.md`.
+- La aplicación actual ofrece una sala demo y formatos locales, además de salas, temporadas,
+  publicaciones, intentos, rankings y varios recorridos competitivos persistidos en el stack local.
+  Fuente: `../../../current/status.md`.
 - No se localizaron métricas, usuarios reales, entrevistas ni resultados de experimentos Lean en la documentación consultada.
 
 ## Afirmaciones documentadas

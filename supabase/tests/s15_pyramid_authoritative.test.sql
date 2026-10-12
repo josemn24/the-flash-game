@@ -12,6 +12,14 @@ set local role service_role;
 select test_support.run('start_attempt', jsonb_build_object(
   'scheduledChallengeId', test_support.id('sc-pyramid'), 'sessionToken', repeat('r', 40)));
 select test_support.run('prepare_interaction');
+reset role;
+select is((select count(*) from private.attempt_timing_units
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)), 0::bigint,
+  'Pyramid preparation does not start a level clock');
+select throws_ok($$select test_support.run('receive_answer','{"answer":true}')$$,
+  '55000', 'interaction_not_presented', 'Answers are rejected before Pyramid activation');
+set local role service_role;
+select test_support.run('activate_interaction');
 insert into s15_attempts values ('interrupted-level',
   (select (state->>'attemptId')::uuid from test_support.runtime));
 reset role;
@@ -49,6 +57,7 @@ select test_support.run('start_attempt', jsonb_build_object(
 insert into s15_attempts values ('summit',
   (select (state->>'attemptId')::uuid from test_support.runtime));
 select test_support.run('prepare_interaction');
+select test_support.run('activate_interaction');
 select throws_ok($$select test_support.run('receive_answer', jsonb_build_object(
   'challengeItemId', test_support.id('item-pyramid-2'), 'answer', true))$$,
   '55000', 'interaction_not_presented', 'The caller cannot skip to a later level');
@@ -79,6 +88,7 @@ declare level_index integer;
 begin
   for level_index in 2..7 loop
     perform test_support.run('prepare_interaction');
+    perform test_support.run('activate_interaction');
     perform test_support.run('receive_answer', '{"answer":"A"}');
     perform test_support.run('record_evaluation', jsonb_build_object(
       'status', 'correct', 'points', case when level_index < 6 then 14 else 15 end

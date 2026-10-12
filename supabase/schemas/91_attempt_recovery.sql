@@ -9,13 +9,13 @@ language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.command_actor(); result jsonb;
 begin
   select jsonb_build_object(
-    'receiptId', r.id, 'answer', case when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
+    'receiptId', r.id, 'answer', case when cv.mode = 'time-trial' and (r.answer is null or r.answer = 'null'::jsonb) then null when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
       select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
       from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
     ), '[]'::jsonb)) else r.answer end, 'receivedAt', r.received_at,
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
-    'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
+    'questionVersionId', q.id, 'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
     'publicPayload', q.public_payload,
     'submittedCodes', case when q.type = 'logic-code' then coalesce((
       select jsonb_agg(e.code order by e.sequence)
@@ -97,12 +97,17 @@ begin
   perform private.lock_command_key(actor, key);
   select * into cached from private.command_requests where actor_id = actor and idempotency_key = key;
   if found and (cached.operation <> 'recover' or cached.input <> safe_input) then raise exception 'idempotency_conflict' using errcode = '40001'; end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
   if not found or a.player_id <> actor or a.kind <> 'competitive' or a.status <> 'in_progress'
     or exists (select 1 from private.platform_role_assignments where player_id = actor) then raise exception 'not_authorized' using errcode = '42501'; end if;
   select * into s from private.attempt_sessions where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or s.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or s.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
+  instant := clock_timestamp();
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into receipt from private.answer_receipts r where r.attempt_id = a.id and not exists (
@@ -124,7 +129,7 @@ begin
         where id = segment.id;
         result := jsonb_build_object('receiptId', null, 'recovered', true,
           'recoveryInterrupted', true, 'challengeItemId', segment.challenge_item_id);
-      elsif cv.mode <> 'pyramid'
+      elsif cv.mode not in ('pyramid', 'time-trial')
         and question.type in ('mini-wordle', 'logic-code', 'logic-matrix', 'progressive-clues', 'matching', 'progressive-image', 'queens', 'word-search', 'word-hashtag', 'zip', 'escape')
         and instant < unit.deadline_at then
         result := jsonb_build_object('receiptId', null, 'recovered', false, 'preserved', true);
@@ -165,15 +170,35 @@ create function private.read_attempt_recovery(target_attempt uuid, session_token
 language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.command_actor(); result jsonb;
 begin
+  perform private.authorize_attempt_replay(target_attempt, private.secret_hash(session_token));
   select jsonb_build_object(
-    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status,
+    'attemptId', a.id, 'scheduledChallengeId', a.scheduled_challenge_id, 'status', a.status, 'outcome', a.outcome,
     'lockVersion', a.lock_version,
+    'deadlineAt', a.deadline_at,
+    'deadlineReached', a.deadline_at is not null and clock_timestamp() >= a.deadline_at,
+    'pendingReceiptId', (select receipt.id from private.answer_receipts receipt
+      where receipt.attempt_id = a.id and not exists (
+        select 1 from private.attempt_answers answer where answer.receipt_id = receipt.id
+      ) order by receipt.received_at, receipt.id limit 1),
     'hasStartedInteraction', exists (select 1 from private.attempt_timing_units u where u.attempt_id = a.id),
     'hasOpenInteraction', exists (select 1 from private.interaction_intervals interval_row
       where interval_row.attempt_id = a.id and interval_row.ended_at is null),
+    'narrativeCursor', case when cv.mode = 'narrative' then jsonb_build_object(
+      'currentChallengeItemId', (select interval_row.challenge_item_id
+        from private.interaction_intervals interval_row
+        where interval_row.attempt_id = a.id and interval_row.ended_at is null
+        order by interval_row.started_at desc limit 1),
+      'nextChallengeItemId', (select item.id
+        from private.challenge_items item
+        where item.challenge_version_id = a.challenge_version_id
+          and not exists (select 1 from private.attempt_answers answer
+            where answer.attempt_id = a.id and answer.challenge_item_id = item.id)
+        order by item.position limit 1)
+    ) else null end,
     'allItemsResolved', not exists (select 1 from private.challenge_items i where i.challenge_version_id = a.challenge_version_id
       and not exists (select 1 from private.attempt_answers aa where aa.attempt_id = a.id and aa.challenge_item_id = i.id)),
     'challengeMode', cv.mode,
+    'timeTrial', case when cv.mode = 'time-trial' then private.time_trial_progress(a.id) end,
     'initialLives', case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer else null end,
     'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
       select sum(case

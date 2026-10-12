@@ -1,0 +1,260 @@
+// @vitest-environment jsdom
+
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { ProfileSaveResult } from "@/types/view-models/user-actions";
+import { FlashPopProfileDialog } from "./FlashPopProfileDialog.client";
+
+const profile = { id: "player", name: "Ana" };
+beforeEach(() => {
+  Object.defineProperties(HTMLDialogElement.prototype, {
+    showModal: {
+      configurable: true,
+      value: function (this: HTMLDialogElement) {
+        this.open = true;
+      },
+    },
+    close: {
+      configurable: true,
+      value: function (this: HTMLDialogElement) {
+        if (!this.open) return;
+        this.open = false;
+        this.dispatchEvent(new Event("close"));
+      },
+    },
+  });
+  vi.spyOn(window, "scrollTo").mockImplementation(() => undefined);
+});
+afterEach(() => {
+  cleanup();
+  Reflect.deleteProperty(HTMLDialogElement.prototype, "showModal");
+  Reflect.deleteProperty(HTMLDialogElement.prototype, "close");
+  Reflect.deleteProperty(window, "visualViewport");
+  vi.restoreAllMocks();
+});
+
+describe("profile form", () => {
+  it("opens without name focus and keeps validation, pending state and trimmed header submit", async () => {
+    let resolve!: (value: ProfileSaveResult) => void;
+    const save = vi
+      .fn()
+      .mockImplementationOnce(
+        () =>
+          new Promise<ProfileSaveResult>((r) => {
+            resolve = r;
+          }),
+      )
+      .mockResolvedValue({ ok: true, profile });
+    render(<FlashPopProfileDialog open profile={profile} onClose={vi.fn()} onSave={save} />);
+    const name = screen.getByLabelText<HTMLInputElement>("Nombre visible");
+    const file = screen.getByLabelText<HTMLInputElement>("Imagen de perfil");
+    const saveButton = screen.getByRole<HTMLButtonElement>("button", { name: "Guardar cambios" });
+    const photoButton = screen.getByRole<HTMLButtonElement>("button", { name: "Cambiar foto" });
+    expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cerrar perfil" }));
+    expect(saveButton.form).toBe(name.form);
+    expect(saveButton.closest("form")).toBeNull();
+    expect(screen.queryByText("Tu identidad")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Cancelar" })).toBeNull();
+    expect(name.minLength).toBe(2);
+    expect(name.maxLength).toBe(24);
+    expect(name.autocomplete).toBe("name");
+    expect(file.accept).toBe("image/jpeg,image/png,image/webp");
+    fireEvent.change(name, { target: { value: "a" } });
+    fireEvent.submit(name.form!);
+    expect(save).not.toHaveBeenCalled();
+    expect(name.getAttribute("aria-invalid")).toBe("true");
+    expect(screen.getByRole("alert").id).toBe(name.id + "-error");
+    expect(document.activeElement).toBe(name);
+    fireEvent.change(name, { target: { value: "  Ana nueva  " } });
+    expect(name.hasAttribute("aria-invalid")).toBe(false);
+    fireEvent.click(saveButton);
+    expect(name.form!.getAttribute("aria-busy")).toBe("true");
+    expect(saveButton.disabled).toBe(true);
+    expect(photoButton.disabled).toBe(true);
+    expect(name.disabled).toBe(true);
+    expect(file.disabled).toBe(true);
+    expect(save).toHaveBeenCalledWith({ name: "Ana nueva", file: null });
+    await act(async () =>
+      resolve({ ok: false, code: "save_failed", message: "Reintenta el guardado" }),
+    );
+    expect(screen.getByRole("alert").textContent).toBe("Reintenta el guardado");
+    expect(file.disabled).toBe(false);
+    fireEvent.click(saveButton);
+    await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    expect(save).toHaveBeenLastCalledWith({ name: "Ana nueva", file: null });
+  });
+
+  it("opens the native picker, associates visible help/errors and preserves selection on cancel", async () => {
+    const save = vi.fn().mockResolvedValue({ ok: true, profile });
+    const create = vi.fn().mockReturnValue("blob:preview");
+    const revoke = vi.fn();
+    vi.stubGlobal(
+      "URL",
+      class extends URL {
+        static createObjectURL = create;
+        static revokeObjectURL = revoke;
+      },
+    );
+    try {
+      render(<FlashPopProfileDialog open profile={profile} onClose={vi.fn()} onSave={save} />);
+      const file = screen.getByLabelText<HTMLInputElement>("Imagen de perfil");
+      const photo = screen.getByRole<HTMLButtonElement>("button", { name: "Cambiar foto" });
+      const openPicker = vi.spyOn(file, "click");
+      expect(file.hidden).toBe(true);
+      fireEvent.click(photo);
+      expect(openPicker).toHaveBeenCalledOnce();
+      const invalid = new File(["x"], "bad.txt", { type: "text/plain" });
+      fireEvent.change(file, { target: { files: [invalid] } });
+      expect(file.getAttribute("aria-invalid")).toBe("true");
+      expect(photo.getAttribute("aria-invalid")).toBe("true");
+      expect(photo.getAttribute("aria-describedby")).toBe(file.id + "-help " + file.id + "-error");
+      expect(screen.getByRole("alert").id).toBe(file.id + "-error");
+      const valid = new File(["image"], "avatar.png", { type: "image/png" });
+      fireEvent.change(file, { target: { files: [valid] } });
+      expect(file.hasAttribute("aria-invalid")).toBe(false);
+      expect(create).toHaveBeenCalledWith(valid);
+      fireEvent.change(file, { target: { files: [] } });
+      expect(revoke).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "Guardar cambios" }));
+      await waitFor(() => expect(save).toHaveBeenCalledWith({ name: "Ana", file: valid }));
+      fireEvent.click(screen.getByRole("button", { name: "Cerrar perfil" }));
+      expect(revoke).toHaveBeenCalledWith("blob:preview");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("tracks visual viewport height/offset and removes listeners when closed", () => {
+    const visualViewport = new EventTarget();
+    Object.defineProperty(visualViewport, "height", {
+      configurable: true,
+      value: 640,
+      writable: true,
+    });
+    Object.defineProperty(visualViewport, "offsetTop", {
+      configurable: true,
+      value: 0,
+      writable: true,
+    });
+    Object.defineProperty(window, "visualViewport", {
+      configurable: true,
+      value: visualViewport,
+    });
+    const removeEventListener = vi.spyOn(visualViewport, "removeEventListener");
+    const save = vi.fn().mockResolvedValue({ ok: true, profile });
+    const { rerender } = render(
+      <FlashPopProfileDialog open profile={profile} onClose={vi.fn()} onSave={save} />,
+    );
+    const dialog = screen.getByRole("dialog");
+
+    expect(dialog.style.getPropertyValue("--profile-dialog-viewport-height")).toBe("640px");
+    expect(dialog.style.getPropertyValue("--profile-dialog-viewport-top")).toBe("0px");
+
+    Object.defineProperty(visualViewport, "height", { value: 420 });
+    visualViewport.dispatchEvent(new Event("resize"));
+    expect(dialog.style.getPropertyValue("--profile-dialog-viewport-height")).toBe("420px");
+    Object.defineProperty(visualViewport, "offsetTop", { value: 48 });
+    visualViewport.dispatchEvent(new Event("scroll"));
+    expect(dialog.style.getPropertyValue("--profile-dialog-viewport-top")).toBe("48px");
+
+    rerender(
+      <FlashPopProfileDialog open={false} profile={profile} onClose={vi.fn()} onSave={save} />,
+    );
+    expect(dialog.style.getPropertyValue("--profile-dialog-viewport-height")).toBe("");
+    expect(dialog.style.getPropertyValue("--profile-dialog-viewport-top")).toBe("");
+    expect(removeEventListener).toHaveBeenCalledWith("resize", expect.any(Function));
+    expect(removeEventListener).toHaveBeenCalledWith("scroll", expect.any(Function));
+  });
+
+  it("restores body styles and page scroll after closing or unmounting", () => {
+    const previousStyles = document.body.style.cssText;
+    const previousScrollY = window.scrollY;
+    document.body.style.setProperty("position", "relative", "important");
+    document.body.style.setProperty("top", "3px");
+    Object.defineProperty(window, "scrollY", { configurable: true, value: 120 });
+    try {
+      const props = { profile, onClose: vi.fn(), onSave: vi.fn() };
+      const { rerender, unmount } = render(<FlashPopProfileDialog {...props} open />);
+      expect(document.body.style.position).toBe("fixed");
+      expect(document.body.style.top).toBe("-120px");
+      expect(document.body.style.overflow).toBe("hidden");
+      rerender(<FlashPopProfileDialog {...props} open={false} />);
+      expect(document.body.style.position).toBe("relative");
+      expect(document.body.style.getPropertyPriority("position")).toBe("important");
+      expect(document.body.style.top).toBe("3px");
+      expect(document.body.style.overflow).toBe("");
+      expect(window.scrollTo).toHaveBeenCalledWith({ left: 0, top: 120, behavior: "instant" });
+      rerender(<FlashPopProfileDialog {...props} open />);
+      unmount();
+      expect(document.body.style.position).toBe("relative");
+      expect(document.body.style.top).toBe("3px");
+    } finally {
+      document.body.style.cssText = previousStyles;
+      Object.defineProperty(window, "scrollY", { configurable: true, value: previousScrollY });
+    }
+  });
+
+  it("discards unsent edits and opens the latest profile after a controlled close", () => {
+    const props = { onClose: vi.fn(), onSave: vi.fn() };
+    const { rerender } = render(<FlashPopProfileDialog {...props} open profile={profile} />);
+    const name = screen.getByLabelText<HTMLInputElement>("Nombre visible");
+    fireEvent.change(name, { target: { value: "Borrador" } });
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar perfil" }));
+    expect(name.value).toBe("Ana");
+    expect(props.onSave).not.toHaveBeenCalled();
+    expect(props.onClose).toHaveBeenCalledOnce();
+    rerender(<FlashPopProfileDialog {...props} open={false} profile={profile} />);
+    rerender(<FlashPopProfileDialog {...props} open profile={profile} />);
+    const savedProfile = { ...profile, name: "Ana guardada" };
+    rerender(<FlashPopProfileDialog {...props} open={false} profile={savedProfile} />);
+    rerender(<FlashPopProfileDialog {...props} open profile={savedProfile} />);
+    expect(name.value).toBe("Ana guardada");
+  });
+
+  it("blocks replacements and offers confirmation retry after closing and reopening", async () => {
+    const save = vi.fn().mockResolvedValue({
+      ok: false,
+      code: "confirmation_pending",
+      message: "No hemos podido confirmar la imagen",
+    });
+    const { rerender } = render(
+      <FlashPopProfileDialog
+        open
+        profile={profile}
+        onClose={vi.fn()}
+        onSave={save}
+        confirmationPending
+      />,
+    );
+    expect(screen.getByLabelText<HTMLInputElement>("Imagen de perfil").disabled).toBe(true);
+    expect(screen.getByLabelText<HTMLInputElement>("Nombre visible").disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Cambiar foto" }).disabled).toBe(
+      true,
+    );
+    expect(screen.getByRole("button", { name: "Reintentar confirmación" }).textContent).toBe(
+      "Reintentar",
+    );
+    expect(screen.getByRole("status").textContent).toBe("No hemos podido confirmar la imagen");
+    fireEvent.click(screen.getByRole("button", { name: "Cerrar perfil" }));
+    rerender(
+      <FlashPopProfileDialog
+        open={false}
+        profile={profile}
+        onClose={vi.fn()}
+        onSave={save}
+        confirmationPending
+      />,
+    );
+    rerender(
+      <FlashPopProfileDialog
+        open
+        profile={profile}
+        onClose={vi.fn()}
+        onSave={save}
+        confirmationPending
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Reintentar confirmación" }));
+    await waitFor(() => expect(save).toHaveBeenCalledWith({ name: "Ana", file: null }));
+  });
+});

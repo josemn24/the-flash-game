@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
 import { FlashPopRoomDetail } from "@/components/game/modes/flash-pop/FlashPopRoomDetail.client";
 
 vi.mock("next/navigation", () => ({
@@ -10,7 +10,7 @@ vi.mock("next/navigation", () => ({
 const now = new Date("2026-09-06T12:00:00.000Z");
 
 async function getRoomDetailModel() {
-  const model = await mockRoomQueries.getDetail("tabarnia-room", mockQueryContext(now));
+  const model = await mockRoomReadCapabilities.getDetail("tabarnia-room", mockQueryContext(now));
   if (!model) throw new Error("Expected room detail model");
   return model;
 }
@@ -61,6 +61,47 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).toContain("Sin reto disponible hoy.");
     expect(markup).not.toContain("pendientes por jugar");
   });
+
+  it.each([
+    ["available", "member", false],
+    ["inProgress", "member", false],
+    ["notCompleted", "member", false],
+    ["completed", "member", true],
+    ["completed", "spectator", false],
+  ] as const)(
+    "only links daily leaderboard members after a completed attempt (%s, %s)",
+    async (dailyAttemptStatus, role, expectsLinks) => {
+      const model = await getRoomDetailModel();
+      const markup = renderToStaticMarkup(
+        <FlashPopRoomDetail
+          model={{
+            ...model,
+            currentUser: {
+              ...model.currentUser,
+              dailyAttemptStatus,
+              role,
+            },
+            dailyLeaderboard: [
+              {
+                memberId: "daily-player",
+                name: "Daily Player",
+                initials: "DP",
+                flashPoints: 0,
+                rank: 1,
+                completed: true,
+                durationMs: 1000,
+                startedAt: "2026-09-06T11:00:00.000Z",
+              },
+            ],
+          }}
+        />,
+      );
+
+      expect(markup.includes('href="/salas/tabarnia-room/ranking/daily-player"')).toBe(
+        expectsLinks,
+      );
+    },
+  );
 
   it("does not add the season calendar, chat or activity feed", async () => {
     const model = await getRoomDetailModel();

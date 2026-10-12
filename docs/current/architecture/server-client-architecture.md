@@ -114,10 +114,9 @@ client states for this boundary.
 
 This pattern applies to server-authoritative modes. Practice, previews and other local sessions should
 remain immediate and should not add a network loading state. The persisted server flow is implemented
-for competitive Flash, Alphabet, Supervivencia and Pyramid (S15, verified on local Supabase).
-Narrative and other unmigrated modes still use client-side
-evaluation or local persistence. New server-authoritative modes should adopt this lifecycle and adapt
-only the visible status to their mechanics.
+for competitive Flash, Alphabet, Supervivencia, Narrative and Pyramid (verified on local Supabase).
+New server-authoritative modes should adopt this lifecycle and adapt only the visible status to their
+mechanics.
 
 ### Universal components
 
@@ -322,6 +321,18 @@ app/formatos/[slug]/page.tsx   Server Component
 ```
 
 `PlayableFormatExample.client.tsx` receives one serializable `Question`, opens a native dialog, and reuses the same input renderers and scoring functions as a stage. Its local phases are `ready`, `playing`, and `feedback`; closing or retrying resets the attempt without changing the route.
+
+`QuestionInput` and `QuestionReviewContent` are small presentation facades. Their typed registries,
+`practiceInputRegistry.ts` and `reviewContentRegistry.ts`, cover all 31 formats. Each format keeps its
+local input in `formats/<id>/PracticeInput.tsx` and its result presentation in
+`formats/<id>/ReviewContent.tsx`. Inputs are Client Components; result renderers and `reviewShared.tsx`
+remain universal. `rendererTypes.ts` provides type-only contracts, and the original facade exports
+remain available to existing consumers. Short text reuses `ShortTextInput` through an alias.
+
+These presentation modules coexist with the competitive `input.tsx` and `review.ts` adapters. The
+latter reconstruct a review question from an authorized terminal result; presentation modules do not
+load solutions or server data. Format-specific helpers stay with their format, while `AnswerPair`
+and `answerLabel` are shared by the result renderers. The extraction reuses the existing CSS Modules.
 
 The correct answer is included in this client DTO because the example is evaluated locally and has no persistent or competitive value. It must never contain secrets or privileged server data.
 

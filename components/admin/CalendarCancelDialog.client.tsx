@@ -1,9 +1,13 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
+import { FormField, Textarea, Button, CrossIcon } from "@/components/ui";
+
 import { useActionState, useEffect, useId, useRef, useState, type FormEvent } from "react";
 
 import { cancelScheduledChallenge, type CalendarActionState } from "@/app/admin/calendar-actions";
-import { Button, CrossIcon } from "@/components/ui";
+
 import type { SuperadminCalendarContext, SuperadminPortalRoom } from "@/types/view-models";
 
 import styles from "./CalendarManagement.module.css";
@@ -12,7 +16,7 @@ const initialState: CalendarActionState = {};
 type Entry = SuperadminCalendarContext["entries"][number];
 
 function prepareKey(event: FormEvent<HTMLFormElement>, ref: { current: string | null }) {
-  if (!ref.current) ref.current = globalThis.crypto.randomUUID();
+  if (!ref.current) ref.current = randomUuid();
   const input = event.currentTarget.elements.namedItem("idempotencyKey");
   if (input instanceof HTMLInputElement) input.value = ref.current;
 }
@@ -55,8 +59,6 @@ export function CalendarCancelDialog({
     dialogRef.current?.close();
     setOpen(false);
   }
-
-  const errorId = `${formId}-reason-error`;
 
   return (
     <>
@@ -108,6 +110,7 @@ export function CalendarCancelDialog({
               action={action}
               className={styles.form}
               onSubmit={(event) => prepareKey(event, keyRef)}
+              aria-busy={pending}
             >
               <input type="hidden" name="idempotencyKey" defaultValue="" />
               <input type="hidden" name="roomId" value={room.roomId} readOnly />
@@ -137,25 +140,25 @@ export function CalendarCancelDialog({
 
               <fieldset className={styles.group}>
                 <legend>Auditoría</legend>
-                <label htmlFor={formId + "-reason"}>
-                  <span>Motivo de cancelación</span>
-                  <textarea
-                    id={formId + "-reason"}
-                    name="reason"
-                    rows={3}
-                    maxLength={500}
-                    required
-                    data-dialog-autofocus
-                    placeholder="Contenido retirado por revisión"
-                    aria-invalid={Boolean(state.fieldErrors?.reason)}
-                    aria-describedby={state.fieldErrors?.reason ? errorId : undefined}
-                  />
-                  {state.fieldErrors?.reason ? (
-                    <small id={errorId} className={styles.fieldError} role="alert">
-                      {state.fieldErrors.reason}
-                    </small>
-                  ) : null}
-                </label>
+                <FormField
+                  id={formId + "-reason"}
+                  label="Motivo de cancelación"
+                  density="compact"
+                  required
+                  error={state.fieldErrors?.reason}
+                  announceError
+                >
+                  {(field) => (
+                    <Textarea
+                      {...field}
+                      name="reason"
+                      rows={3}
+                      maxLength={500}
+                      data-dialog-autofocus
+                      placeholder="Contenido retirado por revisión"
+                    />
+                  )}
+                </FormField>
               </fieldset>
 
               {state.message || state.fieldErrors?.form ? (

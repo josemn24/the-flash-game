@@ -37,12 +37,42 @@ export const scenario = {
       question: "Encuentra CASA y ÑANDÚ",
       grid: { rows: 6, columns: 6 },
       letters: [
-        "C", "A", "S", "A", "X", "X",
-        "Ñ", "A", "N", "D", "Ú", "Z",
-        "B", "Q", "E", "R", "T", "Y",
-        "G", "H", "I", "J", "K", "L",
-        "M", "O", "P", "V", "W", "F",
-        "Á", "É", "Í", "Ó", "Ú", "Ü",
+        "C",
+        "A",
+        "S",
+        "A",
+        "X",
+        "X",
+        "Ñ",
+        "A",
+        "N",
+        "D",
+        "Ú",
+        "Z",
+        "B",
+        "Q",
+        "E",
+        "R",
+        "T",
+        "Y",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "O",
+        "P",
+        "V",
+        "W",
+        "F",
+        "Á",
+        "É",
+        "Í",
+        "Ó",
+        "Ú",
+        "Ü",
       ],
       targets: [
         { id: "casa", word: "CASA" },
@@ -76,17 +106,21 @@ values
     'word-search', 90000, ${sqlString(JSON.stringify(wordSearch))}, ${sqlString(accounts.alice.playerId)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
-  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({
-    correctAnswer: "Lisboa",
-    explanation: "Lisboa es la capital de Portugal.",
-  }))}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(JSON.stringify({
-    positionsByTargetId: {
-      casa: { startCell: 0, endCell: 3 },
-      nandu: { startCell: 6, endCell: 10 },
-    },
-    explanation: "Las palabras se encuentran en la primera y segunda fila.",
-  }))});
+  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(
+    JSON.stringify({
+      correctAnswer: "Lisboa",
+      explanation: "Lisboa es la capital de Portugal.",
+    }),
+  )}),
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(
+    JSON.stringify({
+      positionsByTargetId: {
+        casa: { startCell: 0, endCell: 3 },
+        nandu: { startCell: 6, endCell: 10 },
+      },
+      explanation: "Las palabras se encuentran en la primera y segunda fila.",
+    }),
+  )});
 update private.question_versions set status = 'published', published_at = ${sqlString(dateStart)};
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values (${sqlUuid(domainIds.challenge)}, 'e06-flash-word-search', ${sqlString(accounts.alice.playerId)});

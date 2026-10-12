@@ -31,6 +31,8 @@ create table public.attempts (
   status text not null default 'in_progress'
     check (status in ('in_progress', 'completed', 'abandoned', 'invalidated')),
   outcome text,
+  constraint attempts_outcome_values_check check (outcome is null or outcome in ('survived', 'eliminated', 'summit', 'failed')),
+  constraint attempts_outcome_status_check check (status not in ('in_progress', 'abandoned') or outcome is null),
   started_at timestamptz not null default now(),
   deadline_at timestamptz,
   completed_at timestamptz,
@@ -65,6 +67,7 @@ create table private.attempt_sessions (
   last_seen_at timestamptz not null default now(),
   expires_at timestamptz,
   revoked_at timestamptz,
+  revocation_reason text check (revocation_reason in ('takeover', 'terminal', 'permission_revoked')),
   check (expires_at > created_at),
   check (last_seen_at >= created_at),
   check (revoked_at is null or revoked_at >= created_at)

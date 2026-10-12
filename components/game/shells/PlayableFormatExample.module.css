@@ -3,15 +3,15 @@
     border: var(--border-subtle);
     border-radius: 1.4rem;
     padding: 1.35rem;
-    color: var(--color-ink);
-    background: var(--color-surface);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-card);
   }
 
   .launcherTitle {
     display: block;
     margin-bottom: 0.75rem;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: 0.6rem;
     font-weight: 900;
@@ -27,7 +27,7 @@
   }
 
   .launcherMeta > span {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.62rem;
     font-weight: 900;
@@ -54,7 +54,7 @@
   .launcher > p {
     max-width: 39rem;
     margin: 0.8rem 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.85rem;
     line-height: 1.65;
   }
@@ -71,14 +71,14 @@
     border: var(--border-subtle);
     border-radius: 1.5rem;
     padding: 0;
-    color: var(--color-ink);
-    background: var(--color-surface);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
     box-shadow: var(--shadow-dialog);
     overflow: hidden;
   }
 
   .dialog::backdrop {
-    background: var(--color-overlay-ink);
+    background: var(--ds-color-bg-overlay);
     backdrop-filter: blur(8px);
   }
 
@@ -89,7 +89,7 @@
   .dialogSurface {
     max-height: calc(100dvh - 2rem);
     overflow-y: auto;
-    background: linear-gradient(145deg, var(--color-surface), var(--color-canvas));
+    background: linear-gradient(145deg, var(--ds-color-bg-surface), var(--ds-color-bg-canvas));
   }
 
   .dialogHeader {
@@ -102,7 +102,7 @@
     gap: 1rem;
     border-bottom: var(--border-subtle);
     padding: 1rem 1.15rem;
-    background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+    background: color-mix(in srgb, var(--ds-color-bg-surface) 94%, transparent);
     backdrop-filter: blur(14px);
   }
 
@@ -118,7 +118,7 @@
 
   .dialogEyebrow,
   .explanation > span {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: 0.58rem;
     font-weight: 900;
@@ -136,13 +136,13 @@
     place-items: center;
     border: var(--border-subtle);
     border-radius: 50%;
-    color: var(--color-ink-muted);
-    background: var(--color-surface-raised);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .closeButton:hover {
-    color: var(--color-ink);
-    border-color: var(--color-social);
+    color: var(--ds-color-fg-primary);
+    border-color: var(--ds-color-border-selected);
   }
 
   .readyPanel,
@@ -169,12 +169,12 @@
   .readyPanel p {
     max-width: 36rem;
     margin: 1rem 0 1.75rem;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     line-height: 1.7;
   }
 
   .readyPanel p strong {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   .readyRules {
     display: grid;
@@ -182,12 +182,12 @@
     max-width: 38rem;
     margin: -0.65rem 0 1.75rem;
     padding-left: 1.2rem;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.8rem;
     line-height: 1.5;
   }
   .readyRules li::marker {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
 
   .questionHeader {
@@ -214,7 +214,7 @@
     border: var(--border-subtle);
     border-radius: 1rem;
     padding: 1rem;
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .resultBanner span {
@@ -223,49 +223,58 @@
 
   .resultBanner strong {
     grid-row: span 2;
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
     font-family: var(--type-display);
     font-size: 1.8rem;
   }
 
   .resultBanner small {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
   }
 
   .resultBanner.incorrect,
   .resultBanner.unanswered {
-    border-color: color-mix(in srgb, var(--state-error) 36%, var(--color-border));
+    border-color: color-mix(
+      in srgb,
+      var(--ds-color-border-error) 36%,
+      var(--ds-color-border-default)
+    );
   }
 
   .resultBanner.incorrect strong,
   .resultBanner.unanswered strong {
-    color: var(--color-danger);
+    color: var(--ds-color-fg-error);
   }
 
   .resultBanner.partial {
-    border-color: color-mix(in srgb, var(--color-social) 36%, var(--color-border));
+    border-color: color-mix(
+      in srgb,
+      var(--ds-color-border-selected) 36%,
+      var(--ds-color-border-default)
+    );
   }
 
   .resultBanner.partial strong {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   .explanation {
     margin-top: 1rem;
-    border: 1px solid color-mix(in srgb, var(--color-brand) 28%, var(--color-border));
+    border: 1px solid
+      color-mix(in srgb, var(--ds-color-border-brand) 28%, var(--ds-color-border-default));
     border-radius: 1rem;
     padding: 1rem;
-    background: color-mix(in srgb, var(--color-brand) 8%, var(--color-surface-raised));
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 8%, var(--ds-color-bg-surface-raised));
   }
 
   .explanation > span {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
 
   .explanation p {
     margin: 0.55rem 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.85rem;
     line-height: 1.65;
   }

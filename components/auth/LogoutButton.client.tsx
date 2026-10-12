@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui";
-import { createClient } from "@/lib/supabase/client";
+import { signOut } from "@/app/actions/authentication";
 
 export function LogoutButton() {
   const [message, setMessage] = useState("");
@@ -10,16 +10,17 @@ export function LogoutButton() {
 
   function handleLogout() {
     setMessage("");
-    startTransition(() => {
-      void (async () => {
-        const supabase = createClient();
-        const { error } = await supabase.auth.signOut();
-        if (error) {
+    startTransition(async () => {
+      try {
+        const result = await signOut();
+        if (!result.ok) {
           setMessage("No se ha podido cerrar la sesión.");
           return;
         }
         window.location.assign("/");
-      })();
+      } catch {
+        setMessage("No se ha podido cerrar la sesión.");
+      }
     });
   }
 

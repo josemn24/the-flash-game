@@ -37,6 +37,7 @@ export type RunCalendarTickResult = {
   readonly opened: number;
   readonly closed: number;
   readonly finishedSeasons: number;
+  readonly abandonedAttempts: number;
   readonly source: "supabase";
 };
 

@@ -1,12 +1,15 @@
 import type {
   AcceptInvitationInput,
   AcceptInvitationResult,
+  ActivateInteractionInput,
+  ActivateInteractionResult,
   AttemptCommandInput,
-  AttemptCommandResult,
-  CompleteAttemptInput,
   RecoverAttemptInput,
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
+  SavedAttemptResult,
+  SavedAbandonedAttemptResult,
+  PrepareAttemptSessionInput,
   FinishAttemptResult,
   PassInteractionInput,
   PassInteractionResult,
@@ -37,14 +40,17 @@ import type {
   RevealProgressiveClueResult,
 } from "@/types/contracts/attempts";
 import type { AnswerStatus } from "@/types/domain/attempt";
-import type { AnswerReceiptId } from "@/types/domain/identifiers";
+import type {
+  AnswerReceiptId,
+  QuestionVersionId,
+  ScheduledChallengeId,
+} from "@/types/domain/identifiers";
 import type { DurationMs, JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 import type { QuestionType } from "@/types/contracts/questions";
 import type { GameMode } from "@/types/domain/content";
 
 /** Internal only: created by the adapter using cryptographic randomness, never a player ID. */
 export type StartAttemptCommand = StartAttemptInput & { readonly sessionToken: string };
-/** Reserved for a post-MVP multi-device policy; no current application flow may invoke it. */
 export type TakeOverAttemptCommand = TakeOverAttemptInput & { readonly newSessionToken: string };
 /** Only the trusted evaluator can provide status/points. Not a browser input contract. */
 export type RecordEvaluationCommand = AttemptCommandInput & {
@@ -53,17 +59,16 @@ export type RecordEvaluationCommand = AttemptCommandInput & {
   readonly points: number;
   readonly resultDetails?: JsonValue;
 };
-/** The existing mode evaluator supplies the authoritative termination/normalization decision. */
-export type CompleteAttemptCommand = CompleteAttemptInput & {
-  readonly score: number;
-  readonly outcome?: string;
-};
 export type RecoverAttemptCommand = RecoverAttemptInput;
-export type InvalidateAttemptCommand = TakeOverAttemptInput & { readonly reason: string };
-export type AdjustResultCommand = InvalidateAttemptCommand & { readonly score: number };
-export type AdministrativeResult = AttemptCommandResult & {
-  readonly status: "completed" | "invalidated";
-  readonly effectiveScore: number;
+/** Trusted evaluation prepared outside the final completion transaction. */
+export type PendingReceiptEvaluation = Pick<
+  RecordEvaluationCommand,
+  "receiptId" | "status" | "points" | "resultDetails"
+>;
+/** Minimal authorized metadata; no progress, answers or evaluation content. */
+export type AttemptContext = {
+  readonly challengeMode: GameMode;
+  readonly scheduledChallengeId: ScheduledChallengeId;
 };
 export type EvaluationReceipt = {
   readonly receiptId: AnswerReceiptId;
@@ -72,8 +77,9 @@ export type EvaluationReceipt = {
   readonly timeUsedMs: DurationMs;
   readonly timedOut: boolean;
 };
-/** Private content; the adapter validates each format before assembling the legacy evaluator input. */
+/** Private content; the adapter validates storage payloads before building canonical contracts. */
 export type EvaluationContext = EvaluationReceipt & {
+  readonly questionVersionId: QuestionVersionId;
   readonly questionType: QuestionType;
   readonly payloadSchemaVersion: number;
   readonly itemConfigSchemaVersion: number;
@@ -87,6 +93,7 @@ export type EvaluationContext = EvaluationReceipt & {
   readonly modeConfig: JsonValue;
   readonly submittedCodes?: readonly string[];
   readonly incorrectAttempts?: number;
+  readonly incorrectValidations?: number;
   readonly matchingIncorrectAttempts?: number;
   readonly progressiveCluesRevealed?: number;
   readonly progressiveClueAvailablePoints?: number;
@@ -99,10 +106,17 @@ export type EvaluationContext = EvaluationReceipt & {
  * There is deliberately no insert/update/delete escape hatch.
  */
 export interface AttemptCommands {
+  prepareSession(input: PrepareAttemptSessionInput): Promise<void>;
+  readCompletedAttempt(attemptId: string): Promise<SavedAttemptResult | null>;
+  readAbandonedAttempt(attemptId: string): Promise<SavedAbandonedAttemptResult | null>;
+  readRecordedEvaluation(
+    receiptId: AnswerReceiptId,
+    sessionToken: string,
+  ): Promise<SubmitAnswerResult | null>;
   start(input: StartAttemptCommand): Promise<StartAttemptResult>;
-  /** Reserved for a post-MVP multi-device policy; the database rejects it in the MVP. */
   takeOver(input: TakeOverAttemptCommand): Promise<TakeOverAttemptResult>;
   prepare(input: PrepareInteractionInput): Promise<PrepareInteractionResult>;
+  activate(input: ActivateInteractionInput): Promise<ActivateInteractionResult>;
   receiveAnswer(input: SubmitAnswerInput): Promise<ReceiveAnswerResult>;
   submitMiniWordleGuess(input: SubmitMiniWordleGuessInput): Promise<SubmitMiniWordleGuessResult>;
   submitWordSearchSelection(
@@ -120,17 +134,24 @@ export interface AttemptCommands {
   ): Promise<EvaluationContext>;
   pass(input: PassInteractionInput): Promise<PassInteractionResult>;
   recordEvaluation(input: RecordEvaluationCommand): Promise<SubmitAnswerResult>;
-  complete(input: CompleteAttemptCommand): Promise<FinishAttemptResult>;
+  completeFromPersistedAnswers(input: {
+    readonly attemptId: AttemptCommandInput["attemptId"];
+    readonly sessionToken: string;
+    readonly lockVersion: number;
+    readonly idempotencyKey: string;
+    readonly pendingEvaluation?: PendingReceiptEvaluation;
+  }): Promise<FinishAttemptResult>;
   recover(input: RecoverAttemptCommand): Promise<RecoverAttemptResult>;
+  readAttemptContext(attemptId: string, sessionToken: string): Promise<AttemptContext>;
   readRecovery(attemptId: string, sessionToken: string): Promise<AttemptRecoverySnapshot>;
   abandon(input: AttemptCommandInput): Promise<FinishAttemptResult>;
   acceptInvitation(input: AcceptInvitationInput): Promise<AcceptInvitationResult>;
-  invalidate(input: InvalidateAttemptCommand): Promise<AdministrativeResult>;
-  adjust(input: AdjustResultCommand): Promise<AdministrativeResult>;
 }
 export type CommandErrorCode =
   | "not_authorized"
   | "session_revoked"
+  | "session_transferred"
+  | "takeover_not_prepared"
   | "stale_version"
   | "idempotency_conflict"
   | "invalid_command"

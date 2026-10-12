@@ -9,12 +9,14 @@ type FlashPopGameShellProps = {
   layout: "intro" | "game";
   presentation?: "default" | "pyramid";
   children: ReactNode;
+  notice?: ReactNode;
 };
 
 export function FlashPopGameShell({
   layout,
   presentation = "default",
   children,
+  notice,
 }: FlashPopGameShellProps) {
   const contentClassName =
     layout === "intro"
@@ -29,6 +31,7 @@ export function FlashPopGameShell({
         maxWidth={layout === "intro" ? "none" : "wide"}
         contentClassName={contentClassName}
       >
+        {notice}
         <AnimatePresence mode="wait">{children}</AnimatePresence>
       </Canvas>
     </MotionConfig>

@@ -8,11 +8,17 @@ import {
   buildSafeChallengeIntroModel,
   type SafeChallengeIntroduction,
 } from "@/lib/challengeIntro";
-import type { Challenge } from "@/types/game";
+import type { PracticeChallenge } from "@/types/gameplay/practice";
 import styles from "./ChallengeIntro.module.css";
 
+type TransferPrompt = {
+  busy: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+};
+
 type FullChallengeIntroProps = {
-  challenge: Challenge;
+  challenge: PracticeChallenge;
   introduction?: never;
   onStart: () => void;
   note?: ReactNode;
@@ -20,6 +26,7 @@ type FullChallengeIntroProps = {
   returnTo?: string;
   canStart?: boolean;
   startHref?: string;
+  transfer?: TransferPrompt;
 };
 
 type SafeChallengeIntroProps = {
@@ -32,6 +39,7 @@ type SafeChallengeIntroProps = {
   returnTo?: string;
   canStart: boolean;
   startHref?: string;
+  transfer?: TransferPrompt;
 };
 
 export function ChallengeIntro({
@@ -43,6 +51,7 @@ export function ChallengeIntro({
   returnTo = "/",
   canStart = true,
   startHref,
+  transfer,
 }: FullChallengeIntroProps | SafeChallengeIntroProps) {
   const model = challenge
     ? buildChallengeIntroModel(challenge)
@@ -56,11 +65,7 @@ export function ChallengeIntro({
       exit={{ opacity: 0, y: -18 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
     >
-      <GameHeader
-        left={
-          <BackLink href={returnTo} label="Volver a desafíos" />
-        }
-      />
+      <GameHeader left={<BackLink href={returnTo} label="Volver a desafíos" />} />
 
       <div className={styles.content}>
         <section className={styles.stageCard} aria-labelledby="challenge-intro-title">
@@ -97,7 +102,33 @@ export function ChallengeIntro({
               </p>
             ) : null}
 
-            {challenge || canStart ? (
+            {transfer ? (
+              <div className={styles.transferPrompt} role="alert">
+                <p>
+                  Hay una sesión activa en otro dispositivo. Puedes continuar aquí; la sesión
+                  anterior quedará bloqueada.
+                </p>
+                <Button
+                  size="hero"
+                  fullWidth
+                  onClick={transfer.onConfirm}
+                  loading={transfer.busy}
+                  disabled={transfer.busy}
+                >
+                  {transfer.busy ? "Continuando…" : "Continuar aquí"}
+                </Button>
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={transfer.onCancel}
+                  disabled={transfer.busy}
+                >
+                  Mantener la sesión original
+                </Button>
+              </div>
+            ) : null}
+
+            {!transfer && (challenge || canStart) ? (
               startHref ? (
                 <ButtonLink href={startHref} size="hero" fullWidth trailingIcon={<ArrowIcon />}>
                   Empezar desafío

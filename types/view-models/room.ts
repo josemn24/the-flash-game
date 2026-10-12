@@ -1,22 +1,91 @@
+import type { TimeTrialProgress } from "@/types/domain/time-trial";
+import type { SurvivalAttemptOutcome, PyramidAttemptOutcome } from "@/types/domain/attempt";
 import type { Challenge, ChallengeAvailabilityStatus, GameMode } from "@/types/gameplay/challenge";
-import type { RoomChallengeResult } from "@/types/gameplay/completion";
-import type { LegacySeasonStatus } from "@/types/legacy/room";
+import type { AnswerReview, RoomChallengeResult } from "@/types/gameplay/completion";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
+import type { SeasonStatus } from "@/types/domain/season";
 import type { RoomCalendarEntry } from "@/types/view-models/calendar";
+
+export type RoomSeasonStatus = Extract<SeasonStatus, "active" | "finished">;
 
 export type CompetitiveAttemptStatus = "available" | "inProgress" | "completed" | "notCompleted";
 
 export type RoomMembershipRole = "owner" | "admin" | "member" | "spectator";
 export type RoomDataSource = "mock" | "supabase";
 export type GameplayPersistence = "mock" | "server";
+export type CompetitiveHistoryMode = GameMode;
+
+export type RoomMemberReviewItemStatus =
+  "correct" | "partial" | "incorrect" | "unanswered" | "locked";
+
+export type RoomMemberReviewItem = {
+  id: string;
+  title: string;
+  subtitle: string;
+  question: PracticeQuestion | null;
+  result: AnswerReview | null;
+  status: RoomMemberReviewItemStatus;
+  metadata?: {
+    alphabetLetter?: string;
+    levelId?: string;
+    label?: string;
+    briefing?: {
+      title: string;
+      format: string;
+      description: string;
+    };
+  };
+};
+
+export type RoomMemberReviewProgress =
+  | {
+      mode: "time-trial";
+      answeredCount: number;
+      correctCount: number;
+      totalQuestionCount: number;
+    }
+  | {
+      mode: "alphabet";
+      answeredCount: number;
+      correctCount: number;
+      totalLetterCount: number;
+    }
+  | {
+      mode: "flash";
+      answeredCount: number;
+      totalQuestionCount: number;
+    }
+  | {
+      mode: "survival";
+      reachedQuestionCount: number;
+      totalQuestionCount: number;
+      initialLives: number;
+      livesRemaining: number;
+      outcome: "in_progress" | SurvivalAttemptOutcome;
+    }
+  | {
+      mode: "pyramid";
+      reachedLevelCount: number;
+      levelsCleared: number;
+      totalLevelCount: number;
+      outcome: "in_progress" | PyramidAttemptOutcome;
+    }
+  | {
+      mode: "narrative";
+      answeredCount: number;
+      totalQuestionCount: number;
+    };
 
 export type GameRoomContext = {
+  timeTrial?: TimeTrialProgress;
   roomId: string;
   roomTitle: string;
   returnTo: string;
   memberId: string;
   availabilityStatus: ChallengeAvailabilityStatus;
   attemptStatus: CompetitiveAttemptStatus;
-  gameplayPersistence?: GameplayPersistence;
+  /** Competitive room contexts never opt into the local mock runtime. */
+  gameplayPersistence?: Extract<GameplayPersistence, "server">;
   result?: RoomChallengeResult;
 };
 
@@ -48,7 +117,7 @@ export type RoomCardModel = {
   roomId: string;
   title: string;
   seasonTitle: string | null;
-  seasonStatus: LegacySeasonStatus | null;
+  seasonStatus: RoomSeasonStatus | null;
   dailyChallenge: {
     id: string;
     title: string;
@@ -79,7 +148,7 @@ export type RoomDetailModel = {
   roomId: string;
   title: string;
   seasonTitle: string | null;
-  seasonStatus: LegacySeasonStatus | null;
+  seasonStatus: RoomSeasonStatus | null;
   currentUser: {
     id: string;
     name: string;
@@ -125,7 +194,7 @@ export type RoomIntroductionModel = {
   canStart: boolean;
   competitivePlayable: boolean;
   availabilityStatus: "upcoming" | "available" | "closed" | "cancelled";
-  source: "supabase";
+  source: "mock" | "supabase";
 };
 
 export type RoomMemberDetailModel = {
@@ -134,6 +203,7 @@ export type RoomMemberDetailModel = {
   member: RoomMemberViewModel;
   challengeSummary: {
     id: string;
+    mode: GameMode;
     title: string;
     formatLabel: string;
     subtitle: string;
@@ -143,6 +213,8 @@ export type RoomMemberDetailModel = {
   } | null;
   challenge: Challenge | null;
   result: RoomChallengeResult | null;
+  reviewItems: RoomMemberReviewItem[];
+  reviewProgress: RoomMemberReviewProgress | null;
   roomRank: number;
   challengeRank: number | null;
   roomLeaderboard: RoomLeaderboardEntry[];
@@ -174,7 +246,12 @@ export type RoomSettingsModel = {
 export type RoomHistoryEntry = {
   id: string;
   challengeId: string;
+  mode: CompetitiveHistoryMode;
   title: string;
+  formatLabel: string;
+  subtitle: string;
+  questionCount: number;
+  maxScore: number;
   playedAt: string;
   imageSrc: string;
   playerCount: number;

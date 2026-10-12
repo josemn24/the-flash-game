@@ -8,7 +8,7 @@
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    color: rgba(255, 255, 255, 0.64);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.68rem;
     font-weight: 900;
@@ -16,12 +16,12 @@
     text-transform: uppercase;
   }
   .phaseHeader strong {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand);
   }
   .helper,
   .instructions {
     margin: 0;
-    color: rgba(255, 255, 255, 0.46);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.82rem;
     line-height: 1.45;
   }
@@ -34,26 +34,26 @@
   .recallCell {
     min-height: 7rem;
     overflow: hidden;
-    border: 1px solid rgb(var(--color-brand-rgb) / 0.34);
+    border: 1px solid color-mix(in srgb, var(--ds-color-bg-brand) 34%, transparent);
     border-radius: 1rem;
-    background: rgb(var(--color-brand-rgb) / 0.07);
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 7%, transparent);
   }
   .recallCell {
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--ds-color-fg-secondary);
     border-color: rgba(255, 255, 255, 0.16);
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
     transition:
       border-color 150ms,
       background 150ms;
   }
   .recallCell:hover:not(:disabled),
   .recallCellFilled {
-    border-color: rgb(var(--color-brand-rgb) / 0.7);
-    background: rgb(var(--color-brand-rgb) / 0.08);
+    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 70%, transparent);
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 8%, transparent);
   }
   .recallCell:focus-visible,
   .bankItem:focus-visible {
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
   .tileContent {
@@ -77,7 +77,7 @@
     line-height: 1.2;
   }
   .emptyCell {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.64rem;
     font-weight: 800;
@@ -94,8 +94,8 @@
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.13);
     border-radius: 0.85rem;
-    color: rgba(255, 255, 255, 0.82);
-    background: var(--color-surface-soft);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-soft);
     transition:
       border-color 150ms,
       opacity 150ms,
@@ -105,9 +105,9 @@
     min-height: 4.5rem;
   }
   .bankItemSelected {
-    border-color: var(--color-brand);
-    background: rgb(var(--color-brand-rgb) / 0.1);
-    color: white;
+    border-color: var(--ds-color-border-brand);
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 10%, transparent);
+    color: var(--ds-color-fg-on-inverse);
   }
   .bankItemPlaced {
     opacity: 0.42;
@@ -123,44 +123,44 @@
   }
 
   .root .phaseHeader {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .root .helper,
   .root .instructions {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .root .memoryCell,
   .root .recallCell {
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
   .root .recallCell {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
   .root .recallCell:hover:not(:disabled),
   .root .recallCellFilled {
-    border-color: var(--state-selected);
-    background: color-mix(in srgb, var(--state-selected) 10%, var(--color-surface));
+    border-color: var(--ds-color-border-selected);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 10%, var(--ds-color-bg-surface));
   }
   .root .recallCell:focus-visible,
   .root .bankItem:focus-visible {
-    outline-color: var(--state-focus);
+    outline-color: var(--ds-color-focus-ring);
   }
   .root .emptyCell {
-    color: var(--color-ink-faint);
+    color: var(--ds-color-fg-secondary);
   }
   .root .bankItem {
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
     border-radius: var(--radius-control);
-    color: var(--color-ink);
-    background: var(--color-surface-raised);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-control);
   }
   .root .bankItemSelected {
-    border-color: var(--state-selected);
-    color: var(--color-ink);
-    background: color-mix(in srgb, var(--state-selected) 12%, var(--color-surface));
+    border-color: var(--ds-color-border-selected);
+    color: var(--ds-color-fg-primary);
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 12%, var(--ds-color-bg-surface));
   }
 }

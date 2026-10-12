@@ -319,6 +319,7 @@ begin
   if found and (cached.operation <> 'submit_queens_placement' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -328,7 +329,10 @@ begin
   end if;
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or session_row.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into segment from private.interaction_intervals
@@ -342,6 +346,10 @@ begin
   select * into question from private.question_versions where id = item.question_version_id;
   if question.type <> 'queens' or question.payload_schema_version <> 1 then
     raise exception 'unsupported_question' using errcode = '22023';
+  end if;
+
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode in ('pyramid','time-trial')) then
+    raise exception 'queens_requires_board_validation' using errcode = '22023';
   end if;
 
   current_queens := private.queens_board(a.id, item.id);
@@ -575,6 +583,7 @@ begin
   if found and (cached.operation <> 'save_queens_draft' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -584,7 +593,10 @@ begin
   end if;
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or session_row.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
@@ -687,6 +699,7 @@ begin
   if found and (cached.operation <> 'submit_queens_answer' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -696,7 +709,10 @@ begin
   end if;
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or session_row.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
@@ -783,13 +799,13 @@ language plpgsql stable security definer set search_path = '' as $$
 declare actor uuid := private.command_actor(); result jsonb;
 begin
   select jsonb_build_object(
-    'receiptId', r.id, 'answer', case when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
+    'receiptId', r.id, 'answer', case when cv.mode = 'time-trial' and (r.answer is null or r.answer = 'null'::jsonb) then null when q.type = 'queens' then private.queens_answer(r.attempt_id, r.challenge_item_id) when q.type = 'word-search' then jsonb_build_object('foundWordIds', coalesce((
       select jsonb_agg(to_jsonb(e.matched_target_id) order by e.sequence)
       from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.correct
     ), '[]'::jsonb)) else r.answer end, 'receivedAt', r.received_at,
     'timeUsedMs', r.time_used_ms, 'timedOut', r.timed_out,
-    'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
+    'questionVersionId', q.id, 'questionType', q.type, 'payloadSchemaVersion', q.payload_schema_version,
     'publicPayload', q.public_payload,
     'submittedCodes', case when q.type = 'logic-code' then coalesce((
       select jsonb_agg(e.code order by e.sequence)
@@ -824,6 +840,7 @@ begin
       select count(*)::integer from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
     ), 0) else null end,
+    'incorrectValidations', case when q.type = 'queens' then (private.queens_progress(r.attempt_id, r.challenge_item_id)->>'incorrectValidations')::integer else null end,
     'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
     'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
     'itemConfig', i.mode_config, 'mode', cv.mode,

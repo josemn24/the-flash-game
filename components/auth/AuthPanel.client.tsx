@@ -1,37 +1,81 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Button, BoltIcon, Card, Canvas } from "@/components/ui";
-import { createClient } from "@/lib/supabase/client";
+import { Button, BoltIcon, Card, Canvas, FormField, Input } from "@/components/ui";
+import { signIn } from "@/app/actions/authentication";
+import type { AuthenticationFailureCode } from "@/types/contracts/authentication";
 import styles from "./AuthPanel.module.css";
+
+type LoginState =
+  | { status: "idle" | "authenticating" | "authenticated" }
+  | { status: "error"; message: string; invalidCredentials: boolean };
+
+function loginErrorState(code: AuthenticationFailureCode): LoginState {
+  const messages: Record<AuthenticationFailureCode, string> = {
+    credentials: "Correo o contraseña incorrectos. Revisa tus datos.",
+    rate_limit: "Demasiados intentos. Espera un momento y vuelve a intentarlo.",
+    service: "El servicio no está disponible ahora. Inténtalo de nuevo.",
+    connection: "No hemos podido conectar. Comprueba tu conexión y vuelve a intentarlo.",
+    unexpected: "No se ha podido iniciar sesión. Inténtalo de nuevo.",
+  };
+  return { status: "error", message: messages[code], invalidCredentials: code === "credentials" };
+}
 
 export function AuthPanel() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [state, setState] = useState<LoginState>({ status: "idle" });
   const [isPending, startTransition] = useTransition();
+  const submissionInFlight = useRef(false);
+
+  useEffect(() => {
+    // A fast transition may finish without committing a pending render.
+    if (!isPending) submissionInFlight.current = false;
+  }, [isPending, state]);
+
+  const authenticated = state.status === "authenticated";
+  const invalidCredentials = state.status === "error" && state.invalidCredentials;
+  const progressMessage = isPending ? (authenticated ? "Entrando…" : "Iniciando sesión…") : "";
+  const errorMessage =
+    state.status === "error"
+      ? state.message
+      : authenticated && !isPending
+        ? "No hemos podido abrir tu sesión. Reintenta la entrada."
+        : "";
+
+  function clearError() {
+    if (state.status === "error") setState({ status: "idle" });
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage("");
+    if (submissionInFlight.current || isPending) return;
+    submissionInFlight.current = true;
 
-    startTransition(() => {
-      void authenticate();
-    });
-  }
-
-  async function authenticate() {
-    const supabase = createClient();
-    const result = await supabase.auth.signInWithPassword({ email, password });
-
-    if (result.error) {
-      setMessage("No se ha podido iniciar sesión. Revisa tus datos.");
+    if (authenticated) {
+      setState({ status: "authenticated" });
+      startTransition(() => router.refresh());
       return;
     }
 
-    router.refresh();
+    setState({ status: "authenticating" });
+    startTransition(async () => {
+      try {
+        const result = await signIn({ email, password });
+
+        if (!result.ok) {
+          setState(loginErrorState(result.code));
+          return;
+        }
+
+        setState({ status: "authenticated" });
+        startTransition(() => router.refresh());
+      } catch {
+        setState(loginErrorState("unexpected"));
+      }
+    });
   }
 
   return (
@@ -49,39 +93,64 @@ export function AuthPanel() {
           <p>Inicia sesión para acceder a tu perfil y tus salas.</p>
         </div>
 
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.field}>
-            <label htmlFor="auth-email">Correo electrónico</label>
-            <input
-              id="auth-email"
-              type="email"
-              value={email}
-              autoComplete="email"
-              onChange={(event) => setEmail(event.currentTarget.value)}
-              required
-            />
-          </div>
+        <form className={styles.form} onSubmit={handleSubmit} aria-busy={isPending}>
+          <FormField
+            id="auth-email"
+            label="Correo electrónico"
+            required
+            invalid={invalidCredentials}
+            describedBy={invalidCredentials ? "auth-error" : undefined}
+          >
+            {(field) => (
+              <Input
+                {...field}
+                type="email"
+                value={email}
+                autoComplete="email"
+                disabled={isPending || authenticated}
+                onChange={(event) => {
+                  setEmail(event.currentTarget.value);
+                  clearError();
+                }}
+              />
+            )}
+          </FormField>
 
-          <div className={styles.field}>
-            <label htmlFor="auth-password">Contraseña</label>
-            <input
-              id="auth-password"
-              type="password"
-              value={password}
-              minLength={6}
-              autoComplete="current-password"
-              onChange={(event) => setPassword(event.currentTarget.value)}
-              required
-            />
-          </div>
+          <FormField
+            id="auth-password"
+            label="Contraseña"
+            required
+            invalid={invalidCredentials}
+            describedBy={invalidCredentials ? "auth-error" : undefined}
+          >
+            {(field) => (
+              <Input
+                {...field}
+                type="password"
+                value={password}
+                minLength={6}
+                autoComplete="current-password"
+                disabled={isPending || authenticated}
+                onChange={(event) => {
+                  setPassword(event.currentTarget.value);
+                  clearError();
+                }}
+              />
+            )}
+          </FormField>
 
           <Button type="submit" fullWidth loading={isPending}>
-            Iniciar sesión
+            {progressMessage || (authenticated ? "Reintentar entrada" : "Iniciar sesión")}
           </Button>
-          <p className={styles.message} role="status" aria-live="polite">
-            {message}
-          </p>
         </form>
+        <div className={styles.feedback}>
+          <p className="sr-only" role="status" aria-live="polite">
+            {progressMessage}
+          </p>
+          <p id="auth-error" className={styles.error} role="alert">
+            {errorMessage}
+          </p>
+        </div>
       </Card>
     </Canvas>
   );

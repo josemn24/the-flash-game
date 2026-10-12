@@ -5,9 +5,9 @@
     flex: 0 0 auto;
     place-items: center;
     overflow: hidden;
-    border: 2px solid var(--color-surface);
+    border: 2px solid var(--ds-color-border-on-inverse);
     border-radius: var(--radius-pill);
-    color: var(--color-text-on-social);
+    color: var(--ds-color-fg-on-selected);
     font-family: var(--type-ui);
     font-size: 0.72rem;
     font-weight: 900;
@@ -35,25 +35,28 @@
   }
 
   .social {
-    background: var(--color-social);
+    background: var(--ds-color-bg-selected);
   }
 
   .coral {
-    background: var(--color-danger);
+    color: var(--ds-color-fg-on-error);
+    background: var(--ds-color-bg-error);
   }
 
   .blue,
   .aqua {
-    background: var(--color-info);
+    color: var(--ds-color-fg-on-info);
+    background: var(--ds-color-bg-info);
   }
 
   .ink {
-    background: var(--color-ink);
+    color: var(--ds-color-fg-on-inverse);
+    background: var(--ds-color-bg-inverse);
   }
 
   .reward {
-    background: var(--color-reward);
-    color: var(--color-text-on-reward);
+    background: var(--ds-color-bg-reward);
+    color: var(--ds-color-fg-on-reward);
   }
 
   .group {
@@ -72,7 +75,7 @@
 
   .label {
     margin-left: var(--space-2);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-ui);
     font-size: 0.75rem;
     font-weight: 700;

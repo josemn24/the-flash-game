@@ -1,5 +1,14 @@
 import type { PlayerId, UtcIsoDateTime } from "@/types/domain";
-import type { Challenge } from "@/types/gameplay";
+import type {
+  Challenge,
+  ServerAlphabetChallenge,
+  ServerFlashChallenge,
+  ServerFlashTerminalReview,
+  ServerNarrativeChallenge,
+  ServerPyramidChallenge,
+  ServerSurvivalChallenge,
+  ServerTimeTrialChallenge,
+} from "@/types/gameplay";
 import type {
   GameRoomContext,
   RoomCardModel,
@@ -8,12 +17,13 @@ import type {
   RoomHistoryEntry,
   RoomLeaderboardEntry,
   RoomMemberDetailModel,
+  RoomSeasonStatus,
   RoomSettingsModel,
 } from "@/types/view-models/room";
 import type { UserProfile } from "@/types/view-models/user";
 
 export type QueryContext = {
-  readonly viewerId: PlayerId;
+  readonly viewer: ViewerProfile;
   readonly now: UtcIsoDateTime;
 };
 
@@ -30,6 +40,11 @@ export type RoomRankingModel = {
   readonly roomId: string;
   readonly roomTitle: string;
   readonly currentUserId: string;
+  readonly season: {
+    readonly id: string;
+    readonly title: string;
+    readonly status: RoomSeasonStatus;
+  } | null;
   readonly entries: RoomLeaderboardEntry[];
 };
 
@@ -83,6 +98,21 @@ export type PlayableChallengePageModel = {
   readonly roomContext?: GameRoomContext;
   readonly socialSnapshot: FlashPopSocialSnapshot;
   readonly gameplayPersistence?: "mock" | "server";
+};
+
+export type CompetitiveChallengePageModel = {
+  readonly challenge:
+    | Challenge
+    | ServerFlashChallenge
+    | ServerAlphabetChallenge
+    | ServerSurvivalChallenge
+    | ServerPyramidChallenge
+    | ServerNarrativeChallenge
+    | ServerTimeTrialChallenge;
+  readonly roomContext?: GameRoomContext;
+  readonly socialSnapshot: FlashPopSocialSnapshot;
+  readonly gameplayPersistence?: "mock" | "server";
+  readonly terminalReview?: readonly ServerFlashTerminalReview[];
 };
 
 export type FlashPopLobbyPageModel = {

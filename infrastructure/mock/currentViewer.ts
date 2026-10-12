@@ -1,8 +1,9 @@
+import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import type { CurrentViewerProvider } from "@/application/queries";
 import { getPlayerRouteKey } from "@/data/mock/selectors";
 import type { DomainStore, PlayerId } from "@/types/domain";
 
-export class MockCurrentViewerProvider implements CurrentViewerProvider {
+export class MockCurrentViewerProvider implements CurrentViewerProvider, CurrentViewerReader {
   constructor(
     private readonly store: DomainStore,
     private readonly currentPlayerId: PlayerId,

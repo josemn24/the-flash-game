@@ -1,7 +1,7 @@
-import { getChallengeDisplayTitle } from "@/application/presentation/room";
+import { getChallengeDisplayTitle } from "@/lib/roomPresentation";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import type { Challenge, GameMode, NarrativeQuestionStep } from "@/types/game";
+import type { Challenge, GameMode, NarrativeQuestionStep } from "@/types/gameplay";
 
 export type ChallengeIntroMetric = {
   value: string | number;
@@ -24,6 +24,14 @@ export type ChallengeIntroModel = {
 function formatEstimatedMinutes(seconds: number) {
   const minutes = Math.max(0, Math.floor(seconds / 60));
   return `${minutes} min`;
+}
+
+function formatGlobalDuration(milliseconds: number) {
+  const seconds = Math.floor(milliseconds / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  if (minutes === 0) return `${seconds} s`;
+  return remainingSeconds === 0 ? `${minutes} min` : `${minutes} min ${remainingSeconds} s`;
 }
 
 function getQuestionFormats(challenge: Challenge) {
@@ -52,6 +60,8 @@ function getModeLabel(challenge: Challenge) {
 
 function getModeLabelForMode(mode: GameMode) {
   switch (mode) {
+    case "time-trial":
+      return "Contrarreloj";
     case "flash":
       return "Flash";
     case "survival":
@@ -67,8 +77,28 @@ function getModeLabelForMode(mode: GameMode) {
 
 function buildSafeRules(
   mode: GameMode,
+  timeLimitMs?: number,
 ): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   switch (mode) {
+    case "time-trial":
+      return [
+        {
+          title: "Un solo reloj compartido",
+          description: timeLimitMs
+            ? `El reloj de ${formatGlobalDuration(timeLimitMs)} es único para todas las pruebas. Validaciones y transiciones también consumen tiempo.`
+            : "El mismo reloj global corre durante todas las pruebas. Validaciones y transiciones consumen tiempo.",
+        },
+        {
+          title: "Tercer error",
+          description:
+            "La tercera validación completa incorrecta de un tablero termina el desafío. Los movimientos no consumen oportunidades.",
+        },
+        {
+          title: "Conserva tus aciertos",
+          description:
+            "Cada prueba resuelta suma sus puntos. Recuperar una prueba activa sin respuesta recibida termina la partida.",
+        },
+      ];
     case "flash":
       return buildFlashRules();
     case "survival":
@@ -87,6 +117,7 @@ export type SafeChallengeIntroduction = {
   mode: GameMode;
   questionCount: number;
   maxScore: number;
+  timeLimitMs?: number;
 };
 
 export function buildSafeChallengeIntroModel(
@@ -98,10 +129,16 @@ export function buildSafeChallengeIntroModel(
     contextLabel: `Reto de hoy · ${modeLabel}`,
     title: getChallengeDisplayTitle(introduction.title, introduction.mode),
     metrics: [
-      { value: introduction.questionCount, label: "Preguntas" },
+      {
+        value: introduction.questionCount,
+        label: introduction.mode === "time-trial" ? "Pruebas" : "Preguntas",
+      },
+      ...(introduction.mode === "time-trial" && introduction.timeLimitMs
+        ? [{ value: formatGlobalDuration(introduction.timeLimitMs), label: "Tiempo global" }]
+        : []),
       { value: introduction.maxScore, label: "Puntos" },
     ],
-    rules: buildSafeRules(introduction.mode),
+    rules: buildSafeRules(introduction.mode, introduction.timeLimitMs),
   };
 }
 

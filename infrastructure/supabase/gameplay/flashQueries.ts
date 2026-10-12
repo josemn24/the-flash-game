@@ -1,0 +1,399 @@
+import { assertAttemptLifecycle } from "@/lib/attemptLifecycle";
+import type { AttemptOutcome } from "@/types/domain/attempt";
+import {
+  competitivePerformanceObserver,
+  countCompetitiveDatabaseCall,
+} from "@/infrastructure/observability/competitivePerformance";
+import {
+  competitivePayloadSchemaVersionsFor,
+  isCompetitiveQuestionType,
+  type CompetitiveQuestionType,
+} from "@/lib/question-formats/definitions";
+import type { GameMode } from "@/types/domain/content";
+import "server-only";
+import { validateCompetitiveRows } from "./competitiveReadProjection";
+
+import { resolveCompetitiveQuestionPayload } from "@/infrastructure/supabase/assets/questionAssetRuntime";
+import { FLASH_MAX_QUESTIONS, FLASH_MIN_QUESTIONS } from "@/lib/editorial/flashDocument";
+import type {
+  PublicFunctionArgs,
+  PublicFunctionRow,
+  RawRpcResponse,
+} from "@/infrastructure/supabase/rpcTypes";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import type { AnswerResult, RoomChallengeResult } from "@/types/gameplay";
+import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
+import type { GameRoomContext, QueryContext } from "@/types/view-models";
+
+type FlashReadOverrides = {
+  publication_status: "scheduled" | "open" | "closed" | "cancelled";
+  challenge_subtitle: string;
+  challenge_mode: "flash" | "survival" | "pyramid" | "time-trial";
+  own_attempt_id: string | null;
+  own_attempt_status: "in_progress" | "completed" | "abandoned" | "invalidated" | null;
+  own_attempt_score: number | null;
+  own_attempt_started_at: string | null;
+  own_attempt_completed_at: string | null;
+  own_attempt_deadline_at: string | null;
+  own_attempt_lock_version: number | null;
+  question_type: CompetitiveQuestionType;
+};
+
+type CompetitiveReadFunctionName =
+  | "get_my_flash_challenge"
+  | "get_my_survival_challenge"
+  | "get_my_pyramid_challenge"
+  | "get_my_time_trial_challenge";
+
+export type GeneratedCompetitiveReadRow<Name extends CompetitiveReadFunctionName> = Omit<
+  PublicFunctionRow<Name>,
+  keyof FlashReadOverrides
+> &
+  FlashReadOverrides;
+
+export type FlashReadRow = GeneratedCompetitiveReadRow<"get_my_flash_challenge">;
+
+type FlashResultOverrides = {
+  question_type: CompetitiveQuestionType;
+  public_payload: unknown;
+  solution_payload: unknown;
+  answer: unknown;
+  answer_status: AnswerResult["status"];
+  points: number;
+  result_details: AnswerResult["details"] | null;
+  presented_at: string;
+  submitted_at: string | null;
+  time_used_ms: number;
+  attempt_status: "completed";
+  attempt_score: number;
+  attempt_outcome?: AttemptOutcome;
+};
+
+type CompetitiveResultFunctionName =
+  | "get_my_flash_result"
+  | "get_my_survival_result"
+  | "get_my_pyramid_result"
+  | "get_my_time_trial_result";
+
+export type GeneratedCompetitiveResultRow<Name extends CompetitiveResultFunctionName> = Omit<
+  PublicFunctionRow<Name>,
+  keyof FlashResultOverrides
+> &
+  FlashResultOverrides;
+
+export type FlashResultRow = GeneratedCompetitiveResultRow<"get_my_flash_result">;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+export function isFlashReadRow<Name extends CompetitiveReadFunctionName = "get_my_flash_challenge">(
+  value: unknown,
+): value is GeneratedCompetitiveReadRow<Name> {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.room_id === "string" &&
+    typeof value.room_slug === "string" &&
+    typeof value.room_title === "string" &&
+    typeof value.publication_id === "string" &&
+    (value.publication_status === "scheduled" ||
+      value.publication_status === "open" ||
+      value.publication_status === "closed" ||
+      value.publication_status === "cancelled") &&
+    typeof value.challenge_id === "string" &&
+    typeof value.challenge_version_id === "string" &&
+    typeof value.challenge_title === "string" &&
+    typeof value.challenge_subtitle === "string" &&
+    typeof value.challenge_description === "string" &&
+    (value.challenge_mode === "flash" ||
+      value.challenge_mode === "survival" ||
+      value.challenge_mode === "pyramid" ||
+      value.challenge_mode === "time-trial") &&
+    value.challenge_max_score === 100 &&
+    typeof value.question_count === "number" &&
+    Number.isSafeInteger(value.question_count) &&
+    (value.challenge_mode === "pyramid"
+      ? value.question_count === 7
+      : value.question_count >= FLASH_MIN_QUESTIONS &&
+        value.question_count <= FLASH_MAX_QUESTIONS) &&
+    (value.own_attempt_id === null || typeof value.own_attempt_id === "string") &&
+    (value.own_attempt_status === null || typeof value.own_attempt_status === "string") &&
+    (value.own_attempt_score === null || typeof value.own_attempt_score === "number") &&
+    (value.own_attempt_lock_version === null ||
+      typeof value.own_attempt_lock_version === "number") &&
+    typeof value.challenge_item_id === "string" &&
+    typeof value.item_position === "number" &&
+    typeof value.question_version_id === "string" &&
+    typeof value.question_type === "string" &&
+    isCompetitiveQuestionType(value.question_type, value.challenge_mode as GameMode) &&
+    typeof value.payload_schema_version === "number" &&
+    competitivePayloadSchemaVersionsFor(
+      value.question_type as CompetitiveQuestionType,
+      value.challenge_mode as GameMode | undefined,
+    ).includes(Number(value.payload_schema_version)) &&
+    typeof value.time_limit_ms === "number" &&
+    value.time_limit_ms > 0 &&
+    typeof value.item_points === "number" &&
+    Number.isSafeInteger(value.item_points) &&
+    value.item_points > 0 &&
+    value.item_points <= 100
+  );
+}
+
+export function isFlashResultRow<
+  Name extends CompetitiveResultFunctionName = "get_my_flash_result",
+>(value: unknown): value is GeneratedCompetitiveResultRow<Name> {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.attempt_id === "string" &&
+    typeof value.scheduled_challenge_id === "string" &&
+    typeof value.challenge_item_id === "string" &&
+    typeof value.item_position === "number" &&
+    typeof value.question_type === "string" &&
+    isCompetitiveQuestionType(value.question_type, value.challenge_mode as GameMode) &&
+    typeof value.payload_schema_version === "number" &&
+    competitivePayloadSchemaVersionsFor(
+      value.question_type as CompetitiveQuestionType,
+      value.challenge_mode as GameMode | undefined,
+    ).includes(Number(value.payload_schema_version)) &&
+    isRecord(value.public_payload) &&
+    isRecord(value.solution_payload) &&
+    (typeof value.answer === "string" ||
+      typeof value.answer === "boolean" ||
+      typeof value.answer === "number" ||
+      Array.isArray(value.answer) ||
+      value.answer === null ||
+      isRecord(value.answer)) &&
+    ["correct", "partial", "incorrect", "unanswered", "timeout"].includes(
+      String(value.answer_status),
+    ) &&
+    typeof value.points === "number" &&
+    typeof value.time_used_ms === "number" &&
+    value.attempt_status === "completed" &&
+    typeof value.attempt_score === "number"
+  );
+}
+
+function toTerminalReviewRow(row: FlashResultRow): ServerFlashTerminalReview {
+  return {
+    challengeItemId: row.challenge_item_id,
+    publicPayload: row.public_payload,
+    solutionPayload: row.solution_payload,
+  };
+}
+
+export async function callFlashRead(
+  functionName:
+    | "get_my_time_trial_challenge"
+    | "get_my_time_trial_result"
+    | "get_my_flash_challenge"
+    | "get_my_flash_result"
+    | "get_my_survival_challenge"
+    | "get_my_survival_result"
+    | "get_my_pyramid_challenge"
+    | "get_my_pyramid_result",
+  args: PublicFunctionArgs<typeof functionName>,
+) {
+  const supabase = await createClient();
+  countCompetitiveDatabaseCall("rpcCalls");
+  const response = await competitivePerformanceObserver.measure(
+    functionName.endsWith("_challenge") ? "challenge.initial" : "challenge.enrichment",
+    () => supabase.rpc(functionName, args),
+  );
+  const { data, error } = response as RawRpcResponse<typeof response>;
+  if (error) throw new Error(`Supabase flash read failed (${functionName}): ${error.message}`);
+  if (!Array.isArray(data)) return [];
+  const resultMode = (
+    {
+      get_my_time_trial_result: "time-trial",
+      get_my_flash_result: "flash",
+      get_my_survival_result: "survival",
+      get_my_pyramid_result: "pyramid",
+    } as const
+  )[functionName as CompetitiveResultFunctionName];
+  if (resultMode) {
+    for (const value of data) {
+      assertAttemptLifecycle({
+        challengeMode: resultMode,
+        status: isRecord(value) ? value.attempt_status : undefined,
+        // Flash's answer-review RPC does not project outcome; its fixed mode only admits null.
+        outcome: isRecord(value)
+          ? (resultMode === "flash" || resultMode === "time-trial") && !("attempt_outcome" in value)
+            ? null
+            : value.attempt_outcome
+          : undefined,
+      });
+    }
+  }
+  return data;
+}
+
+export function toRoomContext(
+  row: FlashReadRow,
+  viewerId: string,
+  result?: RoomChallengeResult,
+): GameRoomContext {
+  return {
+    roomId: row.room_slug,
+    roomTitle: row.room_title,
+    returnTo: `/salas/${row.room_slug}`,
+    memberId: viewerId,
+    availabilityStatus: "available",
+    attemptStatus:
+      row.own_attempt_status === "completed"
+        ? "completed"
+        : row.own_attempt_status === "in_progress"
+          ? "inProgress"
+          : row.own_attempt_status === "abandoned" || row.own_attempt_status === "invalidated"
+            ? "notCompleted"
+            : "available",
+    gameplayPersistence: "server",
+    ...(result ? { result } : {}),
+  };
+}
+
+export class SupabaseFlashQueries {
+  async getPlayable(roomKey: string, publicationId: string, context: QueryContext) {
+    return this.getPlayableFromRows(
+      await callFlashRead("get_my_flash_challenge", {
+        target_room_slug: roomKey,
+        target_publication_id: publicationId,
+      }),
+      context,
+    );
+  }
+
+  async getPlayableFromRows(rawRows: readonly unknown[], context: QueryContext) {
+    const viewer = context.viewer;
+    const rows = validateCompetitiveRows(rawRows, isFlashReadRow);
+    const first = rows[0];
+    if (first?.publication_status === "cancelled") return null;
+    if (first && rows.length !== first.question_count) {
+      throw new Error("Incomplete competitive challenge rows");
+    }
+    if (!first || first.challenge_mode !== "flash" || rows.length !== first.question_count)
+      return null;
+
+    let resultRows: FlashResultRow[] = [];
+    if (first.own_attempt_status === "completed" && first.own_attempt_id) {
+      resultRows = (
+        await callFlashRead("get_my_flash_result", {
+          target_attempt_id: first.own_attempt_id,
+        })
+      ).filter(isFlashResultRow);
+    }
+    const result = resultRows.length ? this.toResult(resultRows) : undefined;
+    let terminalReview =
+      resultRows.length === first.question_count ? resultRows.map(toTerminalReviewRow) : undefined;
+    if (terminalReview) {
+      try {
+        const authClient = await createClient();
+        const { data: authData } = await authClient.auth.getUser();
+        if (authData.user) {
+          terminalReview = await Promise.all(
+            terminalReview.map(async (review) => ({
+              ...review,
+              publicPayload: await resolveCompetitiveQuestionPayload({
+                authUserId: authData.user!.id,
+                attemptId: first.own_attempt_id!,
+                publicPayload: review.publicPayload,
+              }),
+            })),
+          );
+        }
+      } catch {
+        // A review asset outage must not hide an already persisted result.
+        terminalReview = undefined;
+      }
+    }
+    const challenge: ServerFlashChallenge = {
+      id: first.publication_id,
+      definitionId: first.challenge_slug,
+      number: 1,
+      title: first.challenge_title,
+      subtitle: first.challenge_subtitle,
+      description: first.challenge_description,
+      mode: "flash",
+      slots: rows.map((row) => ({
+        id: row.challenge_item_id,
+        position: row.item_position,
+        questionType: row.question_type,
+        payloadSchemaVersion: row.payload_schema_version,
+        timeLimitMs: row.time_limit_ms,
+        points: row.item_points,
+      })),
+      maxScore: first.challenge_max_score,
+    };
+    return {
+      challenge,
+      roomContext: toRoomContext(first, viewer.playerId, result),
+      socialSnapshot: {
+        currentPlayer: {
+          id: viewer.playerId,
+          displayName: viewer.name,
+          initials: viewer.name.slice(0, 2).toUpperCase(),
+          tone: "social" as const,
+        },
+        players: [],
+        peers: [],
+      },
+      gameplayPersistence: "server" as const,
+      ...(terminalReview ? { terminalReview } : {}),
+    };
+  }
+
+  toResult(rows: FlashResultRow[]): RoomChallengeResult {
+    const first = rows[0]!;
+    const answers: AnswerResult[] = rows.map((row) => ({
+      questionId: row.challenge_item_id,
+      answer: row.answer as AnswerResult["answer"],
+      status: row.answer_status,
+      isCorrect: row.answer_status === "correct" || row.answer_status === "partial",
+      points: row.points,
+      timeUsed: row.time_used_ms / 1000,
+      ...(row.result_details ? { details: row.result_details } : {}),
+    }));
+    return {
+      flashPoints: first.attempt_score,
+      completed: true,
+      attempt: {
+        challengeId: first.scheduled_challenge_id,
+        startedAt: first.attempt_started_at,
+        playedAt: first.attempt_completed_at,
+        flashPoints: first.attempt_score,
+        completed: true,
+        durationMs: rows.reduce((sum, row) => sum + row.time_used_ms, 0),
+        answers,
+      },
+    };
+  }
+
+  async getResult(attemptId: string) {
+    const rows = await this.getTerminalReview(attemptId);
+    return rows.length ? this.toResult(rows) : null;
+  }
+
+  async getTerminalReview(attemptId: string) {
+    const rows = (
+      await callFlashRead("get_my_flash_result", {
+        target_attempt_id: attemptId,
+      })
+    ).filter(isFlashResultRow);
+    if (!rows.length) return rows;
+    const client = await createClient();
+    const { data } = await client.auth.getUser();
+    if (!data.user) return rows;
+    return Promise.all(
+      rows.map(async (row) => ({
+        ...row,
+        public_payload: await resolveCompetitiveQuestionPayload({
+          authUserId: data.user.id,
+          attemptId,
+          publicPayload: row.public_payload,
+        }),
+      })),
+    );
+  }
+}
+
+export const supabaseFlashQueries = new SupabaseFlashQueries();

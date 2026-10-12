@@ -1,3 +1,4 @@
+import type { PyramidAttemptOutcome } from "@/types/domain/attempt";
 import type {
   ImageSurface,
   ConnectPairsPair,
@@ -5,14 +6,15 @@ import type {
   MatchingLeftItem,
   OddOneOutItem,
   AnagramTile,
-  Question,
   QuestionMedia,
   QueensGrid,
   ZipCheckpoint,
-} from "@/types/question";
+  EscapeBlock,
+} from "@/types/contracts";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
 
-export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
+export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid" | "time-trial";
 export type ChallengeImplementationStatus = "prototype" | "complete";
 
 /** @deprecated ID legible de los mocks; usa `ChallengeDefinitionId` de `@/types/domain`. */
@@ -173,7 +175,7 @@ type ChallengeBase = {
 
 export type FlashChallenge = ChallengeBase & {
   mode: "flash";
-  questions: Question[];
+  questions: PracticeQuestion[];
   questionPoints?: ChallengeQuestionPoints;
 };
 
@@ -186,32 +188,17 @@ export type ServerFlashChallenge = ChallengeBase & {
   slots: readonly {
     id: string;
     position: number;
-    questionType:
-      | "multiple-choice"
-      | "mini-wordle"
-      | "logic-code"
-      | "logic-matrix"
-      | "connect-pairs"
-      | "progressive-clues"
-      | "matching"
-      | "progressive-image"
-      | "queens"
-      | "true-false"
-      | "odd-one-out"
-      | "ordering"
-      | "anagram"
-      | "classification"
-      | "estimation"
-      | "heat-map"
-      | "word-search"
-      | "word-hashtag"
-      | "zip"
-      | "escape";
+    questionType: ServerFlashQuestion["type"];
     payloadSchemaVersion: number;
     timeLimitMs: number;
     points: number;
   }[];
   maxScore: number;
+};
+
+export type ServerTimeTrialChallenge = Omit<ServerFlashChallenge, "mode"> & {
+  readonly mode: "time-trial";
+  readonly timeLimitMs: number;
 };
 
 export type ServerSurvivalChallenge = Omit<ServerFlashChallenge, "mode"> & {
@@ -237,7 +224,7 @@ export type ServerPyramidChallenge = Omit<ServerFlashChallenge, "mode" | "slots"
   }[];
 };
 
-export type ServerPyramidOutcome = "failed" | "summit";
+export type ServerPyramidOutcome = PyramidAttemptOutcome;
 
 export type ServerAlphabetLetterStatus =
   "unvisited" | "active" | "passed" | "correct" | "incorrect" | "unanswered";
@@ -262,11 +249,12 @@ export type ServerAlphabetProgress = {
   readonly letters: readonly ServerAlphabetLetter[];
 };
 
-export type ServerAlphabetQuestion = ServerFlashQuestionBase & {
+export type ServerShortTextQuestion = ServerFlashQuestionBase & {
   readonly type: "short-text";
-  readonly letter: string;
   readonly answerPlaceholder: string | null;
 };
+
+export type ServerAlphabetQuestion = ServerShortTextQuestion & { readonly letter: string };
 
 export type ServerAlphabetChallenge = ChallengeBase & {
   mode: "alphabet";
@@ -283,10 +271,44 @@ export type ServerAlphabetChallenge = ChallengeBase & {
   maxScore: number;
 };
 
+export type ServerNarrativeQuestionStep = {
+  readonly type: "question";
+  /** Challenge item id; the question payload is released only by prepare. */
+  readonly questionId: string;
+  readonly reactions?: NarrativeReactionMap;
+};
+
+export type ServerNarrativeStep = NarrativeSceneStepDefinition | ServerNarrativeQuestionStep;
+
+export type ServerNarrativeBeat = {
+  readonly id: string;
+  readonly title: string;
+  readonly steps: readonly ServerNarrativeStep[];
+};
+
+/**
+ * Competitive narrative projection. Scene content is public, while question
+ * payloads and solutions are delivered progressively by the attempt API.
+ */
+export type ServerNarrativeChallenge = ChallengeBase & {
+  readonly mode: "narrative";
+  readonly maxScore: number;
+  readonly prologue: NarrativeScene;
+  readonly beats: readonly ServerNarrativeBeat[];
+  readonly slots: readonly {
+    readonly id: string;
+    readonly position: number;
+    readonly questionType: ServerFlashChallenge["slots"][number]["questionType"];
+    readonly payloadSchemaVersion: number;
+    readonly timeLimitMs: number;
+    readonly points: number;
+  }[];
+};
+
 type ServerFlashQuestionBase = {
   readonly id: string;
   readonly category: string;
-  readonly tags: Question["tags"];
+  readonly tags: PracticeQuestion["tags"];
   readonly question: string;
   readonly timeLimit: number;
   readonly points: number;
@@ -397,7 +419,7 @@ export type ServerEscapeQuestion = ServerFlashQuestionBase & {
     readonly columns: 6;
     readonly exit: { readonly side: "right"; readonly row: number };
   };
-  readonly initialBlocks: readonly import("@/types/question").EscapeBlock[];
+  readonly initialBlocks: readonly EscapeBlock[];
   readonly instruction: string | null;
   readonly hideInstruction: boolean;
   readonly objectiveLabel: string | null;
@@ -487,6 +509,8 @@ export type ServerProgressiveImageQuestion = ServerFlashQuestionBase & {
 
 export type ServerQueensProgress = {
   readonly kind: "queens";
+  readonly incorrectValidations: number;
+  readonly maxIncorrectValidations: number | null;
   readonly queens: readonly number[];
   readonly placedQueens: number;
   readonly completedRows: number;
@@ -505,6 +529,7 @@ export type ServerQueensQuestion = ServerFlashQuestionBase & {
 };
 
 export type ServerFlashQuestion =
+  | ServerShortTextQuestion
   | ServerMultipleChoiceQuestion
   | ServerMiniWordleQuestion
   | ServerLogicCodeQuestion
@@ -539,13 +564,13 @@ export type ServerFlashTerminalReview = {
 export type SurvivalChallenge = ChallengeBase & {
   mode: "survival";
   lives: number;
-  questions: Question[];
+  questions: PracticeQuestion[];
   questionPoints?: ChallengeQuestionPoints;
 };
 
 export type AlphabetChallengeEntry = {
   letter: string;
-  question: Question;
+  question: PracticeQuestion;
 };
 
 export type AlphabetChallenge = ChallengeBase & {
@@ -557,7 +582,7 @@ export type AlphabetChallenge = ChallengeBase & {
 export type PyramidLevel = {
   id: string;
   label: string;
-  question: Question;
+  question: PracticeQuestion;
   briefing: PyramidLevelBriefing;
 };
 
@@ -574,7 +599,7 @@ export type NarrativeSceneStep = NarrativeSceneStepDefinition;
 
 export type NarrativeQuestionStep = {
   type: "question";
-  question: Question;
+  question: PracticeQuestion;
   reactions?: NarrativeReactionMap;
 };
 

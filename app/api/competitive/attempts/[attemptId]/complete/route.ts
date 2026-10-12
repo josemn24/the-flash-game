@@ -11,9 +11,14 @@ import {
   responseFor,
   requestIdFor,
   verifiedIdentity,
+  mapAttemptError,
 } from "@/server/competitive/attempt-api";
 import type { AttemptId } from "@/types/domain/identifiers";
-import { readTerminalFlashReview } from "@/server/competitive/flashResult";
+import {
+  readTerminalReviewSafely,
+  readTerminalAttemptResult,
+  readAbandonedAttemptResult,
+} from "@/server/competitive/flashResult";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,19 +35,43 @@ export async function POST(
     const { attemptId: rawAttemptId } = await params;
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
-    const sessionToken = await readAttemptToken(attemptId);
-    const commands = commandsFor(identity);
-    const snapshot = await commands.readRecovery(attemptId, sessionToken);
-    const result = await commands.completeFromPersistedAnswers({
-      attemptId: attemptId as AttemptId,
-      sessionToken,
-      lockVersion: requireLockVersion(body),
-      idempotencyKey: requireKey(body),
-    });
-    const review = await readTerminalFlashReview(attemptId);
-    await clearAttemptToken(attemptId, identity.authUserId, snapshot.scheduledChallengeId);
+    const lockVersion = requireLockVersion(body);
+    const idempotencyKey = requireKey(body);
+    const completed = await (async () => {
+      try {
+        const sessionToken = await readAttemptToken(attemptId);
+        return await commandsFor(identity, requestId).complete({
+          attemptId: attemptId as AttemptId,
+          sessionToken,
+          lockVersion,
+          idempotencyKey,
+        });
+      } catch (error) {
+        const code = mapAttemptError(error).code;
+        if (
+          [
+            "attempt_session_missing",
+            "session_revoked",
+            "not_authorized",
+            "attempt_permission_revoked",
+            "attempt_terminal",
+          ].includes(code)
+        ) {
+          const saved = await readTerminalAttemptResult(attemptId, identity);
+          if (saved) return saved;
+          const abandoned = await readAbandonedAttemptResult(attemptId, identity);
+          if (abandoned) return abandoned;
+        }
+        throw error;
+      }
+    })();
+    const review =
+      completed.result.status === "completed"
+        ? await readTerminalReviewSafely(attemptId)
+        : { review: [] as const };
+    await clearAttemptToken(attemptId, identity.authUserId, completed.scheduledChallengeId);
     return responseFor(
-      { ...result, review },
+      { ...completed.result, ...review },
       200,
       requestId,
       "competitive.attempt.complete",

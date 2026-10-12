@@ -47,14 +47,24 @@ export const scenario = {
       ],
     };
     const created = await clients.superadmin.rpc("create_superadmin_flash_draft", {
-      input: { idempotencyKey: "integration-e01-create", document: editorialDocument, reason: "E01" },
+      input: {
+        idempotencyKey: "integration-e01-create",
+        document: editorialDocument,
+        reason: "E01",
+      },
     });
-    assert(!created.error && created.data?.questionCount === 2, "El portal crea un Flash mixto E01");
+    assert(
+      !created.error && created.data?.questionCount === 2,
+      "El portal crea un Flash mixto E01",
+    );
     const context = await clients.superadmin.rpc("get_superadmin_editorial_context");
     const draft = context.data?.entries?.find(
       (entry) => entry.challengeVersionId === created.data?.challengeVersionId,
     );
-    assert(draft?.document?.questions?.[1]?.type === "mini-wordle", "El portal conserva Mini-Wordle");
+    assert(
+      draft?.document?.questions?.[1]?.type === "mini-wordle",
+      "El portal conserva Mini-Wordle",
+    );
     await publishDraftQuestions({
       client: clients.superadmin,
       slugs: editorialDocument.questions.map((question) => question.slug),
@@ -70,7 +80,10 @@ export const scenario = {
         reason: "Publicar E01",
       },
     });
-    assert(!published.error && published.data?.status === "published", "El portal publica el Flash mixto");
+    assert(
+      !published.error && published.data?.status === "published",
+      "El portal publica el Flash mixto",
+    );
 
     const playable = await rpc(clients.alice, "get_my_flash_challenge", {
       target_room_slug: fixture.data.room.slug,

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Avatar, BackLink, ButtonLink, Canvas, Card, Chip, ChevronIcon } from "@/components/ui";
-import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
-import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/game";
+import { ROOM_ART_FALLBACK } from "@/lib/roomPresentation";
+import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/view-models/room";
 import styles from "./FlashPopRoomSecondary.module.css";
 
 function formatHistoryDate(value: string) {
@@ -26,10 +26,7 @@ export function FlashPopRoomHistory({
   return (
     <Canvas contentClassName={styles.content}>
       <header className={styles.toolbar}>
-        <BackLink
-          href={`/salas/${roomId}`}
-          label="Volver al detalle de la sala"
-        />
+        <BackLink href={`/salas/${roomId}`} label="Volver al detalle de la sala" />
       </header>
 
       <div className={styles.pageIntro}>
@@ -57,6 +54,7 @@ export function FlashPopRoomHistory({
                   </div>
                 </div>
                 <div className={styles.historyBody}>
+                  <p className={styles.historyMeta}>{entry.formatLabel}</p>
                   <h2>{entry.title}</h2>
                   {winner ? (
                     <p className={styles.winner}>

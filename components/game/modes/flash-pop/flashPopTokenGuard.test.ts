@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -15,9 +15,9 @@ function collect(directory: string, files: string[]) {
   for (const entry of readdirSync(directory)) {
     const path = join(directory, entry);
     if (
-      path.includes("/flash-pop-concepts/") ||
-      path.includes("/flash-pop-typography/") ||
-      path.includes("/flash-pop/ui-kit/")
+      path.includes("/app/demo/flash-pop-concepts/") ||
+      path.includes("/app/demo/flash-pop-typography/") ||
+      path.includes("/app/demo/flash-pop/ui-kit/")
     ) {
       continue;
     }
@@ -54,9 +54,7 @@ describe("product design-system boundaries", () => {
       new RegExp(
         "\\bPop(?:Avatar|Button|ButtonLink|Chip|Card|Canvas|IconButton|Timer|TimerDisplay|GameHeader)\\b|" +
           ["legacy", "Compat", "Format"].join(""),
-      ).test(
-        readFileSync(path, "utf8"),
-      ),
+      ).test(readFileSync(path, "utf8")),
     );
     const forbiddenThemeFiles = productFiles.filter((path) =>
       new RegExp(
@@ -68,9 +66,7 @@ describe("product design-system boundaries", () => {
           ["Question", "Variant"].join(""),
           ["legacy", "Compat", "Format"].join(""),
         ].join("|"),
-      ).test(
-        readFileSync(path, "utf8"),
-      ),
+      ).test(readFileSync(path, "utf8")),
     );
 
     expect(forbiddenImportFiles).toEqual([]);
@@ -80,8 +76,12 @@ describe("product design-system boundaries", () => {
   });
 
   it("keeps the components root organized by domain", () => {
-    const rootFiles = readdirSync(componentsRoot).filter((entry) =>
-      statSync(join(componentsRoot, entry)).isFile(),
+    // Architecture checker tests create and remove this reserved fixture in parallel.
+    const rootFiles = readdirSync(componentsRoot).filter(
+      (entry) =>
+        entry !== ".DS_Store" &&
+        entry !== "__architecture-authentication-test__.ts" &&
+        statSync(join(componentsRoot, entry)).isFile(),
     );
     expect(rootFiles).toEqual([]);
     for (const domain of requiredDomains) {
@@ -93,8 +93,15 @@ describe("product design-system boundaries", () => {
     expect(readFileSync(join(componentsRoot, "questions/index.ts"), "utf8")).toContain(
       'export * from "./formats"',
     );
-    expect(readFileSync(join(componentsRoot, "game/index.ts"), "utf8")).toContain(
-      'export * from "./shared"',
+    expect(existsSync(join(componentsRoot, "game/index.ts"))).toBe(false);
+    expect(readFileSync(join(componentsRoot, "game/demo.ts"), "utf8")).toContain(
+      'from "./modes/flash-pop/FlashPopLobby.client"',
+    );
+    expect(readFileSync(join(componentsRoot, "game/production.ts"), "utf8")).toContain(
+      'from "./modes/flash-pop/FlashPopHome.client"',
+    );
+    expect(readFileSync(join(componentsRoot, "game/practice.ts"), "utf8")).toContain(
+      'from "./shells/PlayableFormatExample.client"',
     );
     expect(readFileSync(join(componentsRoot, "navigation/index.ts"), "utf8")).toContain(
       "export { Logo }",

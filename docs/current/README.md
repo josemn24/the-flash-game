@@ -14,12 +14,24 @@ contenido Flash/Supervivencia y programa su calendario local.
 - [`status.md`](status.md): fotografía breve del producto y de sus limitaciones.
 - [`domain/README.md`](domain/README.md): modelo de dominio, tipos, fixtures y consultas.
 - [`use-cases.md`](use-cases.md): casos de uso funcionales, prioridades, permisos y límites.
-- [`architecture.md`](architecture.md): fronteras, dependencias y evolución hacia producción.
+- [`architecture.md`](architecture.md): fronteras, dependencias y evolución del recorrido persistido.
 - [`data-model.md`](data-model.md): propuesta relacional, integridad, transacciones y mapeo desde
   el dominio.
 - [`architecture/server-client-architecture.md`](architecture/server-client-architecture.md): límites
   entre servidor y cliente.
+- [`design-tokens.md`](design-tokens.md): roles de color, estados, contrastes y equivalencias de migración.
+- [`design-system.md`](design-system.md): catálogo de desarrollo, componentes reales, demos y mantenimiento.
 - [`qa.md`](qa.md): estado vigente de las comprobaciones automatizadas y sus limitaciones.
+- [`supabase-clean-installation.md`](supabase-clean-installation.md): guía principal por tareas para
+  preparar local y staging, con datasets, bootstrap, reinicio completo y registros de ejecución.
+- [`local-device-testing.md`](local-device-testing.md): pruebas desde un móvil u otro equipo de la
+  red local, configuración de Supabase y resolución de problemas.
+- [`competitive-read-performance.md`](competitive-read-performance.md): contratos de lectura,
+  diagnóstico opcional y comparación local del camino competitivo.
+- [`competitive-format-contracts.md`](competitive-format-contracts.md): representaciones,
+  validación y registros por capa de los formatos competitivos.
+- [`avatar-confirmation-recovery.md`](avatar-confirmation-recovery.md): confirmación recuperable,
+  autorización transaccional de limpieza y validación de avatares.
 - [`glosario.md`](glosario.md): vocabulario del producto.
 
 Las decisiones normativas están en [`../decisions/README.md`](../decisions/README.md), no duplicadas

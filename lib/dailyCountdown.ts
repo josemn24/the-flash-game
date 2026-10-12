@@ -1,4 +1,8 @@
-import { getLocalDateTimeParts, getUtcForLocalDateTime, type LocalDateTimeParts } from "@/lib/zonedDateTime";
+import {
+  getLocalDateTimeParts,
+  getUtcForLocalDateTime,
+  type LocalDateTimeParts,
+} from "@/lib/zonedDateTime";
 
 const DAILY_CHALLENGE_TIME_ZONE = "Europe/Madrid";
 

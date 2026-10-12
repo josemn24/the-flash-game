@@ -10,7 +10,8 @@ import { SpeedBackground } from "@/components/effects/SpeedBackground";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { useGameSession } from "@/features/game/useGameSession";
 import { withChallengeScoring } from "@/lib/challengeScoring";
-import type { FlashChallenge, GameRoomContext } from "@/types/game";
+import type { FlashChallenge } from "@/types/gameplay";
+import type { GameRoomContext } from "@/types/view-models/room";
 
 export function FlashGameApp({
   challenge,
@@ -24,7 +25,7 @@ export function FlashGameApp({
 
   return (
     <MotionConfig reducedMotion="user">
-      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)] selection:bg-[var(--color-brand)] selection:text-[var(--color-text-on-brand)]">
+      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ds-color-bg-canvas)] text-[var(--ds-color-fg-primary)] selection:bg-[var(--ds-color-bg-brand)] selection:text-[var(--ds-color-fg-on-brand)]">
         <SpeedBackground />
         <div className="relative z-10 px-4 py-5 sm:px-6 sm:py-7">
           <AnimatePresence mode="wait">

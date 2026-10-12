@@ -1,4 +1,9 @@
-import type { AnswerStatus, AttemptStatus } from "@/types/domain/attempt";
+import type {
+  AnswerStatus,
+  AttemptLifecycle,
+  SurvivalAttemptOutcome,
+  PyramidAttemptOutcome,
+} from "@/types/domain/attempt";
 import type {
   AttemptId,
   AttemptSessionId,
@@ -12,11 +17,19 @@ import type { AnswerValueOfType, QuestionType } from "@/types/contracts/question
 import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
 import type { AnswerResultDetails } from "@/types/contracts/result-details";
 
+import type {
+  TimeTrialEndReason,
+  TimeTrialProgress,
+  TimeTrialResult,
+} from "@/types/domain/time-trial";
+
 /** Caller identity always comes from the verified server session, never this input. */
 export type StartAttemptInput = {
   readonly scheduledChallengeId: ScheduledChallengeId;
   readonly idempotencyKey: string;
 };
+export type PrepareAttemptSessionInput = Pick<StartAttemptInput, "scheduledChallengeId">;
+export type PrepareAttemptSessionResult = { readonly ready: true };
 export type StartAttemptResult = {
   readonly attemptId: AttemptId;
   readonly sessionId: AttemptSessionId;
@@ -24,6 +37,7 @@ export type StartAttemptResult = {
   readonly controlRequired: boolean;
   readonly deadlineAt: UtcIsoDateTime | null;
   readonly lockVersion: number;
+  readonly timeTrial?: TimeTrialProgress | null;
 };
 export type AttemptCommandInput = {
   readonly attemptId: AttemptId;
@@ -34,6 +48,7 @@ export type AttemptCommandInput = {
 export type AttemptCommandResult = {
   readonly attemptId: AttemptId;
   readonly lockVersion: number;
+  readonly timeTrial?: TimeTrialProgress | null;
 };
 export type PrepareInteractionInput = AttemptCommandInput;
 export type PrepareInteractionResult = AttemptCommandResult & {
@@ -41,11 +56,21 @@ export type PrepareInteractionResult = AttemptCommandResult & {
   readonly questionType: QuestionType;
   readonly payloadSchemaVersion: number;
   readonly publicPayload: JsonValue | null;
-  readonly presentedAt: UtcIsoDateTime;
-  readonly deadlineAt: UtcIsoDateTime;
+  /** Pyramid preparation only selects/releases the payload; timing starts on activate. */
+  readonly presentedAt: UtcIsoDateTime | null;
+  readonly deadlineAt: UtcIsoDateTime | null;
   readonly timedOut: boolean;
   /** Safe progress only; never contains a solution payload. */
   readonly progress?: JsonValue | null;
+};
+export type ActivateInteractionInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+};
+export type ActivateInteractionResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly presentedAt: UtcIsoDateTime;
+  readonly deadlineAt: UtcIsoDateTime;
+  readonly timedOut: boolean;
 };
 export type SubmitAnswerInput<Type extends QuestionType = QuestionType> = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
@@ -171,6 +196,8 @@ export type SaveQueensDraftInput = AttemptCommandInput & {
   readonly queens: readonly number[];
 };
 export type SaveQueensDraftResult = AttemptCommandResult & {
+  readonly incorrectValidations: number;
+  readonly maxIncorrectValidations: number | null;
   readonly challengeItemId: ChallengeItemId;
   readonly queens: readonly number[];
   readonly placedQueens: number;
@@ -185,6 +212,8 @@ export type ValidateQueensBoardInput = AttemptCommandInput & {
   readonly queens: readonly number[];
 };
 export type ValidateQueensBoardResult = AttemptCommandResult & {
+  readonly incorrectValidations: number;
+  readonly maxIncorrectValidations: number | null;
   readonly challengeItemId: ChallengeItemId;
   readonly correct: boolean;
   readonly terminal: boolean;
@@ -227,11 +256,13 @@ export type PassInteractionResult = AttemptCommandResult & { readonly passed: tr
 export type TakeOverAttemptInput = Pick<
   AttemptCommandInput,
   "attemptId" | "lockVersion" | "idempotencyKey"
->;
-/** Reserved for a post-MVP multi-device policy; the current command is deliberately disabled. */
+> & {
+  readonly scheduledChallengeId: ScheduledChallengeId;
+};
 export type TakeOverAttemptResult = AttemptCommandResult & {
   readonly sessionId: AttemptSessionId;
   readonly deadlineAt: UtcIsoDateTime | null;
+  readonly transferred: true;
 };
 export type CompleteAttemptInput = AttemptCommandInput;
 /** Recovery is server initiated after the original HttpOnly session is restored. */
@@ -249,26 +280,61 @@ export type AttemptRecoveryAnswer = {
   readonly timeUsedMs: DurationMs;
   readonly resultDetails?: AnswerResultDetails | null;
 };
+/** Evaluated terminal hint; it does not imply the attempt has committed completion. */
+export type RecoveryTerminalOutcome = SurvivalAttemptOutcome | PyramidAttemptOutcome | null;
 /** Deliberately excludes question public/solution payloads. */
-export type AttemptRecoverySnapshot = {
+export type AttemptRecoverySnapshot = AttemptLifecycle & {
   readonly attemptId: AttemptId;
   readonly scheduledChallengeId: ScheduledChallengeId;
-  readonly status: AttemptStatus;
   readonly lockVersion: number;
+  readonly timeTrial?: TimeTrialProgress | null;
   readonly hasStartedInteraction: boolean;
   readonly hasOpenInteraction?: boolean;
+  readonly narrativeCursor?: {
+    readonly currentChallengeItemId: ChallengeItemId | null;
+    readonly nextChallengeItemId: ChallengeItemId | null;
+  } | null;
   readonly allItemsResolved: boolean;
-  readonly challengeMode?: "flash" | "alphabet" | "survival" | "narrative" | "pyramid";
+  readonly deadlineAt?: UtcIsoDateTime | null;
+  readonly deadlineReached?: boolean;
+  readonly pendingReceiptId?: AnswerReceiptId | null;
   readonly initialLives?: number | null;
   readonly livesRemaining?: number | null;
-  readonly terminalOutcome?: "eliminated" | "survived" | "failed" | "summit" | null;
+  /** Derived progress hint; may exist while persisted outcome is still null. */
+  readonly terminalOutcome?: RecoveryTerminalOutcome;
   readonly answers: readonly AttemptRecoveryAnswer[];
 };
-export type FinishAttemptResult = AttemptCommandResult & {
-  readonly status: Extract<AttemptStatus, "completed" | "abandoned">;
-  readonly score: number | null;
-  readonly outcome?: string | null;
-  readonly livesRemaining?: number | null;
+export type FinishAttemptResult = AttemptCommandResult &
+  Extract<AttemptLifecycle, { status: "completed" | "abandoned" }> & {
+    readonly score: number | null;
+    readonly terminalReason?: string | null;
+    readonly livesRemaining?: number | null;
+    readonly answers?: readonly AttemptRecoveryAnswer[];
+  };
+export type TimeTrialCompletedAttemptResult = FinishAttemptResult & {
+  readonly mode: "time-trial";
+  readonly status: "completed";
+  readonly outcome: null;
+  readonly score: number;
+  readonly terminalReason: TimeTrialEndReason;
+  readonly timeTrial: TimeTrialResult;
+};
+/** Persisted completion without controller cookies, assets or solutions. */
+export type SavedAttemptResult = {
+  readonly scheduledChallengeId: ScheduledChallengeId;
+  readonly result: FinishAttemptResult & {
+    readonly status: "completed";
+    readonly score: number;
+    readonly answers: readonly AttemptRecoveryAnswer[];
+    readonly initialLives?: number;
+  };
+};
+export type SavedAbandonedAttemptResult = {
+  readonly scheduledChallengeId: ScheduledChallengeId;
+  readonly result: FinishAttemptResult & {
+    readonly status: "abandoned";
+    readonly answers?: readonly AttemptRecoveryAnswer[];
+  };
 };
 export type AcceptInvitationInput = {
   readonly invitationToken: string;

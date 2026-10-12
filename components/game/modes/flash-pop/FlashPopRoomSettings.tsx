@@ -1,5 +1,5 @@
 import { Avatar, BackLink, Button, Canvas, UserPlusIcon } from "@/components/ui";
-import type { RoomSettingsModel } from "@/types/game";
+import type { RoomSettingsModel } from "@/types/view-models/room";
 import { RoomMemberActions } from "./RoomMemberActions.client";
 import styles from "./FlashPopRoomSettings.module.css";
 
@@ -15,11 +15,9 @@ export function FlashPopRoomSettings({ model }: { model: RoomSettingsModel }) {
     <Canvas as="div" contentClassName={styles.content}>
       <section className={styles.hero} aria-labelledby="room-settings-title">
         <header className={styles.heroToolbar}>
-          <BackLink
-            href={`/salas/${model.roomId}`}
-            label="Volver al detalle de la sala"
-          />
+          <BackLink href={`/salas/${model.roomId}`} label="Volver al detalle de la sala" />
           <Button
+            className={styles.inviteButton}
             variant="secondary"
             size="sm"
             disabled

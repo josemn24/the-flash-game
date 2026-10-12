@@ -84,68 +84,101 @@ describe("editorial admin actions", () => {
   });
 
   it("authorizes and sends a parsed document when creating a draft", async () => {
-    await expect(createFlashDraft({}, formData({
-      idempotencyKey: "editorial-create-1",
-      document: JSON.stringify(document),
-      reason: "Preparar contenido",
-    }))).rejects.toThrow("REDIRECT:/admin/challenges/00000000-0000-4000-8000-000000000099?editorial=saved");
+    await expect(
+      createFlashDraft(
+        {},
+        formData({
+          idempotencyKey: "editorial-create-1",
+          document: JSON.stringify(document),
+          reason: "Preparar contenido",
+        }),
+      ),
+    ).rejects.toThrow(
+      "REDIRECT:/admin/challenges/00000000-0000-4000-8000-000000000099?editorial=saved",
+    );
 
     expect(mocks.requireSuperadmin).toHaveBeenCalledTimes(1);
-    expect(mocks.createDraft).toHaveBeenCalledWith(expect.objectContaining({
-      idempotencyKey: "editorial-create-1",
-      reason: "Preparar contenido",
-      document: expect.objectContaining({ challenge: expect.objectContaining({ mode: "flash" }) }),
-    }));
+    expect(mocks.createDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        idempotencyKey: "editorial-create-1",
+        reason: "Preparar contenido",
+        document: expect.objectContaining({
+          challenge: expect.objectContaining({ mode: "flash" }),
+        }),
+      }),
+    );
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/challenges");
-    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/challenges/00000000-0000-4000-8000-000000000099");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
+      "/admin/challenges/00000000-0000-4000-8000-000000000099",
+    );
   });
 
   it("rejects malformed JSON before crossing the command boundary", async () => {
-    const result = await createFlashDraft({}, formData({
-      idempotencyKey: "editorial-create-2",
-      document: "{",
-      reason: "Preparar contenido",
-    }));
+    const result = await createFlashDraft(
+      {},
+      formData({
+        idempotencyKey: "editorial-create-2",
+        document: "{",
+        reason: "Preparar contenido",
+      }),
+    );
 
     expect(result.fieldErrors?.document).toContain("JSON válido");
     expect(mocks.createDraft).not.toHaveBeenCalled();
   });
 
   it("passes the optimistic timestamp when updating", async () => {
-    await expect(updateFlashDraft({}, formData({
-      idempotencyKey: "editorial-update-1",
-      challengeVersionId: "00000000-0000-4000-8000-000000000001",
-      expectedUpdatedAt: "2026-09-16T10:00:00.000Z",
-      document: JSON.stringify(document),
-      reason: "Editar contenido",
-    }))).rejects.toThrow("REDIRECT:/admin/challenges/00000000-0000-4000-8000-000000000099?editorial=saved");
+    await expect(
+      updateFlashDraft(
+        {},
+        formData({
+          idempotencyKey: "editorial-update-1",
+          challengeVersionId: "00000000-0000-4000-8000-000000000001",
+          expectedUpdatedAt: "2026-09-16T10:00:00.000Z",
+          document: JSON.stringify(document),
+          reason: "Editar contenido",
+        }),
+      ),
+    ).rejects.toThrow(
+      "REDIRECT:/admin/challenges/00000000-0000-4000-8000-000000000099?editorial=saved",
+    );
 
     expect(mocks.requireSuperadmin).toHaveBeenCalledTimes(1);
-    expect(mocks.updateDraft).toHaveBeenCalledWith(expect.objectContaining({
-      challengeVersionId: "00000000-0000-4000-8000-000000000001",
-      expectedUpdatedAt: "2026-09-16T10:00:00.000Z",
-    }));
+    expect(mocks.updateDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        challengeVersionId: "00000000-0000-4000-8000-000000000001",
+        expectedUpdatedAt: "2026-09-16T10:00:00.000Z",
+      }),
+    );
   });
 
   it("maps publication conflicts to a safe form error", async () => {
     mocks.publish.mockRejectedValue(new SuperadminEditorialCommandError("content_conflict"));
-    const result = await publishFlash({}, formData({
-      idempotencyKey: "editorial-publish-1",
-      challengeVersionId: "00000000-0000-4000-8000-000000000001",
-      expectedUpdatedAt: "2026-09-16T10:00:00.000Z",
-      reason: "Publicar contenido",
-    }));
+    const result = await publishFlash(
+      {},
+      formData({
+        idempotencyKey: "editorial-publish-1",
+        challengeVersionId: "00000000-0000-4000-8000-000000000001",
+        expectedUpdatedAt: "2026-09-16T10:00:00.000Z",
+        reason: "Publicar contenido",
+      }),
+    );
 
     expect(result.fieldErrors?.form).toContain("otra pestaña");
   });
 
   it("creates a correction from a published version and selects its draft", async () => {
-    await expect(createChallengeRevision({}, formData({
-      idempotencyKey: "editorial-revision-1",
-      sourceChallengeVersionId: "00000000-0000-4000-8000-000000000001",
-      reason: "Corregir el piloto",
-    }))).rejects.toThrow(
+    await expect(
+      createChallengeRevision(
+        {},
+        formData({
+          idempotencyKey: "editorial-revision-1",
+          sourceChallengeVersionId: "00000000-0000-4000-8000-000000000001",
+          reason: "Corregir el piloto",
+        }),
+      ),
+    ).rejects.toThrow(
       "REDIRECT:/admin/challenges/00000000-0000-4000-8000-000000000099?editorial=revision-created&draftId=00000000-0000-4000-8000-000000000003",
     );
 
@@ -157,12 +190,15 @@ describe("editorial admin actions", () => {
   });
 
   it("requires a valid optimistic timestamp when archiving", async () => {
-    const result = await archiveChallengeVersion({}, formData({
-      idempotencyKey: "editorial-archive-1",
-      challengeVersionId: "00000000-0000-4000-8000-000000000001",
-      expectedUpdatedAt: "not-a-date",
-      reason: "Retirar la versión anterior",
-    }));
+    const result = await archiveChallengeVersion(
+      {},
+      formData({
+        idempotencyKey: "editorial-archive-1",
+        challengeVersionId: "00000000-0000-4000-8000-000000000001",
+        expectedUpdatedAt: "not-a-date",
+        reason: "Retirar la versión anterior",
+      }),
+    );
 
     expect(result.fieldErrors?.expectedUpdatedAt).toContain("cambió");
     expect(mocks.archiveVersion).not.toHaveBeenCalled();

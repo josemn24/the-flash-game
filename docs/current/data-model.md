@@ -422,9 +422,11 @@ Constraints y reglas:
   `challenge_version_id` inmutable en la tabla como referencia redundante para consultas y
   restricciones compuestas; no es una segunda relación conceptual.
 - Un intento abandonado conserva respuestas aceptadas, pero su `progress_payload` recuperable se
-  elimina o invalida. En esta fase `terminal_reason` distingue abandono voluntario o invalidación
-  administrativa; una desconexión se resuelve por recuperación y no es motivo terminal. Una futura
-  política de inactividad podrá añadir su motivo de sistema aprobado.
+  elimina o invalida. `terminal_reason` distingue abandono voluntario, `inactivity_timeout`,
+  `permission_revoked` o invalidación administrativa; una desconexión mientras el desafío sigue
+  vigente se resuelve por recuperación y no es motivo terminal. Cuando la membresía pasa a
+  `removed`/`banned`, el cierre competitivo y la revocación de sesiones se confirman en la misma
+  transacción, sin crear acreditaciones nuevas.
 
 Para F19, `progress_payload` contiene únicamente el tipo, el `challengeItemId` y la secuencia de
 swaps aceptados. La solución de cuatro palabras permanece en `question_version_solutions`; cada swap
@@ -443,10 +445,16 @@ que deba llegar a la UI.
 - `created_at`, `last_seen_at timestamptz not null`.
 - `expires_at timestamptz null`: coincide con el deadline global cuando existe.
 - `revoked_at timestamptz null`.
+- `revocation_reason text null`: `takeover`, `terminal` o `permission_revoked`.
+
+Los nuevos cierres por abandono o inactividad registran `terminal`; `permission_revoked`
+se reserva para pérdida de acceso competitivo. Las sesiones históricas con motivo `null`
+se conservan. La [reconciliación de comandos](competitive-command-reconciliation.md) describe
+la migración que incorpora esa distinción y sus cambios de validación y replay.
 
 Un índice único parcial sobre `attempt_id where revoked_at is null` garantiza una sesión activa. Se
-guardan hashes, nunca tokens reutilizables. En el MVP un token distinto se bloquea y no revoca ni
-sustituye a la sesión original; la transferencia entre dispositivos queda aplazada.
+guardan hashes, nunca tokens reutilizables. Un token distinto solo sustituye a la sesión original
+tras confirmación explícita, revocación atómica e incremento de `lock_version`.
 No se añade heartbeat ni lease. El deadline impide nuevo juego, pero permite persistir el timeout,
 evaluar la recepción ya guardada y cerrar el intento con la sesión propietaria.
 
@@ -545,7 +553,7 @@ Reglas:
 
 Si la primera versión no permite correcciones de puntuación, puede reducirse a una tabla de
 acreditaciones con una fila por intento. El libro append-only es preferible si la operación
-administrativa de corrección entra en producción desde el inicio.
+administrativa de corrección está disponible desde el inicio del piloto.
 
 ### `audit_log`
 
@@ -676,8 +684,9 @@ hechos/auditoría necesarios. Si la petición se repite, la unicidad devuelve el
 ### Abandonar
 
 Bloquear el intento, comprobar que sigue `in_progress`, conservar respuestas aceptadas, marcarlo
-`abandoned`, invalidar el progreso recuperable y revocar la sesión. No se implementa abandono por
-inactividad, heartbeat ni una caducidad de sesión adicional.
+`abandoned`, invalidar el progreso recuperable y revocar la sesión. El mismo cierre se reutiliza para
+la expiración server-side por inactividad: 15 minutos sin actividad y publicación cerrada o deadline
+vencido; en ese caso `terminal_reason` es `inactivity_timeout` y no se generan puntos.
 
 ### Invalidar o corregir
 
@@ -758,14 +767,15 @@ estancias históricas, se añadirá `room_membership_events` o episodios sin cam
 
 ### Cierre de publicaciones e intentos activos
 
-`closes_at` cierra nuevos inicios, pero un intento válido puede continuar con sus relojes de modo. La
-marca `results_locked_at` permite cerrar el historial de forma definitiva sin inventar un estado
-`expired` para intentos existentes. El criterio exacto para rellenarla depende del heartbeat y la
-gracia aún abiertos.
+`closes_at` cierra nuevos inicios, pero un intento válido puede continuar con sus relojes de modo. Un
+intento `in_progress` que lleve al menos 15 minutos sin actividad se reconcilia como `abandoned` cuando
+la publicación está cerrada o su `deadline_at` ha vencido. La reconciliación es diaria a través del
+calendar tick y también bajo demanda en historial/comandos; una ejecución repetida es idempotente.
 
 El esquema mantiene el bloqueo de sesión única y correcciones de superadmin con motivo y auditoría.
-El wrapper técnico de takeover está deshabilitado durante el MVP. Heartbeat, lease y abandono
-automático quedan fuera de esta fase; no son requisitos para ejecutar los comandos actuales. S04 ya
+La transferencia explícita marca la sesión revocada con `revocation_reason = 'takeover'`, conserva el
+intento y su deadline, e incrementa `lock_version` bajo el mismo lock. Heartbeat y lease del navegador no
+son requisitos para la expiración server-side. S04 ya
 implementa para Flash `recover_attempt` y `read_attempt_recovery`: un intervalo abierto se cierra
 como `recovery_interrupted`, genera una recepción interna nula y se evalúa como `unanswered` antes de
 autorizar otra preparación. S14 reutiliza ese cierre para Supervivencia y deriva vidas/resultados de

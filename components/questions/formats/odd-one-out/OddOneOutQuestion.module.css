@@ -9,7 +9,7 @@
     background: var(--format-selected-surface);
   }
   .card:focus-visible {
-    outline: 3px solid var(--format-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
   .card:disabled {
@@ -26,15 +26,15 @@
   .grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    --format-ink: var(--color-ink);
-    --format-surface: var(--color-surface-raised);
-    --format-border: var(--color-border);
-    --format-hover-ink: var(--color-ink);
-    --format-hover-surface: var(--color-surface);
-    --format-hover-border: var(--color-social);
-    --format-selected-surface: color-mix(in srgb, var(--color-social) 10%, transparent);
-    --format-accent: var(--color-social);
-    --format-focus: var(--color-focus);
+    --format-ink: var(--ds-color-fg-primary);
+    --format-surface: var(--ds-color-bg-surface-raised);
+    --format-border: var(--ds-color-border-default);
+    --format-hover-ink: var(--ds-color-fg-primary);
+    --format-hover-surface: var(--ds-color-bg-surface);
+    --format-hover-border: var(--ds-color-border-selected);
+    --format-selected-surface: color-mix(in srgb, var(--ds-color-bg-selected) 10%, transparent);
+    --format-accent: var(--ds-color-bg-selected);
+    --format-focus: var(--ds-color-focus-ring);
     gap: var(--space-3);
     margin-top: var(--space-5);
   }

@@ -18,7 +18,7 @@
     gap: 0.45rem;
     border: 1px solid transparent;
     border-radius: 0.7rem;
-    color: rgb(255 255 255 / 0.55);
+    color: var(--ds-color-fg-secondary);
     background: transparent;
     font-size: 0.78rem;
     font-weight: 850;
@@ -27,23 +27,15 @@
     width: 1.15rem;
     height: 1.15rem;
   }
-  .toolbar button kbd {
-    color: rgb(255 255 255 / 0.3);
-    font-family: var(--type-mono);
-    font-size: 0.58rem;
-  }
   .toolbar .toolActive {
-    border-color: rgb(var(--color-brand-rgb) / 0.4);
-    color: #111;
-    background: var(--color-brand);
-  }
-  .toolActive kbd {
-    color: rgb(0 0 0 / 0.45);
+    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 40%, transparent);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
   }
   .toolbar button:focus-visible,
   .cell:focus-visible {
     z-index: 4;
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
   }
   .board {
@@ -61,15 +53,6 @@
   button.cell {
     cursor: pointer;
   }
-  .cell::before {
-    position: absolute;
-    z-index: -1;
-    inset: 0;
-    content: "";
-    border-radius: inherit;
-    opacity: 0.26;
-    pointer-events: none;
-  }
   .region0 {
     background: #f3b5bc;
   }
@@ -85,46 +68,14 @@
   .region4 {
     background: #f5dc98;
   }
-  .region0::before {
-    background-image: radial-gradient(circle, #7d2634 1px, transparent 1.5px);
-    background-size: 9px 9px;
-  }
-  .region1::before {
-    background-image: repeating-linear-gradient(45deg, transparent 0 7px, #235a77 7px 8px);
-  }
-  .region2::before {
-    background-image: repeating-linear-gradient(-45deg, transparent 0 8px, #386224 8px 9px);
-  }
-  .region3::before {
-    background-image: radial-gradient(
-      circle at 0 0,
-      transparent 0 5px,
-      #62336d 5px 6px,
-      transparent 6px
-    );
-    background-size: 12px 12px;
-  }
-  .region4::before {
-    background-image: repeating-linear-gradient(90deg, transparent 0 8px, #765d18 8px 9px);
-  }
   .region5 {
     background: #f3c6a8;
-  }
-  .region5::before {
-    background-image: repeating-linear-gradient(135deg, transparent 0 7px, #7a4422 7px 8px);
   }
   .region6 {
     background: #b9b4ef;
   }
-  .region6::before {
-    background-image: radial-gradient(circle, #443b8d 1px, transparent 1.5px);
-    background-size: 10px 10px;
-  }
   .region7 {
     background: #a7e3d6;
-  }
-  .region7::before {
-    background-image: repeating-linear-gradient(45deg, transparent 0 8px, #216b5c 8px 9px);
   }
   .cell:hover:not(:disabled) {
     filter: brightness(1.08);
@@ -139,8 +90,8 @@
     left: 50%;
     padding: 0.08rem 0.28rem;
     border-radius: 999px;
-    color: #11151a;
-    background: var(--color-brand);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
     font-family: var(--type-mono);
     font-size: clamp(0.42rem, 1.8vw, 0.56rem);
     font-weight: 900;
@@ -176,7 +127,7 @@
     right: 0.25rem;
     width: 0.9rem;
     height: 0.9rem;
-    color: #b40018;
+    color: var(--ds-color-fg-error);
     fill: #fff3b0;
     stroke-width: 2.5;
   }
@@ -186,7 +137,7 @@
     z-index: 1;
     width: clamp(2rem, 12vw, 3.35rem);
     height: clamp(2rem, 12vw, 3.35rem);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     filter: drop-shadow(0 3px 1px rgb(255 255 255 / 0.6)) drop-shadow(0 2px 3px rgb(0 0 0 / 0.14));
   }
   .cell {
@@ -212,25 +163,33 @@
     border-radius: inherit;
     animation: conflict-in 180ms ease-out;
     box-shadow:
-      inset 0 0 0 4px var(--state-error),
+      inset 0 0 0 4px var(--ds-color-border-error),
       0 1px 2px rgb(23 23 32 / 16%);
   }
   .progress {
     display: flex;
     justify-content: center;
     gap: 0.7rem;
-    color: rgb(255 255 255 / 0.45);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.7rem;
     font-weight: 800;
     text-transform: uppercase;
   }
   .progress strong {
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
+  }
+  .placementNotice {
+    margin: 0;
+    color: var(--ds-color-fg-error);
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
   }
   .instructions {
     margin: 0;
-    color: rgb(255 255 255 / 0.5);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.82rem;
     line-height: 1.5;
     text-align: center;
@@ -255,9 +214,6 @@
     .toolbar button {
       font-size: 0.7rem;
     }
-    .toolbar button kbd {
-      display: none;
-    }
   }
 
   .root {
@@ -269,35 +225,35 @@
   .root .toolbar {
     border: 0;
     border-radius: var(--radius-control);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
   }
 
   .root .toolbar button {
     min-height: 44px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .root .toolbar .toolActive {
-    border-color: var(--state-selected);
-    color: var(--color-surface);
-    background: var(--state-selected);
+    border-color: var(--ds-color-border-selected);
+    color: var(--ds-color-fg-on-selected);
+    background: var(--ds-color-bg-selected);
   }
 
   .root .board {
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
 
   .root .progress {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 
   .root .progress strong {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
 
   .root .instructions {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
 }

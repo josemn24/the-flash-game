@@ -1,4 +1,4 @@
-import type { AnswerValue } from "@/types/question";
+import type { AnswerValue } from "@/types/contracts";
 import type { AnswerResultDetails, AnswerStatus } from "@/types/gameplay/result";
 
 export type AnswerReview = {

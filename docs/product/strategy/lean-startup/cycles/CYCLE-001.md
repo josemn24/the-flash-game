@@ -14,11 +14,14 @@
 
 ### Hechos observados
 
-- La aplicación tiene desafíos individuales jugables, una sala demo, una temporada mock, miembros y
-  rankings simulados. Fuente: `../../../../current/status.md`.
-- No hay creación o unión a salas, persistencia remota, backend, autenticación real ni rankings
-  compartidos reales. Fuentes: `../../../../../README.md`, `../../../../current/status.md`.
-- No hay resultados de investigación o experimentos Lean disponibles en la documentación revisada.
+- La aplicación tiene desafíos individuales jugables, una sala demo y un vehículo técnico persistido
+  localmente con Auth, salas, temporadas, publicaciones, intentos y rankings. Fuente:
+  `../../../../current/status.md`.
+- El portal privado y los recorridos competitivos server-side permiten preparar el vehículo de la
+  alpha; la validación de staging/producción sigue pendiente. Fuentes: `../../../../../README.md`,
+  `../../../../current/status.md`.
+- No hay resultados de investigación o experimentos Lean disponibles en la documentación revisada:
+  la capacidad técnica no equivale a evidencia de participación recurrente.
 
 ### Afirmaciones documentadas
 

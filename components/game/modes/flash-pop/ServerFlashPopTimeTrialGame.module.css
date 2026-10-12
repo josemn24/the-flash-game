@@ -1,0 +1,24 @@
+@layer app-formats {
+  .timeTrialHeader {
+    width: min(100%, 680px);
+    min-width: 0;
+    margin-inline: auto;
+    gap: var(--space-2);
+  }
+
+  .progressLabel {
+    margin: 0;
+    color: var(--ds-color-fg-primary);
+    font-family: var(--type-mono);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .timeTrialActions {
+    min-width: 0;
+    justify-content: flex-end;
+  }
+}

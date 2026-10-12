@@ -80,8 +80,10 @@ function common(formData: FormData) {
   const idempotencyKey = textValue(formData, "idempotencyKey").trim();
   const reason = textValue(formData, "reason").trim();
   const fieldErrors: Record<string, string> = {};
-  if (idempotencyKey.length < 8 || idempotencyKey.length > 160) fieldErrors.form = "Recarga el editor.";
-  if (reason.length === 0 || reason.length > 500) fieldErrors.reason = "Introduce un motivo de hasta 500 caracteres.";
+  if (idempotencyKey.length < 8 || idempotencyKey.length > 160)
+    fieldErrors.form = "Recarga el editor.";
+  if (reason.length === 0 || reason.length > 500)
+    fieldErrors.reason = "Introduce un motivo de hasta 500 caracteres.";
   return { idempotencyKey, reason, fieldErrors };
 }
 
@@ -98,9 +100,10 @@ function document(formData: FormData, fieldErrors: Record<string, string>) {
   try {
     return parseFlashEditorialQuestionJson(source);
   } catch (error) {
-    fieldErrors.document = error instanceof FlashEditorialValidationError
-      ? error.issues[0] ?? "El JSON no cumple el contrato editorial."
-      : "El documento no contiene JSON válido.";
+    fieldErrors.document =
+      error instanceof FlashEditorialValidationError
+        ? (error.issues[0] ?? "El JSON no cumple el contrato editorial.")
+        : "El documento no contiene JSON válido.";
     return null;
   }
 }
@@ -116,7 +119,8 @@ export async function createQuestionDraft(_state: QuestionActionState, formData:
     const parsed = common(formData);
     const question = document(formData, parsed.fieldErrors);
     const questionDefinitionId = textValue(formData, "questionDefinitionId").trim();
-    if (questionDefinitionId && !uuidPattern.test(questionDefinitionId)) parsed.fieldErrors.questionDefinitionId = "Definición inválida.";
+    if (questionDefinitionId && !uuidPattern.test(questionDefinitionId))
+      parsed.fieldErrors.questionDefinitionId = "Definición inválida.";
     if (!question || Object.keys(parsed.fieldErrors).length > 0) return state(parsed.fieldErrors);
     try {
       const result = await createSuperadminQuestionDraft({
@@ -132,7 +136,11 @@ export async function createQuestionDraft(_state: QuestionActionState, formData:
       return commandState(error);
     }
   } catch (error) {
-    if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) boundary(error);
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    )
+      boundary(error);
     throw error;
   }
 }
@@ -144,11 +152,19 @@ export async function updateQuestionDraft(_state: QuestionActionState, formData:
     const questionVersionId = textValue(formData, "questionVersionId").trim();
     const expectedUpdatedAt = textValue(formData, "expectedUpdatedAt").trim();
     const question = document(formData, parsed.fieldErrors);
-    if (!uuidPattern.test(questionVersionId)) parsed.fieldErrors.questionVersionId = "Versión inválida.";
-    if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt))) parsed.fieldErrors.expectedUpdatedAt = "Recarga la versión.";
+    if (!uuidPattern.test(questionVersionId))
+      parsed.fieldErrors.questionVersionId = "Versión inválida.";
+    if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt)))
+      parsed.fieldErrors.expectedUpdatedAt = "Recarga la versión.";
     if (!question || Object.keys(parsed.fieldErrors).length > 0) return state(parsed.fieldErrors);
     try {
-      await updateSuperadminQuestionDraft({ idempotencyKey: parsed.idempotencyKey, questionVersionId, expectedUpdatedAt, document: question, reason: parsed.reason });
+      await updateSuperadminQuestionDraft({
+        idempotencyKey: parsed.idempotencyKey,
+        questionVersionId,
+        expectedUpdatedAt,
+        document: question,
+        reason: parsed.reason,
+      });
       revalidatePath("/admin");
       revalidatePath(`/admin/questions/${questionVersionId}`);
       redirect(`/admin/questions/${questionVersionId}`);
@@ -156,7 +172,11 @@ export async function updateQuestionDraft(_state: QuestionActionState, formData:
       return commandState(error);
     }
   } catch (error) {
-    if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) boundary(error);
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    )
+      boundary(error);
     throw error;
   }
 }
@@ -167,11 +187,18 @@ export async function publishQuestion(_state: QuestionActionState, formData: For
     const parsed = common(formData);
     const questionVersionId = textValue(formData, "questionVersionId").trim();
     const expectedUpdatedAt = textValue(formData, "expectedUpdatedAt").trim();
-    if (!uuidPattern.test(questionVersionId)) parsed.fieldErrors.questionVersionId = "Versión inválida.";
-    if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt))) parsed.fieldErrors.expectedUpdatedAt = "Recarga la versión.";
+    if (!uuidPattern.test(questionVersionId))
+      parsed.fieldErrors.questionVersionId = "Versión inválida.";
+    if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt)))
+      parsed.fieldErrors.expectedUpdatedAt = "Recarga la versión.";
     if (Object.keys(parsed.fieldErrors).length > 0) return state(parsed.fieldErrors);
     try {
-      await publishSuperadminQuestion({ idempotencyKey: parsed.idempotencyKey, questionVersionId, expectedUpdatedAt, reason: parsed.reason });
+      await publishSuperadminQuestion({
+        idempotencyKey: parsed.idempotencyKey,
+        questionVersionId,
+        expectedUpdatedAt,
+        reason: parsed.reason,
+      });
       revalidatePath("/admin");
       revalidatePath("/admin/questions");
       revalidatePath(`/admin/questions/${questionVersionId}`);
@@ -180,7 +207,11 @@ export async function publishQuestion(_state: QuestionActionState, formData: For
       return commandState(error);
     }
   } catch (error) {
-    if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) boundary(error);
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    )
+      boundary(error);
     throw error;
   }
 }
@@ -191,11 +222,18 @@ export async function archiveQuestion(_state: QuestionActionState, formData: For
     const parsed = common(formData);
     const questionVersionId = textValue(formData, "questionVersionId").trim();
     const expectedUpdatedAt = textValue(formData, "expectedUpdatedAt").trim();
-    if (!uuidPattern.test(questionVersionId)) parsed.fieldErrors.questionVersionId = "Versión inválida.";
-    if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt))) parsed.fieldErrors.expectedUpdatedAt = "Recarga la versión.";
+    if (!uuidPattern.test(questionVersionId))
+      parsed.fieldErrors.questionVersionId = "Versión inválida.";
+    if (!expectedUpdatedAt || Number.isNaN(Date.parse(expectedUpdatedAt)))
+      parsed.fieldErrors.expectedUpdatedAt = "Recarga la versión.";
     if (Object.keys(parsed.fieldErrors).length > 0) return state(parsed.fieldErrors);
     try {
-      await archiveSuperadminQuestion({ idempotencyKey: parsed.idempotencyKey, questionVersionId, expectedUpdatedAt, reason: parsed.reason });
+      await archiveSuperadminQuestion({
+        idempotencyKey: parsed.idempotencyKey,
+        questionVersionId,
+        expectedUpdatedAt,
+        reason: parsed.reason,
+      });
       revalidatePath("/admin");
       revalidatePath("/admin/questions");
       revalidatePath(`/admin/questions/${questionVersionId}`);
@@ -204,7 +242,11 @@ export async function archiveQuestion(_state: QuestionActionState, formData: For
       return commandState(error);
     }
   } catch (error) {
-    if (error instanceof AuthenticationRequiredError || error instanceof SuperadminAccessDeniedError) boundary(error);
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    )
+      boundary(error);
     throw error;
   }
 }
@@ -217,7 +259,10 @@ export async function prepareQuestionAsset(input: {
   return prepareSuperadminQuestionAsset(input);
 }
 
-export async function confirmQuestionAsset(input: { readonly assetId: string; readonly idempotencyKey: string }) {
+export async function confirmQuestionAsset(input: {
+  readonly assetId: string;
+  readonly idempotencyKey: string;
+}) {
   return confirmSuperadminQuestionAsset(input);
 }
 
@@ -229,6 +274,10 @@ export async function previewQuestionAsset(assetId: string) {
   return previewSuperadminQuestionAsset(assetId);
 }
 
-export async function archiveQuestionAsset(input: { readonly assetId: string; readonly idempotencyKey: string; readonly reason: string }) {
+export async function archiveQuestionAsset(input: {
+  readonly assetId: string;
+  readonly idempotencyKey: string;
+  readonly reason: string;
+}) {
   return archiveSuperadminQuestionAsset(input);
 }

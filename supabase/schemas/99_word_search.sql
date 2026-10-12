@@ -117,6 +117,7 @@ begin
   if found and (cached.operation <> 'submit_word_search_selection' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -127,6 +128,7 @@ begin
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
   if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
     raise exception 'session_revoked' using errcode = '42501';
   end if;
   expected := (input->>'lockVersion')::bigint;

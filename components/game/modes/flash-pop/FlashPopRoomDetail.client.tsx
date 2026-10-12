@@ -17,10 +17,10 @@ import {
   TrophyIcon,
 } from "@/components/ui";
 import { formatDailyCountdown, getDailyCountdownSeconds } from "@/lib/dailyCountdown";
-import { ROOM_ART_FALLBACK } from "@/application/presentation/room";
+import { ROOM_ART_FALLBACK } from "@/lib/roomPresentation";
 import { applyRoomChallengeResult } from "@/features/rooms/localResults";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
-import type { RoomDetailModel } from "@/types/game";
+import type { RoomDetailModel } from "@/types/view-models/room";
 import { RoomLeaderboard } from "./RoomLeaderboard";
 import styles from "./FlashPopRoomDetail.module.css";
 
@@ -190,6 +190,10 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
       ? visibleModel.roomLeaderboard.length - visibleModel.dailyLeaderboard.length
       : 0,
   );
+  const canReviewDailyMembers =
+    Boolean(visibleModel.dailyChallenge) &&
+    visibleModel.currentUser.role !== "spectator" &&
+    visibleModel.currentUser.dailyAttemptStatus === "completed";
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -252,9 +256,7 @@ export function FlashPopRoomDetail({ model }: { model: RoomDetailModel }) {
             variant="cards"
             pendingCount={pendingCount}
             memberHrefBase={
-              visibleModel.source === "supabase"
-                ? undefined
-                : `/salas/${visibleModel.roomId}/ranking`
+              canReviewDailyMembers ? `/salas/${visibleModel.roomId}/ranking` : undefined
             }
           />
         </div>

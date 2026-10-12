@@ -100,6 +100,9 @@
         "table": ["SELECT"]
       }
     },
+    "private.prepared_interactions": {
+      "kind": "r"
+    },
     "private.question_definitions": {
       "kind": "r",
       "service_role": {
@@ -191,6 +194,13 @@
       "authenticated": {
         "table": ["SELECT"]
       }
+    },
+    "private.ranked_challenge_results": {
+      "kind": "v",
+      "service_role": {
+        "table": ["SELECT"]
+      },
+      "boundary": "Internal invoker view; service SELECT only. Public ranking functions enforce active room membership and project social fields."
     }
   },
   "functions": {
@@ -219,6 +229,11 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.activate_interaction": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
     "private.adjust_result": {
       "arguments": "input jsonb",
       "securityDefiner": true,
@@ -233,6 +248,21 @@
       "arguments": "target_player_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
+    },
+    "private.can_review_competitive_attempt": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.close_attempt_as_abandoned": {
+      "arguments": "target_attempt uuid, closed_at timestamp with time zone, terminal_reason_value text, audit_actor uuid, audit_request_id text, audit_reason text",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.close_attempts_for_permission_loss": {
+      "arguments": "target_player uuid, target_room uuid, closed_at timestamp with time zone, audit_actor uuid, audit_request_id text",
+      "securityDefiner": true,
+      "executeRoles": []
     },
     "private.confirm_avatar_upload_command": {
       "arguments": "input jsonb",
@@ -297,7 +327,8 @@
     "private.validate_flash_editorial_document": {
       "arguments": "document jsonb",
       "securityDefiner": false,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.create_flash_draft_command": {
       "arguments": "input jsonb",
@@ -342,7 +373,8 @@
     "private.validate_flash_question_document": {
       "arguments": "document jsonb",
       "securityDefiner": false,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.update_flash_draft_command": {
       "arguments": "input jsonb",
@@ -373,6 +405,11 @@
       "arguments": "",
       "securityDefiner": true,
       "executeRoles": []
+    },
+    "private.expire_stale_attempts": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
     },
     "private.execute_command": {
       "arguments": "op text, input jsonb",
@@ -457,7 +494,8 @@
     "private.is_supported_flash_question": {
       "arguments": "target_question uuid",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.is_valid_published_competitive_question_format": {
       "arguments": "target_question uuid, expected_type text",
@@ -774,12 +812,12 @@
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
-    "public.get_flash_history": {
+    "public.get_room_history": {
       "arguments": "target_room_slug text, target_publication_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
     },
-    "public.get_flash_member_review": {
+    "public.get_room_member_review": {
       "arguments": "target_room_slug text, target_publication_id uuid, target_player_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
@@ -795,6 +833,16 @@
       "executeRoles": ["authenticated"]
     },
     "public.get_my_flash_result": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_narrative_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_narrative_result": {
       "arguments": "target_attempt_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
@@ -1028,6 +1076,282 @@
       "arguments": "target_receipt uuid, session_token text",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
+    },
+    "private.read_attempt_context": {
+      "arguments": "target_attempt uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "public.get_my_competitive_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "private.authorize_attempt_replay": {
+      "arguments": "target_attempt uuid, token_hash text",
+      "securityDefiner": true,
+      "executeRoles": []
+    },
+    "private.raise_if_session_transferred": {
+      "arguments": "target_attempt uuid, token_hash text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.prepare_attempt_session": {
+      "arguments": "target_publication uuid",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_recorded_evaluation": {
+      "arguments": "target_receipt uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_completed_attempt": {
+      "arguments": "target_attempt uuid",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_abandoned_attempt": {
+      "arguments": "target_attempt uuid",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.read_avatar_upload_confirmation": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.claim_archived_avatar_cleanup": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"]
+    },
+    "private.validate_anagram_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_classification_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_connect_pairs_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_escape_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_estimation_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_heat_map_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_logic_code_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_logic_matrix_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_matching_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_mini_wordle_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_multiple_choice_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_odd_one_out_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_ordering_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_progressive_clues_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_progressive_image_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_queens_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_short_text_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_true_false_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_word_hashtag_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_word_search_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.validate_zip_question_document": {
+      "arguments": "document jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.is_supported_anagram_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_estimation_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_heat_map_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_logic_code_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_matching_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_mini_wordle_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_multiple_choice_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_progressive_clues_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_progressive_image_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_queens_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_short_text_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.is_supported_word_search_question": {
+      "arguments": "question private.question_versions, solution jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.assert_time_trial_content": {
+      "arguments": "target_version uuid",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.time_trial_progress": {
+      "arguments": "target_attempt uuid",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.close_time_trial_interaction": {
+      "arguments": "target_attempt uuid, closed_at timestamp with time zone, reason text",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "public.get_my_time_trial_challenge": {
+      "arguments": "target_room_slug text, target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
+    },
+    "public.get_my_time_trial_result": {
+      "arguments": "target_attempt_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"]
     }
   }
 }

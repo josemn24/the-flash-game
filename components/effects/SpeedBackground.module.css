@@ -10,12 +10,12 @@
   .ambientOrbOne {
     right: -16rem;
     top: -15rem;
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
   }
   .ambientOrbTwo {
     bottom: -22rem;
     left: -18rem;
-    background: var(--color-social);
+    background: var(--ds-color-bg-selected);
   }
   .speedGrid {
     position: absolute;
@@ -33,7 +33,7 @@
     background: linear-gradient(
       90deg,
       transparent,
-      rgb(var(--color-brand-rgb) / 0.26),
+      color-mix(in srgb, var(--ds-color-bg-brand) 26%, transparent),
       transparent
     );
   }

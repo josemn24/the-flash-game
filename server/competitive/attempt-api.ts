@@ -1,19 +1,30 @@
+import { InvalidAttemptLifecycleError } from "@/lib/attemptLifecycle";
+import {
+  competitivePerformanceObserver,
+  instrumentCompetitiveCommands,
+} from "@/infrastructure/observability/competitivePerformance";
 import "server-only";
 
 import { randomBytes, randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import { AuthServiceUnavailableError } from "@/infrastructure/supabase/auth/auth-availability";
 import { getRuntimeScope } from "@/server/runtime-scope";
 import { logHttpEvent, requestIdFor, safePath } from "@/server/observability";
+import type { AuthenticatedActor, AttemptSessionTokenGenerator } from "@/application/ports/actors";
+import type { AttemptUseCases } from "@/application/ports/attempt-use-cases";
+import { ApplicationAttemptUseCases } from "@/application/use-cases/attempts";
 import {
   consumeCompetitiveRateLimit,
+  consumeAlphabetActionRateLimit,
   CompetitiveRateLimitError,
 } from "@/server/competitive/rate-limit";
 import {
   AttemptCommandError,
   SupabaseAttemptCommands,
-  type VerifiedAuthIdentity,
-} from "@/infrastructure/supabase/attemptCommands";
+} from "@/infrastructure/supabase/attempts/attemptCommands";
+import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/assets/privateQuestionAssetResolver";
+import { supabaseCompetitiveEvaluator } from "@/server/evaluation/competitive-evaluator";
 
 const attemptCookiePrefix = "flash-attempt-";
 const attemptTokenMaxAgeSeconds = 60 * 60;
@@ -23,6 +34,7 @@ export class AttemptApiError extends Error {
     readonly code: string,
     readonly status: number,
     readonly retryAfterSeconds?: number,
+    readonly details?: JsonObject,
   ) {
     super(code);
     this.name = "AttemptApiError";
@@ -146,7 +158,7 @@ export function optionalClientTime(body: JsonObject) {
   return body.clientTimeUsedMs;
 }
 
-export async function verifiedIdentity(): Promise<VerifiedAuthIdentity> {
+export async function verifiedIdentity(): Promise<AuthenticatedActor> {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error) {
@@ -178,6 +190,21 @@ export function assertSameOrigin(request: Request) {
   try {
     actualUrl = new URL(origin);
     expectedUrl = new URL(request.url);
+    // Next uses the server's bind address (e.g. 0.0.0.0) for request.url.
+    // Host carries the actual destination used by the browser on the LAN.
+    const host = request.headers.get("host");
+    if (host) {
+      expectedUrl = new URL(`${expectedUrl.protocol}//${host}`);
+      if (
+        expectedUrl.username ||
+        expectedUrl.password ||
+        expectedUrl.pathname !== "/" ||
+        expectedUrl.search ||
+        expectedUrl.hash
+      ) {
+        throw new Error("Invalid request host.");
+      }
+    }
   } catch {
     throw new AttemptApiError("invalid_origin", 403);
   }
@@ -211,11 +238,26 @@ export async function readAttemptToken(attemptId: string) {
 }
 
 /**
- * The scheduled-challenge cookie lets the server reuse the controlling token after a reload.
- * It is still HttpOnly: a different browser/device does not receive it and remains blocked.
+ * The scheduled-challenge cookie is a one-device candidate. It lets the server
+ * reuse the token after a reload and authorizes an explicit takeover request;
+ * it never grants control until PostgreSQL commits the transfer.
  */
 export async function readStartAttemptToken(authUserId: string, scheduledChallengeId: string) {
   return (await cookies()).get(startCookieName(authUserId, scheduledChallengeId))?.value;
+}
+
+export async function setStartAttemptToken(
+  authUserId: string,
+  scheduledChallengeId: string,
+  token: string,
+) {
+  (await cookies()).set(startCookieName(authUserId, scheduledChallengeId), token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/api/competitive/attempts",
+    maxAge: attemptTokenMaxAgeSeconds,
+  });
 }
 
 export async function setAttemptToken(
@@ -257,14 +299,38 @@ export async function clearAttemptToken(
   }
 }
 
-export function commandsFor(identity: VerifiedAuthIdentity) {
+export function commandsFor(identity: AuthenticatedActor, requestId?: string) {
   const limit = consumeCompetitiveRateLimit(identity.authUserId);
   void limit;
-  return new SupabaseAttemptCommands(identity);
+  const tokenGenerator: AttemptSessionTokenGenerator = { generate: newAttemptToken };
+  return instrumentCompetitiveCommands(
+    new ApplicationAttemptUseCases({
+      actor: identity,
+      commands: new SupabaseAttemptCommands(identity),
+      evaluator: supabaseCompetitiveEvaluator,
+      privateQuestionAssets: supabasePrivateQuestionAssetResolver,
+      sessionTokens: tokenGenerator,
+      performanceObserver: competitivePerformanceObserver,
+      beforeInteractiveAction: ({ attemptId, challengeMode }) => {
+        if (challengeMode === "alphabet") {
+          consumeAlphabetActionRateLimit(identity.authUserId, attemptId);
+        }
+      },
+    }),
+    requestId,
+  ) satisfies AttemptUseCases;
 }
 
 export function mapAttemptError(error: unknown): AttemptApiError {
+  if (error instanceof AuthServiceUnavailableError)
+    return new AttemptApiError("auth_unavailable", 503);
   if (error instanceof AttemptApiError) return error;
+  if (
+    error instanceof InvalidAttemptLifecycleError ||
+    (error instanceof AttemptCommandError && error.code === "invalid_attempt_lifecycle")
+  ) {
+    return new AttemptApiError("invalid_attempt_lifecycle", 500);
+  }
   if (error instanceof AttemptCommandError) {
     const status =
       error.code === "invalid_mini_wordle_guess" ||
@@ -273,6 +339,8 @@ export function mapAttemptError(error: unknown): AttemptApiError {
       error.code === "logic_code_requires_attempt_command" ||
       error.code === "invalid_queens_answer" ||
       error.code === "queens_answer_incomplete" ||
+      error.code === "queens_answer_overflow" ||
+      error.code === "queens_requires_board_validation" ||
       error.code === "invalid_word_hashtag_swap" ||
       error.code === "word_hashtag_requires_swap_command" ||
       error.code === "invalid_question_payload" ||
@@ -285,7 +353,7 @@ export function mapAttemptError(error: unknown): AttemptApiError {
               error.code === "command_failed"
             ? 503
             : 409;
-    return new AttemptApiError(error.code, status);
+    return new AttemptApiError(error.code, status, error.retryAfterSeconds);
   }
   if (error instanceof CompetitiveRateLimitError) {
     return new AttemptApiError(error.code, error.status, error.retryAfterSeconds);
@@ -334,13 +402,23 @@ export function errorResponse(
     durationMs: Date.now() - startedAt,
   });
   return Response.json(
-    { error: { code: mapped.code, requestId } },
+    {
+      error: {
+        code: mapped.code,
+        requestId,
+        ...(mapped.code === "attempt_session_missing"
+          ? { message: "Recarga la página para preparar la sesión antes de empezar." }
+          : {}),
+      },
+    },
     {
       status: mapped.status,
       headers: {
         "Cache-Control": "no-store",
         "X-Request-Id": requestId,
-        ...(mapped.status === 429 ? { "Retry-After": String(mapped.retryAfterSeconds ?? 1) } : {}),
+        ...(mapped.status === 429 || mapped.retryAfterSeconds !== undefined
+          ? { "Retry-After": String(mapped.retryAfterSeconds ?? 1) }
+          : {}),
       },
     },
   );

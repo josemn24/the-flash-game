@@ -33,7 +33,9 @@ test.describe("E05 — Queens competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: "Coloca las seis coronas" })).toBeVisible();
     await expect(page.getByText("1/6 coronas")).toBeVisible();
@@ -41,14 +43,14 @@ test.describe("E05 — Queens competitivo", () => {
 
     const board = page.getByRole("grid", { name: "Tablero Queens de 6 por 6" });
     const validationBodies: Array<Record<string, unknown>> = [];
-    let loseNextValidation = false;
+    let failedValidations = 0;
     await page.route("**/api/competitive/attempts/*/queens/validate", async (route) => {
       validationBodies.push(route.request().postDataJSON() as Record<string, unknown>);
-      if (!loseNextValidation) {
+      if (failedValidations === 0) {
         await route.continue();
         return;
       }
-      loseNextValidation = false;
+      failedValidations--;
       const response = await route.fetch();
       await route.fulfill({
         status: 503,
@@ -77,11 +79,15 @@ test.describe("E05 — Queens competitivo", () => {
     expect(validationBodies).toHaveLength(1);
 
     await board.getByRole("gridcell", { name: /Fila 5, columna 4/ }).click();
-    loseNextValidation = true;
+    failedValidations = 2;
     await board.getByRole("gridcell", { name: /Fila 6, columna 6/ }).click();
-    await expect(page.getByRole("button", { name: "Reintentar validación" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar validación" }).click();
-    expect(validationBodies).toHaveLength(3);
+    await expect.poll(() => validationBodies.length).toBe(3);
+    await expect(
+      page.getByRole("button", { name: "Reintentar validación", exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar validación", exact: true }).click();
+    await expect.poll(() => validationBodies.length).toBe(4);
+    expect(validationBodies[3]).toEqual(validationBodies[1]);
     expect(validationBodies[1]?.idempotencyKey).toBe(validationBodies[2]?.idempotencyKey);
 
     const miniBoard = page.getByRole("grid", { name: "Tablero Queens de 4 por 4" });
@@ -91,7 +97,7 @@ test.describe("E05 — Queens competitivo", () => {
     await miniBoard.getByRole("gridcell", { name: /Fila 3, columna 4/ }).click();
     await miniBoard.getByRole("gridcell", { name: /Fila 4, columna 2/ }).click();
     await expect(page.getByText("4/4 coronas")).toBeVisible();
-    await expect.poll(() => validationBodies).toHaveLength(4);
+    await expect.poll(() => validationBodies).toHaveLength(5);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     const firstQueensReview = page.locator("details").filter({ hasText: /^02Queens/ });

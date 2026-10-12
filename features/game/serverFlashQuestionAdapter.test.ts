@@ -29,6 +29,26 @@ const serverChallenge = {
 };
 
 describe("server flash question adapter", () => {
+  it("adapts competitive short-text without including its solution or alphabet letter", () => {
+    const question = questionFromPayload(
+      "text-1",
+      {
+        question: "Capital de Portugal",
+        answerPlaceholder: "Una ciudad",
+        correctAnswer: "Lisboa",
+      },
+      15_000,
+      50,
+      "short-text" as Parameters<typeof questionFromPayload>[4],
+    );
+    expect(question).toMatchObject({
+      type: "short-text",
+      answerPlaceholder: "Una ciudad",
+      timeLimit: 15,
+    });
+    expect(question).not.toHaveProperty("correctAnswer");
+    expect(question).not.toHaveProperty("letter");
+  });
   it("normalizes terminal review rows returned by both SQL and mode adapters", () => {
     const snakeCase = {
       challenge_item_id: "item-snake",

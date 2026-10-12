@@ -18,7 +18,11 @@ capacidades aún pendientes no deben interpretarse como funcionalidades ya dispo
 | Cómo funcionan las fronteras servidor/cliente   | [`current/architecture/server-client-architecture.md`](current/architecture/server-client-architecture.md) |
 | Qué decisiones son normativas                   | [`decisions/README.md`](decisions/README.md)                                                               |
 | Cómo se crean formatos y desafíos               | [`content/README.md`](content/README.md)                                                                   |
+| Cómo se ha definido el futuro modo Contrarreloj | [`current/domain/contrarreloj.md`](current/domain/contrarreloj.md)                                         |
 | Qué estrategia e hipótesis siguen activas       | [`product/README.md`](product/README.md)                                                                   |
+| Cómo utilizar los colores y estados de la UI    | [`current/design-tokens.md`](current/design-tokens.md)                                                     |
+| Cómo consultar y ampliar el design system       | [`current/design-system.md`](current/design-system.md)                                                     |
+| Cómo probar desde un móvil u otro equipo        | [`current/local-device-testing.md`](current/local-device-testing.md)                                       |
 | Qué documentos describen etapas anteriores      | [`archive/README.md`](archive/README.md)                                                                   |
 
 ## Secciones
@@ -50,17 +54,17 @@ decisiones y después los documentos afectados.
 
 ## Estado de la última revisión
 
-- Fecha: 2026-09-25.
+- Revisión funcional general: 2026-09-30; actualización de Supabase local: 2026-10-11.
 - 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
   y E01–E06/E10 sobre Supabase local.
-- La revisión declarativa canónica es `20260925130000_s20_attempt_inspection_projection`; la comprobación de
-  esquema cubre 48 archivos declarativos y 91 migraciones versionadas, además de 30 tablas, una vista,
-  funciones públicas/privadas y políticas RLS.
-- `npm run typecheck`, `npm run docs:check` y `npm run schema:revision:check` pasan en la comprobación
-  actual. `npm test` tiene un fallo unitario pendiente y `npm run lint` conserva dos warnings; el
-  detalle vigente está en [`current/qa.md`](current/qa.md).
-- `npm run format:check` mantiene avisos en 151 archivos en la comprobación actual.
-- `npm run supabase:schema:test` pasa sobre Supabase local, incluida la suite S20; la validación remota
-  sigue pendiente y sus límites están documentados en [`supabase/schemas/README.md`](../supabase/schemas/README.md).
-- La CLI tiene un proyecto de staging vinculado; las validaciones remotas siguen pendientes.
+- Contrarreloj tiene [reglas acordadas y un diseño previo a implementación](current/domain/contrarreloj.md).
+  No forma parte de los cinco modos implementados. La [guía editorial](content/guidelines/contrarreloj.md)
+  y las [decisiones pendientes](decisions/open-questions.md#contrarreloj-decisiones-pendientes)
+  delimitan su preparación.
+- La revisión activa es `20261011180045_initial_schema`, un baseline generado desde 82 archivos
+  declarativos de esquema, con 31 tablas, dos vistas, funciones públicas/privadas y políticas RLS.
+- El baseline local pasó `supabase:schema:test`, la validación por migraciones, reconciliación,
+  `schema:revision:check`, `supabase:types:check`, `docs:check` y `verify:pilot`; el detalle y el
+  estado limpio posterior al reset están en [`current/qa.md`](current/qa.md).
+- La validación del baseline se limitó a Supabase local. No se ejecutaron operaciones remotas.

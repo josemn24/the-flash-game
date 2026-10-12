@@ -2,10 +2,15 @@
 -- Eligibility is historical: later membership termination does not erase earned points.
 create view private.effective_results with (security_invoker = true) as
 select a.id as attempt_id, a.player_id, a.scheduled_challenge_id, sc.season_id,
-  s.room_id, a.started_at, points.flash_points, duration.duration_ms
+  s.room_id, a.started_at, points.flash_points,
+  case when cv.mode = 'time-trial' then coalesce((trial.progress->>'lastCorrectElapsedMs')::bigint,0) else duration.duration_ms end as duration_ms,
+  cv.mode as challenge_mode, (trial.progress->>'solvedCount')::integer as solved_count,
+  (trial.progress->>'lastCorrectElapsedMs')::bigint as last_correct_elapsed_ms
 from public.attempts a
 join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
 join public.seasons s on s.id = sc.season_id
+join private.challenge_versions cv on cv.id = a.challenge_version_id
+cross join lateral (select case when cv.mode = 'time-trial' then private.time_trial_progress(a.id) end as progress) trial
 join lateral (
   select sum(e.amount)::bigint as flash_points
   from private.flash_point_entries e where e.attempt_id = a.id
@@ -20,15 +25,25 @@ where a.kind = 'competitive' and a.status = 'completed' and sc.status <> 'cancel
 revoke all on private.effective_results from public, anon, authenticated, service_role;
 grant select on private.effective_results to service_role;
 
+-- One comparator for the live ranking and historical projections.
+create view private.ranked_challenge_results with (security_invoker = true) as
+select e.*, rank() over (partition by scheduled_challenge_id order by
+  case when challenge_mode = 'time-trial' then solved_count else flash_points end desc,
+  case when challenge_mode = 'time-trial' then last_correct_elapsed_ms else duration_ms end asc nulls last,
+  case when challenge_mode <> 'time-trial' then started_at end asc
+) as position from private.effective_results e;
+revoke all on private.ranked_challenge_results from public, anon, authenticated, service_role;
+grant select on private.ranked_challenge_results to service_role;
+
 -- The only exposed definer functions return minimal rankings, never raw attempts/answers.
 -- Nonexistent and inaccessible scopes both produce an empty set.
 create function public.get_challenge_ranking(target_publication_id uuid)
 returns table (player_id uuid, display_name text, avatar_path text,
-  flash_points bigint, duration_ms bigint, "position" bigint)
+  flash_points bigint, duration_ms bigint, "position" bigint, solved_count integer, last_correct_elapsed_ms bigint)
 language sql stable security definer set search_path = '' as $$
   select e.player_id, p.display_name, p.avatar_path, e.flash_points, e.duration_ms,
-    rank() over (order by e.flash_points desc, e.duration_ms, e.started_at) as "position"
-  from private.effective_results e join public.players p on p.id = e.player_id
+    e.position, e.solved_count, e.last_correct_elapsed_ms
+  from private.ranked_challenge_results e join public.players p on p.id = e.player_id
   where e.scheduled_challenge_id = target_publication_id and private.is_room_member(e.room_id)
   order by "position", e.player_id
 $$;

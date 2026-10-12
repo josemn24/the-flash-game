@@ -3,10 +3,22 @@ import { defineConfig, devices } from "@playwright/test";
 
 function parseLocalStatus() {
   try {
-    const output = execFileSync("npx", ["supabase", "status", "-o", "env"], {
-      encoding: "utf8",
-      env: { ...process.env, SUPABASE_TELEMETRY: "false" },
-    });
+    const output = execFileSync(
+      "npx",
+      [
+        "supabase",
+        "status",
+        "-o",
+        "env",
+        ...(process.env.SUPABASE_TEST_WORKDIR
+          ? ["--workdir", process.env.SUPABASE_TEST_WORKDIR]
+          : []),
+      ],
+      {
+        encoding: "utf8",
+        env: { ...process.env, SUPABASE_TELEMETRY: "false" },
+      },
+    );
     return Object.fromEntries(
       output.split("\n").flatMap((line) => {
         const match = line.match(/^([A-Z][A-Z0-9_]*)=(.*)$/);
@@ -25,6 +37,8 @@ const e2ePort = isPwaE2e ? process.env.PWA_E2E_PORT || "3001" : process.env.E2E_
 const e2eBaseURL = `http://127.0.0.1:${e2ePort}`;
 const localEnv = {
   ...process.env,
+  FLASH_NEXT_DIST_DIR:
+    process.env.FLASH_NEXT_DIST_DIR || (process.env.SUPABASE_TEST_WORKDIR ? ".next/e2e" : ".next"),
   SUPABASE_DB_URL: process.env.SUPABASE_DB_URL || localStatus.DB_URL || "",
   NEXT_PUBLIC_SUPABASE_URL:
     process.env.NEXT_PUBLIC_SUPABASE_URL || localStatus.API_URL || "http://127.0.0.1:54321",
@@ -45,11 +59,18 @@ const localEnv = {
   // Editorial E2E scenarios create and publish several records in one flow.
   // Keep production's smaller admin burst while allowing the local browser run to complete.
   FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
-  EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260927172602_cancel-scheduled-challenge",
+  EXPECTED_SCHEMA_REVISION: process.env.EXPECTED_SCHEMA_REVISION || "20261011180045_initial_schema",
 };
 
 export default defineConfig({
+  projects: [
+    { name: "chromium" },
+    {
+      name: "webkit-profile",
+      testMatch: "**/profile-dialog-layout.spec.ts",
+      use: { ...devices["Desktop Safari"] },
+    },
+  ],
   testDir: "./e2e",
   timeout: 30_000,
   fullyParallel: false,
@@ -60,6 +81,7 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   webServer: {
+    stdout: process.env.FLASH_PERFORMANCE_DIAGNOSTICS === "1" ? "pipe" : "ignore",
     command: isPwaE2e
       ? `npm run start -- --hostname 127.0.0.1 --port ${e2ePort}`
       : `npm run dev -- --hostname 127.0.0.1 --port ${e2ePort}`,

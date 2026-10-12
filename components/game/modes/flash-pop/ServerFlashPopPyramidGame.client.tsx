@@ -1,8 +1,13 @@
 "use client";
 
+import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
+
 import { motion } from "motion/react";
 import { ArrowIcon, Button, Card, CheckIcon } from "@/components/ui";
-import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
+import {
+  AnswerFeedbackStage,
+  QuestionLoadingStage,
+} from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
 import { FlashPopFeedback } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { ChallengeResultScreen } from "@/components/game/shared";
@@ -15,7 +20,8 @@ import {
   getAnswerResultAccuracyUnit,
 } from "@/features/game/resultSummary";
 import type { PyramidAttemptSummary } from "@/features/pyramid/pyramidAttempt";
-import type { AnswerResult, GameRoomContext } from "@/types/game";
+import type { AnswerResult } from "@/types/gameplay";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerFlashTerminalReview, ServerPyramidChallenge } from "@/types/gameplay/challenge";
 import styles from "./FlashPopPyramidGame.module.css";
 
@@ -46,11 +52,15 @@ function PyramidFeedback({
     : timedOut
       ? "¡Se escapó por poco!"
       : "Casi.";
+  const attemptsExhausted =
+    result.details?.type === "queens" && result.details.failureReason === "attempts_exhausted";
   const body = passed
     ? isLast
       ? "Has superado todos los niveles."
       : "Preparando la siguiente pregunta…"
-    : "El ascenso termina en este nivel.";
+    : attemptsExhausted
+      ? "Has agotado los tres intentos. El ascenso termina en este nivel."
+      : "El ascenso termina en este nivel.";
 
   return (
     <FlashPopFeedback
@@ -136,7 +146,17 @@ export function ServerFlashPopPyramidGame({
   };
 
   return (
-    <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"} presentation="pyramid">
+    <FlashPopGameShell
+      notice={
+        <CompetitiveLifecycleNotice
+          error={session.lifecycleError}
+          busy={session.busy}
+          onRetry={session.retryLifecycle}
+        />
+      }
+      layout={session.phase === "intro" ? "intro" : "game"}
+      presentation="pyramid"
+    >
       {session.phase === "intro" ? (
         <ChallengeIntro
           introduction={{
@@ -148,6 +168,15 @@ export function ServerFlashPopPyramidGame({
           onStart={session.begin}
           canStart
           notice={session.startNotice}
+          transfer={
+            session.transfer
+              ? {
+                  busy: session.busy,
+                  onConfirm: session.takeOver,
+                  onCancel: session.cancelTakeOver,
+                }
+              : undefined
+          }
           returnTo={roomContext.returnTo}
         />
       ) : null}
@@ -172,6 +201,11 @@ export function ServerFlashPopPyramidGame({
             <p className={styles.briefingFormat}>{currentLevel.briefing.format}</p>
             <h1 id="pyramid-briefing-title">{currentLevel.briefing.title}</h1>
             <p className={styles.briefingDescription}>{currentLevel.briefing.description}</p>
+            {session.levelNotice ? (
+              <p className={styles.levelNotice} role="alert">
+                {session.levelNotice}
+              </p>
+            ) : null}
             <div className={styles.briefingStats} aria-label="Condiciones del nivel">
               <div className={styles.briefingStat}>
                 <strong>{formatTime(currentLevel.timeLimitMs / 1000)}</strong>
@@ -187,12 +221,15 @@ export function ServerFlashPopPyramidGame({
               fullWidth
               trailingIcon={<ArrowIcon />}
               onClick={session.startQuestions}
+              loading={session.busy}
             >
-              Empezar nivel
+              {session.levelNotice ? "Reintentar carga" : "Empezar nivel"}
             </Button>
           </Card>
         </motion.div>
       ) : null}
+
+      {session.phase === "preparing" ? <QuestionLoadingStage key="preparing" /> : null}
 
       {session.phase === "countdown" ? (
         <StartCountdown label="La Pirámide" key="countdown" onComplete={session.startQuestions} />
@@ -300,7 +337,8 @@ export function ServerFlashPopPyramidGame({
               },
             ],
           }}
-          onReview={session.showReview}
+          onReview={session.reviewChallenge ? session.showReview : undefined}
+          expired={session.attemptExpired}
           returnTo={roomContext.returnTo}
         />
       ) : null}

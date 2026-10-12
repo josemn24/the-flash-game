@@ -8,8 +8,8 @@ import {
 } from "@/features/narrative/narrativeSession";
 import type { NarrativeSessionState } from "@/features/narrative/narrativeSession";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
-import { calculateTotalScore, evaluateAnswer, getTimedOutAnswer } from "@/lib/scoring";
-import type { AnswerValue, NarrativeChallenge } from "@/types/game";
+import { calculateTotalScore, evaluatePracticeAnswer, getTimedOutAnswer } from "@/lib/scoring";
+import type { AnswerValue, NarrativeChallenge } from "@/types/gameplay";
 
 export function useNarrativeSession(
   challenge: NarrativeChallenge,
@@ -86,7 +86,7 @@ export function useNarrativeSession(
       const rawTime = timedOut
         ? currentStep.question.timeLimit
         : (performance.now() - questionStartedAt.current) / 1000;
-      const result = evaluateAnswer({
+      const result = evaluatePracticeAnswer({
         question: currentStep.question,
         answer,
         timeUsed: rawTime,

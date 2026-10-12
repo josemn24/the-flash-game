@@ -1,9 +1,12 @@
-import type { AnswerResult, AnswerValue, PyramidChallenge, Question } from "@/types/game";
+import type { PyramidAttemptOutcome as PersistedPyramidOutcome } from "@/types/domain/attempt";
+import type { AnswerResult, AnswerValue, PyramidChallenge } from "@/types/gameplay";
+import type { PracticeQuestion } from "@/types/gameplay/practice";
 import { compareChallengeRankingMetrics } from "@/lib/challengeRanking";
+import { isPyramidLevelPassed, normalizePyramidResult } from "@/lib/gameplay/pyramidProgress";
 
 export const PYRAMID_ATTEMPT_SCHEMA_VERSION = 3;
 
-export type PyramidAttemptOutcome = "failed" | "summit";
+export type PyramidAttemptOutcome = PersistedPyramidOutcome;
 export type PyramidAttemptPhase = "briefing" | "playing" | "transition" | "completed";
 
 export type PyramidAttemptSummary = {
@@ -43,14 +46,6 @@ export function getPyramidAttemptStorageKey(
 ) {
   const prefix = namespace ? `the-flash:${namespace}` : "the-flash:pyramid-attempt";
   return `${prefix}:${challenge.id}:v${challenge.attemptVersion}`;
-}
-
-export function isPyramidLevelPassed(result: Pick<AnswerResult, "status" | "isCorrect">) {
-  return result.status === "correct" && result.isCorrect;
-}
-
-export function normalizePyramidResult(result: AnswerResult): AnswerResult {
-  return isPyramidLevelPassed(result) ? result : { ...result, points: 0 };
 }
 
 export function createPyramidAttempt(
@@ -120,7 +115,7 @@ export function advancePyramidToNextBriefing(
 
 export function armPyramidLevel(
   record: PyramidAttemptRecord,
-  question: Question,
+  question: PracticeQuestion,
   availableUntil: string | null,
   now: number,
 ): PyramidAttemptRecord {

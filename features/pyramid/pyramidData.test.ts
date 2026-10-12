@@ -11,7 +11,7 @@ import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { evaluateAnswer, isValidLogicMatrixConfiguration } from "@/lib/scoring";
 import { countQueensSolutions, isValidQueensConfiguration } from "@/lib/queens";
-import { normalizePyramidResult } from "@/features/pyramid/pyramidAttempt";
+import { normalizePyramidResult } from "@/lib/gameplay/pyramidProgress";
 
 describe("La Pirámide: Cumbre lógica", () => {
   it("defines seven unique levels worth exactly 100 points", () => {

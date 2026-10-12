@@ -56,6 +56,36 @@ $$, 'El validador acepta un Alphabet con referencias short-text');
 select throws_ok($$
   select private.validate_flash_editorial_document(jsonb_build_object(
     'challenge', jsonb_build_object(
+      'slug', 's05-alphabet-inline-invalid', 'title', 'Alfabeto', 'subtitle', 'Letras',
+      'description', 'S05', 'mode', 'alphabet', 'configSchemaVersion', 1,
+      'globalTimeLimitMs', 120000, 'modeConfig', '{}'::jsonb),
+    'questions', jsonb_build_array(
+      jsonb_build_object('slug', 's05-inline-short-text', 'type', 'short-text', 'payloadSchemaVersion', 1,
+        'timeLimitMs', 30000, 'points', 50,
+        'publicPayload', jsonb_build_object('question', '¿Quién fue Ada?'),
+        'solutionPayload', jsonb_build_object('correctAnswer', 'Lovelace', 'acceptedAnswers', jsonb_build_array('Lovelace'))),
+      jsonb_build_object('source', 'library', 'questionVersionId', test_support.id('s05a-qv-b')::text,
+        'points', 50, 'modeConfig', jsonb_build_object('letter', 'B')))
+  ))
+$$, '22023', 'invalid_alphabet_item', 'Alphabet still requires published library references with letters');
+
+select throws_ok($$
+  select private.validate_flash_editorial_document(jsonb_build_object(
+    'challenge', jsonb_build_object(
+      'slug', 's05-alphabet-letter-required', 'title', 'Alfabeto', 'subtitle', 'Letras',
+      'description', 'S05', 'mode', 'alphabet', 'configSchemaVersion', 1,
+      'globalTimeLimitMs', 120000, 'modeConfig', '{}'::jsonb),
+    'questions', jsonb_build_array(
+      jsonb_build_object('source', 'library', 'questionVersionId', test_support.id('s05a-qv-a')::text,
+        'points', 50, 'modeConfig', '{}'::jsonb),
+      jsonb_build_object('source', 'library', 'questionVersionId', test_support.id('s05a-qv-b')::text,
+        'points', 50, 'modeConfig', jsonb_build_object('letter', 'B')))
+  ))
+$$, '22023', 'invalid_alphabet_item', 'Alphabet still requires one letter for each item');
+
+select throws_ok($$
+  select private.validate_flash_editorial_document(jsonb_build_object(
+    'challenge', jsonb_build_object(
       'slug', 's05-alphabet-invalid', 'title', 'Alfabeto', 'subtitle', 'Letras',
       'description', 'S05', 'mode', 'alphabet', 'configSchemaVersion', 1,
       'globalTimeLimitMs', 120000, 'modeConfig', '{}'::jsonb),

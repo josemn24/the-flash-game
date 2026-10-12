@@ -10,7 +10,7 @@ export const demoIdentity = {
   superadminPlayerId: mockId.player("dev-superadmin"),
 } as const;
 
-export const roomRouteAliases = {
+export const mockRoomKeys = {
   "tabarnia-room": mockId.room("tabarnia-room"),
 } as const;
 
@@ -31,6 +31,6 @@ export const scheduledChallengeRouteAliases = {
   "tabarnia-challenge-06": mockId.scheduledChallenge("tabarnia-challenge-06"),
 } as const;
 
-export type RoomRouteKey = keyof typeof roomRouteAliases;
+export type MockRoomKey = keyof typeof mockRoomKeys;
 export type PlayerRouteKey = keyof typeof playerRouteAliases;
 export type ScheduledChallengeRouteKey = keyof typeof scheduledChallengeRouteAliases;

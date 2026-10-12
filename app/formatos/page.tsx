@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function FormatsPage() {
   return (
-    <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)]">
+    <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ds-color-bg-canvas)] text-[var(--ds-color-fg-primary)]">
       <SpeedBackground />
       <div className={styles.page}>
         <SiteHeader />

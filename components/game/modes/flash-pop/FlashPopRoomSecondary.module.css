@@ -15,7 +15,7 @@
 
   .eyebrow {
     margin: 0;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 800;
@@ -43,7 +43,7 @@
     position: relative;
     aspect-ratio: 2.1;
     overflow: hidden;
-    background: var(--color-surface-soft);
+    background: var(--ds-color-bg-surface-soft);
   }
 
   .historyArt img {
@@ -72,6 +72,16 @@
     padding: var(--space-4) var(--space-5) var(--space-5);
   }
 
+  .historyMeta {
+    margin: 0 0 var(--space-2);
+    color: var(--ds-color-fg-selected);
+    font-family: var(--type-mono);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
   .historyBody h2 {
     margin: 0;
     font-family: var(--type-display);
@@ -85,12 +95,12 @@
     align-items: center;
     gap: 7px;
     margin: var(--space-3) 0 0;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 12px;
   }
 
   .winner strong {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
 
   .historyAction {
@@ -104,8 +114,80 @@
     margin-top: var(--space-4);
   }
 
+  .historyDetailToolbar {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .historyDetailBack {
+    flex: 0 0 auto;
+  }
+
+  .historyDetailContext {
+    display: flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+    color: var(--ds-color-fg-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .historyDetailIntro {
+    margin-top: var(--space-6);
+  }
+
+  .historyDetailIntro h1 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(30px, 4vw, 38px);
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  .historyDetailMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
+    color: var(--ds-color-fg-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
   .detailRanking {
-    margin-top: var(--space-8);
+    margin-top: var(--space-6);
+  }
+
+  .detailRanking h2 {
+    font-size: 24px;
+    line-height: 1.08;
+  }
+
+  .seasonRanking,
+  .rankingFailure {
+    margin-top: var(--space-6);
+  }
+
+  .seasonRanking h1,
+  .rankingFailure h1 {
+    margin: 0;
+    font-family: var(--type-display);
+    font-size: clamp(28px, 4vw, 38px);
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+  }
+
+  .rankingFailure button {
+    margin-top: var(--space-6);
   }
 
   .emptyState h2 {

@@ -25,7 +25,7 @@ begin
   if version_status <> 'published' then
     raise exception 'content_not_published' using errcode = '55000';
   end if;
-  if version_mode not in ('flash', 'survival', 'pyramid') then
+  if version_mode not in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial') then
     raise exception 'unsupported_content' using errcode = '22023';
   end if;
 
@@ -36,7 +36,12 @@ begin
         and item.config_schema_version = 1
         and (version_mode = 'pyramid'
           and private.is_valid_pyramid_level_config(item.mode_config)
-          or version_mode <> 'pyramid' and item.mode_config = '{}'::jsonb)
+          or version_mode = 'narrative'
+          and jsonb_typeof(item.mode_config) = 'object'
+          and jsonb_typeof(item.mode_config->'questionSlug') = 'string'
+          or version_mode = 'alphabet'
+          and jsonb_typeof(item.mode_config->'letter') = 'string'
+          or version_mode not in ('pyramid', 'narrative', 'alphabet') and item.mode_config = '{}'::jsonb)
         and private.is_supported_flash_question(question.id)
     )::integer,
     coalesce(sum(item.points), 0)::integer
@@ -53,11 +58,17 @@ begin
 
   if version_schema <> 1 or version_score <> 100
     or (version_mode = 'flash' and version_config <> '{}'::jsonb)
+    or (version_mode = 'alphabet' and version_config <> '{}'::jsonb)
     or (version_mode = 'survival' and (
       (select count(*) from jsonb_object_keys(version_config)) <> 1
       or jsonb_typeof(version_config->'lives') is distinct from 'number'
       or (version_config->>'lives')::numeric <> trunc((version_config->>'lives')::numeric)
       or (version_config->>'lives')::integer not between 1 and item_count
+    ))
+    or (version_mode = 'narrative' and (
+      jsonb_typeof(version_config) is distinct from 'object'
+      or jsonb_typeof(version_config->'prologue') is distinct from 'object'
+      or jsonb_typeof(version_config->'beats') is distinct from 'array'
     ))
     or (version_mode = 'pyramid' and (
       version_config <> '{}'::jsonb or item_count <> 7
@@ -503,6 +514,91 @@ begin
 end;
 $$;
 
+create function private.expire_stale_attempts(input jsonb) returns jsonb
+language plpgsql volatile security definer set search_path = '' as $$
+declare
+  run_id_value text;
+  attempt_id_value uuid;
+  room_slug_value text;
+  now_value timestamptz;
+  attempt_row public.attempts%rowtype;
+  abandoned_count integer := 0;
+begin
+  if coalesce(current_setting('role', true), '') <> 'service_role' then
+    raise exception 'attempt_expiration_unauthorized' using errcode = '42501';
+  end if;
+  if input is null or jsonb_typeof(input) is distinct from 'object'
+    or not input ? 'runId'
+    or exists (
+      select 1 from jsonb_object_keys(input) key_name
+      where key_name <> all(array['runId','attemptId','roomSlug'])
+    )
+    or jsonb_typeof(input->'runId') is distinct from 'string'
+    or (input ? 'attemptId' and jsonb_typeof(input->'attemptId') is distinct from 'string')
+    or (input ? 'roomSlug' and jsonb_typeof(input->'roomSlug') is distinct from 'string')
+    or (input ? 'attemptId' and input ? 'roomSlug') then
+    raise exception 'attempt_expiration_invalid' using errcode = '22023';
+  end if;
+
+  run_id_value := btrim(input->>'runId');
+  if char_length(run_id_value) not between 8 and 160 then
+    raise exception 'attempt_expiration_invalid' using errcode = '22023';
+  end if;
+  if input ? 'attemptId' then
+    begin
+      attempt_id_value := (input->>'attemptId')::uuid;
+    exception when others then
+      raise exception 'attempt_expiration_invalid' using errcode = '22023';
+    end;
+  end if;
+  if input ? 'roomSlug' then
+    room_slug_value := btrim(input->>'roomSlug');
+    if char_length(room_slug_value) = 0 or char_length(room_slug_value) > 160 then
+      raise exception 'attempt_expiration_invalid' using errcode = '22023';
+    end if;
+  end if;
+
+  perform pg_advisory_xact_lock(hashtextextended('calendar-tick-global', 0));
+  now_value := clock_timestamp();
+
+  for attempt_row in
+    select attempt.*
+    from public.attempts attempt
+    join public.scheduled_challenges schedule on schedule.id = attempt.scheduled_challenge_id
+    join public.seasons season on season.id = schedule.season_id
+    join public.rooms room on room.id = season.room_id
+    where attempt.kind = 'competitive'
+      and attempt.status = 'in_progress'
+      and coalesce(attempt.last_activity_at, attempt.started_at) <= now_value - interval '15 minutes'
+      and (private.publication_effective_status(
+        schedule.status, season.status, season.starts_at, season.ends_at,
+        schedule.opens_at, schedule.closes_at, now_value
+      ) = 'closed' or attempt.deadline_at <= now_value)
+      and (attempt_id_value is null or attempt.id = attempt_id_value)
+      and (room_slug_value is null or room.slug = room_slug_value)
+    order by attempt.id
+    for update of attempt skip locked
+  loop
+    if private.close_attempt_as_abandoned(
+      attempt_row.id,
+      now_value,
+      'inactivity_timeout',
+      null,
+      run_id_value || ':inactivity_timeout:' || attempt_row.id::text,
+      '15 minutes without activity after challenge closure or deadline'
+    ) then
+      abandoned_count := abandoned_count + 1;
+    end if;
+  end loop;
+
+  return jsonb_build_object(
+    'runId', run_id_value,
+    'evaluatedAt', now_value,
+    'abandonedAttempts', abandoned_count
+  );
+end;
+$$;
+
 create function private.run_calendar_tick_command(input jsonb) returns jsonb
 language plpgsql volatile security definer set search_path = '' as $$
 declare
@@ -514,6 +610,8 @@ declare
   opened_count integer := 0;
   closed_count integer := 0;
   finished_count integer := 0;
+  abandoned_count integer := 0;
+  expiration_result jsonb;
 begin
   if coalesce(current_setting('role', true), '') <> 'service_role' then
     raise exception 'calendar_tick_unauthorized' using errcode = '42501';
@@ -628,9 +726,14 @@ begin
     end if;
   end loop;
 
+  select private.expire_stale_attempts(jsonb_build_object('runId', run_id_value))
+    into expiration_result;
+  abandoned_count := (expiration_result->>'abandonedAttempts')::integer;
+
   return jsonb_build_object(
     'runId', run_id_value, 'evaluatedAt', now_value,
-    'opened', opened_count, 'closed', closed_count, 'finishedSeasons', finished_count
+    'opened', opened_count, 'closed', closed_count, 'finishedSeasons', finished_count,
+    'abandonedAttempts', abandoned_count
   );
 end;
 $$;
@@ -674,7 +777,7 @@ begin
       join public.rooms room on room.id = season.room_id
       join private.challenge_versions version on version.id = schedule.challenge_version_id
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where room.status = 'active' and version.status in ('published', 'archived') and version.mode in ('flash', 'survival', 'pyramid')
+      where room.status = 'active' and version.status in ('published', 'archived') and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     ), '[]'::jsonb)
   );
 end;
@@ -722,7 +825,7 @@ begin
       where room.id = target_room_id
         and room.status = 'active'
         and version.status in ('published', 'archived')
-        and version.mode in ('flash', 'survival', 'pyramid')
+        and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     ), '[]'::jsonb)
   );
 end;
@@ -767,12 +870,17 @@ language sql stable security definer set search_path = '' as $$
     attempt.status,
     membership.role <> 'spectator' and (
       version.mode = 'flash' and version.mode_config = '{}'::jsonb
+      or version.mode = 'alphabet' and version.mode_config = '{}'::jsonb
       or version.mode = 'survival'
         and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
         and jsonb_typeof(version.mode_config->'lives') = 'number'
         and (version.mode_config->>'lives')::integer between 1 and compatibility.question_count
       or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
         and compatibility.question_count = 7
+      or version.mode = 'narrative'
+        and jsonb_typeof(version.mode_config) = 'object'
+        and jsonb_typeof(version.mode_config->'prologue') = 'object'
+        and jsonb_typeof(version.mode_config->'beats') = 'array'
     ) and compatibility.is_supported and private.publication_is_effectively_open(
       schedule.status, season.status, season.starts_at, season.ends_at,
       schedule.opens_at, schedule.closes_at, statement_timestamp()
@@ -786,13 +894,19 @@ language sql stable security definer set search_path = '' as $$
   join lateral (
     select
       count(*)::bigint as question_count,
-      (count(*) between 2 and 20 and version.mode in ('flash', 'survival')
+      (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative')
         or count(*) = 7 and version.mode = 'pyramid')
         and coalesce(bool_and(item.position between 1 and case when version.mode = 'pyramid' then 7 else 20 end), false)
         and coalesce(bool_and(item.points > 0), false)
         and coalesce(bool_and(item.config_schema_version = 1 and (
           version.mode = 'pyramid' and private.is_valid_pyramid_level_config(item.mode_config)
-          or version.mode <> 'pyramid' and item.mode_config = '{}'::jsonb
+          or version.mode = 'narrative'
+            and jsonb_typeof(item.mode_config) = 'object'
+            and jsonb_typeof(item.mode_config->'questionSlug') = 'string'
+          or version.mode = 'alphabet'
+            and jsonb_typeof(item.mode_config->'letter') = 'string'
+          or version.mode not in ('pyramid', 'narrative', 'alphabet')
+            and item.mode_config = '{}'::jsonb
         )), false)
         and (version.mode <> 'pyramid' or count(distinct item.mode_config->>'levelId') = 7)
         and count(*) filter (where private.is_supported_flash_question(question.id)) = count(*)
@@ -808,7 +922,7 @@ language sql stable security definer set search_path = '' as $$
     and membership.player_id = private.current_player_id()
     and membership.status = 'active'
     and version.status in ('published', 'archived')
-    and version.mode in ('flash', 'survival', 'pyramid')
+    and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
     and version.config_schema_version = 1
     and version.max_score = 100
   order by schedule.number
@@ -833,6 +947,7 @@ alter function private.assert_supported_calendar_content(uuid) owner to postgres
 alter function private.create_scheduled_challenge_command(jsonb) owner to postgres;
 alter function private.update_scheduled_challenge_command(jsonb) owner to postgres;
 alter function private.cancel_scheduled_challenge_command(jsonb) owner to postgres;
+alter function private.expire_stale_attempts(jsonb) owner to postgres;
 alter function private.run_calendar_tick_command(jsonb) owner to postgres;
 alter function public.get_superadmin_calendar_context() owner to postgres;
 alter function public.get_superadmin_room_calendar_context(uuid) owner to postgres;
@@ -844,6 +959,7 @@ alter function public.cancel_superadmin_scheduled_challenge(jsonb) owner to post
 revoke all on function private.assert_supported_calendar_content(uuid),
   private.create_scheduled_challenge_command(jsonb), private.update_scheduled_challenge_command(jsonb),
   private.cancel_scheduled_challenge_command(jsonb),
+  private.expire_stale_attempts(jsonb),
   private.run_calendar_tick_command(jsonb) from public, anon, authenticated, service_role;
 revoke all on function public.get_superadmin_calendar_context(), public.get_superadmin_room_calendar_context(uuid), public.get_room_calendar(text),
   public.create_superadmin_scheduled_challenge(jsonb), public.update_superadmin_scheduled_challenge(jsonb),

@@ -1,6 +1,6 @@
 import {
   getPlayerRouteKey,
-  getRoomRouteKey,
+  getMockRoomKey,
   getScheduledChallengeRouteKey,
   selectBestCompletedAttempt,
   selectChallengeRanking,
@@ -8,6 +8,7 @@ import {
   selectSeasonRanking,
 } from "@/data/mock/selectors";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
+import { getChallengeFormatLabel, initials } from "@/lib/roomPresentation";
 import { mockDomainStore, type MockDomainStore } from "@/data/mock/store";
 import type { PlayerId, RoomId } from "@/types/domain";
 import type { AnswerReview, RoomChallengeAttempt } from "@/types/gameplay";
@@ -21,13 +22,6 @@ const historyImages: Readonly<Record<string, string>> = {
   "tabarnia-challenge-04": "/flash-pop/concepts/narrative-story-trail.webp",
   "tabarnia-challenge-05": "/flash-pop/concepts/pyramid-soft-diorama.webp",
 };
-
-function initials(displayName: string) {
-  const parts = displayName.trim().split(/\s+/);
-  return (parts.length > 1 ? parts.map((part) => part[0]).join("") : displayName.slice(0, 2))
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 export function projectLegacyAttempt(
   attemptId: string,
@@ -93,9 +87,9 @@ export function toLegacyRoomSnapshot(
   const season = store.seasons.find(
     (candidate) => candidate.roomId === roomId && candidate.status === "active",
   );
-  const roomRouteKey = getRoomRouteKey(roomId);
+  const mockRoomKey = getMockRoomKey(roomId);
   const currentPlayerRouteKey = getPlayerRouteKey(currentPlayerId);
-  if (!room || !season || !roomRouteKey || !currentPlayerRouteKey) return null;
+  if (!room || !season || !mockRoomKey || !currentPlayerRouteKey) return null;
 
   const schedules = store.scheduledChallenges.filter((schedule) => schedule.seasonId === season.id);
   const totals = new Map(
@@ -106,7 +100,7 @@ export function toLegacyRoomSnapshot(
   );
 
   return {
-    id: roomRouteKey,
+    id: mockRoomKey,
     title: room.title,
     description: room.description,
     currentUserId: currentPlayerRouteKey,
@@ -176,8 +170,9 @@ export function toLegacyRoomSnapshot(
 export function toLegacyRoomHistory(
   roomId: RoomId,
   store: MockDomainStore = mockDomainStore,
+  now = new Date(),
 ): RoomHistoryEntry[] {
-  return selectRoomHistory(roomId, store).flatMap((entry) => {
+  return selectRoomHistory(roomId, store, now).flatMap((entry) => {
     const challengeId = getScheduledChallengeRouteKey(entry.scheduledChallenge.id);
     const version = store.challengeVersions.find(
       ({ id }) => id === entry.scheduledChallenge.challengeVersionId,
@@ -187,7 +182,14 @@ export function toLegacyRoomHistory(
       {
         id: `tabarnia-history-${String(entry.scheduledChallenge.number).padStart(2, "0")}`,
         challengeId,
+        mode: version.mode,
         title: version.title,
+        formatLabel: getChallengeFormatLabel(version.mode),
+        subtitle: version.subtitle,
+        questionCount: store.challengeItems.filter(
+          ({ challengeVersionId }) => challengeVersionId === version.id,
+        ).length,
+        maxScore: version.maxScore,
         playedAt: entry.playedAt,
         imageSrc: historyImages[challengeId] ?? "/flash-pop/concepts/room-ready.webp",
         playerCount: entry.participantCount,

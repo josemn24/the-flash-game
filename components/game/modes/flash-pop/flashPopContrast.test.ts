@@ -1,5 +1,10 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import {
+  readColorTokens,
+  resolveColor,
+  contrast,
+} from "../../../../scripts/test-utils/color-tokens.mjs";
 
 const globals = readFileSync(new URL("../../../../app/globals.css", import.meta.url), "utf8");
 const classificationStyles = readFileSync(
@@ -54,54 +59,90 @@ const stateStyles = [
   css: readFileSync(new URL(filename, import.meta.url), "utf8"),
 }));
 
-function token(name: string) {
-  const match = globals.match(new RegExp(`--color-${name}:\\s*(#[0-9a-fA-F]{6})`));
-  if (!match) throw new Error(`Missing hex token --${name}`);
-  return match[1];
-}
-
-function luminance(hex: string) {
-  const channels = hex
-    .slice(1)
-    .match(/../g)!
-    .map((part) => Number.parseInt(part, 16) / 255)
-    .map((value) => (value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4));
-  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
-}
-
-function contrast(foreground: string, background: string) {
-  const a = luminance(foreground);
-  const b = luminance(background);
-  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-}
+const tokens = readColorTokens(globals);
+const color = (name: string) => resolveColor(`--ds-color-${name}`, tokens);
+const roles = ["brand", "selected", "success", "error", "info", "reward"];
+const lightSurfaces = ["canvas", "surface", "surface-raised", "surface-soft"];
 
 describe("Flash Pop token contrast", () => {
-  it.each([
-    ["ink on brand", "ink", "brand"],
-    ["ink on surface", "ink", "surface"],
-    ["muted on canvas", "ink-muted", "canvas"],
-    ["muted on surface", "ink-muted", "surface"],
-    ["muted on surface soft", "ink-muted", "surface-soft"],
-    ["focus on surface", "focus", "surface"],
-    ["surface on social", "surface", "social"],
-    ["ink on reward", "ink", "reward"],
-    ["surface on success", "surface", "success"],
-    ["ink on danger", "ink", "danger"],
-    ["ink on info", "ink", "info"],
-  ])("keeps %s at WCAG AA for normal text", (_label, foreground, background) => {
-    expect(contrast(token(foreground), token(background))).toBeGreaterThanOrEqual(4.5);
+  it.each(lightSurfaces)("checks normal foregrounds and essential indicators on %s", (surface) => {
+    for (const fg of ["primary", "secondary", ...roles]) {
+      expect(
+        contrast(color(`fg-${fg}`), color(`bg-${surface}`)),
+        `${fg} on ${surface}`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+    for (const indicator of [
+      "focus-ring",
+      "border-strong",
+      ...roles.filter((role) => role !== "brand").map((role) => `border-${role}`),
+    ]) {
+      expect(
+        contrast(color(indicator), color(`bg-${surface}`)),
+        `${indicator} on ${surface}`,
+      ).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it.each(roles)("checks solid, soft and inverse pairs for %s", (role) => {
+    expect(contrast(color(`fg-on-${role}`), color(`bg-${role}`))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(color(`fg-${role}-inverse`), color("bg-inverse"))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(color(`border-${role}-inverse`), color("bg-inverse"))).toBeGreaterThanOrEqual(
+      3,
+    );
+    if (role !== "brand") {
+      for (const fg of [`fg-${role}`, "fg-primary", "fg-secondary"]) {
+        expect(
+          contrast(color(fg), color(`bg-${role}-soft`)),
+          `${fg} on ${role}-soft`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+      expect(contrast(color(`border-${role}`), color(`bg-${role}-soft`))).toBeGreaterThanOrEqual(3);
+      expect(contrast(color("focus-ring"), color(`bg-${role}-soft`))).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("resolves aliases, sRGB mixes and transparent overlays", () => {
+    expect(color("bg-selected-soft")).toEqual(color("bg-surface-soft"));
+    expect(color("border-error")).toEqual(color("fg-error"));
+    const surface = color("bg-surface");
+    const error = color("bg-error");
+    expect(color("bg-error-soft")[0]).toBeCloseTo(error[0] * 0.12 + surface[0] * 0.88);
+    for (const background of lightSurfaces) {
+      expect(
+        contrast(color("fg-on-inverse"), color("bg-overlay"), color(`bg-${background}`)),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+    for (const fg of ["fg-on-inverse", "fg-secondary-inverse"])
+      expect(contrast(color(fg), color("bg-inverse"))).toBeGreaterThanOrEqual(4.5);
+    expect(
+      resolveColor("color-mix(in srgb, var(--ds-color-bg-brand) 8%, transparent)", tokens)[3],
+    ).toBeCloseTo(0.08);
+    expect(() => resolveColor("var(--missing, white)", tokens)).toThrow("Unknown token");
+    expect(() =>
+      resolveColor(
+        "--a",
+        new Map([
+          ["--a", "var(--b)"],
+          ["--b", "var(--a)"],
+        ]),
+      ),
+    ).toThrow("cycle");
   });
 
   it("keeps the canonical tokens free of Pop aliases", () => {
     expect(globals).not.toContain("--pop-");
-    expect(globals).toContain("--color-brand:");
+    expect(globals).toContain("--ds-color-bg-brand:");
     expect(globals).toContain("--space-6:");
     expect(globals).toContain("--type-ui:");
   });
 
-  it("publishes the shared puzzle state roles", () => {
-    for (const state of ["correct", "movable", "selected", "neutral", "error", "focus"]) {
-      expect(globals).toContain(`--state-${state}:`);
+  it("retires the ambiguous API without compatibility aliases", () => {
+    expect(globals).not.toMatch(/--state-[\w-]+/);
+    expect(globals).not.toMatch(/--color-(?!background|foreground)[\w-]+/);
+    for (const role of roles) {
+      for (const family of ["bg", "fg", "border"])
+        expect(tokens.has(`--ds-color-${family}-${role}`)).toBe(true);
     }
   });
 
@@ -132,7 +173,18 @@ describe("Flash Pop token contrast", () => {
     for (const { filename, css } of stateStyles) {
       const formatFilename = filename.split("/").pop();
       for (const state of requiredTokensByFormat.get(formatFilename ?? "") ?? []) {
-        expect(css, filename).toContain(`var(--state-${state})`);
+        const role =
+          (
+            {
+              correct: "success",
+              movable: "brand",
+              neutral: "surface-soft",
+              focus: "focus-ring",
+            } as Record<string, string>
+          )[state] ?? state;
+        expect(css, filename).toMatch(
+          new RegExp(`var\\(--ds-color-(?:(?:bg|fg|border)-)?${role}\\)`),
+        );
       }
     }
   });
@@ -150,37 +202,37 @@ describe("Flash Pop token contrast", () => {
       );
     }
 
-    expect(reviewStyles).toContain("background: var(--color-surface);");
-    expect(reviewStyles).toContain("color: var(--color-ink);");
-    expect(reviewStyles).toContain("var(--state-correct)");
-    expect(reviewStyles).toContain("var(--state-error)");
+    expect(reviewStyles).toContain("background: var(--ds-color-bg-surface);");
+    expect(reviewStyles).toContain("color: var(--ds-color-fg-primary);");
+    expect(reviewStyles).toContain("var(--ds-color-bg-success)");
+    expect(reviewStyles).toContain("var(--ds-color-bg-error)");
   });
 
   it("keeps empty Mini-Wordle tiles on the white surface", () => {
     const miniWordle = stateStyles.find(({ filename }) =>
       filename.endsWith("MiniWordleQuestion.module.css"),
     );
-    expect(miniWordle?.css).toMatch(/\.empty \{[\s\S]*background: var\(--color-surface\);/);
+    expect(miniWordle?.css).toMatch(/\.empty \{[\s\S]*background: var\(--ds-color-bg-surface\);/);
   });
 
   it("uses white text on solid green review tiles", () => {
-    expect(reviewStyles).toContain(".wordle-correct {\n    color: var(--color-text-on-success);");
+    expect(reviewStyles).toContain(".wordle-correct {\n    color: var(--ds-color-fg-on-success);");
     expect(reviewStyles).toContain(
-      ".wordHashtagReviewCorrect {\n    color: var(--color-text-on-success);",
+      ".wordHashtagReviewCorrect {\n    color: var(--ds-color-fg-on-success);",
     );
   });
 
   it("keeps Classification selections visible without overpowering the table", () => {
     expect(classificationStyles).toMatch(
-      /\.matrix,\s*\.binaryList\s*\{[\s\S]*?border: var\(--border-subtle\);[\s\S]*?border-radius: var\(--radius-card\);[\s\S]*?padding: var\(--space-2\);[\s\S]*?background: var\(--color-surface\);/,
+      /\.matrix,\s*\.binaryList\s*\{[\s\S]*?border: var\(--border-subtle\);[\s\S]*?border-radius: var\(--radius-card\);[\s\S]*?padding: var\(--space-2\);[\s\S]*?background: var\(--ds-color-bg-surface\);/,
     );
     expect(classificationStyles).toContain("border: 1px solid rgb(23 23 32 / 17%);");
     expect(classificationStyles).toContain("box-shadow: 0 1px 2px rgb(23 23 32 / 5%);");
     expect(classificationStyles).toContain(
-      "background: color-mix(in srgb, var(--color-social) 15%, var(--color-surface));",
+      "background: color-mix(in srgb, var(--ds-color-bg-selected) 15%, var(--ds-color-bg-surface));",
     );
     expect(classificationStyles).toContain(
-      "color-mix(in srgb, var(--color-social) 14%, transparent)",
+      "color-mix(in srgb, var(--ds-color-bg-selected) 14%, transparent)",
     );
     expect(classificationStyles).toMatch(
       /\.choiceButtonSelected:focus-visible,\s*\.binaryChoiceSelected:focus-visible/,
@@ -189,7 +241,7 @@ describe("Flash Pop token contrast", () => {
 
   it("publishes the complete semantic token groups", () => {
     for (const tokenName of [
-      "color-canvas",
+      "ds-color-bg-canvas",
       "type-ui",
       "border-subtle",
       "radius-card",

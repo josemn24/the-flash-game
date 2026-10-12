@@ -1,9 +1,14 @@
 # The Flash
 
 The Flash es un juego de preguntas diseñado como un sprint contra el reloj. La versión actual
-combina una experiencia de práctica mock con un recorrido competitivo real de Flash sobre Supabase,
+combina una experiencia de práctica local con recorridos competitivos persistidos de Flash y Narrative sobre Supabase,
 además de consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva
 de 31 formatos.
+
+Los únicos entornos de aplicación admitidos son **local** y **staging**. El aprovisionamiento y
+el reset rechazan cualquier otro destino. `NODE_ENV=production`, las compilaciones optimizadas,
+los archivos `production-*` y el perfil de calendario `production` son nombres técnicos: también
+se utilizan en local o staging y no definen un entorno remoto adicional.
 
 ## Qué incluye
 
@@ -29,10 +34,10 @@ de 31 formatos.
 - Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
 La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
-recorridos competitivos persistidos en Supabase. S01–S13, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
+recorridos competitivos persistidos en Supabase. Las rutas competitivas no tienen fallback al mock. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
 F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10 conectan Auth, provisioning de jugador,
 lecturas de salas, el intento Flash de 2 a 20 preguntas, su evaluación server-side, recuperación y
-los rankings de temporada/publicación actual, el historial Flash y la revisión después de volver. El
+los rankings de temporada/publicación actual, el historial común de Flash/Supervivencia/Narrative/Pirámide y la revisión completa después de volver. El
 portal privado `/admin` ya permite a superadmins consultar su contexto, crear salas activas con un
 owner explícito y un grupo inicial opcional, y preparar/editar/activar temporadas. Estas operaciones
 son transaccionales, idempotentes y auditadas.
@@ -41,8 +46,9 @@ gestiona invitaciones ni prepara temporadas. El superadmin añadirá directament
 autenticados a las salas; la publicación mínima de contenido, la programación y la ejecución del
 calendario podrán formar parte de ese portal. La gestión posterior de miembros es parcial: el owner
 puede conceder/quitar admin y eliminar lógicamente miembros; transferencia, bloqueo/desbloqueo e
-invitaciones completas siguen pendientes. Los demás modos competitivos y parte del ciclo de Storage
-siguen pendientes.
+invitaciones completas siguen pendientes. Narrative reutiliza el ciclo genérico de intentos y mantiene
+las escenas públicas en `challenge_versions.mode_config`; parte del ciclo de Storage y la edición
+narrativa avanzada siguen pendientes.
 
 El historial de cambios por versión está disponible en [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -68,7 +74,11 @@ npm run dev
 
 Abre [http://localhost:3000](http://localhost:3000) en el navegador. Para la experiencia mock no se
 necesita configuración adicional. Para probar las slices persistidas actuales, copia `.env.example` a
-`.env.local`, inicia Supabase local y sigue el workflow de [`supabase/README.md`](supabase/README.md).
+`.env.local` y elige un recorrido en la
+[guía de preparación de entornos](docs/current/supabase-clean-installation.md#qué-necesito-preparar).
+
+Para probar desde un móvil u otro equipo de la red local, consulta la
+[guía de pruebas desde dispositivos externos](docs/current/local-device-testing.md).
 
 ## Comandos disponibles
 
@@ -78,6 +88,7 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 | `npm run lint`                       | Comprueba la calidad estática del código.                                                                |
 | `npm run typecheck`                  | Valida todos los contratos TypeScript sin emitir código.                                                 |
 | `npm run type-architecture`          | Comprueba las dependencias entre las capas de tipos.                                                     |
+| `npm run mock-data:check`            | Valida fixtures, adaptadores y límites del almacén mock local.                                           |
 | `npm test`                           | Ejecuta los tests unitarios con Vitest.                                                                  |
 | `npm run build`                      | Genera la compilación optimizada de producción.                                                          |
 | `npm run start`                      | Sirve localmente una compilación de producción.                                                          |
@@ -85,7 +96,8 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 | `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                           |
 | `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                 |
 | `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares. |
-| `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Supervivencia: Cultura pop».            |
+| `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «La vuelta al mundo».                    |
+| `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.    |
 | `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                        |
 | `npm run supabase:schema:test`       | Verifica esquema, RLS, comandos y concurrencia.                                                          |
 | `npm run schema:revision:check`      | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                |
@@ -93,33 +105,75 @@ necesita configuración adicional. Para probar las slices persistidas actuales, 
 | `npm run dictionary:check`           | Comprueba que el vocabulario versionado esté actualizado.                                                |
 | `npm run format:check`               | Comprueba el formato con Prettier.                                                                       |
 
-Para comprobar el escenario conjunto, ejecuta `npm run supabase:betavip:setup` y después
-`npm run test:integration:supabase -- --scenario betavip`. Vuelve a ejecutar el setup antes de
-`npm run test:e2e -- e2e/betavip.spec.ts` para que las pruebas de navegador empiecen sin la partida
-que crea la integración. Repite el setup al terminar: el E2E abre temporalmente el Alphabet y crea
-una partida. Las credenciales locales generadas para Manuel y Genís quedan en
-`output/fixtures/betavip.json`.
+La [guía de preparación](docs/current/supabase-clean-installation.md#qué-necesito-preparar) reúne
+los requisitos, comandos, efectos destructivos y archivos de cada recorrido. El
+[escenario conjunto Tabarnia y BetaVIP](docs/current/supabase-clean-installation.md#escenario-local-con-tabarnia-y-betavip)
+incluye sus cuentas, publicaciones y la secuencia específica de integración y E2E.
 
-En BetaVIP, «Supervivencia: Cultura pop» está abierto durante las primeras 24 horas, «La vuelta al
-mundo» queda programado para el segundo día y «Cumbre lógica II» para el tercero. La temporada dura
-72 horas. El manifiesto lista las tres publicaciones en ese orden: `data.publicationId` apunta a
-Supervivencia, mientras `data.survivalPublicationId`, `data.alphabetPublicationId` y
-`data.pyramidPublicationId` identifican explícitamente cada publicación. `data.questionAssets`
-contiene el recurso propio del casete.
-
-Para preparar el staging remoto, aplica antes las migraciones con `supabase db push` y proporciona
-las variables de bootstrap indicadas en `.env.example`. Comprueba el destino sin escribir nada y,
-solo después, ejecuta:
+Para recorrer las temporadas locales sin esperar un día entre publicaciones, ambos seeds admiten un
+perfil rápido opcional:
 
 ```bash
-npm run supabase:staging:bootstrap -- --dry-run
-npm run supabase:staging:bootstrap
+npm run supabase:tabarnia:setup -- --schedule fast
+npm run supabase:betavip:setup -- --schedule fast
 ```
 
-El script no cambia la configuración global de Auth. Escribe las credenciales generadas únicamente
-en `output/staging/bootstrap-credentials.json` con permisos `0600` y el estado no sensible en
-`output/staging/bootstrap-manifest.json`; copia las contraseñas a un gestor seguro y elimina el
-archivo de credenciales después.
+El perfil predeterminado `production` conserva las ventanas de 24 horas. `fast` usa ventanas reales
+de cinco minutos: Tabarnia recorre sus cuatro desafíos en 20 minutos y BetaVIP sus cinco en 25 minutos. Se acorta
+únicamente la ventana de publicación; los límites internos de preguntas,
+vidas, puntuación y deadlines no cambian. El manifiesto generado incluye `scheduleProfile` y la
+duración de la ventana para identificar el perfil utilizado.
+
+| Dataset             | `production` | `fast`    |
+| ------------------- | ------------ | --------- |
+| Tabarnia, desafío 1 | 0–24 h       | 0–5 min   |
+| Tabarnia, desafío 2 | 24–48 h      | 5–10 min  |
+| Tabarnia, desafío 3 | 48–72 h      | 10–15 min |
+| Tabarnia, desafío 4 | 72–96 h      | 15–20 min |
+| BetaVIP, desafío 1  | 0–24 h       | 0–5 min   |
+| BetaVIP, desafío 2  | 24–48 h      | 5–10 min  |
+| BetaVIP, desafío 3  | 48–72 h      | 10–15 min |
+| BetaVIP, desafío 4  | 72–96 h      | 15–20 min |
+| BetaVIP, desafío 5  | 96–120 h     | 20–25 min |
+
+El seed no ejecuta automáticamente el calendario. Tras alcanzar cada límite temporal, ejecuta el
+tick local con `npm run calendar:tick` mientras la aplicación y Supabase estén activos.
+
+Los comandos independientes de tick cargan automáticamente `.env.local` cuando existe, incluida
+la variable `CALENDAR_TICK_SECRET` del entorno local.
+
+Los setups de Tabarnia y BetaVIP aceptan `--starts-at <fecha-hora-ISO-8601>` para programar el inicio
+futuro de la temporada. Incluye la zona horaria, por ejemplo para las 19:00 en Madrid:
+
+```bash
+npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
+```
+
+El mismo parámetro funciona con Tabarnia y el bootstrap de staging. Si se omite, el inicio sigue
+siendo inmediato. En staging, una ejecución posterior conserva la temporada existente y rechaza
+una fecha distinta; para reprogramarla hay que preparar una base vacía siguiendo el procedimiento
+de reinstalación.
+
+También puedes dejar un watcher local opcional ejecutando el tick automáticamente cada minuto:
+
+```bash
+npm run dev
+npm run calendar:tick:watch
+```
+
+La frecuencia se puede cambiar, por ejemplo, a cinco minutos con
+`npm run calendar:tick:watch -- --interval-seconds=300`. El watcher ejecuta un tick inmediatamente
+al arrancar, espera el intervalo después de cada ejecución y no permite ticks solapados. Solo actúa
+en el entorno local y se detiene con `Ctrl+C`; `npm run calendar:tick` sigue disponible para una
+ejecución única. El ranking puede leerse sin tick cuando la ventana temporal está disponible, pero
+el tick sigue siendo necesario para persistir aperturas, cierres, finalización de temporada y
+expiración de intentos.
+
+Para staging, elegir entre el
+[bootstrap sobre una base migrada](docs/current/supabase-clean-installation.md#bootstrap-sobre-una-base-migrada)
+y una [reinstalación completa](docs/current/supabase-clean-installation.md#reinstalación-completa).
+La guía conserva las confirmaciones de reset y el manejo de credenciales. La ejecución registrada
+es local; la preparación y validación remotas de staging siguen pendientes.
 
 ## Estructura principal
 
@@ -127,9 +181,9 @@ archivo de credenciales después.
 app/             Entrada de Next.js: rutas, layouts, metadata y estilos globales
 application/     Consultas, casos de uso y contratos independientes de Next.js
 components/      Pantallas, UI compartida e islas interactivas
-data/            Fixtures canónicos, store mock y proyecciones transitorias
+data/            Fixtures canónicos y store mock local, sin dependencia de rutas competitivas
 features/        Comportamiento de producto: sesiones, juego y catálogo
-infrastructure/  Adaptadores concretos mock y Supabase
+infrastructure/  Adaptadores concretos mock/locales y Supabase
 lib/             Lógica pura reutilizable: scoring, validación y utilidades
 server/          Composición server-only, sesión y fachadas para las rutas
 types/           Tipos de dominio, contratos, gameplay y view models
@@ -166,12 +220,19 @@ app/ → server/ → application/ → infrastructure/mock/ → data/mock/
 
 `lib/` y `types/` son piezas transversales: `lib/` concentra funciones puras y `types/` separa
 entidades del dominio, contratos públicos, estado de gameplay y modelos preparados para la UI.
-`data/` conserva el store y los fixtures del prototipo; parte de sus archivos antiguos es
-transitoria y no debe tomarse como el destino final de la persistencia.
+`data/` conserva los fixtures y el store mock local; sus adaptadores de compatibilidad solo pueden
+alcanzarse desde la composición mock o desde tests.
 
-La estructura actual es deliberadamente una arquitectura de transición: las slices se migran por
-recorridos completos y el mock se conserva solo donde aún no existe una slice real o para práctica.
-No se pretende añadir más capas hasta que aporten una necesidad concreta. La explicación completa de
+Las superficies de demo y práctica viven bajo `/demo/**`. `/demo/flash-pop` es el lobby mock, y
+`/demo/flash-pop/ui-kit`, `/demo/flash-pop-concepts` y `/demo/flash-pop-typography` son laboratorios
+visuales. Las URLs históricas `/flash-pop/**`, `/flash-pop-concepts` y `/flash-pop-typography`
+redirigen permanentemente a sus equivalentes bajo `/demo/**`. Las rutas competitivas `/salas/**`,
+`/desafios/**` y `/admin/**` no usan la fachada demo ni los fixtures mock.
+
+La arquitectura consolidada separa composición y datos: `server/composition/production.ts` es la
+única entrada de producción competitiva; `server/composition/demo.ts` y `infrastructure/mock/` solo
+sirven para demo, práctica y tests. Los barrels `components/game/demo`, `production` y `practice`
+evitan mezclar esas superficies. La explicación completa de
 responsabilidades, dependencias y evolución está en [`docs/current/architecture.md`](docs/current/architecture.md).
 
 ## Modelo de dominio

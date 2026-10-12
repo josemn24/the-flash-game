@@ -2,11 +2,11 @@
 
 ## Estado y alcance
 
-La fase 4 está cerrada para las slices verificadas. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19,
+Las slices verificadas consolidan la integración real de Supabase. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19,
 E01–E06/E10 y el portal privado consolidan la integración real de Supabase y completan el
-recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash/Supervivencia/Pirámide competitivo →
+recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash/Narrative/Supervivencia/Pirámide competitivo →
 recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
-introducción, el gameplay Flash/Supervivencia/Pirámide, los rankings, el historial Flash cerrado y la revisión consultan o
+introducción, el gameplay Flash/Narrative/Supervivencia/Pirámide, los rankings, el historial común cerrado y la revisión completa consultan o
 mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
 superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
 transaccional de sala, owner y grupo inicial desde el portal. Alphabet ya usa una proyección
@@ -14,36 +14,44 @@ server-only y los comandos competitivos existentes; los ajustes de sala ya tiene
 membresías (conceder/quitar admin y eliminación lógica por el owner), mientras que transferencia,
 bloqueo/desbloqueo e invitaciones completas siguen pendientes. Supervivencia aporta vidas autoritativas;
 S15 integra Pirámide con niveles, evaluación, finalización y revisión server-side, verificada en el
-stack local. Narrativa sigue mock hasta su vertical slice.
+stack local. Narrative reutiliza el ciclo genérico de intentos y también usa la lectura y sesión
+server-backed; la edición narrativa avanzada sigue fuera de alcance.
 
 La dirección vigente es:
 
 ```text
 Server Components
-→ server/data-access.ts
-→ server/profile.ts
+→ server/production-home-data-access.ts
+→ server/composition/production.ts
+→ application/use-cases/room-reads.ts
+→ application/queries (capacidades de lobby)
+→ infrastructure/supabase/identity + rooms
 → Supabase Auth/RPC/RLS
 → PostgreSQL
 
 Las lecturas de S02, S03, E01, S06 y S07 siguen una frontera específica:
 
 Server Components
-→ server/data-access.ts
-→ infrastructure/supabase/roomQueries.ts
+→ server/production-room-data-access.ts
+→ server/composition/production.ts
+→ application/use-cases/room-reads.ts
+→ capacidades de sala (lobby, ranking, settings, history y member detail)
+→ infrastructure/supabase/rooms/*
+→ infraestructura Supabase compartida
 → RPCs públicas de lectura estrecha
 → PostgreSQL privado/RLS
 
 Portal privado `/admin`
-→ server/data-access.ts
+→ server/production-admin-data-access.ts
 → server/admin.ts
-→ infrastructure/supabase/superadminQueries.ts
+→ infrastructure/supabase/admin/superadminQueries.ts
 → public.get_superadmin_portal_context() con temporadas y zona horaria
 → asignación privada de plataforma y salas activas
 
 Dashboard del portal `/admin`
-→ server/data-access.ts
+→ server/production-admin-data-access.ts
 → server/admin.ts
-→ infrastructure/supabase/superadminDashboardQueries.ts
+→ infrastructure/supabase/admin/superadminDashboardQueries.ts
 → public.get_superadmin_dashboard_context()
 → métricas, resúmenes de salas, próximos desafíos y alertas derivadas
 → `components/admin/AdminDashboard` sin formularios ni contexto editorial completo
@@ -56,14 +64,14 @@ Dashboard del portal `/admin`
 Mutaciones del portal `/admin`
 → app/admin/actions.ts
 → server/admin.ts + server/admin-room.ts
-→ infrastructure/supabase/superadminQueries.ts
+→ infrastructure/supabase/admin/superadminQueries.ts
 → public.lookup_superadmin_players() / public.create_superadmin_room()
 → comando privado transaccional + private.audit_log
 
 Mutaciones de temporadas del portal `/admin`
 → app/admin/season-actions.ts
 → server/admin.ts + server/admin-season.ts
-→ infrastructure/supabase/superadminSeasonQueries.ts
+→ infrastructure/supabase/admin/superadminSeasonQueries.ts
 → public.create_superadmin_season() / public.update_superadmin_season() /
   public.activate_superadmin_season()
 → comando privado transaccional, idempotencia y private.audit_log
@@ -71,27 +79,36 @@ Mutaciones de temporadas del portal `/admin`
 Calendario temporal del detalle de sala `/admin/rooms/[roomId]?tab=calendar`
 → `app/admin/calendar-actions.ts`
 → `server/admin-calendar.ts`
-→ `infrastructure/supabase/superadminCalendarQueries.ts`
+→ `infrastructure/supabase/admin/superadminCalendarQueries.ts`
 → `public.create_superadmin_scheduled_challenge()` / `public.update_superadmin_scheduled_challenge()`
 → publicación `scheduled` con ventana UTC, locks, conflictos optimistas, idempotencia y auditoría
 
-Tick local protegido
-→ `POST /api/internal/calendar/tick` o `npm run calendar:tick`
+Calendar tick protegido
+→ Vercel Cron configurado: `GET /api/internal/calendar/tick` a las 13:00 UTC con `CRON_SECRET`; ejecución automática de staging pendiente de verificar
+→ operación local: `POST /api/internal/calendar/tick` o `npm run calendar:tick` con `CALENDAR_TICK_SECRET`
 → conexión PostgreSQL server-only con `SET LOCAL ROLE service_role`
 → `private.run_calendar_tick_command()`
-→ estados efectivos, auditoría de sistema y finalización de temporadas sin DML de cliente
+→ estados efectivos, expiración global de intentos inactivos, auditoría de sistema y finalización de temporadas sin DML de cliente
+
+Reconciliación bajo demanda de intentos
+→ `infrastructure/supabase/attempts/attemptExpiration.ts` (server-only)
+→ `private.expire_stale_attempts(jsonb)` con `service_role`
+→ antes de `get_room_history`, limitada al `roomSlug`
+→ antes de un comando de intento, limitada al `attemptId`
+→ 15 minutos de inactividad + publicación cerrada/deadline vencido
+→ `abandoned` sin puntos; una acción que encuentra el cierre recibe `attempt_inactivity_expired`
 
 Lectura editorial protegida del portal `/admin`
-→ server/data-access.ts
+→ server/production-admin-data-access.ts
 → server/admin-editorial.ts
-→ infrastructure/supabase/superadminEditorialQueries.ts
+→ infrastructure/supabase/admin/superadminEditorialQueries.ts
 → public.get_superadmin_editorial_context()
 → borradores completos solo para superadmin; publicados/archivados como metadatos
 
 Mutaciones editoriales del portal `/admin`
 → app/admin/editorial-actions.ts
 → server/admin-editorial.ts
-→ infrastructure/supabase/superadminEditorialQueries.ts
+→ infrastructure/supabase/admin/superadminEditorialQueries.ts
 → public.create_superadmin_flash_draft() / public.update_superadmin_flash_draft() /
   public.publish_superadmin_flash() / public.create_superadmin_challenge_revision() /
   public.archive_superadmin_challenge_version()
@@ -112,7 +129,7 @@ Eventos Mini-Wordle del Flash competitivo
 → `features/game/useServerFlashSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/mini-wordle/guess`
 → `server/competitive/attempt-api.ts`
-→ `infrastructure/supabase/attemptCommands.ts`
+→ `infrastructure/supabase/attempts/attemptCommands.ts`
 → `private.submit_mini_wordle_guess(jsonb)`
 → `private.mini_wordle_guess_events` + `private.answer_receipts`
 → evaluador confiable desde la respuesta final construida por PostgreSQL
@@ -121,7 +138,7 @@ Eventos Logic-code del Flash competitivo
 → `features/game/useServerFlashSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/logic-code/attempt`
 → `server/competitive/attempt-api.ts`
-→ `infrastructure/supabase/attemptCommands.ts`
+→ `infrastructure/supabase/attempts/attemptCommands.ts`
 → `private.submit_logic_code_attempt(jsonb)`
 → `private.logic_code_attempt_events` + `private.answer_receipts`
 → evaluador confiable desde `submittedCodes` e `incorrectAttempts` reconstruidos por PostgreSQL
@@ -130,27 +147,38 @@ Eventos Progressive-clues del Flash competitivo
 → `features/game/useServerFlashSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/progressive-clues/reveal`
 → `server/competitive/attempt-api.ts`
-→ `infrastructure/supabase/attemptCommands.ts`
+→ `infrastructure/supabase/attempts/attemptCommands.ts`
 → `private.reveal_progressive_clue(jsonb)`
 → `private.progressive_clue_reveal_events` + `private.answer_receipts`
 → evaluador confiable desde `progressiveCluesRevealed` reconstruido por PostgreSQL
 
-Las consultas aún no migradas conservan este flujo:
+La composición productiva de los recorridos competitivos sigue este flujo:
 
 Server Components
-→ server/data-access.ts
+→ server/production-*-data-access.ts
 → application/queries
-→ infrastructure/mock
-→ mockDomainStore
+→ infrastructure/supabase
+→ Supabase
 → DTOs y view models
 → Client Components
+
+Las superficies locales siguen `server/demo-data-access.ts → application/queries → infrastructure/mock → mockDomainStore`.
 ```
 
-En S22 la selección de esa composición está gobernada por `FLASH_RUNTIME_SCOPE`. En `pilot`, los
-aliases mock y la rama roomless devuelven ausencia y no llegan al adaptador mock; un fallo de la
-fuente persistida se propaga como error recuperable. `RoomSessionProvider` puede seguir montado para
-las demos, pero `RoomChallengeClient` solo consulta y escribe sus resultados locales cuando la
-persistencia declarada es `mock`; un modelo `server` nunca se sobrescribe con `localResults`.
+Las dos composiciones son explícitas y request-safe: `server/composition/production.ts` conecta
+lecturas Supabase y `server/composition/demo.ts` conecta las lecturas mock. Las fachadas conservan
+`server-only`, `cache()` y la traducción de ausencia a la navegación de Next.js, pero no importan
+adaptadores concretos. Una composición no captura cookies ni perfiles en un singleton; el
+`CurrentViewerReader` resuelve el actor por petición y el caso de uso crea un único `QueryContext`
+con ese perfil y el reloj de consulta.
+
+La composición mock no se selecciona por `roomKey` ni por `FLASH_RUNTIME_SCOPE`. Solo las rutas
+explícitas de Flash Pop importan `server/demo-data-access.ts`; `/salas/*` importan
+`server/production-room-data-access.ts`, `/desafios/*` combinan las fachadas de desafíos y salas,
+`/admin/*` importa `server/production-admin-data-access.ts` y la home importa
+`server/production-home-data-access.ts`. Un fallo de la fuente persistida se propaga
+como error recuperable y nunca activa un fallback mock. `RoomSessionProvider` puede seguir montado
+para las demos, pero un modelo `server` nunca se sobrescribe con `localResults`.
 
 E01 entrega a la UI únicamente el payload público y `progress` seguro (`guesses`, `feedback`,
 `attemptsUsed`, `maxAttempts`). La solución, `additionalGuesses` y `dictionaryId` quedan en el
@@ -180,9 +208,19 @@ E05 entrega el tablero `N×N` (entre 4×4 y 8×8), las regiones, las coronas pre
 edita las coronas localmente y guarda checkpoints mediante `private.save_queens_draft(jsonb)` sin
 crear resultados ni penalizaciones. Al alcanzar `N` coronas, el tablero completo pasa por
 `private.submit_queens_answer(jsonb)`, que bloquea el intento, reconstruye las métricas, registra una
-validación completa y solo crea una recepción terminal si la solución es correcta. Cada validación
+validación completa y crea una recepción terminal si la solución es correcta o si se agotan las tres
+validaciones incorrectas de Queens en Pirámide competitivo. Cada validación
 incorrecta aplica un 5% de penalización; las marcas X siguen siendo estado local y se descartan al
 recuperar. La solución solo se reconstruye en el contexto privado de evaluación y revisión autorizada.
+
+El progreso público y las respuestas de borrador/validación incluyen `incorrectValidations` y
+`maxIncorrectValidations`: el contador se calcula desde `queens_validation_events` por intento e item,
+y el máximo es `3` en Pirámide y `null` en los demás modos. El tercer fallo cierra la interacción en la
+misma transacción bloqueada e idempotente y entrega una única recepción para la evaluación habitual:
+`incorrect`, cero puntos y `failureReason: attempts_exhausted`. La finalización de Pirámide conserva
+los puntos de niveles anteriores. Una petición tardía sigue la política de timeout del servidor;
+entradas incompletas, inválidas o con demasiadas coronas no crean eventos. El comando legado
+`submit_queens_placement` se rechaza en Pirámide.
 
 S05 entrega `public.get_my_alphabet_challenge` con letras y payloads públicos `short-text`, y
 `public.get_my_alphabet_result` solo tras un intento completado. El cliente conserva únicamente el
@@ -200,17 +238,20 @@ invitación.
 
 ## Contratos de aplicación
 
-`application/queries` define `CurrentViewerProvider`, `RoomQueries`, `RoomLobbyQueries`,
-`RoomRankingQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`, `SuperadminPortalQueries`,
-`SuperadminDashboardQueries`,
-`SuperadminEditorialQueries` y `ChallengeQueries`. `application/ports` añade
-`SuperadminRoomCommands`, `SuperadminEditorialCommands`, `SuperadminCalendarCommands` y
-`SuperadminCalendarQueries` para separar las mutaciones administrativas de las consultas. Esta capa
-solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni adaptadores.
+`application/queries` define `CurrentViewerProvider`, las capacidades `RoomLobbyQueries`,
+`RoomRankingQueries`, `RoomSettingsQueries`, `RoomHistoryQueries`, `RoomMemberDetailQueries`,
+`DemoChallengeQueries` y `CompetitiveChallengeQueries`, además de los contratos de
+superadministración. `application/ports` añade
+`CurrentViewerReader`, `PrivateQuestionAssetResolver`, `SuperadminRoomCommands`,
+`SuperadminEditorialCommands`, `SuperadminCalendarCommands` y `SuperadminCalendarQueries` para
+separar las dependencias de lectura de sala y las mutaciones administrativas de las consultas. Esta
+capa solo conoce tipos de dominio y view models; no depende de Next.js, React, fixtures ni
+adaptadores.
 
-Todas las consultas reciben un `QueryContext` con el jugador autenticado simulado y el instante de
-la petición. Las entradas usan aliases de ruta legibles. Los UUID canónicos se resuelven y quedan
-encapsulados en infraestructura.
+Todas las consultas reciben un `QueryContext` con el perfil autenticado ya resuelto y el instante de
+la petición. El contexto se construye exclusivamente en los casos de uso server-side: no acepta
+`viewerId`, `authUserId`, tokens ni clientes Supabase desde una ruta. Las entradas usan aliases de
+ruta legibles. Los UUID canónicos se resuelven y quedan encapsulados en infraestructura.
 
 Los DTOs de sala no devuelven identidades de autenticación, roles globales, filas canónicas ni
 payloads privados. Los rankings y el historial se calculan desde membresías, publicaciones,
@@ -218,21 +259,28 @@ intentos y respuestas normalizados.
 
 ## Composición de servidor
 
-`server/data-access.ts` lleva el marcador `server-only`. Para la home, delega en
-`server/profile.ts`, que valida la sesión con `auth.getUser()`, llama al RPC estrecho
-`public.provision_player` y devuelve un DTO mínimo. El nombre se actualiza mediante la política RLS
-del propio jugador; no existe DML de aplicación con `service_role`.
+Las fachadas `server/production-*-data-access.ts` llevan el marcador `server-only` y memoizan con
+`cache` de React y delegan en `productionReadServices`. `server/profile.ts` conserva su frontera
+independiente para el perfil y queda fuera de esta migración de lecturas de home, salas y desafíos.
+Esa frontera valida la sesión con `auth.getUser()`, llama al RPC estrecho `public.provision_player`
+y devuelve un DTO mínimo. El nombre se actualiza mediante la política RLS del propio jugador; no
+existe DML de aplicación con `service_role`.
 
 La home, el detalle S02, los rankings S06 y el historial/revisión S07 delegan en
-`SupabaseRoomQueries`. El adaptador implementa `listCards`, `getDetail`, `getIntroduction`,
-`getRanking`, `listHistory`, `getHistoryDetail` y `getMemberDetail`. Para una sala real resuelve la
-temporada desde `get_room_detail`, consulta `get_season_ranking` y, cuando corresponde,
-`get_challenge_ranking`. S07 usa `get_flash_history` para agrupar publicaciones cerradas y
-`get_flash_member_review` para reconstruir el resultado desde la versión histórica enlazada; carga
+`ApplicationRoomReads`. El caso de uso resuelve una vez el perfil actual, construye el
+`QueryContext` y delega cada operación en una capacidad de sala. Los adaptadores concretos son
+`SupabaseRoomLobbyQueries`, `SupabaseRoomRankingQueries`, `SupabaseRoomSettingsQueries`,
+`SupabaseRoomHistoryQueries` y `SupabaseRoomMemberDetailQueries`; ninguno agrupa el contrato de
+otra capacidad. Para una sala real el adaptador correspondiente resuelve la temporada desde
+`get_room_detail`, consulta `get_season_ranking` y, cuando corresponde,
+`get_challenge_ranking`. S07 usa `get_room_history` para agrupar publicaciones cerradas y
+`get_room_member_review` para reconstruir la revisión desde la versión histórica enlazada. Antes de
+esas lecturas ejecuta la reconciliación acotada a la sala para que los intentos que ya cumplen la
+política no oculten indefinidamente la publicación. Carga
 en paralelo los rankings necesarios para el detalle de miembro. Las filas JSON se validan antes de
 convertirse a view models; los UUID de jugador son el `memberId` canónico y un error RPC o una fila
-inválida se propaga. Las consultas todavía mock se limitan a los aliases explícitos del demo, por lo
-que una sala real no puede caer silenciosamente en `MockRoomQueries`.
+inválida se propaga. Las consultas mock no participan en las rutas de sala. Las vistas reales no
+aceptan aliases de fixtures ni pueden caer silenciosamente en la composición demo.
 
 `get_my_room_cards` reutiliza el mismo `get_season_ranking` para `current_position`. Así, puntos,
 empates y la posición visible en home/detalle proceden de una sola semántica SQL. El RPC de desafío
@@ -245,10 +293,26 @@ de PostgreSQL; `can_start` requiere una publicación compatible y `can_continue`
 un intento propio en curso incluso después del cierre o de finalizar la temporada. El portal usa una
 lectura separada de calendario y comandos de programación/reprogramación exclusivos de superadmin.
 
-La fachada obtiene el viewer internamente; ningún parámetro de URL ni dato del cliente puede elegir
-la identidad de consulta. Sus funciones usan `cache` de React para compartir una misma promesa
-dentro de la petición, incluida la lectura repetida por `generateMetadata` y por la página. No hay
-caché persistente ni compartida entre usuarios.
+`server/composition/production.ts` es el único composition root de las lecturas públicas reales.
+Conecta las cinco capacidades de sala y el adaptador competitivo con sus dependencias de
+infraestructura. La implementación Supabase concentra Auth, RLS, RPCs, reconciliación y resolución
+de URLs firmadas. Ningún parámetro de URL ni dato del cliente puede elegir la identidad de consulta,
+y las assets privadas solo se resuelven para el miembro autorizado. `ApplicationRoomReads` y
+`ApplicationCompetitiveChallengeReads` reciben un contexto ya autenticado y no conocen cookies,
+redirects, `notFound()` ni Supabase. Las fachadas usan `cache` de React para compartir una misma
+promesa dentro de la petición, incluida la lectura repetida por `generateMetadata` y por la página.
+No hay caché persistente ni compartida entre usuarios.
+
+Los clientes Supabase se tipan con `infrastructure/supabase/database.types.ts`, generado desde el schema
+`public` de la base local mediante `npm run supabase:types`. Estos tipos describen el contrato de
+persistencia y RPC. Los adaptadores derivan de ellos los tipos de transporte y conservan aliases
+locales más estrictos para los datos después de pasar por guards; no sustituyen los guards, los
+mappers ni los view models de aplicación. Las respuestas `Json` siguen siendo datos no confiables
+hasta su validación explícita.
+El schema `private` no forma parte del contrato TypeScript compartido ni de la Data API.
+
+El procedimiento operativo para regenerar y verificar estos tipos está documentado en el
+[workflow de tipos TypeScript generados](../../../supabase/README.md#workflow-de-tipos-typescript-generados).
 
 ### Separación del portal de superadministración
 
@@ -324,12 +388,13 @@ salas, temporadas, contenido y calendario.
   contextualizado en una sala.
 - Los miembros antiguos pueden figurar en resultados históricos si eran competitivos cuando
   iniciaron el intento, pero ya no pueden leer la sala.
-- El historial exige una membresía activa del lector, incluye publicaciones Flash `closed` sin
+- El historial exige una membresía activa del lector, incluye publicaciones `flash`, `survival` y `pyramid` `closed` sin
   intentos `in_progress` y conserva publicaciones sin participantes. Las filas competitivas excluyen
   `test`, `invalidated` y `cancelled`; los espectadores no aparecen como jugadores.
-- La revisión propia terminal está disponible aunque el rol actual sea `spectator`. La revisión de
-  otra persona exige `owner`, `admin` o `member`, y solo expone intentos `completed` o `abandoned`.
-  Los abandonos conservan respuestas parciales y proyectan los huecos como `unanswered`.
+- La revisión propia y ajena exige `owner`, `admin` o `member`; `spectator` puede consultar historial y
+  ranking, pero no recibe respuestas ni soluciones, tampoco por URL directa. Solo se exponen intentos
+  `completed` o `abandoned`; Survival limita las filas a preguntas alcanzadas y Pyramid mantiene sus
+  siete metadatos con payload/solución nulos en niveles no alcanzados.
 - Un recurso inexistente y uno inaccesible devuelven igualmente `null`.
 - Las relaciones canónicas imposibles provocan un error de integridad; no se sustituyen por datos
   inventados.
@@ -355,8 +420,9 @@ frontera de seguridad.
 ## Compatibilidad temporal
 
 `PlayableChallengePageModel` conserva el `Challenge` gameplay completo para no reescribir los 31
-formatos ni la evaluación local en rutas mock/práctica. El recorrido competitivo de Pirámide usa
-`ServerPyramidChallenge` y una lectura por checkpoint que no envía soluciones ni niveles futuros.
+formatos ni la evaluación local en rutas mock/práctica. Los recorridos competitivos de Flash,
+Alphabet, Supervivencia, Narrative y Pirámide usan proyecciones `Server*Challenge` y lecturas que
+no envían soluciones ni niveles futuros.
 
 `RoomSessionProvider` y el `localStorage` de Pirámide permanecen disponibles solo en recorridos
 mock/práctica. Los modelos
@@ -377,6 +443,8 @@ adaptadores internos que todavía necesita para entregar los modelos de gameplay
 - componentes, features y utilidades cliente no importan servidor, infraestructura ni datos;
 - solo `infrastructure/mock` y el código de test pueden leer `data/mock`;
 - la infraestructura mock no consume proyecciones legacy de nivel superior;
+- las rutas productivas no importan barrels legacy ni el barrel mixto de gameplay;
+- las rutas competitivas no habilitan `persistence: "mock"`;
 - la fachada conserva `server-only` y la memoización de petición.
 
 Los tests de contrato se ejecutan contra los adaptadores mock y el adaptador Supabase incluye acceso

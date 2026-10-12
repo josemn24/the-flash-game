@@ -7,12 +7,12 @@ import {
   completePyramidAttempt,
   createPyramidAttempt,
   getPyramidAttemptStorageKey,
-  normalizePyramidResult,
   parsePyramidAttempt,
   type PyramidAttemptSummary,
 } from "@/features/pyramid/pyramidAttempt";
+import { normalizePyramidResult } from "@/lib/gameplay/pyramidProgress";
 import { getChallengeById } from "@/test-utils/mockGameplay";
-import type { AnswerResult } from "@/types/game";
+import type { AnswerResult } from "@/types/gameplay";
 
 function getChallenge() {
   const challenge = getChallengeById("tabarnia-challenge-05");

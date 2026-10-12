@@ -12,3 +12,10 @@ revoke all on function private.prepare_avatar_upload_command(jsonb),
 grant execute on function private.prepare_avatar_upload_command(jsonb),
   private.read_avatar_upload_asset(jsonb), private.confirm_avatar_upload_command(jsonb),
   private.abort_avatar_upload_command(jsonb) to service_role;
+
+alter function private.read_avatar_upload_confirmation(jsonb) owner to postgres;
+alter function private.claim_archived_avatar_cleanup(jsonb) owner to postgres;
+revoke all on function private.read_avatar_upload_confirmation(jsonb),
+  private.claim_archived_avatar_cleanup(jsonb) from public, anon, authenticated, service_role;
+grant execute on function private.read_avatar_upload_confirmation(jsonb),
+  private.claim_archived_avatar_cleanup(jsonb) to service_role;

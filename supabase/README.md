@@ -3,6 +3,11 @@
 Este directorio contiene la definición, el historial y las herramientas locales de la base de
 datos Supabase.
 
+Los destinos operativos admitidos son `local` y `staging`. El perfil mínimo se prepara con
+`npm run supabase:local:bootstrap -- --target local`; staging conserva su bootstrap BetaVIP.
+La [guía de preparación](../docs/current/supabase-clean-installation.md#qué-necesito-preparar)
+permite elegir el recorrido y documenta ambos procedimientos.
+
 ## Regla principal: schema first
 
 El esquema declarativo es la fuente de verdad:
@@ -17,10 +22,17 @@ El esquema declarativo es la fuente de verdad:
 La configuración de Supabase usa `pg-delta` con `declarative_schema_path = "./schemas"`. El detalle
 de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/README.md).
 
-El historial activo está consolidado en las migraciones
-`20260927140000_queens_board_validation.sql`, `20260927170000_queens_dynamic_grid.sql` y
-`20260927172602_cancel-scheduled-challenge.sql`, generadas desde los 53 archivos declarativos. La rama de
-respaldo conserva el historial incremental anterior.
+El historial activo consta de `20261011180045_initial_schema.sql`, un baseline generado desde los
+82 archivos declarativos. Las migraciones anteriores permanecen en Git, pero no forman parte del
+historial activo.
+
+La [validación SQL por formato](../docs/current/sql-question-validation-refactor.md) documenta
+los helpers privados, las pruebas de compatibilidad y la reversión del último refactor.
+
+La [auditoría de las 14 funciones pendientes](../docs/current/supabase-function-drift-audit.md)
+clasifica las diferencias anteriores entre esquema e historial y documenta cómo reproducirlas.
+La [reconciliación de comandos competitivos](../docs/current/competitive-command-reconciliation.md)
+resuelve esas diferencias, documenta los cambios intencionados y prueba actualización y reversión.
 
 ## Flujo para un cambio de esquema
 
@@ -52,6 +64,73 @@ respaldo conserva el historial incremental anterior.
 No se deben renombrar ni reescribir migraciones ya aplicadas. Una migración nueva es la unidad
 reproducible que se desplegará posteriormente en un entorno remoto.
 
+## Workflow de tipos TypeScript generados
+
+El archivo [`infrastructure/supabase/database.types.ts`](../infrastructure/supabase/database.types.ts) se genera desde
+el schema `public` de Supabase local. Es un artefacto versionado que debe cambiar junto con la
+migración o definición de schema que lo justifica.
+
+### Cuándo regenerar
+
+Regenera los tipos después de cambios estructurales en `public`, por ejemplo:
+
+- tablas, columnas, relaciones o vistas;
+- funciones RPC, sus argumentos o sus valores de retorno;
+- enums y otros tipos usados por la Data API.
+
+No es necesario regenerarlos por cambios en datos, fixtures, seeds, componentes, código
+TypeScript o políticas RLS que no cambien la forma del schema. Estos últimos cambios siguen
+requiriendo sus propias pruebas de comportamiento o seguridad.
+
+### Flujo local recomendado
+
+Después de cambiar `supabase/schemas/` y crear o actualizar la migración:
+
+1. Arrancar Supabase local si no está en marcha:
+
+   ```bash
+   npm run supabase:start
+   ```
+
+2. Aplicar las migraciones pendientes al proyecto local:
+
+   ```bash
+   npm run supabase:migration:up
+   ```
+
+3. Generar los tipos desde el schema local actualizado:
+
+   ```bash
+   npm run supabase:types
+   ```
+
+4. Verificar que el archivo generado coincide con la base local sin escribir cambios:
+
+   ```bash
+   npm run supabase:types:check
+   ```
+
+5. Ejecutar las comprobaciones del proyecto:
+
+   ```bash
+   npm run typecheck
+   npm test
+   ```
+
+6. Versionar juntos la migración, la definición declarativa y
+   `infrastructure/supabase/database.types.ts`.
+
+El script de generación usa el CLI local de Supabase, limita la salida al schema `public` y no
+ejecuta `db reset` automáticamente. Si la base local está obsoleta, actualízala explícitamente
+con el flujo de migraciones. En un entorno desechable, como CI, puede reconstruirse primero desde
+las migraciones con `npm run supabase:db:reset` y después ejecutarse `npm run supabase:types:check`.
+
+La generación desde un proyecto remoto puede ser útil para diagnosticar drift o reconciliar un
+entorno, pero no es el flujo diario recomendado: hace depender la generación de credenciales y
+del estado remoto. Si los tipos remotos difieren, primero hay que reconciliar schemas y
+migraciones; no se debe sobrescribir automáticamente el artefacto versionado con la salida
+remota.
+
 ## Validación mínima
 
 Con Docker y Supabase local en marcha:
@@ -82,7 +161,10 @@ supabase/
 └── .gitignore               # Estado local de la CLI y credenciales locales
 ```
 
-Para preparar cuentas y datos de navegador, consulta [`local-development.md`](local-development.md).
+Para preparar datasets, fixtures, el perfil mínimo o staging, consulta la
+[guía de preparación de entornos](../docs/current/supabase-clean-installation.md#qué-necesito-preparar).
+Para arrancar el stack y verificar el desarrollo local, consulta
+[`local-development.md`](local-development.md).
 Para los límites de seguridad y el modelo de persistencia, consulta
 [`architecture.md`](architecture.md). El estado funcional y las capacidades pendientes se mantienen
 en [`docs/current/status.md`](../docs/current/status.md).

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { RoomMembershipCommandError } from "@/application/administration/errors";
 import type { RoomMemberManagementAction } from "@/application/ports/room-membership-commands";
-import { isValidRoomMemberTarget, manageRoomMemberCommand } from "@/server/room-members";
+import { isValidRoomMemberTarget, manageRoomMemberCommand } from "@/server/production-room-members";
 
 export type RoomMemberActionState = {
   readonly ok?: boolean;

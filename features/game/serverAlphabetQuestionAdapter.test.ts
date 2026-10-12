@@ -31,11 +31,17 @@ const challenge = {
 describe("server Alphabet question adapter", () => {
   it("accepts the public payload without requiring the solution", () => {
     expect(
-      questionFromAlphabetPayload("item-a", "A", {
-        category: "Historia",
-        question: "¿Quién llegó primero?",
-        answerPlaceholder: "Escribe un nombre",
-      }, 30_000, 50),
+      questionFromAlphabetPayload(
+        "item-a",
+        "A",
+        {
+          category: "Historia",
+          question: "¿Quién llegó primero?",
+          answerPlaceholder: "Escribe un nombre",
+        },
+        30_000,
+        50,
+      ),
     ).toMatchObject({
       type: "short-text",
       letter: "A",
@@ -46,10 +52,16 @@ describe("server Alphabet question adapter", () => {
 
   it("rejects a leaked solution in the gameplay payload", () => {
     expect(() =>
-      questionFromAlphabetPayload("item-a", "A", {
-        question: "Pregunta",
-        correctAnswer: "Respuesta",
-      }, 30_000, 50),
+      questionFromAlphabetPayload(
+        "item-a",
+        "A",
+        {
+          question: "Pregunta",
+          correctAnswer: "Respuesta",
+        },
+        30_000,
+        50,
+      ),
     ).toThrow(ServerAlphabetQuestionError);
   });
 

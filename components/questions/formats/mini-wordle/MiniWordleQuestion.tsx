@@ -19,7 +19,7 @@ import {
   normalizeMiniWordleWord,
 } from "@/lib/miniWordle";
 import { loadMiniWordleDictionary } from "@/lib/miniWordleDictionary";
-import type { MiniWordleAnswer } from "@/types/game";
+import type { MiniWordleAnswer } from "@/types/gameplay/practice";
 
 type Props = {
   correctAnswer: string;
@@ -99,11 +99,7 @@ export function MiniWordleQuestion({
   useEffect(() => {
     const previousGuessCount = previousGuessCountRef.current;
     previousGuessCountRef.current = guesses.length;
-    if (
-      guesses.length > previousGuessCount &&
-      guesses.length < maxAttempts &&
-      !locked
-    ) {
+    if (guesses.length > previousGuessCount && guesses.length < maxAttempts && !locked) {
       inputRef.current?.focus();
     }
   }, [guesses.length, locked, maxAttempts]);

@@ -13,19 +13,35 @@ select set_config('s15.document', jsonb_build_object(
     'configSchemaVersion', 1, 'modeConfig', '{}'::jsonb
   ),
   'questions', (
-    select jsonb_agg(jsonb_build_object(
-      'source', 'library', 'questionVersionId', test_support.id('qv-' || question_key),
-      'points', points,
-      'modeConfig', jsonb_build_object(
-        'levelId', 'level-' || level_number,
-        'label', 'Nivel ' || level_number,
-        'briefing', jsonb_build_object(
-          'title', 'Briefing ' || level_number,
-          'format', 'Lógica',
-          'description', 'Resuelve la prueba para ascender.'
+    select jsonb_agg(
+      jsonb_build_object(
+        'points', points,
+        'modeConfig', jsonb_build_object(
+          'levelId', 'level-' || level_number,
+          'label', 'Nivel ' || level_number,
+          'briefing', jsonb_build_object(
+            'title', 'Briefing ' || level_number,
+            'format', 'Lógica',
+            'description', 'Resuelve la prueba para ascender.'
+          )
         )
-      )
-    ) order by level_number)
+      ) || case
+        when level_number = 1 then jsonb_build_object(
+          'slug', 's15-pyramid-short-text-inline', 'type', 'short-text', 'payloadSchemaVersion', 1,
+          'timeLimitMs', 15000,
+          'publicPayload', jsonb_build_object('question', '¿Capital de Portugal?', 'answerPlaceholder', 'Ciudad'),
+          'solutionPayload', jsonb_build_object('correctAnswer', 'Lisboa',
+            'acceptedAnswers', jsonb_build_array('Lisboa'), 'explanation', 'Lisboa es la capital.')
+        )
+        when level_number = 2 then jsonb_build_object(
+          'source', 'library', 'questionVersionId', test_support.id('qv-alphabet-1')::text
+        )
+        else jsonb_build_object(
+          'source', 'library', 'questionVersionId', test_support.id('qv-' || question_key)::text
+        )
+      end
+      order by level_number
+    )
     from (values
       (1, 'pyramid-1', 14), (2, 'pyramid-2', 14), (3, 'pyramid-3', 14),
       (4, 'pyramid-4', 14), (5, 'pyramid-5', 14), (6, 'pyramid-6', 15),
@@ -68,9 +84,44 @@ reset role;
 select set_config('s15.version_id', (
   select id::text from private.challenge_versions where title = 'La Pirámide S15'
 ), true);
+select is((select count(*) from private.challenge_items item
+  join private.question_versions question on question.id = item.question_version_id
+  where item.challenge_version_id = current_setting('s15.version_id')::uuid and question.type = 'short-text'), 2::bigint,
+  'Pyramid persists both inline and library short-text items');
+select set_config('s15.expected_editorial_updated_at', (
+  select updated_at::text from private.challenge_versions where id = current_setting('s15.version_id')::uuid
+), true);
+select set_config('s15.updated_document', jsonb_set(current_setting('s15.document')::jsonb,
+  '{challenge,title}', '"La Pirámide S15 editada"'::jsonb)::text, true);
+set local role authenticated;
+select is((public.update_superadmin_flash_draft(jsonb_build_object(
+  'idempotencyKey', 's15-editorial-update', 'challengeVersionId', current_setting('s15.version_id')::uuid,
+  'expectedUpdatedAt', current_setting('s15.expected_editorial_updated_at')::timestamptz,
+  'document', current_setting('s15.updated_document')::jsonb, 'reason', 'Editar Pyramid short-text'
+))->>'title'), 'La Pirámide S15 editada', 'A Pyramid short-text draft can be edited');
+reset role;
 select set_config('s15.expected_updated_at', (
   select updated_at::text from private.challenge_versions where id = current_setting('s15.version_id')::uuid
 ), true);
+select set_config('s15.inline_question_version', (
+  select question.id::text
+  from private.challenge_items item
+  join private.question_versions question on question.id = item.question_version_id
+  join private.question_definitions definition on definition.id = question.question_definition_id
+  where item.challenge_version_id = current_setting('s15.version_id')::uuid
+    and definition.slug = 's15-pyramid-short-text-inline'
+), true);
+select set_config('s15.inline_question_updated_at', (
+  select updated_at::text from private.question_versions where id = current_setting('s15.inline_question_version')::uuid
+), true);
+set local role authenticated;
+select lives_ok($$select public.publish_superadmin_question(jsonb_build_object(
+  'idempotencyKey', 's15-publish-inline-short-text',
+  'questionVersionId', current_setting('s15.inline_question_version')::uuid,
+  'expectedUpdatedAt', current_setting('s15.inline_question_updated_at')::timestamptz,
+  'reason', 'Publicar pregunta short-text de Pirámide'
+))$$, 'The inline Pyramid short-text question can be published');
+reset role;
 set local role authenticated;
 select is((public.publish_superadmin_flash(jsonb_build_object(
   'idempotencyKey', 's15-editorial-publish',
@@ -85,10 +136,10 @@ select is((public.create_superadmin_scheduled_challenge(jsonb_build_object(
   'reason', 'Programar La Pirámide S15'
 ))->>'status'), 'scheduled', 'The calendar accepts a published Pyramid');
 
-select set_config('s15.unsupported_document', jsonb_set(jsonb_set(jsonb_set(
+select set_config('s15.anagram_document', jsonb_set(jsonb_set(jsonb_set(
   current_setting('s15.document')::jsonb,
-  '{challenge,slug}', '"s15-pyramid-unevaluated-format"'::jsonb),
-  '{challenge,title}', '"La Pirámide S15 formato no evaluado"'::jsonb),
+  '{challenge,slug}', '"s15-pyramid-anagram-format"'::jsonb),
+  '{challenge,title}', '"La Pirámide S15 Anagram"'::jsonb),
   '{questions,0}',
   jsonb_build_object(
     'slug', 's15-pyramid-anagram', 'type', 'anagram', 'payloadSchemaVersion', 1,
@@ -104,42 +155,52 @@ select set_config('s15.unsupported_document', jsonb_set(jsonb_set(jsonb_set(
   )
 )::text, true);
 select is((public.create_superadmin_flash_draft(jsonb_build_object(
-  'idempotencyKey', 's15-editorial-unsupported-create',
-  'document', current_setting('s15.unsupported_document')::jsonb,
-  'reason', 'Probar formato no disponible en el evaluador competitivo'
-))->>'status'), 'draft', 'An unevaluated competitive format can exist in a draft');
+  'idempotencyKey', 's15-editorial-anagram-create',
+  'document', current_setting('s15.anagram_document')::jsonb,
+  'reason', 'Verificar Anagram en el evaluador competitivo'
+))->>'status'), 'draft', 'Anagram can be composed in a Pyramid draft');
 reset role;
-select set_config('s15.unsupported_version_id', (
-  select id::text from private.challenge_versions where title = 'La Pirámide S15 formato no evaluado'
+select set_config('s15.anagram_version_id', (
+  select id::text from private.challenge_versions where title = 'La Pirámide S15 Anagram'
     and status = 'draft' order by created_at desc limit 1
 ), true);
-select set_config('s15.unevaluated_version_id', (
+select set_config('s15.anagram_question_id', (
   select question.id::text from private.question_versions question
   join private.question_definitions definition on definition.id = question.question_definition_id
   where definition.slug = 's15-pyramid-anagram'
 ), true);
-select set_config('s15.unevaluated_updated_at', (
-  select updated_at::text from private.question_versions where id = current_setting('s15.unevaluated_version_id')::uuid
+select set_config('s15.anagram_question_updated_at', (
+  select updated_at::text from private.question_versions where id = current_setting('s15.anagram_question_id')::uuid
 ), true);
 set local role authenticated;
 select lives_ok($$select public.publish_superadmin_question(jsonb_build_object(
-  'idempotencyKey', 's15-editorial-publish-unevaluated',
-  'questionVersionId', current_setting('s15.unevaluated_version_id')::uuid,
-  'expectedUpdatedAt', current_setting('s15.unevaluated_updated_at')::timestamptz,
+  'idempotencyKey', 's15-editorial-publish-anagram',
+  'questionVersionId', current_setting('s15.anagram_question_id')::uuid,
+  'expectedUpdatedAt', current_setting('s15.anagram_question_updated_at')::timestamptz,
   'reason', 'Publicar formato para validar el gate'
-))$$, 'The unsupported question is otherwise publishable');
+))$$, 'The Anagram question can be published');
 reset role;
-select set_config('s15.unsupported_updated_at', (
-  select updated_at::text from private.challenge_versions where id = current_setting('s15.unsupported_version_id')::uuid
+select set_config('s15.anagram_updated_at', (
+  select updated_at::text from private.challenge_versions where id = current_setting('s15.anagram_version_id')::uuid
 ), true);
 set local role authenticated;
-select throws_ok($$select public.publish_superadmin_flash(jsonb_build_object(
-  'idempotencyKey', 's15-editorial-unsupported-publish',
-  'challengeVersionId', current_setting('s15.unsupported_version_id')::uuid,
-  'expectedUpdatedAt', current_setting('s15.unsupported_updated_at')::timestamptz,
-  'reason', 'No hay evaluación competitiva'
-))$$, '22023', 'unsupported_question', 'Pyramid publication rejects a format without a server evaluator');
+select lives_ok($$select public.publish_superadmin_flash(jsonb_build_object(
+  'idempotencyKey', 's15-editorial-anagram-publish',
+  'challengeVersionId', current_setting('s15.anagram_version_id')::uuid,
+  'expectedUpdatedAt', current_setting('s15.anagram_updated_at')::timestamptz,
+  'reason', 'Evaluación Anagram disponible'
+))$$, 'Pyramid admits Anagram through its existing server evaluator');
 
+reset role;
+insert into private.question_definitions(id,slug,created_by_player_id)
+values(test_support.id('s15-practice-only'), 's15-practice-only', test_support.id('superadmin'));
+insert into private.question_versions(id,question_definition_id,version_number,payload_schema_version,type,time_limit_ms,public_payload,created_by_player_id)
+values(test_support.id('s15-practice-only-v1'),test_support.id('s15-practice-only'),1,1,'memory-pairs',15000,'{"question":"Memoria de práctica","tiles":[]}',test_support.id('superadmin'));
+insert into private.question_version_solutions(question_version_id,solution_payload)
+values(test_support.id('s15-practice-only-v1'),'{}');
+update private.question_versions set status='published',published_at=now() where id=test_support.id('s15-practice-only-v1');
+select ok(not private.is_supported_flash_question(test_support.id('s15-practice-only-v1')), 'Practice-only formats remain outside competitive admission');
+set local role authenticated;
 select test_support.as_actor('member');
 select throws_ok($$select public.create_superadmin_flash_draft(jsonb_build_object(
   'idempotencyKey', 's15-member-create', 'document', current_setting('s15.document')::jsonb,

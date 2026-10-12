@@ -72,6 +72,52 @@ update private.challenge_versions set status = 'published' where id = test_suppo
 select set_config('request.jwt.claims', jsonb_build_object(
   'sub', test_support.id('auth-superadmin'), 'role', 'authenticated', 'is_anonymous', false
 )::text, true);
+
+select lives_ok($$select private.assert_supported_calendar_content(test_support.id('cv-alphabet'))$$,
+  'The calendar admission gate accepts a valid Alphabet version');
+set local role authenticated;
+select is((select count(*) from jsonb_array_elements(public.get_superadmin_calendar_context()->'entries') entry
+  where entry->>'mode' = 'alphabet'), 2::bigint,
+  'The superadmin calendar includes Alphabet publications');
+reset role;
+insert into private.challenge_definitions(id, slug, created_by_player_id)
+select test_support.id('s12-cd-alpha-' || label), 's12-alpha-' || label, test_support.id('superadmin')
+from unnest(array['missing-letter', 'bad-letter', 'bad-config']) label;
+insert into private.challenge_versions(
+  id, challenge_definition_id, version_number, config_schema_version, status, mode,
+  title, max_score, global_time_limit_ms, mode_config, created_by_player_id
+)
+select test_support.id('s12-cv-alpha-' || label), test_support.id('s12-cd-alpha-' || label),
+  1, 1, 'draft', 'alphabet', 'S12 Alphabet ' || label, 100, 60000,
+  case when label = 'bad-config' then jsonb_build_object('unexpected', true) else '{}'::jsonb end,
+  test_support.id('superadmin')
+from unnest(array['missing-letter', 'bad-letter', 'bad-config']) label;
+insert into private.challenge_items(
+  challenge_version_id, question_version_id, position, points, config_schema_version, mode_config
+)
+select test_support.id('s12-cv-alpha-' || invalid.label), source.question_version_id,
+  source.position, source.points, source.config_schema_version,
+  case
+    when invalid.label = 'missing-letter' and source.position = 1 then '{}'::jsonb
+    when invalid.label = 'bad-letter' and source.position = 1 then jsonb_build_object('letter', 7)
+    else source.mode_config
+  end
+from unnest(array['missing-letter', 'bad-letter', 'bad-config']) invalid(label)
+cross join private.challenge_items source
+where source.challenge_version_id = test_support.id('cv-alphabet');
+update private.challenge_versions
+set status = 'published'
+where id in (
+  test_support.id('s12-cv-alpha-missing-letter'),
+  test_support.id('s12-cv-alpha-bad-letter'),
+  test_support.id('s12-cv-alpha-bad-config')
+);
+select throws_ok($$select private.assert_supported_calendar_content(test_support.id('s12-cv-alpha-missing-letter'))$$,
+  '22023', 'unsupported_content', 'Alphabet calendar content requires a letter on every item');
+select throws_ok($$select private.assert_supported_calendar_content(test_support.id('s12-cv-alpha-bad-letter'))$$,
+  '22023', 'unsupported_content', 'Alphabet calendar content rejects non-string letters');
+select throws_ok($$select private.assert_supported_calendar_content(test_support.id('s12-cv-alpha-bad-config'))$$,
+  '22023', 'unsupported_content', 'Alphabet calendar content requires an empty version mode_config');
 set local role authenticated;
 
 select throws_ok($$select public.create_superadmin_scheduled_challenge(jsonb_build_object(

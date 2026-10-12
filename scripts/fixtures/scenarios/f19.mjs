@@ -37,11 +37,31 @@ export const scenario = {
       question: "Intercambia las letras amarillas para completar las cuatro palabras.",
       grid: { rows: 5, columns: 5 },
       initialLetters: [
-        null, "G", null, "Q", null,
-        "E", "O", "P", "U", "I",
-        null, "N", null, "Y", null,
-        "R", "A", "U", "M", "E",
-        null, "R", null, "A", null,
+        null,
+        "G",
+        null,
+        "Q",
+        null,
+        "E",
+        "O",
+        "P",
+        "U",
+        "I",
+        null,
+        "N",
+        null,
+        "Y",
+        null,
+        "R",
+        "A",
+        "U",
+        "M",
+        "E",
+        null,
+        "R",
+        null,
+        "A",
+        null,
       ],
       maxMoves: 7,
     };
@@ -75,14 +95,18 @@ values
     'word-hashtag', 45000, ${sqlString(JSON.stringify(wordHashtag))}, ${sqlString(accounts.alice.playerId)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
-  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({
-    correctAnswer: "Lisboa",
-    explanation: "Lisboa es la capital de Portugal.",
-  }))}),
-  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(JSON.stringify({
-    words,
-    explanation: "Las cuatro palabras se cruzan en una cuadrícula con forma de hashtag.",
-  }))});
+  (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(
+    JSON.stringify({
+      correctAnswer: "Lisboa",
+      explanation: "Lisboa es la capital de Portugal.",
+    }),
+  )}),
+  (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlString(
+    JSON.stringify({
+      words,
+      explanation: "Las cuatro palabras se cruzan en una cuadrícula con forma de hashtag.",
+    }),
+  )});
 update private.question_versions set status = 'published', published_at = ${sqlString(dateStart)}
 where status = 'draft';
 insert into private.challenge_definitions (id, slug, created_by_player_id)
@@ -116,7 +140,10 @@ commit;
       publicationId: stableId(domainIds.publication),
       challengeId: stableId(domainIds.challenge),
       challengeVersionId: stableId(domainIds.challengeVersion),
-      challengeItemIds: [stableId(domainIds.challengeItemOne), stableId(domainIds.challengeItemTwo)],
+      challengeItemIds: [
+        stableId(domainIds.challengeItemOne),
+        stableId(domainIds.challengeItemTwo),
+      ],
     };
   },
 };

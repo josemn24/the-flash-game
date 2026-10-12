@@ -4,7 +4,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import type { KeyboardEvent } from "react";
 import styles from "./SlidingPuzzleQuestion.module.css";
-import type { SlidingPuzzleAnswer } from "@/types/game";
+import type { SlidingPuzzleAnswer } from "@/types/gameplay/practice";
 
 type SlidingPuzzleQuestionProps = {
   initialTiles: Array<number | null>;
@@ -59,10 +59,7 @@ export function SlidingPuzzleQuestion({
   };
 
   return (
-    <section
-      className={styles.root}
-      aria-label="Rompecabezas deslizante de tres por tres"
-    >
+    <section className={styles.root} aria-label="Rompecabezas deslizante de tres por tres">
       <p className={styles.instructions}>
         Desliza las fichas junto al hueco hasta ordenarlas del 1 al 8. También puedes usar las
         flechas.

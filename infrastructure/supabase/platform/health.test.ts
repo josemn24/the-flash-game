@@ -1,0 +1,104 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const pgMocks = vi.hoisted(() => ({ Pool: vi.fn() }));
+const configMocks = vi.hoisted(() => ({
+  getSupabasePublishableKey: vi.fn(() => "publishable-key"),
+  getSupabaseUrl: vi.fn(() => "http://supabase.local"),
+}));
+
+vi.mock("pg", () => ({ Pool: pgMocks.Pool }));
+vi.mock("@/infrastructure/supabase/config", () => configMocks);
+
+const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
+
+describe("readPrivateHealth", () => {
+  const client = {
+    query: vi.fn(),
+    release: vi.fn(),
+  };
+  const pool = {
+    connect: vi.fn().mockResolvedValue(client),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (globalThis as Record<PropertyKey, unknown>)[poolKey] = undefined;
+    process.env.SUPABASE_DB_URL =
+      "postgresql://postgres.bebmthwwyiyobaiertsm:p%40ssword@pooler.example:6543/postgres?sslmode=require";
+    delete process.env.EXPECTED_SCHEMA_REVISION;
+    client.query.mockImplementation(async (query: string) => {
+      if (query.includes("schema_revision_marker")) {
+        return {
+          rows: [{ database_ok: true, schema_ready: true, schema_revision_marker: true }],
+        };
+      }
+      return {};
+    });
+    pgMocks.Pool.mockImplementation(() => pool);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true }));
+  });
+
+  it("recognizes the current revision and required capabilities", async () => {
+    const { readPrivateHealth } = await import("@/infrastructure/supabase/platform/health");
+
+    await expect(readPrivateHealth()).resolves.toEqual({
+      ok: true,
+      checks: { auth: true, database: true, schema: true },
+    });
+
+    const markerQuery = client.query.mock.calls.find(([query]) =>
+      String(query).includes("schema_revision_marker"),
+    )?.[0];
+    expect(pgMocks.Pool).toHaveBeenCalledWith({
+      connectionString: process.env.SUPABASE_DB_URL,
+      max: 1,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 2_000,
+      application_name: "the-flash-game-health",
+    });
+    expect(markerQuery).toContain("public.get_superadmin_challenge_catalog()");
+    expect(markerQuery).toContain("public.get_superadmin_challenge_detail(uuid)");
+    expect(markerQuery).toContain("public.manage_room_member(jsonb)");
+    expect(markerQuery).toContain("member_previews jsonb");
+    expect(markerQuery).toContain("private.prepare_attempt_session(uuid)");
+    expect(markerQuery).toContain("private.read_completed_attempt(uuid)");
+    expect(markerQuery).toContain("private.read_recorded_evaluation(uuid,text)");
+    expect(markerQuery).toContain("private.read_avatar_upload_confirmation(jsonb)");
+    expect(markerQuery).toContain("private.claim_archived_avatar_cleanup(jsonb)");
+    expect(markerQuery).toContain("attempts_outcome_values_check");
+    expect(markerQuery).toContain("attempts_outcome_status_check");
+    expect(markerQuery).toContain("invalid_attempt_lifecycle");
+    expect(markerQuery).toContain("private.take_over_attempt(jsonb)");
+    expect(markerQuery).toContain("private.execute_command(text,jsonb)");
+    expect(markerQuery).toContain("case when terminal_reason_value = ''permission_revoked''");
+    expect(markerQuery).toContain("private.raise_if_session_transferred");
+  });
+
+  it("rejects an old expected revision", async () => {
+    const legacySchemaRevision = ["20260919", "090805_declarative_sync"].join("");
+    process.env.EXPECTED_SCHEMA_REVISION = legacySchemaRevision;
+    const { readPrivateHealth } = await import("@/infrastructure/supabase/platform/health");
+
+    await expect(readPrivateHealth()).resolves.toMatchObject({
+      ok: false,
+      checks: { auth: true, database: true, schema: false },
+    });
+  });
+
+  it("rejects a schema missing a required capability", async () => {
+    client.query.mockImplementation(async (query: string) => {
+      if (query.includes("schema_revision_marker")) {
+        return {
+          rows: [{ database_ok: true, schema_ready: true, schema_revision_marker: false }],
+        };
+      }
+      return {};
+    });
+    const { readPrivateHealth } = await import("@/infrastructure/supabase/platform/health");
+
+    await expect(readPrivateHealth()).resolves.toMatchObject({
+      ok: false,
+      checks: { auth: true, database: true, schema: false },
+    });
+  });
+});

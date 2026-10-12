@@ -24,6 +24,9 @@ export type {
   RoomHistoryResult,
   RoomLeaderboardEntry,
   RoomMemberDetailModel,
+  RoomMemberReviewItem,
+  RoomMemberReviewItemStatus,
+  RoomMemberReviewProgress,
   RoomMemberViewModel,
   RoomSettingsModel,
 } from "@/types/view-models/room";

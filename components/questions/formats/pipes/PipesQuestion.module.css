@@ -13,7 +13,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    color: rgb(255 255 255 / 48%);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.72rem;
     font-weight: 800;
@@ -23,7 +23,7 @@
 
   .header strong,
   .progress strong {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   .board {
@@ -78,7 +78,7 @@
   }
 
   .connected .pipe {
-    stroke: var(--color-social);
+    stroke: var(--ds-color-fg-selected);
     filter: drop-shadow(0 0 0.25rem rgb(53 232 255 / 55%));
   }
 
@@ -89,21 +89,21 @@
   .source {
     background: radial-gradient(
       circle,
-      rgb(var(--color-brand-rgb) / 22%),
+      color-mix(in srgb, var(--ds-color-bg-brand) 22%, transparent),
       rgb(53 232 255 / 8%) 58%,
       transparent 60%
     );
   }
 
   .sourceCore {
-    fill: var(--color-brand);
+    fill: var(--ds-color-fg-brand);
     stroke: #f9ffbd;
     stroke-width: 3;
   }
 
   .cell:focus-visible {
     z-index: 1;
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: -3px;
   }
 
@@ -116,14 +116,14 @@
     border: 1px solid rgb(255 255 255 / 14%);
     border-radius: 0.7rem;
     padding: 0.62rem 0.8rem;
-    color: white;
+    color: var(--ds-color-fg-on-inverse);
     background: rgb(255 255 255 / 6%);
     font-size: 0.72rem;
     font-weight: 850;
   }
 
   .actions button:hover:not(:disabled) {
-    border-color: var(--color-social);
+    border-color: var(--ds-color-border-selected);
     background: rgb(53 232 255 / 11%);
   }
 
@@ -134,7 +134,7 @@
   .instructions {
     max-width: 31rem;
     margin: 0;
-    color: rgb(255 255 255 / 44%);
+    color: var(--ds-color-fg-secondary);
     font-size: 0.75rem;
     line-height: 1.5;
     text-align: center;
@@ -155,51 +155,51 @@
   .root .header,
   .root .progress,
   .root .instructions {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
   }
   .root .board {
-    border-color: var(--color-border);
+    border-color: var(--ds-color-border-default);
     border-radius: var(--radius-card);
-    background: var(--color-surface-raised);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
   }
   .root .cell {
-    border-color: color-mix(in srgb, var(--color-ink) 10%, transparent);
-    background: var(--color-surface);
+    border-color: color-mix(in srgb, var(--ds-color-border-ink) 10%, transparent);
+    background: var(--ds-color-bg-surface);
   }
   .root .pipe {
-    stroke: var(--color-ink-muted);
+    stroke: var(--ds-color-fg-secondary);
   }
   .root .joint {
-    fill: var(--color-ink-faint);
+    fill: var(--ds-color-fg-secondary);
   }
   .root .connected {
-    background: color-mix(in srgb, var(--color-social) 10%, var(--color-surface));
+    background: color-mix(in srgb, var(--ds-color-bg-selected) 10%, var(--ds-color-bg-surface));
   }
   .root .connected .pipe {
-    stroke: var(--state-correct);
+    stroke: var(--ds-color-fg-success);
   }
   .root .connected .joint {
-    fill: var(--state-correct);
+    fill: var(--ds-color-fg-success);
   }
   .root .source {
-    background: color-mix(in srgb, var(--color-brand) 14%, var(--color-surface));
+    background: color-mix(in srgb, var(--ds-color-bg-brand) 14%, var(--ds-color-bg-surface));
   }
   .root .sourceCore {
-    fill: var(--color-brand);
-    stroke: var(--color-surface);
+    fill: var(--ds-color-fg-brand);
+    stroke: var(--ds-color-fg-on-inverse);
   }
   .root .cell:focus-visible {
-    outline-color: var(--state-focus);
+    outline-color: var(--ds-color-focus-ring);
   }
   .root .actions button {
-    border-color: var(--color-border);
-    color: var(--color-ink);
-    background: var(--color-surface-raised);
+    border-color: var(--ds-color-border-default);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-control);
   }
   .root .actions button:hover:not(:disabled) {
-    border-color: var(--state-focus);
-    background: var(--color-surface);
+    border-color: var(--ds-color-focus-ring);
+    background: var(--ds-color-bg-surface);
   }
 }

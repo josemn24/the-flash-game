@@ -14,10 +14,9 @@ import {
   verifiedIdentity,
 } from "@/server/competitive/attempt-api";
 import { AttemptApiError } from "@/server/competitive/attempt-api";
-import { consumeAlphabetActionRateLimit } from "@/server/competitive/rate-limit";
 import type { AttemptId, ChallengeItemId } from "@/types/domain/identifiers";
 import type { DurationMs } from "@/types/domain/values";
-import type { AnswerValue } from "@/types/game";
+import type { AnswerValue } from "@/types/contracts";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,21 +46,15 @@ export async function POST(
     if (!isJsonAnswer(answer)) {
       throw new AttemptApiError("invalid_answer", 400);
     }
-    const commands = commandsFor(identity);
-    const snapshot = await commands.readRecovery(attemptId, sessionToken);
-    if (snapshot.challengeMode === "alphabet") {
-      consumeAlphabetActionRateLimit(identity.authUserId, attemptId);
-    }
-    const { evaluated, received } = await commands.evaluateAndRecord({
-      receive: {
-        attemptId: attemptId as AttemptId,
-        sessionToken,
-        lockVersion: requireLockVersion(body),
-        idempotencyKey: requireKey(body),
-        challengeItemId: requireUuid(body, "challengeItemId") as ChallengeItemId,
-        answer,
-        clientTimeUsedMs: optionalClientTime(body) as DurationMs | undefined,
-      },
+    const commands = commandsFor(identity, requestId);
+    const { evaluated, received } = await commands.submitAnswer({
+      attemptId: attemptId as AttemptId,
+      sessionToken,
+      lockVersion: requireLockVersion(body),
+      idempotencyKey: requireKey(body),
+      challengeItemId: requireUuid(body, "challengeItemId") as ChallengeItemId,
+      answer,
+      clientTimeUsedMs: optionalClientTime(body) as DurationMs | undefined,
     });
     return responseFor(
       {

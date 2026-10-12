@@ -17,14 +17,25 @@ export type AnswerFeedbackStageProps =
       readonly onRetry: () => void;
     };
 
-export function AnswerFeedbackStage(props: AnswerFeedbackStageProps) {
+function PendingFeedbackStage({
+  state,
+  indicatorVisible,
+  title,
+  description,
+  onRetry,
+}: {
+  state: "checking" | "loading-question" | "error";
+  indicatorVisible: boolean;
+  title: string;
+  description: string;
+  onRetry?: () => void;
+}) {
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const checking = props.state === "checking";
-  const indicatorVisible = checking ? props.indicatorVisible : true;
+  const pending = state !== "error";
 
   useEffect(() => {
     headingRef.current?.focus();
-  }, [props.state, indicatorVisible]);
+  }, [state, indicatorVisible]);
 
   return (
     <div
@@ -32,9 +43,9 @@ export function AnswerFeedbackStage(props: AnswerFeedbackStageProps) {
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      aria-busy={checking || undefined}
-      aria-label={checking ? "Comprobando respuesta" : undefined}
-      data-feedback-state={props.state}
+      aria-busy={pending || undefined}
+      aria-label={pending ? title.replace(/…$/, "") : undefined}
+      data-feedback-state={state}
     >
       <motion.div
         className={styles.stage}
@@ -42,31 +53,55 @@ export function AnswerFeedbackStage(props: AnswerFeedbackStageProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        <Card className={`${styles.card} ${props.state === "error" ? styles.error : ""}`}>
-          {checking && indicatorVisible ? (
+        <Card className={`${styles.card} ${state === "error" ? styles.error : ""}`}>
+          {pending && indicatorVisible ? (
             <span className={styles.icon} aria-hidden="true">
               <span className={styles.spinner} />
             </span>
-          ) : !checking ? (
+          ) : !pending ? (
             <span className={`${styles.icon} ${styles.errorIcon}`} aria-hidden="true">
               <WarningIcon />
             </span>
           ) : null}
-          {indicatorVisible || !checking ? (
+          {indicatorVisible || !pending ? (
             <>
               <h1 ref={headingRef} tabIndex={-1}>
-                {checking ? "Comprobando respuesta…" : "No hemos podido confirmar tu respuesta"}
+                {title}
               </h1>
-              <p>{checking ? "Espera un momento…" : props.errorMessage}</p>
+              <p>{description}</p>
             </>
           ) : null}
-          {props.state === "error" ? (
-            <Button type="button" onClick={props.onRetry}>
+          {state === "error" && onRetry ? (
+            <Button type="button" onClick={onRetry}>
               Reintentar
             </Button>
           ) : null}
         </Card>
       </motion.div>
     </div>
+  );
+}
+
+export function AnswerFeedbackStage(props: AnswerFeedbackStageProps) {
+  const checking = props.state === "checking";
+  return (
+    <PendingFeedbackStage
+      state={props.state}
+      indicatorVisible={checking ? props.indicatorVisible : true}
+      title={checking ? "Comprobando respuesta…" : "No hemos podido confirmar tu respuesta"}
+      description={checking ? "Espera un momento…" : props.errorMessage}
+      onRetry={props.state === "error" ? props.onRetry : undefined}
+    />
+  );
+}
+
+export function QuestionLoadingStage() {
+  return (
+    <PendingFeedbackStage
+      state="loading-question"
+      indicatorVisible
+      title="Cargando pregunta…"
+      description="Espera un momento…"
+    />
   );
 }

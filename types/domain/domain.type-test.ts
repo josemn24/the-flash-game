@@ -2,6 +2,7 @@ import type {
   AnswerStatus,
   Attempt,
   AttemptKind,
+  AttemptLifecycle,
   AttemptOutcome,
   AttemptStatus,
   ContentStatus,
@@ -59,7 +60,9 @@ type PublicationStatesAreExhaustive = Assert<
 type AttemptStatesAreExhaustive = Assert<
   IsEqual<AttemptStatus, "in_progress" | "completed" | "abandoned" | "invalidated">
 >;
-type AttemptOutcomesAreExhaustive = Assert<IsEqual<AttemptOutcome, "passed" | "failed" | null>>;
+type AttemptOutcomesAreExhaustive = Assert<
+  IsEqual<AttemptOutcome, "survived" | "eliminated" | "summit" | "failed" | null>
+>;
 type AnswerStatesAreExhaustive = Assert<
   IsEqual<AnswerStatus, "correct" | "partial" | "incorrect" | "unanswered" | "timeout">
 >;
@@ -90,3 +93,13 @@ export type DomainTypeAssertions =
   | AttemptOutcomesAreExhaustive
   | AnswerStatesAreExhaustive
   | AttemptKindsAreExhaustive;
+
+export type SurvivalHasOnlyOwnOutcomes = Assert<
+  IsEqual<
+    Extract<AttemptLifecycle, { challengeMode: "survival"; status: "completed" }>["outcome"],
+    "survived" | "eliminated"
+  >
+>;
+export type ActiveHasNoTerminalOutcome = Assert<
+  IsEqual<Extract<AttemptLifecycle, { status: "in_progress" }>["outcome"], null>
+>;

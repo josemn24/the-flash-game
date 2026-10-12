@@ -57,7 +57,10 @@ export const scenario = {
         reason: "Publicar contenido inicial S17",
       },
     });
-    assert(!published.error && published.data?.status === "published", "S17 publica la versión inicial");
+    assert(
+      !published.error && published.data?.status === "published",
+      "S17 publica la versión inicial",
+    );
 
     const revision = await clients.superadmin.rpc("create_superadmin_challenge_revision", {
       input: {
@@ -66,7 +69,10 @@ export const scenario = {
         reason: "Crear corrección S17",
       },
     });
-    assert(!revision.error && revision.data?.status === "draft", "S17 crea una corrección como borrador");
+    assert(
+      !revision.error && revision.data?.status === "draft",
+      "S17 crea una corrección como borrador",
+    );
     assert(revision.data?.versionNumber === 2, "La corrección S17 recibe la versión secuencial 2");
 
     const draftContext = await clients.superadmin.rpc("get_superadmin_challenge_detail", {
@@ -75,10 +81,14 @@ export const scenario = {
     const clonedDraft = draftContext.data?.entries?.find(
       (entry) => entry.challengeVersionId === revision.data.challengeVersionId,
     );
-    assert(clonedDraft?.document?.questions?.every((question) => question.source === "library"),
-      "El borrador clonado representa preguntas publicadas como referencias de biblioteca");
-    assert(!JSON.stringify(clonedDraft).includes("solutionPayload"),
-      "La lectura del borrador clonado no entrega soluciones privadas inline");
+    assert(
+      clonedDraft?.document?.questions?.every((question) => question.source === "library"),
+      "El borrador clonado representa preguntas publicadas como referencias de biblioteca",
+    );
+    assert(
+      !JSON.stringify(clonedDraft).includes("solutionPayload"),
+      "La lectura del borrador clonado no entrega soluciones privadas inline",
+    );
 
     const updatedDocument = {
       ...clonedDraft.document,
@@ -93,7 +103,10 @@ export const scenario = {
         reason: "Corregir título S17",
       },
     });
-    assert(!updated.error && updated.data?.title === "Flash S17 corregido", "S17 actualiza el borrador clonado");
+    assert(
+      !updated.error && updated.data?.title === "Flash S17 corregido",
+      "S17 actualiza el borrador clonado",
+    );
 
     const republished = await clients.superadmin.rpc("publish_superadmin_flash", {
       input: {
@@ -103,7 +116,10 @@ export const scenario = {
         reason: "Publicar corrección S17",
       },
     });
-    assert(!republished.error && republished.data?.status === "published", "S17 publica la corrección");
+    assert(
+      !republished.error && republished.data?.status === "published",
+      "S17 publica la corrección",
+    );
 
     const initialSchedule = await clients.superadmin.rpc("create_superadmin_scheduled_challenge", {
       input: {
@@ -116,18 +132,24 @@ export const scenario = {
         reason: "Programar versión inicial S17",
       },
     });
-    const correctedSchedule = await clients.superadmin.rpc("create_superadmin_scheduled_challenge", {
-      input: {
-        idempotencyKey: "integration-s17-schedule-2",
-        seasonId: fixture.data.seasonId,
-        challengeVersionId: revision.data.challengeVersionId,
-        number: 2,
-        opensAt: new Date(Date.now() + 86_400_000).toISOString(),
-        closesAt: new Date(Date.now() + 90_000_000).toISOString(),
-        reason: "Programar corrección S17",
+    const correctedSchedule = await clients.superadmin.rpc(
+      "create_superadmin_scheduled_challenge",
+      {
+        input: {
+          idempotencyKey: "integration-s17-schedule-2",
+          seasonId: fixture.data.seasonId,
+          challengeVersionId: revision.data.challengeVersionId,
+          number: 2,
+          opensAt: new Date(Date.now() + 86_400_000).toISOString(),
+          closesAt: new Date(Date.now() + 90_000_000).toISOString(),
+          reason: "Programar corrección S17",
+        },
       },
-    });
-    assert(!initialSchedule.error && !correctedSchedule.error, "S17 programa dos versiones distintas");
+    );
+    assert(
+      !initialSchedule.error && !correctedSchedule.error,
+      "S17 programa dos versiones distintas",
+    );
 
     const archived = await clients.superadmin.rpc("archive_superadmin_challenge_version", {
       input: {
@@ -137,23 +159,36 @@ export const scenario = {
         reason: "Archivar versión inicial S17",
       },
     });
-    assert(!archived.error && archived.data?.status === "archived", "S17 archiva solo la versión inicial");
+    assert(
+      !archived.error && archived.data?.status === "archived",
+      "S17 archiva solo la versión inicial",
+    );
 
     const comparison = await clients.superadmin.rpc("get_superadmin_challenge_version_comparison", {
       from_challenge_version_id: created.data.challengeVersionId,
       to_challenge_version_id: revision.data.challengeVersionId,
     });
-    assert(!comparison.error && comparison.data?.from?.status === "archived", "La comparación incluye la versión archivada");
-    assert(!JSON.stringify(comparison.data).includes("solutionPayload"), "La comparación no expone soluciones");
+    assert(
+      !comparison.error && comparison.data?.from?.status === "archived",
+      "La comparación incluye la versión archivada",
+    );
+    assert(
+      !JSON.stringify(comparison.data).includes("solutionPayload"),
+      "La comparación no expone soluciones",
+    );
 
     await dockerSql(
       "set role service_role; select private.run_calendar_tick_command(jsonb_build_object('runId','integration-s17-tick'));",
       config.dbContainer,
     );
-    const calendar = await rpc(clients.member, "get_room_calendar", { target_room_slug: fixture.data.roomSlug });
+    const calendar = await rpc(clients.member, "get_room_calendar", {
+      target_room_slug: fixture.data.roomSlug,
+    });
     assert(calendar.length === 2, "El calendario conserva las dos publicaciones históricas");
-    assert(calendar.some((entry) => entry.challenge_title === "Flash S17 integración"),
-      "La publicación antigua sigue resolviendo la versión archivada");
+    assert(
+      calendar.some((entry) => entry.challenge_title === "Flash S17 integración"),
+      "La publicación antigua sigue resolviendo la versión archivada",
+    );
     const initialChallenge = await rpc(clients.member, "get_my_flash_challenge", {
       target_room_slug: fixture.data.roomSlug,
       target_publication_id: initialSchedule.data.scheduledChallengeId,
@@ -173,10 +208,13 @@ export const scenario = {
     });
     assert(Boolean(rejectedSchedule.error), "Una nueva programación rechaza versiones archivadas");
 
-    const memberComparison = await clients.member.rpc("get_superadmin_challenge_version_comparison", {
-      from_challenge_version_id: created.data.challengeVersionId,
-      to_challenge_version_id: revision.data.challengeVersionId,
-    });
+    const memberComparison = await clients.member.rpc(
+      "get_superadmin_challenge_version_comparison",
+      {
+        from_challenge_version_id: created.data.challengeVersionId,
+        to_challenge_version_id: revision.data.challengeVersionId,
+      },
+    );
     assert(Boolean(memberComparison.error), "Un miembro no puede comparar versiones editoriales");
   },
 };

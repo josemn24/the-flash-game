@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Última actualización: 2026-09-23.
+Última actualización: 2026-10-11.
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -10,6 +10,10 @@ implementación. Cuando una regla aparece como **Recomendación**, debe consider
 comportamiento y no una decisión irreversible hasta confirmarla en `docs/decisions/decisions.md`.
 La política de recuperación de interacción iniciada que figura en este documento ya está confirmada
 por la decisión y ADR de 2026-09-15.
+
+Los cinco modos anteriores se describen en las secciones 1 a 5. La sección 6 describe Contrarreloj,
+implementado inicialmente para Queens. El modo existente se
+denomina únicamente **Flash**.
 
 La jerarquía documental aplicable es la descrita en [`README.md`](README.md): los ADR y las
 decisiones generales prevalecen sobre este documento; este documento prevalece sobre descripciones
@@ -28,11 +32,27 @@ Estas reglas se aplican a cualquier modo cuando se juega dentro de una sala:
 - Si un intento iniciado se abandona, pasa a `abandoned` y se proyecta como `notCompleted`. Es
   terminal: no se reanuda ni se repite.
 - `inProgress` significa reanudar el mismo intento, no empezar una nueva partida.
-- En el MVP solo la sesión que inició el intento puede reanudarlo. Un segundo navegador o dispositivo
-  se bloquea; no existe transferencia de control entre dispositivos.
-- Cerrar una pestaña, perder conectividad u observar `offline` no demuestra que el jugador haya
-  abandonado. Solo la acción explícita e idempotente de abandonar termina el intento como
-  `abandoned`; el abandono automático queda para una política posterior de actividad.
+- La [pérdida del permiso competitivo](../../decisions/decisions.md#20-pérdida-del-permiso-para-jugar)
+  bloquea nuevas acciones y cierra el intento como `abandoned`/`notCompleted`, con motivo separado
+  del abandono voluntario y sin acreditar puntos. Conserva hechos aceptados y resultados anteriores;
+  reincorporarse no reabre el intento. Esta regla común también se aplica a los modos cuyo contrato
+  menciona el abandono explícito; el cierre se realiza server-side con motivo
+  `permission_revoked` y conserva solo la proyección terminal segura.
+- La [política de guardado aprobada](../../decisions/decisions.md#19-guardado-automático-y-recuperación-de-partidas)
+  conserva en el servidor respuestas aceptadas, puntos, progreso y tiempos. Las respuestas sin
+  enviar permanecen solo en memoria y no se restauran al recargar; los checkpoints y eventos
+  enviados y aceptados por el modo sí forman parte del progreso recuperable.
+- La [decisión aprobada de transferencia](../../decisions/adr/0006-explicit-attempt-control-transfer.md)
+  permite a la misma cuenta confirmar «Continuar aquí» en otro dispositivo: revoca atómicamente la
+  sesión anterior y recupera el mismo intento, sin reiniciar plazos ni repetir preguntas vistas.
+  La UI confirma la transferencia mediante el endpoint de takeover; el runtime recupera el mismo
+  intento sin volver a iniciar ni reiniciar plazos.
+- Cerrar una pestaña, perder conectividad u observar `offline` no demuestra por sí solo que el jugador
+  haya abandonado. La acción explícita e idempotente de abandonar sigue terminando el intento como
+  `abandoned`; además, una reconciliación server-side puede aplicar `inactivity_timeout` cuando han
+  pasado 15 minutos desde `last_activity_at` (o `started_at`) y la publicación está cerrada o su
+  `deadline_at` ha vencido. Mientras el desafío siga abierto y vigente, la inactividad no termina el
+  intento.
 - `invalidated` queda fuera del ranking y de la acreditación competitiva. La revisión visible de un
   intento invalidado requiere una decisión administrativa específica y nunca es la consecuencia de
   recuperar una interrupción.
@@ -51,8 +71,9 @@ Cada contrato debe distinguir tres relojes:
    producir `unanswered`.
 2. **Ventana de publicación:** determina si el desafío está disponible o `expired` antes de crear
    un intento.
-3. **Actividad del intento:** checkpoints y heartbeat que permiten detectar abandono. El abandono
-   automático todavía no está implementado; los eventos del navegador son solo avisos auxiliares.
+3. **Actividad del intento:** los comandos server-side actualizan `last_activity_at`. La reconciliación
+   de inactividad se ejecuta en el tick diario y bajo demanda al leer historial o procesar un comando;
+   no depende de un heartbeat del navegador.
 
 No se recomienda añadir un tiempo total común a todos los modos sin que el contenido del modo lo
 requiera. Si existe, debe documentarse aparte del tiempo de respuesta.
@@ -91,6 +112,10 @@ Si los tres valores coinciden, se comparte posición con ranking de competición
 absoluta de finalización (`completedAt`) y métricas como `lastCorrectAt` siguen disponibles para
 historial y análisis, pero no son criterios competitivos. El ranking de temporada solo usa Flash
 Points acumulados.
+
+Contrarreloj tiene un comparador específico: pruebas resueltas y tiempo global hasta el último
+acierto. La [decisión del modo](../../decisions/decisions.md#21-contrarreloj-reglas-acordadas)
+no cambia el comparador de los cinco modos actuales ni el ranking de temporada.
 
 ## 1. Flash (`flash`)
 
@@ -159,6 +184,16 @@ El reducer ya distingue vueltas, letras pasadas, aciertos, errores y respuestas 
 calcula `lastCorrectAt`. El componente independiente conserva replay; el shell competitivo debe
 seguir aplicando la política de `roomContext`.
 
+El cierre competitivo por tiempo utiliza una única petición `complete`. El servidor verifica el
+deadline con PostgreSQL, evalúa cualquier recepción pendiente antes de la transacción final y
+registra todas las letras restantes con respuesta nula, cero puntos y `unanswered`. Conserva las
+respuestas y tiempos persistidos y no crea visitas para letras nunca presentadas. La recuperación
+tras el deadline utiliza la misma operación y devuelve todas las respuestas finales.
+La fase «Finalizando partida…» espera las respuestas o pases en curso y bloquea acciones nuevas.
+El cierre tiene tres reintentos automáticos adicionales: 1, 2 y 4 segundos para red/5xx; para 429
+o un deadline aún no alcanzado respeta `Retry-After`, con un mínimo de un segundo. Un conflicto de
+versión reconcilia el intento antes de crear un nuevo comando de cierre.
+
 ## 3. Supervivencia (`survival`)
 
 ### Contrato recomendado
@@ -181,10 +216,10 @@ seguir aplicando la política de `roomContext`.
   mecánica o al llegar al final.
 - **Recuperación y abandono:** una pregunta temporizada activa sin recepción se registra
   `unanswered` y aplica la pérdida normal de vida. Si se agotan las vidas, el intento se completa
-  con el feedback interno de eliminación; si no, avanza. Abandonar explícitamente es la única salida
-  que marca `abandoned`.
+  con el feedback interno de eliminación; si no, avanza. Abandonar explícitamente marca `abandoned`;
+  también se aplica el cierre común por pérdida del permiso competitivo.
 - **Checkpoint recomendado:** índice de pregunta, resultados, vidas restantes, errores, estado de
-  eliminación, intentos de código, borrador, pistas reveladas, deadline actual y transición
+  eliminación, intentos de código aceptados, pistas reveladas, deadline actual y transición
   pendiente. La vida no debe recalcularse solo desde datos enviados por el cliente.
 - **Resultado y revisión:** mostrar Flash Points, preguntas alcanzadas, vidas restantes y desglose.
   Tras un intento iniciado se permiten las respuestas propias y correctas; durante la partida solo
@@ -197,8 +232,9 @@ seguir aplicando la política de `roomContext`.
 `ServerFlashPopSurvivalGame` reutiliza la pantalla de supervivencia y conecta el intento persistido
 mediante `useServerFlashSession`; `survivalRules.ts` reconstruye vidas, outcome y preguntas
 alcanzadas a partir de evaluaciones persistidas. El servidor cierra el intento y acredita el score.
-La recuperación evalúa como `unanswered` una interacción abierta sin respuesta. El abandono sigue
-siendo explícito; su automatización continúa pendiente.
+La recuperación evalúa como `unanswered` una interacción abierta sin respuesta. El abandono explícito
+sigue disponible; la reconciliación adicional cierra como `abandoned` los intentos inactivos elegibles,
+sin puntos, con `terminal_reason = inactivity_timeout`.
 
 ## 4. Narrativa (`narrative`)
 
@@ -213,7 +249,7 @@ siendo explícito; su automatización continúa pendiente.
 - **Finalización:** después del último paso de la secuencia, incluido el epílogo cuando exista, el
   flujo pasa a resultados. El intento queda `completed` aunque no haya aciertos.
 - **Estado global:** `inProgress` durante escenas, preguntas y transiciones; `completed` al terminar
-  la secuencia; `abandoned` solo por abandono explícito.
+  la secuencia; `abandoned` por abandono explícito o por pérdida del permiso competitivo.
   Reacciones como `correct`, `incorrect` o `timeout` son feedback narrativo interno.
 - **Recuperación y abandono:** una pregunta temporizada activa sin recepción se registra
   `unanswered`, muestra la reacción de timeout si la narrativa la define y continúa al siguiente
@@ -228,12 +264,18 @@ siendo explícito; su automatización continúa pendiente.
 - **Ranking:** aplica el comparador común de ranking por desafío.
 - **Replay:** permitido en preview; oculto en competición con `roomContext`.
 
-### Observación de implementación
+### Implementación competitiva actual
 
-`useNarrativeSession` ya conserva la secuencia, escenas, respuestas, timeout y fases de resultado y
-revisión. El snapshot actual no conserva todos los borradores y referencias temporales del formato;
-la siguiente implementación de checkpoints debe completarlo antes de prometer recuperación completa
-con la sesión original.
+La práctica y el preview siguen usando `useNarrativeSession` y el modelo completo local. En una sala
+competitiva, `SupabaseNarrativeQueries` devuelve únicamente la proyección pública de escenas, beats y
+metadatos de preguntas. `useServerNarrativeSession` libera cada payload con `prepare`, envía respuestas
+al comando genérico y completa el intento con el mismo contrato que Flash. Las soluciones solo llegan
+en la revisión terminal autorizada.
+
+La recuperación devuelve un cursor narrativo con la pregunta abierta o la siguiente pregunta no
+resuelta. Si la recarga ocurre durante una escena, el cliente reconstruye la última escena pública
+anterior a esa pregunta; no se crea un endpoint específico para avanzar escenas ni se persiste un
+segundo log narrativo.
 
 ## 5. La Pirámide (`pyramid`)
 
@@ -250,14 +292,21 @@ con la sesión original.
 - **Finalización:** hay dos resultados internos: `summit` cuando se completan correctamente los
   siete niveles y `failed` cuando se falla un nivel que termina el modo. Ambos producen
   `completed`; `failed` nunca se proyecta como `notCompleted`.
+- **Queens competitivo:** cada prueba permite tres validaciones completas incorrectas. Al completar
+  `N` coronas, incluidas las pistas fijas, el tablero se valida automáticamente y se bloquea hasta
+  confirmar. Los dos primeros fallos permiten seguir editando; el tercero cierra Queens como
+  `incorrect`, con cero puntos y motivo `attempts_exhausted`, y termina el ascenso como `failed`
+  conservando los puntos anteriores. Acertar en la tercera oportunidad supera el nivel. El límite
+  es fijo; los borradores, entradas inválidas y reintentos idempotentes no consumen oportunidades.
 - **Estado global:** `inProgress` mientras el jugador está en briefing o resolviendo un nivel;
-  `completed` después de cima o fallo de nivel; `abandoned` solo por abandono explícito.
+  `completed` después de cima o fallo de nivel; `abandoned` por abandono explícito o por pérdida
+  del permiso competitivo.
 - **Recuperación y abandono:** un briefing previo al inicio del temporizador se reanuda. Si el nivel
   temporizado ya se preparó y no existe recepción, se registra como `unanswered`, no se supera y La
   Pirámide termina con resultado interno `failed` y estado global `completed`; no hay vuelta a ese
   nivel. Abandonar explícitamente marca `abandoned`.
 - **Checkpoint recomendado:** reutilizar `PyramidAttemptRecord`: nivel actual, resultados,
-  borrador, códigos enviados, intentos incorrectos, pistas reveladas, `levelStartedAt`, deadline,
+  códigos enviados y aceptados, intentos incorrectos, pistas reveladas, `levelStartedAt`, deadline,
   fase y versión del contenido. Al finalizar, el snapshot deja de ser reanudable.
 - **Resultado y feedback:** mostrar Flash Points y niveles alcanzados. “Cima conquistada” se reserva
   para `summit`; “Ascenso terminado” describe `failed` sin convertirlo en un fallo global. Tras un
@@ -274,9 +323,33 @@ nivel obtiene solo su pregunta preparada. Las unidades temporales usan scope `le
 guarda recibos y evaluaciones, deriva los niveles superados, `summit`/`failed`, el score y el cierre,
 y no permite preparar después de una respuesta no correcta. La recuperación en briefing reanuda sin
 iniciar reloj; si se interrumpe un nivel temporizado lo resuelve como `unanswered` y finaliza el
-intento. El propietario puede leer el resultado terminal y la revisión de niveles alcanzados. El
+intento. Los roles autorizados pueden leer el resultado terminal y la revisión; la revisión histórica
+muestra los siete niveles y bloquea los no alcanzados sin payload. El
 editor/calendario y rankings existentes incluyen `pyramid`; no se añaden tablas. La migración,
 pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se validó despliegue remoto.
+
+## 6. Contrarreloj
+
+- **Identificador y contenido:** `time-trial`; 2–20 Queens 4×4 a 8×8 en orden fijo creciente.
+- **Duración:** segundos enteros positivos obligatorios, sin default. La primera preparación posterior
+  a la cuenta atrás fija el deadline una sola vez; intro y cuenta atrás no crean intento.
+  Todas las pruebas comparten reloj, incluidas validaciones, cargas y transiciones de 1,1 segundos.
+- **Puntuación:** pesos enteros positivos que suman 100; acierto completo sin bonus, parcial ni penalización.
+- **Oportunidades:** dos validaciones completas incorrectas permiten continuar; la tercera termina.
+  Movimientos exploratorios y solicitudes inválidas no consumen oportunidades.
+- **Finalización:** `completed`, `outcome = null`; `all_solved`, `validation_limit`, `time_limit` o
+  `recovery_interrupted`. Conservar puntos previos; conciliar recepciones aceptadas antes de cerrar.
+  Una recepción debe ocurrir después de bloqueos y estrictamente antes del deadline.
+- **Ranking:** más pruebas resueltas y menor tiempo global hasta último acierto. Empates `1,1,3`;
+  cero aciertos empatados sin tiempo inventado. Temporada conserva Flash Points acumulados.
+- **Recuperación:** conciliar recepción existente primero; una prueba activa sin recepción termina
+  sin respuesta ni replay. Con deadline vencido prevalece `time_limit`. Transferencia conserva reglas.
+- **Revisión:** pruebas alcanzadas con revisión autorizada; las no alcanzadas solo metadatos.
+- **Abandono y permisos:** contrato común, sin acreditación.
+
+La [especificación E2E](contrarreloj.md) y la [guía editorial](../../content/guidelines/contrarreloj.md)
+desarrollan el contrato aprobado. CT-01 a CT-05 están cerradas para Queens; nuevos formatos requieren
+su propia verificación.
 
 ## Matriz de estados y consulta
 
@@ -291,7 +364,8 @@ pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se va
 
 ## Pendientes que no debe resolver este documento
 
-- Definir el intervalo de heartbeat, lease y periodo de gracia para abandono automático.
+- La UI puede mejorar la señalización previa a la expiración, pero no necesita heartbeat ni lease para
+  aplicar la política server-side de 15 minutos después del cierre o deadline.
 - Implementar persistencia y validación autoritativa de checkpoints, deadlines, respuestas y puntos,
   incluida la resolución transaccional de recuperación aquí definida.
 - Resolver la política de consulta para intentos `invalidated`.

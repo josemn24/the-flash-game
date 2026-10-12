@@ -37,11 +37,31 @@ export const scenario = {
             question: "Intercambia las letras amarillas para completar las cuatro palabras.",
             grid: { rows: 5, columns: 5 },
             initialLetters: [
-              null, "G", null, "Q", null,
-              "E", "O", "P", "U", "I",
-              null, "N", null, "Y", null,
-              "R", "A", "U", "M", "E",
-              null, "R", null, "A", null,
+              null,
+              "G",
+              null,
+              "Q",
+              null,
+              "E",
+              "O",
+              "P",
+              "U",
+              "I",
+              null,
+              "N",
+              null,
+              "Y",
+              null,
+              "R",
+              "A",
+              "U",
+              "M",
+              "E",
+              null,
+              "R",
+              null,
+              "A",
+              null,
             ],
             maxMoves: 7,
           },
@@ -59,13 +79,19 @@ export const scenario = {
         reason: "F19",
       },
     });
-    assert(!created.error && created.data?.questionCount === 2, "El portal crea un Flash editorial F19");
+    assert(
+      !created.error && created.data?.questionCount === 2,
+      "El portal crea un Flash editorial F19",
+    );
 
     const context = await clients.superadmin.rpc("get_superadmin_editorial_context");
     const draft = context.data?.entries?.find(
       (entry) => entry.challengeVersionId === created.data?.challengeVersionId,
     );
-    assert(draft?.document?.questions?.[1]?.type === "word-hashtag", "La biblioteca conserva word-hashtag");
+    assert(
+      draft?.document?.questions?.[1]?.type === "word-hashtag",
+      "La biblioteca conserva word-hashtag",
+    );
     assert(
       draft?.document?.questions?.[1]?.solutionPayload?.words?.top === "YOGUI",
       "La solución privada de F19 se conserva en la biblioteca",
@@ -86,7 +112,10 @@ export const scenario = {
         reason: "Publicar F19",
       },
     });
-    assert(!published.error && published.data?.status === "published", "El portal publica el Flash F19");
+    assert(
+      !published.error && published.data?.status === "published",
+      "El portal publica el Flash F19",
+    );
 
     const playable = await rpc(clients.alice, "get_my_flash_challenge", {
       target_room_slug: fixture.data.room.slug,

@@ -5,10 +5,10 @@
     height: 44px;
     padding: 0;
     place-items: center;
-    border: 1px solid var(--color-line);
+    border: 1px solid var(--ds-color-border-default);
     border-radius: 50%;
     background: rgb(255 255 255 / 76%);
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     box-shadow: var(--shadow-control);
     cursor: pointer;
     text-decoration: none;
@@ -20,7 +20,7 @@
   }
 
   .backControl:hover:not(:disabled) {
-    background: var(--color-surface);
+    background: var(--ds-color-bg-surface);
     transform: translateY(-1px);
   }
 
@@ -31,13 +31,13 @@
   }
 
   .backControl:focus-visible {
-    outline: 3px solid var(--color-brand);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 3px;
   }
 
   .backControl:disabled {
     cursor: not-allowed;
-    opacity: var(--color-disabled-opacity);
+    opacity: var(--ds-opacity-disabled);
     box-shadow: none;
   }
 

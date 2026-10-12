@@ -1,3 +1,4 @@
+import { loseGameplayConfirmations } from "./support/lost-confirmations";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -56,20 +57,17 @@ test.describe("S14 — supervivencia competitiva", () => {
       questions: [
         {
           slug: `${questionSlugSuffix}-q1`,
-          type: "multiple-choice",
+          type: "short-text",
           payloadSchemaVersion: 1,
           timeLimitMs: 15000,
           points: 50,
           publicPayload: {
-            category: "Cultura",
-            tags: {},
             question: "¿Cuál es la capital de Portugal?",
-            options: ["Lisboa", "Oporto"],
-            media: null,
-            promptVisual: null,
+            answerPlaceholder: "Ciudad",
           },
           solutionPayload: {
             correctAnswer: "Lisboa",
+            acceptedAnswers: ["Lisboa"],
             explanation: "Lisboa es la capital de Portugal.",
           },
         },
@@ -148,6 +146,7 @@ test.describe("S14 — supervivencia competitiva", () => {
 
     const memberContext = await browser.newContext();
     const member = await memberContext.newPage();
+    const verifyConfirmations = await loseGameplayConfirmations(member);
     const spectatorContext = await browser.newContext();
     const spectator = await spectatorContext.newPage();
     try {
@@ -158,10 +157,13 @@ test.describe("S14 — supervivencia competitiva", () => {
       const playableUrl = member.url();
       await expect(member.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
       await member.getByRole("button", { name: "Empezar desafío" }).click();
-      await expect(member.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+      await expect(member.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+        timeout: 15_000,
+      });
       await expect(member.getByLabel("1 de 1 vidas")).toBeVisible();
       expect(await member.content()).not.toContain("Lisboa es la capital de Portugal.");
-      await member.getByRole("button", { name: "Lisboa" }).click();
+      await member.getByLabel("Escribe tu respuesta").fill("Lisboa");
+      await member.getByRole("button", { name: "Enviar respuesta" }).click();
       await expect(member.getByRole("heading", { name: /planeta rojo/ })).toBeVisible({
         timeout: 15_000,
       });
@@ -176,6 +178,7 @@ test.describe("S14 — supervivencia competitiva", () => {
       await member.reload();
       await expect(member.getByText("Sin vidas", { exact: true })).toBeVisible();
       await member.getByRole("button", { name: "Ver respuestas" }).click();
+      await member.locator("details").first().locator("summary").click();
       await expect(member.getByText("Lisboa es la capital de Portugal.")).toBeVisible();
       await member.locator("details").nth(1).locator("summary").click();
       await expect(member.getByText("Marte es conocido como el planeta rojo.")).toBeVisible();
@@ -189,6 +192,7 @@ test.describe("S14 — supervivencia competitiva", () => {
       await member.goto(`/salas/${data.data.e2eRoomSlug}/ranking`);
       await expect(member.getByText("Member S14")).toBeVisible();
       await expect(member.getByRole("img", { name: `${score} Flash Points` })).toBeVisible();
+      await verifyConfirmations();
     } finally {
       await memberContext.close();
       await spectatorContext.close();

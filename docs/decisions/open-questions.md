@@ -33,37 +33,26 @@ Cada modo debe declarar explícitamente:
 7. Qué intento se acredita si admite varios; el valor predeterminado es el mejor.
 8. Qué checkpoints adicionales necesita para reanudarse sin permitir repetir contenido; la regla
    ya cerrada consume toda interacción preparada y aplica la recuperación por modo documentada.
-9. Qué estado parcial debe persistirse en el servidor.
+9. Qué checkpoints de progreso adicionales necesita cada modo. La sección 19 de
+   [`decisions.md`](decisions.md) ya establece que respuestas aceptadas, puntos, progreso y tiempos
+   se guardan en el servidor; las respuestas sin enviar no se persisten ni restauran.
 10. Qué feedback puede mostrarse después de cada respuesta.
 11. Cuándo puede mostrarse la solución completa.
 12. Qué eventos intermedios deben conservarse para evaluación o auditoría.
 
-## Operación y políticas pendientes
+## Contrarreloj: decisiones pendientes
 
-- Duración exacta y número de usos de las invitaciones.
-- Periodo de recuperación antes de purgar una sala eliminada.
-- Periodo de conservación de eventos técnicos y datos antifraude.
-- Procedimiento concreto para conceder y retirar el rol global `superadmin`.
-- Interfaz y flujo de auditoría para correcciones de puntuación.
-- Límites de frecuencia por operación competitiva.
-- Política posterior al MVP para una transferencia voluntaria de control entre dispositivos. El MVP
-  bloquea la segunda sesión y no ofrece takeover.
-- Intervalo del heartbeat, duración del lease y periodo de gracia para confirmar un abandono por
-  cierre de pestaña, pérdida de conexión o ausencia de actividad.
-- Momento en que un antiguo miembro deja de aparecer en listados no históricos.
-- Criterios para materializar rankings si el cálculo dinámico deja de ser suficiente.
-- Política de moderación para nombres visibles y avatares.
-- Requisitos legales definitivos de exportación, anonimización y eliminación de datos.
+CT-01 a CT-05 están cerradas el 2026-10-11 para la primera versión Queens. Se conserva este
+encabezado para los enlaces históricos. Las [decisiones normativas](decisions.md#21-contrarreloj-reglas-acordadas)
+y la [especificación implementada](../current/domain/contrarreloj.md) contienen el detalle.
 
-## Fuera del alcance inicial
+| ID    | Resolución vigente                                                                                                |
+| ----- | ----------------------------------------------------------------------------------------------------------------- |
+| CT-01 | Pesos editoriales enteros positivos con suma 100; acierto completo, sin parcial, bonus ni penalización.           |
+| CT-02 | Queens: dos validaciones completas incorrectas permiten continuar; la tercera termina.                            |
+| CT-03 | 2–20 pruebas, Queens 4×4–8×8; segundos enteros positivos obligatorios, sin default.                               |
+| CT-04 | Primera preparación inicia reloj; esperas sin compensación; recuperación activa sin recepción termina sin replay. |
+| CT-05 | Recepción BD después de bloqueos, estrictamente antes del deadline; conciliación previa a cierre.                 |
 
-- Invitados o jugadores sin cuenta.
-- Perfiles distintos por sala.
-- Salas públicas.
-- Equipos y juego cooperativo.
-- Partidas sincronizadas en tiempo real.
-- Transferencia de control de un intento entre dispositivos durante el MVP.
-- Ranking global entre salas.
-- Internacionalización del contenido.
-- Monetización o recompensas distintas de Flash Points.
-- Feed social completo y notificaciones.
+Sigue pendiente habilitar otros formatos y calibrar contenido real en staging. Los fixtures técnicos
+no son una secuencia editorial validada para publicación real.

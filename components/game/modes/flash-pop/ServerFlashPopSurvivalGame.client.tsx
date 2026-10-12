@@ -1,10 +1,12 @@
 "use client";
 
+import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
+
 import { motion } from "motion/react";
 import {
   ReviewStage,
   Transition,
-} from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
+} from "@/components/game/modes/flash-pop/FlashPopCompetitiveHelpers";
 import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
 import { FlashPopGameShell } from "@/components/game/modes/flash-pop/FlashPopGameShell";
 import { ChallengeIntro, ChallengeResultScreen } from "@/components/game/shared";
@@ -16,12 +18,13 @@ import {
   getAnswerResultAccuracyUnit,
 } from "@/features/game/resultSummary";
 import { useServerFlashSession } from "@/features/game/useServerFlashSession";
-import type { AnswerResult, GameRoomContext } from "@/types/game";
+import type { AnswerResult } from "@/types/gameplay";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type {
   ServerFlashTerminalReview,
   ServerSurvivalChallenge,
 } from "@/types/gameplay/challenge";
-import type { SurvivalProgress } from "@/features/game/survivalRules";
+import type { SurvivalProgress } from "@/lib/gameplay/survivalProgress";
 import styles from "./FlashPopFlashGame.module.css";
 
 function getSurvivalResultModel(
@@ -90,7 +93,16 @@ export function ServerFlashPopSurvivalGame({
     : null;
 
   return (
-    <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"}>
+    <FlashPopGameShell
+      notice={
+        <CompetitiveLifecycleNotice
+          error={session.lifecycleError}
+          busy={session.busy}
+          onRetry={session.retryLifecycle}
+        />
+      }
+      layout={session.phase === "intro" ? "intro" : "game"}
+    >
       {session.phase === "intro" ? (
         <motion.div
           key="intro"
@@ -108,6 +120,15 @@ export function ServerFlashPopSurvivalGame({
             onStart={session.begin}
             canStart
             notice={session.startNotice}
+            transfer={
+              session.transfer
+                ? {
+                    busy: session.busy,
+                    onConfirm: session.takeOver,
+                    onCancel: session.cancelTakeOver,
+                  }
+                : undefined
+            }
             returnTo={roomContext.returnTo}
           />
         </motion.div>
@@ -215,7 +236,8 @@ export function ServerFlashPopSurvivalGame({
         >
           <ChallengeResultScreen
             model={resultModel}
-            onReview={() => session.reviewChallenge && session.showReview()}
+            onReview={session.reviewChallenge ? session.showReview : undefined}
+            expired={session.attemptExpired}
             returnTo={roomContext.returnTo}
             returnLabel="Volver a la sala"
           />
@@ -235,6 +257,7 @@ export function ServerFlashPopSurvivalGame({
             returnTo={roomContext.returnTo}
             roomContext={roomContext}
             presentation="survival"
+            totalQuestionCount={challenge.slots.length}
           />
         </motion.div>
       ) : null}

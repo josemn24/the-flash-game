@@ -1,9 +1,9 @@
+import type { ChallengeCompletion } from "@/types/gameplay";
 import type {
-  ChallengeCompletion,
   RoomDailyLeaderboardEntry,
   RoomDetailModel,
   RoomMemberDetailModel,
-} from "@/types/game";
+} from "@/types/view-models/room";
 import { rankChallengeEntries } from "@/lib/challengeRanking";
 
 function rankSeasonEntries<T extends { memberId: string; flashPoints: number }>(entries: T[]) {

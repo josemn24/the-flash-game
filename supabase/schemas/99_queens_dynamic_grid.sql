@@ -183,12 +183,16 @@ declare
   completed_columns integer;
   completed_regions integer;
   solved boolean;
+  incorrect_validations integer;
+  max_incorrect_validations integer;
 begin
-  select q.public_payload->'regions', (q.public_payload->'grid'->>'rows')::integer, a.progress_payload
-    into regions, board_size, draft
+  select q.public_payload->'regions', (q.public_payload->'grid'->>'rows')::integer, a.progress_payload,
+    case when cv.mode in ('pyramid', 'time-trial') then 3 else null end
+    into regions, board_size, draft, max_incorrect_validations
   from public.attempts a
   join private.challenge_items i on i.id = target_item
   join private.question_versions q on q.id = i.question_version_id
+  join private.challenge_versions cv on cv.id = a.challenge_version_id
   where a.id = target_attempt;
 
   if jsonb_typeof(draft) = 'object'
@@ -240,8 +244,14 @@ begin
     and completed_regions = board_size
     and conflicting_queens = 0;
 
+  select count(*)::integer into incorrect_validations
+  from private.queens_validation_events e
+  where e.attempt_id = target_attempt and e.challenge_item_id = target_item and not e.correct;
+
   return jsonb_build_object(
     'kind', 'queens',
+    'incorrectValidations', incorrect_validations,
+    'maxIncorrectValidations', max_incorrect_validations,
     'queens', to_jsonb(queens),
     'placedQueens', coalesce(array_length(queens, 1), 0),
     'completedRows', completed_rows,
@@ -303,6 +313,7 @@ begin
   if found and (cached.operation <> 'save_queens_draft' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -312,12 +323,19 @@ begin
   end if;
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or session_row.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
   if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
     raise exception 'interaction_not_presented' using errcode = '55000';
+  end if;
+  instant := clock_timestamp();
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial') and instant >= a.deadline_at then
+    raise exception 'deadline_reached' using errcode = '55000';
   end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
   select * into question from private.question_versions where id = item.question_version_id;
@@ -343,7 +361,7 @@ begin
     select distinct cell from unnest(prefilled) cell
   ) cells;
   if coalesce(array_length(normalized, 1), 0) > board_size then
-    raise exception 'invalid_queens_answer' using errcode = '22023';
+    raise exception 'queens_answer_overflow' using errcode = '22023';
   end if;
   update public.attempts
     set progress_payload = jsonb_build_object('kind', 'queens', 'challengeItemId', item.id, 'queens', to_jsonb(normalized)),
@@ -355,7 +373,9 @@ begin
     'queens', progress->'queens', 'placedQueens', progress->'placedQueens',
     'completedRows', progress->'completedRows', 'completedColumns', progress->'completedColumns',
     'completedRegions', progress->'completedRegions', 'conflictingQueens', progress->'conflictingQueens',
-    'solved', progress->'solved');
+    'solved', progress->'solved',
+    'incorrectValidations', progress->'incorrectValidations',
+    'maxIncorrectValidations', progress->'maxIncorrectValidations');
   insert into private.audit_log(actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
     values(actor, 'save_queens_draft', 'attempt', a.id, key,
       jsonb_build_object('lockVersion', expected), result);
@@ -393,9 +413,11 @@ declare
   cell_count integer;
   progress jsonb;
   correct boolean;
+  terminal boolean;
   sequence_no integer;
   incorrect_attempts integer;
   penalty_points integer;
+  challenge_mode text;
   result jsonb;
 begin
   if jsonb_typeof(input) is distinct from 'object'
@@ -426,6 +448,7 @@ begin
   if found and (cached.operation <> 'submit_queens_answer' or cached.input <> safe_input) then
     raise exception 'idempotency_conflict' using errcode = '40001';
   end if;
+  perform private.authorize_attempt_replay((input->>'attemptId')::uuid, safe_input->>'sessionToken');
   if cached.result is not null then return cached.result; end if;
 
   select * into a from public.attempts where id = (input->>'attemptId')::uuid for update;
@@ -435,15 +458,23 @@ begin
   end if;
   select * into session_row from private.attempt_sessions
     where attempt_id = a.id and session_token_hash = safe_input->>'sessionToken';
-  if not found or session_row.revoked_at is not null then raise exception 'session_revoked' using errcode = '42501'; end if;
+  if not found or session_row.revoked_at is not null then
+    perform private.raise_if_session_transferred(a.id, safe_input->>'sessionToken');
+    raise exception 'session_revoked' using errcode = '42501';
+  end if;
   expected := (input->>'lockVersion')::bigint;
   if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
   if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
     raise exception 'interaction_not_presented' using errcode = '55000';
   end if;
+  instant := clock_timestamp();
   select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
   if instant >= unit.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
+  instant := clock_timestamp();
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial') and instant >= a.deadline_at then
+    raise exception 'deadline_reached' using errcode = '55000';
+  end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
   select * into question from private.question_versions where id = item.question_version_id;
   if question.type <> 'queens' or question.payload_schema_version <> 1 then
@@ -455,7 +486,10 @@ begin
     raise exception 'unsupported_question' using errcode = '22023';
   end if;
   cell_count := board_size * board_size;
-  if coalesce(array_length(candidate, 1), 0) <> board_size then
+  if coalesce(array_length(candidate, 1), 0) > board_size then
+    raise exception 'queens_answer_overflow' using errcode = '22023';
+  end if;
+  if coalesce(array_length(candidate, 1), 0) < board_size then
     raise exception 'queens_answer_incomplete' using errcode = '22023';
   end if;
   if exists (select 1 from unnest(candidate) cell where cell not between 0 and cell_count - 1) then
@@ -470,7 +504,10 @@ begin
     union
     select distinct cell from unnest(prefilled) cell
   ) cells;
-  if coalesce(array_length(normalized, 1), 0) <> board_size then
+  if coalesce(array_length(normalized, 1), 0) > board_size then
+    raise exception 'queens_answer_overflow' using errcode = '22023';
+  end if;
+  if coalesce(array_length(normalized, 1), 0) < board_size then
     raise exception 'queens_answer_incomplete' using errcode = '22023';
   end if;
   select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
@@ -491,15 +528,19 @@ begin
     where attempt_id = a.id and challenge_item_id = item.id;
   select coalesce(max(e.sequence), 0) + 1 into sequence_no
     from private.queens_validation_events e where e.attempt_id = a.id and e.challenge_item_id = item.id;
-  penalty_points := case when correct then 0 else round(item.points * 0.05)::integer end;
+  select mode into challenge_mode from private.challenge_versions where id = a.challenge_version_id;
+  penalty_points := case when correct or challenge_mode = 'time-trial' then 0 else round(item.points * 0.05)::integer end;
   insert into private.queens_validation_events(
     attempt_id, challenge_item_id, challenge_version_id, sequence, queens, correct,
     conflicting_queens, penalty_applied, penalty_points, received_at, presented_at, time_used_ms, idempotency_key)
   values(a.id, item.id, a.challenge_version_id, sequence_no, normalized, correct,
-    (progress->>'conflictingQueens')::integer, not correct, penalty_points,
+    (progress->>'conflictingQueens')::integer, not correct and challenge_mode <> 'time-trial', penalty_points,
     instant, presented, used_ms, key)
   returning * into validation;
-  if correct then
+  progress := private.queens_progress(a.id, item.id);
+  incorrect_attempts := (progress->>'incorrectValidations')::integer;
+  terminal := correct or coalesce(incorrect_attempts >= (progress->>'maxIncorrectValidations')::integer, false);
+  if terminal then
     update private.interaction_intervals set ended_at = effective, end_reason = 'answer' where id = segment.id;
     insert into private.answer_receipts(
       attempt_id, challenge_item_id, challenge_version_id, answer, received_at,
@@ -507,19 +548,19 @@ begin
     values(a.id, item.id, a.challenge_version_id, private.queens_answer(a.id, item.id), instant,
       presented, effective, used_ms, false, null) returning * into receipt;
   end if;
-  select count(*)::integer into incorrect_attempts
-    from private.queens_validation_events e
-    where e.attempt_id = a.id and e.challenge_item_id = item.id and not e.correct;
   update public.attempts set lock_version = lock_version + 1, last_activity_at = instant
     where id = a.id returning * into a;
   result := jsonb_build_object(
     'attemptId', a.id, 'challengeItemId', item.id, 'lockVersion', a.lock_version,
-    'correct', correct, 'terminal', correct, 'queens', progress->'queens',
+    'correct', correct, 'terminal', terminal, 'queens', progress->'queens',
     'placedQueens', progress->'placedQueens', 'completedRows', progress->'completedRows',
     'completedColumns', progress->'completedColumns', 'completedRegions', progress->'completedRegions',
     'conflictingQueens', progress->'conflictingQueens', 'solved', progress->'solved',
-    'incorrectAttempts', incorrect_attempts);
-  if correct then result := result || jsonb_build_object('receiptId', receipt.id, 'timeUsedMs', used_ms); end if;
+    'incorrectAttempts', incorrect_attempts,
+    'incorrectValidations', incorrect_attempts,
+    'maxIncorrectValidations', progress->'maxIncorrectValidations');
+  if terminal then result := result || jsonb_build_object('receiptId', receipt.id, 'timeUsedMs', used_ms); end if;
+  if challenge_mode = 'time-trial' then result := result || jsonb_build_object('timeTrial', private.time_trial_progress(a.id)); end if;
   insert into private.audit_log(actor_player_id, action, entity_type, entity_id, request_id, before_payload, after_payload)
     values(actor, 'submit_queens_answer', 'attempt', a.id, key,
       jsonb_build_object('lockVersion', expected, 'queens', to_jsonb(normalized)),

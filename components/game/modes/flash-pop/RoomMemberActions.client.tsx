@@ -1,5 +1,7 @@
 "use client";
 
+import { randomUuid } from "@/lib/randomUuid";
+
 import { useActionState, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { manageRoomMember, type RoomMemberActionState } from "@/app/actions/room-members";
 import { IconButton, MoreIcon, UserMinusIcon } from "@/components/ui";
@@ -58,7 +60,7 @@ export function RoomMemberActions({
           if (event.defaultPrevented) return;
           const idempotencyInput = event.currentTarget.elements.namedItem("idempotencyKey");
           if (idempotencyInput instanceof HTMLInputElement) {
-            idempotencyInput.value = globalThis.crypto.randomUUID();
+            idempotencyInput.value = randomUuid();
           }
           setOpen(false);
         }}

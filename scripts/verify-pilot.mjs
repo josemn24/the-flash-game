@@ -2,33 +2,11 @@ import { execFile } from "node:child_process";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
+import { PILOT_E2E_BY_SCENARIO } from "./e2e-scenarios.mjs";
 
 const execFileAsync = promisify(execFile);
 const outputDirectory = path.join("output", "s22");
 const logDirectory = path.join(outputDirectory, "logs");
-
-const e2eByScenario = {
-  portal: ["e2e/admin-portal.spec.ts"],
-  s02: ["e2e/s02-rooms.spec.ts"],
-  s03: ["e2e/s03-flash.spec.ts"],
-  e01: ["e2e/e01-mini-wordle.spec.ts"],
-  e02: ["e2e/e02-logic-code.spec.ts"],
-  e03: ["e2e/e03-progressive-clues.spec.ts"],
-  e04: ["e2e/e04-matching.spec.ts"],
-  e05: ["e2e/e05-queens.spec.ts"],
-  e06: ["e2e/e06-word-search.spec.ts"],
-  f08: ["e2e/f08-logic-matrix.spec.ts"],
-  f16: ["e2e/f16-zip.spec.ts"],
-  f18: ["e2e/f18-escape.spec.ts"],
-  f19: ["e2e/f19-word-hashtag.spec.ts"],
-  s04: ["e2e/s04-recovery.spec.ts"],
-  s06: ["e2e/s06-ranking.spec.ts"],
-  s07: ["e2e/s07-history-review.spec.ts"],
-  s10: ["e2e/s10-season.spec.ts"],
-  s11: ["e2e/s11-editorial.spec.ts"],
-  s12: ["e2e/s12-calendar.spec.ts"],
-  s17: ["e2e/s17-editorial-versioning.spec.ts"],
-};
 
 const pilotEnv = {
   ...process.env,
@@ -36,8 +14,7 @@ const pilotEnv = {
   FLASH_RUNTIME_SCOPE: "pilot",
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
-  EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20260927172602_cancel-scheduled-challenge",
+  EXPECTED_SCHEMA_REVISION: process.env.EXPECTED_SCHEMA_REVISION || "20261011180045_initial_schema",
 };
 
 async function run(label, command, args, options = {}) {
@@ -68,7 +45,7 @@ async function run(label, command, args, options = {}) {
 function redact(value) {
   return String(value)
     .replaceAll(
-      /(SUPABASE_[A-Z0-9_]+|NEXT_PUBLIC_SUPABASE_[A-Z0-9_]+|CALENDAR_TICK_SECRET|HEALTHCHECK_SECRET|APP_ORIGIN)=\S+/g,
+      /(SUPABASE_[A-Z0-9_]+|NEXT_PUBLIC_SUPABASE_[A-Z0-9_]+|CALENDAR_TICK_SECRET|CRON_SECRET|HEALTHCHECK_SECRET|APP_ORIGIN)=\S+/g,
       "$1=REDACTED",
     )
     .replaceAll(/sb_(?:publishable|secret)_[A-Za-z0-9_-]+/g, "SUPABASE_KEY_REDACTED")
@@ -82,17 +59,20 @@ try {
   await run("supabase-start", "npx", ["supabase", "start"]);
   await run("schema-revision", "npm", ["run", "schema:revision:check"]);
   await run("schema-security", "npm", ["run", "supabase:schema:test"]);
+  await run("schema-migrations", "npm", ["run", "supabase:schema:test", "--", "--migrations"]);
+  await run("schema-reconciliation", "npm", ["run", "supabase:schema:reconciliation:test"]);
   await run("dictionary-load", "npm", ["run", "supabase:dictionary:load"]);
   await run("unit-tests", "npm", ["test"], {
     env: { ...pilotEnv, FLASH_RUNTIME_SCOPE: "test" },
   });
   await run("typecheck", "npm", ["run", "typecheck"]);
   await run("type-architecture", "npm", ["run", "type-architecture"]);
+  await run("style-architecture", "npm", ["run", "style-architecture"]);
   await run("lint", "npm", ["run", "lint"]);
   await run("docs-check", "npm", ["run", "docs:check"]);
   await run("build", "npm", ["run", "build"]);
 
-  for (const [scenario, specs] of Object.entries(e2eByScenario)) {
+  for (const [scenario, specs] of Object.entries(PILOT_E2E_BY_SCENARIO)) {
     await run(`${scenario}-reset`, "npm", ["run", "supabase:db:reset"]);
     await run(`${scenario}-dictionary-load`, "npm", ["run", "supabase:dictionary:load"]);
     await unlink(`output/fixtures/${scenario}.json`).catch(() => undefined);
@@ -126,13 +106,13 @@ try {
     await run(
       `${scenario}-e2e`,
       "npm",
-      ["run", "test:e2e", "--", ...specs],
+      ["run", "test:e2e:raw", "--", ...specs],
       scenario === "e01" ? { env: { ...pilotEnv, FLASH_RATE_LIMIT_BURST: "30" } } : {},
     );
   }
 
   await run("browser-fixture", "npm", ["run", "supabase:browser:setup"]);
-  await run("browser-layout-e2e", "npm", ["run", "test:e2e", "--", "e2e/flash-layout.spec.ts"]);
+  await run("browser-layout-e2e", "npm", ["run", "test:e2e:raw", "--", "e2e/flash-layout.spec.ts"]);
 
   await run("dictionary-check", "npm", ["run", "dictionary:check"]);
   await run("backup-restore", "node", ["scripts/s22-backup-restore.mjs"]);

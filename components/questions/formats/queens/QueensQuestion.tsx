@@ -8,7 +8,11 @@ import {
   queensCellCount,
   type QueensConflictType,
 } from "@/lib/queens";
-import type { QueensAnswer, QueensGrid, QueensQuestion as QueensQuestionType } from "@/types/game";
+import type {
+  QueensAnswer,
+  QueensGrid,
+  QueensQuestion as QueensQuestionType,
+} from "@/types/gameplay/practice";
 import styles from "./QueensQuestion.module.css";
 
 type QueensTool = "queen" | "mark";
@@ -266,20 +270,22 @@ export function QueensQuestion({
         <button
           type="button"
           className={tool === "queen" ? styles.toolActive : ""}
+          aria-label="Colocar corona"
           aria-pressed={tool === "queen"}
           onClick={() => selectTool("queen")}
           disabled={locked}
         >
-          <CrownIcon /> Corona <kbd>C</kbd>
+          <CrownIcon /> Colocar
         </button>
         <button
           type="button"
           className={tool === "mark" ? styles.toolActive : ""}
+          aria-label="Marcar casilla con X"
           aria-pressed={tool === "mark"}
           onClick={() => selectTool("mark")}
           disabled={locked}
         >
-          <CrossIcon /> Marcar X <kbd>X</kbd>
+          <CrossIcon /> Marcar
         </button>
       </div>
 

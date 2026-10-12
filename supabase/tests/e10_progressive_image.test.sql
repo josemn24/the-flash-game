@@ -8,7 +8,12 @@ select no_plan();
 insert into public.rooms (id, slug, title, description)
 values (test_support.id('e10-room'), 'e10-room', 'E10', 'Progressive-image');
 insert into public.room_memberships (room_id, player_id, role, status)
-values (test_support.id('e10-room'), test_support.id('owner'), 'owner', 'active');
+values
+  (test_support.id('e10-room'), test_support.id('owner'), 'owner', 'active'),
+  (test_support.id('e10-room'), test_support.id('member'), 'member', 'active'),
+  (test_support.id('e10-room'), test_support.id('member2'), 'member', 'active'),
+  (test_support.id('e10-room'), test_support.id('outsider'), 'member', 'active'),
+  (test_support.id('e10-room'), test_support.id('spectator'), 'spectator', 'active');
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
 values (test_support.id('e10-season'), test_support.id('e10-room'), 'E10', 'active', now() - interval '1 hour', now() + interval '1 hour');
 
@@ -21,7 +26,10 @@ insert into private.media_assets
 values
   (test_support.id('e10-asset'), 'question-assets', 'question-assets/' || test_support.id('e10-asset')::text || '.png',
    'question-asset', 'ready', test_support.id('superadmin'), 'image/png', 1, 847, 566,
-   'de188cf69cb899771872cc32cd304babd4bdd64c483f8165f3766dd844db3aad');
+   'de188cf69cb899771872cc32cd304babd4bdd64c483f8165f3766dd844db3aad'),
+  (test_support.id('e10-unbound-asset'), 'question-assets', 'question-assets/' || test_support.id('e10-unbound-asset')::text || '.png',
+   'question-asset', 'ready', test_support.id('superadmin'), 'image/png', 1, 640, 480,
+   'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
 insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id)
 values (
@@ -81,6 +89,24 @@ insert into public.scheduled_challenges
 values (test_support.id('e10-sc'), test_support.id('e10-season'), test_support.id('e10-cv'), 99,
   'open', now() - interval '1 hour', now() + interval '1 hour');
 
+-- Peer review is allowed while the publication is open only after the viewer
+-- has completed the same competitive attempt.
+set local session_replication_role = replica;
+insert into public.attempts
+  (id, player_id, scheduled_challenge_id, challenge_version_id, kind, status,
+   started_at, deadline_at, completed_at, score, client_state_schema_version, lock_version)
+values
+  (test_support.id('e10-reviewer-attempt'), test_support.id('member'), test_support.id('e10-sc'),
+   test_support.id('e10-cv'), 'competitive', 'completed', now() - interval '20 minutes',
+   now() + interval '10 minutes', now() - interval '10 minutes', 0, 1, 1),
+  (test_support.id('e10-peer-attempt'), test_support.id('member2'), test_support.id('e10-sc'),
+   test_support.id('e10-cv'), 'competitive', 'completed', now() - interval '20 minutes',
+   now() + interval '10 minutes', now() - interval '9 minutes', 50, 1, 1),
+  (test_support.id('e10-active-peer-attempt'), test_support.id('outsider'), test_support.id('e10-sc'),
+   test_support.id('e10-cv'), 'competitive', 'in_progress', now() - interval '5 minutes',
+   now() + interval '15 minutes', null, null, 1, 1);
+set local session_replication_role = origin;
+
 select ok(private.is_supported_flash_question(test_support.id('e10-qv-image')), 'Progressive-image is a supported Flash question');
 select ok(private.is_supported_flash_question(test_support.id('e10-qv-choice')), 'Multiple-choice v2 is a supported Flash question');
 select ok(private.is_ready_question_asset(test_support.id('e10-asset')), 'E10 question asset is ready');
@@ -108,6 +134,11 @@ select ok((select not (state->'publicPayload'->'surface' ? 'src') from test_supp
 select ok((select not (state->'publicPayload' ? 'correctAnswer') from test_support.runtime), 'Prepare does not return the solution');
 select ok((select not (state->'publicPayload' ? 'solutionAlt') from test_support.runtime), 'Prepare does not return solution alt text');
 select ok((select state ? 'presentedAt' and state ? 'deadlineAt' from test_support.runtime), 'Prepare returns server presentation and deadline timestamps');
+select is((private.read_competitive_question_asset(jsonb_build_object(
+  'attemptId', (select state->>'attemptId' from test_support.runtime),
+  'assetId', test_support.id('e10-asset')))->>'assetId'),
+  test_support.id('e10-asset')::text,
+  'The active attempt owner can resolve the Progressive-image asset during gameplay');
 
 select test_support.run('receive_answer', jsonb_build_object('answer', '  EIFFEL TOWER  ', 'clientTimeUsedMs', 999999999));
 select set_config('e10.time_used_ms', (select last_result->>'timeUsedMs' from test_support.runtime), true);
@@ -115,6 +146,37 @@ select test_support.run('record_evaluation', '{"status":"correct","points":50}')
 select is((select last_result->>'status' from test_support.runtime), 'correct', 'Progressive-image accepts normalized answers');
 select is((select (last_result->>'points')::integer from test_support.runtime), 50, 'Progressive-image awards the configured points');
 select ok(current_setting('e10.time_used_ms')::integer < 20000, 'Evaluation uses server time instead of client time');
+select test_support.run('complete_attempt', jsonb_build_object('score', 50));
+
+select test_support.as_actor('owner');
+set local role authenticated;
+select is((select count(*) from public.get_room_member_review(
+  'e10-room', test_support.id('e10-sc'), test_support.id('member2'))), 2::bigint,
+  'Completed viewer can review a completed peer while Progressive-image publication is open');
+reset role;
+set local role service_role;
+select is((private.read_competitive_question_asset(jsonb_build_object(
+  'attemptId', test_support.id('e10-peer-attempt'), 'assetId', test_support.id('e10-asset')))->>'assetId'),
+  test_support.id('e10-asset')::text,
+  'Authorized peer review resolves a referenced Progressive-image asset');
+select throws_ok($$select private.read_competitive_question_asset(jsonb_build_object(
+  'attemptId', test_support.id('e10-peer-attempt'), 'assetId', test_support.id('e10-unbound-asset')))
+  $$, '42501', 'not_authorized', 'An asset not referenced by the question cannot be resolved');
+select throws_ok($$select private.read_competitive_question_asset(jsonb_build_object(
+  'attemptId', test_support.id('e10-active-peer-attempt'), 'assetId', test_support.id('e10-asset')))
+  $$, '42501', 'not_authorized', 'A reviewer cannot resolve an unrelated in-progress attempt');
+reset role;
+select test_support.as_actor('spectator');
+set local role authenticated;
+select is((select count(*) from public.get_room_member_review(
+  'e10-room', test_support.id('e10-sc'), test_support.id('member2'))), 0::bigint,
+  'Spectator cannot review a peer');
+reset role;
+set local role service_role;
+select throws_ok($$select private.read_competitive_question_asset(jsonb_build_object(
+  'attemptId', test_support.id('e10-peer-attempt'), 'assetId', test_support.id('e10-asset')))
+  $$, '42501', 'not_authorized', 'Spectator cannot resolve a peer review asset directly');
+reset role;
 
 reset role;
 select test_support.as_actor('superadmin');

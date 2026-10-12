@@ -18,7 +18,7 @@ import {
   getFlashPopLobbyChallenge,
 } from "@/features/flash-pop/demoSocial";
 import type { FlashPopLobbyPageModel } from "@/types/view-models";
-import styles from "@/app/flash-pop/FlashPop.module.css";
+import styles from "@/app/demo/flash-pop/FlashPop.module.css";
 
 function getActionLabel(status: ReturnType<typeof getFlashPopLobbyChallenge>["status"]) {
   return status === "available"
@@ -163,7 +163,7 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
               </Chip>
             </div>
             <ButtonLink
-              href={`/flash-pop/desafios/${primaryModel.id}`}
+              href={`/demo/flash-pop/desafios/${primaryModel.id}`}
               size="hero"
               fullWidth
               trailingIcon={<ArrowIcon />}
@@ -225,7 +225,7 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
                 </p>
               ) : null}
               <ButtonLink
-                href={`/flash-pop/desafios/${secondaryModel.id}`}
+                href={`/demo/flash-pop/desafios/${secondaryModel.id}`}
                 fullWidth
                 trailingIcon={<ArrowIcon />}
               >
@@ -241,7 +241,7 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
               Juega las 16 preguntas del reto original con la nueva presentación clara y eléctrica.
             </p>
             <ButtonLink
-              href="/flash-pop/flash/tabarnia-flash-01"
+              href="/demo/flash-pop/flash/tabarnia-flash-01"
               variant="secondary"
               fullWidth
               trailingIcon={<ArrowIcon />}

@@ -1,5 +1,7 @@
 "use client";
 
+import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
+
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import { Button, Card, Canvas, Timer } from "@/components/ui";
 import { ChallengeIntro, ChallengeResultScreen, StartCountdown } from "@/components/game/shared";
@@ -9,7 +11,7 @@ import {
   AlphabetReviewPresentation,
 } from "@/components/game/modes/flash-pop/AlphabetPresentation";
 import { useServerAlphabetSession } from "@/features/game/useServerAlphabetSession";
-import type { GameRoomContext } from "@/types/game";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type {
   ServerAlphabetChallenge,
   ServerFlashTerminalReview,
@@ -53,6 +55,15 @@ export function ServerFlashPopAlphabetGame({
           onStart={session.begin}
           canStart
           notice={session.startNotice}
+          transfer={
+            session.transfer
+              ? {
+                  busy: session.busy,
+                  onConfirm: session.takeOver,
+                  onCancel: session.cancelTakeOver,
+                }
+              : undefined
+          }
           returnTo={roomContext.returnTo}
         />
       </motion.div>
@@ -76,6 +87,15 @@ export function ServerFlashPopAlphabetGame({
               {session.busy ? "Reintentando…" : "Reintentar recuperación"}
             </Button>
           ) : null}
+        </Card>
+      </motion.div>
+    );
+  } else if (session.phase === "finalizing") {
+    content = (
+      <motion.div key="finalizing" className={styles.stage} role="status" aria-live="polite">
+        <Card>
+          <h1>Finalizando partida…</h1>
+          <p>Estamos guardando tu resultado.</p>
         </Card>
       </motion.div>
     );
@@ -113,7 +133,8 @@ export function ServerFlashPopAlphabetGame({
               { label: "Letras", value: challenge.entries.length },
             ],
           }}
-          onReview={session.showReview}
+          onReview={session.reviewChallenge ? session.showReview : undefined}
+          expired={session.attemptExpired}
           returnTo={roomContext.returnTo}
         />
       </motion.div>
@@ -196,6 +217,11 @@ export function ServerFlashPopAlphabetGame({
         maxWidth={isIntro ? "none" : "wide"}
         contentClassName={isIntro ? styles.introCanvasContent : styles.screen}
       >
+        <CompetitiveLifecycleNotice
+          error={session.completionRetryScheduled ? undefined : session.lifecycleError}
+          busy={session.busy}
+          onRetry={session.retryLifecycle}
+        />
         <AnimatePresence mode="wait">{content}</AnimatePresence>
       </Canvas>
     </MotionConfig>

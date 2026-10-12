@@ -14,10 +14,16 @@ const labels = {
 export const scenario = {
   id: "s06",
   namespace,
-  users: s03Scenario.users,
+  users: s03Scenario.users.filter(({ label }) => ["alice", "bob", "carol", "dave"].includes(label)),
 
   buildDomainSql(args) {
-    return s03Scenario.buildDomainSql(args).replaceAll("s03", "s06").replaceAll("S03", "S06");
+    return s03Scenario
+      .buildDomainSql({
+        ...args,
+        activeCompetitorLabels: ["alice", "carol", "dave"],
+      })
+      .replaceAll("s03", "s06")
+      .replaceAll("S03", "S06");
   },
 
   manifest({ stableId }) {

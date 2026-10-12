@@ -8,7 +8,10 @@ Esta carpeta ayuda a decidir qué aprender antes de ampliar The Flash. La unidad
 
 ## Relación con el proyecto existente
 
-El repositorio contiene una aplicación frontend con experiencia social simulada y desafíos individuales. Este sistema mantiene separadas esa realidad técnica y las hipótesis sobre el producto social y persistente que se quiere explorar.
+El repositorio combina una experiencia mock/práctica con recorridos competitivos persistidos sobre
+Supabase y un portal privado de operación. Este sistema mantiene separadas la realidad técnica
+disponible, la preparación del vehículo experimental y las hipótesis sobre participación social que
+todavía deben validarse con personas.
 
 ## Principios de trabajo
 

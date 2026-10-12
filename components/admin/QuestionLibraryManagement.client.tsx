@@ -1,8 +1,11 @@
 "use client";
 
+import { useId, useMemo, useState } from "react";
+
+import { FormField, Input, Select, Card, Chip } from "@/components/ui";
+
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Card, Chip } from "@/components/ui";
+
 import type { SuperadminQuestionLibraryContext } from "@/types/view-models/editorial";
 import styles from "./QuestionLibraryManagement.module.css";
 
@@ -13,6 +16,7 @@ export function QuestionLibraryManagement({
 }: {
   readonly library: SuperadminQuestionLibraryContext;
 }) {
+  const fieldId = useId();
   const [search, setSearch] = useState("");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
@@ -49,46 +53,56 @@ export function QuestionLibraryManagement({
         asignan sus propios puntos.
       </p>
       <Card as="section" className={styles.filters} aria-label="Filtros de preguntas">
-        <label>
-          <span>Buscar</span>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Slug o enunciado"
-          />
-        </label>
-        <label>
-          <span>Formato</span>
-          <select value={type} onChange={(event) => setType(event.target.value)}>
-            <option value="all">Todos</option>
-            <option value="multiple-choice">Multiple choice</option>
-            <option value="estimation">Estimation</option>
-            <option value="heat-map">Heat map</option>
-            <option value="mini-wordle">Mini Wordle</option>
-            <option value="logic-code">Logic code</option>
-            <option value="progressive-clues">Progressive clues</option>
-            <option value="matching">Matching</option>
-            <option value="true-false">True / False</option>
-            <option value="odd-one-out">Odd one out</option>
-            <option value="ordering">Ordering</option>
-            <option value="anagram">Anagram</option>
-            <option value="classification">Classification</option>
-            <option value="progressive-image">Progressive image</option>
-          </select>
-        </label>
-        <label>
-          <span>Estado</span>
-          <select value={status} onChange={(event) => setStatus(event.target.value)}>
-            <option value="all">Todos</option>
-            <option value="published">Publicadas</option>
-            <option value="draft">Borradores</option>
-            <option value="archived">Archivadas</option>
-          </select>
-        </label>
-        <label>
-          <span>Tag</span>
-          <input value={tag} onChange={(event) => setTag(event.target.value)} placeholder="arte" />
-        </label>
+        <FormField id={fieldId + "-buscar"} label="Buscar" density="compact">
+          {(field) => (
+            <Input
+              {...field}
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Slug o enunciado"
+            />
+          )}
+        </FormField>
+        <FormField id={fieldId + "-formato"} label="Formato" density="compact">
+          {(field) => (
+            <Select {...field} value={type} onChange={(event) => setType(event.target.value)}>
+              <option value="all">Todos</option>
+              <option value="multiple-choice">Multiple choice</option>
+              <option value="estimation">Estimation</option>
+              <option value="heat-map">Heat map</option>
+              <option value="mini-wordle">Mini Wordle</option>
+              <option value="logic-code">Logic code</option>
+              <option value="progressive-clues">Progressive clues</option>
+              <option value="matching">Matching</option>
+              <option value="true-false">True / False</option>
+              <option value="odd-one-out">Odd one out</option>
+              <option value="ordering">Ordering</option>
+              <option value="anagram">Anagram</option>
+              <option value="classification">Classification</option>
+              <option value="progressive-image">Progressive image</option>
+            </Select>
+          )}
+        </FormField>
+        <FormField id={fieldId + "-estado"} label="Estado" density="compact">
+          {(field) => (
+            <Select {...field} value={status} onChange={(event) => setStatus(event.target.value)}>
+              <option value="all">Todos</option>
+              <option value="published">Publicadas</option>
+              <option value="draft">Borradores</option>
+              <option value="archived">Archivadas</option>
+            </Select>
+          )}
+        </FormField>
+        <FormField id={fieldId + "-tag"} label="Tag" density="compact">
+          {(field) => (
+            <Input
+              {...field}
+              value={tag}
+              onChange={(event) => setTag(event.target.value)}
+              placeholder="arte"
+            />
+          )}
+        </FormField>
       </Card>
       <div className={styles.meta}>
         {entries.length} de {library.total} entradas · página {library.page}

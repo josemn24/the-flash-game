@@ -118,17 +118,23 @@ language sql stable security definer set search_path = '' as $$
         where items.challenge_version_id = cv.id
       ) as question_count,
       (
-        select (count(*) between 2 and 20 and cv.mode in ('flash', 'survival')
+        select (count(*) between 2 and 20 and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'time-trial')
             or count(*) = 7 and cv.mode = 'pyramid')
           and bool_and(private.is_supported_flash_question(q.id))
-          and (cv.mode = 'flash' and cv.mode_config = '{}'::jsonb
+          and (cv.mode = 'time-trial' and cv.mode_config = '{}'::jsonb and cv.global_time_limit_ms > 0 and bool_and(q.type = 'queens')
+            or cv.mode = 'flash' and cv.mode_config = '{}'::jsonb
+            or cv.mode = 'alphabet' and cv.mode_config = '{}'::jsonb
+              and bool_and(jsonb_typeof(items.mode_config->'letter') = 'string')
             or cv.mode = 'survival'
               and jsonb_typeof(cv.mode_config->'lives') = 'number'
               and (cv.mode_config->>'lives')::integer between 1 and count(*)
               and (select count(*) from jsonb_object_keys(cv.mode_config)) = 1
             or cv.mode = 'pyramid' and cv.mode_config = '{}'::jsonb
               and bool_and(private.is_valid_pyramid_level_config(items.mode_config))
-              and count(distinct items.mode_config->>'levelId') = 7)
+              and count(distinct items.mode_config->>'levelId') = 7
+            or cv.mode = 'narrative'
+              and jsonb_typeof(cv.mode_config->'prologue') = 'object'
+              and jsonb_typeof(cv.mode_config->'beats') = 'array')
         from private.challenge_items items
         join private.question_versions q on q.id = items.question_version_id
         where items.challenge_version_id = cv.id
@@ -219,17 +225,23 @@ language sql stable security definer set search_path = '' as $$
     version.mode,
     version.max_score,
     (select count(*)::bigint from private.challenge_items item where item.challenge_version_id = version.id),
-    (select (count(*) between 2 and 20 and version.mode in ('flash', 'survival')
+    (select (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'time-trial')
           or count(*) = 7 and version.mode = 'pyramid')
         and bool_and(private.is_supported_flash_question(question.id))
-        and (version.mode = 'flash' and version.mode_config = '{}'::jsonb
+        and (version.mode = 'time-trial' and version.mode_config = '{}'::jsonb and version.global_time_limit_ms > 0 and bool_and(question.type = 'queens')
+        or version.mode = 'flash' and version.mode_config = '{}'::jsonb
+          or version.mode = 'alphabet' and version.mode_config = '{}'::jsonb
+            and bool_and(jsonb_typeof(item.mode_config->'letter') = 'string')
           or version.mode = 'survival'
             and jsonb_typeof(version.mode_config->'lives') = 'number'
             and (version.mode_config->>'lives')::integer between 1 and count(*)
             and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
           or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
             and bool_and(private.is_valid_pyramid_level_config(item.mode_config))
-            and count(distinct item.mode_config->>'levelId') = 7)
+            and count(distinct item.mode_config->>'levelId') = 7
+          or version.mode = 'narrative'
+            and jsonb_typeof(version.mode_config->'prologue') = 'object'
+            and jsonb_typeof(version.mode_config->'beats') = 'array')
        from private.challenge_items item
        join private.question_versions question on question.id = item.question_version_id
       where item.challenge_version_id = version.id),

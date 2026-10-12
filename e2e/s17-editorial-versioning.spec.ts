@@ -21,6 +21,30 @@ async function publishQuestions(page: Page, suffix: string) {
   await page.getByLabel("Buscar").fill(suffix);
   const links = page.locator("a[href^='/admin/questions/']:not([href$='/new'])");
   await expect(links).toHaveCount(2);
+  for (const width of [390, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.getByLabel("Formato", { exact: true }).selectOption("true-false");
+    await expect(links).toHaveCount(0);
+    await page.getByLabel("Formato", { exact: true }).selectOption("multiple-choice");
+    await expect(links).toHaveCount(2);
+    await page.getByLabel("Estado", { exact: true }).selectOption("published");
+    await expect(links).toHaveCount(0);
+    await page.getByLabel("Estado", { exact: true }).selectOption("draft");
+    await expect(links).toHaveCount(2);
+    await page.getByLabel("Tag", { exact: true }).fill("sin-coincidencias-s17");
+    await expect(links).toHaveCount(0);
+    await page.getByLabel("Tag", { exact: true }).fill("");
+    await expect(links).toHaveCount(2);
+    const filters = page.getByRole("region", { name: "Filtros de preguntas" });
+    for (const control of await filters.locator("input, select").all()) {
+      await expect(control).toHaveCSS("min-height", "44px");
+      await expect(control).toHaveCSS("font-size", "16px");
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await filters.screenshot({ path: `output/playwright/library-filters-${width}.png` });
+  }
   const hrefs = await links.evaluateAll((items) =>
     items.map((item) => (item as HTMLAnchorElement).href),
   );
@@ -106,9 +130,9 @@ test.describe("S17 — corrección y versionado editorial", () => {
     await expect(page.locator("#editorial-management-title")).toHaveText("Flash S17 E2E corregido");
 
     const compareFrom = page.locator("select[name='compareFrom']");
-    const versions = await compareFrom.locator("option").evaluateAll((items) =>
-      items.map((item) => (item as HTMLOptionElement).value),
-    );
+    const versions = await compareFrom
+      .locator("option")
+      .evaluateAll((items) => items.map((item) => (item as HTMLOptionElement).value));
     expect(versions.length).toBeGreaterThanOrEqual(2);
     await compareFrom.selectOption(versions.at(-1)!);
     await page.locator("select[name='compareTo']").selectOption(versions[0]!);
@@ -122,7 +146,9 @@ test.describe("S17 — corrección y versionado editorial", () => {
     page.once("dialog", (dialog) => dialog.accept());
     await archiveForm.getByRole("button", { name: "Archivar versión" }).click();
     await expect(page).toHaveURL(/editorial=archived$/);
-    await expect(page.locator("article").filter({ hasText: "v1" }).getByText("Archivado")).toBeVisible();
+    await expect(
+      page.locator("article").filter({ hasText: "v1" }).getByText("Archivado"),
+    ).toBeVisible();
     await expect(
       page.locator("article").filter({ hasText: "v2" }).getByText("Publicado", { exact: true }),
     ).toBeVisible();

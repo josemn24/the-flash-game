@@ -1,11 +1,13 @@
 "use client";
 
+import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
+
 import { motion } from "motion/react";
 import {
   buildResultModel,
   ReviewStage,
   Transition,
-} from "@/components/game/modes/flash-pop/FlashPopFlashGame.client";
+} from "@/components/game/modes/flash-pop/FlashPopCompetitiveHelpers";
 import { AnswerFeedbackStage } from "@/components/game/modes/flash-pop/AnswerFeedbackStage";
 import { FlashPopGameShell } from "@/components/game/modes/flash-pop/FlashPopGameShell";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
@@ -16,7 +18,7 @@ import {
 } from "@/components/game/shared";
 import { Card } from "@/components/ui";
 import { useServerFlashSession } from "@/features/game/useServerFlashSession";
-import type { GameRoomContext } from "@/types/game";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerFlashChallenge, ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import styles from "./FlashPopFlashGame.module.css";
 
@@ -32,7 +34,16 @@ export function ServerFlashPopGame({
   const session = useServerFlashSession({ challenge, roomContext, terminalReview });
 
   return (
-    <FlashPopGameShell layout={session.phase === "intro" ? "intro" : "game"}>
+    <FlashPopGameShell
+      notice={
+        <CompetitiveLifecycleNotice
+          error={session.lifecycleError}
+          busy={session.busy}
+          onRetry={session.retryLifecycle}
+        />
+      }
+      layout={session.phase === "intro" ? "intro" : "game"}
+    >
       {session.phase === "intro" ? (
         <motion.div
           key="intro"
@@ -50,6 +61,15 @@ export function ServerFlashPopGame({
             onStart={session.begin}
             canStart
             notice={session.startNotice}
+            transfer={
+              session.transfer
+                ? {
+                    busy: session.busy,
+                    onConfirm: session.takeOver,
+                    onCancel: session.cancelTakeOver,
+                  }
+                : undefined
+            }
             returnTo={roomContext.returnTo}
           />
         </motion.div>
@@ -155,7 +175,8 @@ export function ServerFlashPopGame({
         >
           <ChallengeResultScreen
             model={buildResultModel(session.results, session.score)}
-            onReview={() => session.reviewChallenge && session.showReview()}
+            onReview={session.reviewChallenge ? session.showReview : undefined}
+            expired={session.attemptExpired}
             returnTo={roomContext.returnTo}
           />
         </motion.div>
@@ -173,6 +194,7 @@ export function ServerFlashPopGame({
             onBack={session.showResults}
             returnTo={roomContext.returnTo}
             roomContext={roomContext}
+            presentation="flash"
           />
         </motion.div>
       ) : null}

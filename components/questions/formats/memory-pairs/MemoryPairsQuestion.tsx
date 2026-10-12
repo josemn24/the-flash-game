@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckIcon, CrossIcon } from "@/components/ui";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import styles from "./MemoryPairsQuestion.module.css";
-import type { MemoryPairsAnswer, MemoryPairsTile } from "@/types/game";
+import type { MemoryPairsAnswer, MemoryPairsTile } from "@/types/gameplay/practice";
 
 type MemoryPairsQuestionProps = {
   grid: { rows: number; columns: number };
@@ -90,10 +90,7 @@ export function MemoryPairsQuestion({
   };
 
   return (
-    <section
-      className={styles.root}
-      aria-label="Memoria de parejas"
-    >
+    <section className={styles.root} aria-label="Memoria de parejas">
       <div className={styles.header}>
         <span>Encuentra las parejas</span>
         <strong>

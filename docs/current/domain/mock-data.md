@@ -2,23 +2,25 @@
 
 ## Estado
 
-La fase 3 está cerrada. `mockDomainStore` es un conjunto de tablas planas con las entidades de
+La Fase 3 retira la compatibilidad productiva. `mockDomainStore` es un conjunto de tablas planas con las entidades de
 `@/types/domain` y sigue siendo la fuente de fixtures de práctica, previews y tests de contrato para
 contenido, identidad, salas, membresías, temporadas, publicaciones, intentos y respuestas. Desde
 S01, los recorridos reales no lo usan como fuente de persistencia y no existe ningún flujo
 legacy → store en producción.
 
-Los IDs persistibles son UUID v5 deterministas generados solo en `data/mock`. Los slugs legibles
-siguen siendo la identidad de las rutas públicas y se resuelven mediante los mapas de aliases. El
-jugador de la sesión demo se declara aparte; no existe `currentUserId` en `Room`.
+Los IDs persistibles son UUID v5 deterministas generados solo en `data/mock`. Las claves legibles de
+los fixtures se usan únicamente para materializar datos mock y tests; no seleccionan la composición
+de las rutas reales. El jugador de la sesión demo se declara aparte; no existe `currentUserId` en
+`Room`.
 
 ## Fuente editorial de contenido
 
 - Las 105 preguntas se editan en `data/mock/catalog/questions`, divididas por catálogo temático.
   Cada fixture declara `publicPayload`, `privatePayload` y `practicePoints`; este último solo
-  reconstruye el contrato de práctica legacy y no interviene en la puntuación competitiva.
+  reconstruye `PracticeQuestion` y no interviene en la puntuación competitiva.
 - `data/mock/questionFixtures.ts` genera directamente una definición estable y una versión
-  publicada por pregunta. El adaptador exhaustivo canónico → legacy cubre los 31 formatos.
+  publicada por pregunta. El adaptador exhaustivo canónico → práctica vive en
+  `data/mock/compat` y cubre los 31 formatos.
 - Los siete desafíos se editan en `data/mock/catalog/challenges.ts` y generan directamente sus
   definiciones, versiones e items. Seis están programados y Conexiones rápidas permanece sin
   programar.
@@ -29,10 +31,10 @@ jugador de la sesión demo se declara aparte; no existe `currentUserId` en `Room
   generan registros persistibles.
 
 Las preguntas y los desafíos canónicos se convierten a contratos de gameplay únicamente a través de
-los adaptadores internos de `data/mock` que todavía necesita la infraestructura mock. La conversión
-legacy → canónico solo existe en tests para verificar round trips; no participa en la creación del
-store. La lectura legacy todavía recompone preguntas y desafíos completos, incluidos datos privados,
-por lo que no es una frontera de seguridad.
+los adaptadores explícitos de `data/mock/compat` que todavía necesita la infraestructura mock. La
+conversión legacy → canónico solo existe en tests para verificar round trips; no participa en la
+creación del store. La lectura de práctica todavía recompone preguntas y desafíos completos,
+incluidos datos privados, por lo que no es una frontera de seguridad.
 
 ## Calendario y actividad
 
@@ -58,14 +60,15 @@ solo representa visualmente Flash Points.
 
 El superadministrador demo es un jugador con rol global, sin membresía ni intentos competitivos.
 
-## Compatibilidad y validación
+## Compatibilidad local y validación
 
 Las antiguas fachadas de `data/` para `demoRoom`, preguntas, desafíos, publicaciones e historial se
 han retirado. Los tests que necesitan contratos de gameplay usan helpers exclusivos de
 `test-utils/mockGameplay.ts` y `test-utils/mockRoom.ts`, respaldados por fixtures canónicos y por
 los adaptadores internos necesarios para materializar la UI. No queda código de apoyo en
 `test-utils/legacy`; los adaptadores de compatibilidad que aún necesita la infraestructura viven en
-`data/mock`.
+`data/mock/compat` y son la única entrada permitida a las proyecciones antiguas. Ninguna ruta
+competitiva puede alcanzarlos ni utilizarlos como fallback.
 
 La integridad se valida sin modificar archivos:
 
@@ -79,19 +82,30 @@ El primer comando comprueba UUID, slugs, autenticación, roles, membresías, inv
 ventanas, cancelaciones, puntos, intentos, respuestas, rankings, historial, round trips y separación
 del contenido público. Incluye escenarios negativos aislados de relaciones y estados temporales.
 
-## Fase 4 cerrada y límite actual
+## Composición local y límite actual
 
-Las rutas de práctica y preview acceden al store mediante contratos asíncronos, el adaptador mock y
-la fachada `server/data-access.ts`. Las rutas reales persistidas usan la misma fachada para seleccionar
-Auth, RPCs y PostgreSQL mediante `infrastructure/supabase/`. Consulta
+Las demos server-side de Flash Pop acceden al store mediante contratos asíncronos, los adaptadores
+por capacidad (`MockRoomLobbyQueries`, `MockRoomRankingQueries`, `MockRoomSettingsQueries`,
+`MockRoomHistoryQueries`, `MockRoomMemberDetailQueries`, `MockDemoChallengeQueries` y
+`MockCompetitiveChallengeQueries`) y la fachada explícita `server/demo-data-access.ts`. Las rutas reales persistidas usan fachadas
+separadas por recorrido (`server/production-home-data-access.ts`,
+`server/production-room-data-access.ts`, `server/production-challenge-data-access.ts` y
+`server/production-admin-data-access.ts`) para seleccionar Auth, RPCs y PostgreSQL mediante
+`infrastructure/supabase/`. No existe una fachada compartida que seleccione entre ambas composiciones.
+La lógica común de fixtures vive en proyecciones internas; no se expone un adaptador agregado de
+sala o desafío. Los tests pueden construir una composición local de capacidades, pero esa
+composición no forma parte de los puertos públicos de aplicación.
+Consulta
 [`data-access.md`](data-access.md) para la composición, autorización y DTOs.
 
 S01 cubre Auth, provisioning de jugador y nombre; S02 cubre home, salas, detalle e introducción;
 S03 cubre el Flash competitivo de dos preguntas; S04 cubre recuperación, sesión exclusiva y
 abandono; S06 consulta los rankings reales de temporada y de la publicación abierta; S07 consulta
-historial Flash, ranking histórico y revisión autorizada después de volver. S08–S12 añaden portal
-privado, temporadas, publicación editorial Flash mínima y calendario local; Storage y los demás modos
-siguen usando mock o están pendientes de sus propias slices. La beta provisionará miembros
+historial común y revisión autorizada de los cinco modos, incluido Alfabeto con todas sus letras.
+Las lecturas mock aplican los mismos límites temporales con `QueryContext.now`; las pruebas fijan
+el reloj para distinguir el reto actual de una ventana vencida sin tick. S08–S12 añaden portal
+privado, temporadas, publicación editorial Flash mínima y calendario local; Storage y la edición
+narrativa avanzada siguen fuera de esta fase. La beta provisionará miembros
 directamente desde ese portal, sin flujo público de invitaciones.
 
 Como compatibilidad de la práctica y de previews, `PlayableChallengePageModel` todavía puede llevar

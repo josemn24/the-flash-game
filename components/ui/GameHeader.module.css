@@ -1,8 +1,8 @@
 @layer app-components {
   .header {
-    --header-ink: var(--color-ink);
-    --header-muted: var(--color-ink-muted);
-    --header-faint: var(--color-ink-faint);
+    --header-ink: var(--ds-color-fg-primary);
+    --header-muted: var(--ds-color-fg-secondary);
+    --header-faint: var(--ds-color-fg-decorative);
     display: flex;
     min-height: 54px;
     align-items: center;
@@ -41,7 +41,7 @@
     place-items: center;
     border: var(--border-flash);
     border-radius: 13px;
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
   }
 

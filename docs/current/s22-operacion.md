@@ -1,37 +1,53 @@
 # S22 — Operación del piloto
 
-> Estado: vigente. Alcance local/CI; staging está vinculado en la CLI, pero no se ha desplegado ni validado esta revisión.
+> Estado: vigente. La verificación funcional reproducible sigue siendo local/CI; el repositorio declara
+> la integración de Vercel Cron, pero el despliegue y sus logs deben validarse en staging.
+> Los únicos entornos de aplicación admitidos son local y staging.
 
-S22 fija un alcance cerrado para operar localmente y en CI sin declarar todavía un entorno remoto.
-El piloto incluye Flash, Supervivencia y Pirámide competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
+S22 fija un alcance cerrado para operar localmente y en CI, y conserva la integración del
+calendario sin convertir staging en requisito para la verificación reproducible.
+El piloto incluye Flash, Narrative, Supervivencia y Pirámide competitivos persistidos y portal superadmin sobre Supabase, incluidos E01
 Mini-Wordle, E02 Logic-code, E03 Progressive-clues, E04 Matching, E05 Queens, E06 Word-search, F08 Logic-matrix, F16 Zip, F18 Escape, F19 Word-hashtag y E10 Progressive-image,
-además de los formatos F habilitados. Narrativa, formatos no migrados, E07–E09, abandono automático,
-takeover y `results_locked_at` siguen fuera de alcance. D08a/S13 habilita avatares y
+además de los formatos F habilitados. Los formatos no migrados, E07–E09 y
+`results_locked_at` siguen fuera de alcance. La transferencia de control está disponible según
+la [reconciliación de comandos](competitive-command-reconciliation.md). La expiración por inactividad de intentos competitivos
+sí está activa: 15 minutos sin actividad tras cierre/deadline, estado `abandoned`, sin puntos.
+D08a/S13 habilita avatares y
 D08b habilita assets privados de E10 y `multiple-choice` desde el editor y el recorrido competitivo.
 S14 limita el editor de Supervivencia a formatos con evaluación server-side.
 
 ## Runtime scope
 
-El servidor lee `FLASH_RUNTIME_SCOPE`:
+El servidor lee `FLASH_RUNTIME_SCOPE` para aplicar controles operativos y de origen; no selecciona
+la composición de datos:
 
-- `pilot`: solo rutas persistidas; cualquier fallo de Auth, PostgREST o PostgreSQL termina en un
-  error recuperable, `404` autorizado o `503`. No hay fallback a fixtures.
-- `development`: permite las rutas explícitas de práctica, preview y demo.
+- `pilot`: cualquier fallo de Auth, PostgREST o PostgreSQL termina en un error recuperable, `404`
+  autorizado o `503`. No hay fallback a fixtures.
+- `development`: conserva los controles locales y permite verificar las pruebas de la aplicación.
 - `test`: permite verificar contratos mock aislados y pruebas de UI.
 
 Un build con `NODE_ENV=production` usa `pilot` si la variable no está definida. Un valor desconocido
 falla al arrancar la composición server-only.
 
-| Superficie                                  | Pilot                                                                                   | Development/Test                           |
-| ------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                | Supabase; mocks solo en aliases explícitos |
-| `/desafios/[challengeId]?roomId=<UUID>`     | Supabase; Flash, Supervivencia y Pirámide admiten los formatos con evaluación competitiva migrada | Supabase                                   |
-| `/desafios/[challengeId]` sin sala          | 404                                                                                     | Preview mock explícito                     |
-| aliases como `tabarnia-room`                | 404                                                                                     | Demo mock                                  |
-| `/formatos`, `/flash-pop/**`                | Demo/práctica                                                                           | Demo/práctica                              |
-| `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                 | Supabase + autorización                    |
+| Superficie                                  | Pilot                                                                                                        | Development/Test             |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| `/`, `/salas/[roomId]`, rankings, historial | Supabase                                                                                                     | Supabase                     |
+| `/desafios/[challengeId]?roomId=<slug>`     | Supabase; Flash, Narrative, Supervivencia y Pirámide admiten los formatos con evaluación competitiva migrada | Supabase                     |
+| `/desafios/[challengeId]` sin sala          | 404                                                                                                          | 404                          |
+| aliases como `tabarnia-room`                | Supabase; 404 si no existe como sala persistida                                                              | Supabase; nunca fixture mock |
+| `/formatos`, `/demo/**`                     | Demo/práctica; `/flash-pop/**` redirige permanentemente a `/demo/**`                                         | Demo/práctica                |
+| `/admin` y `/api/internal/calendar/tick`    | Supabase + autorización                                                                                      | Supabase + autorización      |
 
 ## Contrato HTTP
+
+Las operaciones de sesión tienen un presupuesto de cinco segundos por petición, compartido entre
+el proxy y el renderizado. Un fallo de conexión o un 5xx de Auth interrumpe la espera inmediatamente;
+el timeout cancela las peticiones activas y bloquea nuevos fetches de los reintentos pendientes del SDK.
+La caída conserva las cookies de sesión, incluidas las rotaciones completadas antes del fallo, y muestra
+«Servicio temporalmente no disponible». «Reintentar» vuelve a solicitar los datos con un presupuesto
+nuevo. Una sesión ausente o invalidada sigue mostrando el login; las API competitivas devuelven
+`503/auth_unavailable` cuando no pueden verificar la identidad. Este presupuesto no limita las
+operaciones de PostgREST, Storage o PostgreSQL.
 
 Las mutaciones competitivas requieren `Origin` igual a `APP_ORIGIN` cuando el runtime es `pilot`.
 Los cuerpos JSON están limitados a 32 KiB; el editor editorial limita el documento a 256 KiB.
@@ -43,7 +59,25 @@ administrativos durante el piloto; no es una garantía de escalado multiinstanci
 PostgreSQL y la revisión indicada por `EXPECTED_SCHEMA_REVISION`. Solo devuelve estado agregado y
 no contiene credenciales, JWT, cookies ni datos de dominio.
 
+El repositorio conserva Vercel Cron con `GET /api/internal/calendar/tick` a las 13:00 UTC y
+`Authorization: Bearer <CRON_SECRET>`. Vercel solo programa cron en despliegues de tipo
+Production: esa etiqueta técnica de la plataforma no añade un entorno de aplicación.
+No se ejecuta en previews ni reintenta una invocación fallida; la ejecución automática de
+staging y sus logs siguen sin verificarse. En España peninsular son las 15:00 durante el horario
+de verano y las 14:00 durante el horario de invierno, porque Vercel interpreta la expresión en UTC.
+La recuperación manual usa `CALENDAR_TICK_SECRET` y `npm run calendar:tick`,
+que conserva el `POST` del endpoint. El tick incluye la limpieza global de intentos inactivos y
+devuelve `abandonedAttempts`. La lectura de historial y los comandos de partida ejecutan además una
+reconciliación limitada a la sala o al intento; una partida sin nuevas lecturas ni acciones puede
+permanecer pendiente hasta la siguiente ejecución diaria. El tick sigue siendo idempotente y
+`start_attempt` revalida la ventana temporal.
+
 ## Verificación reproducible
+
+`npm run test:e2e:auth-outage` comprueba caída de conexión, 503, timeout, conservación de cookies,
+recuperación, login/logout, invalidación de sesión y las cabeceras internas del proxy. Usa una app y
+un servidor Supabase simulado aislados, sin Docker ni un proyecto remoto, en los puertos 3319 y 54329.
+Los puertos pueden cambiarse con `AUTH_OUTAGE_APP_PORT` y `AUTH_OUTAGE_UPSTREAM_PORT`.
 
 Con Docker disponible y sin desplegar sobre un proyecto remoto:
 
@@ -55,6 +89,11 @@ El comando arranca Supabase local, comprueba el esquema desde una base limpia, e
 typecheck, lint, build, escenarios de integración/E2E por fixture —incluido S17— y una prueba de backup/restore.
 Los logs y artefactos temporales se escriben en `output/s22/`, ignorado por Git.
 
+`npm run test:e2e -- e2e/<escenario>.spec.ts` es autocontenido para los escenarios registrados: arranca
+Supabase, reinicia la base, recrea las cuentas Auth y el fixture, ejecuta Playwright y limpia al terminar.
+Cuando otro comando ya ha preparado deliberadamente el fixture, `test:e2e:raw` permite ejecutar Playwright
+sin repetir ese bootstrap; es el modo usado internamente por `verify:pilot`.
+
 Para una ejecución manual aislada:
 
 ```bash
@@ -64,7 +103,7 @@ npm run test:integration:supabase -- --scenario s03
 FLASH_RUNTIME_SCOPE=pilot APP_ORIGIN=http://127.0.0.1:3000 npm run test:e2e -- e2e/s03-flash.spec.ts
 ```
 
-Para S17, la verificación aislada cubre el historial editorial de Flash, Supervivencia y Pirámide;
+Para S17, la verificación aislada cubre el historial editorial de Flash, Narrative, Supervivencia y Pirámide;
 la corrección de una pregunta continúa pasando por `/admin/questions`.
 
 Para E01, el reset debe ir seguido de la carga del diccionario antes de crear el fixture:
@@ -137,6 +176,25 @@ y valida automáticamente el tablero completo con `POST /api/competitive/attempt
 al colocar las `N` coronas del tablero. Las validaciones incorrectas mantienen la interacción abierta y aplican
 una penalización del 5%; las marcas X son locales y la solución solo aparece en la revisión autorizada.
 
-No existe todavía despliegue remoto ni rollback de migraciones destructivo. El rollback del piloto
-es de aplicación: conservar el esquema compatible, detener el proceso actual y arrancar el build
-anterior sin sustituir datos por mocks.
+En Pirámide competitivo, Queens tiene tres validaciones incorrectas como máximo. El tercer fallo
+termina el ascenso con cero puntos para Queens y conserva los niveles anteriores; acertar en la
+última oportunidad permite avanzar. El progreso devuelve `incorrectValidations` y
+`maxIncorrectValidations` (`3` en Pirámide, `null` en los demás modos). Los reintentos repiten el
+comando idempotente y no consumen otra oportunidad. La UI permite editar entre validaciones y se
+bloquea mientras espera confirmación. Se conserva la política de timeout y recuperación de Pirámide.
+
+La migración histórica `20261009172416_queens_pyramid_validation_limit` quedó consolidada en el
+baseline activo; actualiza funciones existentes, sin añadir tablas ni contadores persistidos ni
+migrar partidas anteriores. Para comprobar un esquema
+limpio y el flujo de navegador sin reiniciar la base habitual:
+
+```bash
+npm run supabase:schema:test
+npm run supabase:schema:test -- --migrations
+npm run test:e2e:isolated -- e2e/pyramid-queens.spec.ts e2e/e05-queens.spec.ts
+```
+
+La [instalación limpia](supabase-clean-installation.md) define el reinicio completo, el bootstrap
+local mínimo y el procedimiento posterior para staging. El alcance ejecutado en este trabajo
+es local. La [reconciliación de comandos](competitive-command-reconciliation.md) incluye una reversión
+de funciones mediante migración posterior; nunca requiere sustituir datos por mocks.

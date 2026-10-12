@@ -19,12 +19,8 @@ import {
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import { withChallengeScoring } from "@/lib/challengeScoring";
-import type {
-  AnswerResult,
-  ChallengeCompletionResult,
-  GameRoomContext,
-  SurvivalChallenge,
-} from "@/types/game";
+import type { AnswerResult, ChallengeCompletionResult, SurvivalChallenge } from "@/types/gameplay";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
 import { FlashPopSurvivalResult } from "./FlashPopSurvivalResult";
 import styles from "./FlashPopSurvivalGame.module.css";

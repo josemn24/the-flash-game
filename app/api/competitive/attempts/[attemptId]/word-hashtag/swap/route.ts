@@ -33,7 +33,7 @@ export async function POST(
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
-    const result = await commandsFor(identity).submitWordHashtagSwap({
+    const result = await commandsFor(identity, requestId).submitWordHashtagSwap({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),

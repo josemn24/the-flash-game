@@ -43,9 +43,7 @@ export function ReviewAnswerPanel({
 
   return (
     <section className={styles.reviewPanel} aria-labelledby="review-answers-title">
-      {backAtTop && onBack ? (
-        <BackButton label={backLabel} onClick={onBack} />
-      ) : null}
+      {backAtTop && onBack ? <BackButton label={backLabel} onClick={onBack} /> : null}
 
       <div
         className={`${styles.reviewPanelHeading} ${compactHeading ? styles.reviewPanelHeadingCompact : ""}`}
@@ -53,9 +51,7 @@ export function ReviewAnswerPanel({
         <div>
           <h1 id="review-answers-title">{title}</h1>
         </div>
-        {!progress ? (
-          <span className={styles.reviewPanelCount}>{countLabel}</span>
-        ) : null}
+        {!progress ? <span className={styles.reviewPanelCount}>{countLabel}</span> : null}
       </div>
 
       {progress ? (

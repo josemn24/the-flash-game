@@ -1,21 +1,23 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
-import { Button, Card, Chip } from "@/components/ui";
-import { formatFlashEditorialQuestionDocument } from "@/lib/editorial/flashDocument";
-import type { SuperadminQuestionVersionDetail } from "@/types/view-models/editorial";
+import { randomUuid } from "@/lib/randomUuid";
+
+import { useActionState, useId, useRef, useState } from "react";
+
+import { Button, Card, Chip, FormField, Textarea } from "@/components/ui";
+
 import {
-  abortQuestionAsset,
   archiveQuestion,
-  confirmQuestionAsset,
   createQuestionDraft,
-  prepareQuestionAsset,
   publishQuestion,
   updateQuestionDraft,
   type QuestionActionState,
 } from "@/app/admin/question-actions";
-import { createClient } from "@/lib/supabase/client";
+import { formatFlashEditorialQuestionDocument } from "@/lib/editorial/flashDocument";
+import type { SuperadminQuestionVersionDetail } from "@/types/view-models/editorial";
 import styles from "./QuestionVersionEditor.module.css";
+
+import { QuestionAssetUploader } from "./editorial/QuestionAssetUploader.client";
 
 const initialState: QuestionActionState = {};
 const emptyQuestion = {
@@ -35,7 +37,7 @@ const emptyQuestion = {
 } as const;
 
 function key() {
-  return globalThis.crypto.randomUUID();
+  return randomUuid();
 }
 function ErrorMessage({ state }: { readonly state: QuestionActionState }) {
   return state.message ? (
@@ -45,215 +47,21 @@ function ErrorMessage({ state }: { readonly state: QuestionActionState }) {
   ) : null;
 }
 function Reason() {
+  const fieldId = useId();
   return (
-    <label className={styles.reason}>
-      <span>Motivo de auditoría</span>
-      <textarea
-        name="reason"
-        rows={2}
-        maxLength={500}
-        required
-        placeholder="Preparar pregunta para la biblioteca"
-      />
-    </label>
-  );
-}
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
-function QuestionAssetUploader({
-  document,
-  onDocumentChange,
-}: {
-  readonly document: string;
-  readonly onDocumentChange: (value: string) => void;
-}) {
-  const [pending, setPending] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [altText, setAltText] = useState("");
-  const [fit, setFit] = useState<"" | "cover" | "contain">("");
-  const [position, setPosition] = useState("");
-  let target: "multiple-choice" | "progressive-image" | "heat-map" | null = null;
-  let currentReference: Record<string, unknown> = {};
-  let progressiveImage = false;
-  try {
-    const parsed = JSON.parse(document) as { type?: unknown; publicPayload?: unknown };
-    if (
-      parsed.type === "progressive-image" ||
-      parsed.type === "multiple-choice" ||
-      parsed.type === "heat-map"
-    ) {
-      target = parsed.type;
-      progressiveImage = parsed.type === "progressive-image";
-      const publicPayload = isRecord(parsed.publicPayload) ? parsed.publicPayload : {};
-      const reference = publicPayload[parsed.type === "progressive-image" ? "surface" : "media"];
-      currentReference = isRecord(reference) ? reference : {};
-    }
-  } catch {
-    /* The JSON editor displays the validation error. */
-  }
-  if (!target) return null;
-
-  const currentAlt = typeof currentReference.alt === "string" ? currentReference.alt : "";
-  const currentFit =
-    currentReference.fit === "cover" || currentReference.fit === "contain"
-      ? currentReference.fit
-      : "";
-  const currentPosition =
-    typeof currentReference.position === "string" ? currentReference.position : "";
-  const effectiveAlt = altText || currentAlt;
-  const effectiveFit = fit || currentFit;
-  const effectivePosition = position || currentPosition;
-
-  async function upload(file: File) {
-    setMessage(null);
-    setPending(true);
-    const idempotencyKey = crypto.randomUUID();
-    try {
-      const alt = effectiveAlt.trim();
-      if (!alt || alt.length > 500) {
-        setMessage("Introduce un texto alternativo de entre 1 y 500 caracteres.");
-        return;
-      }
-      const prepared = await prepareQuestionAsset({
-        mimeType: file.type,
-        byteSize: file.size,
-        idempotencyKey,
-      });
-      if (!prepared.ok) {
-        setMessage(prepared.message);
-        return;
-      }
-      const { error } = await createClient()
-        .storage.from("question-assets")
-        .uploadToSignedUrl(prepared.objectPath, prepared.uploadToken, file, {
-          contentType: file.type,
-          upsert: false,
-        });
-      if (error) {
-        await abortQuestionAsset(prepared.assetId);
-        setMessage("No se ha podido subir el asset.");
-        return;
-      }
-      const confirmed = await confirmQuestionAsset({
-        assetId: prepared.assetId,
-        idempotencyKey: prepared.confirmIdempotencyKey,
-      });
-      if (!confirmed.ok) {
-        setMessage(confirmed.message);
-        return;
-      }
-      const parsed = JSON.parse(document) as Record<string, unknown>;
-      const publicPayload = (parsed.publicPayload ?? {}) as Record<string, unknown>;
-      const referenceKey = target === "multiple-choice" ? "media" : "surface";
-      const reference = (publicPayload[referenceKey] ?? {}) as Record<string, unknown>;
-      const privateReference =
-        target === "multiple-choice"
-          ? {
-              type: "image",
-              assetId: confirmed.assetId,
-              alt,
-              width: confirmed.width,
-              height: confirmed.height,
-              ...(effectiveFit ? { fit: effectiveFit } : {}),
-              ...(effectivePosition ? { position: effectivePosition } : {}),
-            }
-          : {
-              ...reference,
-              assetId: confirmed.assetId,
-              alt,
-              width: confirmed.width,
-              height: confirmed.height,
-              ...(effectiveFit ? { fit: effectiveFit } : {}),
-              ...(effectivePosition ? { position: effectivePosition } : {}),
-            };
-      onDocumentChange(
-        JSON.stringify(
-          {
-            ...parsed,
-            payloadSchemaVersion: 2,
-            publicPayload: { ...publicPayload, [referenceKey]: privateReference },
-          },
-          null,
-          2,
-        ),
-      );
-      setMessage("Asset confirmado y vinculado al documento.");
-    } catch {
-      setMessage("No se ha podido completar la subida.");
-    } finally {
-      setPending(false);
-    }
-  }
-
-  return (
-    <div className={styles.assetPanel}>
-      <div>
-        <strong>
-          Asset privado de{" "}
-          {target === "heat-map"
-            ? "heat-map"
-            : progressiveImage
-              ? "progressive-image"
-              : "multiple-choice"}
-        </strong>
-        <span>El servidor inspecciona los bytes y guarda solo el assetId.</span>
-      </div>
-      <div className={styles.assetFields}>
-        <label>
-          <span>Texto alternativo</span>
-          <input
-            value={effectiveAlt}
-            maxLength={500}
-            onChange={(event) => setAltText(event.target.value)}
-            placeholder="Describe la imagen"
-          />
-        </label>
-        <label>
-          <span>Ajuste</span>
-          <select
-            value={effectiveFit}
-            onChange={(event) => setFit(event.target.value as "" | "cover" | "contain")}
-          >
-            <option value="">Predeterminado</option>
-            <option value="cover">Cover</option>
-            <option value="contain">Contain</option>
-          </select>
-        </label>
-        <label>
-          <span>Posición</span>
-          <input
-            value={effectivePosition}
-            maxLength={100}
-            onChange={(event) => setPosition(event.target.value)}
-            placeholder="center"
-          />
-        </label>
-      </div>
-      <label className={styles.fileInput}>
-        <span>Seleccionar JPEG, PNG o WebP</span>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          disabled={pending}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void upload(file);
-            event.currentTarget.value = "";
-          }}
+    <FormField id={fieldId + "-reason"} label="Motivo de auditoría" density="compact" required>
+      {(field) => (
+        <Textarea
+          {...field}
+          name="reason"
+          rows={2}
+          maxLength={500}
+          placeholder="Preparar pregunta para la biblioteca"
         />
-      </label>
-      {pending ? <span role="status">Subiendo y confirmando…</span> : null}
-      {message ? (
-        <span className={styles.assetMessage} role="status">
-          {message}
-        </span>
-      ) : null}
-    </div>
+      )}
+    </FormField>
   );
 }
-
 export function QuestionVersionEditor({
   detail,
   newQuestion = false,
@@ -261,6 +69,7 @@ export function QuestionVersionEditor({
   readonly detail?: SuperadminQuestionVersionDetail;
   readonly newQuestion?: boolean;
 }) {
+  const fieldId = useId();
   const latest = detail?.versions[0];
   const editable = latest?.status === "draft" && latest.document;
   const [text, setText] = useState(
@@ -319,18 +128,29 @@ export function QuestionVersionEditor({
       </div>
       <div className={styles.layout}>
         <Card as="section" className={styles.editor}>
-          <label className={styles.field}>
-            <span>Documento standalone (sin points)</span>
-            <textarea
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              rows={28}
-              spellCheck={false}
-            />
-          </label>
+          <FormField
+            id={fieldId + "-documento-standalone-sin-points"}
+            label="Documento standalone (sin points)"
+            density="compact"
+          >
+            {(field) => (
+              <Textarea
+                {...field}
+                font="mono"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                rows={28}
+                spellCheck={false}
+              />
+            )}
+          </FormField>
           <QuestionAssetUploader document={text} onDocumentChange={setText} />
           {newQuestion || !formTarget ? (
-            <form action={createAction} onSubmit={(event) => prepare(event, createKey)}>
+            <form
+              action={createAction}
+              onSubmit={(event) => prepare(event, createKey)}
+              aria-busy={createPending}
+            >
               <input type="hidden" name="idempotencyKey" />
               <input type="hidden" name="document" value={text} readOnly />
               {detail?.questionDefinitionId ? (
@@ -347,7 +167,11 @@ export function QuestionVersionEditor({
               </Button>
             </form>
           ) : editable ? (
-            <form action={updateAction} onSubmit={(event) => prepare(event, updateKey)}>
+            <form
+              action={updateAction}
+              onSubmit={(event) => prepare(event, updateKey)}
+              aria-busy={updatePending}
+            >
               <input type="hidden" name="idempotencyKey" />
               <input type="hidden" name="questionVersionId" value={formTarget} />
               <input type="hidden" name="expectedUpdatedAt" value={latest.updatedAt} />
@@ -359,7 +183,11 @@ export function QuestionVersionEditor({
               </Button>
             </form>
           ) : (
-            <form action={createAction} onSubmit={(event) => prepare(event, createKey)}>
+            <form
+              action={createAction}
+              onSubmit={(event) => prepare(event, createKey)}
+              aria-busy={createPending}
+            >
               <input type="hidden" name="idempotencyKey" />
               <input
                 type="hidden"
@@ -375,7 +203,11 @@ export function QuestionVersionEditor({
             </form>
           )}
           {latest?.status === "draft" ? (
-            <form action={publishAction} onSubmit={(event) => prepare(event, publishKey)}>
+            <form
+              action={publishAction}
+              onSubmit={(event) => prepare(event, publishKey)}
+              aria-busy={publishPending}
+            >
               <input type="hidden" name="idempotencyKey" />
               <input type="hidden" name="questionVersionId" value={latest.questionVersionId} />
               <input type="hidden" name="expectedUpdatedAt" value={latest.updatedAt} />
@@ -393,6 +225,7 @@ export function QuestionVersionEditor({
                 if (!window.confirm("¿Archivar esta versión?")) event.preventDefault();
                 else prepare(event, archiveKey);
               }}
+              aria-busy={archivePending}
             >
               <input type="hidden" name="idempotencyKey" />
               <input type="hidden" name="questionVersionId" value={latest.questionVersionId} />

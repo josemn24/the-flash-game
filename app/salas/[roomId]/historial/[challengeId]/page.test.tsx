@@ -1,12 +1,26 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
-import { FlashPopRoomHistoryDetail } from "@/components/game/modes/flash-pop/FlashPopRoomHistoryDetail";
-import { mockQueryContext, mockRoomQueries } from "@/test-utils/mockRoom";
+import { describe, expect, it, vi } from "vitest";
+import { FlashPopRoomHistoryDetail } from "@/components/game/production";
+import { mockQueryContext, mockRoomReadCapabilities } from "@/test-utils/mockRoom";
+
+const mocks = vi.hoisted(() => ({
+  getRoomHistoryDetailPageModel: vi.fn(),
+}));
+
+vi.mock("@/server/production-room-data-access", () => mocks);
+
 import { dynamic, generateMetadata } from "./page";
 
 describe("room history detail route", () => {
   it("exposes historical challenge rankings", async () => {
     expect(dynamic).toBe("force-dynamic");
+    mocks.getRoomHistoryDetailPageModel.mockResolvedValue(
+      await mockRoomReadCapabilities.getHistoryDetail(
+        "tabarnia-room",
+        "tabarnia-challenge-05",
+        mockQueryContext(),
+      ),
+    );
     await expect(
       generateMetadata({
         params: Promise.resolve({ roomId: "tabarnia-room", challengeId: "tabarnia-challenge-05" }),
@@ -15,7 +29,7 @@ describe("room history detail route", () => {
       title: "Ranking de La Pirámide: Cumbre lógica — Tabarnia — The Flash",
     });
 
-    const model = await mockRoomQueries.getHistoryDetail(
+    const model = await mockRoomReadCapabilities.getHistoryDetail(
       "tabarnia-room",
       "tabarnia-challenge-05",
       mockQueryContext(),
@@ -24,16 +38,17 @@ describe("room history detail route", () => {
     const markup = renderToStaticMarkup(<FlashPopRoomHistoryDetail {...model} />);
 
     expect(markup).toContain("La Pirámide: Cumbre lógica");
-    expect(markup).toContain("Ranking del desafío");
+    expect(markup).toContain('id="daily-leaderboard-title">Ranking</h2>');
     expect(markup).toContain("Dark");
     expect(markup).toContain("52");
     expect(markup).toContain("Jackobo");
     expect(markup).toContain("44");
     expect(markup).toContain('href="/salas/tabarnia-room/historial"');
+    expect(model.canReviewMembers).toBe(true);
   });
 
   it("renders an empty state when the challenge has no completed results", async () => {
-    const model = await mockRoomQueries.getHistoryDetail(
+    const model = await mockRoomReadCapabilities.getHistoryDetail(
       "tabarnia-room",
       "tabarnia-challenge-05",
       mockQueryContext(),

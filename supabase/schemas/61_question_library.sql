@@ -226,7 +226,7 @@ begin
     id, question_definition_id, version_number, payload_schema_version, status,
     type, time_limit_ms, public_payload, created_by_player_id
   ) values (
-    version_id, definition_id, next_version, document_value->>'payloadSchemaVersion', 'draft',
+    version_id, definition_id, next_version, (document_value->>'payloadSchemaVersion')::integer, 'draft',
     document_value->>'type', (document_value->>'timeLimitMs')::integer,
     document_value->'publicPayload', actor
   );

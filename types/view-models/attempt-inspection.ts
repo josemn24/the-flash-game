@@ -1,7 +1,9 @@
+import type { AttemptOutcome, AttemptStatus } from "@/types/domain/attempt";
 import type { JsonValue, UtcIsoDateTime } from "@/types/domain/values";
 
-export type SuperadminCompetitiveMode = "flash" | "alphabet" | "survival" | "pyramid";
-export type SuperadminAttemptStatus = "in_progress" | "completed" | "abandoned" | "invalidated";
+export type SuperadminCompetitiveMode =
+  "flash" | "alphabet" | "survival" | "narrative" | "pyramid" | "time-trial";
+export type SuperadminAttemptStatus = AttemptStatus;
 
 export type SuperadminAttemptPublication = {
   readonly scheduledChallengeId: string;
@@ -29,7 +31,7 @@ export type SuperadminAttemptListRow = {
   readonly displayName: string;
   readonly avatarSrc?: string;
   readonly status: SuperadminAttemptStatus;
-  readonly outcome: string | null;
+  readonly outcome: AttemptOutcome;
   readonly attemptNumber: number;
   readonly startedAt: UtcIsoDateTime;
   readonly deadlineAt: UtcIsoDateTime | null;

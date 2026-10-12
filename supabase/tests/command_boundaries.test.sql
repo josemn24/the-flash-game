@@ -39,6 +39,8 @@ select throws_ok($$select test_support.run('receive_answer','{"answer":true,"sub
 select throws_ok($$select test_support.run('receive_answer','{"answer":true,"playerId":"00000000-0000-0000-0000-000000000001"}')$$,'22023',null,'Command does not accept an actor identity');
 select test_support.run('receive_answer','{"answer":true}');
 select is((select private.read_evaluation_context((state->>'receiptId')::uuid,state->>'sessionToken')->'answer' from test_support.runtime),'true'::jsonb,'Evaluator reads persisted raw answer');
+select is((select private.read_evaluation_context((state->>'receiptId')::uuid,state->>'sessionToken')->>'questionVersionId' from test_support.runtime), test_support.id('qv-normal')::text,
+  'Evaluator returns the frozen question version identity');
 select is((select (private.read_evaluation_context((state->>'receiptId')::uuid,state->>'sessionToken')->>'payloadSchemaVersion')::integer from test_support.runtime),1,
   'Evaluator context includes the question payload schema version');
 select is((select (private.read_evaluation_context((state->>'receiptId')::uuid,state->>'sessionToken')->>'itemConfigSchemaVersion')::integer from test_support.runtime),1,
@@ -58,11 +60,11 @@ select throws_ok($$select test_support.run('adjust_result','{"score":10,"reason"
 reset role;
 create trigger test_fail_audit before insert on private.audit_log for each row execute function test_support.fail_audit();
 set local role service_role;
-select throws_ok($$select test_support.run('take_over_attempt','{"newSessionToken":"tttttttttttttttttttttttttttttttttttttttt"}')$$,'55000','takeover_disabled','Cross-device takeover remains disabled even during a transient failure');
+select throws_ok($$select test_support.run('take_over_attempt','{"newSessionToken":"tttttttttttttttttttttttttttttttttttttttt"}')$$,'P0001',null,'Takeover audit failure rolls back the transfer');
 select throws_ok($$select test_support.run('complete_attempt','{"score":50}')$$,'P0001',null,'Completion audit failure rolls back accreditation');
 reset role;
 select is((select count(*) from private.attempt_sessions where revoked_at is null),1::bigint,'Failed completion retains the original active session');
-select is((select count(*) from private.attempt_sessions),1::bigint,'Disabled takeover does not create a new session');
+select is((select count(*) from private.attempt_sessions),1::bigint,'Failed takeover does not create a new session');
 select is((select status from public.attempts),'in_progress','Failed completion does not close attempt');
 select is((select count(*) from private.flash_point_entries),0::bigint,'Failed completion does not credit points');
 drop trigger test_fail_audit on private.audit_log;
@@ -84,6 +86,22 @@ select test_support.as_actor('member');
 set local role service_role;
 select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-pyramid'),'sessionToken',repeat('p',40)));
 select test_support.run('prepare_interaction');
+reset role;
+select is((select count(*) from private.attempt_timing_units
+  where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),0::bigint,
+  'Pyramid preparation does not start timing');
+select throws_ok($$select test_support.run('receive_answer','{"answer":true}')$$,
+  '55000', 'interaction_not_presented',
+  'A Pyramid answer is rejected before activation');
+set local role service_role;
+select test_support.run('activate_interaction');
+select is((test_support.repeat_last())->>'deadlineAt',
+  (select state->>'deadlineAt' from test_support.runtime),
+  'Activation retries return the cached result');
+reset role;
+select is((select count(*) from private.interaction_intervals
+  where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),1::bigint,
+  'Activation retries do not create another interval');
 reset role;
 select is((select scope from private.attempt_timing_units where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),'level','Pyramid uses a level timing unit');
 select is((select extract(epoch from deadline_at-started_at)*1000 from private.attempt_timing_units where scope='level'),60000::numeric,'Pyramid limit comes from published configuration');
@@ -125,7 +143,7 @@ reset role;
 select is((select extract(epoch from deadline_at-started_at)*1000 from public.attempts where id=(select (state->>'attemptId')::uuid from test_support.runtime)),100::numeric,'Global deadline is exactly the published limit from the persisted start');
 set local role service_role;
 select pg_sleep(0.12);
-select throws_ok($$select test_support.run('take_over_attempt','{"newSessionToken":"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"}')$$,'55000','takeover_disabled','Takeover remains disabled after the global deadline');
+select throws_ok($$select test_support.run('take_over_attempt','{"newSessionToken":"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"}')$$,'55000','deadline_reached','Takeover cannot restart an expired attempt');
 select test_support.run('prepare_interaction');
 select is((select last_result->'publicPayload' from test_support.runtime),'null'::jsonb,'Expired alphabet never delivers unvisited content');
 select test_support.run('receive_answer','{"answer":null}');

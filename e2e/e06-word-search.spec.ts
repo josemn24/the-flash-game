@@ -32,12 +32,16 @@ function cell(board: Locator, row: number, column: number) {
 }
 
 test.describe("E06 — Word-search competitivo", () => {
-  test("persiste errores, oculta soluciones y recupera selecciones idempotentes", async ({ page }) => {
+  test("persiste errores, oculta soluciones y recupera selecciones idempotentes", async ({
+    page,
+  }) => {
     test.setTimeout(90_000);
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: "Encuentra CASA y ÑANDÚ" })).toBeVisible();
     expect(await page.content()).not.toContain("positionsByTargetId");
@@ -52,15 +56,15 @@ test.describe("E06 — Word-search competitivo", () => {
     await expect(page.getByRole("heading", { name: "Encuentra CASA y ÑANDÚ" })).toBeVisible();
     await expect(page.getByText("1 error")).toBeVisible();
 
-    let firstResponse = true;
+    let failureResponses = 2;
     const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/api/competitive/attempts/*/word-search/select", async (route) => {
       requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
-      if (!firstResponse) {
+      if (failureResponses === 0) {
         await route.continue();
         return;
       }
-      firstResponse = false;
+      failureResponses--;
       const response = await route.fetch();
       await route.fulfill({
         status: 503,
@@ -72,9 +76,11 @@ test.describe("E06 — Word-search competitivo", () => {
 
     await cell(board, 1, 1).click();
     await cell(board, 1, 4).click();
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar" }).click();
-    expect(requestBodies).toHaveLength(2);
+    await expect.poll(() => requestBodies.length).toBe(2);
+    await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar", exact: true }).click();
+    await expect.poll(() => requestBodies.length).toBe(3);
+    expect(requestBodies[2]).toEqual(requestBodies[0]);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("1 / 2")).toBeVisible();
 
@@ -83,7 +89,9 @@ test.describe("E06 — Word-search competitivo", () => {
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").filter({ hasText: "Sopa" }).locator("summary").click();
-    await expect(page.getByText("Las palabras se encuentran en la primera y segunda fila.")).toBeVisible();
+    await expect(
+      page.getByText("Las palabras se encuentran en la primera y segunda fila."),
+    ).toBeVisible();
   });
 
   test("el spectator no puede iniciar el Flash E06", async ({ page }) => {

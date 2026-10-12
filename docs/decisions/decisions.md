@@ -5,6 +5,8 @@
 - Estado: aprobado.
 - Versión: 1.2.
 - Fecha: 2026-09-15.
+- Última actualización: 2026-10-11; reglas de Contrarreloj aprobadas para trabajo futuro, con
+  implementación y detalles específicos pendientes.
 - Este documento define comportamiento e invariantes, no tablas SQL concretas.
 
 ## 1. Producto y participación
@@ -38,9 +40,10 @@
   autoritativa por modo y no es, por sí solo, una transición terminal.
 - La política predeterminada permite un único intento. Un modo puede sustituirla explícitamente y,
   si permite varios intentos, cuenta el mejor.
-- Para el MVP, un intento `in_progress` tiene una única sesión controladora. Una recarga en esa
-  sesión puede reanudarlo; una cookie/token distinto recibe un conflicto de sesión activa y no
-  transfiere el control. El takeover entre dispositivos queda expresamente fuera del MVP.
+- Un intento `in_progress` tiene una única sesión controladora. La decisión aprobada el 2026-10-06
+  permite transferirla explícitamente a otra sesión de la misma cuenta mediante «Continuar aquí»,
+  revocando atómicamente la anterior. El runtime actual aún bloquea un token distinto: la
+  transferencia está pendiente de implementar según la sección 17 y el ADR-0006.
 
 ## 2. Jugadores e identidad
 
@@ -83,6 +86,9 @@
 - Volver a entrar reactiva la relación del jugador con la sala sin eliminar su historial.
 - Salir, ser expulsado o ser bloqueado no elimina automáticamente resultados obtenidos. Los
   intentos fraudulentos se invalidan de forma explícita.
+- Perder el permiso competitivo bloquea nuevas acciones y cierra el intento en curso sin
+  acreditación, conforme a la política aprobada de la sección 20; los resultados ya completados
+  no se eliminan por ese cambio.
 - La zona horaria pertenece a la sala. El valor inicial será `Europe/Madrid`.
 - Una sala se elimina primero de forma lógica y recuperable. Su purga definitiva elimina los datos
   que solo tienen significado dentro de ella.
@@ -273,8 +279,9 @@
   resultado, los puntos concedidos y los detalles necesarios para revisión.
 - Las respuestas polimórficas se almacenan como JSONB validado según el formato. IDs, relaciones y
   campos de consulta frecuente permanecen como columnas normales.
-- Los borradores permanecen en el cliente por defecto. Un modo que necesite reanudación compleja
-  puede persistir un `progress_payload` validado.
+- Las respuestas sin enviar solo permanecen en memoria durante la interacción; no se guardan
+  como borradores recuperables en el navegador ni en el servidor. El `progress_payload` validado
+  conserva únicamente progreso enviado y aceptado, según la política de la sección 19.
 - Los envíos intermedios relevantes se registran como eventos o contadores y no sobrescriben
   silenciosamente la respuesta final.
 - Se distinguen `correct`, `partial`, `incorrect`, `unanswered` y `timeout`.
@@ -306,13 +313,20 @@
   en la versión publicada.
 - Las coronas se editan localmente y se guardan mediante checkpoints server-side sin bloquear la UI.
   Al alcanzar `N` coronas se envía automáticamente el tablero completo a un comando idempotente de
-  validación; una respuesta incorrecta deja la interacción abierta y permite continuar editando.
+  validación, con el tablero bloqueado mientras se confirma. Una respuesta incorrecta permite
+  continuar editando, salvo al agotar las tres validaciones incorrectas de Queens en Pirámide competitivo.
 - Cada validación completa incorrecta registra un evento privado y aplica una penalización del 5% de
   los puntos del item; las marcas X pertenecen únicamente al estado de interfaz y se pierden al
   recuperar la interacción.
 - Completar el tablero válido crea la recepción terminal una sola vez. La solución no forma parte del
   payload de `prepare`, del progreso ni de los comandos del navegador y solo se expone en evaluación
   o revisión autorizada.
+- En Pirámide competitivo el límite fijo es de tres validaciones completas incorrectas por prueba.
+  El tercer fallo crea una recepción terminal con el tablero enviado y se evalúa como `incorrect`,
+  con cero puntos y motivo `attempts_exhausted`; el ascenso termina como `failed` conservando los
+  puntos anteriores. Acertar en la tercera oportunidad supera el nivel. El contador público se
+  deriva de `queens_validation_events`; borradores, entradas inválidas y reintentos idempotentes no
+  consumen oportunidades. `/queens/place` se rechaza en Pirámide. Los demás modos conservan sus reglas.
 - La puntuación competitiva se denomina **Flash Points**. Los Flash Points obtenidos al jugar un
   desafío se suman al total de la temporada activa de la sala.
 - `⚡` y “Flash Points” son equivalentes como representación de interfaz. El texto completo se
@@ -343,6 +357,9 @@
   aplican allí.
 - Un modo futuro podrá sustituir esta regla mediante una decisión específica del modo, sin modificar
   este comparador común ni los contratos de los demás modos.
+- Contrarreloj ya tiene aprobado su comparador propio en la
+  [sección 21](#21-contrarreloj-reglas-acordadas), pendiente de implementación. No modifica los
+  criterios competitivos de los cinco modos actuales.
 - En la temporada manda la suma de Flash Points. Los empates comparten posición y cualquier orden adicional
   es únicamente visual.
 - Los miembros y espectadores pueden consultar los rankings de su sala.
@@ -399,3 +416,165 @@
 - Las operaciones concurrentes usan escrituras atómicas y control de versión.
 - Los fixtures y seeds tienen IDs y fechas deterministas.
 - La aplicación usa privilegios mínimos y nunca expone credenciales administrativas al navegador.
+
+## 15. Scheduler del calendar tick con Vercel Cron
+
+- **Decisión vigente (2026-09-28):** Vercel Cron es el scheduler oficial del calendar tick para el
+  tipo de despliegue Production de Vercel.
+- Vercel invoca `GET /api/internal/calendar/tick` diariamente a las 13:00 UTC mediante
+  `CRON_SECRET`. La tarea no se ejecuta en previews y Vercel no reintenta automáticamente una
+  invocación fallida.
+- `POST /api/internal/calendar/tick` y `npm run calendar:tick` se conservan para ejecución local,
+  CI y recuperación manual, autenticados con `CALENDAR_TICK_SECRET`.
+- La cadencia diaria es una decisión operativa aceptada: una apertura, cierre o finalización puede
+  retrasarse hasta la siguiente ejecución. El tick sigue siendo idempotente y `start_attempt`
+  revalida la ventana temporal antes de iniciar una partida.
+- Esta decisión concreta la automatización remota que S12 dejó pendiente sin introducir una cola ni
+  un worker propio; la validación efectiva del despliegue y sus logs pertenece al proyecto Vercel de staging.
+- **Alcance actual (2026-10-10):** los únicos entornos de aplicación son local y staging.
+  Production es la etiqueta técnica de Vercel que admite cron; no añade un destino operativo.
+  Se conserva la integración y su ejecución automática en staging sigue pendiente de verificar.
+
+## 16. Incidencias del servicio durante partidas
+
+- **Decisión aprobada (2026-10-06):** un fallo breve se resuelve recuperando la partida y conservando
+  respuestas y puntos aceptados, sin repetir preguntas vistas.
+- Si una incidencia del servicio impide continuar, el intento se marca como afectado, sin
+  penalización automática por la incidencia, y el superadmin revisa el caso.
+- Si una caída general compromete la competición, se cancela la publicación para todos y se
+  reprograma con contenido nuevo, conservando histórico y resoluciones auditadas.
+- No se conceden puntos automáticamente ni replay individual como compensación.
+- La [política de incidencias](service-incidents.md) detalla el alcance y separa el acuerdo aprobado
+  de los umbrales, evidencias y procedimientos pendientes de definir e implementar.
+
+## 17. Transferencia explícita de control del intento
+
+- **Decisión aprobada (2026-10-06):** la misma cuenta, con permisos vigentes, puede continuar el
+  mismo intento en otro dispositivo mediante confirmación explícita «Continuar aquí», aunque la
+  sesión anterior siga abierta.
+- El servidor transfiere el control y revoca la sesión anterior atómicamente; nunca hay dos sesiones
+  distintas con permiso para actuar sobre el intento a la vez.
+- La sesión anterior queda bloqueada y, cuando detecta la transferencia, muestra «Has continuado
+  esta partida en otro dispositivo».
+- Se conservan respuestas, puntos y progreso aceptados; los plazos siguen corriendo y no se repiten
+  preguntas vistas. La recuperación aplica el contrato del modo y reconcilia recepciones pendientes.
+- Login, refresh y apertura de URL no transfieren control automáticamente. Un intento terminal
+  permite consultar resultado, sin reabrir la partida.
+- [ADR-0006](adr/0006-explicit-attempt-control-transfer.md) sustituye el aplazamiento anterior,
+  documenta garantías y casos de aceptación. La implementación permanece pendiente.
+
+## 18. Esperas y reintentos de peticiones
+
+- **Decisión aprobada (2026-10-06):** login, 5 segundos sin retry automático; consultas de salas y
+  rankings, 10 segundos y hasta dos retries; respuestas/acciones de juego, 5 segundos y hasta uno;
+  finalización, 10 segundos y hasta tres. El timeout se aplica por petición y los retries son
+  adicionales a la petición inicial.
+- Las esperas entre retries son 1, 2 y 4 segundos según el número permitido; se respeta
+  `Retry-After` del servidor cuando exista.
+- Una escritura incierta solo se reintenta automáticamente con idempotencia garantizada y el mismo
+  comando, payload, versión y clave. Se conservan estado y hechos aceptados; los retries no
+  reinician el reloj competitivo ni conceden otro intento.
+- Agotar el ciclo muestra «Reintentar» conservando el estado. Credenciales, permisos y datos inválidos
+  requieren intervención del usuario; una versión obsoleta requiere reconciliación autorizada.
+- La [política de esperas y retries](request-retries.md) detalla categorías, aceptación y aspectos
+  pendientes. El runtime competitivo ya aplica los valores; la política completa de consultas sigue pendiente.
+
+## 19. Guardado automático y recuperación de partidas
+
+- **Decisión aprobada (2026-10-06):** guardar en el servidor cada respuesta aceptada, su evaluación,
+  puntos, progreso y tiempos autoritativos. Recuperar el mismo intento desde esos hechos, sin
+  reiniciar plazos ni repetir oportunidades consumidas.
+- Las respuestas sin enviar no se guardan ni restauran después de recargar, cerrar la pestaña o
+  cambiar de dispositivo. Permanecen únicamente en memoria mientras la interacción siga abierta.
+- Una respuesta enviada cuya confirmación se perdió no es un borrador: consultar la recepción
+  persistida y resolverla idempotentemente, conforme a la política de reintentos. Si el servidor
+  la recibió antes de la interrupción, conservarla y completar su evaluación una sola vez.
+- El acuerdo conserva los eventos y checkpoints de progreso ya enviados y aceptados por las
+  mecánicas del modo, como coronas de Queens, pistas o intentos de código; no exige guardar cada
+  cambio local. Las marcas X y demás ediciones locales sin enviar se pierden al recargar.
+- La UI solo puede indicar que algo está guardado cuando exista confirmación del servidor;
+  un envío incierto se muestra pendiente y se reconcilia antes de avanzar.
+- Los borradores de formularios administrativos o de perfil quedan fuera de esta decisión y
+  requieren una política específica. No se ha aprobado su guardado automático.
+- La [implementación competitiva](../current/competitive-command-recovery.md) incorpora recuperación
+  durable y pruebas de pérdida de confirmación en los cinco modos. La validación en staging sigue
+  pendiente antes de publicar.
+- **Casos de aceptación:** aceptar una respuesta y recargar conserva una sola evaluación y los
+  mismos puntos/plazos; escribir sin enviar y recargar no restaura el texto ni lo puntúa; perder
+  la confirmación HTTP después de persistir recupera la recepción sin duplicarla; interrumpir
+  antes de evaluar completa la evaluación una vez; Queens restaura checkpoints aceptados, sin
+  inventar coronas pendientes ni marcas X locales. En todos los casos se aplica la recuperación
+  del modo a interacciones consumidas sin recepción.
+
+## 20. Pérdida del permiso para jugar
+
+- **Decisión aprobada (2026-10-06):** bloquear inmediatamente nuevas acciones cuando el jugador
+  pierde el permiso competitivo, sin excepción para terminar la partida. Se prioriza una regla
+  uniforme de autorización y el mantenimiento sencillo de la lógica y la base de datos.
+- Se aplica a expulsión, bloqueo o cambios que retiren realmente el permiso competitivo. Retirar
+  el rol de admin dejando al jugador como miembro competitivo no interrumpe su partida.
+- Sin intento iniciado, no se permite empezar. Un intento en curso se cierra como no completado,
+  usando el estado terminal existente `abandoned` y un motivo de pérdida de permisos diferenciado
+  del abandono voluntario. No se usa `invalidated` ni se presupone fraude.
+- El cierre conserva respuestas, evaluaciones, tiempos y evidencias ya aceptados para auditoría,
+  pero no acredita Flash Points del intento interrumpido. Los puntos de intentos completados
+  antes de retirar el permiso se conservan; cualquier invalidación es una operación aparte.
+- Restablecer permisos o reincorporarse a la sala no reabre ese intento ni concede otro para la
+  misma publicación. La pérdida de cookies, caducidad de Auth o transferencia de control no son
+  por sí solas pérdida del permiso competitivo y siguen sus propias políticas de recuperación.
+- La UI bloquea los controles, cancela reintentos y retira contenido que ya no está autorizado
+  cuando detecta la pérdida, mostrando «Ya no tienes permiso para continuar esta partida».
+  El servidor debe rechazar nuevas acciones aunque el cliente siga abierto, offline o desactualizado.
+- La retirada del permiso y el cierre deben coordinarse atómicamente con los comandos concurrentes.
+  Si la finalización se confirma antes, conservar el resultado completado. Si se confirma primero
+  la pérdida del permiso, rechazar respuesta, finalización y transferencia posteriores sin efecto.
+  Una recepción anterior pendiente de evaluación se conserva para reconciliación interna, sin
+  conceder permiso al jugador para continuar ni acreditar el intento cerrado.
+- **Implementación pendiente:** los comandos actuales exigen membresía activa y ya deniegan
+  acciones tras expulsar; la eliminación de membresía no cierra automáticamente el intento.
+  Implementar cierre idempotente, motivo auditado, coordinación de concurrencia y aviso de UI
+  en todos los caminos que retiren el permiso competitivo, sin depender del navegador del expulsado.
+- **Casos de aceptación:** expulsar antes de iniciar impide crear intento; expulsar durante juego
+  deja un único cierre no completado y cero acreditaciones, conservando hechos anteriores; intentar
+  responder/finalizar/transferir tras expulsión no muta progreso; completar antes de expulsar conserva
+  puntos; competir finalización y expulsión produce un solo resultado según el orden confirmado;
+  reincorporarse no reabre el intento; revocar solo admin manteniendo permiso competitivo no lo cierra.
+
+## 21. Contrarreloj: reglas acordadas
+
+Aprobadas el 2026-10-11. Identificador `time-trial`, como modo competitivo independiente de Flash.
+La [especificación funcional](../current/domain/contrarreloj.md) desarrolla el recorrido completo.
+
+- V1: entre 2 y 20 Queens compatibles de 4×4 a 8×8, en un orden fijo de dificultad creciente.
+  Todos juegan las mismas versiones. Otros formatos quedan para ampliaciones.
+- Duración global obligatoria, sin default, en segundos enteros positivos almacenados como
+  milisegundos dentro del rango integer existente. Los límites por pregunta no se aplican.
+- Pesos editoriales enteros positivos, suma exacta 100. Cada acierto concede todo su peso, sin
+  crédito parcial, bonus de velocidad ni penalización por validaciones incorrectas.
+- Cada tablero permite dos validaciones completas incorrectas; la tercera termina el desafío.
+  Movimientos exploratorios, solicitudes inválidas e idempotencia no consumen oportunidades.
+- Intro y cuenta atrás no crean intento ni entregan tableros. `start` crea el intento sin deadline;
+  la primera preparación fija atómicamente inicio, deadline e intervalo y libera el tablero.
+  `started_at` sigue siendo creación; el reloj se deriva del deadline y duración publicada.
+- El reloj corre durante validaciones, cargas y transiciones sin compensaciones ni reinicios.
+  El feedback de acierto intermedio dura 1,1 segundos; el último acierto solicita cierre inmediato.
+- La recepción se fecha después de adquirir bloqueos en PostgreSQL. Debe ser estrictamente anterior
+  al deadline; la igualdad es tardía. Antes de cerrar se concilian recepciones pendientes.
+  Una última solución aceptada a tiempo deriva `all_solved`; una tercera validación incorrecta
+  aceptada a tiempo deriva `validation_limit`, incluso si la evaluación acaba después del límite.
+  Un acierto intermedio seguido del vencimiento conserva puntos y cierra por `time_limit`.
+- Una prueba activa sin recepción final se cierra sin respuesta y termina por `recovery_interrupted`;
+  si el reloj ya venció, prevalece `time_limit`. Los borradores no sustituyen recepciones.
+  Recuperación y transferencia conservan identidad, deadline y hechos, sin reentregar pruebas vistas.
+  Un intento sin prueba entregada puede preparar; entre pruebas puede avanzar si aún tiene tiempo.
+- Los cierres reglamentarios usan `completed`, `outcome = null` y los motivos anteriores, conservando
+  puntos. Finalización y acreditación son idempotentes. Las pruebas no entregadas no reciben respuestas
+  o tiempos ficticios; revisión solo muestra sus metadatos, sin tablero ni solución.
+- Ranking de publicación e historial: resueltas descendente, luego milisegundos hasta último acierto
+  ascendente, derivados de recepciones aceptadas e incluyendo transiciones. Empates `1,1,3`; cero
+  aciertos comparten posición sin tiempo inventado. El orden visual estable no desempata.
+- La temporada continúa sumando Flash Points. Abandono, pérdida de permisos, invalidación y acceso
+  a revisión mantienen el contrato común; abandonar no acredita puntos.
+
+CT-01 a CT-05 quedan cerradas para Queens. Antes de publicar contenido real se exige calibración
+mediante resoluciones completas y un recorrido de staging. Migración compatible antes de aplicación.

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { CheckIcon } from "@/components/ui";
 import styles from "./ClassificationQuestion.module.css";
 import { MotionButton } from "@/components/ui";
-import type { ClassificationAnswer, ClassificationItem } from "@/types/game";
+import type { ClassificationAnswer, ClassificationItem } from "@/types/gameplay/practice";
 
 type ClassificationQuestionProps = {
   items: Array<Pick<ClassificationItem, "label">>;
@@ -43,10 +43,7 @@ export function ClassificationQuestion({
   };
 
   return (
-    <div
-      className={`${styles.root}`}
-      data-format="classification"
-    >
+    <div className={`${styles.root}`} data-format="classification">
       <div className={styles.progressHeader}>
         <span>Clasificación</span>
         <span>

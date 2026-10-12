@@ -53,9 +53,10 @@ autenticados a una sala o reactivará su membresía con un rol permitido, sin fl
 aceptación de enlace.
 
 La publicación mínima de contenido, la programación de desafíos y la ejecución del calendario se
-realizan desde ese portal interno para S11/S12, con el tick temporal local protegido. S12 también
-permite cancelar de forma lógica y auditada publicaciones futuras antes de abrirlas; la cancelación
-de publicaciones abiertas o cerradas, de temporadas, la automatización remota y las operaciones
+realizan desde ese portal interno para S11/S12. El tick temporal está protegido y se ejecuta mediante
+la integración existente de Vercel Cron, pendiente de verificar en staging, y CLI para operación manual. S12 también permite
+cancelar de forma lógica y auditada publicaciones futuras antes de abrirlas; la cancelación de
+publicaciones abiertas o cerradas, de temporadas, los schedulers alternativos y las operaciones
 públicas siguen fuera de este alcance.
 No son funciones de la UI pública.
 
@@ -162,13 +163,19 @@ No son funciones de la UI pública.
 
 - **FR-18 —** Un jugador competitivo puede iniciar el desafío de su sala solo si tiene una
   membresía competitiva activa y la publicación está disponible.
+  [Perder ese permiso](../../decisions/decisions.md#20-pérdida-del-permiso-para-jugar) bloquea nuevas
+  acciones y cierra el intento en curso como no completado, sin acreditar puntos ni reabrirlo
+  después de reincorporarse. Se conservan los resultados ya completados. La membresía, el cierre,
+  la revocación de sesiones y la auditoría se coordinan en una única transacción.
 - **FR-19 —** El inicio oficial consume el único intento competitivo del jugador para ese desafío.
-  (**Objetivo confirmado para la primera producción**)
+  (**Objetivo confirmado para el piloto**)
 - **FR-20 —** Mientras el intento conserve el estado `inProgress`, una reapertura con la sesión
   controladora autorizada debe reanudar el mismo intento y no crear otro. El servidor debe resolver
   antes cualquier interacción temporal abierta según el modo; cerrar una pestaña o perder conexión
-  no marca por sí solo `abandoned`. Una segunda sesión se bloquea y un abandono explícito sí es
-  terminal.
+  no marca por sí solo `abandoned`. La transferencia explícita de control a la misma cuenta está
+  [aprobada y pendiente de implementar](../../decisions/adr/0006-explicit-attempt-control-transfer.md):
+  «Continuar aquí» revoca atómicamente la sesión anterior sin crear otro intento ni reiniciar plazos.
+  El runtime aún bloquea otra sesión; el abandono explícito sigue siendo terminal.
 - **FR-21 —** El desafío debe aplicar el tiempo total, los tiempos por pregunta y las reglas de
   finalización propias del modo. El agotamiento del tiempo de una pregunta o ronda se registra como
   una respuesta no contestada o como el estado equivalente definido por el modo; no implica por sí
@@ -246,7 +253,7 @@ No son funciones de la UI pública.
 - Mientras la publicación está disponible, no jugar no crea un intento ni concede Flash Points. Si
   la publicación termina antes de iniciar el desafío, el desafío se proyecta como `expired`: el
   jugador no ha jugado, no consume un intento y no genera resultado.
-- Para producción inicial hay un único intento competitivo por jugador y desafío programado.
+- Para el piloto hay un único intento competitivo por jugador y desafío programado.
 - Un intento que sigue `inProgress` puede reanudarse con la sesión controladora; repetir el desafío
   no crea una segunda oportunidad competitiva. Antes de reanudar, el servidor consume la
   interacción abierta según las reglas del modo, sin volver a entregar contenido ya preparado.
@@ -313,7 +320,7 @@ aún aparecen en tipos y lógica de algunos modos son internos y no representan 
 del producto. La disponibilidad de la publicación (`available`, `locked`, `expired`) se mantiene
 separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`, `invalidated`).
 
-### Comportamiento recomendado pendiente de implementación
+### Comportamiento de intentos y expiración por inactividad
 
 - Al iniciar un desafío competitivo se debe crear o recuperar un único intento autoritativo en
   `in_progress`.
@@ -326,10 +333,17 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
 - Al recuperar, el servidor debe reconciliar una recepción ya persistida y, si no existe, cerrar
   atómicamente la interacción preparada como consumida con la consecuencia definida por el modo.
   Nunca debe volver a entregar esa unidad ni concederle un nuevo reloj.
-- Una política posterior podrá cerrar por inactividad tras el límite acordado; hasta entonces la
-  falta de actividad no cambia por sí sola el intento a `abandoned`.
-- La duración del heartbeat, el lease y el posible periodo de gracia aún deben concretarse antes de
-  implementar este comportamiento.
+- La reconciliación server-side cierra como `abandoned` un intento competitivo `in_progress` cuando
+  han pasado al menos 15 minutos desde `last_activity_at` (o desde `started_at` si no existe), y la
+  publicación está cerrada o su `deadline_at` ha vencido. El cierre limpia el progreso recuperable,
+  revoca la sesión, cierra intervalos abiertos, no concede puntos y registra
+  `terminal_reason = inactivity_timeout`.
+- Mientras la publicación siga abierta y su deadline no haya vencido, la falta de actividad no cambia
+  el intento a `abandoned`. El tick diario realiza la limpieza global; la consulta de historial y los
+  comandos de partida la reconcilian bajo demanda. Un intento sin nuevas lecturas ni acciones puede
+  permanecer pendiente hasta el siguiente tick.
+- No se requiere heartbeat ni lease del navegador para esta política; los eventos de ciclo de vida
+  siguen siendo avisos auxiliares.
 
 ## 8. Permisos y restricciones conocidas
 
@@ -373,8 +387,8 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
 - Las decisiones generales de `docs/decisions/decisions.md` siguen vigentes cuando no contradicen lo
   anterior: competición asíncrona, salas privadas, temporadas por sala, perfiles globales,
   contenido versionado y evaluación autoritativa.
-- Los ejemplos de formatos y los datos simulados no demuestran por sí solos que una regla esté lista
-  para producción.
+- Los ejemplos de formatos y los datos simulados no demuestran por sí solos que una regla esté verificada
+  en staging.
 
 ## 10. Cuestiones todavía abiertas
 
@@ -407,9 +421,11 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
   validarse en servidor cuando exista backend.
 - **Resuelta (2026-09-13):** un resultado de cero Flash Points sigue siendo `completed` si el jugador
   llegó al final del flujo y se incluye en el ranking del desafío.
-- **Resuelta (2026-09-13, precisada 2026-09-15):** `abandoned` se reserva para un intento iniciado
-  que el jugador abandona explícitamente; `expired` se reserva para una publicación que termina
-  antes de que el jugador empiece. Una interrupción se recupera por modo y no equivale a ninguno.
+- **Resuelta (2026-09-13, precisada 2026-09-15, ampliada 2026-09-29 y cerrada 2026-10-07):** `abandoned` se reserva
+  para un intento iniciado, por abandono explícito, `inactivity_timeout` o pérdida del permiso
+  competitivo (`permission_revoked`); `expired` se reserva
+  para una publicación que termina antes de que el jugador empiece. Una interrupción abierta mientras
+  el desafío sigue vigente se recupera por modo y no equivale a abandono automático.
 - **Resuelta (2026-09-13):** `expired` ya no forma parte de `AttemptStatus`. El mock deriva la
   expiración a partir de la ventana de la publicación cuando no existe un intento; la interfaz la
   muestra como desafío cerrado sin resultado ni revisión propios.
@@ -420,10 +436,10 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
   desafío: más Flash Points, menor duración efectiva —suma de `AttemptAnswer.timeUsedMs`— y
   `startedAt` más antiguo, con posiciones compartidas. El ranking de temporada solo usa Flash
   Points acumulados.
-- **Pendiente de implementar:** el abandono automático de intentos. El comportamiento objetivo
-  requiere abandono explícito idempotente, checkpoints/heartbeat y cierre autoritativo tras perder
-  actividad; los eventos del navegador solo deben actuar como avisos auxiliares. El intervalo y el
-  periodo de gracia aún no están definidos.
+- **Resuelta (2026-09-29):** la expiración por inactividad usa 15 minutos desde la última actividad,
+  o desde el inicio si no existe, y exige publicación cerrada o deadline vencido. Se aplica mediante
+  Vercel Cron diario y reconciliación bajo demanda; devuelve `attempt_inactivity_expired` a una acción
+  que encuentra su intento recién cerrado.
 - **Resuelta (2026-09-13):** La Pirámide conserva `summit` y `failed` como resultado interno del
   modo. Ambos se proyectan como `completed` cuando la partida llega a su final reglamentario;
   `failed` indica únicamente que terminó antes de alcanzar la cima y no equivale a `notCompleted`.

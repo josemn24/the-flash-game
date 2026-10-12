@@ -38,9 +38,11 @@ Tras aceptar participar en la alpha, las personas juegan voluntariamente al meno
 
 ### Hechos observados
 
-- La aplicación actual permite jugar desafíos individuales y muestra una sala, usuarios y rankings
-  simulados, pero no ofrece salas reales, autenticación ni persistencia remota. Fuentes:
+- La aplicación actual permite jugar desafíos individuales y dispone además de un vehículo técnico
+  persistido localmente con Auth, salas, publicaciones, intentos, rankings y portal privado. Fuentes:
   `../../../../README.md`, `../../../current/status.md`.
+- Estas capacidades técnicas permiten preparar la alpha, pero no demuestran por sí mismas participación
+  recurrente, valor percibido ni deseo de volver.
 
 ### Afirmaciones documentadas
 

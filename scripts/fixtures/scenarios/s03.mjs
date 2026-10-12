@@ -38,13 +38,31 @@ export const scenario = {
     { label: "bob", displayName: "Bob" },
     { label: "carol", displayName: "Carol" },
     { label: "dave", displayName: "Dave" },
+    { label: "erin", displayName: "Erin" },
+    { label: "frank", displayName: "Frank" },
   ],
 
-  buildDomainSql({ accounts, sqlString, sqlUuid }) {
+  buildDomainSql({
+    accounts,
+    sqlString,
+    sqlUuid,
+    activeCompetitorLabels = ["alice", "carol", "dave", "erin", "frank"],
+  }) {
     const alice = accounts.alice.playerId;
-    const bob = accounts.bob.playerId;
     const dateStart = "2000-01-01T00:00:00Z";
     const dateEnd = "2999-01-01T00:00:00Z";
+    const membershipRows = [
+      ["alice", "owner"],
+      ["bob", "spectator"],
+      ...activeCompetitorLabels
+        .filter((label) => label !== "alice")
+        .map((label) => [label, "member"]),
+    ]
+      .map(
+        ([label, role]) =>
+          `(${sqlUuid(domainIds.room)}, ${sqlString(accounts[label].playerId)}, '${role}', 'active', ${sqlString(dateStart)})`,
+      )
+      .join(",\n  ");
     const questionOne = publicQuestion("s03-question-one", "¿Cuál es la capital de Portugal?", [
       "Lisboa",
       "Oporto",
@@ -64,10 +82,7 @@ insert into public.rooms (id, slug, title, description)
 values (${sqlUuid(domainIds.room)}, 's03-main', 'Sala competitiva S03', 'Flash persistido de dos preguntas');
 insert into public.room_memberships (room_id, player_id, role, status, joined_at)
 values
-  (${sqlUuid(domainIds.room)}, ${sqlString(alice)}, 'owner', 'active', ${sqlString(dateStart)}),
-  (${sqlUuid(domainIds.room)}, ${sqlString(bob)}, 'spectator', 'active', ${sqlString(dateStart)}),
-  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.carol.playerId)}, 'member', 'active', ${sqlString(dateStart)}),
-  (${sqlUuid(domainIds.room)}, ${sqlString(accounts.dave.playerId)}, 'member', 'active', ${sqlString(dateStart)});
+  ${membershipRows};
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
 values (${sqlUuid(domainIds.season)}, ${sqlUuid(domainIds.room)}, 'Temporada S03', 'active',
   ${sqlString(dateStart)}, ${sqlString(dateEnd)});
@@ -80,9 +95,9 @@ insert into private.question_versions
    public_payload, created_by_player_id)
 values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlUuid(domainIds.questionOne)}, 1, 1,
-    'multiple-choice', 15000, ${sqlString(JSON.stringify(questionOne))}, ${sqlString(alice)}),
+    'multiple-choice', 60000, ${sqlString(JSON.stringify(questionOne))}, ${sqlString(alice)}),
   (${sqlUuid(domainIds.questionVersionTwo)}, ${sqlUuid(domainIds.questionTwo)}, 1, 1,
-    'multiple-choice', 15000, ${sqlString(JSON.stringify(questionTwo))}, ${sqlString(alice)});
+    'multiple-choice', 60000, ${sqlString(JSON.stringify(questionTwo))}, ${sqlString(alice)});
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
   (${sqlUuid(domainIds.questionVersionOne)}, ${sqlString(JSON.stringify({ correctAnswer: "Lisboa", explanation: "Lisboa es la capital de Portugal." }))}),

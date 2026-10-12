@@ -1,0 +1,62 @@
+import "server-only";
+
+import type { EvaluationContext } from "@/application/ports/attempt-commands";
+import type { CompetitiveEvaluator } from "@/application/ports/competitive-evaluator";
+import { normalizeCompetitiveEvaluationContext } from "@/infrastructure/supabase/attempts/normalize-competitive-context";
+import { evaluateCompetitiveReceipt } from "@/server/evaluation/evaluate-receipt";
+import { resolveCompetitiveQuestion } from "@/server/evaluation/resolve-competitive-question";
+import { QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS } from "@/lib/queens";
+import type { AnswerValue } from "@/types/contracts";
+
+export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
+  evaluate(context: EvaluationContext) {
+    if ((context.mode === "pyramid" || context.mode === "time-trial") && context.answer === null) {
+      return { status: "unanswered", points: 0 };
+    }
+
+    const result = evaluateCompetitiveReceipt({
+      receipt: {
+        timeUsedMs: context.timeUsedMs,
+        timedOut: context.timedOut,
+      },
+      question: resolveCompetitiveQuestion(
+        normalizeCompetitiveEvaluationContext(context, "authorized-runtime"),
+      ),
+      answer: (context.answer as AnswerValue | null) ?? null,
+      submittedCodes: [...(context.submittedCodes ?? [])],
+      progressiveCluesRevealed: context.progressiveCluesRevealed ?? 1,
+      progressiveClueAvailablePoints: context.progressiveClueAvailablePoints,
+      matchingIncorrectAttempts: context.matchingIncorrectAttempts ?? 0,
+      incorrectAttempts: context.incorrectAttempts ?? 0,
+    });
+
+    if (
+      context.mode === "pyramid" &&
+      !context.timedOut &&
+      result.details?.type === "queens" &&
+      !result.details.solved &&
+      (context.incorrectValidations ?? 0) >= QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS
+    ) {
+      return {
+        status: "incorrect",
+        points: 0,
+        details: { ...result.details, failureReason: "attempts_exhausted" },
+      };
+    }
+
+    if (context.mode === "time-trial") {
+      const correct =
+        !context.timedOut && result.details?.type === "queens" && result.details.solved;
+      return {
+        status: correct ? "correct" : context.timedOut ? "unanswered" : "incorrect",
+        points: correct ? context.itemPoints : 0,
+        ...(result.details ? { details: result.details } : {}),
+      };
+    }
+    return {
+      status: result.status,
+      points: result.points,
+      ...(result.details ? { details: result.details } : {}),
+    };
+  },
+};

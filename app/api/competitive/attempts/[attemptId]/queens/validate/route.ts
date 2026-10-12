@@ -31,7 +31,7 @@ export async function POST(
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
     const sessionToken = await readAttemptToken(attemptId);
-    const result = await commandsFor(identity).validateQueensBoard({
+    const result = await commandsFor(identity, requestId).validateQueensBoard({
       attemptId: attemptId as AttemptId,
       sessionToken,
       lockVersion: requireLockVersion(body),

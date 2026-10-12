@@ -10,9 +10,15 @@ import {
   responseFor,
   requestIdFor,
   verifiedIdentity,
+  mapAttemptError,
 } from "@/server/competitive/attempt-api";
-import { readTerminalFlashReview } from "@/server/competitive/flashResult";
-import type { AttemptId, AnswerReceiptId } from "@/types/domain/identifiers";
+import {
+  readTerminalReviewSafely,
+  readTerminalAttemptResult,
+  readAbandonedAttemptResult,
+} from "@/server/competitive/flashResult";
+import type { AttemptId } from "@/types/domain/identifiers";
+import type { RecoveryUseCaseResult } from "@/application/ports/attempt-use-cases";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,58 +35,72 @@ export async function POST(
     const { attemptId: rawAttemptId } = await params;
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
-    const sessionToken = await readAttemptToken(attemptId);
-    const commands = commandsFor(identity);
-    const recovery = await commands.recover({
-      attemptId: attemptId as AttemptId,
-      sessionToken,
-      lockVersion: requireLockVersion(body),
-      idempotencyKey: `recovery:${attemptId}:${requireLockVersion(body)}`,
-    });
-    let resolved: unknown;
-    let lockVersion = recovery.lockVersion;
-    if (recovery.receiptId) {
-      resolved = await commands.evaluateReceipt({
-        attemptId,
+    const lockVersion = requireLockVersion(body);
+    let recovered: RecoveryUseCaseResult;
+    try {
+      const sessionToken = await readAttemptToken(attemptId);
+      recovered = await commandsFor(identity, requestId).recover({
+        attemptId: attemptId as AttemptId,
         sessionToken,
         lockVersion,
-        receiptId: recovery.receiptId as AnswerReceiptId,
-        idempotencyKey: `recovery:evaluation:${recovery.receiptId}`,
+        idempotencyKey: `recovery:${attemptId}:${lockVersion}`,
       });
-      lockVersion = (resolved as { lockVersion: number }).lockVersion;
+    } catch (error) {
+      if (
+        [
+          "attempt_session_missing",
+          "session_revoked",
+          "not_authorized",
+          "attempt_permission_revoked",
+          "attempt_terminal",
+        ].includes(mapAttemptError(error).code)
+      ) {
+        const saved = await readTerminalAttemptResult(attemptId, identity);
+        if (saved) {
+          await clearAttemptToken(attemptId, identity.authUserId, saved.scheduledChallengeId);
+          return responseFor(
+            { ...saved.result, ...(await readTerminalReviewSafely(attemptId)), phase: "results" },
+            200,
+            requestId,
+            "competitive.attempt.recover",
+            startedAt,
+          );
+        }
+        const abandoned = await readAbandonedAttemptResult(attemptId, identity);
+        if (abandoned) {
+          await clearAttemptToken(attemptId, identity.authUserId, abandoned.scheduledChallengeId);
+          return responseFor(
+            { ...abandoned.result, phase: "results" },
+            200,
+            requestId,
+            "competitive.attempt.recover",
+            startedAt,
+          );
+        }
+      }
+      throw error;
     }
-    const snapshot = await commands.readRecovery(attemptId, sessionToken);
-    if (
-      snapshot.allItemsResolved ||
-      snapshot.terminalOutcome === "eliminated" ||
-      snapshot.terminalOutcome === "failed"
-    ) {
-      const completed = await commands.completeFromPersistedAnswers({
-        attemptId,
-        sessionToken,
-        lockVersion: snapshot.lockVersion,
-        idempotencyKey: `recovery:complete:${attemptId}`,
-      });
-      const review = await readTerminalFlashReview(attemptId);
+    const snapshot = recovered.snapshot;
+    if (recovered.completed) {
+      const review = await readTerminalReviewSafely(attemptId);
       await clearAttemptToken(attemptId, identity.authUserId, snapshot.scheduledChallengeId);
       return responseFor(
         {
-          status: completed.status,
-          lockVersion: completed.lockVersion,
-          answers: snapshot.answers,
+          ...recovered.completed,
+          terminalOutcome: snapshot.terminalOutcome ?? null,
+          answers: recovered.completed.answers ?? snapshot.answers,
           phase: "results",
-          ...(resolved ? { resolved } : {}),
-          review,
-          score: completed.score,
+          ...(recovered.evaluated ? { resolved: recovered.evaluated } : {}),
+          ...(snapshot.challengeMode === "narrative" && snapshot.narrativeCursor
+            ? { narrativeCursor: snapshot.narrativeCursor }
+            : {}),
+          ...review,
+          score: recovered.completed.score,
           ...(snapshot.challengeMode === "survival"
             ? {
-                livesRemaining: completed.livesRemaining ?? snapshot.livesRemaining,
+                livesRemaining: recovered.completed.livesRemaining ?? snapshot.livesRemaining,
                 initialLives: snapshot.initialLives,
-                outcome: completed.outcome ?? snapshot.terminalOutcome,
               }
-            : {}),
-          ...(snapshot.challengeMode === "pyramid"
-            ? { outcome: completed.outcome ?? snapshot.terminalOutcome }
             : {}),
         },
         200,
@@ -91,7 +111,11 @@ export async function POST(
     }
     return responseFor(
       {
+        attemptId: snapshot.attemptId,
+        challengeMode: snapshot.challengeMode,
         status: snapshot.status,
+        outcome: snapshot.outcome,
+        terminalOutcome: snapshot.terminalOutcome ?? null,
         lockVersion: snapshot.lockVersion,
         answers: snapshot.answers,
         phase:
@@ -104,10 +128,12 @@ export async function POST(
           ? {
               livesRemaining: snapshot.livesRemaining,
               initialLives: snapshot.initialLives,
-              outcome: snapshot.terminalOutcome,
             }
           : {}),
-        ...(resolved ? { resolved } : {}),
+        ...(recovered.evaluated ? { resolved: recovered.evaluated } : {}),
+        ...(snapshot.challengeMode === "narrative" && snapshot.narrativeCursor
+          ? { narrativeCursor: snapshot.narrativeCursor }
+          : {}),
       },
       200,
       requestId,

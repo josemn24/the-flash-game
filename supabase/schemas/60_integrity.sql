@@ -123,6 +123,9 @@ begin
       if (select coalesce(sum(points), 0) from private.challenge_items where challenge_version_id = new.id) <> 100 then
         raise exception 'Challenge items must sum to 100 points';
       end if;
+      if new.mode = 'time-trial' then
+        perform private.assert_time_trial_content(new.id);
+      end if;
       if exists (select 1 from private.challenge_items i join private.question_versions q on q.id = i.question_version_id
         where i.challenge_version_id = new.id and q.status <> 'published') then
         raise exception 'Publish every question before its challenge';
@@ -199,6 +202,7 @@ create trigger publications_guard before insert or update on public.scheduled_ch
 -- tick must not block a live window, and a closed or finished window rejects new attempts.
 create function private.guard_attempt() returns trigger
 language plpgsql set search_path = '' as $$
+declare attempt_mode text;
 begin
   if tg_op = 'INSERT' then
     if new.status <> 'in_progress' then raise exception 'An attempt must start in progress'; end if;
@@ -236,10 +240,23 @@ begin
     return new;
   end if;
   if (new.id, new.player_id, new.scheduled_challenge_id, new.challenge_version_id, new.kind,
-      new.attempt_number, new.started_at, new.deadline_at) is distinct from
+      new.attempt_number, new.started_at) is distinct from
      (old.id, old.player_id, old.scheduled_challenge_id, old.challenge_version_id, old.kind,
-      old.attempt_number, old.started_at, old.deadline_at) then
+      old.attempt_number, old.started_at) then
     raise exception 'Attempt context is immutable';
+  end if;
+  if new.deadline_at is distinct from old.deadline_at then
+    if old.deadline_at is not null or old.status <> 'in_progress' or new.status <> 'in_progress'
+      or not exists (
+        select 1 from private.challenge_versions cv
+        join private.attempt_timing_units u on u.attempt_id = old.id
+        join private.challenge_items i on i.id = u.challenge_item_id
+        where cv.id = old.challenge_version_id and cv.mode = 'time-trial'
+          and i.position = 1 and u.scope = 'attempt'
+          and u.deadline_at = new.deadline_at
+          and u.deadline_at = u.started_at + cv.global_time_limit_ms * interval '1 millisecond'
+          and (select count(*) from private.attempt_timing_units other_unit where other_unit.attempt_id = old.id) = 1
+      ) then raise exception 'Attempt deadline is immutable'; end if;
   end if;
   if new.lock_version <> old.lock_version + 1 then raise exception 'Expected next lock_version'; end if;
   if old.status <> 'in_progress' then
@@ -252,6 +269,16 @@ begin
     end if;
   elsif new.status = 'invalidated' then
     raise exception 'Complete or abandon before administrative invalidation';
+  end if;
+  if new.status = 'completed' then
+    select cv.mode into attempt_mode from private.challenge_versions cv
+      where cv.id = new.challenge_version_id;
+    if attempt_mode is null
+      or (attempt_mode in ('flash', 'alphabet', 'narrative', 'time-trial') and new.outcome is not null)
+      or (attempt_mode = 'survival' and (new.outcome is null or new.outcome not in ('survived', 'eliminated')))
+      or (attempt_mode = 'pyramid' and (new.outcome is null or new.outcome not in ('summit', 'failed'))) then
+      raise exception 'invalid_attempt_lifecycle' using errcode = '23514';
+    end if;
   end if;
   return new;
 end;
@@ -300,6 +327,11 @@ begin
     raise exception 'Publication cancelled';
   end if;
   select points into item_points from private.challenge_items where id = new.challenge_item_id;
+  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial')
+    and (new.status = 'partial' or new.points <> case when new.status = 'correct' then item_points else 0 end
+      or (new.status = 'correct' and (r.timed_out or r.received_at >= a.deadline_at))) then
+    raise exception 'Invalid Contrarreloj score';
+  end if;
   if new.points > item_points then raise exception 'Points exceed item allocation'; end if;
   return new;
 end;

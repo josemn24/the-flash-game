@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import styles from "./LogicMatrixQuestion.module.css";
-import type { LogicMatrixPiece } from "@/types/game";
+import type { LogicMatrixPiece } from "@/types/gameplay/practice";
 
 type LogicMatrixQuestionProps = {
   pieces: LogicMatrixPiece[];
@@ -111,9 +111,7 @@ export function LogicMatrixQuestion({
   const piecesById = new Map(pieces.map((piece) => [piece.id, piece]));
 
   return (
-    <section
-      className={`${styles.root} ${showPieceLabels ? "" : styles.symbolsOnly}`}
-    >
+    <section className={`${styles.root} ${showPieceLabels ? "" : styles.symbolsOnly}`}>
       <div className={styles.matrix} role="grid" aria-label="Matriz lógica con una casilla vacía">
         {cells.map((pieceId, index) => {
           const piece = pieceId ? piecesById.get(pieceId) : undefined;

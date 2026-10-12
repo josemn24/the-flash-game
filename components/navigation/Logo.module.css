@@ -5,14 +5,14 @@
     height: 2rem;
     place-items: center;
     border-radius: 0.55rem;
-    color: var(--color-text-on-brand);
-    background: var(--color-brand);
-    box-shadow: 0 0 24px color-mix(in srgb, var(--color-brand) 22%, transparent);
+    color: var(--ds-color-fg-on-brand);
+    background: var(--ds-color-bg-brand);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--ds-color-bg-brand) 22%, transparent);
     transform: skewX(-7deg);
   }
 
   .brandLabel {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
     font-size: 0.875rem;
     font-weight: 900;
     letter-spacing: 0.18em;

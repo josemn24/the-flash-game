@@ -15,7 +15,10 @@ export const scenario = {
         reason: "Abrir S12",
       },
     });
-    assert(!nowOpen.error && nowOpen.data?.status === "scheduled", "El superadmin programa una publicación");
+    assert(
+      !nowOpen.error && nowOpen.data?.status === "scheduled",
+      "El superadmin programa una publicación",
+    );
     const repeated = await clients.superadmin.rpc("create_superadmin_scheduled_challenge", {
       input: {
         idempotencyKey: "integration-s12-create-open",
@@ -27,7 +30,10 @@ export const scenario = {
         reason: "Abrir S12",
       },
     });
-    assert(!repeated.error && repeated.data?.scheduledChallengeId === nowOpen.data?.scheduledChallengeId, "La programación es idempotente");
+    assert(
+      !repeated.error && repeated.data?.scheduledChallengeId === nowOpen.data?.scheduledChallengeId,
+      "La programación es idempotente",
+    );
 
     const future = await clients.superadmin.rpc("create_superadmin_scheduled_challenge", {
       input: {
@@ -40,23 +46,47 @@ export const scenario = {
         reason: "Preparar futuro S12",
       },
     });
-    assert(!future.error && future.data?.status === "scheduled", "El calendario conserva una publicación futura");
+    assert(
+      !future.error && future.data?.status === "scheduled",
+      "El calendario conserva una publicación futura",
+    );
     const context = await clients.superadmin.rpc("get_superadmin_calendar_context");
-    assert(!context.error && context.data?.entries?.length === 2, "El superadmin ve el contexto de calendario");
+    assert(
+      !context.error && context.data?.entries?.length === 2,
+      "El superadmin ve el contexto de calendario",
+    );
 
     const tickSql = `set role service_role; select private.run_calendar_tick_command(jsonb_build_object('runId','integration-s12-tick'));`;
     await dockerSql(tickSql, config.dbContainer);
-    const calendar = await rpc(clients.member, "get_room_calendar", { target_room_slug: fixture.data.roomSlug });
+    const calendar = await rpc(clients.member, "get_room_calendar", {
+      target_room_slug: fixture.data.roomSlug,
+    });
     assert(calendar.length === 2, "El miembro ve futuro y disponible en el calendario");
-    assert(calendar.find((entry) => entry.publication_number === 1)?.availability_status === "available", "La publicación abierta es jugable por reloj efectivo");
-    assert(!JSON.stringify(calendar).includes("correctAnswer"), "La lectura pública nunca entrega soluciones");
+    assert(
+      calendar.find((entry) => entry.publication_number === 1)?.availability_status === "available",
+      "La publicación abierta es jugable por reloj efectivo",
+    );
+    assert(
+      !JSON.stringify(calendar).includes("correctAnswer"),
+      "La lectura pública nunca entrega soluciones",
+    );
 
-    const spectator = await rpc(clients.spectator, "get_room_calendar", { target_room_slug: fixture.data.roomSlug });
-    assert(spectator.length === 2 && spectator.every((entry) => !entry.can_start), "El espectador ve metadatos sin inicio competitivo");
+    const spectator = await rpc(clients.spectator, "get_room_calendar", {
+      target_room_slug: fixture.data.roomSlug,
+    });
+    assert(
+      spectator.length === 2 && spectator.every((entry) => !entry.can_start),
+      "El espectador ve metadatos sin inicio competitivo",
+    );
 
     const memberCards = await rpc(clients.member, "get_my_room_cards");
-    assert(memberCards.some((room) => room.room_slug === fixture.data.roomSlug), "La sala sigue disponible para el miembro");
-    const outsider = await rpc(clients.outsider, "get_room_calendar", { target_room_slug: fixture.data.roomSlug });
+    assert(
+      memberCards.some((room) => room.room_slug === fixture.data.roomSlug),
+      "La sala sigue disponible para el miembro",
+    );
+    const outsider = await rpc(clients.outsider, "get_room_calendar", {
+      target_room_slug: fixture.data.roomSlug,
+    });
     assert(outsider.length === 0, "Un externo no ve el calendario");
   },
 };

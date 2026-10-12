@@ -33,7 +33,7 @@
     place-items: center;
     border: var(--border-flash);
     border-radius: var(--radius-control);
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
   }
 
@@ -80,7 +80,7 @@
   }
 
   .roomLink:focus-visible {
-    outline: 3px solid var(--color-focus);
+    outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 5px;
     border-radius: var(--radius-card);
   }
@@ -102,14 +102,18 @@
     position: relative;
     aspect-ratio: 1.72;
     overflow: visible;
-    background: var(--color-social);
+    background: var(--ds-color-bg-selected);
   }
 
   .roomArt::after {
     position: absolute;
     inset: 0;
     z-index: 1;
-    background: linear-gradient(145deg, rgb(105 87 232 / 8%), rgb(23 23 32 / 30%));
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--ds-color-bg-selected) 8%, transparent),
+      rgb(23 23 32 / 30%)
+    );
     content: "";
     pointer-events: none;
   }
@@ -165,7 +169,7 @@
   .roomTitles p {
     overflow: hidden;
     margin-top: 7px;
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 15px;
     font-weight: 700;
     line-height: 1.25;
@@ -181,7 +185,7 @@
     place-items: center;
     border: var(--border-flash);
     border-radius: var(--radius-control);
-    background: var(--color-brand);
+    background: var(--ds-color-bg-brand);
     box-shadow: var(--shadow-control);
     transition: transform var(--motion-press-out) var(--ease-out);
   }
@@ -207,8 +211,8 @@
     gap: 6px;
     padding: 6px 11px;
     border-radius: var(--radius-pill);
-    background: var(--color-ink);
-    color: var(--color-text-on-social);
+    background: var(--ds-color-bg-inverse);
+    color: var(--ds-color-fg-on-inverse);
     font-family: var(--type-mono);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
@@ -216,11 +220,11 @@
   }
 
   .statBadge:first-child svg {
-    color: var(--color-brand);
+    color: var(--ds-color-fg-brand-inverse);
   }
 
   .statBadge:last-child svg {
-    color: var(--color-reward);
+    color: var(--ds-color-fg-reward-inverse);
   }
 
   .statBadge svg {
@@ -238,7 +242,7 @@
   .emptyState > svg {
     width: 24px;
     height: 24px;
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   .emptyState h2,
@@ -253,7 +257,7 @@
   }
 
   .emptyState p {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-size: 14px;
     line-height: 1.5;
   }

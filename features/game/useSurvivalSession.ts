@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import {
   calculateTotalScore,
-  evaluateAnswer,
+  evaluatePracticeAnswer,
   getTimedOutAnswer,
   isAnswerCorrect,
 } from "@/lib/scoring";
@@ -12,9 +12,12 @@ import {
   getSurvivalReachedQuestionCount,
   isSurvivalMistake,
   shouldEliminateAfterIncorrectAttempt,
-} from "@/features/game/survivalRules";
+} from "@/lib/gameplay/survivalProgress";
 import { FLASH_POP_FEEDBACK_DURATION } from "@/features/game/transitionTiming";
-import type { AnswerResult, AnswerValue, GamePhase, SurvivalChallenge } from "@/types/game";
+import type { AnswerResult } from "@/types/gameplay/result";
+import type { PracticeAnswerValue } from "@/types/gameplay/practice";
+import type { GamePhase } from "@/types/gameplay/session";
+import type { SurvivalChallenge } from "@/types/gameplay/challenge";
 
 export type SurvivalSessionSnapshot = {
   startedAt?: string;
@@ -127,7 +130,7 @@ export function useSurvivalSession(
   const questionStartedAt = useRef(0);
   const answerLock = useRef(false);
   const codeAttemptsRef = useRef<string[]>([]);
-  const draftAnswerRef = useRef<AnswerValue | null>(null);
+  const draftAnswerRef = useRef<PracticeAnswerValue | null>(null);
   const incorrectAttemptsRef = useRef(0);
   const progressiveCluesRevealedRef = useRef(1);
   const advanceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -184,14 +187,14 @@ export function useSurvivalSession(
   }, [challenge.lives, clearAdvanceTimeout, resetQuestionRefs]);
 
   const submitAnswer = useCallback(
-    (answer: AnswerValue | null, timedOut = false, submittedCodes?: string[]) => {
+    (answer: PracticeAnswerValue | null, timedOut = false, submittedCodes?: string[]) => {
       if (answerLock.current || !question) return;
       answerLock.current = true;
 
       const rawTime = timedOut
         ? question.timeLimit
         : (performance.now() - questionStartedAt.current) / 1000;
-      const result = evaluateAnswer({
+      const result = evaluatePracticeAnswer({
         question,
         answer,
         timeUsed: rawTime,
@@ -265,7 +268,7 @@ export function useSurvivalSession(
     );
   }, [question, submitAnswer]);
 
-  const handleAnswerProgress = useCallback((answer: AnswerValue) => {
+  const handleAnswerProgress = useCallback((answer: PracticeAnswerValue) => {
     draftAnswerRef.current = answer;
   }, []);
 

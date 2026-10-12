@@ -1,3 +1,4 @@
+import { loseGameplayConfirmations } from "./support/lost-confirmations";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -33,27 +34,23 @@ async function signIn(page: Page, account: FixtureAccount) {
 
 async function solveEscape(page: Page) {
   const board = page.getByRole("group", { name: "Tablero Escape de Pirámide" });
-  const move = async (button: Locator, axis: "x" | "y", distance: number) => {
-    const [buttonBox, boardBox] = await Promise.all([button.boundingBox(), board.boundingBox()]);
-    expect(buttonBox).not.toBeNull();
-    expect(boardBox).not.toBeNull();
-    const cellSize = (axis === "x" ? boardBox!.width : boardBox!.height) / 6;
-    const startX = buttonBox!.x + buttonBox!.width / 2;
-    const startY = buttonBox!.y + buttonBox!.height / 2;
-    await page.mouse.move(startX, startY);
-    await page.mouse.down();
-    await page.mouse.move(
-      startX + (axis === "x" ? distance * cellSize : 0),
-      startY + (axis === "y" ? distance * cellSize : 0),
-      { steps: 8 },
-    );
-    await page.mouse.up();
+  const move = async (
+    button: Locator,
+    key: "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown",
+    repetitions = 1,
+  ) => {
+    await expect(board).toBeVisible();
+    await expect(button).toBeVisible();
+    await button.click();
+    for (let index = 0; index < repetitions; index += 1) {
+      await button.press(key);
+    }
   };
 
-  await move(page.getByRole("button", { name: /bloque C/ }), "x", -1);
-  await move(page.getByRole("button", { name: /bloque A/ }), "y", -1);
-  await move(page.getByRole("button", { name: /bloque B/ }), "y", 3);
-  await move(page.getByRole("button", { name: /pieza objetivo/ }), "x", 4);
+  await move(page.getByRole("button", { name: /bloque C/ }), "ArrowLeft");
+  await move(page.getByRole("button", { name: /bloque A/ }), "ArrowUp");
+  await move(page.getByRole("button", { name: /bloque B/ }), "ArrowDown", 3);
+  await move(page.getByRole("button", { name: /pieza objetivo/ }), "ArrowRight", 4);
 }
 
 async function solveWordHashtag(page: Page) {
@@ -123,7 +120,7 @@ async function createRoomAndSeason(page: Page, data: Fixture, suffix: string) {
   ] as const;
   for (const member of members) {
     await dialog.getByRole("button", { name: "Añadir miembro" }).click();
-    const row = dialog.locator('[aria-label="Email del miembro"]').last().locator("..");
+    const row = dialog.getByLabel("Email del miembro").last().locator("..").locator("..");
     await row.getByLabel("Email del miembro").fill(member.account.email);
     await row.getByLabel("Rol del miembro").selectOption(member.role);
     await row.getByRole("button", { name: "Buscar" }).click();
@@ -434,7 +431,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
           ...formatQuestion,
           payloadSchemaVersion: 1,
           timeLimitMs: level === 5 ? 90_000 : level === 6 || level === 7 ? 60_000 : 30_000,
-          points: level === 2 ? 12 : level === 7 ? 16 : index < 5 ? 14 : 15,
+          points: level === 2 ? 12 : level === 7 ? 16 : index < 4 ? 14 : 15,
           modeConfig: {
             levelId: `level-${level}`,
             label: `Nivel ${level}`,
@@ -506,6 +503,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
 
     const memberContext = await browser.newContext();
     const member = await memberContext.newPage();
+    const verifyConfirmations = await loseGameplayConfirmations(member);
     const ownerContext = await browser.newContext();
     const owner = await ownerContext.newPage();
     const interruptedContext = await browser.newContext();
@@ -541,18 +539,8 @@ test.describe("S15 — La Pirámide competitiva", () => {
           await expect(member.locator("header").getByText(/Nivel 1/)).toBeVisible();
           await member.setViewportSize({ width: 1280, height: 720 });
           await expect(member.locator("p[aria-label='Nivel 1 de 7']")).toBeVisible();
-          let failFirstAnswerRequest = true;
-          await member.route("**/api/competitive/attempts/*/answer", async (route) => {
-            if (failFirstAnswerRequest) {
-              failFirstAnswerRequest = false;
-              await route.abort();
-              return;
-            }
-            await route.continue();
-          });
           await member.getByRole("button", { name: "Verdadero" }).click();
           await expect(member.getByText("No hemos podido confirmar tu respuesta.")).toBeVisible();
-          await member.getByRole("button", { name: "Reintentar" }).click();
         } else if (level === 2) {
           await expect(
             member.getByRole("heading", { name: /Qué personaje bíblico soy/ }),
@@ -639,9 +627,7 @@ test.describe("S15 — La Pirámide competitiva", () => {
       ] as const;
       for (const [levelIndex, explanation] of reviewExplanations) {
         const answer = member.locator("details").nth(levelIndex);
-        if (levelIndex > 0) {
-          await answer.locator("summary").click();
-        }
+        await answer.locator("summary").click();
         await expect(answer.getByText(explanation, { exact: false })).toBeVisible();
       }
       const secondAnswer = member.locator("details").nth(1);
@@ -754,7 +740,8 @@ test.describe("S15 — La Pirámide competitiva", () => {
 
       await member.goto(`/salas/${room.roomSlug}/ranking`);
       await expect(member.getByText("Member S15")).toBeVisible();
-      await expect(member.getByRole("img", { name: /Flash Points$/ })).toBeVisible();
+      await expect(member.getByRole("img", { name: /Flash Points$/ }).first()).toBeVisible();
+      await verifyConfirmations();
     } finally {
       await memberContext.close();
       await ownerContext.close();

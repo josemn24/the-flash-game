@@ -13,7 +13,7 @@ import { GameHeader, Chip, MotionButton } from "@/components/ui";
 import { usePyramidSession } from "@/features/pyramid/usePyramidSession";
 import { withPyramidScoring } from "@/lib/challengeScoring";
 import type { PyramidAttemptOutcome } from "@/features/pyramid/pyramidAttempt";
-import type { PyramidChallenge, PyramidLevel } from "@/types/game";
+import type { PyramidChallenge, PyramidLevel } from "@/types/gameplay";
 import styles from "./PyramidGame.module.css";
 
 function formatTime(seconds: number) {
@@ -311,7 +311,7 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--color-canvas)] text-[var(--color-ink)] selection:bg-[var(--color-brand)] selection:text-[var(--color-text-on-brand)]">
+      <main className="relative min-h-[100dvh] overflow-hidden bg-[var(--ds-color-bg-canvas)] text-[var(--ds-color-fg-primary)] selection:bg-[var(--ds-color-bg-brand)] selection:text-[var(--ds-color-fg-on-brand)]">
         <SpeedBackground />
         <div className="relative z-10">
           <AnimatePresence mode="wait">

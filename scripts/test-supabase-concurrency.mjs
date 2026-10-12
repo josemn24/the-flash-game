@@ -20,7 +20,14 @@ export async function testConcurrentCommands(sql) {
   await sql(
     `begin; ${await readFile("supabase/tests/support/command-fixtures.sql", "utf8")} commit;`,
   );
-  async function invoke(actor, command, input, hold = false, role = "service_role", schema = "private") {
+  async function invoke(
+    actor,
+    command,
+    input,
+    hold = false,
+    role = "service_role",
+    schema = "private",
+  ) {
     const marker = `flash_concurrency_${randomUUID().replaceAll("-", "")}`;
     const operation =
       sql(`begin; set local application_name = ${quote(marker)}; set local role ${role};
@@ -86,7 +93,11 @@ export async function testConcurrentCommands(sql) {
   );
   requireOneConflict(seasonActivations, "Only one concurrent season activation succeeds");
   assert.equal(
-    (await sql(`select count(*) from public.seasons where room_id=${quote(seasonRaceRoom)} and status='active';`)).trim(),
+    (
+      await sql(
+        `select count(*) from public.seasons where room_id=${quote(seasonRaceRoom)} and status='active';`,
+      )
+    ).trim(),
     "1",
     "Concurrent season activation leaves exactly one active season",
   );
@@ -127,7 +138,9 @@ export async function testConcurrentCommands(sql) {
       (${quote(editorialItemTwo)}, ${quote(editorialVersion)}, ${quote(editorialQuestionVersionTwo)}, 2, 50, 1, '{}'::jsonb);
     commit;`);
   const editorialUpdatedAt = (
-    await sql(`select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`)
+    await sql(
+      `select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`,
+    )
   ).trim();
   const editorialDocument = (title) => ({
     challenge: {
@@ -201,7 +214,9 @@ export async function testConcurrentCommands(sql) {
       join private.question_versions version on version.id = item.question_version_id
       where item.challenge_version_id=${quote(editorialVersion)}
       order by item.position;`)
-  ).trim().split("\n");
+  )
+    .trim()
+    .split("\n");
   for (const [index, currentQuestion] of currentEditorialQuestions.entries()) {
     const [questionVersionId, questionUpdatedAt] = currentQuestion.split("|");
     await sql(`begin;
@@ -220,7 +235,9 @@ export async function testConcurrentCommands(sql) {
   ).trim();
   assert.equal(publishedBeforeRace, "draft", "A concurrent edit leaves the draft unpublished");
   const editorialPublishUpdatedAt = (
-    await sql(`select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`)
+    await sql(
+      `select updated_at::text from private.challenge_versions where id=${quote(editorialVersion)};`,
+    )
   ).trim();
   const editorialPublications = await race(
     "superadmin",
@@ -242,7 +259,11 @@ export async function testConcurrentCommands(sql) {
   );
   requireOneConflict(editorialPublications, "Only one concurrent editorial publication succeeds");
   assert.equal(
-    (await sql(`select count(*) from private.challenge_versions where id=${quote(editorialVersion)} and status='published';`)).trim(),
+    (
+      await sql(
+        `select count(*) from private.challenge_versions where id=${quote(editorialVersion)} and status='published';`,
+      )
+    ).trim(),
     "1",
     "Concurrent editorial publication leaves one published version",
   );
@@ -304,12 +325,73 @@ export async function testConcurrentCommands(sql) {
     answer: true,
     idempotencyKey: "same-response",
   };
-  const answers = await race("owner", "owner", "receive_answer", response, response);
+  const firstAnswer = await invoke("owner", "receive_answer", response, true);
+  const answers = await Promise.allSettled([
+    firstAnswer.done,
+    ...Array.from({ length: 9 }, () => run("owner", "receive_answer", response)),
+  ]);
   assert.ok(answers.every((r) => r.status === "fulfilled"));
   assert.deepEqual(
     answers[0].value,
     answers[1].value,
     "Concurrent retries return the same receipt",
+  );
+  assert.equal((await sql("select count(*) from private.answer_receipts;")).trim(), "1");
+  await assert.rejects(
+    run("owner", "receive_answer", { ...response, answer: false }),
+    /idempotency_conflict/,
+  );
+  const receipt = answers[0].value;
+  const recoveryInput = {
+    attemptId: a.attemptId,
+    lockVersion: receipt.lockVersion,
+    sessionToken: response.sessionToken,
+    idempotencyKey: "race-recovery",
+  };
+  const evaluationInput = {
+    attemptId: a.attemptId,
+    lockVersion: receipt.lockVersion,
+    sessionToken: response.sessionToken,
+    receiptId: receipt.receiptId,
+    status: "correct",
+    points: 50,
+    idempotencyKey: "race-evaluation",
+  };
+  const recovery = await invoke("owner", "recover_attempt", recoveryInput, true);
+  const evaluating = await invoke("owner", "record_evaluation", evaluationInput);
+  const competing = await Promise.allSettled([recovery.done, evaluating.done]);
+  assert.equal(competing[0].status, "fulfilled");
+  assert.equal(competing[0].value.receiptId, receipt.receiptId);
+  assert.equal(competing[1].status, "rejected");
+  assert.match(competing[1].reason.message, /stale_version/);
+  const evaluatedInput = { ...evaluationInput, lockVersion: competing[0].value.lockVersion };
+  const evaluations = await race("owner", "owner", "record_evaluation", evaluatedInput, {
+    ...evaluatedInput,
+    idempotencyKey: "race-evaluation-recovery",
+  });
+  requireOneConflict(evaluations, "Concurrent evaluator and recovery register one evaluation");
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.attempt_answers where receipt_id=${quote(receipt.receiptId)};`,
+      )
+    ).trim(),
+    "1",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.answer_receipts where attempt_id=${quote(a.attemptId)};`,
+      )
+    ).trim(),
+    "1",
+  );
+  const tenReplays = await Promise.all(
+    Array.from({ length: 10 }, () => run("owner", "receive_answer", response)),
+  );
+  assert.ok(
+    tenReplays.every((value) => JSON.stringify(value) === JSON.stringify(answers[0].value)),
+    "Ten independent retries return one receipt",
   );
   assert.equal((await sql("select count(*) from private.answer_receipts;")).trim(), "1");
 
@@ -383,4 +465,436 @@ export async function testConcurrentCommands(sql) {
     ).trim(),
     "2",
   );
+
+  const alphabetToken = "alphabet-race-token-".repeat(3);
+  const alphabetStart = await run("owner", "start_attempt", {
+    scheduledChallengeId: id("sc-alphabet-fast"),
+    sessionToken: alphabetToken,
+    idempotencyKey: "alphabet-race-start",
+  });
+  const alphabetPrepare = await run("owner", "prepare_interaction", {
+    attemptId: alphabetStart.attemptId,
+    sessionToken: alphabetToken,
+    lockVersion: alphabetStart.lockVersion,
+    idempotencyKey: "alphabet-race-prepare",
+  });
+  const receiving = await invoke(
+    "owner",
+    "receive_answer",
+    {
+      attemptId: alphabetStart.attemptId,
+      sessionToken: alphabetToken,
+      challengeItemId: alphabetPrepare.challengeItemId,
+      lockVersion: alphabetPrepare.lockVersion,
+      answer: true,
+      idempotencyKey: "alphabet-race-answer",
+    },
+    true,
+  );
+  const closing = await invoke("owner", "complete_attempt", {
+    attemptId: alphabetStart.attemptId,
+    sessionToken: alphabetToken,
+    lockVersion: alphabetPrepare.lockVersion,
+    score: 0,
+    idempotencyKey: "alphabet-race-stale-close",
+  });
+  const alphabetOutcomes = await Promise.allSettled([receiving.done, closing.done]);
+  requireOneConflict(
+    alphabetOutcomes,
+    "An in-flight Alphabet receipt invalidates the old completion version",
+  );
+  assert.match(alphabetOutcomes[1].reason.message, /stale_version/);
+  const alphabetReceipt = alphabetOutcomes[0].value;
+  const alphabetCompletion = {
+    attemptId: alphabetStart.attemptId,
+    sessionToken: alphabetToken,
+    lockVersion: alphabetReceipt.lockVersion,
+    score: 0,
+    idempotencyKey: "alphabet-race-final-close",
+    pendingEvaluation: {
+      receiptId: alphabetReceipt.receiptId,
+      status: alphabetReceipt.timedOut ? "unanswered" : "correct",
+      points: alphabetReceipt.timedOut ? 0 : 50,
+    },
+  };
+  const duplicateClosures = await race(
+    "owner",
+    "owner",
+    "complete_attempt",
+    alphabetCompletion,
+    alphabetCompletion,
+  );
+  assert.equal(
+    duplicateClosures.filter((outcome) => outcome.status === "fulfilled").length,
+    2,
+    "Duplicate Alphabet completion replays after session revocation",
+  );
+  assert.deepEqual(duplicateClosures[0].value, duplicateClosures[1].value);
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.attempt_answers where attempt_id=${quote(alphabetStart.attemptId)};`,
+      )
+    ).trim(),
+    "2",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.flash_point_entries where attempt_id=${quote(alphabetStart.attemptId)};`,
+      )
+    ).trim(),
+    "1",
+  );
+  // Avatar lifecycle races use separate connections and a barrier after the
+  // first command has acquired its locks, before its COMMIT.
+  const avatarInput = (assetId, key) => ({
+    assetId,
+    idempotencyKey: key,
+    mimeType: "image/png",
+    byteSize: 128,
+    width: 64,
+    height: 64,
+    sha256: "a".repeat(64),
+  });
+  const prepareAvatar = async () => {
+    const assetId = randomUUID();
+    const path = `avatars/${id("owner")}/${assetId}.png`;
+    await run("owner", "prepare_avatar_upload_command", {
+      assetId,
+      objectPath: path,
+      idempotencyKey: randomUUID(),
+      mimeType: "image/png",
+      byteSize: 128,
+    });
+    return { assetId, path };
+  };
+  const confirmedFirst = await prepareAvatar();
+  const confirming = await invoke(
+    "owner",
+    "confirm_avatar_upload_command",
+    avatarInput(confirmedFirst.assetId, "avatar-confirm-first"),
+    true,
+  );
+  const cancelAfter = await invoke("owner", "abort_avatar_upload_command", {
+    assetId: confirmedFirst.assetId,
+  });
+  const confirmationRace = await Promise.allSettled([confirming.done, cancelAfter.done]);
+  assert.equal(confirmationRace[0].status, "fulfilled");
+  assert.equal(confirmationRace[1].status, "rejected");
+  assert.match(confirmationRace[1].reason.message, /media_asset_in_use/);
+  assert.equal(
+    (
+      await sql(
+        `select status from private.media_assets where id=${quote(confirmedFirst.assetId)};`,
+      )
+    ).trim(),
+    "ready",
+  );
+
+  const canceledFirst = await prepareAvatar();
+  const canceling = await invoke(
+    "owner",
+    "abort_avatar_upload_command",
+    { assetId: canceledFirst.assetId },
+    true,
+  );
+  const confirmAfter = await invoke(
+    "owner",
+    "confirm_avatar_upload_command",
+    avatarInput(canceledFirst.assetId, "avatar-canceled-first"),
+  );
+  const cancelRace = await Promise.allSettled([canceling.done, confirmAfter.done]);
+  assert.equal(cancelRace[0].value.status, "deleted");
+  assert.equal(cancelRace[1].status, "rejected");
+  assert.match(cancelRace[1].reason.message, /media_asset_not_pending/);
+  assert.equal(
+    (await sql(`select avatar_path from public.players where id=${quote(id("owner"))};`)).trim(),
+    confirmedFirst.path,
+  );
+
+  const firstReplacement = await prepareAvatar();
+  const secondReplacement = await prepareAvatar();
+  const replacements = await race(
+    "owner",
+    "owner",
+    "confirm_avatar_upload_command",
+    avatarInput(firstReplacement.assetId, "avatar-replace-one"),
+    avatarInput(secondReplacement.assetId, "avatar-replace-two"),
+  );
+  assert.equal(
+    replacements.filter((r) => r.status === "fulfilled").length,
+    2,
+    "Replacements serialize without deadlock",
+  );
+  assert.equal(
+    (await sql(`select avatar_path from public.players where id=${quote(id("owner"))};`)).trim(),
+    secondReplacement.path,
+  );
+  const oldClaim = await invoke(
+    "owner",
+    "claim_archived_avatar_cleanup",
+    { objectPath: firstReplacement.path },
+    true,
+  );
+  const oldReplay = await invoke("owner", "read_avatar_upload_confirmation", {
+    assetId: firstReplacement.assetId,
+    idempotencyKey: "avatar-replace-one",
+  });
+  const [claim, replay] = await Promise.all([oldClaim.done, oldReplay.done]);
+  assert.equal(claim.status, "deleted");
+  assert.equal(replay.currentProfile.avatarPath, secondReplacement.path);
+  assert.equal(
+    (
+      await sql(
+        `select status from private.media_assets where id=${quote(secondReplacement.assetId)};`,
+      )
+    ).trim(),
+    "ready",
+  );
+
+  const duplicate = await prepareAvatar();
+  const duplicateCommand = avatarInput(duplicate.assetId, "avatar-ten-copies");
+  const leader = await invoke("owner", "confirm_avatar_upload_command", duplicateCommand, true);
+  const followers = await Promise.all(
+    Array.from({ length: 9 }, () =>
+      invoke("owner", "confirm_avatar_upload_command", duplicateCommand),
+    ),
+  );
+  const duplicateResults = await Promise.all([leader.done, ...followers.map((f) => f.done)]);
+  for (const result of duplicateResults) assert.deepEqual(result, duplicateResults[0]);
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.audit_log where action='confirm_avatar_upload' and entity_id=${quote(duplicate.assetId)};`,
+      )
+    ).trim(),
+    "1",
+  );
+  await assert.rejects(
+    run("owner", "confirm_avatar_upload_command", { ...duplicateCommand, sha256: "b".repeat(64) }),
+    /idempotency_conflict/,
+  );
+  await sql(
+    `begin; ${await readFile("supabase/tests/support/pyramid-queens-fixtures.sql", "utf8")} commit;`,
+  );
+  const queens = lastJson(
+    await sql(`begin;
+    select test_support.as_actor('member');
+    set local role service_role;
+    select test_support.start_pyramid_queens();
+    select test_support.run('activate_interaction');
+    commit;`),
+  );
+  let queensInput = {
+    attemptId: queens.attemptId,
+    challengeItemId: id("pyramid-queens-item-2"),
+    sessionToken: "q".repeat(40),
+    lockVersion: queens.lockVersion,
+    queens: [0, 2, 5, 14, 20],
+    idempotencyKey: "queens-first-wrong",
+  };
+  const firstWrong = await run("member", "submit_queens_answer", queensInput);
+  queensInput = {
+    ...queensInput,
+    lockVersion: firstWrong.lockVersion,
+    idempotencyKey: "queens-second-wrong",
+  };
+  const secondWrongRace = await race("member", "member", "submit_queens_answer", queensInput, {
+    ...queensInput,
+    idempotencyKey: "queens-second-competing",
+  });
+  requireOneConflict(
+    secondWrongRace,
+    "Concurrent different validations consume only one opportunity",
+  );
+  const secondWrong = secondWrongRace.find((r) => r.status === "fulfilled").value;
+  assert.equal(secondWrong.incorrectValidations, 2);
+  queensInput = {
+    ...queensInput,
+    lockVersion: secondWrong.lockVersion,
+    idempotencyKey: "queens-third-wrong",
+  };
+  const finalRace = await race(
+    "member",
+    "member",
+    "submit_queens_answer",
+    queensInput,
+    queensInput,
+  );
+  assert.ok(
+    finalRace.every((r) => r.status === "fulfilled"),
+    "Concurrent identical validations replay successfully",
+  );
+  const terminalQueens = finalRace[0].value;
+  assert.deepEqual(terminalQueens, finalRace[1].value);
+  assert.equal(terminalQueens.terminal, true);
+  assert.equal(terminalQueens.incorrectValidations, 3);
+  await assert.rejects(
+    run("member", "save_queens_draft", {
+      ...queensInput,
+      lockVersion: terminalQueens.lockVersion,
+      idempotencyKey: "queens-late-draft",
+      queens: [2],
+    }),
+    /interaction_not_presented/,
+  );
+  const evaluatedQueens = await run("member", "record_evaluation", {
+    attemptId: queens.attemptId,
+    sessionToken: queensInput.sessionToken,
+    lockVersion: terminalQueens.lockVersion,
+    receiptId: terminalQueens.receiptId,
+    idempotencyKey: "queens-final-evaluation",
+    status: "incorrect",
+    points: 0,
+    resultDetails: { type: "queens", failureReason: "attempts_exhausted", solved: false },
+  });
+  const queensComplete = {
+    attemptId: queens.attemptId,
+    sessionToken: queensInput.sessionToken,
+    lockVersion: evaluatedQueens.lockVersion,
+    idempotencyKey: "queens-final-completion",
+    score: 0,
+    outcome: "failed",
+  };
+  const completionRace = await race(
+    "member",
+    "member",
+    "complete_attempt",
+    queensComplete,
+    queensComplete,
+  );
+  assert.ok(completionRace.every((r) => r.status === "fulfilled"));
+  assert.deepEqual(completionRace[0].value, completionRace[1].value);
+  assert.equal(completionRace[0].value.outcome, "failed");
+  assert.equal(completionRace[0].value.score, 14);
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.queens_validation_events where attempt_id=${quote(queens.attemptId)};`,
+      )
+    ).trim(),
+    "3",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.answer_receipts where attempt_id=${quote(queens.attemptId)} and challenge_item_id=${quote(queensInput.challengeItemId)};`,
+      )
+    ).trim(),
+    "1",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.flash_point_entries where attempt_id=${quote(queens.attemptId)} and entry_type='accreditation';`,
+      )
+    ).trim(),
+    "1",
+  );
+
+  const timedQueens = lastJson(
+    await sql(`begin;
+    select test_support.as_actor('member');
+    set local role service_role;
+    select test_support.start_pyramid_queens(6);
+    select test_support.run('activate_interaction');
+    commit;`),
+  );
+  const timedInput = {
+    attemptId: timedQueens.attemptId,
+    challengeItemId: id("pyramid-queens-timeout-item-2"),
+    sessionToken: "u".repeat(40),
+    lockVersion: timedQueens.lockVersion,
+  };
+  // The draft holds the attempt row beyond the published one-second clock. The validation
+  // starts before that deadline but must use the clock after acquiring the attempt lock.
+  const delayedDraft = await invoke(
+    "member",
+    "save_queens_draft",
+    {
+      ...timedInput,
+      queens: [2, 9],
+      idempotencyKey: "queens-held-draft",
+    },
+    true,
+  );
+  const lateValidation = await invoke("member", "submit_queens_answer", {
+    ...timedInput,
+    lockVersion: timedInput.lockVersion + 1,
+    queens: [2, 9, 10, 18, 21],
+    idempotencyKey: "queens-validation-crosses-deadline",
+  });
+  const timingRace = await Promise.allSettled([delayedDraft.done, lateValidation.done]);
+  requireOneConflict(timingRace, "A validation waiting beyond the server deadline is rejected");
+  assert.match(String(timingRace[1].reason), /deadline_reached/);
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.queens_validation_events where attempt_id=${quote(timedQueens.attemptId)};`,
+      )
+    ).trim(),
+    "0",
+  );
+  const recoveredQueens = await run("member", "recover_attempt", {
+    attemptId: timedInput.attemptId,
+    sessionToken: timedInput.sessionToken,
+    lockVersion: timedInput.lockVersion + 1,
+    idempotencyKey: "queens-timeout-recovery",
+  });
+  const timedContext = lastJson(
+    await sql(`begin;
+    select test_support.as_actor('member');
+    set local role service_role;
+    select private.read_evaluation_context(${quote(recoveredQueens.receiptId)}::uuid, ${quote(timedInput.sessionToken)});
+    commit;`),
+  );
+  assert.equal(timedContext.timedOut, true);
+  assert.equal(timedContext.incorrectValidations, 0);
+  await sql(
+    `begin; ${await readFile("supabase/tests/support/time-trial-fixtures.sql", "utf8")} commit;`,
+  );
+  const ctSession = "concurrent-time-trial-session-token";
+  const ctStarted = await run("owner", "start_attempt", {
+    scheduledChallengeId: id("ct-sc-4"),
+    sessionToken: ctSession,
+    idempotencyKey: "ct-concurrent-start",
+  });
+  const ctPrepared = await invoke(
+    "owner",
+    "prepare_interaction",
+    {
+      attemptId: ctStarted.attemptId,
+      sessionToken: ctSession,
+      lockVersion: ctStarted.lockVersion,
+      idempotencyKey: "ct-concurrent-prepare",
+    },
+    true,
+  );
+  const blockedValidation = await invoke("owner", "submit_queens_answer", {
+    attemptId: ctStarted.attemptId,
+    sessionToken: ctSession,
+    lockVersion: ctStarted.lockVersion + 2,
+    challengeItemId: id("ct-item-2-1"),
+    queens: [2, 9, 10, 18, 21],
+    idempotencyKey: "ct-blocked-validation",
+  });
+  const lockedOutcomes = await Promise.allSettled([ctPrepared.done, blockedValidation.done]);
+  assert.equal(lockedOutcomes[0].status, "fulfilled");
+  assert.equal(lockedOutcomes[1].status, "rejected");
+  assert.match(
+    lockedOutcomes[1].reason.message,
+    /deadline_reached/,
+    "A request arriving before the deadline but acquiring the attempt lock afterwards is late",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.queens_validation_events where attempt_id=${quote(ctStarted.attemptId)};`,
+      )
+    ).trim(),
+    "0",
+    "A blocked late validation consumes no opportunity and accepts no receipt",
+  );
+  console.log("Contrarreloj post-lock deadline race passed.");
 }

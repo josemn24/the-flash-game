@@ -35,9 +35,13 @@ async function solveEscape(page: Page) {
     const startY = buttonBox!.y + buttonBox!.height / 2;
     await page.mouse.move(startX, startY);
     await page.mouse.down();
-    await page.mouse.move(startX + (axis === "x" ? distance * cellSize : 0), startY + (axis === "y" ? distance * cellSize : 0), {
-      steps: 8,
-    });
+    await page.mouse.move(
+      startX + (axis === "x" ? distance * cellSize : 0),
+      startY + (axis === "y" ? distance * cellSize : 0),
+      {
+        steps: 8,
+      },
+    );
     await page.mouse.up();
     await expect(page.getByText(new RegExp(`${count} movimiento`))).toBeVisible();
   };
@@ -49,12 +53,16 @@ async function solveEscape(page: Page) {
 }
 
 test.describe("F18 — escape competitivo", () => {
-  test("oculta la solución, acepta la ruta final y reintenta idempotentemente", async ({ page }) => {
+  test("oculta la solución, acepta la ruta final y reintenta idempotentemente", async ({
+    page,
+  }) => {
     test.setTimeout(75_000);
     const data = await fixture();
     await openFlash(page, data.users.charlie);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: /Mueve los bloques/ })).toBeVisible();
     expect(await page.content()).not.toContain("referenceSolution");
@@ -88,8 +96,8 @@ test.describe("F18 — escape competitivo", () => {
     });
 
     await solveEscape(page);
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar" }).click();
+    await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar", exact: true }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });

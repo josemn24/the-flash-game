@@ -30,21 +30,39 @@ function toneClass(tone: ResultMetricTone | undefined) {
 export function ChallengeResultScreen({
   model,
   onReview,
+  expired = false,
   returnTo,
   returnLabel = "Volver",
 }: ChallengeResultScreenProps) {
-  const maxScore = Number.isFinite(model.maxScore) && model.maxScore > 0 ? model.maxScore : 100;
-  const score = normalizeResultScore(model.score, maxScore);
-  const accuracy = Number.isFinite(model.accuracy)
-    ? Math.min(100, Math.max(0, Math.round(model.accuracy)))
+  const displayModel = expired
+    ? {
+        ...model,
+        statusLabel: "No completado",
+        eyebrow: "Partida cerrada",
+        title: "Partida cerrada por inactividad",
+        subtitle:
+          "El desafío terminó mientras la partida estaba inactiva. No se han concedido puntos.",
+        score: 0,
+        accuracy: 0,
+        totalTime: 0,
+        metrics: [{ label: "Estado", value: "Abandonada", tone: "danger" as const }],
+      }
+    : model;
+  const maxScore =
+    Number.isFinite(displayModel.maxScore) && displayModel.maxScore > 0
+      ? displayModel.maxScore
+      : 100;
+  const score = normalizeResultScore(displayModel.score, maxScore);
+  const accuracy = Number.isFinite(displayModel.accuracy)
+    ? Math.min(100, Math.max(0, Math.round(displayModel.accuracy)))
     : 0;
   const progress = getResultProgress(score, maxScore);
 
   return (
     <div className={styles.stage}>
       <GameHeader
-        title={model.gameTitle}
-        action={<Chip tone="success">{model.statusLabel}</Chip>}
+        title={displayModel.gameTitle}
+        action={<Chip tone={expired ? "danger" : "success"}>{displayModel.statusLabel}</Chip>}
       />
       <div className={styles.resultLayout}>
         <motion.div
@@ -53,9 +71,11 @@ export function ChallengeResultScreen({
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
           <Card as="section" className={styles.resultCard} aria-labelledby="challenge-result-title">
-            <p className={styles.eyebrow}>{model.eyebrow}</p>
-            <h1 id="challenge-result-title">{model.title}</h1>
-            {model.subtitle ? <p className={styles.subtitle}>{model.subtitle}</p> : null}
+            <p className={styles.eyebrow}>{displayModel.eyebrow}</p>
+            <h1 id="challenge-result-title">{displayModel.title}</h1>
+            {displayModel.subtitle ? (
+              <p className={styles.subtitle}>{displayModel.subtitle}</p>
+            ) : null}
             <div className={styles.scoreDisplay}>
               <strong>{score}</strong>
               <span>/{maxScore} puntos</span>
@@ -78,9 +98,11 @@ export function ChallengeResultScreen({
                   {returnLabel}
                 </ButtonLink>
               ) : null}
-              <Button variant="secondary" fullWidth onClick={onReview} leadingIcon={<EyeIcon />}>
-                Ver respuestas
-              </Button>
+              {onReview ? (
+                <Button variant="secondary" fullWidth onClick={onReview} leadingIcon={<EyeIcon />}>
+                  Ver respuestas
+                </Button>
+              ) : null}
             </div>
           </Card>
         </motion.div>
@@ -108,12 +130,12 @@ export function ChallengeResultScreen({
                 <span>Tiempo total</span>
                 <ClockIcon />
               </div>
-              <strong>{formatResultTime(model.totalTime)}</strong>
+              <strong>{formatResultTime(displayModel.totalTime)}</strong>
             </Card>
           </div>
 
-          <div className={styles.answerStats} data-count={model.metrics.length}>
-            {model.metrics.map((metric) => (
+          <div className={styles.answerStats} data-count={displayModel.metrics.length}>
+            {displayModel.metrics.map((metric) => (
               <Card className={`${styles.metricCard} ${toneClass(metric.tone)}`} key={metric.label}>
                 <div className={styles.metricHeader}>
                   <span>{metric.label}</span>

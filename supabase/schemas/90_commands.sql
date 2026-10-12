@@ -19,9 +19,12 @@ begin
     when 'start' then
       allowed := array['idempotencyKey','scheduledChallengeId','sessionToken']; required := allowed;
     when 'takeover' then
-      allowed := array['idempotencyKey','attemptId','lockVersion','newSessionToken']; required := allowed;
+      allowed := array['idempotencyKey','attemptId','scheduledChallengeId','lockVersion','newSessionToken']; required := allowed;
     when 'prepare' then
       allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
+    when 'activate' then
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId'];
+      allowed := required;
     when 'receive' then
       required := array['idempotencyKey','attemptId','lockVersion','sessionToken','challengeItemId','answer'];
       allowed := required || array['clientTimeUsedMs'];
@@ -32,7 +35,7 @@ begin
       allowed := required || array['resultDetails'];
     when 'complete' then
       required := array['idempotencyKey','attemptId','lockVersion','sessionToken','score'];
-      allowed := required || array['outcome'];
+      allowed := required || array['outcome','pendingEvaluation'];
     when 'abandon' then
       allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;
     when 'accept_invitation' then
@@ -66,10 +69,13 @@ begin
   if coalesce((outcome->>'replayed')::boolean, false) then return result; end if;
 
   insert into private.audit_log(actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload)
-  values(actor, op, outcome->>'entityType', (outcome->>'entityId')::uuid, input->>'reason', key,
-    nullif(outcome->'beforePayload', 'null'::jsonb),
+  values(actor, case when op = 'takeover' then 'takeover_confirmed' else op end,
+    outcome->>'entityType', (outcome->>'entityId')::uuid, input->>'reason', key,
+    case when op = 'takeover' then
+      nullif(outcome->'beforePayload', 'null'::jsonb) || jsonb_build_object('deadlineAt', result->'deadlineAt')
+      else nullif(outcome->'beforePayload', 'null'::jsonb) end,
     -- Avoid persisting playable payloads or free-text answers into a second store.
-    result - 'publicPayload');
+    result - 'publicPayload' - 'answers');
   insert into private.command_requests(actor_id, idempotency_key, operation, input, result)
     values(actor, key, op, safe_input, result);
   return result;
@@ -84,11 +90,8 @@ revoke all on function private.start_attempt(jsonb) from public, anon, authentic
 grant execute on function private.start_attempt(jsonb) to service_role;
 
 create function private.take_over_attempt(input jsonb) returns jsonb
-language plpgsql security definer set search_path = '' as $$
-begin
-  -- Cross-device control transfer is deliberately deferred for the MVP.
-  raise exception 'takeover_disabled' using errcode = '55000';
-end;
+language sql security definer set search_path = '' as $$
+  select private.execute_command('takeover', input)
 $$;
 alter function private.take_over_attempt(jsonb) owner to postgres;
 revoke all on function private.take_over_attempt(jsonb) from public, anon, authenticated, service_role;
@@ -97,9 +100,9 @@ grant execute on function private.take_over_attempt(jsonb) to service_role;
 create function private.prepare_interaction(input jsonb) returns jsonb
 language plpgsql security definer set search_path = '' as $$
 begin
-  -- A lost prepare response or a countdown race may leave the interval open.
-  -- Re-reading is safe: execute_command exposes only public payload/progress,
-  -- and an already received answer is still blocked as evaluation_pending.
+  -- A lost prepare response is safe: the command cache and the prepared row
+  -- allow the client to re-read public payloads before activation. Pyramid
+  -- timing starts only in activate_interaction.
   if exists (
     select 1 from private.command_requests
     where actor_id = private.command_actor() and idempotency_key = prepare_interaction.input->>'idempotencyKey'
@@ -113,6 +116,14 @@ $$;
 alter function private.prepare_interaction(jsonb) owner to postgres;
 revoke all on function private.prepare_interaction(jsonb) from public, anon, authenticated, service_role;
 grant execute on function private.prepare_interaction(jsonb) to service_role;
+
+create function private.activate_interaction(input jsonb) returns jsonb
+language sql security definer set search_path = '' as $$
+  select private.execute_command('activate', input)
+$$;
+alter function private.activate_interaction(jsonb) owner to postgres;
+revoke all on function private.activate_interaction(jsonb) from public, anon, authenticated, service_role;
+grant execute on function private.activate_interaction(jsonb) to service_role;
 
 create function private.receive_answer(input jsonb) returns jsonb
 language sql security definer set search_path = '' as $$

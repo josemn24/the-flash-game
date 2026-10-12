@@ -3,7 +3,6 @@ import {
   AttemptApiError,
   commandsFor,
   errorResponse,
-  newAttemptToken,
   readStartAttemptToken,
   readJson,
   requireKey,
@@ -26,29 +25,42 @@ export async function POST(request: Request) {
     const body = await readJson(request);
     const identity = await verifiedIdentity();
     const scheduledChallengeId = requireUuid(body, "scheduledChallengeId") as ScheduledChallengeId;
-    const sessionToken =
-      (await readStartAttemptToken(identity.authUserId, scheduledChallengeId)) ?? newAttemptToken();
-    const result = await commandsFor(identity).start({
+    const sessionToken = await readStartAttemptToken(identity.authUserId, scheduledChallengeId);
+    if (!sessionToken) throw new AttemptApiError("attempt_session_missing", 409);
+    const started = await commandsFor(identity, requestId).start({
       scheduledChallengeId,
       idempotencyKey: requireKey(body),
       sessionToken,
     });
-    if (result.controlRequired) {
-      throw new AttemptApiError("attempt_control_required", 409);
+    if (started.result.controlRequired) {
+      return responseFor(
+        {
+          error: { code: "attempt_control_required", requestId },
+          attempt: {
+            attemptId: started.result.attemptId,
+            lockVersion: started.result.lockVersion,
+            deadlineAt: started.result.deadlineAt,
+          },
+        },
+        409,
+        requestId,
+        "competitive.attempt.start",
+        startedAt,
+      );
     }
     // The token is intentionally absent from the JSON response and the HTML/RSC tree.
     await setAttemptToken(
-      result.attemptId,
+      started.result.attemptId,
       identity.authUserId,
       scheduledChallengeId,
-      sessionToken,
+      started.sessionToken,
     );
     return responseFor(
       {
-        attemptId: result.attemptId,
-        resumed: result.resumed,
-        deadlineAt: result.deadlineAt,
-        lockVersion: result.lockVersion,
+        attemptId: started.result.attemptId,
+        resumed: started.result.resumed,
+        deadlineAt: started.result.deadlineAt,
+        lockVersion: started.result.lockVersion,
       },
       200,
       requestId,

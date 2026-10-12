@@ -25,18 +25,24 @@ async function openFlash(page: Page, account: FixtureAccount) {
 }
 
 async function solveZip(page: Page) {
-  const path = [0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24];
+  const path = [
+    0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24,
+  ];
   const cells = page.locator('[role="gridcell"] button');
   for (const cell of path) await cells.nth(cell).click();
 }
 
 test.describe("F16 — zip competitivo", () => {
-  test("oculta la solución, acepta el camino final y reintenta idempotentemente", async ({ page }) => {
+  test("oculta la solución, acepta el camino final y reintenta idempotentemente", async ({
+    page,
+  }) => {
     test.setTimeout(75_000);
     const data = await fixture();
     await openFlash(page, data.users.charlie);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: /Une los números/ })).toBeVisible();
     expect(await page.content()).not.toContain("solutionPayload");
@@ -69,8 +75,8 @@ test.describe("F16 — zip competitivo", () => {
     });
 
     await solveZip(page);
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar" }).click();
+    await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar", exact: true }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });

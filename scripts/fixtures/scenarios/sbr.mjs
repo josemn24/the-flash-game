@@ -344,7 +344,7 @@ const SBR_QUESTIONS = [
       category: "Química",
       tags: tags(["natural_sciences"], ["chemistry_elements"], ["memory"], ["recall"]),
       question: "¿Qué dos elementos forman principalmente el acero?",
-      options: ["Hierro y carbono", "Cobre y estaño", "Oro y plata", "Sodio y cloro"],
+      options: ["Cobre y estaño", "Hierro y carbono", "Oro y plata", "Sodio y cloro"],
       media: null,
       promptVisual: null,
     },

@@ -29,6 +29,10 @@ select set_config('request.jwt.claims', jsonb_build_object(
 )::text, true);
 set local role authenticated;
 
+select is((select count(*) from jsonb_array_elements(public.get_superadmin_editorial_context()->'entries') entry
+  where entry->>'mode' = 'alphabet'), 2::bigint,
+  'The editorial context includes Alphabet versions');
+
 select set_config('s11.document', jsonb_build_object(
   'challenge', jsonb_build_object(
     'slug', 's11-flash-001', 'title', 'Flash S11', 'subtitle', 'Dos preguntas',
@@ -37,22 +41,17 @@ select set_config('s11.document', jsonb_build_object(
   ),
   'questions', jsonb_build_array(
     jsonb_build_object(
-      'slug', 's11-question-001', 'type', 'multiple-choice', 'payloadSchemaVersion', 1,
+      'slug', 's11-question-001', 'type', 'short-text', 'payloadSchemaVersion', 1,
       'timeLimitMs', 15000, 'points', 50,
       'publicPayload', jsonb_build_object(
-        'category', 'Cultura', 'tags', '{}'::jsonb, 'question', '¿Capital de Portugal?',
-        'options', jsonb_build_array('Lisboa', 'Oporto', 'Braga'), 'media', null, 'promptVisual', null
+        'question', '¿Capital de Portugal?', 'answerPlaceholder', 'Ciudad'
       ),
-      'solutionPayload', jsonb_build_object('correctAnswer', 'Lisboa', 'explanation', 'Lisboa es la capital.')
+      'solutionPayload', jsonb_build_object('correctAnswer', 'Lisboa',
+        'acceptedAnswers', jsonb_build_array('Lisboa'), 'explanation', 'Lisboa es la capital.')
     ),
     jsonb_build_object(
-      'slug', 's11-question-002', 'type', 'multiple-choice', 'payloadSchemaVersion', 1,
-      'timeLimitMs', 12000, 'points', 50,
-      'publicPayload', jsonb_build_object(
-        'category', 'Ciencia', 'tags', '{}'::jsonb, 'question', '¿Qué planeta es rojo?',
-        'options', jsonb_build_array('Marte', 'Venus', 'Júpiter'), 'media', null, 'promptVisual', null
-      ),
-      'solutionPayload', jsonb_build_object('correctAnswer', 'Marte', 'explanation', 'Marte.')
+      'source', 'library', 'questionVersionId', test_support.id('qv-alphabet-1')::text,
+      'points', 50, 'modeConfig', '{}'::jsonb
     )
   )
 )::text, true);
@@ -64,14 +63,14 @@ select lives_ok($$select private.validate_flash_question_document(
 select throws_ok($$select private.validate_flash_question_document(
   jsonb_set((current_setting('s11.document')::jsonb->'questions'->0) - 'points',
     '{publicPayload,correctAnswer}', '"Lisboa"'::jsonb)
-)$$, '22023', 'invalid_public_payload', 'El validador común rechaza respuestas dentro del payload público');
+)$$, '22023', 'invalid_question_document', 'The short-text document rejects an extra public answer field');
 set local role authenticated;
 
 select throws_ok($$select public.create_superadmin_flash_draft(jsonb_build_object(
   'idempotencyKey', 's11-invalid-secret',
   'document', jsonb_set(current_setting('s11.document')::jsonb, '{questions,0,publicPayload,correctAnswer}', '"Lisboa"'::jsonb),
   'reason', 'Invalid payload'
-))$$, '22023', 'invalid_public_payload', 'A solution cannot be embedded in the public payload');
+))$$, '22023', 'invalid_question_document', 'An extra answer field cannot be embedded in short-text public content');
 select throws_ok($$select public.create_superadmin_flash_draft(jsonb_build_object(
   'idempotencyKey', 's11-invalid-points',
   'document', jsonb_set(current_setting('s11.document')::jsonb, '{questions,1,points}', '40'::jsonb),
@@ -91,11 +90,18 @@ select is((select count(*) from private.challenge_items where challenge_version_
 select is((select sum(points) from private.challenge_items where challenge_version_id = current_setting('s11.version_id')::uuid), 100::bigint,
   'Flash items sum to 100 points');
 select is((select count(*) from private.question_versions question join private.challenge_items item on item.question_version_id = question.id
-  where item.challenge_version_id = current_setting('s11.version_id')::uuid and question.status = 'draft'), 2::bigint,
-  'Questions remain drafts until publication');
+  where item.challenge_version_id = current_setting('s11.version_id')::uuid and question.status = 'draft'), 1::bigint,
+  'The inline short-text question remains a draft until publication');
 select is((select count(*) from private.question_version_solutions solution join private.challenge_items item on item.question_version_id = solution.question_version_id
   where item.challenge_version_id = current_setting('s11.version_id')::uuid), 2::bigint,
   'Every draft question has a private solution');
+select is((select count(*) from private.challenge_items item
+  join private.question_versions question on question.id = item.question_version_id
+  where item.challenge_version_id = current_setting('s11.version_id')::uuid and question.type = 'short-text'), 2::bigint,
+  'Flash accepts both inline and library short-text questions');
+select is((select item.question_version_id from private.challenge_items item
+  where item.challenge_version_id = current_setting('s11.version_id')::uuid and item.position = 2),
+  test_support.id('qv-alphabet-1'), 'The library item retains its published short-text version');
 select is((select count(*) from private.audit_log where action = 'create_flash_draft' and entity_id = current_setting('s11.version_id')::uuid), 1::bigint,
   'Draft creation writes one audit event');
 select is((select after_payload ? 'documentHash' from private.audit_log where action = 'create_flash_draft' and entity_id = current_setting('s11.version_id')::uuid), true,
@@ -130,7 +136,7 @@ select set_config('s11.question_versions', (
   select coalesce(jsonb_agg(jsonb_build_object('id', item.question_version_id, 'updatedAt', version.updated_at) order by item.position), '[]'::jsonb)
   from private.challenge_items item
   join private.question_versions version on version.id = item.question_version_id
-  where item.challenge_version_id = current_setting('s11.version_id')::uuid
+  where item.challenge_version_id = current_setting('s11.version_id')::uuid and version.status = 'draft'
  )::text, true);
 set local role authenticated;
 do $$

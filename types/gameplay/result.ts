@@ -1,4 +1,4 @@
-import type { AnswerValue } from "@/types/question";
+import type { AnswerValue } from "@/types/contracts";
 import type { AnswerResultDetails } from "@/types/contracts/result-details";
 
 export type { AnswerResultDetails } from "@/types/contracts/result-details";

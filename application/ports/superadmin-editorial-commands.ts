@@ -86,8 +86,12 @@ export interface SuperadminEditorialCommands {
   createFlashDraft(input: CreateFlashDraftInput): Promise<SuperadminEditorialCommandResult>;
   updateFlashDraft(input: UpdateFlashDraftInput): Promise<SuperadminEditorialCommandResult>;
   publishFlash(input: PublishFlashInput): Promise<SuperadminEditorialCommandResult>;
-  createChallengeRevision(input: CreateChallengeRevisionInput): Promise<SuperadminEditorialCommandResult>;
-  archiveChallengeVersion(input: ArchiveChallengeVersionInput): Promise<SuperadminEditorialCommandResult>;
+  createChallengeRevision(
+    input: CreateChallengeRevisionInput,
+  ): Promise<SuperadminEditorialCommandResult>;
+  archiveChallengeVersion(
+    input: ArchiveChallengeVersionInput,
+  ): Promise<SuperadminEditorialCommandResult>;
   createQuestionDraft(input: CreateQuestionDraftInput): Promise<SuperadminQuestionVersionDetail>;
   updateQuestionDraft(input: UpdateQuestionDraftInput): Promise<SuperadminQuestionVersionDetail>;
   publishQuestion(input: PublishQuestionInput): Promise<SuperadminQuestionVersionDetail>;
@@ -97,7 +101,9 @@ export interface SuperadminEditorialCommands {
 export interface SuperadminEditorialQueries {
   getContext(): Promise<SuperadminEditorialContext>;
   getChallengeCatalog(): Promise<SuperadminChallengeCatalogContext>;
-  getChallengeDetail(challengeDefinitionId: string): Promise<SuperadminChallengeDetailContext | null>;
+  getChallengeDetail(
+    challengeDefinitionId: string,
+  ): Promise<SuperadminChallengeDetailContext | null>;
   getChallengeVersionComparison(
     fromChallengeVersionId: string,
     toChallengeVersionId: string,

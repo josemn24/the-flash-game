@@ -28,7 +28,8 @@ Navegador
 
 La regla central es que Next.js transporta y compone la experiencia, pero no contiene las reglas
 competitivas. Los casos de uso coordinan operaciones; el dominio decide qué es válido; la
-persistencia conserva hechos y estados.
+persistencia conserva hechos y estados. El [contrato del ciclo de vida de intentos](attempt-lifecycle.md)
+alinea modo, estado y resultado entre dominio, adaptadores y PostgreSQL.
 
 ### Decisión de transporte
 
@@ -63,10 +64,15 @@ En la beta, el superadmin provisiona directamente a usuarios autenticados en una
 simula la aceptación de una invitación y no consume un token. La emisión, aceptación y revocación de
 invitaciones siguen siendo capacidades del producto para una fase posterior, sin UI pública en esta
 versión. La publicación mínima de contenido, la programación de desafíos y la ejecución del
-calendario ya están habilitadas localmente en el mismo portal interno para Flash de S11/S12 y
+calendario ya están verificadas localmente en el mismo portal interno para Flash de S11/S12 y
 Supervivencia de S14.
-La ejecución temporal se realiza mediante un Route Handler protegido y CLI local; no hay scheduler
-remoto, cola ni worker propio.
+La ejecución temporal conserva el Route Handler protegido: Vercel Cron está configurado para
+invocar `GET /api/internal/calendar/tick` diariamente a las 13:00 UTC con `CRON_SECRET`, mientras
+que el CLI conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` con
+`CALENDAR_TICK_SECRET`. Local y staging son los únicos entornos de aplicación. La etiqueta
+Production de Vercel identifica el tipo de despliegue que admite cron; no define un entorno
+adicional. Su ejecución automática en staging no está verificada. No hay cola ni worker propio;
+Vercel Cron no ejecuta previews ni reintenta automáticamente una invocación fallida.
 
 Cada operación administrativa debe comprobar el privilegio global en servidor, aplicar las
 invariantes de dominio y usar un comando acotado. Las acciones que afecten directamente a una sala
@@ -111,6 +117,64 @@ No debe:
 Los componentes de juego pueden tener una frontera cliente amplia porque comparten sesión, timers y
 feedback. Los componentes editoriales, de navegación y de consulta deben permanecer en servidor
 si no necesitan interacción.
+
+### Sesiones competitivas en el navegador
+
+Las fachadas `useServerFlashSession`, `useServerNarrativeSession` y
+`useServerAlphabetSession` conservan los contratos de las pantallas y se suscriben al mismo
+núcleo en `features/game/competitive/`. Flash, Supervivencia, Pirámide, Narrative y Alfabeto
+comparten este flujo; práctica y mock mantienen sus controladores actuales.
+
+```text
+Pantalla → fachada del modo → useCompetitiveSession
+                              → CompetitiveSessionEngine
+                                  ├── core/sessionReducer: snapshot único y commit(event)
+                                  ├── core/commandExecutor: cola y comando pendiente original
+                                  ├── core/attemptLifecycle: inicio, recuperación, preparación, activación, cierre
+                                  ├── core/advance: feedback y siguiente paso
+                                  ├── modes: secuencia, presentación y cursor recuperado
+                                  └── formats: comando, progreso y resultado normalizado
+                                          → attemptClient → Route Handler existente
+```
+
+El motor actualiza el snapshot utilizado por las operaciones asíncronas y notifica a React
+mediante un único `commit(event)` y `useSyncExternalStore`. No hay una copia de `lockVersion`
+en cada modo o formato. El reducer deduplica resultados por interacción y guarda intento,
+interacción, deadlines recibidos, resultados, comando pendiente y error de lifecycle.
+
+La cola resuelve la versión al enviar un comando nuevo. Desde ese momento conserva operación,
+intento/interacción, payload, versión y clave idempotente; un reintento reutiliza el comando
+completo. Los borradores Queens pasan por esa misma cola antes de validar o expirar. Los
+adaptadores se seleccionan mediante el catálogo de capacidades por modo/formato y producen
+progreso intermedio o una respuesta evaluada, sin gestionar recuperación ni cierre.
+
+Una respuesta aceptada inicia una espera de feedback; después, la política determina escena,
+briefing, preparación o cierre. Si ese paso falla, `lifecycleError` y `retryLifecycle` permiten
+reintentar solamente el comando pendiente. Los reintentos existentes de cada formato siguen
+funcionando. Una respuesta incierta bloquea nuevas escrituras; una versión obsoleta inicia
+recuperación autorizada mediante `start` y `recover`, sin reenviar ni cambiar la versión del
+comando rechazado. `429` conserva el comando y bloquea reintentos hasta `Retry-After`, sin polling.
+Alfabeto conserva su única recuperación automática de timeout y ofrece recuperación manual si
+esta falla. Si el cierre perdió su respuesta y la cookie ya se eliminó, se recarga la proyección
+server-side del resultado, que comprueba los hechos persistidos.
+
+Los cronómetros visuales existentes consumen deadlines del servidor. Las esperas de feedback
+no modifican esos deadlines. Pirámide prepara la pregunta y la activa después de montar su
+presentación; solo la activación inicia el reloj. Narrative conserva los deadlines de sus
+preguntas, mientras escenas y reacciones no consumen tiempo competitivo. Alfabeto conserva
+el deadline global y procesa secuencialmente las letras pendientes al expirar. Desmontar o
+cambiar el desafío cancela las esperas e invalida las respuestas tardías; la repetición de
+efectos de StrictMode conserva una única recuperación.
+
+La validación incluye pruebas del reducer, coordinación con cliente simulado y reloj controlado,
+y recorridos persistidos con pérdidas de respuesta. `npm run test:e2e:isolated` ejecuta los
+escenarios competitivos en un Supabase temporal, con identificador propio, puertos 55320–55329 y
+aplicación en 3300; limpia ese stack al terminar. El fixture S05 cubre Alfabeto y
+`narrative-interactive` cubre Queens y pistas dentro de Narrative. El stack local habitual del
+proyecto no se reinicia.
+El servidor de pruebas usa un `distDir` propio para convivir con `next dev`; elimina su salida y
+los paths de tipos generados al terminar. `E2E_INTEGRATION_SCENARIOS=s05,s07,s12` ejecuta también
+las integraciones de esos escenarios sobre el mismo stack antes de sus pruebas de navegador.
 
 ### 2.2 Entrada al backend
 
@@ -161,6 +225,13 @@ application/
 
 Una función de caso de uso puede llamar a varias operaciones de persistencia; no debe ser un simple
 alias de una tabla.
+
+Las lecturas públicas siguen la misma disciplina. `ApplicationRoomReads` crea el `QueryContext`
+desde `CurrentViewerReader` y el reloj, y delega en una capacidad de lobby, ranking, settings,
+historial o revisión. `ApplicationDemoChallengeReads` y `ApplicationCompetitiveChallengeReads`
+separan previews mock de desafíos jugables persistidos. Estos casos de uso no conocen cookies,
+`redirect()`, `notFound()`, `cache()` ni clientes Supabase; esas responsabilidades permanecen en
+las fachadas `server/*-data-access.ts` y en los composition roots server-only.
 
 ### 2.4 Lógica de dominio
 
@@ -219,8 +290,9 @@ de lecturas y escrituras desde la aplicación.
 
 La frontera concreta está en [attempt-commands.ts](../../application/ports/attempt-commands.ts):
 inicio/recuperación con sesión exclusiva, preparación, recepción, evaluación, cierre, invitaciones
-y correcciones. El tipo de takeover se reserva para una política posterior, pero está deshabilitado
-en el MVP. La recuperación debe ser una operación de dominio: reconcilia una recepción pendiente o
+y correcciones. La [transferencia explícita](../decisions/adr/0006-explicit-attempt-control-transfer.md)
+está aprobada y pendiente de implementar; el comando permanece deshabilitado en el runtime.
+La recuperación debe ser una operación de dominio: reconcilia una recepción pendiente o
 resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
 ciega de un snapshot de cliente.
 Los [comandos SQL privados](../../supabase/schemas/README.md) implementan bloqueo, idempotencia,
@@ -231,15 +303,38 @@ PostgREST ni se usa el propietario de las funciones como credencial de servidor.
 Preparar confirma el reloj antes de entregar contenido; recibir confirma payload e instante antes
 de evaluar. [evaluateReceipt](../../server/evaluation/evaluate-receipt.ts) adapta el tiempo persistido
 al evaluador existente en una frontera `server-only`. Corrección, puntos, identidad y marcas
-autoritativas no son inputs públicos. El recorrido Flash de S03/S04 ya está conectado a estas
-operaciones; la UI conserva mocks únicamente para práctica, previews y slices aún no migradas.
+autoritativas no son inputs públicos. Los recorridos Flash, Alphabet, Supervivencia, Pirámide y
+Narrative están conectados a estas operaciones. Narrative comparte las tablas/RPCs genéricas de
+intentos: `mode_config` contiene solo escenas y configuración pública, `challenge_items` aporta el
+orden y metadatos, y `prepare` entrega el payload de una pregunta. La UI conserva mocks únicamente
+para práctica y demos.
+
+Las acciones `submitAnswer`, `pass`, `complete` y `abandon` leen únicamente el
+`AttemptContext` autorizado (`challengeMode`, `scheduledChallengeId`) mediante
+`private.read_attempt_context`; `recover` conserva el snapshot completo. Una respuesta genérica
+mantiene cuatro transacciones: contexto mínimo, recepción, contexto privado de evaluación y
+registro. El scoring ocurre entre la tercera y la cuarta, sin transacción abierta. El límite
+general precede al caso de uso y el de Alfabeto precede a recepción/pase.
+
+La carga inicial competitiva ejecuta `public.get_my_competitive_challenge` una sola vez. SQL
+resuelve el modo y reutiliza su proyección autorizada; el adaptador valida `{ mode, rows }` y
+selecciona el constructor correspondiente. Resultados, revisión y assets conservan sus lecturas
+posteriores. Los contratos, diagnóstico y mediciones locales están en
+[lecturas competitivas](competitive-read-performance.md).
+
+La frontera de composición también es explícita: `server/composition/demo.ts` es el único composition
+root local; `server/composition/production.ts` conecta las lecturas Supabase. Las rutas bajo
+`app/demo/**` pueden importar la fachada demo, mientras que `/salas`, `/desafios` y `/admin` no pueden
+importar `data/mock`, `infrastructure/mock`, tipos legacy ni barrels de gameplay retirados.
+`npm run type-architecture` comprueba estas reglas y verifica que cada modo competitivo tenga lector
+Supabase registrado.
 
 Adaptadores previstos:
 
 ```text
 infrastructure/
-  mock/       adaptador actual sobre mockDomainStore
-  supabase/   adaptador real sobre PostgreSQL/Supabase para las slices persistidas actuales
+  mock/       adaptadores demo y de contrato sobre mockDomainStore
+  supabase/   adaptadores reales sobre PostgreSQL/Supabase para las slices persistidas actuales
 ```
 
 Reglas de persistencia:
@@ -262,6 +357,18 @@ segunda fuente de verdad ni en un comportamiento especial de producción.
 
 La autenticación responde a “quién es la persona”. La autorización responde a “qué puede hacer en
 este contexto”. Son comprobaciones distintas.
+
+El login y el logout siguen el recorrido `components/auth` → `app/actions/authentication` →
+`server/authentication` → `application/use-cases/authentication` → puerto `AuthenticationGateway`.
+El adaptador `infrastructure/supabase/identity/authentication` gestiona el cliente por petición,
+las cookies de sesión y la traducción de errores del SDK a códigos propios de
+`types/contracts/authentication`. La UI no recibe clientes, tokens ni errores del proveedor.
+Los estados de espera y los mensajes pertenecen al componente; la validación del payload se repite
+en el caso de uso porque la acción es una entrada pública.
+
+Las subidas de avatar y de imágenes editoriales usan `lib/media/uploadFile` para enviar los bytes
+por HTTP a la URL firmada preparada por el servidor. El componente trata esa URL como opaca; la
+selección del proveedor, la autorización y la confirmación del archivo quedan en el servidor.
 
 Propuesta:
 
@@ -290,7 +397,8 @@ Los servicios externos se incorporan detrás de adaptadores solo cuando el caso 
   la aplicación persiste referencias estables y resuelve URLs firmadas únicamente en runtime;
 - **correo/notificaciones:** invitaciones y avisos, si se activan;
 - **observabilidad:** errores, auditoría y métricas, sin convertir logs en fuente de verdad;
-- **scheduler:** cierre de intentos inactivos y tareas temporales, si se aprueba el abandono automático.
+- **scheduler:** se conserva Vercel Cron configurado para el calendar tick diario; el tick cierra temporadas,
+  actualiza publicaciones y reconcilia intentos inactivos elegibles.
 
 La lógica de The Flash no debe depender de la forma concreta de una respuesta externa. Cada
 integración debe tener timeouts, reintentos idempotentes y un comportamiento definido si está
@@ -309,14 +417,16 @@ respuesta, finalización y acreditación deben ser síncronas y transaccionales.
 
 Un proceso asíncrono será necesario solo para tareas que no deben bloquear la respuesta de la UI:
 
-- detectar abandono automático solo si se aprueba posteriormente una política de heartbeat/lease;
+- reconciliar intentos inactivos después del cierre o deadline; la ejecución global es diaria y las
+  lecturas de historial/comandos también pueden ejecutar una reconciliación acotada;
 - enviar correos o notificaciones;
 - limpiar assets o datos después de anonimización/purga;
 - recalcular proyecciones materializadas si el volumen lo exige;
 - procesar webhooks externos.
 
-Para S12, un scheduler externo opcional invoca el Route Handler protegido y es suficiente. No se
-debe introducir event sourcing, una cola propia ni microservicios solo por anticipar estas tareas.
+Para S12 se conserva la integración de Vercel Cron con el Route Handler protegido, pendiente de
+validación en staging. El CLI conserva la operación manual. No se debe introducir event sourcing, una cola propia ni
+microservicios solo por anticipar estas tareas.
 
 ## 3. Reglas de dependencia
 
@@ -347,7 +457,20 @@ Reglas concretas:
 4. `server` puede componer infraestructura y aplicación, pero no debe contener reglas de scoring.
 5. `app` usa la fachada server-only o entradas de backend; no lee `data/mock` directamente.
 6. `components` y `features` cliente no importan `server`, `infrastructure` ni `data`.
+   `type-architecture` rechaza además imports de `@supabase/*` y de `infrastructure/supabase` desde
+   `components`, `features` y `app`, incluidos imports de tipos,
+   reexports e imports dinámicos literales. La UI invoca Server Actions y consume contratos propios.
 7. `infrastructure` implementa puertos; no es importada desde el dominio.
+   En concreto, los adaptadores Supabase de sala (sus capacidades, RPCs,
+   contratos, guards y mappers) solo consumen tipos/puertos de `application`, módulos puros de
+   `lib`, tipos y otros módulos de infraestructura: no importan `server/*`, `features/*` ni
+   `application/presentation/*`. Las reglas puras de gameplay y la presentación compartida viven
+   en `lib`.
+   El contrato de persistencia generado en `infrastructure/supabase/database.types.ts` solo puede ser
+   consumido por el boundary de clientes Supabase y por `infrastructure/supabase`; no se expone a
+   `application`, `server`, `features`, `components` ni `app`. En los adaptadores, el flujo es
+   `Database` para transporte → guard runtime para datos externos → mapper para DTO/view model;
+   los retornos `Json` no se consideran modelos de dominio sin validación explícita.
 8. Un Client Component no importa un Server Component. Un Server Component puede renderizar un
    Client Component y pasarle props serializables o contenido por slots.
 9. Los barrels (`index.ts`) no mezclan exports cliente y servidor de forma indiscriminada.
@@ -379,36 +502,45 @@ types/
   contracts/               frontera serializable pública/privada
   gameplay/               estado local de sesión
   view-models/             proyecciones de pantalla
-  legacy/                  compatibilidad temporal
+  legacy/                  aliases históricos solo para mocks y tests
 
 lib/                       reglas puras y algoritmos existentes
-data/mock/                  fixtures y adaptador mock temporal
+data/mock/                  fixtures y adaptador local soportado
 infrastructure/
-  mock/                    implementación actual
-  supabase/                implementación futura
-server/                    composición server-only y contexto de sesión
+  mock/                    implementación local para demo/práctica/tests
+  supabase/                implementación productiva
+server/
+  composition/             composition roots demo y producción
+  *-data-access.ts         fachadas server-only y semántica de Next.js
 ```
 
-Las proyecciones legacy de `data/*.ts` deben permanecer aisladas y dejar de recibir consumidores
-nuevos. Cuando se sustituya el mock, se conserva el contrato de `application` y se cambia la
-composición de infraestructura, no las páginas ni los modos de juego.
+Las proyecciones y aliases legacy deben permanecer aislados y no reciben consumidores productivos
+nuevos. Los adaptadores que todavía necesita `infrastructure/mock` son compatibilidad local explícita;
+si quedan sin consumidores se eliminan junto con sus exports. La composición competitiva no puede
+seleccionar el mock como fallback.
 
 ## 5. Encaje con el Next.js actual
 
 El repositorio ya tiene una base compatible con esta propuesta:
 
-| Área actual                                       | Responsabilidad actual                                          | Evolución prevista                                                            |
-| ------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `app/page.tsx`, `app/salas/**`, `app/desafios/**` | Server Components dinámicos que cargan modelos                  | Mantenerlos finos; usar consultas/casos de uso server-only                    |
-| `app/formatos/**`                                 | Biblioteca editorial estática con ejemplos cliente              | Mantener Server Components y una isla por ejemplo                             |
-| `server/data-access.ts`                           | Fachada `server-only`, contexto demo y memoización por petición | Conservar como composición; añadir fachadas de comandos si crecen             |
-| `application/queries/`                            | Contratos de lectura independientes de Next.js                  | Añadir contratos de comandos y puertos mínimos                                |
-| `infrastructure/mock/`                            | Consultas y composición sobre `mockDomainStore`                 | Mantener como adaptador de pruebas; añadir `infrastructure/supabase/` después |
-| `data/mock/`                                      | Fixtures canónicos, store normalizado y validación              | Fuente del adaptador mock, nunca dependencia de UI productiva                 |
-| `components/game/**`                              | Shell cliente, modos, resultados y revisión                     | Conservar estado inmediato; sustituir reporter local por comandos de servidor |
-| `features/rooms/**`                               | Resultados y snapshots locales en memoria                       | Convertirlos en caché de UI; el intento oficial vivirá en servidor            |
-| `lib/**`                                          | Scoring, ranking, disponibilidad y algoritmos puros             | Reutilizar en dominio/servidor y cubrir con tests de contrato                 |
-| `types/contracts/**`                              | Separación de payload público, solución y respuesta             | Usar el payload público en competición y mantener solución privada            |
+| Área actual                                       | Responsabilidad actual                                      | Evolución prevista                                                                                                                                                           |
+| ------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app/page.tsx`, `app/salas/**`, `app/desafios/**` | Server Components dinámicos que cargan modelos              | Mantenerlos finos; usar consultas/casos de uso server-only                                                                                                                   |
+| `app/formatos/**`                                 | Biblioteca editorial estática con ejemplos cliente          | Mantener Server Components y una isla por ejemplo                                                                                                                            |
+| `server/production-home-data-access.ts`           | Fachada `server-only` de la home y memoización por petición | Mantenerla limitada a la carga de identidad y salas de la home                                                                                                               |
+| `server/production-room-data-access.ts`           | Fachada `server-only` de salas, rankings e historial        | Mantenerla sin dependencias mock y limitada a consultas de sala                                                                                                              |
+| `server/production-challenge-data-access.ts`      | Fachada `server-only` de desafíos jugables reales           | Mantenerla sin dependencias mock y limitada a la selección de gameplay persistido                                                                                            |
+| `server/production-admin-data-access.ts`          | Fachada `server-only` del portal de administración          | Mantener autorización superadmin y consultas administrativas separadas de las rutas públicas                                                                                 |
+| `server/demo-data-access.ts`                      | Fachada `server-only` exclusiva de Flash Pop mock           | Mantenerla limitada a rutas `/demo/**`; las URLs antiguas solo redirigen                                                                                                     |
+| `server/composition/production.ts`                | Conecta capacidades Supabase con casos de uso de lectura    | Único composition root de las lecturas públicas reales; no capturar sesión en estado global                                                                                  |
+| `server/composition/demo.ts`                      | Conecta adaptadores mock con casos de uso demo              | Único composition root de Flash Pop mock                                                                                                                                     |
+| `application/queries/`                            | Contratos de lectura independientes de Next.js              | Mantener capacidades pequeñas; no reintroducir agregadores por tabla                                                                                                         |
+| `infrastructure/mock/`                            | Consultas y composición sobre `mockDomainStore`             | Mantener como adaptador local de demo, práctica y tests; Supabase se organiza por capacidades en `rooms`, `attempts`, `gameplay`, `assets`, `identity`, `admin` y `platform` |
+| `data/mock/`                                      | Fixtures canónicos, store normalizado y validación          | Fuente del adaptador local, nunca dependencia de UI competitiva                                                                                                              |
+| `components/game/**`                              | Shell cliente, modos, resultados y revisión                 | Usar barrels explícitos `demo`, `production` y `practice`; conservar estado local en demo/práctica y comandos de servidor en competición                                     |
+| `features/rooms/**`                               | Resultados y snapshots locales en memoria                   | Convertirlos en caché de UI; el intento oficial vivirá en servidor                                                                                                           |
+| `lib/**`                                          | Scoring, ranking, disponibilidad y algoritmos puros         | Reutilizar en dominio/servidor y cubrir con tests de contrato                                                                                                                |
+| `types/contracts/**`                              | Separación de payload público, solución y respuesta         | Usar el payload público en competición y mantener solución privada                                                                                                           |
 
 El flujo objetivo de una partida será:
 
@@ -455,10 +587,21 @@ reales en sus recorridos; esas piezas mock son puntos de sustitución, no el con
 
 ### Contenido y seguridad
 
+Los 21 formatos competitivos comparten definiciones y validadores puros en
+`lib/question-formats`. Los transformadores puros de revisión viven junto a los lectores y
+validadores de cada formato; los renderizadores, fichas y previews editoriales están en
+`features/question-formats`. Cada formato tiene entradas separadas de cliente y servidor: la composición
+privada está protegida con `server-only` en `server/evaluation/formats`. Los registros tipados
+enlazan implementaciones reales y se verifican con un corpus común para TypeScript y SQL.
+Las representaciones y el recorrido completo se describen en
+[contratos de formatos competitivos](competitive-format-contracts.md), y la distribución de
+historial, catálogo y editor en [organización de formatos y revisión](question-format-organization.md).
+
 - La publicación referencia versiones inmutables de desafío y pregunta.
-- El editor S11/S14 conserva un documento editorial común para Flash y Supervivencia, pero
-  persiste sus campos públicos y soluciones en las tablas versionadas existentes; no crea una
-  representación paralela del runtime.
+- El editor S11/S14 conserva un documento editorial común para Flash y Supervivencia. Narrative
+  reutiliza la proyección de contenido para lectura y ejecución, pero su edición avanzada queda fuera
+  de esta fase. Todos persisten sus campos públicos y soluciones en las tablas versionadas existentes;
+  no se crea una representación paralela del runtime.
 - En competición se entrega `PublicQuestion`; solución, tolerancias, rutas y métricas permanecen en
   servidor.
 - Los payloads editoriales usan referencias de asset (`assetId`, alt, dimensiones y configuración
@@ -476,7 +619,9 @@ reales en sus recorridos; esas piezas mock son puntos de sustitución, no el con
 
 - Las reglas puras siguen probándose con unit tests y type tests.
 - Cada caso de uso de escritura tendrá tests de aplicación contra dobles de sus puertos.
-- Los adaptadores mock tendrán tests de contrato que también deberá cumplir Supabase.
+- Los adaptadores mock y Supabase comparten un harness de contrato para roles, ausencia, historial,
+  revisión y ausencia de datos sensibles; el mapeo y la validación de RPC permanecen junto a cada
+  adaptador.
 - Las Route Handlers y Server Actions tendrán pocas pruebas de transporte; la mayor parte de la
   cobertura estará en aplicación y dominio.
 - Los componentes cliente conservarán tests de interacción, timeout, revisión y accesibilidad.
@@ -534,8 +679,10 @@ deben vivir en el servidor.
 - La matriz de permisos de `owner` frente a `admin` está cerrada: `admin` no gestiona `owner`,
   solo `owner` concede `admin` y `superadmin` audita sus acciones directas sobre salas. El alcance
   editorial del rol `editor` aún no está cerrado.
-- La transferencia de control entre dispositivos está deshabilitada durante el MVP. Heartbeat, lease
-  y abandono automático quedan fuera de la fase actual, pendientes de una política posterior.
+- La transferencia de control entre dispositivos está implementada según ADR-0006 en PostgreSQL, API
+  y runtime; queda validación multi-dispositivo en staging. La expiración por
+  inactividad ya está definida: 15 minutos sin actividad, solo tras cierre o deadline, con `abandoned`
+  sin puntos; no requiere heartbeat ni lease del navegador.
 - Debe definirse un contrato de errores estable para distinguir no autorizado, no disponible,
   conflicto obsoleto y validación inválida sin filtrar información.
 - Supabase RLS debe diseñarse junto con las políticas de aplicación; no conviene asumir que una capa
@@ -544,12 +691,16 @@ deben vivir en el servidor.
   estrategia para reintentos de red.
 - Finalización/acreditación atómica y lecturas de los dos rankings están implementadas y probadas en
   SQL/adapter; S06 lee rankings bajo demanda y no materializa tablas adicionales.
-- S07 implementa el historial Flash de publicaciones cerradas sin intentos `in_progress`, el ranking
+- S07 implementa el historial común de los cinco modos (Flash, Alfabeto, Supervivencia, Narrativa y Pirámide),
+  con cierre efectivo por timestamps de publicación/temporada y sin intentos `in_progress`, el ranking
   histórico y la revisión propia/ajena autorizada sin tablas materializadas ni recalcular puntos.
 - La revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` conserva el acceso a
-  historial/rankings, pero no recibe respuestas ni soluciones ajenas.
-- `results_locked_at`, el abandono automático, el takeover y la revisión administrativa de
-  invalidados quedan fuera de S07.
+  historial/rankings, pero no recibe respuestas ni soluciones. La revisión propia terminal se permite
+  durante la ventana abierta; la ajena exige cierre efectivo. Alfabeto conserva el reloj global, el
+  orden original de las letras y todos los huecos sin responder.
+- `results_locked_at`, el takeover y la revisión administrativa de invalidados quedan fuera de S07.
+  La expiración por inactividad se implementa en la reconciliación del calendario y bajo demanda,
+  con cierre efectivo sin depender de que el tick haya persistido `closed`.
 - Invalidación y corrección exigen superadmin, motivo y auditoría. La revisión de intentos
   `invalidated`, inspección global y moderación siguen pendientes de política administrativa.
 - La anonimización debe coordinar identidad, avatar, actividad social y retención histórica.
@@ -570,5 +721,5 @@ resolverse antes de declarar competitiva la persistencia real.
    gradualmente `demoIdentity` por la sesión real.
 4. Implementar el adaptador Supabase con transacciones, unicidad, RLS y control de concurrencia.
 5. Separar soluciones del DTO competitivo y trasladar evaluación, tiempo y acreditación al servidor.
-6. Incorporar scheduler o procesos asíncronos únicamente para abandono automático, notificaciones y
-   limpieza cuando los requisitos estén cerrados.
+6. Mantener Vercel Cron y la reconciliación bajo demanda para expiración de inactividad, notificaciones
+   y limpieza cuando los requisitos estén cerrados.

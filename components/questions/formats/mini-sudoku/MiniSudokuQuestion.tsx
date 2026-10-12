@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import styles from "./MiniSudokuQuestion.module.css";
-import type { MiniSudokuAnswer } from "@/types/game";
+import type { MiniSudokuAnswer } from "@/types/gameplay/practice";
 
 type MiniSudokuQuestionProps = {
   grid: Array<number | null>;
@@ -45,10 +45,7 @@ export function MiniSudokuQuestion({
   };
 
   return (
-    <section
-      className={styles.root}
-      aria-label="Mini-sudoku de cuatro por cuatro"
-    >
+    <section className={styles.root} aria-label="Mini-sudoku de cuatro por cuatro">
       <div className={styles.grid} role="grid" aria-label="Cuadrícula de mini-sudoku">
         {grid.map((givenValue, index) => {
           const isBlank = givenValue === null;

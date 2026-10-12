@@ -1,6 +1,8 @@
 import type { GameMode } from "@/types/gameplay/challenge";
 
 export type RoomCalendarAvailability = "upcoming" | "available" | "closed" | "cancelled";
+export type RoomCalendarAttemptStatus =
+  "in_progress" | "completed" | "abandoned" | "invalidated" | null;
 
 export type RoomCalendarEntry = {
   readonly id: string;
@@ -8,6 +10,7 @@ export type RoomCalendarEntry = {
   readonly timeZone: string;
   readonly status: "scheduled" | "open" | "closed" | "cancelled";
   readonly availabilityStatus: RoomCalendarAvailability;
+  readonly ownAttemptStatus: RoomCalendarAttemptStatus;
   readonly opensAt: string;
   readonly closesAt: string;
   readonly title: string;

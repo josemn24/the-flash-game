@@ -3,7 +3,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-4);
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 10px;
     font-weight: 900;
@@ -12,18 +12,18 @@
   }
 
   .navLink {
-    color: var(--color-ink-muted);
+    color: var(--ds-color-fg-secondary);
     text-decoration: none;
     transition: color var(--motion-press-out) ease;
   }
 
   .navLink:hover,
   .navLink:focus-visible {
-    color: var(--color-ink);
+    color: var(--ds-color-fg-primary);
   }
 
   .navLinkActive {
-    color: var(--color-social);
+    color: var(--ds-color-fg-selected);
   }
 
   @media (min-width: 640px) {

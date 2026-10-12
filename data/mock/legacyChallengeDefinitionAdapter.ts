@@ -31,6 +31,8 @@ export function projectLegacyChallengeDefinition(
   const config = objectConfig(fixture.modeConfig);
 
   switch (fixture.mode) {
+    case "time-trial":
+      throw new Error("Contrarreloj requires the competitive server runtime");
     case "flash":
       return {
         ...base,

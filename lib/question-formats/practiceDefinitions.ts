@@ -1,0 +1,123 @@
+import { baseValidation, practice } from "./metadata";
+export const practiceDefinitions = {
+  "image-labeling": {
+    id: "image-labeling",
+    practice: { ...practice, rendererKey: "image-labeling" },
+    scoringPolicyId: "image-labeling",
+    validation: {
+      publicValidatorKey: "image-labeling",
+      solutionValidatorKey: "image-labeling",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+  "flash-memory": {
+    id: "flash-memory",
+    practice: { ...practice, rendererKey: "flash-memory" },
+    scoringPolicyId: "partial-items",
+    validation: {
+      publicValidatorKey: "flash-memory",
+      solutionValidatorKey: "flash-memory",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+  "memory-pairs": {
+    id: "memory-pairs",
+    practice: { ...practice, rendererKey: "memory-pairs" },
+    scoringPolicyId: "partial-items",
+    validation: {
+      publicValidatorKey: "memory-pairs",
+      solutionValidatorKey: "memory-pairs",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+  "simon-sequence": {
+    id: "simon-sequence",
+    practice: { ...practice, rendererKey: "simon-sequence" },
+    scoringPolicyId: "binary-speed",
+    validation: {
+      publicValidatorKey: "simon-sequence",
+      solutionValidatorKey: "simon-sequence",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+  "mini-sudoku": {
+    id: "mini-sudoku",
+    practice: { ...practice, rendererKey: "mini-sudoku" },
+    scoringPolicyId: "partial-items",
+    validation: {
+      publicValidatorKey: "mini-sudoku",
+      solutionValidatorKey: "mini-sudoku",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+  "mini-nonogram": {
+    id: "mini-nonogram",
+    practice: { ...practice, rendererKey: "mini-nonogram" },
+    scoringPolicyId: "partial-items",
+    validation: {
+      publicValidatorKey: "mini-nonogram",
+      solutionValidatorKey: "mini-nonogram",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+  "time-maze": {
+    id: "time-maze",
+    practice: { ...practice, rendererKey: "time-maze" },
+    scoringPolicyId: "binary-speed",
+    validation: {
+      publicValidatorKey: "time-maze",
+      solutionValidatorKey: "time-maze",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+  pipes: {
+    id: "pipes",
+    practice: { ...practice, rendererKey: "pipes" },
+    scoringPolicyId: "binary-speed",
+    validation: {
+      publicValidatorKey: "pipes",
+      solutionValidatorKey: "pipes",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+  "sliding-puzzle": {
+    id: "sliding-puzzle",
+    practice: { ...practice, rendererKey: "sliding-puzzle" },
+    scoringPolicyId: "binary-speed",
+    validation: {
+      publicValidatorKey: "sliding-puzzle",
+      solutionValidatorKey: "sliding-puzzle",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+  "error-reconstruction": {
+    id: "error-reconstruction",
+    practice: { ...practice, rendererKey: "error-reconstruction" },
+    scoringPolicyId: "error-location-correction",
+    validation: {
+      publicValidatorKey: "error-reconstruction",
+      solutionValidatorKey: "error-reconstruction",
+      payloadSchemaVersions: [1],
+      ...baseValidation,
+    },
+    competitive: {},
+  },
+} as const;

@@ -5,14 +5,17 @@ import { GameApp } from "@/components/game/shells/GameApp";
 import { CompetitiveResultScreen } from "@/components/game/shared";
 import { ArrowIcon, ButtonLink, Canvas, Card, TrophyIcon } from "@/components/ui";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
-import { isTerminalCompetitiveAttemptStatus } from "@/features/rooms/competitiveAttempt";
-import type { Challenge, ChallengeCompletionResult, GameRoomContext } from "@/types/game";
+import { isTerminalCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
+import type { Challenge, ChallengeCompletionResult } from "@/types/gameplay";
+import type { GameRoomContext } from "@/types/view-models/room";
 import type {
   ServerAlphabetChallenge,
   ServerFlashChallenge,
   ServerFlashTerminalReview,
+  ServerNarrativeChallenge,
   ServerSurvivalChallenge,
   ServerPyramidChallenge,
+  ServerTimeTrialChallenge,
 } from "@/types/gameplay/challenge";
 import type { FlashPopSocialSnapshot, GameplayPersistence } from "@/types/view-models";
 
@@ -33,9 +36,9 @@ function TerminalCompetitiveChallenge({
   return (
     <Canvas maxWidth="content">
       <Card as="section" aria-labelledby="terminal-challenge-title" className="mx-auto mt-12">
-        <TrophyIcon className="mb-4 h-8 w-8 text-[var(--color-brand)]" />
+        <TrophyIcon className="mb-4 h-8 w-8 text-[var(--ds-color-fg-brand)]" />
         <h1 id="terminal-challenge-title">{title}</h1>
-        <p className="mt-3 text-[var(--color-ink-muted)]">{description}</p>
+        <p className="mt-3 text-[var(--ds-color-fg-secondary)]">{description}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <ButtonLink href={roomContext.returnTo} variant="secondary" trailingIcon={<ArrowIcon />}>
             Volver a la sala
@@ -63,7 +66,7 @@ function UnavailableCompetitiveChallenge({ roomContext }: { roomContext: GameRoo
         <h1 id="unavailable-challenge-title">
           {isExpired ? "Desafío cerrado" : "Desafío no disponible"}
         </h1>
-        <p className="mt-3 text-[var(--color-ink-muted)]">
+        <p className="mt-3 text-[var(--ds-color-fg-secondary)]">
           {isExpired
             ? "La publicación terminó antes de que iniciaras este desafío. No se creó ningún intento competitivo."
             : "Este desafío todavía no está disponible para jugar en la sala."}
@@ -95,13 +98,15 @@ export function RoomChallengeClient({
     | ServerFlashChallenge
     | ServerAlphabetChallenge
     | ServerSurvivalChallenge
-    | ServerPyramidChallenge;
+    | ServerPyramidChallenge
+    | ServerTimeTrialChallenge
+    | ServerNarrativeChallenge;
   roomContext?: GameRoomContext;
   socialSnapshot: FlashPopSocialSnapshot;
   persistence?: GameplayPersistence;
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
-  const persistence = persistenceProp ?? roomContext?.gameplayPersistence ?? "mock";
+  const persistence = resolveGameplayPersistence(roomContext, persistenceProp);
   const { recordCompletion, getCompletion } = useRoomSession();
   // Server-backed competitive sessions must never be shadowed by the
   // client-only demo store. The provider remains available for explicit
@@ -129,6 +134,15 @@ export function RoomChallengeClient({
   );
 
   if (
+    roomContext &&
+    !localCompletion &&
+    attemptStatus === "available" &&
+    roomContext.availabilityStatus !== "available"
+  ) {
+    return <UnavailableCompetitiveChallenge roomContext={roomContext} />;
+  }
+
+  if (
     persistence === "server" &&
     roomContext &&
     (!attemptStatus || !isTerminalCompetitiveAttemptStatus(attemptStatus))
@@ -141,15 +155,6 @@ export function RoomChallengeClient({
         persistence="server"
       />
     );
-  }
-
-  if (
-    roomContext &&
-    !localCompletion &&
-    attemptStatus === "available" &&
-    roomContext.availabilityStatus !== "available"
-  ) {
-    return <UnavailableCompetitiveChallenge roomContext={roomContext} />;
   }
 
   if (
@@ -198,4 +203,11 @@ export function RoomChallengeClient({
       onComplete={roomContext ? onComplete : undefined}
     />
   );
+}
+
+export function resolveGameplayPersistence(
+  roomContext: GameRoomContext | undefined,
+  persistenceProp: GameplayPersistence | undefined,
+): GameplayPersistence {
+  return roomContext ? "server" : (persistenceProp ?? "mock");
 }

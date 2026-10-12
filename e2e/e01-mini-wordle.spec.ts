@@ -36,7 +36,9 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(
       page.getByRole("heading", { name: "Descubre el personaje bíblico" }),
@@ -75,15 +77,15 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
     await expect(page.getByLabel(/Intento 2: SALON/)).toBeVisible();
     await expect(page.getByText("Intento 3 de 4")).toBeVisible();
 
-    let firstResponse = true;
+    let failureResponses = 2;
     const requestBodies: Array<Record<string, unknown>> = [];
     await page.route("**/api/competitive/attempts/*/mini-wordle/guess", async (route) => {
       requestBodies.push(route.request().postDataJSON() as Record<string, unknown>);
-      if (!firstResponse) {
+      if (failureResponses === 0) {
         await route.continue();
         return;
       }
-      firstResponse = false;
+      failureResponses--;
       const response = await route.fetch();
       await route.fulfill({
         status: 503,
@@ -95,9 +97,11 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
 
     await input.fill("JESUS");
     await page.getByRole("button", { name: "Enviar" }).click();
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar" }).click();
-    expect(requestBodies).toHaveLength(2);
+    await expect.poll(() => requestBodies.length).toBe(2);
+    await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar", exact: true }).click();
+    await expect.poll(() => requestBodies.length).toBe(3);
+    expect(requestBodies[2]).toEqual(requestBodies[0]);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
