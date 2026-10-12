@@ -96,7 +96,7 @@ Para probar desde un móvil u otro equipo de la red local, consulta la
 | `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                           |
 | `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                 |
 | `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares. |
-| `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «La vuelta al mundo».                    |
+| `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «La vuelta al mundo» salvo que se indique un inicio futuro. |
 | `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.    |
 | `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                        |
 | `npm run supabase:schema:test`       | Verifica esquema, RLS, comandos y concurrencia.                                                          |

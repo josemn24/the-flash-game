@@ -91,8 +91,9 @@ del casete. Las cuentas y los IDs quedan en `output/fixtures/tabarnia.json` y
 `output/fixtures/betavip.json`; este último incluye las credenciales locales de Manuel y Genís.
 Las credenciales de ejemplo son exclusivamente locales.
 
-Por defecto, ambas temporadas empiezan al ejecutar el setup. Para programarlas más tarde, pasar una
-fecha y hora ISO 8601 con zona horaria; la opción también está disponible en `supabase:tabarnia:setup`:
+Por defecto, ambas temporadas empiezan al ejecutar el setup y «La vuelta al mundo» queda abierta.
+Para programar un inicio futuro, pasar una fecha y hora ISO 8601 con zona horaria; el primer desafío
+quedará programado hasta esa hora. La opción también está disponible en `supabase:tabarnia:setup`:
 
 ```bash
 npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
