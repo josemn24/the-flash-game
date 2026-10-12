@@ -504,10 +504,8 @@ begin
     ) then
       raise exception 'question_not_published' using errcode = '55000';
     end if;
-    if challenge_row.mode in ('flash', 'survival', 'pyramid') and (
-      not private.is_supported_flash_question(question_row.id)
-      or (challenge_row.mode = 'survival' and question_row.type = 'short-text')
-    ) then
+    if challenge_row.mode in ('flash', 'survival', 'narrative', 'pyramid', 'time-trial')
+      and not private.is_supported_flash_question(question_row.id) then
       raise exception 'unsupported_question' using errcode = '22023';
     end if;
   end loop;
@@ -585,7 +583,7 @@ begin
               'mode', version.mode,
               'configSchemaVersion', version.config_schema_version,
               'modeConfig', version.mode_config
-            ),
+            ) || case when version.mode in ('alphabet','time-trial') then jsonb_build_object('globalTimeLimitMs', version.global_time_limit_ms) else '{}'::jsonb end,
             'questions', coalesce((
               select jsonb_agg(
                 case when question.status <> 'draft' then jsonb_build_object(
@@ -617,7 +615,7 @@ begin
       )
       from private.challenge_versions version
       join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where version.mode in ('flash', 'alphabet', 'survival', 'pyramid')
+      where version.mode in ('flash', 'alphabet', 'survival', 'pyramid', 'time-trial')
     ), '[]'::jsonb)
   );
 end;

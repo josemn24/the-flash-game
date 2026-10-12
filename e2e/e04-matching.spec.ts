@@ -92,8 +92,8 @@ test.describe("E04 — Matching competitivo", () => {
     await expect(page.getByRole("button", { name: "Comprobar parejas" })).toBeEnabled();
 
     await page.getByRole("button", { name: "Comprobar parejas" }).click();
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar" }).click();
+    await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar", exact: true }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     expect(requestBodies[0]?.answer).toEqual({ l1: "r1", l2: "r2", l3: "r3" });

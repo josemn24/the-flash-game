@@ -243,4 +243,34 @@ describe("competitive Pyramid Queens evaluation", () => {
     expect(result.status).toBe("unanswered");
     expect(result.details).not.toHaveProperty("failureReason");
   });
+  it.each([0, 1, 2])("Contrarreloj grants the editorial weight after %i failures", (failures) => {
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(
+        queensContext({
+          mode: "time-trial",
+          itemPoints: 30,
+          answer: { queens: solution, marks: [] },
+          incorrectAttempts: failures,
+          incorrectValidations: failures,
+        }),
+      ),
+    ).toMatchObject({ status: "correct", points: 30 });
+  });
+  it("Contrarreloj never grants partial credit and keeps interrupted drafts unanswered", () => {
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(queensContext({ mode: "time-trial" })),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(queensContext({ mode: "time-trial", answer: null })),
+    ).toEqual({ status: "unanswered", points: 0 });
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(
+        queensContext({
+          mode: "time-trial",
+          timedOut: true,
+          answer: { queens: solution, marks: [] },
+        }),
+      ),
+    ).toMatchObject({ status: "unanswered", points: 0 });
+  });
 });

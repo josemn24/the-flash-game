@@ -82,10 +82,11 @@ simultáneas y diez confirmaciones concurrentes. Los E2E ejecutan la petición r
 su respuesta después del commit; verifican la referencia en PostgreSQL, los bytes en Storage,
 el reintento sin nueva subida y la recarga.
 
-1. Aplicar el [baseline activo](../../supabase/migrations/20261010214230_initial_schema.sql)
-   antes del código nuevo. El entorno debe haberse reiniciado; no se conservan datos anteriores.
+1. Aplicar el [baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql)
+   antes del código nuevo. El entorno debe haberse
+   reiniciado; no se conservan datos anteriores.
 2. Desplegar el servidor y cliente nuevos; verificar readiness para las dos funciones privadas
-   y la revisión `20261010214230_initial_schema`. Evitar un despliegue con
+   y la revisión `20261011180045_initial_schema`. Evitar un despliegue con
    servidores antiguos que aún ejecuten la compensación destructiva; pausar las subidas
    durante esa transición si la plataforma mantiene ambas versiones activas.
 3. En staging, ejecutar con cuentas de prueba los mismos cortes posteriores al commit,

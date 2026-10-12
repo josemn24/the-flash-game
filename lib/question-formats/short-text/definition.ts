@@ -10,5 +10,11 @@ export const definition = {
     payloadSchemaVersions: [1],
     ...baseValidation,
   },
-  competitive: { flash: generic, pyramid: generic, alphabet: alphabetPass },
+  competitive: {
+    flash: generic,
+    survival: generic,
+    pyramid: generic,
+    narrative: generic,
+    alphabet: alphabetPass,
+  },
 } as const satisfies FormatDefinition<"short-text">;

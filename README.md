@@ -119,7 +119,7 @@ npm run supabase:betavip:setup -- --schedule fast
 ```
 
 El perfil predeterminado `production` conserva las ventanas de 24 horas. `fast` usa ventanas reales
-de cinco minutos: Tabarnia y BetaVIP recorren sus cuatro desafíos en 20 minutos. Se acorta
+de cinco minutos: Tabarnia recorre sus cuatro desafíos en 20 minutos y BetaVIP sus cinco en 25 minutos. Se acorta
 únicamente la ventana de publicación; los límites internos de preguntas,
 vidas, puntuación y deadlines no cambian. El manifiesto generado incluye `scheduleProfile` y la
 duración de la ventana para identificar el perfil utilizado.
@@ -134,12 +134,25 @@ duración de la ventana para identificar el perfil utilizado.
 | BetaVIP, desafío 2  | 24–48 h      | 5–10 min  |
 | BetaVIP, desafío 3  | 48–72 h      | 10–15 min |
 | BetaVIP, desafío 4  | 72–96 h      | 15–20 min |
+| BetaVIP, desafío 5  | 96–120 h     | 20–25 min |
 
 El seed no ejecuta automáticamente el calendario. Tras alcanzar cada límite temporal, ejecuta el
 tick local con `npm run calendar:tick` mientras la aplicación y Supabase estén activos.
 
 Los comandos independientes de tick cargan automáticamente `.env.local` cuando existe, incluida
 la variable `CALENDAR_TICK_SECRET` del entorno local.
+
+Los setups de Tabarnia y BetaVIP aceptan `--starts-at <fecha-hora-ISO-8601>` para programar el inicio
+futuro de la temporada. Incluye la zona horaria, por ejemplo para las 19:00 en Madrid:
+
+```bash
+npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
+```
+
+El mismo parámetro funciona con Tabarnia y el bootstrap de staging. Si se omite, el inicio sigue
+siendo inmediato. En staging, una ejecución posterior conserva la temporada existente y rechaza
+una fecha distinta; para reprogramarla hay que preparar una base vacía siguiendo el procedimiento
+de reinstalación.
 
 También puedes dejar un watcher local opcional ejecutando el tick automáticamente cada minuto:
 

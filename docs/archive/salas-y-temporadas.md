@@ -82,7 +82,7 @@ El cuarto desafío de la temporada mock es la misión narrativa **El que caminab
 
 Estos modos encajan bien como desafíos periódicos asíncronos dentro de una temporada:
 
-- Flash / Contrarreloj.
+- Flash.
 - Supervivencia.
 - Cadena.
 - La Pirámide.

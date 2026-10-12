@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Última actualización: 2026-09-23.
+Última actualización: 2026-10-11.
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -10,6 +10,10 @@ implementación. Cuando una regla aparece como **Recomendación**, debe consider
 comportamiento y no una decisión irreversible hasta confirmarla en `docs/decisions/decisions.md`.
 La política de recuperación de interacción iniciada que figura en este documento ya está confirmada
 por la decisión y ADR de 2026-09-15.
+
+Los cinco modos anteriores se describen en las secciones 1 a 5. La sección 6 describe Contrarreloj,
+implementado inicialmente para Queens. El modo existente se
+denomina únicamente **Flash**.
 
 La jerarquía documental aplicable es la descrita en [`README.md`](README.md): los ADR y las
 decisiones generales prevalecen sobre este documento; este documento prevalece sobre descripciones
@@ -108,6 +112,10 @@ Si los tres valores coinciden, se comparte posición con ranking de competición
 absoluta de finalización (`completedAt`) y métricas como `lastCorrectAt` siguen disponibles para
 historial y análisis, pero no son criterios competitivos. El ranking de temporada solo usa Flash
 Points acumulados.
+
+Contrarreloj tiene un comparador específico: pruebas resueltas y tiempo global hasta el último
+acierto. La [decisión del modo](../../decisions/decisions.md#21-contrarreloj-reglas-acordadas)
+no cambia el comparador de los cinco modos actuales ni el ranking de temporada.
 
 ## 1. Flash (`flash`)
 
@@ -319,6 +327,29 @@ intento. Los roles autorizados pueden leer el resultado terminal y la revisión;
 muestra los siete niveles y bloquea los no alcanzados sin payload. El
 editor/calendario y rankings existentes incluyen `pyramid`; no se añaden tablas. La migración,
 pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se validó despliegue remoto.
+
+## 6. Contrarreloj
+
+- **Identificador y contenido:** `time-trial`; 2–20 Queens 4×4 a 8×8 en orden fijo creciente.
+- **Duración:** segundos enteros positivos obligatorios, sin default. La primera preparación posterior
+  a la cuenta atrás fija el deadline una sola vez; intro y cuenta atrás no crean intento.
+  Todas las pruebas comparten reloj, incluidas validaciones, cargas y transiciones de 1,1 segundos.
+- **Puntuación:** pesos enteros positivos que suman 100; acierto completo sin bonus, parcial ni penalización.
+- **Oportunidades:** dos validaciones completas incorrectas permiten continuar; la tercera termina.
+  Movimientos exploratorios y solicitudes inválidas no consumen oportunidades.
+- **Finalización:** `completed`, `outcome = null`; `all_solved`, `validation_limit`, `time_limit` o
+  `recovery_interrupted`. Conservar puntos previos; conciliar recepciones aceptadas antes de cerrar.
+  Una recepción debe ocurrir después de bloqueos y estrictamente antes del deadline.
+- **Ranking:** más pruebas resueltas y menor tiempo global hasta último acierto. Empates `1,1,3`;
+  cero aciertos empatados sin tiempo inventado. Temporada conserva Flash Points acumulados.
+- **Recuperación:** conciliar recepción existente primero; una prueba activa sin recepción termina
+  sin respuesta ni replay. Con deadline vencido prevalece `time_limit`. Transferencia conserva reglas.
+- **Revisión:** pruebas alcanzadas con revisión autorizada; las no alcanzadas solo metadatos.
+- **Abandono y permisos:** contrato común, sin acreditación.
+
+La [especificación E2E](contrarreloj.md) y la [guía editorial](../../content/guidelines/contrarreloj.md)
+desarrollan el contrato aprobado. CT-01 a CT-05 están cerradas para Queens; nuevos formatos requieren
+su propia verificación.
 
 ## Matriz de estados y consulta
 

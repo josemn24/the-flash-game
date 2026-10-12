@@ -167,7 +167,7 @@ language sql stable security definer set search_path = '' as $$
       and a.status in ('completed', 'abandoned')
       and r.status = 'active'
       and s.status in ('active', 'finished')
-      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
       and cv.status in ('published', 'archived')
   )
   select exists (

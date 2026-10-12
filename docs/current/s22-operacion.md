@@ -59,11 +59,13 @@ administrativos durante el piloto; no es una garantía de escalado multiinstanci
 PostgreSQL y la revisión indicada por `EXPECTED_SCHEMA_REVISION`. Solo devuelve estado agregado y
 no contiene credenciales, JWT, cookies ni datos de dominio.
 
-El repositorio conserva Vercel Cron con `GET /api/internal/calendar/tick` a las 00:05 UTC y
+El repositorio conserva Vercel Cron con `GET /api/internal/calendar/tick` a las 13:00 UTC y
 `Authorization: Bearer <CRON_SECRET>`. Vercel solo programa cron en despliegues de tipo
 Production: esa etiqueta técnica de la plataforma no añade un entorno de aplicación.
 No se ejecuta en previews ni reintenta una invocación fallida; la ejecución automática de
-staging y sus logs siguen sin verificarse. La recuperación manual usa `CALENDAR_TICK_SECRET` y `npm run calendar:tick`,
+staging y sus logs siguen sin verificarse. En España peninsular son las 15:00 durante el horario
+de verano y las 14:00 durante el horario de invierno, porque Vercel interpreta la expresión en UTC.
+La recuperación manual usa `CALENDAR_TICK_SECRET` y `npm run calendar:tick`,
 que conserva el `POST` del endpoint. El tick incluye la limpieza global de intentos inactivos y
 devuelve `abandonedAttempts`. La lectura de historial y los comandos de partida ejecutan además una
 reconciliación limitada a la sala o al intento; una partida sin nuevas lecturas ni acciones puede

@@ -29,6 +29,7 @@ function renderDefaultPreview(question: FlashEditorialQuestion, index: number) {
   );
 }
 export const EDITORIAL_PREVIEW_RENDERERS = {
+  queens: renderDefaultPreview,
   "mini-wordle": miniWordlePreview,
   "logic-code": logicCodePreview,
   "progressive-clues": progressiveCluesPreview,

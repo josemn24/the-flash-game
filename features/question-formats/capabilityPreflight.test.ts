@@ -31,17 +31,14 @@ describe("editorial capability preflight", () => {
     expect(result).toMatchObject({ code: "unsupported_question_type", questionIndex: 0 });
   });
 
-  it("rejects short-text in Survival while keeping it valid for Alphabet", () => {
-    expect(
-      findEditorialCapabilityIssue(
-        documentFor("survival", { type: "short-text", payloadSchemaVersion: 1 }),
-      )?.code,
-    ).toBe("unsupported_question_type");
-    expect(
-      findEditorialCapabilityIssue(
-        documentFor("alphabet", { type: "short-text", payloadSchemaVersion: 1 }),
-      ),
-    ).toBeNull();
+  it("admits short-text in every competitive mode", () => {
+    for (const mode of ["flash", "alphabet", "survival", "narrative", "pyramid"] as const) {
+      expect(
+        findEditorialCapabilityIssue(
+          documentFor(mode, { type: "short-text", payloadSchemaVersion: 1 }),
+        ),
+      ).toBeNull();
+    }
   });
 
   it("rejects an unsupported payload version", () => {

@@ -5,6 +5,8 @@
 - Estado: aprobado.
 - Versión: 1.2.
 - Fecha: 2026-09-15.
+- Última actualización: 2026-10-11; reglas de Contrarreloj aprobadas para trabajo futuro, con
+  implementación y detalles específicos pendientes.
 - Este documento define comportamiento e invariantes, no tablas SQL concretas.
 
 ## 1. Producto y participación
@@ -355,6 +357,9 @@
   aplican allí.
 - Un modo futuro podrá sustituir esta regla mediante una decisión específica del modo, sin modificar
   este comparador común ni los contratos de los demás modos.
+- Contrarreloj ya tiene aprobado su comparador propio en la
+  [sección 21](#21-contrarreloj-reglas-acordadas), pendiente de implementación. No modifica los
+  criterios competitivos de los cinco modos actuales.
 - En la temporada manda la suma de Flash Points. Los empates comparten posición y cualquier orden adicional
   es únicamente visual.
 - Los miembros y espectadores pueden consultar los rankings de su sala.
@@ -416,7 +421,7 @@
 
 - **Decisión vigente (2026-09-28):** Vercel Cron es el scheduler oficial del calendar tick para el
   tipo de despliegue Production de Vercel.
-- Vercel invoca `GET /api/internal/calendar/tick` diariamente a las 00:05 UTC mediante
+- Vercel invoca `GET /api/internal/calendar/tick` diariamente a las 13:00 UTC mediante
   `CRON_SECRET`. La tarea no se ejecuta en previews y Vercel no reintenta automáticamente una
   invocación fallida.
 - `POST /api/internal/calendar/tick` y `npm run calendar:tick` se conservan para ejecución local,
@@ -534,3 +539,42 @@
   responder/finalizar/transferir tras expulsión no muta progreso; completar antes de expulsar conserva
   puntos; competir finalización y expulsión produce un solo resultado según el orden confirmado;
   reincorporarse no reabre el intento; revocar solo admin manteniendo permiso competitivo no lo cierra.
+
+## 21. Contrarreloj: reglas acordadas
+
+Aprobadas el 2026-10-11. Identificador `time-trial`, como modo competitivo independiente de Flash.
+La [especificación funcional](../current/domain/contrarreloj.md) desarrolla el recorrido completo.
+
+- V1: entre 2 y 20 Queens compatibles de 4×4 a 8×8, en un orden fijo de dificultad creciente.
+  Todos juegan las mismas versiones. Otros formatos quedan para ampliaciones.
+- Duración global obligatoria, sin default, en segundos enteros positivos almacenados como
+  milisegundos dentro del rango integer existente. Los límites por pregunta no se aplican.
+- Pesos editoriales enteros positivos, suma exacta 100. Cada acierto concede todo su peso, sin
+  crédito parcial, bonus de velocidad ni penalización por validaciones incorrectas.
+- Cada tablero permite dos validaciones completas incorrectas; la tercera termina el desafío.
+  Movimientos exploratorios, solicitudes inválidas e idempotencia no consumen oportunidades.
+- Intro y cuenta atrás no crean intento ni entregan tableros. `start` crea el intento sin deadline;
+  la primera preparación fija atómicamente inicio, deadline e intervalo y libera el tablero.
+  `started_at` sigue siendo creación; el reloj se deriva del deadline y duración publicada.
+- El reloj corre durante validaciones, cargas y transiciones sin compensaciones ni reinicios.
+  El feedback de acierto intermedio dura 1,1 segundos; el último acierto solicita cierre inmediato.
+- La recepción se fecha después de adquirir bloqueos en PostgreSQL. Debe ser estrictamente anterior
+  al deadline; la igualdad es tardía. Antes de cerrar se concilian recepciones pendientes.
+  Una última solución aceptada a tiempo deriva `all_solved`; una tercera validación incorrecta
+  aceptada a tiempo deriva `validation_limit`, incluso si la evaluación acaba después del límite.
+  Un acierto intermedio seguido del vencimiento conserva puntos y cierra por `time_limit`.
+- Una prueba activa sin recepción final se cierra sin respuesta y termina por `recovery_interrupted`;
+  si el reloj ya venció, prevalece `time_limit`. Los borradores no sustituyen recepciones.
+  Recuperación y transferencia conservan identidad, deadline y hechos, sin reentregar pruebas vistas.
+  Un intento sin prueba entregada puede preparar; entre pruebas puede avanzar si aún tiene tiempo.
+- Los cierres reglamentarios usan `completed`, `outcome = null` y los motivos anteriores, conservando
+  puntos. Finalización y acreditación son idempotentes. Las pruebas no entregadas no reciben respuestas
+  o tiempos ficticios; revisión solo muestra sus metadatos, sin tablero ni solución.
+- Ranking de publicación e historial: resueltas descendente, luego milisegundos hasta último acierto
+  ascendente, derivados de recepciones aceptadas e incluyendo transiciones. Empates `1,1,3`; cero
+  aciertos comparten posición sin tiempo inventado. El orden visual estable no desempata.
+- La temporada continúa sumando Flash Points. Abandono, pérdida de permisos, invalidación y acceso
+  a revisión mantienen el contrato común; abandonar no acredita puntos.
+
+CT-01 a CT-05 quedan cerradas para Queens. Antes de publicar contenido real se exige calibración
+mediante resoluciones completas y un recorrido de staging. Migración compatible antes de aplicación.

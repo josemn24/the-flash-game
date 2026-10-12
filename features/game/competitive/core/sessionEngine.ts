@@ -1,3 +1,4 @@
+import { readTimeTrialProgress } from "@/lib/timeTrial";
 import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import { createCompetitiveAttemptClient, type CompetitiveAttemptClient } from "../attemptClient";
@@ -80,6 +81,7 @@ export class CompetitiveSessionEngine {
       roomContext.result?.flashPoints ?? 0,
       terminalReview?.length ? reviewFor(challenge, terminalReview) : null,
     );
+    if (roomContext.timeTrial) this.snapshot.timeTrial = roomContext.timeTrial;
     if (roomContext.result && !terminalReview?.length) {
       this.snapshot.lifecycleError = {
         operation: "projection",
@@ -169,6 +171,8 @@ export class CompetitiveSessionEngine {
         (!attemptId || !Number.isSafeInteger(lockVersion))
       )
         throw new Error("invalid_attempt_response");
+      if (this.options.challenge.mode === "time-trial" && response.timeTrial)
+        this.commit({ type: "time_trial", progress: readTimeTrialProgress(response.timeTrial) });
       step.accept(response, command);
       this.commit({
         type: "command_succeeded",
@@ -244,6 +248,21 @@ export class CompetitiveSessionEngine {
       return false;
     }
     if (accepted && this.active) await step.after?.();
+    if (
+      this.options.challenge.mode === "time-trial" &&
+      operation !== "complete" &&
+      operation !== "recover" &&
+      this.lifecycle.finalizationRequested()
+    )
+      await this.lifecycle.finalizeAlphabet();
+    if (
+      !accepted &&
+      this.options.challenge.mode === "time-trial" &&
+      ["deadline_reached", "time_trial_terminal"].includes(this.snapshot.lifecycleError?.code ?? "")
+    ) {
+      this.commit({ type: "command_failed", definitive: true, phase: "finalizing", locked: true });
+      await this.lifecycle.finalizeAlphabet();
+    }
     if (!accepted && this.snapshot.lifecycleError?.code === "stale_version" && !this.reconciling)
       await this.reconcile();
     if (
@@ -393,7 +412,8 @@ export class CompetitiveSessionEngine {
       error instanceof CompetitiveCommandError &&
       (error.retryAfterSeconds !== undefined ||
         error.status === 429 ||
-        code === "alphabet_deadline_not_reached")
+        code === "alphabet_deadline_not_reached" ||
+        code === "time_trial_not_terminal")
         ? Math.max(1, error.retryAfterSeconds ?? 1)
         : undefined;
     this.retryAt = seconds === undefined ? 0 : Date.now() + seconds * 1000;
@@ -405,12 +425,13 @@ export class CompetitiveSessionEngine {
         error.status >= 500 ||
         error.status === 429 ||
         code === "invalid_json_response" ||
-        code === "alphabet_deadline_not_reached");
+        code === "alphabet_deadline_not_reached" ||
+        code === "time_trial_not_terminal");
     const limit = command.operation === "complete" ? 3 : 1;
     const message =
       retryable && this.automaticRetries >= limit
         ? "No hemos podido confirmar la operación"
-        : code === "alphabet_deadline_not_reached"
+        : code === "alphabet_deadline_not_reached" || code === "time_trial_not_terminal"
           ? "Esperando a que termine el tiempo de la partida."
           : seconds !== undefined
             ? `Demasiadas solicitudes. Espera ${seconds} ${seconds === 1 ? "segundo" : "segundos"} antes de volver a intentarlo.`
@@ -525,6 +546,21 @@ export class CompetitiveSessionEngine {
       return;
     }
     if (accepted && this.active) await step.after?.();
+    if (
+      this.options.challenge.mode === "time-trial" &&
+      command.operation !== "complete" &&
+      command.operation !== "recover" &&
+      this.lifecycle.finalizationRequested()
+    )
+      await this.lifecycle.finalizeAlphabet();
+    if (
+      !accepted &&
+      this.options.challenge.mode === "time-trial" &&
+      ["deadline_reached", "time_trial_terminal"].includes(this.snapshot.lifecycleError?.code ?? "")
+    ) {
+      this.commit({ type: "command_failed", definitive: true, phase: "finalizing", locked: true });
+      await this.lifecycle.finalizeAlphabet();
+    }
     if (!accepted && this.snapshot.lifecycleError?.code === "stale_version") await this.reconcile();
   };
   reconcile = async () => {
@@ -552,6 +588,10 @@ export class CompetitiveSessionEngine {
       return;
     }
     if (this.snapshot.busy) return;
+    if (this.options.challenge.mode === "time-trial") {
+      await this.lifecycle.startTimeTrial();
+      return;
+    }
     if (this.options.challenge.mode === "pyramid")
       this.commit({ type: "phase", phase: "preparing", clearQuestion: true });
     await this.lifecycle.prepare();
@@ -585,6 +625,16 @@ export class CompetitiveSessionEngine {
       if (!(error instanceof PendingCommandBlocked)) throw error;
     }
     if (accepted && this.active) await step.after?.();
+    if (this.options.challenge.mode === "time-trial" && this.lifecycle.finalizationRequested())
+      await this.lifecycle.finalizeAlphabet();
+    if (
+      !accepted &&
+      this.options.challenge.mode === "time-trial" &&
+      ["deadline_reached", "time_trial_terminal"].includes(this.snapshot.lifecycleError?.code ?? "")
+    ) {
+      this.commit({ type: "command_failed", definitive: true, phase: "finalizing", locked: true });
+      await this.lifecycle.finalizeAlphabet();
+    }
     return accepted;
   };
   cancelTakeOver = () => {

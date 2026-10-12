@@ -15,6 +15,7 @@ import type {
   ServerNarrativeChallenge,
   ServerSurvivalChallenge,
   ServerPyramidChallenge,
+  ServerTimeTrialChallenge,
 } from "@/types/gameplay/challenge";
 import type { FlashPopSocialSnapshot, GameplayPersistence } from "@/types/view-models";
 
@@ -98,6 +99,7 @@ export function RoomChallengeClient({
     | ServerAlphabetChallenge
     | ServerSurvivalChallenge
     | ServerPyramidChallenge
+    | ServerTimeTrialChallenge
     | ServerNarrativeChallenge;
   roomContext?: GameRoomContext;
   socialSnapshot: FlashPopSocialSnapshot;

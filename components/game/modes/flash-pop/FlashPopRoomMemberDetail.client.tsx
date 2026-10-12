@@ -59,19 +59,31 @@ function AnswerHistory({
     title: item.title,
     subtitle: item.subtitle,
     status: item.status,
+    statusLabel:
+      progress?.mode === "time-trial"
+        ? item.status === "locked"
+          ? "No alcanzada"
+          : item.status === "correct"
+            ? "Resuelta"
+            : "Sin resolver"
+        : undefined,
     lockedMessage:
       item.status === "locked"
-        ? "No alcanzado: el ascenso terminó en un nivel anterior."
+        ? progress?.mode === "time-trial"
+          ? "No alcanzada: el desafío terminó antes de entregar esta prueba."
+          : "No alcanzado: el ascenso terminó en un nivel anterior."
         : undefined,
   }));
   const countLabel =
-    progress?.mode === "alphabet"
-      ? `${progress.correctCount} de ${progress.totalLetterCount} letras acertadas`
-      : progress?.mode === "pyramid"
-        ? `${progress.levelsCleared} de ${progress.totalLevelCount} niveles superados`
-        : progress?.mode === "survival"
-          ? `${progress.reachedQuestionCount} preguntas alcanzadas`
-          : `${progress?.answeredCount ?? items.length} respuestas`;
+    progress?.mode === "time-trial"
+      ? `${progress.correctCount} de ${progress.totalQuestionCount} pruebas resueltas`
+      : progress?.mode === "alphabet"
+        ? `${progress.correctCount} de ${progress.totalLetterCount} letras acertadas`
+        : progress?.mode === "pyramid"
+          ? `${progress.levelsCleared} de ${progress.totalLevelCount} niveles superados`
+          : progress?.mode === "survival"
+            ? `${progress.reachedQuestionCount} preguntas alcanzadas`
+            : `${progress?.answeredCount ?? items.length} respuestas`;
 
   return (
     <section className={styles.history} aria-labelledby="answer-history-title">
@@ -120,7 +132,9 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
           ? "Pirámide"
           : mode === "narrative"
             ? "Narrativa"
-            : "Flash";
+            : mode === "time-trial"
+              ? "Contrarreloj"
+              : "Flash";
   const outcomeLabel =
     resolvedModel.reviewProgress?.mode === "survival"
       ? resolvedModel.reviewProgress.outcome === "survived"

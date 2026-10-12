@@ -88,7 +88,9 @@ test.describe("S03 — Flash competitivo persistido", () => {
     });
 
     await openFlash(page, (await fixture()).users.carol);
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Oporto" }).click();
     await expect.poll(() => requestBodies.length).toBe(2);
     await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
@@ -151,7 +153,9 @@ test.describe("S03 — Flash competitivo persistido", () => {
   test("convierte el timeout de una pregunta en una respuesta persistida", async ({ page }) => {
     test.setTimeout(90000);
     await openFlash(page, (await fixture()).users.dave);
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await expect(page.getByRole("heading", { name: "Tiempo agotado" })).toBeVisible({
       timeout: 75_000,
     });

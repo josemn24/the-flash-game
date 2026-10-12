@@ -33,7 +33,9 @@ test.describe("E05 — Queens competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: "Coloca las seis coronas" })).toBeVisible();
     await expect(page.getByText("1/6 coronas")).toBeVisible();
@@ -80,8 +82,10 @@ test.describe("E05 — Queens competitivo", () => {
     failedValidations = 2;
     await board.getByRole("gridcell", { name: /Fila 6, columna 6/ }).click();
     await expect.poll(() => validationBodies.length).toBe(3);
-    await expect(page.getByRole("button", { name: "Reintentar validación" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar validación" }).click();
+    await expect(
+      page.getByRole("button", { name: "Reintentar validación", exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar validación", exact: true }).click();
     await expect.poll(() => validationBodies.length).toBe(4);
     expect(validationBodies[3]).toEqual(validationBodies[1]);
     expect(validationBodies[1]?.idempotencyKey).toBe(validationBodies[2]?.idempotencyKey);

@@ -64,7 +64,9 @@ export function parseEnvironmentArgs(args, { targets = environmentTargets } = {}
 
 export function loadOperationalEnv(options) {
   assertEnvironmentTarget(options.target);
-  const file = options.envFile ?? (options.target === "local" ? ".env.local" : null);
+  const file =
+    options.envFile ??
+    (options.target === "local" && !process.env.SUPABASE_TEST_WORKDIR ? ".env.local" : null);
   if (!file) return;
   try {
     process.loadEnvFile(file);

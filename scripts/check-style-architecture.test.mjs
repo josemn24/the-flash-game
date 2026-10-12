@@ -174,6 +174,8 @@ describe("design token architecture guard", () => {
     fixtures.push(root);
     for (const dir of ["app", "components", "features", "lib", "data"])
       await mkdir(path.join(root, dir));
+    await mkdir(path.join(root, "features", "nested"));
+    await mkdir(path.join(root, "components", ".hidden"));
     await writeFile(
       path.join(root, "app/globals.css"),
       "@layer app-reset, app-tokens, app-base, app-components, app-formats, app-utilities; @layer app-tokens { :root { --ds-color-fg-primary: #171720; } }",
@@ -190,9 +192,33 @@ describe("design token architecture guard", () => {
       path.join(root, "components/Fixture.test.tsx"),
       'const test = "var(--ds-color-fg-missing)";',
     );
+    await writeFile(
+      path.join(root, "components/Fixture.spec.tsx"),
+      'const test = "var(--ds-color-fg-missing)";',
+    );
+    await writeFile(
+      path.join(root, "components/Fixture.d.ts"),
+      'declare const token: "--color-retired";',
+    );
+    await writeFile(
+      path.join(root, "components/.hidden/Hidden.module.css"),
+      "@layer app-components { .hidden { color: var(--color-retired); } }",
+    );
+    await writeFile(
+      path.join(root, "features/nested/Fixture.module.css"),
+      "@layer app-components { .nested { color: var(--ds-color-fg-primary); } }",
+    );
+    await writeFile(
+      path.join(root, "features/nested/Fixture.generated.css"),
+      "@layer app-components { .generated { color: var(--color-retired); } }",
+    );
+    await writeFile(
+      path.join(root, "lib/database.types.ts"),
+      'const generated = "var(--color-retired)";',
+    );
     expect(await checkStyleArchitecture(root)).toEqual({
       violations: [expect.stringContaining("desconocido --space-missing")],
-      moduleCount: 1,
+      moduleCount: 2,
     });
   });
 });

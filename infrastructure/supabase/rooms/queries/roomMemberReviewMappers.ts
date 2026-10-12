@@ -11,7 +11,8 @@ export function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMe
     .slice()
     .sort((left, right) => left.item_position - right.item_position)
     .map((row) => {
-      const locked = row.challenge_mode === "pyramid" && !row.has_persisted_answer;
+      const locked =
+        ["pyramid", "time-trial"].includes(row.challenge_mode) && !row.has_persisted_answer;
       const question = locked ? null : toHistoricalFlashQuestion(row);
       const result = locked ? null : toHistoricalAnswerReview(row);
       const status = locked ? "locked" : (result?.status ?? "unanswered");
@@ -35,11 +36,13 @@ export function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMe
       return {
         id: row.challenge_item_id,
         title:
-          row.challenge_mode === "pyramid"
-            ? (row.level_label ?? `Nivel ${row.item_position}`)
-            : question
-              ? QUESTION_FORMAT_LABELS[question.type]
-              : row.question_type,
+          row.challenge_mode === "time-trial"
+            ? `Prueba ${row.item_position}`
+            : row.challenge_mode === "pyramid"
+              ? (row.level_label ?? `Nivel ${row.item_position}`)
+              : question
+                ? QUESTION_FORMAT_LABELS[question.type]
+                : row.question_type,
         subtitle:
           row.challenge_mode === "pyramid"
             ? (row.briefing_title ?? `Nivel ${row.item_position}`)

@@ -36,7 +36,9 @@ test.describe("E03 — Progressive-clues competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: "Identifica el acontecimiento" })).toBeVisible();
     await expect(page.getByText("1 de 3 pistas")).toBeVisible();
@@ -65,8 +67,10 @@ test.describe("E03 — Progressive-clues competitivo", () => {
 
     await page.getByRole("button", { name: /Revelar otra pista/ }).click();
     await expect.poll(() => requestBodies.length).toBe(2);
-    await expect(page.getByRole("button", { name: "Reintentar revelación" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar revelación" }).click();
+    await expect(
+      page.getByRole("button", { name: "Reintentar revelación", exact: true }),
+    ).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar revelación", exact: true }).click();
     await expect.poll(() => requestBodies.length).toBe(3);
     expect(requestBodies[2]).toEqual(requestBodies[0]);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);

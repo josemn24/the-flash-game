@@ -101,6 +101,9 @@ function commandCode(error: unknown) {
     "attempt_terminal",
     "interaction_not_presented",
     "pass_unavailable",
+    "time_trial_terminal",
+    "time_trial_not_terminal",
+    "queens_requires_validation_command",
     "evaluation_pending",
     "publication_cancelled",
     "attempt_not_terminal",
@@ -229,8 +232,25 @@ export async function callAttemptCommand<T>(
       `select private.${functionName}($1::jsonb) as result`,
       [JSON.stringify(input)],
     );
-    return decode ? decode(result.rows[0]?.result) : (result.rows[0]?.result as T);
+    const response = await refreshTimeTrialReference(client, result.rows[0]?.result);
+    return decode ? decode(response) : (response as T);
   });
+}
+
+/** Idempotent facts retain their original timestamps; the display clock gets a fresh database reference even on replay. */
+async function refreshTimeTrialReference(client: PoolClient, value: unknown): Promise<unknown> {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    !("timeTrial" in value) ||
+    !value.timeTrial ||
+    typeof value.timeTrial !== "object"
+  )
+    return value;
+  const clock = await client.query<{ server_now: string }>(
+    "select clock_timestamp()::text as server_now",
+  );
+  return { ...value, timeTrial: { ...value.timeTrial, serverNow: clock.rows[0]?.server_now } };
 }
 
 async function expireStaleAttempt(client: PoolClient, attemptId: string) {
@@ -249,7 +269,9 @@ function isAttemptContext(value: unknown): value is AttemptContext {
   return (
     Object.keys(context).length === 2 &&
     typeof context.challengeMode === "string" &&
-    ["flash", "alphabet", "survival", "pyramid", "narrative"].includes(context.challengeMode) &&
+    ["flash", "alphabet", "survival", "pyramid", "narrative", "time-trial"].includes(
+      context.challengeMode,
+    ) &&
     typeof context.scheduledChallengeId === "string" &&
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
       context.scheduledChallengeId,
@@ -479,7 +501,9 @@ export class SupabaseAttemptCommands implements Pick<
           }),
         ],
       );
-      return decodeFinishAttemptResult(command.rows[0]?.result);
+      return decodeFinishAttemptResult(
+        await refreshTimeTrialReference(client, command.rows[0]?.result),
+      );
     });
   }
 }

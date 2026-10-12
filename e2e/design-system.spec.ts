@@ -105,7 +105,7 @@ for (const width of [390, 1280]) {
       await page.getByRole("button", { name: "Guardar correo de ejemplo" }).click();
       await expect(field).toBeDisabled();
       await page.getByRole("button", { name: "Simular error de envío" }).click();
-      await page.getByRole("button", { name: "Reintentar envío" }).click();
+      await page.getByRole("button", { name: "Reintentar envío", exact: true }).click();
       await page.getByRole("button", { name: "Completar envío" }).click();
       await expect(page.getByText("Correo de ejemplo guardado", { exact: true })).toBeVisible();
       await page.getByRole("button", { name: "Reiniciar formulario" }).click();
@@ -274,7 +274,7 @@ for (const width of [390, 1280]) {
       const feedback = page.frameLocator('iframe[title="Resultados y recuperación"]');
       await page.getByLabel("Tipo de feedback").selectOption("operacion");
       await feedback.getByRole("button", { name: "Simular error", exact: true }).click();
-      await feedback.getByRole("button", { name: "Reintentar operación" }).click();
+      await feedback.getByRole("button", { name: "Reintentar operación", exact: true }).click();
       await expect(feedback.getByText("Enviando el ejemplo…")).toBeVisible();
       await feedback.getByRole("button", { name: "Completar operación" }).click();
       await expect(feedback.getByText("Operación de ejemplo completada.")).toBeVisible();

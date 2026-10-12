@@ -10,7 +10,7 @@ import type { AnswerValue } from "@/types/contracts";
 
 export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
   evaluate(context: EvaluationContext) {
-    if (context.mode === "pyramid" && context.answer === null) {
+    if ((context.mode === "pyramid" || context.mode === "time-trial") && context.answer === null) {
       return { status: "unanswered", points: 0 };
     }
 
@@ -44,6 +44,15 @@ export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
       };
     }
 
+    if (context.mode === "time-trial") {
+      const correct =
+        !context.timedOut && result.details?.type === "queens" && result.details.solved;
+      return {
+        status: correct ? "correct" : context.timedOut ? "unanswered" : "incorrect",
+        points: correct ? context.itemPoints : 0,
+        ...(result.details ? { details: result.details } : {}),
+      };
+    }
     return {
       status: result.status,
       points: result.points,

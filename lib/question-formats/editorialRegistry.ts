@@ -19,7 +19,9 @@ import { parseStored as trueFalseParser } from "./true-false/stored";
 import { parseStored as wordHashtagParser } from "./word-hashtag/stored";
 import { parseStored as wordSearchParser } from "./word-search/stored";
 import { parseStored as zipParser } from "./zip/stored";
+import { parseStored as queensParser } from "./queens/stored";
 export const EDITORIAL_FORMAT_PARSERS = {
+  queens: queensParser,
   "word-search": wordSearchParser,
   "word-hashtag": wordHashtagParser,
   zip: zipParser,

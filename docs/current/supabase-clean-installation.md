@@ -2,8 +2,8 @@
 
 > Estado: vigente. Entornos admitidos: local y staging. La instalación registrada es local; la ejecución y validación de staging quedan pendientes de una ventana posterior.
 
-Esta es la guía principal para elegir y preparar un entorno. La migración activa es un baseline
-generado desde `supabase/schemas/`; el historial incremental anterior permanece en Git. Un reinicio
+Esta es la guía principal para elegir y preparar un entorno. El historial activo parte de un baseline
+generado desde `supabase/schemas/` y continúa con migraciones incrementales. Un reinicio
 completo elimina datos de aplicación, usuarios de Auth y archivos de Storage; debe hacerse
 únicamente cuando esos datos sean prescindibles.
 
@@ -28,7 +28,7 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261010214230_initial_schema`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
+La revisión esperada es `20261011180045_initial_schema`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
 
 ## Herramientas y garantías
 
@@ -86,18 +86,32 @@ npm run supabase:betavip:setup
 npm run dev
 ```
 
-El setup reinicia la base local, prepara Tabarnia y añade BetaVIP con sus cuatro desafíos y el asset
+El setup reinicia la base local, prepara Tabarnia y añade BetaVIP con sus cinco desafíos y el asset
 del casete. Las cuentas y los IDs quedan en `output/fixtures/tabarnia.json` y
 `output/fixtures/betavip.json`; este último incluye las credenciales locales de Manuel y Genís.
 Las credenciales de ejemplo son exclusivamente locales.
 
-«La vuelta al mundo» está abierto durante las primeras 24 horas, «Cumbre lógica II» queda
-programado para el segundo día, «Supervivencia: Cultura pop» para el tercero y «Ecos de la
-Antigüedad» para el cuarto. La temporada dura 96 horas. El manifiesto lista las publicaciones en
-ese orden; `data.publicationId` apunta a
-La vuelta al mundo y los campos `data.survivalPublicationId`, `data.alphabetPublicationId` y
-`data.pyramidPublicationId` identifican las tres primeras publicaciones; `data.antiquityPublicationId`
-identifica Ecos de la Antigüedad. `data.questionAssets` contiene el recurso del casete. Los
+Por defecto, ambas temporadas empiezan al ejecutar el setup. Para programarlas más tarde, pasar una
+fecha y hora ISO 8601 con zona horaria; la opción también está disponible en `supabase:tabarnia:setup`:
+
+```bash
+npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
+```
+
+La fecha y hora configuradas se guardan en UTC en el manifiesto. El desafío queda visible como
+próximo y se podrá jugar al llegar el inicio; cada persona inicia su propia partida manualmente.
+
+Desde el inicio de temporada, «La vuelta al mundo» está abierto durante las primeras 24 horas,
+«Cumbre lógica II» queda programado para el segundo día, «Escalera de coronas» para el tercero,
+«Supervivencia: Cultura pop» para el cuarto y «Ecos de la Antigüedad» para el quinto. «Escalera de
+coronas» es un Contrarreloj Queens de seis tableros, de 4×4 a 7×7, con 100 puntos y un único reloj
+de tres minutos. La tercera validación incorrecta de un tablero termina la partida. La temporada
+dura 120 horas. El perfil rápido conserva cinco ventanas consecutivas de cinco minutos (25 minutos
+en total); el calendario normal usa cinco ventanas de 24 horas. El manifiesto lista las publicaciones
+en ese orden; `data.publicationId` apunta a La vuelta al mundo y los campos
+`data.alphabetPublicationId`, `data.pyramidPublicationId`, `data.timeTrialPublicationId`,
+`data.survivalPublicationId` y `data.antiquityPublicationId` identifican cada publicación.
+`data.questionAssets` contiene el recurso del casete. Los
 [perfiles y comandos de calendario](../../README.md#comandos-disponibles) explican
 cómo recorrer las ventanas localmente.
 
@@ -182,6 +196,12 @@ Los 12 E2E existentes de Flash, recuperación, Pirámide y contratos por formato
 
 Al terminar el piloto se simuló y ejecutó `npm run supabase:environment:reset -- --target local`. El ledger local contiene únicamente `20261010214230_initial_schema`. Auth tiene cero usuarios; las tablas de `public` y `private` suman cero filas; Storage tiene cero objetos. La CLI local recreó solo los buckets configurados y vacíos `avatars` y `question-assets`. No se ejecutaron bootstrap ni carga de diccionarios después del reset. No se ejecutaron comandos ni validaciones contra staging.
 
+### Baseline regenerado — 2026-10-11
+
+El historial activo se consolidó en `20261011180045_initial_schema`, generado desde los 82 schemas declarativos. Las tres migraciones activas anteriores se conservaron en Git; no contenían DML ni backfills necesarios tras el reset. Pasan las 55 suites SQL desde schemas y desde el baseline, la reconciliación, los tipos, la documentación y los gates estáticos. `verify:pilot` se detuvo en una aserción del test del seed BetaVIP; por ello, sus etapas de integración y E2E no se ejecutaron.
+
+El reset final local dejó únicamente la revisión `20261011180045` en el ledger, cero usuarios de Auth, cero filas en las tablas de `public` y `private`, cero objetos de Storage y dos buckets locales vacíos: `avatars` y `question-assets`. No se ejecutaron bootstrap, carga de diccionarios ni operaciones contra staging.
+
 ## Staging — ejecución posterior
 
 Preparar `.env.staging.operations`, excluido de Git, con `STAGING_PROJECT_REF`,
@@ -212,6 +232,18 @@ Las contraseñas aleatorias quedan en `output/staging/bootstrap-credentials.json
 `0600`, y el estado sin contraseñas en `output/staging/bootstrap-manifest.json`. Guardar las
 contraseñas en un gestor seguro y retirar el archivo después de completar la preparación y
 verificación; conservarlo durante una recuperación parcial del bootstrap.
+
+Para programar el inicio de una temporada BetaVIP nueva, pasar `--starts-at` al dry-run y al
+bootstrap real. Usa una fecha y hora ISO 8601 con zona horaria; por ejemplo, las 19:00 en Madrid:
+
+```bash
+node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs --dry-run --starts-at "2026-10-20T19:00:00+02:00"
+node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs --starts-at "2026-10-20T19:00:00+02:00"
+```
+
+El manifiesto registra la fecha convertida a UTC. El bootstrap no cambia temporadas ya creadas: si
+se indica una fecha distinta de la existente, falla con una instrucción para usar el procedimiento
+de reinstalación completa.
 
 ### Reinstalación completa
 
@@ -258,7 +290,7 @@ aplicación. Vercel no programa cron en previews y la ejecución automática de 
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261010214230_initial_schema`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION=20261011180045_initial_schema`. El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 
@@ -269,7 +301,7 @@ Antes de abrir cada entorno:
 1. Confirmar que el manifiesto del reset está completo y que el bootstrap corresponde al mismo proyecto y revisión.
 2. Solicitar `GET /api/internal/health` con el secreto del entorno: `200`, con `auth`, `database` y `schema` en `true`. Comprobar también `supabase migration list`: health valida atributos y marcadores, no sustituye al historial aplicado.
 3. Iniciar sesión con el superadmin y comprobar `/admin`. Una cuenta sin ese rol no debe obtener acceso al portal.
-4. En local, comprobar el perfil mínimo con una identidad y jugador, buckets vacíos y diccionarios completos. En staging, comprobar Xesmona como superadmin, Ches como owner de BetaVIP, sus cuatro desafíos, el asset y los diccionarios.
+4. En local, comprobar el perfil mínimo con una identidad y jugador, buckets vacíos y diccionarios completos. En staging, comprobar Xesmona como superadmin, Ches como owner de BetaVIP, sus cinco desafíos, el asset y los diccionarios.
 5. Abrir acceso y reactivar calendario. Registrar commit, revisión, bootstrap y health en un informe sin credenciales.
 
 Las puertas locales/CI incluyen esquema declarativo, migraciones, reconciliación, contratos, permisos y concurrencia; tipos públicos, arquitectura, documentación, lint, unitarias, build y E2E. Las pruebas de actualización histórica se conservan, pero este despliegue no requiere migrar partidas anteriores.

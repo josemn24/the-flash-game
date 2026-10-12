@@ -64,12 +64,12 @@ el rango más próximo. Los artefactos en `output/performance/` están ignorados
 ## Migración y reversión
 
 El cambio sigue el flujo declarativo de [Supabase](../../supabase/schemas/README.md). El
-[baseline activo](../../supabase/migrations/20261010214230_initial_schema.sql) contiene las dos
-funciones y sus permisos. El inventario de seguridad, los tipos públicos
+[baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql) contiene las dos funciones
+y sus permisos. El inventario de seguridad, los tipos públicos
 Supabase y los marcadores del health check están sincronizados.
 
-Reconstruir el entorno desde el baseline antes de desplegar el código y configurar
-`EXPECTED_SCHEMA_REVISION=20261010214230_initial_schema`. El despliegue remoto queda pendiente
+Reconstruir el entorno desde el historial activo antes de desplegar el código y configurar
+`EXPECTED_SCHEMA_REVISION=20261011180045_initial_schema`. El despliegue remoto queda pendiente
 de una ventana de reinicio.
 
 ## Verificación local y medición

@@ -8,6 +8,7 @@ export const ROOM_ART_BY_MODE: Readonly<Record<GameMode, string>> = {
   survival: "/flash-pop/concepts/survival-last-beacon.webp",
   narrative: "/flash-pop/concepts/narrative-story-trail.webp",
   pyramid: ROOM_ART_FALLBACK,
+  "time-trial": "/flash-pop/concepts/flash-floating-cards.webp",
 };
 
 export function getChallengeImage(mode: GameMode) {
@@ -21,6 +22,7 @@ export function getChallengeFormatLabel(mode: GameMode) {
     survival: "Supervivencia",
     narrative: "Narrativa",
     pyramid: "La Pirámide",
+    "time-trial": "Contrarreloj",
   };
   return labels[mode];
 }

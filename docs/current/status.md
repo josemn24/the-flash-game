@@ -57,10 +57,43 @@ están verificadas en Supabase local dentro del runtime `pilot`. Las demos mock 
 rutas competitivas. Consulta
 [`s22-operacion.md`](s22-operacion.md).
 
+## Contrarreloj
+
+`time-trial` integra Queens sobre el runtime competitivo, editor, ledger y consultas comunes.
+Incluye reloj global iniciado al entregar la primera prueba, pesos editoriales, tres validaciones,
+recuperación estricta, ranking por resueltas y último acierto, y revisión sin contenido futuro.
+Las [decisiones CT-01 a CT-05](../decisions/open-questions.md#contrarreloj-decisiones-pendientes)
+están cerradas; [especificación](domain/contrarreloj.md) y
+[guía editorial](../content/guidelines/contrarreloj.md) describen el alcance.
+La migración compatible debe preceder a la aplicación. La calibración de una secuencia real y su
+verificación en staging siguen siendo requisitos antes de habilitar publicaciones reales.
+
+Verificación local de implementación (2026-10-11):
+
+- Baseline `20261011180045_initial_schema` generado desde los 82 schemas y aplicado localmente;
+  no se realizaron operaciones remotas.
+- 226 suites unitarias, 2.067 pruebas aprobadas. Incluyen el reloj persistente, la referencia
+  horaria del servidor con desfase del dispositivo y revisión histórica sin respuestas ficticias.
+- 59 suites SQL y 1.547 comprobaciones aprobadas tanto desde `schemas` como desde `migrations`.
+  Contrarreloj aporta 77 comprobaciones de contenido, scoring, deadline, recuperación, permisos,
+  revisión y empates `1,1,3`. Pasan además 158 casos de conformidad de formatos, 904 observaciones
+  de validación y las carreras concurrentes, incluida recepción después de adquirir bloqueos.
+- Reconciliación: 222 funciones, cero diferencias de definición y comportamiento en 41 probes;
+  inventario de seguridad, contratos de reconciliación y carreras de transferencia aprobados.
+- Integración Supabase de Contrarreloj: Auth, PostgREST y RLS aprobados. E2E aislados: 4/4 de
+  Contrarreloj, con escritorio, móvil, teclado, recuperación y confirmación perdida; 14/14 de los
+  cinco modos existentes. Paridad del dispatcher y permisos verificados en los seis modos.
+- Tipos, arquitectura de tipos y estilos, ESLint, Stylelint, Prettier, enlaces documentales y
+  revisión canónica aprobados. `supabase:types:check` confirma los tipos generados.
+  `npm run build` compila, comprueba TypeScript y genera las rutas de producción correctamente.
+  El build requiere acceso a las fuentes de Google usadas por la aplicación.
+- Las pruebas usan fixtures desechables. No sustituyen la calibración de contenido real ni la
+  comprobación de staging requerida por la guía editorial.
+
 ## Capacidades actuales
 
 - 31 formatos de pregunta nativos, con ejemplos jugables en la biblioteca.
-- Cinco modos: `flash`, `alphabet`, `survival`, `narrative` y `pyramid`.
+- Seis modos: `flash`, `alphabet`, `survival`, `narrative`, `pyramid` y `time-trial` (Queens).
 - Autenticación Supabase local, provisioning idempotente de `Player`, logout y edición del nombre.
 - Home, detalle de sala e introducción con lecturas autorizadas reales (S02).
 - Flash competitivo real de 2 a 20 preguntas, 100 puntos totales, con sesiones exclusivas, tiempos,
@@ -140,7 +173,7 @@ La UI pública no permite crear salas privadas ni gestionar invitaciones. Un por
 superadmin prepara y activa temporadas, publica Flash/Supervivencia/Pirámide y provisiona directamente a los
 usuarios autenticados en las salas, creando o reactivando sus membresías sin flujo de aceptación de
 invitaciones. La superficie `/admin` permite programar y reprogramar publicaciones Flash/Supervivencia/Pirámide futuras;
-el repositorio declara Vercel Cron para ejecutar `GET /api/internal/calendar/tick` a las 00:05 UTC
+el repositorio declara Vercel Cron para ejecutar `GET /api/internal/calendar/tick` a las 13:00 UTC
 y conserva `POST /api/internal/calendar/tick` y `npm run calendar:tick` para operación
 local o recuperación manual. La configuración remota y sus logs aún requieren validación en el
 proyecto Vercel de staging. Production es la etiqueta técnica del despliegue que admite cron,

@@ -32,7 +32,9 @@ test.describe("F08 — logic-matrix competitivo", () => {
     const data = await fixture();
     await openFlash(page, data.users.alice);
 
-    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /capital de Portugal/ })).toBeVisible({
+      timeout: 10_000,
+    });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: /pieza completa la matriz/ })).toBeVisible();
     expect(await page.content()).not.toContain("correctOptionId");
@@ -62,8 +64,8 @@ test.describe("F08 — logic-matrix competitivo", () => {
     });
 
     await page.getByRole("button", { name: "Opción 1: Pieza D" }).click();
-    await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-    await page.getByRole("button", { name: "Reintentar" }).click();
+    await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Reintentar", exact: true }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });

@@ -4,7 +4,7 @@
 
 La migración incremental original `20261009180205_question_validation_by_format` dividió las
 reglas antes concentradas en `54_question_validation.sql`. El refactor está integrado en el
-baseline activo `20261010214230_initial_schema`. Conserva la aceptación, el rechazo, la compatibilidad histórica,
+baseline activo `20261011180045_initial_schema`. Conserva la aceptación, el rechazo, la compatibilidad histórica,
 los errores y los permisos de la implementación del commit
 `eddd90c80acf5fff7d2e8180b137826385176ab7`.
 

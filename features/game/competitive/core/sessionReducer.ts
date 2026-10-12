@@ -1,3 +1,4 @@
+import type { TimeTrialProgress } from "@/types/domain/time-trial";
 import type { AnswerValue } from "@/types/contracts";
 import type { AnswerResult } from "@/types/gameplay/result";
 import type {
@@ -74,6 +75,8 @@ export type SessionState = {
   questionDeadlineAt: number | null;
   deadlineAt: number | null;
   progress: ServerAlphabetProgress | null;
+  timeTrial: TimeTrialProgress | null;
+  terminalReason: string | null;
   results: AnswerResult[];
   lastResult?: AnswerResult;
   score: number;
@@ -97,6 +100,7 @@ export type SessionState = {
   };
 };
 export type SessionEvent =
+  | { type: "time_trial"; progress: TimeTrialProgress }
   | {
       type: "phase";
       phase: SessionPhase;
@@ -172,6 +176,8 @@ export function initialSessionState(
     questionDeadlineAt: null,
     deadlineAt: null,
     progress: null,
+    timeTrial: null,
+    terminalReason: null,
     results,
     score,
     reviewChallenge,
@@ -187,6 +193,18 @@ export function initialSessionState(
 }
 export function sessionReducer(state: SessionState, event: SessionEvent): SessionState {
   switch (event.type) {
+    case "time_trial":
+      return {
+        ...state,
+        timeTrial: event.progress,
+        deadlineAt: event.progress.deadlineAt
+          ? state.timeTrial?.deadlineAt === event.progress.deadlineAt && state.deadlineAt !== null
+            ? state.deadlineAt
+            : Date.now() +
+              Date.parse(event.progress.deadlineAt) -
+              Date.parse(event.progress.serverNow)
+          : null,
+      };
     case "phase":
       return {
         ...state,
@@ -370,6 +388,8 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         questionPresentedAt: null,
         questionDeadlineAt: null,
         progress: null,
+        timeTrial: state.timeTrial,
+        terminalReason: event.terminalReason ?? state.terminalReason,
         pendingCommand: null,
         lifecycleError: event.reviewPending
           ? {

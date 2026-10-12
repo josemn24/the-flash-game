@@ -12,6 +12,9 @@ begin
   where publication.id = target_publication_id and room.slug = target_room_slug;
 
   case challenge_mode
+    when 'time-trial' then
+      select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
+      from public.get_my_time_trial_challenge(target_room_slug, target_publication_id) row;
     when 'flash' then
       select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
       from public.get_my_flash_challenge(target_room_slug, target_publication_id) row;

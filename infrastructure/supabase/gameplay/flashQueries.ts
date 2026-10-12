@@ -28,7 +28,7 @@ import type { GameRoomContext, QueryContext } from "@/types/view-models";
 type FlashReadOverrides = {
   publication_status: "scheduled" | "open" | "closed" | "cancelled";
   challenge_subtitle: string;
-  challenge_mode: "flash" | "survival" | "pyramid";
+  challenge_mode: "flash" | "survival" | "pyramid" | "time-trial";
   own_attempt_id: string | null;
   own_attempt_status: "in_progress" | "completed" | "abandoned" | "invalidated" | null;
   own_attempt_score: number | null;
@@ -40,7 +40,10 @@ type FlashReadOverrides = {
 };
 
 type CompetitiveReadFunctionName =
-  "get_my_flash_challenge" | "get_my_survival_challenge" | "get_my_pyramid_challenge";
+  | "get_my_flash_challenge"
+  | "get_my_survival_challenge"
+  | "get_my_pyramid_challenge"
+  | "get_my_time_trial_challenge";
 
 export type GeneratedCompetitiveReadRow<Name extends CompetitiveReadFunctionName> = Omit<
   PublicFunctionRow<Name>,
@@ -67,7 +70,10 @@ type FlashResultOverrides = {
 };
 
 type CompetitiveResultFunctionName =
-  "get_my_flash_result" | "get_my_survival_result" | "get_my_pyramid_result";
+  | "get_my_flash_result"
+  | "get_my_survival_result"
+  | "get_my_pyramid_result"
+  | "get_my_time_trial_result";
 
 export type GeneratedCompetitiveResultRow<Name extends CompetitiveResultFunctionName> = Omit<
   PublicFunctionRow<Name>,
@@ -101,7 +107,8 @@ export function isFlashReadRow<Name extends CompetitiveReadFunctionName = "get_m
     typeof value.challenge_description === "string" &&
     (value.challenge_mode === "flash" ||
       value.challenge_mode === "survival" ||
-      value.challenge_mode === "pyramid") &&
+      value.challenge_mode === "pyramid" ||
+      value.challenge_mode === "time-trial") &&
     value.challenge_max_score === 100 &&
     typeof value.question_count === "number" &&
     Number.isSafeInteger(value.question_count) &&
@@ -177,6 +184,8 @@ function toTerminalReviewRow(row: FlashResultRow): ServerFlashTerminalReview {
 
 export async function callFlashRead(
   functionName:
+    | "get_my_time_trial_challenge"
+    | "get_my_time_trial_result"
     | "get_my_flash_challenge"
     | "get_my_flash_result"
     | "get_my_survival_challenge"
@@ -196,6 +205,7 @@ export async function callFlashRead(
   if (!Array.isArray(data)) return [];
   const resultMode = (
     {
+      get_my_time_trial_result: "time-trial",
       get_my_flash_result: "flash",
       get_my_survival_result: "survival",
       get_my_pyramid_result: "pyramid",
@@ -208,7 +218,7 @@ export async function callFlashRead(
         status: isRecord(value) ? value.attempt_status : undefined,
         // Flash's answer-review RPC does not project outcome; its fixed mode only admits null.
         outcome: isRecord(value)
-          ? resultMode === "flash" && !("attempt_outcome" in value)
+          ? (resultMode === "flash" || resultMode === "time-trial") && !("attempt_outcome" in value)
             ? null
             : value.attempt_outcome
           : undefined,

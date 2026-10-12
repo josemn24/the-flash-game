@@ -53,7 +53,7 @@ test.describe("Fase 2 — Narrative competitivo persistido", () => {
 
     await expect(page.getByRole("heading", { name: /continente rodea el Polo Sur/ })).toBeVisible();
     expect(await page.content()).not.toContain("NARRATIVE_PRIVATE");
-    await page.getByRole("button", { name: "África" }).click();
+    await page.getByRole("button", { name: "Antártida" }).click();
     await expect(page.getByRole("heading", { name: "El aire cambia" })).toBeVisible({
       timeout: 10_000,
     });
@@ -62,7 +62,8 @@ test.describe("Fase 2 — Narrative competitivo persistido", () => {
     await expect(
       page.getByRole("heading", { name: /instrumento registra la temperatura/ }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Termómetro" }).click();
+    await page.getByLabel("Escribe tu respuesta").fill("Termómetro");
+    await page.getByRole("button", { name: "Enviar respuesta" }).click();
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
     expect(await page.content()).not.toContain("NARRATIVE_PRIVATE");
@@ -106,7 +107,8 @@ test.describe("Fase 2 — Narrative competitivo persistido", () => {
     await expect(
       page.getByRole("heading", { name: /instrumento registra la temperatura/ }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Termómetro" }).click();
+    await page.getByLabel("Escribe tu respuesta").fill("Termómetro");
+    await page.getByRole("button", { name: "Enviar respuesta" }).click();
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
   });

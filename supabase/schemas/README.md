@@ -1,11 +1,11 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 80 archivos y su revisión canónica es
-`20261010214230_initial_schema`. El historial activo contiene un baseline generado desde esos
-archivos; las migraciones incrementales anteriores permanecen únicamente en Git. La validación
-local corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP y la concurrencia
-pasan en esa ejecución. El baseline se aplicó a Supabase local en un reset limpio; esta actualización
-no ejecutó comandos ni validaciones remotas.
+Estado: el esquema declarativo vigente se compone de 82 archivos y su revisión canónica es
+`20261011180045_initial_schema`. El historial activo consta de un único baseline generado desde
+estos schemas; las migraciones anteriores permanecen en Git, fuera del historial activo. La validación local
+corresponde a PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP, la conformidad y la
+concurrencia pasan desde schemas y desde el historial de migraciones. No se ejecutaron comandos ni
+validaciones remotas.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
@@ -17,8 +17,8 @@ La organización, las comprobaciones y la reversión se describen en
 La [reconciliación de comandos](../../docs/current/competitive-command-reconciliation.md) sustituye
 once cuerpos, conserva OIDs y permisos, y distingue cierres normales de pérdida de permisos.
 Su aplicación se verificó en bases desechables y forma parte del baseline aplicado localmente.
-**31 tablas**, una vista
-interna, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
+**31 tablas**, dos vistas
+internas, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
 privados de servidor. S01–S15, S17a, S18b parcial, S05-Alphabet, F* y E* conectan
 Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas, Flash, Supervivencia y Pirámide
 competitivos; S15 está validada sobre el stack local,

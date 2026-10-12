@@ -2,10 +2,26 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { challenges } from "@/test-utils/mockGameplay";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
-import { buildChallengeIntroModel } from "@/lib/challengeIntro";
+import { buildChallengeIntroModel, buildSafeChallengeIntroModel } from "@/lib/challengeIntro";
 import { getChallengeDisplayTitle } from "@/lib/roomPresentation";
 
 describe("challenge intro model", () => {
+  it("explains the shared three-minute Contrarreloj clock and third-error limit", () => {
+    const model = buildSafeChallengeIntroModel({
+      title: "Escalera de coronas",
+      mode: "time-trial",
+      questionCount: 6,
+      maxScore: 100,
+      timeLimitMs: 180_000,
+    });
+
+    expect(model.metrics.find((metric) => metric.label === "Tiempo global")?.value).toBe("3 min");
+    expect(model.rules[0].description).toContain("3 min es único para todas las pruebas");
+    expect(model.rules[1].description).toContain(
+      "La tercera validación completa incorrecta de un tablero termina el desafío",
+    );
+  });
+
   it("builds the same three-metric contract for every challenge mode", () => {
     const modes = new Set<string>();
 

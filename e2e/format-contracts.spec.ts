@@ -13,6 +13,9 @@ test("Flash evalúa short-text y recupera una respuesta aceptada cuya respuesta 
   await page.getByRole("link", { name: /Abrir sala Sala format-contracts/ }).click();
   await page.getByRole("link", { name: "Jugar" }).click();
   await page.getByRole("button", { name: "Empezar desafío" }).click();
+  await expect(page.getByRole("heading", { name: "Capital de Portugal 1" })).toBeVisible({
+    timeout: 15000,
+  });
   await expect(page.getByRole("timer")).toBeVisible();
   const requests: unknown[] = [];
   let lost = true;
@@ -29,8 +32,8 @@ test("Flash evalúa short-text y recupera una respuesta aceptada cuya respuesta 
   });
   await page.getByLabel("Escribe tu respuesta").fill("lisboa");
   await page.getByRole("button", { name: "Enviar respuesta" }).click();
-  await expect(page.getByRole("button", { name: "Reintentar" })).toBeVisible();
-  await page.getByRole("button", { name: "Reintentar" }).click();
+  await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Reintentar", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Capital de Portugal 2" })).toBeVisible();
   expect(requests).toHaveLength(2);
   expect(requests[0]).toEqual(requests[1]);

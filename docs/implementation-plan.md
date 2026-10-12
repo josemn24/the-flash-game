@@ -3,8 +3,8 @@
 > Estado: backlog técnico vivo. S01–S15, S17, S17a, S18b parcial, S20, D08a, D08b, E01–E06, E10, S05-Alphabet, F01, F02, F03, F04, F06, F07, F08, F12, F16, F18 y F19 están implementadas y verificadas sobre el stack local;
 > E10 y `multiple-choice` ya usan `question-assets` privado con contrato v2;
 > las demás slices siguen pendientes hasta cumplir sus propios criterios de cierre.
-> Fecha de análisis funcional: 2026-09-29; actualización del esquema: 2026-10-10. El esquema contiene 80 archivos declarativos y la revisión activa es
-> `20261010214230_initial_schema`, un baseline generado desde esos archivos; las validaciones locales recientes
+> Fecha de análisis funcional: 2026-09-29; actualización del esquema: 2026-10-11. El esquema contiene 82 archivos declarativos y la revisión activa es
+> `20261011180045_initial_schema`, un baseline generado desde esos archivos; las validaciones locales recientes
 > deben leerse junto con [`current/qa.md`](current/qa.md). Alcance: pasar del prototipo mock a competición persistida,
 > ampliar después la cobertura de modos y permitir operar el producto sin editar la base a mano.
 > En la beta cerrada, las operaciones de administración y bootstrap se realizarán desde un portal
@@ -34,7 +34,7 @@ Este plan propone orden y alcance de entrega; no aprueba por sí mismo política
 | Identidad | `Player` separado de Auth, provisioning, login/logout, nombre persistido y avatar global en S01/S13/D08a.                                                                                                                                                                                                                                                                                                                                                                                                              | Moderación, purga y assets editoriales.                                                                                                            |
 | Partidas  | Reducers/scoring para práctica; comandos, sesiones, tiempos, evaluación privada, puntos y recuperación server-side para Flash, Alphabet, Supervivencia y Pirámide.                                                                                                                                                                                                                                                                                                                                                     | Sustituir autoridad cliente en Narrativa; Pirámide conserva `localStorage` solo en práctica.                                                       |
 | Contratos | `types/domain`, `types/contracts`, `types/gameplay`, `types/view-models`; payload público, solución y revelación separados.                                                                                                                                                                                                                                                                                                                                                                                            | Validación en ejecución de JSON y adaptación progresiva de la UI. Los tipos TypeScript no validan peticiones ni filas JSONB.                       |
-| SQL       | 31 tablas, 80 archivos declarativos y un baseline versionado, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings.                                                                                                                                                                                                                                                                                                                                     | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado.                                     |
+| SQL       | 31 tablas, 82 archivos declarativos y un baseline versionado, restricciones, RLS/ACL, Storage, versiones congeladas, recepciones y tiempos privados, ledger, auditoría y rankings.                                                                                                                                                                                                                                                                                                                                     | Aplicación controlada a un proyecto remoto y operación completa de assets editoriales desde un portal privado.                                     |
 | Comandos  | `application/ports/attempt-commands.ts`, comandos privados y transportes HTTP de start/prepare/answer/complete/abandon/recover/takeover para S03–S04, más comandos administrativos de sala y membresía parcial.                                                                                                                                                                                                                                                                                                        | Alta de jugador, bloqueo/desbloqueo, invitaciones completas, edición y publicación adicional; rollout de takeover en staging.                      |
 | Evaluador | `server/evaluation/evaluate-receipt.ts` reutiliza `lib/scoringCore`; Flash, Alphabet, Supervivencia y Pirámide persisten evaluaciones; el servidor deriva vidas de Survival y ascenso/puntuación/cierre de Pirámide.                                                                                                                                                                                                                                                                                                   | Autoridad de escenas y cierre de Narrativa.                                                                                                        |
 | Pruebas   | Vitest, type tests, pgTAP, inventario de seguridad, carreras, integración Auth/HTTP/Storage y E2E local para S01–S15, D08a/D08b, E01–E06, F08, F16, F18, E10 y `multiple-choice` con assets privados.                                                                                                                                                                                                                                                                                                                  | Verificación contra un entorno remoto.                                                                                                             |
@@ -1102,6 +1102,35 @@ de Matching ajena a esta slice.
 - **Dependencias:** S13, S18a, D09 y decisiones explícitas de recuperación/purga.
 - **Terminada:** la identidad personal deja de dar acceso y los resultados permanecen coherentes,
   sin assets personales accesibles ni operaciones parciales sin vía de recuperación.
+
+### Contrarreloj — Ficha futura pendiente de diseño técnico e implementación
+
+- **Estado y prioridad:** reglas funcionales acordadas el 2026-10-11; sin fecha comprometida ni cambios
+  en el orden de las slices anteriores. El catálogo implementado conserva cinco modos.
+- **Fuentes:** [especificación funcional y recorrido E2E](current/domain/contrarreloj.md),
+  [guía editorial](content/guidelines/contrarreloj.md) y
+  [decisiones CT-01 a CT-05](decisions/open-questions.md#contrarreloj-decisiones-pendientes).
+- **Objetivo:** publicar y jugar una secuencia homogénea de dificultad creciente con reloj global;
+  finalizar por fallo definitivo, timeout o secuencia completa y acreditar Flash Points una sola vez.
+- **UI/editor:** autoría con formato único, orden y tiempo total; introducción y cuenta atrás, prueba
+  activa, reloj global, validación y avance automático; cierre confirmado, ranking, historial y revisión.
+- **Backend/dominio:** admitir el modo en capacidades y contratos, mantener el deadline global,
+  evaluar privadamente oportunidades y respuestas, resolver recuperación y carreras temporales,
+  y aplicar el comparador de pruebas resueltas y tiempo hasta el último acierto.
+- **Persistencia y consultas:** revisar restricciones de modo y reloj global, versionado, progreso,
+  recepciones, tiempos, motivo de cierre y ledger. Concretar el almacenamiento después de cerrar las
+  decisiones; no se aprueban tablas o endpoints nuevos por esta ficha.
+- **Dependencias:** CT-01 a CT-05, S03/S04, S06/S07, S11/S12 y las capacidades server-backed de cada
+  formato elegido. Respetar los ADR de contenido inmutable, puntuación, recuperación y transferencia.
+  La disponibilidad de un formato en otro modo no verifica Contrarreloj.
+- **Pruebas futuras:** los escenarios de la especificación cubren acierto, oportunidad interna,
+  fallo definitivo, timeout, secuencia completa, cero aciertos, desempates, recuperación, permisos y
+  comandos duplicados. Verificar respuesta concurrente con cierre y una sola acreditación mediante
+  pruebas de dominio, PostgreSQL, integración y E2E del recorrido elegido.
+- **Terminada:** contenido publicable y capacidad habilitada tras verificación del recorrido completo,
+  mismo intento/deadline tras recuperar, evaluación autoritativa, resultado y rankings coherentes,
+  acreditación única y revisión protegida. Actualizar documentación técnica, estado y QA con evidencia
+  del entorno verificado. Esta ficha no declara pruebas del modo ya ejecutadas.
 
 ## 8. Contrato técnico del primer loop y recuperación
 

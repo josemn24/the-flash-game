@@ -15,7 +15,7 @@ export const scenario = {
     const beta = fixture.data;
     const betaSlug = beta.room.slug;
     const tabarniaSlug = beta.tabarnia.room.slug;
-    const [alphabet, pyramid, survival, antiquity] = beta.publications;
+    const [alphabet, pyramid, timeTrial, survival, antiquity] = beta.publications;
     const tabarniaSteel = tabarnia.data.publications.find(
       (publication) => publication.slug === "steel-ball-run",
     );
@@ -27,10 +27,11 @@ export const scenario = {
         JSON.stringify([
           [1, "La vuelta al mundo", "alphabet", "open"],
           [2, "Cumbre lógica II", "pyramid", "scheduled"],
-          [3, "Supervivencia: Cultura pop", "survival", "scheduled"],
-          [4, "Ecos de la Antigüedad", "pyramid", "scheduled"],
+          [3, "Escalera de coronas", "time-trial", "scheduled"],
+          [4, "Supervivencia: Cultura pop", "survival", "scheduled"],
+          [5, "Ecos de la Antigüedad", "pyramid", "scheduled"],
         ]),
-      "BetaVIP publica Alphabet, Cumbre lógica II, Survival y Ecos de la Antigüedad en ese orden",
+      "BetaVIP publica Alphabet, Pirámide, Contrarreloj, Survival y Ecos de la Antigüedad en ese orden",
     );
     assert(beta.publicationId === alphabet.id, "El manifiesto apunta al primer desafío");
     assert(beta.challengeId === alphabet.challengeId, "El manifiesto apunta al desafío Alphabet");
@@ -53,6 +54,7 @@ export const scenario = {
       beta.antiquityPublicationId === antiquity.id,
       "Ecos de la Antigüedad tiene ID explícito",
     );
+    assert(beta.timeTrialPublicationId === timeTrial.id, "Contrarreloj tiene ID explícito");
 
     assert(fixture.users.ches.playerId === tabarnia.users.ches.playerId, "Ches conserva su Player");
     assert(fixture.users.dark.playerId === tabarnia.users.dark.playerId, "Dark conserva su Player");
@@ -187,22 +189,22 @@ export const scenario = {
       config.dbContainer,
     );
     assert(
-      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled,4:scheduled",
-      "Las cuatro publicaciones de BetaVIP están en orden y estado correctos",
+      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled,4:scheduled,5:scheduled",
+      "Las cinco publicaciones de BetaVIP están en orden y estado correctos",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '96 hours';`,
+        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '120 hours';`,
         config.dbContainer,
       )) === 1,
-      "La temporada BetaVIP cubre exactamente cuatro ventanas de 24 horas",
+      "La temporada BetaVIP cubre exactamente cinco ventanas de 24 horas",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.scheduled_challenges fourth on fourth.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${alphabet.id}' and second.id = '${pyramid.id}' and third.id = '${survival.id}' and fourth.id = '${antiquity.id}' and first.number = 1 and second.number = 2 and third.number = 3 and fourth.number = 4 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = fourth.opens_at and fourth.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (fourth.closes_at - fourth.opens_at)) = 86400 and private.publication_is_effectively_open(first.status, season.status, season.starts_at, season.ends_at, first.opens_at, first.closes_at, first.opens_at + interval '1 hour');`,
+        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.scheduled_challenges fourth on fourth.season_id = first.season_id join public.scheduled_challenges fifth on fifth.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${alphabet.id}' and second.id = '${pyramid.id}' and third.id = '${timeTrial.id}' and fourth.id = '${survival.id}' and fifth.id = '${antiquity.id}' and first.number = 1 and second.number = 2 and third.number = 3 and fourth.number = 4 and fifth.number = 5 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = fourth.opens_at and fourth.closes_at = fifth.opens_at and fifth.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (fifth.closes_at - fifth.opens_at)) = 86400 and private.publication_is_effectively_open(first.status, season.status, season.starts_at, season.ends_at, first.opens_at, first.closes_at, first.opens_at + interval '1 hour');`,
         config.dbContainer,
       )) === 1,
-      "Las cuatro publicaciones quedan disponibles en sus días, sin huecos ni solapes",
+      "Las cinco publicaciones quedan disponibles en sus días, sin huecos ni solapes",
     );
     assert(
       (await sqlCount(
@@ -267,6 +269,15 @@ export const scenario = {
         ).length === 0,
         "Survival permanece bloqueado durante el primer día",
       );
+      assert(
+        (
+          await rpc(client, "get_my_time_trial_challenge", {
+            target_room_slug: betaSlug,
+            target_publication_id: timeTrial.id,
+          })
+        ).length === 0,
+        "Contrarreloj permanece bloqueado durante el primer día",
+      );
       const calendar = await rpc(client, "get_room_calendar", { target_room_slug: betaSlug });
       assert(
         calendar.some((entry) => entry.publication_id === alphabet.id && entry.can_start),
@@ -279,6 +290,10 @@ export const scenario = {
       assert(
         !calendar.some((entry) => entry.publication_id === survival.id && entry.can_start),
         "Survival permanece programado durante el primer día",
+      );
+      assert(
+        !calendar.some((entry) => entry.publication_id === timeTrial.id && entry.can_start),
+        "Contrarreloj permanece programado durante el primer día",
       );
     }
     for (const [method, publicationId, message] of [
@@ -296,6 +311,11 @@ export const scenario = {
         "get_my_survival_challenge",
         survival.id,
         "Un miembro exclusivo de Tabarnia no recibe el Survival de BetaVIP",
+      ],
+      [
+        "get_my_time_trial_challenge",
+        timeTrial.id,
+        "Un miembro exclusivo de Tabarnia no recibe Contrarreloj de BetaVIP",
       ],
     ]) {
       assert(
@@ -478,12 +498,63 @@ commit;
         target_room_slug: betaSlug,
         target_publication_id: survival.id,
       });
-      assert(playable.length === 20, "Survival se desbloquea como tercer desafío");
+      assert(playable.length === 20, "Survival se desbloquea como cuarto desafío");
       assert(
         !JSON.stringify(playable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
         "La lectura de Survival no expone soluciones",
       );
     }
+
+    await dockerSql(
+      `
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where id in ('${alphabet.id}', '${pyramid.id}', '${survival.id}', '${antiquity.id}') and status <> 'cancelled';
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${timeTrial.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-integration-time-trial"}'::jsonb);
+commit;
+`,
+      config.dbContainer,
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from public.scheduled_challenges where id = '${timeTrial.id}' and status = 'open';`,
+        config.dbContainer,
+      )) === 1,
+      "El tick abre Contrarreloj como tercer desafío",
+    );
+    const timeTrialRows = await rpc(clients.ches, "get_my_time_trial_challenge", {
+      target_room_slug: betaSlug,
+      target_publication_id: timeTrial.id,
+    });
+    assert(timeTrialRows.length === 6, "Ches puede iniciar el tercer desafío Contrarreloj");
+    assert(
+      timeTrialRows.every(
+        (row) =>
+          row.challenge_mode === "time-trial" &&
+          row.global_time_limit_ms === 180000 &&
+          Number(row.question_count) === 6,
+      ) && timeTrialRows.map((row) => Number(row.item_points)).join(",") === "10,12,14,16,20,28",
+      "Contrarreloj entrega el reloj global y los seis pesos publicados",
+    );
+    assert(
+      !JSON.stringify(timeTrialRows).match(/solution|prefilledQueens|regions|public_payload/i),
+      "La consulta inicial de Contrarreloj no expone tableros ni soluciones",
+    );
+    assert(
+      (
+        await rpc(kike, "get_my_time_trial_challenge", {
+          target_room_slug: betaSlug,
+          target_publication_id: timeTrial.id,
+        })
+      ).length === 0,
+      "Un miembro exclusivo de Tabarnia no recibe Contrarreloj aunque esté abierto",
+    );
   },
 };
 

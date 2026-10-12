@@ -84,7 +84,7 @@ Calendario temporal del detalle de sala `/admin/rooms/[roomId]?tab=calendar`
 → publicación `scheduled` con ventana UTC, locks, conflictos optimistas, idempotencia y auditoría
 
 Calendar tick protegido
-→ Vercel Cron configurado: `GET /api/internal/calendar/tick` a las 00:05 UTC con `CRON_SECRET`; ejecución automática de staging pendiente de verificar
+→ Vercel Cron configurado: `GET /api/internal/calendar/tick` a las 13:00 UTC con `CRON_SECRET`; ejecución automática de staging pendiente de verificar
 → operación local: `POST /api/internal/calendar/tick` o `npm run calendar:tick` con `CALENDAR_TICK_SECRET`
 → conexión PostgreSQL server-only con `SET LOCAL ROLE service_role`
 → `private.run_calendar_tick_command()`

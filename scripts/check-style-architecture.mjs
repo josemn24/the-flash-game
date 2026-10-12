@@ -1,9 +1,39 @@
-import { readFile } from "node:fs/promises";
-import { execFileSync } from "node:child_process";
+import { readdir, readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import postcss from "postcss";
 import ts from "typescript";
+
+const styleSourceDirectories = ["app", "components", "features", "lib", "data"];
+
+function isStyleSourceFile(fileName) {
+  return (
+    /\.(?:css|tsx|ts)$/.test(fileName) &&
+    !/\.(?:test|spec)\./.test(fileName) &&
+    !/\.d\.ts$/.test(fileName) &&
+    !/\.generated\./.test(fileName) &&
+    fileName !== "database.types.ts"
+  );
+}
+
+async function collectStyleSourceFiles(root) {
+  const files = [];
+  async function visit(directory) {
+    const entries = await readdir(directory, { withFileTypes: true });
+    for (const entry of entries) {
+      // Match `rg --files`' default behavior of skipping hidden files and directories.
+      if (entry.name.startsWith(".")) continue;
+      const absolutePath = path.join(directory, entry.name);
+      if (entry.isDirectory()) await visit(absolutePath);
+      else if (entry.isFile() && isStyleSourceFile(entry.name)) {
+        files.push(path.relative(root, absolutePath).split(path.sep).join("/"));
+      }
+    }
+  }
+
+  for (const directory of styleSourceDirectories) await visit(path.join(root, directory));
+  return files.sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
+}
 
 const colorName =
   /^--(?:ds-color-|color-|state-)|(?:color|ink|muted|faint|accent|surface|danger|success|error|reward|focus|overlay|border|tone)$/;
@@ -167,37 +197,7 @@ export function checkTokenReferences(sources) {
 }
 
 export async function checkStyleArchitecture(root = process.cwd()) {
-  const files = execFileSync(
-    "rg",
-    [
-      "--files",
-      "-g",
-      "*.css",
-      "-g",
-      "*.tsx",
-      "-g",
-      "*.ts",
-      "-g",
-      "!*.test.*",
-      "-g",
-      "!*.spec.*",
-      "-g",
-      "!*.d.ts",
-      "-g",
-      "!*.generated.*",
-      "-g",
-      "!database.types.ts",
-      "app",
-      "components",
-      "features",
-      "lib",
-      "data",
-    ],
-    { cwd: root, encoding: "utf8" },
-  )
-    .trim()
-    .split("\n")
-    .filter(Boolean);
+  const files = await collectStyleSourceFiles(root);
   const sources = new Map(
     await Promise.all(
       files.map(async (file) => [file, await readFile(path.join(root, file), "utf8")]),

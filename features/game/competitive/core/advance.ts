@@ -25,6 +25,13 @@ export function createAdvancement(
   };
   const next = () => apply(runtime.policy.next(runtime.state()));
   const afterAnswer = async () => {
+    if (
+      runtime.challenge.mode === "time-trial" &&
+      runtime.policy.terminal(runtime.state().results, runtime.state().questionIndex)
+    ) {
+      await complete();
+      return;
+    }
     if (runtime.challenge.mode === "alphabet") {
       await next();
       return;

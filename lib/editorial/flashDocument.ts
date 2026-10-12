@@ -100,7 +100,7 @@ export function formatFlashEditorialQuestionDocument(document: FlashEditorialQue
   return JSON.stringify(document, null, 2);
 }
 
-export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocument {
+function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument {
   if (!isRecord(value) || !hasExactKeys(value, documentKeys)) {
     throw new FlashEditorialValidationError([
       "El documento debe contener solo challenge y questions.",
@@ -116,6 +116,15 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
     throw new FlashEditorialValidationError(["challenge tiene una estructura inválida."]);
   }
   if (
+    challenge.mode === "time-trial" &&
+    !editing &&
+    (!Number.isSafeInteger(challenge.globalTimeLimitMs) || Number(challenge.globalTimeLimitMs) <= 0)
+  ) {
+    throw new FlashEditorialValidationError([
+      "Contrarreloj requiere una duración global obligatoria en segundos enteros positivos.",
+    ]);
+  }
+  if (
     !nonEmptyString(challenge.slug, 120) ||
     !nonEmptyString(challenge.title, 200) ||
     typeof challenge.subtitle !== "string" ||
@@ -126,14 +135,16 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
       challenge.mode !== "alphabet" &&
       challenge.mode !== "survival" &&
       challenge.mode !== "narrative" &&
-      challenge.mode !== "pyramid") ||
+      challenge.mode !== "pyramid" &&
+      challenge.mode !== "time-trial") ||
     challenge.configSchemaVersion !== 1 ||
     !isRecord(challenge.modeConfig) ||
     !Object.values(challenge.modeConfig).every(isJsonValue) ||
-    (challenge.mode === "alphabet" &&
+    ((challenge.mode === "alphabet" || (challenge.mode === "time-trial" && !editing)) &&
       (!Number.isSafeInteger(challenge.globalTimeLimitMs) ||
         (challenge.globalTimeLimitMs as number) <= 0)) ||
-    (challenge.mode !== "alphabet" && challenge.globalTimeLimitMs !== undefined) ||
+    (!["alphabet", "time-trial"].includes(challenge.mode as string) &&
+      challenge.globalTimeLimitMs !== undefined) ||
     (challenge.mode === "survival" &&
       (!hasExactKeys(challenge.modeConfig, ["lives"]) ||
         !Number.isSafeInteger(challenge.modeConfig.lives) ||
@@ -147,11 +158,23 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
   ) {
     throw new FlashEditorialValidationError(["challenge no cumple el contrato Flash."]);
   }
+  if (
+    challenge.mode === "time-trial" &&
+    !editing &&
+    ((challenge.globalTimeLimitMs as number) > 2147483647 ||
+      (challenge.globalTimeLimitMs as number) % 1000 !== 0 ||
+      Object.keys(challenge.modeConfig).length !== 0)
+  )
+    throw new FlashEditorialValidationError([
+      "Contrarreloj requiere una duración global en segundos enteros positivos y configuración vacía.",
+    ]);
   const validQuestionCount =
     Array.isArray(questions) &&
-    (challenge.mode === "pyramid"
-      ? questions.length === 7
-      : questions.length >= FLASH_MIN_QUESTIONS && questions.length <= FLASH_MAX_QUESTIONS);
+    (challenge.mode === "time-trial" && editing
+      ? true
+      : challenge.mode === "pyramid"
+        ? questions.length === 7
+        : questions.length >= FLASH_MIN_QUESTIONS && questions.length <= FLASH_MAX_QUESTIONS);
   if (!validQuestionCount) {
     throw new FlashEditorialValidationError([
       challenge.mode === "pyramid"
@@ -187,14 +210,6 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
     }
     return parseQuestion(question, index);
   });
-  if (
-    challenge.mode === "survival" &&
-    parsedQuestions.some((question) => !("source" in question) && question.type === "short-text")
-  ) {
-    throw new FlashEditorialValidationError([
-      "Supervivencia requiere formatos con evaluación competitiva de Flash.",
-    ]);
-  }
   if (challenge.mode === "pyramid") {
     const levelIds = parsedQuestions.map((question) =>
       "modeConfig" in question ? question.modeConfig?.levelId : undefined,
@@ -244,6 +259,15 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
       ]);
     }
   }
+  if (
+    challenge.mode === "time-trial" &&
+    !editing &&
+    parsedQuestions.some((question) => !("source" in question) && question.type !== "queens")
+  ) {
+    throw new FlashEditorialValidationError([
+      "Contrarreloj admite únicamente pruebas Queens compatibles.",
+    ]);
+  }
   const inlineSlugs = parsedQuestions
     .filter((question): question is FlashEditorialQuestion => !("source" in question))
     .map((question) => question.slug);
@@ -259,6 +283,7 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
     ]);
   }
   if (
+    !(editing && challenge.mode === "time-trial") &&
     parsedQuestions.reduce((total, question) => total + question.points, 0) !== FLASH_TOTAL_POINTS
   ) {
     throw new FlashEditorialValidationError([
@@ -275,12 +300,22 @@ export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocum
       mode: challenge.mode,
       configSchemaVersion: 1,
       modeConfig: challenge.modeConfig as EditorialJsonObject,
-      ...(challenge.mode === "alphabet"
+      ...(["alphabet", "time-trial"].includes(challenge.mode as string)
         ? { globalTimeLimitMs: challenge.globalTimeLimitMs as number }
         : {}),
     },
     questions: parsedQuestions,
   };
+}
+
+export function parseFlashEditorialDocument(value: unknown): FlashEditorialDocument {
+  return parseDocument(value, false);
+}
+
+/** Structured controls remain editable while a Contrarreloj draft is incomplete.
+ * This reader is only for the editor; persistence and preview use the strict parser. */
+export function parseEditableEditorialJson(source: string): FlashEditorialDocument {
+  return parseDocument(JSON.parse(source), true);
 }
 
 export function parseFlashEditorialJson(source: string): FlashEditorialDocument {

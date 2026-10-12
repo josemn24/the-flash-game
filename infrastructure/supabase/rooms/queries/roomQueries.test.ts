@@ -1040,6 +1040,58 @@ describe("Supabase history and review capabilities S07", () => {
     ).resolves.toBeNull();
   });
 
+  it("keeps unreached Contrarreloj boards as metadata without creating historical answers", async () => {
+    const trialHistory = { ...historyRows[0], challenge_mode: "time-trial" };
+    const trialRows = reviewRows.map((row) => ({
+      ...row,
+      challenge_mode: "time-trial",
+      question_type: "queens",
+      time_limit_ms: 1000,
+      global_time_limit_ms: 60000,
+      public_payload: row.has_persisted_answer
+        ? {
+            question: "Coloca cinco coronas.",
+            grid: { rows: 5, columns: 5 },
+            regions: [0, 0, 0, 1, 1, 2, 0, 1, 1, 1, 2, 2, 1, 3, 1, 2, 3, 3, 3, 3, 2, 4, 3, 3, 3],
+            prefilledQueens: [2],
+          }
+        : null,
+      solution_payload: row.has_persisted_answer ? { solution: [2, 9, 10, 18, 21] } : null,
+      answer: row.has_persisted_answer ? { queens: [2, 9, 10, 18, 21] } : null,
+    }));
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (name: string) => ({
+        data:
+          name === "get_room_member_review"
+            ? trialRows
+            : name === "get_room_history"
+              ? [trialHistory]
+              : [],
+        error: null,
+      })),
+    });
+    const model = await createRoomReadCapabilities().getMemberDetail(
+      "s06-main",
+      viewer.id,
+      queryContext,
+      historyRows[0].publication_id,
+    );
+    expect(model?.challenge).toBeNull();
+    expect(model?.reviewProgress).toEqual({
+      mode: "time-trial",
+      answeredCount: 1,
+      correctCount: 1,
+      totalQuestionCount: 2,
+    });
+    expect(model?.result?.attempt?.answers).toHaveLength(1);
+    expect(model?.reviewItems[1]).toMatchObject({
+      title: "Prueba 2",
+      question: null,
+      result: null,
+      status: "locked",
+    });
+  });
+
   it.each(["completed", "abandoned"])(
     "reconstructs all Alphabet letters for a %s attempt",
     async (status) => {

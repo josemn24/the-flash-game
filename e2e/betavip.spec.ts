@@ -20,6 +20,7 @@ type Fixture = {
     alphabetPublicationId: string;
     survivalPublicationId: string;
     antiquityPublicationId: string;
+    timeTrialPublicationId: string;
     publications: Publication[];
   };
 };
@@ -36,19 +37,27 @@ async function signIn(page: Page, account: Account) {
   await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
 }
 
+function queensCell(page: Page, index: number, size: number) {
+  return page.getByRole("gridcell", {
+    name: new RegExp(`Fila ${Math.floor(index / size) + 1}, columna ${(index % size) + 1},`),
+  });
+}
+
 test("BetaVIP muestra La vuelta al mundo como primer desafío", async ({ page }) => {
   const data = await fixture();
-  const [alphabet, pyramid, survival, antiquity] = data.data.publications;
+  const [alphabet, pyramid, timeTrial, survival, antiquity] = data.data.publications;
   expect(data.data.publicationId).toBe(alphabet.id);
   expect(data.data.survivalPublicationId).toBe(survival.id);
   expect(data.data.alphabetPublicationId).toBe(alphabet.id);
   expect(data.data.pyramidPublicationId).toBe(pyramid.id);
   expect(data.data.antiquityPublicationId).toBe(antiquity.id);
+  expect(data.data.timeTrialPublicationId).toBe(timeTrial.id);
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
     [1, "La vuelta al mundo", "alphabet"],
     [2, "Cumbre lógica II", "pyramid"],
-    [3, "Supervivencia: Cultura pop", "survival"],
-    [4, "Ecos de la Antigüedad", "pyramid"],
+    [3, "Escalera de coronas", "time-trial"],
+    [4, "Supervivencia: Cultura pop", "survival"],
+    [5, "Ecos de la Antigüedad", "pyramid"],
   ]);
 
   await signIn(page, data.users.ches);
@@ -60,7 +69,7 @@ test("BetaVIP muestra La vuelta al mundo como primer desafío", async ({ page })
   await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
   expect(
     await sqlCount(
-      `select count(*) from public.attempts where scheduled_challenge_id in ('${survival.id}', '${alphabet.id}', '${pyramid.id}', '${antiquity.id}');`,
+      `select count(*) from public.attempts where scheduled_challenge_id in ('${survival.id}', '${alphabet.id}', '${pyramid.id}', '${antiquity.id}', '${timeTrial.id}');`,
     ),
   ).toBe(0);
 });
@@ -68,15 +77,16 @@ test("BetaVIP muestra La vuelta al mundo como primer desafío", async ({ page })
 test("Ches continúa con Cumbre lógica II en el segundo periodo", async ({ page }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [alphabet, pyramid, survival] = data.data.publications;
+  const [alphabet, pyramid, , survival] = data.data.publications;
   expect(data.data.publicationId).toBe(alphabet.id);
   expect(data.data.survivalPublicationId).toBe(survival.id);
   expect(data.data.alphabetPublicationId).toBe(alphabet.id);
   expect(data.data.publications.map(({ number, title, mode }) => [number, title, mode])).toEqual([
     [1, "La vuelta al mundo", "alphabet"],
     [2, "Cumbre lógica II", "pyramid"],
-    [3, "Supervivencia: Cultura pop", "survival"],
-    [4, "Ecos de la Antigüedad", "pyramid"],
+    [3, "Escalera de coronas", "time-trial"],
+    [4, "Supervivencia: Cultura pop", "survival"],
+    [5, "Ecos de la Antigüedad", "pyramid"],
   ]);
 
   await dockerSql(`
@@ -125,12 +135,12 @@ commit;
   ).toBe(0);
 });
 
-test("Ches responde la imagen progresiva en el tercer periodo de Supervivencia", async ({
+test("Ches responde la imagen progresiva en el cuarto periodo de Supervivencia", async ({
   page,
 }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [, pyramid, survival] = data.data.publications;
+  const [, pyramid, , survival] = data.data.publications;
 
   await dockerSql(`
 begin;
@@ -197,16 +207,18 @@ commit;
   ).toBe(1);
 });
 
-test("Ches abre Ecos de la Antigüedad en el cuarto periodo", async ({ page }) => {
+test("Ches abre Ecos de la Antigüedad en el quinto periodo", async ({ page }) => {
   test.setTimeout(90_000);
   const data = await fixture();
-  const [alphabet, pyramid, survival, antiquity] = data.data.publications;
+  const [alphabet, pyramid, timeTrial, survival, antiquity] = data.data.publications;
 
   await dockerSql(`
 begin;
 update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
-where id in ('${alphabet.id}', '${pyramid.id}', '${survival.id}') and status <> 'cancelled';
+where id in (
+  '${alphabet.id}', '${pyramid.id}', '${timeTrial.id}', '${survival.id}'
+) and status <> 'cancelled';
 update public.scheduled_challenges
 set opens_at = (select starts_at from public.seasons where id = season_id),
     closes_at = clock_timestamp() + interval '1 hour'
@@ -243,6 +255,89 @@ commit;
   expect(
     await sqlCount(
       `select count(*) from public.attempts where player_id = '${data.users.ches.playerId}' and scheduled_challenge_id = '${antiquity.id}' and challenge_version_id = '${antiquity.challengeVersionId}';`,
+    ),
+  ).toBe(1);
+});
+
+test("Escalera de coronas: tercer desafío, un deadline y 100 puntos", async ({ page }) => {
+  test.setTimeout(120_000);
+  const data = await fixture();
+  const [alphabet, pyramid, timeTrial, survival, antiquity] = data.data.publications;
+
+  await dockerSql(`
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where id in ('${alphabet.id}', '${pyramid.id}', '${survival.id}', '${antiquity.id}') and status <> 'cancelled';
+update public.scheduled_challenges
+set opens_at = (select starts_at from public.seasons where id = season_id),
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${timeTrial.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"betavip-e2e-time-trial"}'::jsonb);
+commit;
+`);
+
+  expect(
+    await sqlCount(
+      `select count(*) from public.scheduled_challenges where id = '${timeTrial.id}' and status = 'open';`,
+    ),
+  ).toBe(1);
+
+  const preparations: Array<Record<string, unknown>> = [];
+  page.on("response", async (response) => {
+    if (response.url().endsWith("/prepare") && response.ok()) {
+      preparations.push(await response.json());
+    }
+  });
+  await signIn(page, data.users.ches);
+  await page.getByRole("link", { name: /Abrir sala BetaVIP/ }).click();
+  await page.getByRole("link", { name: "Jugar" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Escalera de coronas", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(/el reloj de 3 min es único para todas las pruebas/i)).toBeVisible();
+  await expect(
+    page.getByText(/la tercera validación completa incorrecta de un tablero termina el desafío/i),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
+
+  const boards = [
+    { size: 4, progress: "Prueba 1 de 6", clicks: [7, 8, 14] },
+    { size: 5, progress: "Prueba 2 de 6", clicks: [13, 16, 24] },
+    { size: 5, progress: "Prueba 3 de 6", clicks: [7, 14, 23] },
+    { size: 6, progress: "Prueba 4 de 6", clicks: [9, 22, 26] },
+    { size: 6, progress: "Prueba 5 de 6", clicks: [8, 16, 27, 30] },
+    { size: 7, progress: "Prueba 6 de 6", clicks: [9, 22, 31, 35] },
+  ];
+  for (const [index, board] of boards.entries()) {
+    await expect(page.getByText(board.progress, { exact: true })).toBeVisible({ timeout: 15_000 });
+    for (const position of board.clicks) {
+      await queensCell(page, position, board.size).click();
+    }
+    if (index < boards.length - 1) {
+      await expect(page.getByText(boards[index + 1].progress, { exact: true })).toBeVisible({
+        timeout: 15_000,
+      });
+    }
+  }
+
+  await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByText("6/6", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
+  expect(preparations).toHaveLength(6);
+  expect(new Set(preparations.map((preparation) => preparation.deadlineAt)).size).toBe(1);
+  expect(JSON.stringify(preparations)).not.toMatch(/solutionPayload|"solution"/);
+  expect(
+    await sqlCount(
+      `select count(*) from public.attempts where player_id = '${data.users.ches.playerId}' and scheduled_challenge_id = '${timeTrial.id}' and challenge_version_id = '${timeTrial.challengeVersionId}' and status = 'completed' and score = 100;`,
+    ),
+  ).toBe(1);
+  expect(
+    await sqlCount(
+      `select count(*) from private.flash_point_entries where player_id = '${data.users.ches.playerId}' and scheduled_challenge_id = '${timeTrial.id}' and amount = 100;`,
     ),
   ).toBe(1);
 });

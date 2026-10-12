@@ -166,4 +166,5 @@ export const gameModes = new Set<GameMode>([
   "survival",
   "narrative",
   "pyramid",
+  "time-trial",
 ]);

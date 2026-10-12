@@ -13,19 +13,35 @@ select set_config('s15.document', jsonb_build_object(
     'configSchemaVersion', 1, 'modeConfig', '{}'::jsonb
   ),
   'questions', (
-    select jsonb_agg(jsonb_build_object(
-      'source', 'library', 'questionVersionId', test_support.id('qv-' || question_key),
-      'points', points,
-      'modeConfig', jsonb_build_object(
-        'levelId', 'level-' || level_number,
-        'label', 'Nivel ' || level_number,
-        'briefing', jsonb_build_object(
-          'title', 'Briefing ' || level_number,
-          'format', 'Lógica',
-          'description', 'Resuelve la prueba para ascender.'
+    select jsonb_agg(
+      jsonb_build_object(
+        'points', points,
+        'modeConfig', jsonb_build_object(
+          'levelId', 'level-' || level_number,
+          'label', 'Nivel ' || level_number,
+          'briefing', jsonb_build_object(
+            'title', 'Briefing ' || level_number,
+            'format', 'Lógica',
+            'description', 'Resuelve la prueba para ascender.'
+          )
         )
-      )
-    ) order by level_number)
+      ) || case
+        when level_number = 1 then jsonb_build_object(
+          'slug', 's15-pyramid-short-text-inline', 'type', 'short-text', 'payloadSchemaVersion', 1,
+          'timeLimitMs', 15000,
+          'publicPayload', jsonb_build_object('question', '¿Capital de Portugal?', 'answerPlaceholder', 'Ciudad'),
+          'solutionPayload', jsonb_build_object('correctAnswer', 'Lisboa',
+            'acceptedAnswers', jsonb_build_array('Lisboa'), 'explanation', 'Lisboa es la capital.')
+        )
+        when level_number = 2 then jsonb_build_object(
+          'source', 'library', 'questionVersionId', test_support.id('qv-alphabet-1')::text
+        )
+        else jsonb_build_object(
+          'source', 'library', 'questionVersionId', test_support.id('qv-' || question_key)::text
+        )
+      end
+      order by level_number
+    )
     from (values
       (1, 'pyramid-1', 14), (2, 'pyramid-2', 14), (3, 'pyramid-3', 14),
       (4, 'pyramid-4', 14), (5, 'pyramid-5', 14), (6, 'pyramid-6', 15),
@@ -68,9 +84,44 @@ reset role;
 select set_config('s15.version_id', (
   select id::text from private.challenge_versions where title = 'La Pirámide S15'
 ), true);
+select is((select count(*) from private.challenge_items item
+  join private.question_versions question on question.id = item.question_version_id
+  where item.challenge_version_id = current_setting('s15.version_id')::uuid and question.type = 'short-text'), 2::bigint,
+  'Pyramid persists both inline and library short-text items');
+select set_config('s15.expected_editorial_updated_at', (
+  select updated_at::text from private.challenge_versions where id = current_setting('s15.version_id')::uuid
+), true);
+select set_config('s15.updated_document', jsonb_set(current_setting('s15.document')::jsonb,
+  '{challenge,title}', '"La Pirámide S15 editada"'::jsonb)::text, true);
+set local role authenticated;
+select is((public.update_superadmin_flash_draft(jsonb_build_object(
+  'idempotencyKey', 's15-editorial-update', 'challengeVersionId', current_setting('s15.version_id')::uuid,
+  'expectedUpdatedAt', current_setting('s15.expected_editorial_updated_at')::timestamptz,
+  'document', current_setting('s15.updated_document')::jsonb, 'reason', 'Editar Pyramid short-text'
+))->>'title'), 'La Pirámide S15 editada', 'A Pyramid short-text draft can be edited');
+reset role;
 select set_config('s15.expected_updated_at', (
   select updated_at::text from private.challenge_versions where id = current_setting('s15.version_id')::uuid
 ), true);
+select set_config('s15.inline_question_version', (
+  select question.id::text
+  from private.challenge_items item
+  join private.question_versions question on question.id = item.question_version_id
+  join private.question_definitions definition on definition.id = question.question_definition_id
+  where item.challenge_version_id = current_setting('s15.version_id')::uuid
+    and definition.slug = 's15-pyramid-short-text-inline'
+), true);
+select set_config('s15.inline_question_updated_at', (
+  select updated_at::text from private.question_versions where id = current_setting('s15.inline_question_version')::uuid
+), true);
+set local role authenticated;
+select lives_ok($$select public.publish_superadmin_question(jsonb_build_object(
+  'idempotencyKey', 's15-publish-inline-short-text',
+  'questionVersionId', current_setting('s15.inline_question_version')::uuid,
+  'expectedUpdatedAt', current_setting('s15.inline_question_updated_at')::timestamptz,
+  'reason', 'Publicar pregunta short-text de Pirámide'
+))$$, 'The inline Pyramid short-text question can be published');
+reset role;
 set local role authenticated;
 select is((public.publish_superadmin_flash(jsonb_build_object(
   'idempotencyKey', 's15-editorial-publish',

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { validateQuestionTags } from "../lib/questionTags.ts";
 import { parseFlashEditorialQuestionDocument } from "../lib/editorial/flashDocument.ts";
+import { isValidQueensConfiguration } from "../lib/queens.ts";
 import { BETA_VIP_ALPHABET } from "./fixtures/scenarios/betavip-alphabet.mjs";
 import {
   BETA_VIP_SURVIVAL,
@@ -14,6 +15,10 @@ import {
   BETA_VIP_ANTIQUITY,
   betaVipAntiquityQuestions,
 } from "./fixtures/scenarios/betavip-antiquity.mjs";
+import {
+  BETA_VIP_TIME_TRIAL,
+  betaVipTimeTrialQuestions,
+} from "./fixtures/scenarios/betavip-time-trial.mjs";
 import { betaVipManifest, buildBetaVipDomainSql, setupBetaVipDataset } from "./seed-betavip.mjs";
 import { deterministicUuid } from "./support/supabase-local.mjs";
 import {
@@ -307,7 +312,50 @@ describe("BetaVIP seed", () => {
     );
   });
 
-  it("publishes all four BetaVIP challenges on consecutive days", () => {
+  it("defines six valid, distinct Queens boards for the three-minute time trial", () => {
+    expect(BETA_VIP_TIME_TRIAL).toMatchObject({
+      slug: "betavip-escalera-de-coronas",
+      title: "Escalera de coronas",
+      globalTimeLimitMs: 180_000,
+    });
+    expect(BETA_VIP_TIME_TRIAL.description).toMatch(/único reloj compartido de tres minutos/i);
+    expect(BETA_VIP_TIME_TRIAL.description).toMatch(/tercera validación incorrecta/i);
+    expect(betaVipTimeTrialQuestions).toHaveLength(6);
+    expect(new Set(betaVipTimeTrialQuestions.map((item) => item.slug)).size).toBe(6);
+    expect(
+      new Set(betaVipTimeTrialQuestions.map((item) => JSON.stringify(item.publicPayload))).size,
+    ).toBe(6);
+    expect(betaVipTimeTrialQuestions.map((item) => item.publicPayload.grid.rows)).toEqual([
+      4, 5, 5, 6, 6, 7,
+    ]);
+    expect(betaVipTimeTrialQuestions.map((item) => item.type)).toEqual(Array(6).fill("queens"));
+    expect(betaVipTimeTrialQuestions.map((item) => item.points)).toEqual([10, 12, 14, 16, 20, 28]);
+    expect(betaVipTimeTrialQuestions.reduce((total, item) => total + item.points, 0)).toBe(100);
+    for (const item of betaVipTimeTrialQuestions) {
+      expect(validateQuestionTags(item.publicPayload.tags).valid).toBe(true);
+      expect(
+        isValidQueensConfiguration({
+          grid: item.publicPayload.grid,
+          regions: item.publicPayload.regions,
+          prefilledQueens: item.publicPayload.prefilledQueens,
+          solution: item.solutionPayload.solution,
+        }),
+      ).toBe(true);
+      expect(() =>
+        parseFlashEditorialQuestionDocument({
+          slug: item.slug,
+          type: item.type,
+          payloadSchemaVersion: item.payloadSchemaVersion,
+          timeLimitMs: item.timeLimitMs,
+          publicPayload: item.publicPayload,
+          solutionPayload: item.solutionPayload,
+        }),
+      ).not.toThrow();
+      expect(JSON.stringify(item.publicPayload)).not.toMatch(/solution|explanation|answer/i);
+    }
+  });
+
+  it("publishes all five BetaVIP challenges on consecutive days", () => {
     const data = betaVipManifest(tabarniaFixture);
     const sql = buildBetaVipDomainSql({
       tabarniaFixture,
@@ -345,8 +393,9 @@ describe("BetaVIP seed", () => {
     ).toEqual([
       [1, "La vuelta al mundo", "alphabet", "open"],
       [2, "Cumbre lógica II", "pyramid", "scheduled"],
-      [3, "Supervivencia: Cultura pop", "survival", "scheduled"],
-      [4, "Ecos de la Antigüedad", "pyramid", "scheduled"],
+      [3, "Escalera de coronas", "time-trial", "scheduled"],
+      [4, "Supervivencia: Cultura pop", "survival", "scheduled"],
+      [5, "Ecos de la Antigüedad", "pyramid", "scheduled"],
     ]);
     expect(
       data.publications
@@ -373,21 +422,22 @@ describe("BetaVIP seed", () => {
         ),
       ],
       [
-        deterministicUuid("the-flash-game:betavip", "publication:beta-vip-pop-culture-survival"),
-        deterministicUuid("the-flash-game:betavip", `challenge:${BETA_VIP_SURVIVAL.slug}`),
+        deterministicUuid("the-flash-game:betavip", "publication:beta-vip-escalera-de-coronas"),
+        deterministicUuid("the-flash-game:betavip", `challenge:${BETA_VIP_TIME_TRIAL.slug}`),
         deterministicUuid(
           "the-flash-game:betavip",
-          `challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`,
+          `challenge-version:${BETA_VIP_TIME_TRIAL.slug}-v1`,
         ),
       ],
     ]);
-    expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48, 72]);
-    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 20, 7]);
+    expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48, 72, 96]);
+    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100, 100]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 6, 20, 7]);
     expect(data.alphabetPublicationId).toBe(data.publications[0].id);
     expect(data.pyramidPublicationId).toBe(data.publications[1].id);
-    expect(data.survivalPublicationId).toBe(data.publications[2].id);
-    expect(data.antiquityPublicationId).toBe(data.publications[3].id);
+    expect(data.timeTrialPublicationId).toBe(data.publications[2].id);
+    expect(data.survivalPublicationId).toBe(data.publications[3].id);
+    expect(data.antiquityPublicationId).toBe(data.publications[4].id);
     expect(data.publications.some((item) => item.slug === "steel-ball-run")).toBe(false);
     expect(sql).toContain("'BetaVIP'");
     expect(sql).toContain("'Temporada BetaVIP'");
@@ -395,17 +445,21 @@ describe("BetaVIP seed", () => {
     expect(sql).toContain("'La vuelta al mundo'");
     expect(sql).toContain("'alphabet'");
     expect(sql).toContain("'short-text'");
-    expect(sql).toContain("'active', now(), now() + interval '96 hours'");
+    expect(sql).toContain("'active', now(), now() + interval '120 hours'");
     expect(sql).toContain("'open', now(), now() + interval '24 hours'");
     expect(sql).toContain("'scheduled', now() + interval '24 hours', now() + interval '48 hours'");
     expect(sql).toContain("'scheduled', now() + interval '48 hours', now() + interval '72 hours'");
     expect(sql).toContain("'scheduled', now() + interval '72 hours', now() + interval '96 hours'");
+    expect(sql).toContain("'scheduled', now() + interval '96 hours', now() + interval '120 hours'");
     expect(sql).toContain("'Cumbre lógica II'");
     expect(sql).toContain("'Ecos de la Antigüedad'");
     expect(sql).toContain('"title":"Identifica al personaje"');
     expect(sql).toContain("¿Quién gobernó Egipto?");
     expect(sql).toContain("'pyramid'");
     expect(sql).toContain("'connect-pairs'");
+    expect(sql).toContain("'time-trial'");
+    expect(sql).toContain("'Escalera de coronas'");
+    expect(sql).toContain("180000");
     for (const [publication, status, start, end] of [
       [data.publications[0], "open", "now()", "now() + interval '24 hours'"],
       [
@@ -425,6 +479,12 @@ describe("BetaVIP seed", () => {
         "scheduled",
         "now() + interval '72 hours'",
         "now() + interval '96 hours'",
+      ],
+      [
+        data.publications[4],
+        "scheduled",
+        "now() + interval '96 hours'",
+        "now() + interval '120 hours'",
       ],
     ]) {
       expect(sql).toContain(
@@ -448,7 +508,7 @@ describe("BetaVIP seed", () => {
     expect(sql).not.toContain("insert into public.attempts");
   });
 
-  it("publishes the four BetaVIP windows every five minutes in the fast schedule", () => {
+  it("publishes the five BetaVIP windows every five minutes in the fast schedule", () => {
     const data = betaVipManifest(tabarniaFixture, "fast");
     const sql = buildBetaVipDomainSql({
       tabarniaFixture,
@@ -460,7 +520,7 @@ describe("BetaVIP seed", () => {
     expect(data).toMatchObject({
       scheduleProfile: "fast",
       scheduleWindowMinutes: 5,
-      seasonDurationMinutes: 20,
+      seasonDurationMinutes: 25,
     });
     expect(
       data.publications.map((publication) => [
@@ -472,8 +532,9 @@ describe("BetaVIP seed", () => {
       [5, 5],
       [10, 5],
       [15, 5],
+      [20, 5],
     ]);
-    expect(sql).toContain("'active', now(), now() + interval '20 minutes'");
+    expect(sql).toContain("'active', now(), now() + interval '25 minutes'");
     expect(sql).toContain("'open', now(), now() + interval '5 minutes'");
     expect(sql).toContain(
       "'scheduled', now() + interval '5 minutes', now() + interval '10 minutes'",
@@ -483,6 +544,9 @@ describe("BetaVIP seed", () => {
     );
     expect(sql).toContain(
       "'scheduled', now() + interval '15 minutes', now() + interval '20 minutes'",
+    );
+    expect(sql).toContain(
+      "'scheduled', now() + interval '20 minutes', now() + interval '25 minutes'",
     );
   });
 

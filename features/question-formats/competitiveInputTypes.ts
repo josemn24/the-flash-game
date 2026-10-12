@@ -41,6 +41,6 @@ export type CompetitiveInputProps = {
   readonly presentedAt?: number | null;
   readonly livesRemaining?: number;
   readonly totalLives?: number;
-  readonly presentation?: "default" | "pyramid";
+  readonly presentation?: "default" | "pyramid" | "time-trial";
   readonly showTimer?: boolean;
 };

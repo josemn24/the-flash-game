@@ -28,6 +28,11 @@ export async function loseGameplayConfirmations(page: Page) {
     bodies.set(operation, requests);
     if (requests.length !== 1) return route.continue();
     const response = await route.fetch();
+    if (response.status() !== 200) {
+      throw new Error(
+        `${operation} expected HTTP 200, received ${response.status()}: ${await response.text()}`,
+      );
+    }
     expect(response.status()).toBe(200);
     if (operation === "start") attemptId = (await response.json()).attemptId;
     if (operation === "complete") terminalResults.push(await response.json());

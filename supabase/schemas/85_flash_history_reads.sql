@@ -98,7 +98,7 @@ language sql stable security definer set search_path = '' as $$
         sc.status, s.status, s.starts_at, s.ends_at,
         sc.opens_at, sc.closes_at, statement_timestamp()
       ) = 'closed'
-      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+      and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
       and cv.status in ('published', 'archived')
       and not exists (
         select 1 from public.attempts in_progress
@@ -114,11 +114,8 @@ language sql stable security definer set search_path = '' as $$
       e.flash_points,
       e.duration_ms,
       e.started_at,
-      rank() over (
-        partition by e.scheduled_challenge_id
-        order by e.flash_points desc, e.duration_ms, e.started_at
-      ) as "position"
-    from private.effective_results e
+      e.position
+    from private.ranked_challenge_results e
     join eligible_publications h on h.publication_id = e.scheduled_challenge_id
     join public.players p on p.id = e.player_id
   )
@@ -230,7 +227,7 @@ language sql stable security definer set search_path = '' as $$
       cv.description as challenge_description,
       cv.mode as challenge_mode,
       cv.max_score as challenge_max_score,
-      case when cv.mode = 'alphabet' then cv.global_time_limit_ms end as global_time_limit_ms,
+      case when cv.mode in ('alphabet','time-trial') then cv.global_time_limit_ms end as global_time_limit_ms,
       (select count(*)::bigint from private.challenge_items item
         where item.challenge_version_id = cv.id) as question_count,
       case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer end as initial_lives,
@@ -240,7 +237,7 @@ language sql stable security definer set search_path = '' as $$
       a.outcome as attempt_outcome,
       a.started_at as attempt_started_at,
       a.completed_at as attempt_completed_at,
-      (extract(epoch from (coalesce(a.completed_at, a.started_at) - a.started_at)) * 1000)::bigint
+      (extract(epoch from (coalesce(a.completed_at, a.started_at) - case when cv.mode = 'time-trial' and a.deadline_at is not null then a.deadline_at - cv.global_time_limit_ms * interval '1 millisecond' else a.started_at end)) * 1000)::bigint
         as attempt_duration_ms,
       a.lock_version as attempt_lock_version,
       v.player_id as viewer_player_id
@@ -261,7 +258,7 @@ language sql stable security definer set search_path = '' as $$
         sc.opens_at, sc.closes_at, statement_timestamp()
       ) as status
     ) availability
-    where cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid')
+    where cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
       and cv.status in ('published', 'archived')
       and private.can_review_competitive_attempt(a.id)
   )
@@ -277,8 +274,8 @@ language sql stable security definer set search_path = '' as $$
     a.attempt_started_at, a.attempt_completed_at, a.attempt_duration_ms,
     a.attempt_lock_version, i.id, i.position,
     q.id, q.type, q.payload_schema_version, q.time_limit_ms,
-    case when a.challenge_mode = 'pyramid' and aa.id is null then null else q.public_payload end,
-    case when a.challenge_mode = 'pyramid' and aa.id is null then null else qs.solution_payload end,
+    case when a.challenge_mode in ('pyramid','time-trial') and aa.id is null then null else q.public_payload end,
+    case when a.challenge_mode in ('pyramid','time-trial') and aa.id is null then null else qs.solution_payload end,
     aa.answer, aa.status, aa.points, aa.result_details, aa.presented_at,
     aa.submitted_at, aa.time_used_ms, i.points, aa.id is not null,
     case when a.challenge_mode = 'pyramid' then i.mode_config->>'levelId' end,

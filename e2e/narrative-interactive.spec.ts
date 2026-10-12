@@ -42,7 +42,7 @@ test("Narrative persiste Queens, revela pistas y recupera el cursor interactivo"
     });
   });
   await page.getByRole("button", { name: /Revelar otra pista/ }).click();
-  await page.getByRole("button", { name: "Reintentar revelación" }).click();
+  await page.getByRole("button", { name: "Reintentar revelación", exact: true }).click();
   await expect(page.getByText("2 de 3 pistas")).toBeVisible();
   expect(bodies[1]).toEqual(bodies[0]);
   await page.reload();
@@ -86,7 +86,7 @@ test("Narrative reintenta preparación y una respuesta aceptada sin duplicarla",
     });
   });
   await page.getByRole("button", { name: "Seguir" }).click();
-  await page.getByRole("button", { name: "Reintentar partida" }).click();
+  await page.getByRole("button", { name: "Reintentar partida", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Identifica el acontecimiento del archivo" }),
   ).toBeVisible();

@@ -105,6 +105,75 @@ describe("Flash editorial document", () => {
     });
   });
 
+  it.each(["flash", "survival", "narrative", "pyramid"] as const)(
+    "accepts inline short-text in %s",
+    (mode) => {
+      const document = documentFixture();
+      document.challenge.mode = mode;
+      if (mode === "survival") document.challenge.modeConfig = { lives: 1 };
+      if (mode === "narrative") document.challenge.modeConfig = { prologue: {}, beats: [] };
+      if (mode === "pyramid") {
+        document.questions = Array.from({ length: 7 }, (_, index) => ({
+          slug: `short-text-level-${index + 1}`,
+          type: "short-text",
+          payloadSchemaVersion: 1,
+          timeLimitMs: 15000,
+          points: index < 5 ? 14 : 15,
+          publicPayload: { question: `Pregunta ${index + 1}?`, answerPlaceholder: "Respuesta" },
+          solutionPayload: { correctAnswer: "A", acceptedAnswers: ["A"] },
+          modeConfig: {
+            levelId: `level-${index + 1}`,
+            label: `Nivel ${index + 1}`,
+            briefing: {
+              title: `Briefing ${index + 1}`,
+              format: "Texto",
+              description: `Resuelve el nivel ${index + 1}.`,
+            },
+          },
+        })) as unknown as TestQuestion[];
+      } else {
+        document.questions = document.questions.map((question, index) => ({
+          ...question,
+          slug: `short-text-${mode}-${index + 1}`,
+          type: "short-text",
+          publicPayload: { question: `Pregunta ${index + 1}?`, answerPlaceholder: "Respuesta" },
+          solutionPayload: { correctAnswer: "A", acceptedAnswers: ["A"] },
+        }));
+      }
+
+      expect(parseFlashEditorialDocument(document).questions[0]).toMatchObject({
+        type: "short-text",
+      });
+    },
+  );
+
+  it("keeps Alphabet short-text on published library references with one letter per item", () => {
+    const document = documentFixture();
+    document.challenge.mode = "alphabet";
+    document.challenge.globalTimeLimitMs = 120000;
+    document.questions = ["A", "B"].map((letter, index) => ({
+      source: "library",
+      questionVersionId: `00000000-0000-4000-8000-00000000000${index + 1}`,
+      points: 50,
+      modeConfig: { letter },
+    })) as unknown as TestQuestion[];
+
+    expect(parseFlashEditorialDocument(document).questions).toHaveLength(2);
+
+    document.questions[0] = {
+      slug: "inline-alphabet-short-text",
+      type: "short-text",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 15000,
+      points: 50,
+      publicPayload: { question: "¿Quién fue Ada?" },
+      solutionPayload: { correctAnswer: "Lovelace", acceptedAnswers: ["Lovelace"] },
+    };
+    expect(() => parseFlashEditorialDocument(document)).toThrow(
+      "Alphabet requiere referencias short-text y una letra única por elemento.",
+    );
+  });
+
   it("accepts a published Narrative document with public scene configuration", () => {
     const document = documentFixture();
     document.challenge.mode = "narrative";
@@ -123,7 +192,7 @@ describe("Flash editorial document", () => {
     });
   });
 
-  it("rejects invalid Survival lives and the unsupported short-text format", () => {
+  it("rejects invalid Survival lives and accepts short-text in Survival", () => {
     for (const modeConfig of [{ lives: 0 }, { lives: 3 }, { lives: 1, extra: true }]) {
       const document = documentFixture();
       document.challenge.mode = "survival";
@@ -152,9 +221,10 @@ describe("Flash editorial document", () => {
         explanation: "Lisboa es la capital.",
       },
     };
-    expect(() => parseFlashEditorialDocument(document)).toThrow(
-      "Supervivencia requiere formatos con evaluación competitiva de Flash.",
-    );
+    expect(parseFlashEditorialDocument(document).questions[0]).toMatchObject({
+      type: "short-text",
+      slug: "short-text-question",
+    });
   });
 
   it("accepts seven Pyramid levels with unique metadata and 100 points", () => {

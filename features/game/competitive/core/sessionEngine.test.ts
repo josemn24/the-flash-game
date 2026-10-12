@@ -5,6 +5,7 @@ import type {
   ServerFlashChallenge,
   ServerNarrativeChallenge,
   ServerPyramidChallenge,
+  ServerTimeTrialChallenge,
 } from "@/types/gameplay/challenge";
 import { createCompetitiveAttemptClient } from "../attemptClient";
 import { CompetitiveCommandError } from "../transport";
@@ -99,6 +100,166 @@ beforeEach(() => {
 afterEach(() => {
   engines.splice(0).forEach((engine) => engine.dispose());
   vi.useRealTimers();
+});
+
+describe("Contrarreloj global lifecycle", () => {
+  const challenge: ServerTimeTrialChallenge = {
+    ...base,
+    mode: "time-trial",
+    maxScore: 100,
+    timeLimitMs: 60000,
+    slots: ["a", "b"].map((id, index) => ({
+      ...slot(id, index + 1),
+      questionType: "queens",
+      points: index ? 70 : 30,
+      timeLimitMs: 1000,
+    })),
+  };
+  const queensPayload = {
+    question: "Coronas",
+    grid: { rows: 4, columns: 4 },
+    regions: [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 2, 3, 3, 3, 2],
+    prefilledQueens: [2],
+  };
+  function progress(solvedCount = 0, endReason: string | null = null) {
+    return {
+      kind: "time-trial",
+      currentIndex: Math.min(solvedCount, 1),
+      solvedCount,
+      totalCount: 2,
+      points: solvedCount === 2 ? 100 : solvedCount * 30,
+      clockStartedAt: "2026-10-02T10:00:10Z",
+      deadlineAt: "2026-10-02T10:01:10Z",
+      serverNow: new Date().toISOString(),
+      lastCorrectElapsedMs: solvedCount ? 2000 : null,
+      elapsedTimeMs: 2000,
+      endReason,
+    };
+  }
+  it("starts only after countdown, keeps one deadline through the 1.1-second feedback, and immediately finishes the final correct board", async () => {
+    const { engine, calls } = setup(challenge);
+    await engine.lifecycle.begin();
+    expect(calls.prepareSession).not.toHaveBeenCalled();
+    expect(calls.start).not.toHaveBeenCalled();
+    expect(engine.getSnapshot().phase).toBe("countdown");
+    await vi.advanceTimersByTimeAsync(10000);
+    calls.prepare.mockResolvedValue({ ...prepared("a", 2, queensPayload), timeTrial: progress() });
+    calls.queensDraft.mockImplementation(async (input) => ({
+      lockVersion: input.lockVersion + 1,
+      queens: input.queens,
+      placedQueens: input.queens.length,
+      completedRows: 4,
+      completedColumns: 4,
+      completedRegions: 4,
+      conflictingQueens: 0,
+      solved: true,
+    }));
+    calls.queensValidation.mockResolvedValueOnce({
+      ...accepted(4),
+      terminal: true,
+      correct: true,
+      queens: [2, 4, 11, 13],
+      points: 30,
+      timeTrial: progress(1),
+    });
+    await engine.startQuestions();
+    expect(engine.getSnapshot().deadlineAt).toBe(Date.parse("2026-10-02T10:01:10Z"));
+    await engine.interactions.validateQueensBoard([2, 4, 11, 13]);
+    expect(engine.getSnapshot().phase).toBe("transition");
+    const deadline = engine.getSnapshot().deadlineAt;
+    calls.prepare.mockResolvedValue({ ...prepared("b", 5, queensPayload), timeTrial: progress(1) });
+    await vi.advanceTimersByTimeAsync(1100);
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "playing",
+      questionIndex: 1,
+      deadlineAt: deadline,
+    });
+    calls.queensValidation.mockResolvedValueOnce({
+      ...accepted(7),
+      terminal: true,
+      correct: true,
+      queens: [2, 4, 11, 13],
+      points: 70,
+      timeTrial: progress(2, "all_solved"),
+    });
+    calls.complete.mockResolvedValue({
+      score: 100,
+      lockVersion: 6,
+      timeTrial: progress(2, "all_solved"),
+      review: [],
+    });
+    await engine.interactions.validateQueensBoard([2, 4, 11, 13]);
+    expect(calls.complete).toHaveBeenCalledTimes(1);
+    expect(engine.getSnapshot()).toMatchObject({
+      phase: "results",
+      score: 100,
+      timeTrial: { endReason: "all_solved" },
+    });
+  });
+  it("finalizes timeout between boards without preparing another board", async () => {
+    const { engine, calls } = setup(challenge);
+    calls.prepare.mockResolvedValue({ ...prepared("a", 2, queensPayload), timeTrial: progress() });
+    await play(engine);
+    calls.queensDraft.mockResolvedValue({
+      lockVersion: 3,
+      queens: [2, 4, 11, 13],
+      placedQueens: 4,
+      completedRows: 4,
+      completedColumns: 4,
+      completedRegions: 4,
+      conflictingQueens: 0,
+      solved: true,
+    });
+    calls.queensValidation.mockResolvedValue({
+      ...accepted(4),
+      terminal: true,
+      correct: true,
+      queens: [2, 4, 11, 13],
+      points: 30,
+      timeTrial: progress(1),
+    });
+    await engine.interactions.validateQueensBoard([2, 4, 11, 13]);
+    expect(engine.getSnapshot().phase).toBe("transition");
+    calls.complete.mockResolvedValue({
+      score: 0,
+      lockVersion: 3,
+      timeTrial: progress(0, "time_limit"),
+      review: [],
+    });
+    engine.interactions.onTimeUp();
+    await drain();
+    expect(calls.prepare).toHaveBeenCalledTimes(1);
+    expect(calls.complete).toHaveBeenCalledTimes(1);
+    expect(engine.getSnapshot().phase).toBe("results");
+  });
+  it("uses the server reference when recovering with a client clock five minutes ahead", async () => {
+    vi.setSystemTime(new Date("2026-10-02T10:05:00Z"));
+    const { engine, calls } = setup(challenge);
+    const authoritative = { ...progress(), serverNow: "2026-10-02T10:00:10Z" };
+    calls.start.mockResolvedValue({
+      attemptId: "attempt",
+      lockVersion: 1,
+      resumed: true,
+      deadlineAt: authoritative.deadlineAt,
+      timeTrial: authoritative,
+    });
+    calls.recover.mockResolvedValue({
+      lockVersion: 2,
+      phase: "playing",
+      answers: [],
+      timeTrial: authoritative,
+    });
+    calls.prepare.mockResolvedValue({
+      ...prepared("a", 3, queensPayload),
+      timeTrial: authoritative,
+    });
+    await engine.lifecycle.recover();
+    expect(engine.getSnapshot().deadlineAt).toBe(Date.now() + 60000);
+    expect(calls.complete).not.toHaveBeenCalled();
+    expect(calls.recover).toHaveBeenCalledTimes(1);
+    expect(calls.prepare).toHaveBeenCalledTimes(1);
+    expect(engine.getSnapshot().phase).toBe("playing");
+  });
 });
 
 describe("competitive session ownership", () => {

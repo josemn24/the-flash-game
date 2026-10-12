@@ -55,7 +55,8 @@ La tabla siguiente es orientativa. Sirve para comparar modos y decidir qué vali
 
 | Modo                 | Finalidad principal                      | Relación entre jugadores                | Ritmo                   |
 | -------------------- | ---------------------------------------- | --------------------------------------- | ----------------------- |
-| Flash / Contrarreloj | velocidad, competición, marca personal   | solo / todos contra todos               | asíncrono / tiempo real |
+| Flash                | velocidad, competición, marca personal   | solo / todos contra todos               | asíncrono / tiempo real |
+| Contrarreloj         | lógica, dificultad, gestión del tiempo   | solo / todos contra todos               | asíncrono               |
 | Supervivencia        | superación, resistencia                  | solo / todos contra todos               | asíncrono / tiempo real |
 | Cadena               | racha, riesgo, progresión                | solo / todos contra todos               | asíncrono / tiempo real |
 | La Pirámide          | progresión, dificultad, superación       | solo / todos contra todos               | asíncrono / tiempo real |
@@ -78,7 +79,7 @@ La tabla siguiente es orientativa. Sirve para comparar modos y decidir qué vali
 
 Los primeros modos a validar deberían ser:
 
-1. **Flash / Contrarreloj**, como modo base y control.
+1. **Flash**, como modo base y control.
 2. **Supervivencia**, por superación personal y rejugabilidad.
 3. **Cadena**, por rachas, tensión y riesgo con coste bajo.
 4. **La Pirámide**, por convertir la dificultad creciente en una meta visible y compartible.
@@ -91,7 +92,7 @@ Todos deberían validarse primero en modalidad asíncrona. Estos modos pueden re
 
 ## Catálogo de modos
 
-### Flash / Contrarreloj
+### Flash
 
 Partida individual rápida con preguntas cronometradas, puntuación por acierto y bonus por velocidad. Es el modo actual y la referencia contra la que comparar cualquier alternativa.
 
@@ -102,6 +103,28 @@ Partida individual rápida con preguntas cronometradas, puntuación por acierto 
 - **Encaje con The Flash:** concentra la identidad del producto en rondas breves, presión temporal y comparación clara.
 - **V1 validable:** usarlo como modo base de sala asíncrona todos contra todos, con ranking individual por puntos, precisión y tiempo.
 - **Riesgos:** puede percibirse como trivia rápida si no se combina con formatos visuales, memoria, lógica y retos especiales.
+
+### Contrarreloj
+
+Modo independiente con reglas acordadas y pendiente de implementación. El jugador resuelve una
+secuencia finita de pruebas del mismo formato, con dificultad creciente y un único reloj global.
+Cada acierto concede puntos y permite avanzar; el fallo definitivo o el reloj agotado terminan la
+partida conservando los puntos. Resolver toda la secuencia detiene el reloj y concede 100 Flash Points.
+
+- **Motivación principal:** razonamiento, superación y gestión del tiempo.
+- **Relación entre jugadores:** solo / todos contra todos, con la misma secuencia para cada participante.
+- **Ritmo inicial:** asíncrono dentro de salas y temporadas.
+- **Formatos candidatos:** Queens, Escape, Conectar parejas, Mini-Wordle y Hashtag de palabras;
+  cada combinación requiere verificación competitiva específica.
+- **Comparación:** más pruebas resueltas; a igualdad, menor tiempo global hasta el último acierto.
+  Los puntos acreditados se suman al ranking de temporada de la sala.
+- **Preparación:** [especificación funcional y recorrido E2E](../../current/domain/contrarreloj.md),
+  [guía editorial](../../content/guidelines/contrarreloj.md) y
+  [decisiones CT-01 a CT-05](../../decisions/open-questions.md#contrarreloj-decisiones-pendientes).
+- **Riesgos:** dificultad mal calibrada, confundir errores exploratorios con fallo definitivo o
+  consumir tiempo en esperas técnicas sin una política definida.
+
+Su documentación no compromete una fecha de entrega ni modifica la prioridad de la shortlist.
 
 ### Supervivencia
 

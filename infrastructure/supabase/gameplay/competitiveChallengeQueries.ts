@@ -9,6 +9,7 @@ import type { CompetitiveChallengeQueries } from "@/application/queries";
 import type { CompetitiveChallengePageModel, QueryContext } from "@/types/view-models";
 import { createClient } from "@/infrastructure/supabase/auth/server-client";
 import { readCompetitiveProjection } from "./competitiveReadProjection";
+import { supabaseTimeTrialQueries } from "./timeTrialQueries";
 import { supabaseAlphabetQueries } from "./alphabetQueries";
 import { supabaseFlashQueries } from "./flashQueries";
 import { supabasePyramidQueries } from "./pyramidQueries";
@@ -25,6 +26,7 @@ export type CompetitiveChallengeModeReader = {
 };
 
 export type SupabaseCompetitiveChallengeReaders = {
+  readonly "time-trial"?: CompetitiveChallengeModeReader;
   readonly flash: CompetitiveChallengeModeReader;
   readonly alphabet: CompetitiveChallengeModeReader;
   readonly survival: CompetitiveChallengeModeReader;
@@ -64,7 +66,10 @@ export class SupabaseCompetitiveChallengeQueries implements CompetitiveChallenge
       )
         throw new Error("Inconsistent competitive challenge route");
       return competitivePerformanceObserver.measure("challenge.enrichment", () =>
-        this.readers[projection.mode].getPlayableFromRows(projection.rows, context),
+        (this.readers[projection.mode] ?? supabaseTimeTrialQueries).getPlayableFromRows(
+          projection.rows,
+          context,
+        ),
       );
     });
   }
@@ -82,6 +87,7 @@ async function callCompetitiveChallengeRead(roomKey: string, challengeKey: strin
 }
 
 export const supabaseCompetitiveChallengeQueries = new SupabaseCompetitiveChallengeQueries({
+  "time-trial": supabaseTimeTrialQueries,
   flash: supabaseFlashQueries,
   alphabet: supabaseAlphabetQueries,
   survival: supabaseSurvivalQueries,

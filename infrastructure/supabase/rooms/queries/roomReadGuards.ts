@@ -408,6 +408,13 @@ function hasReviewAnswerFields(row: ReadRow) {
 function hasReviewModeConfiguration(row: ReadRow) {
   if (row.initial_lives !== null && !isInteger(row.initial_lives)) return false;
 
+  if (row.challenge_mode === "time-trial")
+    return (
+      row.question_type === "queens" &&
+      typeof row.global_time_limit_ms === "number" &&
+      row.global_time_limit_ms > 0 &&
+      row.alphabet_letter === null
+    );
   if (row.challenge_mode !== "alphabet") {
     return row.global_time_limit_ms === null && row.alphabet_letter === null;
   }

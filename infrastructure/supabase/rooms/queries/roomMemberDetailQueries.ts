@@ -138,7 +138,7 @@ export class SupabaseRoomMemberDetailQueries implements RoomMemberDetailQueries 
     member.totalFlashPoints = seasonEntry?.flash_points ?? 0;
     const roomLeaderboard = toSeasonLeaderboard(seasonRows);
     const challenge =
-      reviewRows.length && reviewRows[0]?.challenge_mode !== "pyramid"
+      reviewRows.length && !["pyramid", "time-trial"].includes(reviewRows[0]!.challenge_mode)
         ? toHistoricalChallenge(reviewRows)
         : null;
     const result = reviewRows.length ? toHistoricalResult(reviewRows) : null;

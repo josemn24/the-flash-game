@@ -600,8 +600,8 @@ const competitiveReaderSource = await readFile(
   ),
   "utf8",
 );
-for (const mode of ["flash", "alphabet", "survival", "narrative", "pyramid"]) {
-  if (!new RegExp(`\\b${mode}:`).test(competitiveReaderSource)) {
+for (const mode of ["flash", "alphabet", "survival", "narrative", "pyramid", "time-trial"]) {
+  if (!new RegExp(`(?:\\b${mode}|"${mode}"):`).test(competitiveReaderSource)) {
     violations.push(`competitive challenge mode ${mode} has no Supabase reader`);
   }
 }
