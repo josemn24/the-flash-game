@@ -69,7 +69,7 @@ y sus permisos. El inventario de seguridad, los tipos públicos
 Supabase y los marcadores del health check están sincronizados.
 
 Reconstruir el entorno desde el historial activo antes de desplegar el código y configurar
-`EXPECTED_SCHEMA_REVISION=20261011180045_initial_schema`. El despliegue remoto queda pendiente
+`EXPECTED_SCHEMA_REVISION=20261012105317_room_calendar_time_trial`. El despliegue remoto queda pendiente
 de una ventana de reinicio.
 
 ## Verificación local y medición

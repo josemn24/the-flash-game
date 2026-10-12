@@ -2,21 +2,28 @@ name: quality
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+
+concurrency:
+  group: quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
 
+env:
+  SUPABASE_TELEMETRY: "false"
+  FLASH_RUNTIME_SCOPE: pilot
+  APP_ORIGIN: http://127.0.0.1:3000
+  HEALTHCHECK_SECRET: ci-s22-health-secret
+
 jobs:
-  quality:
+  application:
+    name: Application checks
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    env:
-      SUPABASE_TELEMETRY: "false"
-      FLASH_RUNTIME_SCOPE: pilot
-      APP_ORIGIN: http://127.0.0.1:3000
-      HEALTHCHECK_SECRET: ci-s22-health-secret
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -51,8 +58,22 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Production build
-        run: npm run build
+  supabase:
+    name: Supabase checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Start Supabase
         run: npm run supabase:start
@@ -68,6 +89,29 @@ jobs:
 
       - name: Schema reconciliation
         run: npm run supabase:schema:reconciliation:test
+
+  browser:
+    name: Browser scenarios
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: npm run build
+
+      - name: Start Supabase
+        run: npm run supabase:start
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
@@ -94,3 +138,29 @@ jobs:
           e2e/f16-zip.spec.ts
           e2e/f18-escape.spec.ts
           e2e/f19-word-hashtag.spec.ts
+
+  quality:
+    name: quality
+    if: always()
+    needs:
+      - application
+      - supabase
+      - browser
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require all quality jobs
+        env:
+          APPLICATION_RESULT: ${{ needs.application.result }}
+          SUPABASE_RESULT: ${{ needs.supabase.result }}
+          BROWSER_RESULT: ${{ needs.browser.result }}
+        run: |
+          if [[ "$APPLICATION_RESULT" != "success" || \
+                "$SUPABASE_RESULT" != "success" || \
+                "$BROWSER_RESULT" != "success" ]]; then
+            echo "::error::One or more quality jobs did not succeed."
+            echo "Application: $APPLICATION_RESULT"
+            echo "Supabase: $SUPABASE_RESULT"
+            echo "Browser: $BROWSER_RESULT"
+            exit 1
+          fi

@@ -36,9 +36,18 @@ import type {
   SuperadminQuestionLibraryEntry,
   SuperadminQuestionVersionDetail,
 } from "@/types/view-models/editorial";
+import type { GameMode } from "@/types/domain/content";
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const statuses = new Set(["draft", "published", "archived"]);
+const gameModes = new Set<GameMode>([
+  "flash",
+  "alphabet",
+  "survival",
+  "narrative",
+  "pyramid",
+  "time-trial",
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
@@ -46,6 +55,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isIsoDate(value: unknown) {
   return typeof value === "string" && !Number.isNaN(Date.parse(value));
+}
+
+function isGameMode(value: unknown): value is GameMode {
+  return typeof value === "string" && gameModes.has(value as GameMode);
 }
 
 function isEditorialEntry(
@@ -70,10 +83,7 @@ function isEditorialEntry(
     value.title.trim().length > 0 &&
     typeof value.subtitle === "string" &&
     typeof value.description === "string" &&
-    (value.mode === "flash" ||
-      value.mode === "survival" ||
-      value.mode === "narrative" ||
-      value.mode === "pyramid") &&
+    isGameMode(value.mode) &&
     typeof value.questionCount === "number" &&
     Number.isSafeInteger(value.questionCount) &&
     value.questionCount >= 0 &&
@@ -109,10 +119,7 @@ function isChallengeSummary(value: unknown): value is SuperadminChallengeSummary
     value.title.trim().length > 0 &&
     typeof value.subtitle === "string" &&
     typeof value.description === "string" &&
-    (value.mode === "flash" ||
-      value.mode === "survival" ||
-      value.mode === "narrative" ||
-      value.mode === "pyramid") &&
+    isGameMode(value.mode) &&
     typeof value.questionCount === "number" &&
     Number.isSafeInteger(value.questionCount) &&
     value.questionCount >= 0 &&
@@ -180,10 +187,7 @@ function isChallengeVersionSnapshot(
     typeof value.title === "string" &&
     typeof value.subtitle === "string" &&
     typeof value.description === "string" &&
-    (value.mode === "flash" ||
-      value.mode === "survival" ||
-      value.mode === "narrative" ||
-      value.mode === "pyramid") &&
+    isGameMode(value.mode) &&
     typeof value.configSchemaVersion === "number" &&
     Number.isSafeInteger(value.configSchemaVersion) &&
     isRecord(value.modeConfig) &&

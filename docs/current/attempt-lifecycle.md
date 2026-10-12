@@ -1,7 +1,7 @@
 # Modo, estado y resultado de los intentos
 
 Estado: vigente. Contrato implementado en TypeScript y PostgreSQL; despliegue conjunto tras el
-reinicio local de datos acordado. Revisión activa: `20261011180045_initial_schema`.
+reinicio local de datos acordado. Revisión activa: `20261012105317_room_calendar_time_trial`.
 
 `status` describe el ciclo de vida. `outcome` conserva el desenlace oficial y no determina los
 puntos. El modo procede de la versión inmutable del desafío, sin una columna adicional en

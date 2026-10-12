@@ -62,8 +62,9 @@ decisiones y después los documentos afectados.
   No forma parte de los cinco modos implementados. La [guía editorial](content/guidelines/contrarreloj.md)
   y las [decisiones pendientes](decisions/open-questions.md#contrarreloj-decisiones-pendientes)
   delimitan su preparación.
-- La revisión activa es `20261011180045_initial_schema`, un baseline generado desde 82 archivos
-  declarativos de esquema, con 31 tablas, dos vistas, funciones públicas/privadas y políticas RLS.
+- La revisión más reciente es `20261012105317_room_calendar_time_trial`, aplicada sobre el baseline
+  `20261011180045_initial_schema`, generado desde 82 archivos declarativos de esquema, con 31 tablas,
+  dos vistas, funciones públicas/privadas y políticas RLS.
 - El baseline local pasó `supabase:schema:test`, la validación por migraciones, reconciliación,
   `schema:revision:check`, `supabase:types:check`, `docs:check` y `verify:pilot`; el detalle y el
   estado limpio posterior al reset están en [`current/qa.md`](current/qa.md).

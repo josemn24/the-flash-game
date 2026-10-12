@@ -24,6 +24,7 @@ const modes = new Set<SuperadminCompetitiveMode>([
   "survival",
   "narrative",
   "pyramid",
+  "time-trial",
 ]);
 const statuses = new Set<SuperadminAttemptStatus>([
   "in_progress",

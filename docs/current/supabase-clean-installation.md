@@ -28,7 +28,7 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261011180045_initial_schema`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
+La revisión esperada es `20261012105317_room_calendar_time_trial`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
 
 ## Herramientas y garantías
 
@@ -91,8 +91,9 @@ del casete. Las cuentas y los IDs quedan en `output/fixtures/tabarnia.json` y
 `output/fixtures/betavip.json`; este último incluye las credenciales locales de Manuel y Genís.
 Las credenciales de ejemplo son exclusivamente locales.
 
-Por defecto, ambas temporadas empiezan al ejecutar el setup. Para programarlas más tarde, pasar una
-fecha y hora ISO 8601 con zona horaria; la opción también está disponible en `supabase:tabarnia:setup`:
+Por defecto, ambas temporadas empiezan al ejecutar el setup y «La vuelta al mundo» queda abierta.
+Para programar un inicio futuro, pasar una fecha y hora ISO 8601 con zona horaria; el primer desafío
+quedará programado hasta esa hora. La opción también está disponible en `supabase:tabarnia:setup`:
 
 ```bash
 npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
@@ -284,13 +285,20 @@ Desplegar el commit validado y comprobar con intentos nuevos:
 
 La inactividad conserva la regla de 15 minutos tras cierre/deadline. No modificar reglas ni acortar
 los tiempos competitivos para acelerar la prueba. Se conserva la integración de Vercel Cron con
-GET, `CRON_SECRET` y la programación actual; el POST y el CLI usan `CALENDAR_TICK_SECRET`.
+GET, `CRON_SECRET` y la programación diaria `0 13 * * *` de `vercel.json`; el POST y el CLI usan
+`CALENDAR_TICK_SECRET`. Vercel interpreta el cron en UTC: se ejecuta a las 13:00 UTC, que son las
+15:00 en Madrid durante el horario de verano (CEST) y las 14:00 durante el horario de invierno
+(CET). Por tanto, mantiene fija la hora UTC, no las 15:00 locales durante todo el año.
+
 La etiqueta Production de Vercel es un tipo de despliegue de la plataforma, no otro entorno de
-aplicación. Vercel no programa cron en previews y la ejecución automática de staging no está verificada.
+aplicación. Vercel solo programa crons para despliegues Production, no para previews; la ejecución
+automática de staging no está verificada. Antes de abrir staging, confirmar en Settings → Cron Jobs
+que la ruta está activa en el proyecto y despliegue previstos; durante el reset, desactivarla allí
+y reactivarla tras las comprobaciones.
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261011180045_initial_schema`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION=20261012105317_room_calendar_time_trial`. El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 

@@ -166,7 +166,7 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     questionCount: alphabetItems.length,
     pointsTotal: alphabetItems.reduce((total, item) => total + item.points, 0),
     ...scheduleData.publications[0],
-    status: "open",
+    status: normalizedStartAt ? "scheduled" : "open",
   };
   const pyramid = {
     id: stableId("publication:beta-vip-cumbre-logica-ii"),
@@ -264,6 +264,7 @@ export function buildBetaVipDomainSql({
   const profile = resolveScheduleProfile(schedule);
   const normalizedStartAt = normalizeStartAt(startsAt);
   const seasonStart = scheduleStartExpression(normalizedStartAt);
+  const firstPublicationStatus = normalizedStartAt ? "scheduled" : "open";
   const data = betaVipManifest(tabarniaFixture, profile.name, normalizedStartAt);
   const players = {
     ches: tabarniaFixture.users.ches?.playerId,
@@ -518,7 +519,7 @@ insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
   (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1,
-   'open', ${seasonStart}, ${scheduleInterval(profile, 1, normalizedStartAt)}),
+   '${firstPublicationStatus}', ${seasonStart}, ${scheduleInterval(profile, 1, normalizedStartAt)}),
   (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2,
    'scheduled', ${scheduleInterval(profile, 1, normalizedStartAt)}, ${scheduleInterval(profile, 2, normalizedStartAt)}),
   (${sqlString(timeTrial.id)}, ${sqlString(data.seasonId)}, ${sqlString(timeTrial.challengeVersionId)}, 3,
@@ -546,7 +547,7 @@ export function stagingBetaVipManifest(startsAt = null) {
     pointsTotal: alphabetItems.reduce((total, item) => total + item.points, 0),
     opensAfterHours: 0,
     durationHours: 24,
-    status: "open",
+    status: normalizedStartAt ? "scheduled" : "open",
   };
   const pyramid = {
     id: stableId("publication:beta-vip-cumbre-logica-ii"),
@@ -669,6 +670,7 @@ export function buildStagingBetaVipDomainSql({
 }) {
   const normalizedStartAt = normalizeStartAt(startsAt);
   const seasonStart = scheduleStartExpression(normalizedStartAt);
+  const firstPublicationStatus = normalizedStartAt ? "scheduled" : "open";
   const data = stagingBetaVipManifest(normalizedStartAt);
   const persistedSeasonStart = `(select starts_at from public.seasons where id = ${sqlString(data.seasonId)})`;
   const publicationStartAfterHours = (hours) =>
@@ -886,7 +888,7 @@ select private.assert_supported_calendar_content(${sqlString(timeTrial.challenge
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1, 'open', ${persistedSeasonStart}, ${publicationStartAfterHours(24)}),
+  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1, '${firstPublicationStatus}', ${persistedSeasonStart}, ${publicationStartAfterHours(24)}),
   (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2, 'scheduled', ${publicationStartAfterHours(24)}, ${publicationStartAfterHours(48)}),
   (${sqlString(timeTrial.id)}, ${sqlString(data.seasonId)}, ${sqlString(timeTrial.challengeVersionId)}, 3, 'scheduled', ${publicationStartAfterHours(48)}, ${publicationStartAfterHours(72)}),
   (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 4, 'scheduled', ${publicationStartAfterHours(72)}, ${publicationStartAfterHours(96)}),
