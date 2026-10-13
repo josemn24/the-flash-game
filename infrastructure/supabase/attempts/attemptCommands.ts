@@ -44,6 +44,7 @@ import type {
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 import { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
+import { countAlphabetAnswerCharacters } from "@/lib/gameplay/alphabetAnswerSlots";
 
 export { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
 
@@ -222,7 +223,7 @@ export async function callAttemptCommand<T>(
   identity: VerifiedAuthIdentity,
   functionName: string,
   input: object,
-  decode?: (value: unknown) => T,
+  decode?: (value: unknown, client: PoolClient) => T | Promise<T>,
 ): Promise<T> {
   return transaction(identity, async (client) => {
     if ("attemptId" in input && typeof input.attemptId === "string" && input.attemptId.length > 0) {
@@ -233,7 +234,7 @@ export async function callAttemptCommand<T>(
       [JSON.stringify(input)],
     );
     const response = await refreshTimeTrialReference(client, result.rows[0]?.result);
-    return decode ? decode(response) : (response as T);
+    return decode ? decode(response, client) : (response as T);
   });
 }
 
@@ -357,6 +358,30 @@ export class SupabaseAttemptCommands implements Pick<
       this.identity,
       "prepare_interaction",
       input,
+      async (value, client) => {
+        const prepared = value as PrepareInteractionResult;
+        const progress = prepared.progress;
+        if (
+          !prepared.publicPayload ||
+          prepared.questionType !== "short-text" ||
+          !progress ||
+          typeof progress !== "object" ||
+          Array.isArray(progress) ||
+          !("kind" in progress) ||
+          progress.kind !== "alphabet"
+        ) {
+          return prepared;
+        }
+        // The source stays inside this transaction; neither the API nor command receipts receive it.
+        const source = await client.query<{ principal_answer: string }>(
+          "select private.read_alphabet_answer_hint_source($1::uuid, $2::uuid, $3::text) as principal_answer",
+          [input.attemptId, prepared.challengeItemId, input.sessionToken],
+        );
+        const principal = source.rows[0]?.principal_answer;
+        if (typeof principal !== "string")
+          throw new AttemptCommandError("invalid_question_payload");
+        return { ...prepared, answerLength: countAlphabetAnswerCharacters(principal) || null };
+      },
     );
   }
 

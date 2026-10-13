@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 82 archivos. La revisión más reciente aplicada
-es `20261012105317_room_calendar_time_trial`; el historial activo empieza con el baseline
+Estado: el esquema declarativo vigente se compone de 83 archivos. La revisión más reciente aplicada
+es `20261013173015_alphabet_answer_length`; el historial activo empieza con el baseline
 `20261011180045_initial_schema` y continúa con migraciones incrementales. Las migraciones anteriores
 al baseline permanecen en Git, fuera del historial activo. La validación local corresponde a
 PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP, la conformidad y la concurrencia

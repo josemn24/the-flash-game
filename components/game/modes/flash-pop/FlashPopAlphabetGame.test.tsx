@@ -9,6 +9,10 @@ const presentationSource = readFileSync(
   new URL("./AlphabetPresentation.tsx", import.meta.url),
   "utf8",
 );
+const editorSource = readFileSync(
+  new URL("./AlphabetAnswerEditor.client.tsx", import.meta.url),
+  "utf8",
+);
 const styles = readFileSync(new URL("./FlashPopAlphabetGame.module.css", import.meta.url), "utf8");
 const countdownSource = readFileSync(
   new URL("../../shared/StartCountdown.client.tsx", import.meta.url),
@@ -41,10 +45,10 @@ describe("FlashPopAlphabetGame", () => {
   });
 
   it("keeps the legacy six-column gameplay grid on Pop surfaces", () => {
-    expect(styles).toContain(".boardCard .boardCompact");
+    expect(styles).toContain(".board {");
     expect(styles).toContain("grid-template-columns: repeat(6, minmax(0, 1fr));");
-    expect(styles).toContain(".boardCard .boardCompact .letterCell");
-    expect(styles).toContain("transform: none;");
+    expect(styles).not.toContain("--letter-index");
+    expect(styles).not.toContain("translateY(calc(");
     expect(styles).toContain("min-height: auto;");
   });
 
@@ -73,7 +77,7 @@ describe("FlashPopAlphabetGame", () => {
   });
 
   it("keeps the answer input bright against the Pop canvas", () => {
-    expect(styles).toContain(".answerForm input {");
+    expect(styles).toContain(".answerEditor input {");
     expect(styles).toContain("background: var(--ds-color-bg-surface);");
   });
 
@@ -113,14 +117,13 @@ describe("FlashPopAlphabetGame", () => {
   });
 
   it("clears the answer when the next letter becomes active", () => {
-    expect(presentationSource).toContain("key={question.id}");
-    expect(presentationSource).toContain("useEffect(() => {");
-    expect(presentationSource).toContain("inputRef.current?.focus();");
+    expect(presentationSource).toContain("answerVisitKey !== draft.visitKey");
+    expect(editorSource).toContain("editorRef.current?.focus({ preventScroll: true });");
   });
 
   it("uses the Pop rotate icon and spacing for the pass action", () => {
-    expect(presentationSource).toContain("className={styles.passButton}");
-    expect(presentationSource).toContain("trailingIcon={<RotateIcon />}");
+    expect(editorSource).toContain("className={styles.passButton}");
+    expect(editorSource).toContain("trailingIcon={<RotateIcon />}");
     expect(styles).toContain(".passButton {");
     expect(styles).toContain("gap: var(--space-3);");
   });

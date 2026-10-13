@@ -24,8 +24,11 @@ de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/READ
 
 El historial activo comienza con `20261011180045_initial_schema.sql`, un baseline generado desde los
 82 archivos declarativos, y continúa con las migraciones incrementales. La revisión más reciente es
-`20261012105317_room_calendar_time_trial`; las migraciones anteriores al baseline permanecen en Git,
+`20261013173015_alphabet_answer_length`; las migraciones anteriores al baseline permanecen en Git,
 pero no forman parte del historial activo.
+
+La migración de longitud de Alfabeto añade una lectura privada para el servidor. La API de preparación
+expone solo `answerLength`, fuera del payload almacenado; no cambia las soluciones ni las versiones publicadas.
 
 La [validación SQL por formato](../docs/current/sql-question-validation-refactor.md) documenta
 los helpers privados, las pruebas de compatibilidad y la reversión del último refactor.

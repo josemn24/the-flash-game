@@ -254,7 +254,10 @@ export type ServerShortTextQuestion = ServerFlashQuestionBase & {
   readonly answerPlaceholder: string | null;
 };
 
-export type ServerAlphabetQuestion = ServerShortTextQuestion & { readonly letter: string };
+export type ServerAlphabetQuestion = ServerShortTextQuestion & {
+  readonly letter: string;
+  readonly answerLength: number | null;
+};
 
 export type ServerAlphabetChallenge = ChallengeBase & {
   mode: "alphabet";

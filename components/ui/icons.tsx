@@ -6,6 +6,7 @@ import {
   Bell,
   Check,
   ChevronRight,
+  CircleDashed,
   Clock,
   Crown,
   Eye,
@@ -62,6 +63,10 @@ export function CheckIcon(props: IconProps) {
 
 export function CrossIcon(props: IconProps) {
   return <X {...baseProps} {...props} />;
+}
+
+export function PendingIcon(props: IconProps) {
+  return <CircleDashed {...baseProps} {...props} />;
 }
 
 export function CrownIcon(props: IconProps) {

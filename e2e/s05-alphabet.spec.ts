@@ -6,7 +6,10 @@ type Account = { email: string; password: string; playerId: string };
 async function fixture() {
   return JSON.parse(await readFile("output/fixtures/s05.json", "utf8")) as {
     users: Record<string, Account>;
-    data: { timeoutRoom: { slug: string }; timeoutPublicationId: string };
+    data: {
+      timeoutRoom: { slug: string };
+      timeoutPublicationId: string;
+    };
   };
 }
 async function open(page: Page, account: Account, roomTitle = "Sala s05") {
@@ -19,7 +22,11 @@ async function open(page: Page, account: Account, roomTitle = "Sala s05") {
   await page.getByRole("button", { name: "Empezar desafío" }).click();
 }
 async function answer(page: Page, value: string) {
-  await page.getByLabel("Tu respuesta").fill(value);
+  const editor = page.getByRole("textbox", { name: "Tu respuesta" });
+  await editor.focus();
+  await expect(editor).toHaveAttribute("aria-disabled", "false");
+  await editor.press("Backspace");
+  await editor.pressSequentially(value);
   await page.getByRole("button", { name: "Responder", exact: true }).click();
 }
 
@@ -27,17 +34,22 @@ test("Alfabeto conserva pases y vueltas tras recargar y completa el resultado", 
   page,
 }) => {
   test.setTimeout(60000);
+  await page.setViewportSize({ width: 390, height: 844 });
   const verifyConfirmations = await loseGameplayConfirmations(page);
   await open(page, (await fixture()).users.alice);
   await expect(page.getByRole("heading", { name: "Animal con placas óseas" })).toBeVisible({
     timeout: 15000,
   });
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Pasar", exact: true }).click();
   await expect(page.getByRole("heading", { name: "País más extenso de Sudamérica" })).toBeVisible();
   await page.reload();
   // Recover closes the open letter as a pass under the existing server rules.
   await expect(page.getByRole("heading", { name: "Capital de Australia" })).toBeVisible();
-  await expect(page.getByRole("listitem", { name: "B: Pasada" })).toBeVisible();
+  await expect(page.getByLabel("Anterior: no disponible")).toBeVisible();
+  await page.getByRole("button", { name: "Ver todas" }).click();
+  await expect(page.getByRole("dialog").getByRole("listitem", { name: "B: Pasada" })).toBeVisible();
+  await page.getByRole("button", { name: "Cerrar tablero" }).click();
   await answer(page, "Canberra");
   await expect(page.getByRole("heading", { name: "Animal con placas óseas" })).toBeVisible();
   await answer(page, "armadillo");
@@ -51,8 +63,241 @@ test("Alfabeto conserva pases y vueltas tras recargar y completa el resultado", 
   await verifyConfirmations();
 });
 
+test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", async ({ page }) => {
+  test.setTimeout(90000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const preparation = page.waitForResponse(
+    (response) => response.url().endsWith("/prepare") && response.ok(),
+  );
+  await open(page, (await fixture()).users.dave, "Sala s05-ui");
+  const payload = await (await preparation).json();
+  expect(payload.answerLength).toBe(12);
+  expect(payload.publicPayload).not.toHaveProperty("answerLength");
+  expect(JSON.stringify(payload)).not.toContain("archipiélago");
+  await expect(
+    page.getByRole("heading", { name: "Conjunto de islas próximas entre sí" }),
+  ).toBeVisible({
+    timeout: 15000,
+  });
+  // The Next development badge covers the space key at this viewport size.
+  // Remove development chrome from this layout test and its screenshots.
+  await page.addStyleTag({ content: "nextjs-portal { display: none; }" });
+  const editor = page.getByRole("textbox", { name: "Tu respuesta" });
+  const keyboard = page.getByRole("group", { name: "Teclado del juego" });
+  await expect(editor.locator('[data-answer-slot="filled"]')).toHaveCount(1);
+  await expect(editor.locator('[data-answer-slot="filled"]')).toHaveText("A");
+  await page.screenshot({ path: "output/playwright/alphabet-initial-letter.png" });
+  await editor.pressSequentially("rma");
+  for (const size of [
+    { width: 320, height: 568 },
+    { width: 390, height: 844 },
+    { width: 640, height: 800 },
+    { width: 1024, height: 768 },
+    { width: 844, height: 390 },
+  ]) {
+    await page.setViewportSize(size);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      size.width,
+    );
+    await expect
+      .poll(async () => {
+        const box = await page
+          .getByRole("button", { name: "Responder", exact: true })
+          .boundingBox();
+        return box!.y + box!.height;
+      })
+      .toBeLessThanOrEqual(size.height);
+    const respond = await page
+      .getByRole("button", { name: "Responder", exact: true })
+      .boundingBox();
+    expect(respond!.height).toBeGreaterThanOrEqual(44);
+    expect(respond!.y + respond!.height).toBeLessThanOrEqual(size.height);
+    const navigation = page.getByRole("list", { name: "Recorrido de letras" });
+    const board = page.getByRole("list", { name: "Estado de las letras" });
+    if (size.width <= 640) {
+      await expect(navigation).toBeVisible();
+      await expect(board).toBeHidden();
+      const current = await navigation.getByLabel("Actual: A: Activa").boundingBox();
+      expect(current!.width).toBe(80);
+      expect(current!.height).toBe(80);
+      await editor.focus();
+      await page.getByRole("button", { name: "Ver todas" }).click();
+      const dialog = page.getByRole("dialog", { name: "Estado de las letras" });
+      await expect(dialog.getByRole("button", { name: "Cerrar tablero" })).toBeFocused();
+      await expect(dialog.getByRole("listitem")).toHaveCount(3);
+      const box = await dialog.boundingBox();
+      expect(box!.x).toBeGreaterThanOrEqual(16);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(size.width - 16);
+      await page.keyboard.press("Escape");
+      await expect(editor).toBeFocused();
+    } else {
+      await expect(navigation).toBeHidden();
+      await expect(board).toBeVisible();
+    }
+    if (size.height <= 480) {
+      await expect(keyboard).toBeHidden();
+      await page.getByRole("button", { name: "Mostrar teclado" }).click();
+      expect(
+        (await keyboard.getByRole("button", { name: "Q", exact: true }).boundingBox())!.height,
+      ).toBe(32);
+      await page.screenshot({ path: "output/playwright/alphabet-landscape.png" });
+      await page.getByRole("button", { name: "Ocultar teclado" }).click();
+    } else {
+      await expect(keyboard).toBeVisible();
+      expect(
+        (await keyboard.getByRole("button", { name: "Q", exact: true }).boundingBox())!.height,
+      ).toBe(48);
+      if (size.width === 320)
+        await page.screenshot({
+          path: "output/playwright/alphabet-mobile-320.png",
+          animations: "disabled",
+        });
+      if (size.width === 390)
+        await page.screenshot({
+          path: "output/playwright/alphabet-mobile.png",
+          animations: "disabled",
+        });
+      if (size.width === 1024)
+        await page.screenshot({ path: "output/playwright/alphabet-desktop.png" });
+    }
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  const qKey = keyboard.getByRole("button", { name: "Q", exact: true });
+  await qKey.focus();
+  await qKey.press("Space");
+  await expect(editor).toContainText("ArmaQ");
+  await keyboard.getByRole("button", { name: "Borrar último carácter" }).click();
+  await editor.focus();
+  await keyboard.getByRole("button", { name: "Ñ", exact: true }).click();
+  await keyboard.getByRole("button", { name: "Espacio" }).click();
+  // Playwright's US keyboard inserts non-ASCII text directly into native inputs.
+  // A physical Spanish keyboard sends these characters in keydown events instead.
+  await editor.dispatchEvent("keydown", { key: "á" });
+  await editor.dispatchEvent("keydown", { key: "👨‍👩‍👧‍👦" });
+  await keyboard.getByRole("button", { name: "Borrar último carácter" }).click();
+  await expect(editor).toBeFocused();
+  await expect(editor).toContainText("ArmaÑ á");
+  await expect(editor).not.toContainText("👨");
+  await page.getByRole("button", { name: "Usar teclado" }).click();
+  await expect(editor).toHaveValue("ArmaÑ á");
+  await expect(editor).toBeFocused();
+  await expect(keyboard).toBeHidden();
+  await editor.fill("Una respuesta muy larga con Ñ y acentos: áéíóú ".repeat(3));
+  await page.getByRole("button", { name: "Usar teclado del juego" }).click();
+  await expect(editor).toContainText("Una respuesta muy larga");
+  const cursor = page.locator('[data-answer-slot="caret"]');
+  const last = await cursor.boundingBox();
+  const panel = await editor.boundingBox();
+  expect(last!.y).toBeGreaterThanOrEqual(panel!.y);
+  expect(last!.y + last!.height).toBeLessThanOrEqual(panel!.y + panel!.height);
+  await page.screenshot({ path: "output/playwright/alphabet-long-answer.png" });
+  await page.setViewportSize({ width: 844, height: 390 });
+  await expect(page.getByRole("button", { name: "Mostrar teclado" })).toBeVisible();
+  await expect
+    .poll(async () => {
+      const singleRow = await cursor.boundingBox();
+      const compactPanel = await editor.boundingBox();
+      return Math.max(
+        singleRow!.x + singleRow!.width - compactPanel!.x - compactPanel!.width,
+        singleRow!.y + singleRow!.height - compactPanel!.y - compactPanel!.height,
+      );
+    })
+    .toBeLessThanOrEqual(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.getByRole("button", { name: "Usar teclado" }).click();
+  await editor.fill("arma");
+  // Simulate an OS keyboard resize/scroll on the existing VisualViewport listeners.
+  await page.evaluate(() => {
+    const viewport = window.visualViewport!;
+    Object.defineProperties(viewport, {
+      height: { configurable: true, value: 280 },
+      offsetTop: { configurable: true, value: 48 },
+    });
+    viewport.dispatchEvent(new Event("resize"));
+  });
+  await expect
+    .poll(async () => {
+      const nativeAction = await page
+        .getByRole("button", { name: "Responder", exact: true })
+        .boundingBox();
+      return nativeAction!.y + nativeAction!.height;
+    })
+    .toBeLessThanOrEqual(328);
+  await page.getByRole("button", { name: "Ver todas" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect.poll(async () => (await dialog.boundingBox())!.y).toBeGreaterThanOrEqual(64);
+  const keyboardBox = await dialog.boundingBox();
+  expect(keyboardBox!.y).toBeGreaterThanOrEqual(64);
+  expect(keyboardBox!.y + keyboardBox!.height).toBeLessThanOrEqual(312);
+  await page.screenshot({ path: "output/playwright/alphabet-board-mobile.png" });
+  await page.keyboard.press("Escape");
+  await expect(editor).toHaveValue("arma");
+  await expect(editor).toBeFocused();
+  await page.evaluate(() => {
+    const viewport = window.visualViewport!;
+    Reflect.deleteProperty(viewport, "height");
+    Reflect.deleteProperty(viewport, "offsetTop");
+    viewport.dispatchEvent(new Event("resize"));
+  });
+  await page.getByRole("button", { name: "Pasar", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "País más extenso de Sudamérica" })).toBeVisible();
+  await expect(editor).toHaveValue("B");
+  await editor.fill("Brasil");
+  await page.getByRole("button", { name: "Responder", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Capital de Australia" })).toBeVisible();
+  await expect(editor).toHaveValue("C");
+  await editor.fill("Canberra");
+  await editor.press("Enter");
+  await expect(
+    page.getByRole("heading", { name: "Conjunto de islas próximas entre sí" }),
+  ).toBeVisible();
+  await expect(editor).toBeEnabled();
+  await expect(page.getByText("Última pendiente")).toBeVisible();
+  await editor.fill("pase repetido");
+  await page.getByRole("button", { name: "Pasar", exact: true }).click();
+  await expect(editor).toHaveValue("A");
+  await expect(page.getByRole("button", { name: "Usar teclado del juego" })).toBeVisible();
+  await page.getByRole("button", { name: "Usar teclado del juego" }).click();
+  await expect(editor).toHaveAttribute("aria-disabled", "false");
+  await editor.pressSequentially("rchipielagos");
+  await expect(editor.locator('[data-answer-slot="filled"]')).toHaveCount(13);
+  await expect(editor.locator('[data-answer-slot="empty"]')).toHaveCount(0);
+  const answerResponse = page.waitForResponse(
+    (response) => response.url().endsWith("/answer") && response.ok(),
+  );
+  await editor.press("Enter");
+  expect((await (await answerResponse).json()).status).toBe("correct");
+  await expect(page.getByText("Desafío completado")).toBeVisible();
+});
+
+test("Alfabeto acepta una alternativa más corta con huecos pendientes", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await open(page, (await fixture()).users.alice, "Sala s05-ui");
+  await expect(
+    page.getByRole("heading", { name: "Conjunto de islas próximas entre sí" }),
+  ).toBeVisible();
+  const editor = page.getByRole("textbox", { name: "Tu respuesta" });
+  await expect(editor.locator('[data-answer-slot="filled"]')).toHaveText("A");
+  await expect(editor.locator('[data-answer-slot="empty"]')).toHaveCount(11);
+  await editor.press("Backspace");
+  await expect(editor.locator('[data-answer-slot="empty"]')).toHaveCount(12);
+  await expect(page.getByRole("button", { name: "Responder", exact: true })).toBeDisabled();
+  await editor.pressSequentially("archipelago");
+  await expect(editor.locator('[data-answer-slot="empty"]')).toHaveCount(1);
+  await expect(editor).toHaveAccessibleDescription(/11 escritos/);
+  const answerResponse = page.waitForResponse(
+    (response) => response.url().endsWith("/answer") && response.ok(),
+  );
+  await page.getByRole("button", { name: "Responder", exact: true }).click();
+  expect((await (await answerResponse).json()).status).toBe("correct");
+  await expect(page.getByRole("heading", { name: "País más extenso de Sudamérica" })).toBeVisible();
+});
+
 test("Alfabeto cierra una vez cada letra pendiente tras el deadline global", async ({ page }) => {
   test.setTimeout(60000);
+  await page.setViewportSize({ width: 390, height: 844 });
   const bodies: Record<string, unknown>[] = [];
   const completions: string[] = [];
   await page.route("**/attempts/*/answer", async (route) => {
@@ -64,7 +309,10 @@ test("Alfabeto cierra una vez cada letra pendiente tras el deadline global", asy
   });
   await open(page, (await fixture()).users.bob);
   await expect(page.getByRole("heading", { name: "Animal con placas óseas" })).toBeVisible();
+  await page.getByRole("button", { name: "Ver todas" }).click();
+  await expect(page.getByRole("dialog", { name: "Estado de las letras" })).toBeVisible();
   await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 35000 });
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   expect(bodies).toHaveLength(0);
   expect(completions).toHaveLength(1);
   await page.reload();
@@ -125,6 +373,7 @@ test("18 letras conservan la respuesta válida y cierran las pendientes con una 
   page,
 }) => {
   test.setTimeout(60000);
+  await page.setViewportSize({ width: 390, height: 844 });
   const requests: string[] = [];
   page.on("request", (request) => {
     if (/\/(answer|complete)$/.test(request.url())) requests.push(request.url());
@@ -132,6 +381,16 @@ test("18 letras conservan la respuesta válida y cierran las pendientes con una 
   const data = await fixture();
   await open(page, data.users.dave, "Sala s05-timeout");
   await expect(page.getByRole("heading", { name: "Pregunta de la letra A" })).toBeVisible();
+  await page.getByRole("button", { name: "Ver todas" }).click();
+  const dialog = page.getByRole("dialog", { name: "Estado de las letras" });
+  await expect(dialog.getByRole("listitem")).toHaveCount(18);
+  expect(
+    await dialog
+      .getByRole("list")
+      .evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length),
+  ).toBe(6);
+  await page.screenshot({ path: "output/playwright/alphabet-board-18.png" });
+  await dialog.getByRole("button", { name: "Cerrar tablero" }).click();
   await answer(page, "respuesta");
   await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 25000 });
   expect(requests.filter((url) => url.endsWith("/answer"))).toHaveLength(1);

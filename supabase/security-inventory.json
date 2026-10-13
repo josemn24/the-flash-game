@@ -1352,6 +1352,12 @@
       "arguments": "target_attempt_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
+    },
+    "private.read_alphabet_answer_hint_source": {
+      "arguments": "target_attempt uuid, target_item uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "s"
     }
   }
 }

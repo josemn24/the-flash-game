@@ -134,6 +134,79 @@ describe("Supabase attempt database connection", () => {
     authUserId: "00000000-0000-4000-8000-000000000001",
   });
 
+  const prepared = {
+    attemptId,
+    lockVersion: 2,
+    challengeItemId: "00000000-0000-4000-8000-000000000004",
+    questionType: "short-text",
+    publicPayload: { question: "Conjunto de islas" },
+    progress: { kind: "alphabet" },
+  };
+  const prepareInput = {
+    attemptId: attemptId as never,
+    sessionToken: "session-token",
+    lockVersion: 1,
+    idempotencyKey: "alphabet-prepare-1",
+  };
+
+  it("derives only the public length in the existing transaction, including retries", async () => {
+    client.query.mockImplementation(async (sql: string) => ({
+      rows: [
+        {
+          result: sql.includes("private.prepare_interaction") ? prepared : { abandonedAttempts: 0 },
+          ...(sql.includes("private.read_alphabet_answer_hint_source")
+            ? { principal_answer: "archipiélago" }
+            : {}),
+        },
+      ],
+    }));
+    const first = await commands.prepare(prepareInput);
+    expect(first).toEqual({ ...prepared, answerLength: 12 });
+    expect(JSON.stringify(first)).not.toContain("archipiélago");
+    expect(first.publicPayload).toEqual(prepared.publicPayload);
+    expect(client.query.mock.calls.filter(([sql]) => sql === "BEGIN")).toHaveLength(1);
+    expect(
+      client.query.mock.calls.filter(([sql]) => sql.includes("read_alphabet_answer_hint_source")),
+    ).toHaveLength(1);
+    expect(client.query).toHaveBeenLastCalledWith("COMMIT");
+    expect(await commands.prepare(prepareInput)).toEqual(first);
+  });
+
+  it.each([
+    { ...prepared, publicPayload: null },
+    { ...prepared, progress: undefined },
+    { ...prepared, progress: { kind: "flash" } },
+    { ...prepared, questionType: "multiple-choice" },
+  ])("does not read principal answers outside a live Alphabet payload %#", async (value) => {
+    client.query.mockImplementation(async (sql: string) => ({
+      rows: [
+        { result: sql.includes("private.prepare_interaction") ? value : { abandonedAttempts: 0 } },
+      ],
+    }));
+    expect(await commands.prepare(prepareInput)).toEqual(value);
+    expect(
+      client.query.mock.calls.some(([sql]) => sql.includes("read_alphabet_answer_hint_source")),
+    ).toBe(false);
+  });
+
+  it("rolls back when the private hint read denies authorization", async () => {
+    client.query.mockImplementation(async (sql: string) => {
+      if (sql.includes("private.read_alphabet_answer_hint_source"))
+        throw new Error("not_authorized");
+      return {
+        rows: [
+          {
+            result: sql.includes("private.prepare_interaction")
+              ? prepared
+              : { abandonedAttempts: 0 },
+          },
+        ],
+      };
+    });
+    await expect(commands.prepare(prepareInput)).rejects.toMatchObject({ code: "not_authorized" });
+    expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
+  });
+
   it("reads only authorized metadata after claims and expiry, then commits and releases", async () => {
     client.query.mockImplementation(async (sql: string) => ({
       rows: sql.includes("private.read_attempt_context")

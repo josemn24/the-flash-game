@@ -1,7 +1,8 @@
 "use client";
 
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { CheckIcon, ClockIcon, CrossIcon, Canvas, Timer } from "@/components/ui";
+import { useState } from "react";
+import { CheckIcon, ClockIcon, CrossIcon, Canvas, Timer, TimerDisplay } from "@/components/ui";
 import type { AlphabetState } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
 import { buildAlphabetAnswerReviews } from "@/features/alphabet/alphabetReview";
@@ -21,6 +22,7 @@ import {
 import type { AlphabetChallenge, AnswerStatus, ChallengeCompletionResult } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";
 import styles from "./FlashPopAlphabetGame.module.css";
+import { countAlphabetAnswerCharacters } from "@/lib/gameplay/alphabetAnswerSlots";
 
 function Intro({
   challenge,
@@ -43,6 +45,7 @@ function Playing({
   challenge: AlphabetChallenge;
   session: AlphabetSession;
 }) {
+  const [remaining, setRemaining] = useState(challenge.timeLimit);
   const entry = session.activeEntry;
   if (!entry || entry.question.type !== "short-text") return null;
   const locked = session.phase === "feedback";
@@ -50,9 +53,10 @@ function Playing({
   const correct = session.feedback === "correct";
   return (
     <AlphabetPlayingPresentation
+      key={challenge.id}
       round={session.round}
-      correctAnswers={session.correctAnswers}
-      totalLetters={challenge.entries.length}
+      currentIndex={session.currentIndex}
+      answerVisitKey={`${session.round}:${session.currentIndex}`}
       timer={
         <Timer
           duration={challenge.timeLimit}
@@ -60,10 +64,17 @@ function Playing({
           onTimeUp={session.finish}
           resetKey={`${challenge.id}-alphabet`}
           size="compact"
+          onTick={(value) => setRemaining(Math.ceil(value))}
         />
       }
+      dialogTimer={
+        <TimerDisplay duration={challenge.timeLimit} remaining={remaining} size="compact" />
+      }
       letters={session.letters}
-      question={entry.question}
+      question={{
+        ...entry.question,
+        answerLength: countAlphabetAnswerCharacters(entry.question.correctAnswer) || null,
+      }}
       locked={locked}
       feedback={
         session.phase === "feedback"
@@ -213,7 +224,13 @@ export function FlashPopAlphabetGame({
     <MotionConfig reducedMotion="user">
       <Canvas
         maxWidth={session.phase === "intro" ? "none" : "wide"}
-        contentClassName={session.phase === "intro" ? styles.introCanvasContent : styles.screen}
+        contentClassName={
+          session.phase === "intro"
+            ? styles.introCanvasContent
+            : session.phase === "playing" || session.phase === "feedback"
+              ? styles.playingCanvasContent
+              : styles.screen
+        }
       >
         <AnimatePresence mode="wait">
           {session.phase === "intro" ? (

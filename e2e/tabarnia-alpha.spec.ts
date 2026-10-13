@@ -121,10 +121,7 @@ test.describe("Tabarnia alpha", () => {
       "playing",
     );
     const viewportRight = 386;
-    const board = await page
-      .getByRole("list", { name: "Estado de las letras" })
-      .locator("..")
-      .boundingBox();
+    const board = await page.getByRole("list", { name: "Recorrido de letras" }).boundingBox();
     const question = await page
       .getByRole("heading", {
         name: "Mamífero protegido por una coraza de placas óseas.",
@@ -154,7 +151,7 @@ test.describe("Tabarnia alpha", () => {
       }
       await route.continue();
     });
-    await page.getByLabel("Tu respuesta").fill("armadillo");
+    await page.getByRole("textbox", { name: "Tu respuesta" }).pressSequentially("rmadillo");
     await page.getByRole("button", { name: "Responder" }).click();
     await expect(
       page.getByText("No se ha podido confirmar la respuesta.", { exact: true }),

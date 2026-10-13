@@ -3,7 +3,8 @@
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
 
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
-import { Button, Card, Canvas, Timer } from "@/components/ui";
+import { useState } from "react";
+import { Button, Card, Canvas, Timer, TimerDisplay } from "@/components/ui";
 import { ChallengeIntro, ChallengeResultScreen, StartCountdown } from "@/components/game/shared";
 import { buildReviewAnswerEntries } from "@/components/game/shared/ReviewAnswerList";
 import {
@@ -28,6 +29,7 @@ export function ServerFlashPopAlphabetGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const session = useServerAlphabetSession({ challenge, roomContext, terminalReview });
+  const [remaining, setRemaining] = useState(challenge.timeLimitMs / 1000);
   const isIntro = session.phase === "intro";
   const letters =
     session.progress?.letters ??
@@ -172,9 +174,14 @@ export function ServerFlashPopAlphabetGame({
         exit={{ opacity: 0, x: -18 }}
       >
         <AlphabetPlayingPresentation
+          key={challenge.id}
           round={session.progress?.round ?? 1}
-          correctAnswers={session.progress?.correctAnswers ?? 0}
-          totalLetters={challenge.entries.length}
+          currentIndex={session.progress?.currentIndex ?? null}
+          answerVisitKey={
+            session.question && session.questionPresentedAt !== null
+              ? `${session.question.id}:${session.questionPresentedAt}`
+              : null
+          }
           timer={
             <Timer
               duration={challenge.timeLimitMs / 1000}
@@ -182,6 +189,14 @@ export function ServerFlashPopAlphabetGame({
               deadlineAt={session.deadlineAt ?? undefined}
               onTimeUp={session.onTimeUp}
               resetKey={challenge.id}
+              size="compact"
+              onTick={(value) => setRemaining(Math.ceil(value))}
+            />
+          }
+          dialogTimer={
+            <TimerDisplay
+              duration={challenge.timeLimitMs / 1000}
+              remaining={remaining}
               size="compact"
             />
           }
@@ -215,7 +230,13 @@ export function ServerFlashPopAlphabetGame({
         data-gameplay-shell="flash-pop-alphabet"
         data-gameplay-layout={session.phase}
         maxWidth={isIntro ? "none" : "wide"}
-        contentClassName={isIntro ? styles.introCanvasContent : styles.screen}
+        contentClassName={
+          isIntro
+            ? styles.introCanvasContent
+            : session.phase === "playing"
+              ? styles.playingCanvasContent
+              : styles.screen
+        }
       >
         <CompetitiveLifecycleNotice
           error={session.completionRetryScheduled ? undefined : session.lifecycleError}

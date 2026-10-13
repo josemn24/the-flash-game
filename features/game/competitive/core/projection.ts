@@ -53,6 +53,7 @@ export function preparedEvent(
         response.publicPayload ?? { question: "Tiempo agotado" },
         slot.timeLimitMs,
         slot.points,
+        response.answerLength,
       )
     : questionFromPayload(
         itemId,

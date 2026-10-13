@@ -29,6 +29,7 @@ export function questionFromAlphabetPayload(
   payload: unknown,
   timeLimitMs: number,
   points: number,
+  answerLength?: unknown,
 ): ServerAlphabetQuestion {
   const value = record(payload);
   if (!hasOnlyKeys(value, shortTextPublicPayloadKeys)) {
@@ -45,7 +46,18 @@ export function questionFromAlphabetPayload(
   ) {
     throw new ServerAlphabetQuestionError();
   }
-  return { ...readPublic({ id, payload, timeLimitMs, points }), letter };
+  if (
+    answerLength !== undefined &&
+    answerLength !== null &&
+    (typeof answerLength !== "number" || !Number.isSafeInteger(answerLength) || answerLength <= 0)
+  ) {
+    throw new ServerAlphabetQuestionError();
+  }
+  return {
+    ...readPublic({ id, payload, timeLimitMs, points }),
+    letter,
+    answerLength: answerLength ?? null,
+  };
 }
 
 function questionWithSolution(

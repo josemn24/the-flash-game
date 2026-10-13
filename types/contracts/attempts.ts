@@ -56,6 +56,8 @@ export type PrepareInteractionResult = AttemptCommandResult & {
   readonly questionType: QuestionType;
   readonly payloadSchemaVersion: number;
   readonly publicPayload: JsonValue | null;
+  /** Alphabet-only visual reference, derived server-side from the principal answer. */
+  readonly answerLength?: number | null;
   /** Pyramid preparation only selects/releases the payload; timing starts on activate. */
   readonly presentedAt: UtcIsoDateTime | null;
   readonly deadlineAt: UtcIsoDateTime | null;
