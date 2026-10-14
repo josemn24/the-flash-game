@@ -1,8 +1,17 @@
-import { describe, expect, it } from "vitest";
-import { evaluateAnswer, getTimedOutAnswer } from "@/lib/scoring";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  calculateAnswerScore,
+  evaluateAnswer,
+  getTimedOutAnswer,
+  isAnswerCorrect,
+} from "@/lib/scoring";
+import { evaluateWordHashtag } from "@/lib/scoringCore/questions/wordHashtag";
+import { resolvePracticeQuestion } from "@/lib/scoringPractice";
+import { minimumSwapsForSequences } from "@/lib/word-hashtag/minimumSwaps";
 import {
   WORD_HASHTAG_ACTIVE_CELLS,
   applyWordHashtagSwap,
+  analyzeWordHashtagAnswer,
   buildWordHashtagSolution,
   calculateMinimumWordHashtagSwaps,
   calculateWordHashtagMetrics,
@@ -13,6 +22,13 @@ import {
   replayWordHashtagSwaps,
 } from "@/lib/wordHashtag";
 import type { WordHashtagQuestion } from "@/types/gameplay";
+
+vi.mock("@/lib/word-hashtag/minimumSwaps", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@/lib/word-hashtag/minimumSwaps")>();
+  return { ...original, minimumSwapsForSequences: vi.fn(original.minimumSwapsForSequences) };
+});
+
+beforeEach(() => vi.clearAllMocks());
 
 export const wordHashtagQuestion: WordHashtagQuestion = {
   id: "word-hashtag-test",
@@ -242,5 +258,270 @@ describe("Word Hashtag", () => {
       points: 0,
       details: { type: "word-hashtag", correctCells: 14, movesUsed: 0, solved: false },
     });
+  });
+});
+
+describe("Word Hashtag evaluation compatibility", () => {
+  const solvedAnswer = { swaps: [{ fromCell: 16, toCell: 19 }] };
+  const solvedDetails = {
+    type: "word-hashtag",
+    correctCells: 16,
+    totalCells: 16,
+    completedWords: 4,
+    totalWords: 4,
+    movesUsed: 1,
+    movesRemaining: 2,
+    optimalMoves: 1,
+    solved: true,
+  };
+  const draftDetails = {
+    ...solvedDetails,
+    correctCells: 14,
+    completedWords: 2,
+    movesUsed: 0,
+    movesRemaining: 3,
+    solved: false,
+  };
+  const emptyDetails = {
+    ...draftDetails,
+    correctCells: 0,
+    completedWords: 0,
+    optimalMoves: 0,
+  };
+
+  it.each([
+    [0, 150],
+    [10, 120],
+    [20, 90],
+  ])("preserves the complete solved result at %i seconds", (timeUsed, points) => {
+    expect(
+      evaluateAnswer({ question: wordHashtagQuestion, answer: solvedAnswer, timeUsed }),
+    ).toEqual({
+      questionId: wordHashtagQuestion.id,
+      answer: solvedAnswer,
+      timeUsed,
+      status: "correct",
+      isCorrect: true,
+      points,
+      details: solvedDetails,
+    });
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([false, true])("preserves incomplete draft details with timeout=%s", (timedOut) => {
+    const answer = { swaps: [] };
+    expect(
+      evaluateAnswer({ question: wordHashtagQuestion, answer, timeUsed: 20, timedOut }),
+    ).toEqual({
+      questionId: wordHashtagQuestion.id,
+      answer,
+      timeUsed: 20,
+      status: timedOut ? "unanswered" : "incorrect",
+      isCorrect: false,
+      points: 0,
+      details: draftDetails,
+    });
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps a solved late answer unanswered with its solved details and zero points", () => {
+    expect(
+      evaluateAnswer({
+        question: wordHashtagQuestion,
+        answer: solvedAnswer,
+        timeUsed: 30,
+        timedOut: true,
+      }),
+    ).toEqual({
+      questionId: wordHashtagQuestion.id,
+      answer: solvedAnswer,
+      timeUsed: 20,
+      status: "unanswered",
+      isCorrect: true,
+      points: 0,
+      details: solvedDetails,
+    });
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves details for a null answer", () => {
+    expect(
+      evaluateAnswer({ question: wordHashtagQuestion, answer: null, timeUsed: 20, timedOut: true }),
+    ).toEqual({
+      questionId: wordHashtagQuestion.id,
+      answer: null,
+      timeUsed: 20,
+      status: "unanswered",
+      isCorrect: false,
+      points: 0,
+      details: draftDetails,
+    });
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+  });
+
+  it("distinguishes malformed answers and configurations from invalid swap histories", () => {
+    const malformedAnswer = { swaps: [{ fromCell: 16, toCell: "19" }] };
+    expect(analyzeWordHashtagAnswer(wordHashtagQuestion, malformedAnswer)).toEqual({
+      kind: "invalid-answer",
+    });
+    expect(
+      evaluateAnswer({
+        question: wordHashtagQuestion,
+        answer: malformedAnswer as never,
+        timeUsed: 0,
+      }),
+    ).toEqual({
+      questionId: wordHashtagQuestion.id,
+      answer: malformedAnswer,
+      timeUsed: 0,
+      status: "incorrect",
+      isCorrect: false,
+      points: 0,
+    });
+    expect(minimumSwapsForSequences).not.toHaveBeenCalled();
+
+    const impossible = {
+      ...wordHashtagQuestion,
+      initialLetters: wordHashtagQuestion.initialLetters.map((letter, cell) =>
+        cell === 16 ? "Z" : letter,
+      ),
+    };
+    expect(analyzeWordHashtagAnswer(impossible, solvedAnswer)).toEqual({
+      kind: "invalid-configuration",
+    });
+    expect(evaluateAnswer({ question: impossible, answer: solvedAnswer, timeUsed: 0 })).toEqual({
+      questionId: impossible.id,
+      answer: solvedAnswer,
+      timeUsed: 0,
+      status: "incorrect",
+      isCorrect: false,
+      points: 0,
+    });
+    expect(minimumSwapsForSequences).not.toHaveBeenCalled();
+
+    const answer = { swaps: [{ fromCell: 6, toCell: 16 }] };
+    expect(evaluateAnswer({ question: wordHashtagQuestion, answer, timeUsed: 0 })).toEqual({
+      questionId: wordHashtagQuestion.id,
+      answer,
+      timeUsed: 0,
+      status: "incorrect",
+      isCorrect: false,
+      points: 0,
+      details: emptyDetails,
+    });
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+    expect(calculateWordHashtagMetrics(wordHashtagQuestion, answer)).toEqual({
+      valid: false,
+      correctCells: 0,
+      totalCells: 16,
+      completedWords: 0,
+      totalWords: 4,
+      movesUsed: 0,
+      movesRemaining: 3,
+      optimalMoves: 0,
+      solved: false,
+    });
+  });
+
+  it("calculates the minimum once for the direct evaluator and each public helper", () => {
+    const question = resolvePracticeQuestion(wordHashtagQuestion);
+    expect(
+      evaluateWordHashtag({
+        question,
+        answer: solvedAnswer,
+        timeUsed: 0,
+        submittedCodes: [],
+        incorrectAttempts: 0,
+        revealedClues: 1,
+      }),
+    ).toEqual({
+      status: "correct",
+      isCorrect: true,
+      points: 150,
+      details: solvedDetails,
+    });
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+    vi.clearAllMocks();
+    expect(calculateAnswerScore(wordHashtagQuestion, solvedAnswer, 0)).toBe(150);
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+    vi.clearAllMocks();
+    expect(isAnswerCorrect(wordHashtagQuestion, solvedAnswer)).toBe(true);
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+    vi.clearAllMocks();
+    expect(calculateWordHashtagMetrics(wordHashtagQuestion, solvedAnswer)).toEqual({
+      valid: true,
+      correctCells: 16,
+      totalCells: 16,
+      completedWords: 4,
+      totalWords: 4,
+      movesUsed: 1,
+      movesRemaining: 2,
+      optimalMoves: 1,
+      solved: true,
+    });
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves normalization, including decomposed Ñ, without mutating the question", () => {
+    const question = {
+      ...wordHashtagQuestion,
+      words: { top: "yn\u0303gui", bottom: "reúma", left: "pn\u0303ner", right: "quema" },
+      initialLetters: wordHashtagQuestion.initialLetters.map((letter, cell) =>
+        cell === 6 ? "n\u0303" : (letter?.toLowerCase() ?? null),
+      ),
+    };
+    const original = structuredClone(question);
+    expect(evaluateAnswer({ question, answer: solvedAnswer, timeUsed: 0 })).toEqual({
+      questionId: question.id,
+      answer: solvedAnswer,
+      timeUsed: 0,
+      status: "correct",
+      isCorrect: true,
+      points: 150,
+      details: solvedDetails,
+    });
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(1);
+    expect(question).toEqual(original);
+  });
+
+  it("recomputes mutated configuration data on the next evaluation", () => {
+    const question = structuredClone(wordHashtagQuestion);
+    expect(calculateAnswerScore(question, solvedAnswer, 0)).toBe(150);
+    question.maxMoves = 5;
+    [question.initialLetters[5], question.initialLetters[7]] = [
+      question.initialLetters[7],
+      question.initialLetters[5],
+    ];
+    const answer = { swaps: [...solvedAnswer.swaps, { fromCell: 5, toCell: 7 }] };
+    expect(evaluateAnswer({ question, answer, timeUsed: 0 })).toEqual({
+      questionId: question.id,
+      answer,
+      timeUsed: 0,
+      status: "correct",
+      isCorrect: true,
+      points: 150,
+      details: { ...solvedDetails, movesUsed: 2, movesRemaining: 3, optimalMoves: 2 },
+    });
+    expect(minimumSwapsForSequences).toHaveBeenCalledTimes(2);
+  });
+
+  it("preserves the board at the first invalid replay step without running the minimum search", () => {
+    const answer = [...solvedAnswer.swaps, { fromCell: 16, toCell: 19 }];
+    const solution = buildWordHashtagSolution(wordHashtagQuestion.words)!;
+    expect(replayWordHashtagSwaps(wordHashtagQuestion, answer)).toEqual({
+      valid: false,
+      letters: solution,
+      appliedMoves: 1,
+      errorIndex: 1,
+      solved: true,
+    });
+    expect(replayWordHashtagSwaps({ ...wordHashtagQuestion, maxMoves: 1 }, answer)).toEqual({
+      valid: false,
+      letters: solution,
+      appliedMoves: 1,
+      errorIndex: 1,
+      solved: true,
+    });
+    expect(minimumSwapsForSequences).not.toHaveBeenCalled();
   });
 });

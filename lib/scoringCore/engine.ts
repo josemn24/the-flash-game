@@ -9,7 +9,9 @@ import type {
   UnansweredDetailsContext,
 } from "@/lib/scoringCore/types";
 
-function buildDefaultEvaluationContext(input: NormalizedEvaluationInput): EvaluationContext {
+function buildDefaultEvaluationContext(
+  input: Omit<NormalizedEvaluationInput, "isCorrect">,
+): EvaluationContext {
   return {
     question: input.question,
     answer: input.answer,
@@ -49,8 +51,6 @@ export function calculateResolvedAnswerScore(
   const scoring = SCORING[question.type];
   if (!scoring.isAnswer(answer)) return 0;
   const safeTime = clampTime(timeUsed, question.timeLimit);
-  const isCorrect = scoring.isCorrect(question, answer);
-
   const context = scoring.buildEvaluationContext?.({
     question,
     answer,
@@ -60,7 +60,7 @@ export function calculateResolvedAnswerScore(
     incorrectAttempts,
     matchingIncorrectAttempts: incorrectAttempts,
     progressiveCluesRevealed: revealedClues,
-    isCorrect,
+    isCorrect: scoring.isCorrect(question, answer),
   }) ?? {
     question,
     answer,
@@ -136,8 +136,7 @@ export function evaluateResolvedAnswer({
     };
   }
 
-  const isCorrect = isResolvedAnswerCorrect(question, answer);
-  const normalizedInput: NormalizedEvaluationInput = {
+  const normalizedInput: Omit<NormalizedEvaluationInput, "isCorrect"> = {
     question,
     answer,
     timeUsed: safeTime,
@@ -147,11 +146,12 @@ export function evaluateResolvedAnswer({
     matchingIncorrectAttempts,
     progressiveCluesRevealed,
     progressiveClueAvailablePoints,
-    isCorrect,
   };
   const evaluation = scoring.evaluate(
-    scoring.buildEvaluationContext?.(normalizedInput) ??
-      buildDefaultEvaluationContext(normalizedInput),
+    scoring.buildEvaluationContext?.({
+      ...normalizedInput,
+      isCorrect: scoring.isCorrect(question, answer),
+    }) ?? buildDefaultEvaluationContext(normalizedInput),
   );
   const timedOutStatus = timedOut
     ? scoring.timeoutPolicy?.status?.(evaluation, question)
