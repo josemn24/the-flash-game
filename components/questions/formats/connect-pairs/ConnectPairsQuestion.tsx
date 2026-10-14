@@ -94,7 +94,7 @@ export function ConnectPairsQuestion({
   const activePairIdRef = useRef(activePairId);
   const dragRef = useRef<DragState | null>(null);
   const suppressClickRef = useRef(false);
-  const [announcement, setAnnouncement] = useState("Selecciona un extremo para empezar.");
+  const [announcement, setAnnouncement] = useState("");
 
   const activePair = question.pairs.find((pair) => pair.id === activePairId) ?? question.pairs[0];
   const answer = useMemo(() => ({ paths }), [paths]);
@@ -451,8 +451,7 @@ export function ConnectPairsQuestion({
       </div>
 
       <p className={styles.instructions}>
-        Arrastra desde un símbolo hasta su pareja. No cruces ni compartas celdas; también puedes
-        usar clics o las flechas del teclado.
+        Une los puntos iguales. No cruces ni compartas celdas;
       </p>
       <p className={styles.statusText} role="status" aria-live="polite">
         {announcement}

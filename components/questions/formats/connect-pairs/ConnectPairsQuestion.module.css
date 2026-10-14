@@ -93,7 +93,7 @@
     height: clamp(1.35rem, 6vw, 2.15rem);
     place-items: center;
     border-radius: 999px;
-    color: #071011;
+    color: var(--pair-color, var(--ds-color-bg-selected));
     background: color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 76%, white);
     font-size: clamp(0.8rem, 3vw, 1.1rem);
     box-shadow:

@@ -91,7 +91,7 @@ export function ServerLogicCodeQuestion({
   const statusText =
     submissionState === "idle"
       ? (submissionError ?? feedback) ||
-        "Cada intento incorrecto reduce la puntuación. El reloj sigue corriendo."
+        "Cada intento incorrecto reduce la puntuación"
       : "";
 
   return (
