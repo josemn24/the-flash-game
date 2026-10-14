@@ -183,7 +183,7 @@ export function ServerFlashPopAlphabetGame({
           timer={
             <Timer
               duration={challenge.timeLimitMs / 1000}
-              active={!session.locked}
+              active={session.deadlineAt !== null}
               deadlineAt={session.deadlineAt ?? undefined}
               onTimeUp={session.onTimeUp}
               resetKey={challenge.id}
