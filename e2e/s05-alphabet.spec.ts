@@ -25,9 +25,16 @@ async function answer(page: Page, value: string) {
   const editor = page.getByRole("textbox", { name: "Tu respuesta" });
   await editor.focus();
   await expect(editor).toHaveAttribute("aria-disabled", "false");
-  await editor.press("Backspace");
   await editor.pressSequentially(value);
   await page.getByRole("button", { name: "Responder", exact: true }).click();
+}
+
+async function switchKeyboard(page: Page, name: "Usar teclado" | "Usar teclado del juego") {
+  const size = page.viewportSize();
+  // The keyboard switch is intentionally visible only on desktop.
+  if (size && size.width <= 640) await page.setViewportSize({ width: 641, height: size.height });
+  await page.getByRole("button", { name, exact: true }).click();
+  if (size && size.width <= 640) await page.setViewportSize(size);
 }
 
 test("Alfabeto conserva pases y vueltas tras recargar y completa el resultado", async ({
@@ -46,10 +53,11 @@ test("Alfabeto conserva pases y vueltas tras recargar y completa el resultado", 
   await page.reload();
   // Recover closes the open letter as a pass under the existing server rules.
   await expect(page.getByRole("heading", { name: "Capital de Australia" })).toBeVisible();
-  await expect(page.getByLabel("Anterior: no disponible")).toBeVisible();
-  await page.getByRole("button", { name: "Ver todas" }).click();
-  await expect(page.getByRole("dialog").getByRole("listitem", { name: "B: Pasada" })).toBeVisible();
-  await page.getByRole("button", { name: "Cerrar tablero" }).click();
+  await expect(
+    page
+      .getByRole("list", { name: "Estado de las letras" })
+      .getByRole("listitem", { name: "B: Pasada" }),
+  ).toBeVisible();
   await answer(page, "Canberra");
   await expect(page.getByRole("heading", { name: "Animal con placas óseas" })).toBeVisible();
   await answer(page, "armadillo");
@@ -85,10 +93,12 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
   await page.addStyleTag({ content: "nextjs-portal { display: none; }" });
   const editor = page.getByRole("textbox", { name: "Tu respuesta" });
   const keyboard = page.getByRole("group", { name: "Teclado del juego" });
-  await expect(editor.locator('[data-answer-slot="filled"]')).toHaveCount(1);
-  await expect(editor.locator('[data-answer-slot="filled"]')).toHaveText("A");
-  await page.screenshot({ path: "output/playwright/alphabet-initial-letter.png" });
-  await editor.pressSequentially("rma");
+  await expect(editor.locator('[data-answer-slot="filled"]')).toHaveCount(0);
+  await expect(editor.locator('[data-answer-placeholder="A"]')).toHaveText("A");
+  await expect(editor.locator('[data-answer-slot="empty"]')).toHaveCount(12);
+  await expect(page.getByRole("button", { name: "Responder", exact: true })).toBeDisabled();
+  await page.screenshot({ path: "output/playwright/alphabet-letter-placeholder.png" });
+  await editor.pressSequentially("Arma");
   for (const size of [
     { width: 320, height: 568 },
     { width: 390, height: 844 },
@@ -113,35 +123,29 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
       .boundingBox();
     expect(respond!.height).toBeGreaterThanOrEqual(44);
     expect(respond!.y + respond!.height).toBeLessThanOrEqual(size.height);
-    const navigation = page.getByRole("list", { name: "Recorrido de letras" });
     const board = page.getByRole("list", { name: "Estado de las letras" });
-    if (size.width <= 640) {
-      await expect(navigation).toBeVisible();
-      await expect(board).toBeHidden();
-      const current = await navigation.getByLabel("Actual: A: Activa").boundingBox();
-      expect(current!.width).toBe(80);
-      expect(current!.height).toBe(80);
-      await editor.focus();
-      await page.getByRole("button", { name: "Ver todas" }).click();
-      const dialog = page.getByRole("dialog", { name: "Estado de las letras" });
-      await expect(dialog.getByRole("button", { name: "Cerrar tablero" })).toBeFocused();
-      await expect(dialog.getByRole("listitem")).toHaveCount(3);
-      const box = await dialog.boundingBox();
-      expect(box!.x).toBeGreaterThanOrEqual(16);
-      expect(box!.x + box!.width).toBeLessThanOrEqual(size.width - 16);
-      await page.keyboard.press("Escape");
-      await expect(editor).toBeFocused();
-    } else {
-      await expect(navigation).toBeHidden();
-      await expect(board).toBeVisible();
-    }
-    if (size.height <= 480) {
+    await expect(board).toBeVisible();
+    await expect(board.getByRole("listitem")).toHaveCount(3);
+    await expect(board.getByRole("listitem", { name: "A: Activa" })).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
+    expect(
+      await board.evaluate(
+        (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
+      ),
+    ).toBe(8);
+    await expect(page.getByRole("button", { name: "Ver todas" })).toHaveCount(0);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    if (size.height <= 640) {
       await expect(keyboard).toBeHidden();
       await page.getByRole("button", { name: "Mostrar teclado" }).click();
       expect(
         (await keyboard.getByRole("button", { name: "Q", exact: true }).boundingBox())!.height,
       ).toBe(32);
-      await page.screenshot({ path: "output/playwright/alphabet-landscape.png" });
+      await page.screenshot({
+        path: `output/playwright/alphabet-compact-${size.width}x${size.height}.png`,
+      });
       await page.getByRole("button", { name: "Ocultar teclado" }).click();
     } else {
       await expect(keyboard).toBeVisible();
@@ -179,12 +183,12 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
   await expect(editor).toBeFocused();
   await expect(editor).toContainText("ArmaÑ á");
   await expect(editor).not.toContainText("👨");
-  await page.getByRole("button", { name: "Usar teclado" }).click();
+  await switchKeyboard(page, "Usar teclado");
   await expect(editor).toHaveValue("ArmaÑ á");
   await expect(editor).toBeFocused();
   await expect(keyboard).toBeHidden();
   await editor.fill("Una respuesta muy larga con Ñ y acentos: áéíóú ".repeat(3));
-  await page.getByRole("button", { name: "Usar teclado del juego" }).click();
+  await switchKeyboard(page, "Usar teclado del juego");
   await expect(editor).toContainText("Una respuesta muy larga");
   const cursor = page.locator('[data-answer-slot="caret"]');
   const last = await cursor.boundingBox();
@@ -205,7 +209,7 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
     })
     .toBeLessThanOrEqual(0);
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("button", { name: "Usar teclado" }).click();
+  await switchKeyboard(page, "Usar teclado");
   await editor.fill("arma");
   // Simulate an OS keyboard resize/scroll on the existing VisualViewport listeners.
   await page.evaluate(() => {
@@ -224,14 +228,7 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
       return nativeAction!.y + nativeAction!.height;
     })
     .toBeLessThanOrEqual(328);
-  await page.getByRole("button", { name: "Ver todas" }).click();
-  const dialog = page.getByRole("dialog");
-  await expect.poll(async () => (await dialog.boundingBox())!.y).toBeGreaterThanOrEqual(64);
-  const keyboardBox = await dialog.boundingBox();
-  expect(keyboardBox!.y).toBeGreaterThanOrEqual(64);
-  expect(keyboardBox!.y + keyboardBox!.height).toBeLessThanOrEqual(312);
-  await page.screenshot({ path: "output/playwright/alphabet-board-mobile.png" });
-  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(editor).toHaveValue("arma");
   await expect(editor).toBeFocused();
   await page.evaluate(() => {
@@ -242,11 +239,11 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
   });
   await page.getByRole("button", { name: "Pasar", exact: true }).click();
   await expect(page.getByRole("heading", { name: "País más extenso de Sudamérica" })).toBeVisible();
-  await expect(editor).toHaveValue("B");
+  await expect(editor).toHaveValue("");
   await editor.fill("Brasil");
   await page.getByRole("button", { name: "Responder", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Capital de Australia" })).toBeVisible();
-  await expect(editor).toHaveValue("C");
+  await expect(editor).toHaveValue("");
   await editor.fill("Canberra");
   await editor.press("Enter");
   await expect(
@@ -256,11 +253,10 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
   await expect(page.getByText("Última pendiente")).toBeVisible();
   await editor.fill("pase repetido");
   await page.getByRole("button", { name: "Pasar", exact: true }).click();
-  await expect(editor).toHaveValue("A");
-  await expect(page.getByRole("button", { name: "Usar teclado del juego" })).toBeVisible();
-  await page.getByRole("button", { name: "Usar teclado del juego" }).click();
+  await expect(editor).toHaveValue("");
+  await switchKeyboard(page, "Usar teclado del juego");
   await expect(editor).toHaveAttribute("aria-disabled", "false");
-  await editor.pressSequentially("rchipielagos");
+  await editor.pressSequentially("Archipielagos");
   await expect(editor.locator('[data-answer-slot="filled"]')).toHaveCount(13);
   await expect(editor.locator('[data-answer-slot="empty"]')).toHaveCount(0);
   const answerResponse = page.waitForResponse(
@@ -279,9 +275,8 @@ test("Alfabeto acepta una alternativa más corta con huecos pendientes", async (
     page.getByRole("heading", { name: "Conjunto de islas próximas entre sí" }),
   ).toBeVisible();
   const editor = page.getByRole("textbox", { name: "Tu respuesta" });
-  await expect(editor.locator('[data-answer-slot="filled"]')).toHaveText("A");
-  await expect(editor.locator('[data-answer-slot="empty"]')).toHaveCount(11);
-  await editor.press("Backspace");
+  await expect(editor.locator('[data-answer-slot="filled"]')).toHaveCount(0);
+  await expect(editor.locator('[data-answer-placeholder="A"]')).toHaveText("A");
   await expect(editor.locator('[data-answer-slot="empty"]')).toHaveCount(12);
   await expect(page.getByRole("button", { name: "Responder", exact: true })).toBeDisabled();
   await editor.pressSequentially("archipelago");
@@ -309,8 +304,7 @@ test("Alfabeto cierra una vez cada letra pendiente tras el deadline global", asy
   });
   await open(page, (await fixture()).users.bob);
   await expect(page.getByRole("heading", { name: "Animal con placas óseas" })).toBeVisible();
-  await page.getByRole("button", { name: "Ver todas" }).click();
-  await expect(page.getByRole("dialog", { name: "Estado de las letras" })).toBeVisible();
+  await expect(page.getByRole("list", { name: "Estado de las letras" })).toBeVisible();
   await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 35000 });
   await expect(page.getByRole("dialog")).toHaveCount(0);
   expect(bodies).toHaveLength(0);
@@ -381,16 +375,18 @@ test("18 letras conservan la respuesta válida y cierran las pendientes con una 
   const data = await fixture();
   await open(page, data.users.dave, "Sala s05-timeout");
   await expect(page.getByRole("heading", { name: "Pregunta de la letra A" })).toBeVisible();
-  await page.getByRole("button", { name: "Ver todas" }).click();
-  const dialog = page.getByRole("dialog", { name: "Estado de las letras" });
-  await expect(dialog.getByRole("listitem")).toHaveCount(18);
+  const board = page.getByRole("list", { name: "Estado de las letras" });
+  await expect(board).toBeVisible();
+  await expect(board.getByRole("listitem")).toHaveCount(18);
   expect(
-    await dialog
-      .getByRole("list")
-      .evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").length),
-  ).toBe(6);
+    await board.evaluate(
+      (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
+    ),
+  ).toBe(8);
+  expect(
+    await board.evaluate((element) => getComputedStyle(element).gridTemplateRows.split(" ").length),
+  ).toBe(3);
   await page.screenshot({ path: "output/playwright/alphabet-board-18.png" });
-  await dialog.getByRole("button", { name: "Cerrar tablero" }).click();
   await answer(page, "respuesta");
   await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 25000 });
   expect(requests.filter((url) => url.endsWith("/answer"))).toHaveLength(1);

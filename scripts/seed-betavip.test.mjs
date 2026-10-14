@@ -64,7 +64,7 @@ const prepareCassetteAsset = async () => ({
 });
 
 describe("BetaVIP seed", () => {
-  it("defines eighteen playable geography letters with the agreed answers", () => {
+  it("defines sixteen playable geography letters with the agreed answers", () => {
     const entries = BETA_VIP_ALPHABET.entries;
     expect(entries.map((entry) => entry.letter)).toEqual([
       "A",
@@ -73,8 +73,6 @@ describe("BetaVIP seed", () => {
       "D",
       "E",
       "F",
-      "G",
-      "H",
       "I",
       "J",
       "L",
@@ -86,7 +84,7 @@ describe("BetaVIP seed", () => {
       "T",
       "Z",
     ]);
-    expect(new Set(entries.map((entry) => entry.letter)).size).toBe(18);
+    expect(new Set(entries.map((entry) => entry.letter)).size).toBe(16);
     expect(
       entries.every((entry) => entry.correctAnswer.toUpperCase().startsWith(entry.letter)),
     ).toBe(true);
@@ -95,7 +93,7 @@ describe("BetaVIP seed", () => {
     );
     expect(entries.filter((entry) => entry.topic === "countries")).toHaveLength(4);
     expect(entries.filter((entry) => entry.topic === "capitals")).toHaveLength(3);
-    expect(entries.filter((entry) => entry.topic === "physical_geography")).toHaveLength(11);
+    expect(entries.filter((entry) => entry.topic === "physical_geography")).toHaveLength(9);
     expect(
       entries
         .filter((entry) => entry.topic === "physical_geography")
@@ -105,7 +103,7 @@ describe("BetaVIP seed", () => {
       "Tokio",
       "Tokyo",
     ]);
-    expect(BETA_VIP_ALPHABET.globalTimeLimitMs).toBe(135_000);
+    expect(BETA_VIP_ALPHABET.globalTimeLimitMs).toBe(150_000);
   });
 
   it("defines twenty survival questions with five per topic and interleaved clues", () => {
@@ -432,7 +430,7 @@ describe("BetaVIP seed", () => {
     ]);
     expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48, 72, 96]);
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 6, 20, 7]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([16, 7, 6, 20, 7]);
     expect(data.alphabetPublicationId).toBe(data.publications[0].id);
     expect(data.pyramidPublicationId).toBe(data.publications[1].id);
     expect(data.timeTrialPublicationId).toBe(data.publications[2].id);

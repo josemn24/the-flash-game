@@ -41,7 +41,7 @@ export const scenario = {
     );
     assert(
       beta.questionCount === alphabet.questionCount,
-      "El manifiesto conserva las dieciocho preguntas del Alphabet",
+      "El manifiesto conserva las dieciséis preguntas del Alphabet",
     );
     assert(
       beta.pointsTotal === alphabet.pointsTotal,
@@ -118,17 +118,17 @@ export const scenario = {
     );
     assert(
       (await sqlCount(
-        `select count(*) from private.challenge_versions where id = '${alphabet.challengeVersionId}' and status = 'published' and mode = 'alphabet' and global_time_limit_ms = 135000;`,
+        `select count(*) from private.challenge_versions where id = '${alphabet.challengeVersionId}' and status = 'published' and mode = 'alphabet' and global_time_limit_ms = 150000;`,
         config.dbContainer,
       )) === 1,
-      "El Alphabet de BetaVIP está publicado con 135 segundos",
+      "El Alphabet de BetaVIP está publicado con 150 segundos",
     );
     assert(
       (await sqlCount(
         `select count(*) from private.challenge_items i join private.question_versions q on q.id = i.question_version_id where i.challenge_version_id = '${alphabet.challengeVersionId}' and q.type = 'short-text' and i.mode_config ? 'letter';`,
         config.dbContainer,
-      )) === 18,
-      "La vuelta al mundo tiene dieciocho preguntas con letra",
+      )) === 16,
+      "La vuelta al mundo tiene dieciséis preguntas con letra",
     );
     assert(
       (await sqlCount(
@@ -242,7 +242,7 @@ export const scenario = {
         target_room_slug: betaSlug,
         target_publication_id: alphabet.id,
       });
-      assert(alphabetPlayable.length === 18, "El Alphabet está disponible durante el primer día");
+      assert(alphabetPlayable.length === 16, "El Alphabet está disponible durante el primer día");
       assert(
         alphabetPlayable.reduce((total, row) => total + Number(row.item_points), 0) === 100,
         "La vuelta al mundo suma 100 puntos durante el primer día",

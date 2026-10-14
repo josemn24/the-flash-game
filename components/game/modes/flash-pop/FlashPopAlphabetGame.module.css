@@ -37,7 +37,7 @@
   .board {
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(8, minmax(0, 1fr));
     gap: 0.38rem;
   }
 
@@ -139,7 +139,7 @@
     width: min(100%, 1040px);
     height: var(--alphabet-viewport-height, 100dvh);
     min-height: 0;
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     gap: var(--space-2);
     margin: 0 auto;
     padding: max(var(--space-3), env(safe-area-inset-top))
@@ -179,7 +179,7 @@
     display: grid;
     width: 100%;
     gap: var(--space-3);
-    padding: var(--space-1) 0 0;
+    padding: var(--space-3) 0 0;
   }
 
   .questionPanel h1 {
@@ -288,174 +288,41 @@
     padding: 0;
   }
 
-  .progressRow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-  }
-
-  .progressSummary {
-    margin: 0;
-    color: var(--ds-color-fg-secondary);
-    font-size: 13px;
-    font-weight: 700;
-    line-height: 1.5;
-  }
-
-  .progressCounters {
-    display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    margin: 0;
-    color: var(--ds-color-fg-primary);
-    font-size: 13px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.5;
-  }
-
-  .progressCounter {
-    display: inline-flex;
-    align-items: center;
+  .boardPanel {
+    display: grid;
     gap: var(--space-1);
   }
 
-  .progressCounter svg {
-    width: 16px;
-    height: 16px;
-    flex: 0 0 auto;
+  .playingBoard {
+    width: min(100%, 29rem);
+    padding: var(--space-2);
+    box-shadow: var(--shadow-card);
   }
 
-  .progressCorrect {
-    color: var(--ds-color-fg-success);
+  .playingBoard .letterCell {
+    font-size: clamp(14px, 4vw, 20px);
+    line-height: 1;
   }
 
-  .progressIncorrect {
-    color: var(--ds-color-fg-error);
-  }
-
-  .progressPending {
-    color: var(--ds-color-fg-secondary);
-  }
-
-  .boardButton {
-    display: none;
-    min-height: var(--control-height-compact);
-    padding: var(--space-1);
-    border: 0;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--ds-color-fg-selected);
-    font-size: 12px;
-    font-weight: 800;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    cursor: pointer;
-  }
-
-  .boardButton:disabled {
-    opacity: var(--ds-opacity-disabled);
-    cursor: not-allowed;
-  }
-
-  .compactNavigation {
-    display: none;
-  }
-
-  .navigation {
-    display: grid;
-    grid-template-columns: 56px 80px 56px;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-3);
-  }
-
-  .navigationCell {
-    width: 56px;
-    height: 56px;
-    font-size: 24px;
-  }
-
-  .currentCell {
-    width: 80px;
-    height: 80px;
-    border-radius: var(--radius-card);
-    font-size: 32px;
-  }
-
-  .emptyCell {
-    border-style: dashed;
-    background: transparent;
-    color: var(--ds-color-fg-decorative);
+  .playingBoard .markIcon,
+  .playingBoard .passMark,
+  .playingBoard .emptyMark {
+    width: 12px;
+    height: 12px;
+    font-size: 8px;
   }
 
   .navigationHint {
-    min-height: 18px;
-    margin: var(--space-1) 0 0;
+    margin: 0;
     color: var(--ds-color-fg-secondary);
     font-size: 12px;
     line-height: 1.5;
     text-align: center;
   }
 
-  .boardDialog {
-    position: fixed;
-    inset: var(--alphabet-dialog-viewport-top, 0px) 0 auto;
-    width: min(calc(100% - 32px), 512px);
-    max-width: none;
-    max-height: calc(var(--alphabet-dialog-viewport-height, 100dvh) - 32px);
-    margin: 16px auto;
-    padding: 0;
-    overflow: auto;
-    overscroll-behavior: contain;
-    border: var(--border-subtle);
-    border-radius: var(--radius-card);
-    background: var(--ds-color-bg-surface);
-    color: var(--ds-color-fg-primary);
-    box-shadow: var(--shadow-dialog);
-  }
-
-  .boardDialog::backdrop {
-    background: var(--ds-color-bg-overlay);
-  }
-
-  .dialogSurface {
-    display: grid;
-    gap: var(--space-4);
-    padding: var(--space-4);
-  }
-
-  .dialogHeader,
-  .dialogMeta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
-  }
-
-  .dialogHeader h2 {
-    margin: 0;
-    font-family: var(--type-display);
-    font-size: 24px;
-    line-height: 1.1;
-  }
-
-  .dialogMeta {
-    font-family: var(--type-mono);
-    font-size: 12px;
-    font-weight: 700;
-  }
-
   @media (max-width: 640px) {
-    .desktopBoard {
+    .answerHeader {
       display: none;
-    }
-
-    .compactNavigation,
-    .boardButton {
-      display: block;
     }
 
     .playGrid {
@@ -535,6 +402,14 @@
     border-radius: var(--radius-pill);
     background: currentColor;
     content: "";
+  }
+
+  .letterPlaceholder {
+    color: var(--ds-color-fg-decorative);
+  }
+
+  .letterPlaceholder::after {
+    content: none;
   }
 
   .answerSpace {
@@ -673,6 +548,11 @@
     padding-top: max(var(--space-1), env(safe-area-inset-top));
   }
 
+  .compactHeight .playingBoard .letterCell {
+    height: 32px;
+    aspect-ratio: auto;
+  }
+
   .compactHeight .answerTiles {
     max-width: none;
     max-height: none;
@@ -692,5 +572,13 @@
 
   .compactHeight .questionPanel h1 {
     font-size: 26px;
+  }
+
+  @media (min-width: 641px) {
+    .compactHeight .playGrid {
+      grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+      align-items: start;
+      gap: var(--space-6);
+    }
   }
 }

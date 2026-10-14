@@ -30,7 +30,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it("seeds a repeated practice visit, retains native mode and resets it on a new game", async () => {
+it("starts repeated practice visits empty, retains native mode and resets on a new game", async () => {
   const original = getChallengeById("tabarnia-challenge-02");
   if (original?.mode !== "alphabet") throw new Error("Expected Alphabet challenge");
   const challenge = { ...original, entries: original.entries.slice(0, 1) };
@@ -39,17 +39,20 @@ it("seeds a repeated practice visit, retains native mode and resets it on a new 
   for (let step = 0; step < 4; step++) await act(() => vi.advanceTimersByTimeAsync(1000));
   expect(screen.getByRole("textbox").tagName).toBe("DIV");
   expect(screen.getByRole("textbox").querySelectorAll('[data-answer-slot="empty"]')).toHaveLength(
-    8,
+    9,
   );
-  expect(
-    screen.getByRole("textbox").querySelector('[data-answer-slot="filled"]')?.textContent,
-  ).toBe("A");
+  expect(screen.getByRole("textbox").querySelectorAll('[data-answer-slot="filled"]')).toHaveLength(
+    0,
+  );
+  expect(screen.getByRole("textbox").querySelector("[data-answer-placeholder]")?.textContent).toBe(
+    "A",
+  );
   fireEvent.click(screen.getByRole("button", { name: "Usar teclado" }));
   const input = screen.getByRole("textbox") as HTMLInputElement;
   fireEvent.change(input, { target: { value: "borrador" } });
   fireEvent.click(screen.getByRole("button", { name: "Pasar" }));
   expect(screen.getByRole("textbox").tagName).toBe("INPUT");
-  expect(input.value).toBe("A");
+  expect(input.value).toBe("");
   expect(screen.getAllByText("Vuelta 2").length).toBeGreaterThan(0);
   fireEvent.change(input, { target: { value: "armadillo" } });
   fireEvent.submit(input.closest("form")!);
@@ -60,7 +63,10 @@ it("seeds a repeated practice visit, retains native mode and resets it on a new 
   fireEvent.click(screen.getByRole("button", { name: "Empezar desafío" }));
   for (let step = 0; step < 4; step++) await act(() => vi.advanceTimersByTimeAsync(1000));
   expect(screen.getByRole("textbox").tagName).toBe("DIV");
-  expect(
-    screen.getByRole("textbox").querySelector('[data-answer-slot="filled"]')?.textContent,
-  ).toBe("A");
+  expect(screen.getByRole("textbox").querySelectorAll('[data-answer-slot="filled"]')).toHaveLength(
+    0,
+  );
+  expect(screen.getByRole("textbox").querySelector("[data-answer-placeholder]")?.textContent).toBe(
+    "A",
+  );
 });

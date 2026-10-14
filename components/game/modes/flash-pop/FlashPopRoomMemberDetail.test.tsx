@@ -25,8 +25,8 @@ describe("FlashPopRoomMemberDetail", () => {
     const markup = renderToStaticMarkup(<FlashPopRoomMemberDetail model={model} />);
 
     expect(markup).toContain("Dark");
-    expect(markup).toContain("242 ⚡");
-    expect(markup).toContain("242 Flash Points");
+    expect(markup).toContain("232 ⚡");
+    expect(markup).toContain("232 Flash Points");
     expect(markup).toContain("#1 en la sala");
     expect(markup).toContain("54");
     expect(markup).toContain("Flash Points");

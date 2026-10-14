@@ -22,12 +22,12 @@ export function AlphabetAnswerEditor({
   mode,
   onModeChange,
   disabled,
-  focusBlocked,
   visitKey,
   editorRef,
   scrollRef,
   onSubmit,
   placeholder,
+  letterPlaceholder,
   answerLength,
 }: {
   value: string;
@@ -35,12 +35,12 @@ export function AlphabetAnswerEditor({
   mode: AlphabetKeyboardMode;
   onModeChange: (mode: AlphabetKeyboardMode) => void;
   disabled: boolean;
-  focusBlocked: boolean;
   visitKey: string | null;
   editorRef: RefObject<AlphabetEditorElement | null>;
   scrollRef: RefObject<HTMLDivElement | null>;
   onSubmit: () => void;
   placeholder?: string | null;
+  letterPlaceholder: string | null;
   answerLength: number | null;
 }) {
   const labelId = useId();
@@ -53,14 +53,13 @@ export function AlphabetAnswerEditor({
   const written = countAlphabetAnswerCharacters(value);
 
   useEffect(() => {
-    if (!disabled && !focusBlocked && mode === "game" && focusVisit.current !== visitKey) {
+    if (!disabled && mode === "game" && focusVisit.current !== visitKey) {
       editorRef.current?.focus({ preventScroll: true });
       focusVisit.current = visitKey;
     }
-  }, [disabled, editorRef, focusBlocked, mode, visitKey]);
+  }, [disabled, editorRef, mode, visitKey]);
 
   useEffect(() => {
-    if (focusBlocked) return;
     const area = scrollRef.current;
     const tiles = tilesRef.current;
     const keepResponseVisible = () => {
@@ -89,7 +88,7 @@ export function AlphabetAnswerEditor({
     if (area) observer.observe(area);
     if (tiles) observer.observe(tiles);
     return () => observer.disconnect();
-  }, [value, visitKey, mode, focusBlocked, editorRef, scrollRef, answerLength]);
+  }, [value, visitKey, mode, editorRef, scrollRef, answerLength]);
 
   const switchKeyboard = () => {
     // Focus the native field in the same user gesture that chooses it.
@@ -108,13 +107,14 @@ export function AlphabetAnswerEditor({
         <button
           type="button"
           className={styles.keyboardSwitch}
-          disabled={disabled || focusBlocked}
+          disabled={disabled}
           onClick={switchKeyboard}
         >
           {mode === "game" ? "Usar teclado" : "Usar teclado del juego"}
         </button>
       </div>
       <p id={lengthId} className={styles.srOnly}>
+        {letterPlaceholder ? <span>Letra de referencia: {letterPlaceholder}. </span> : null}
         {answerLength !== null ? (
           <span>
             Respuesta principal: {answerLength} {answerLength === 1 ? "carácter" : "caracteres"}
@@ -130,11 +130,11 @@ export function AlphabetAnswerEditor({
           id={`${labelId}-input`}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          disabled={disabled || focusBlocked}
+          disabled={disabled}
           aria-describedby={`${lengthId} ${hintId}`}
           autoComplete="off"
           enterKeyHint="send"
-          placeholder={placeholder ?? "Escribe tu respuesta…"}
+          placeholder={placeholder ?? letterPlaceholder ?? "Escribe tu respuesta…"}
         />
       ) : (
         <div
@@ -144,12 +144,11 @@ export function AlphabetAnswerEditor({
           tabIndex={0}
           aria-labelledby={labelId}
           aria-describedby={`${lengthId} ${hintId}`}
-          aria-disabled={disabled || focusBlocked}
+          aria-disabled={disabled}
           aria-multiline="false"
           onKeyDown={(event) => {
             if (
               disabled ||
-              focusBlocked ||
               event.ctrlKey ||
               event.metaKey ||
               event.altKey ||
@@ -170,28 +169,37 @@ export function AlphabetAnswerEditor({
         >
           <span className={styles.srOnly}>{value || "Respuesta vacía"}</span>
           <div ref={tilesRef} className={styles.answerTiles} aria-hidden="true">
-            {slots.map((slot, index) => (
-              <span
-                key={index}
-                data-answer-slot={slot.kind}
-                ref={
-                  slot.kind === "caret" || (slot.kind === "empty" && slot.active)
-                    ? cursorRef
-                    : undefined
-                }
-                className={
-                  slot.kind === "filled"
-                    ? styles.answerTile
-                    : slot.kind === "space"
-                      ? styles.answerSpace
-                      : slot.kind === "caret"
-                        ? `${styles.writingCaret} ${styles.activeSlot}`
-                        : `${styles.emptyAnswerSlot} ${slot.active ? styles.activeSlot : ""}`
-                }
-              >
-                {slot.kind === "filled" ? slot.character : null}
-              </span>
-            ))}
+            {slots.map((slot, index) => {
+              const isLetterPlaceholder =
+                slot.kind === "empty" && slot.active && written === 0 && !!letterPlaceholder;
+              return (
+                <span
+                  key={index}
+                  data-answer-slot={slot.kind}
+                  data-answer-placeholder={isLetterPlaceholder ? letterPlaceholder : undefined}
+                  ref={
+                    slot.kind === "caret" || (slot.kind === "empty" && slot.active)
+                      ? cursorRef
+                      : undefined
+                  }
+                  className={
+                    slot.kind === "filled"
+                      ? styles.answerTile
+                      : slot.kind === "space"
+                        ? styles.answerSpace
+                        : slot.kind === "caret"
+                          ? `${styles.writingCaret} ${styles.activeSlot}`
+                          : `${styles.emptyAnswerSlot} ${slot.active ? styles.activeSlot : ""} ${isLetterPlaceholder ? styles.letterPlaceholder : ""}`
+                  }
+                >
+                  {slot.kind === "filled"
+                    ? slot.character
+                    : isLetterPlaceholder
+                      ? letterPlaceholder
+                      : null}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

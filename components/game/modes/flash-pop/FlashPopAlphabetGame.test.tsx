@@ -31,7 +31,7 @@ describe("FlashPopAlphabetGame", () => {
     const markup = renderToStaticMarkup(<FlashPopAlphabetGame challenge={challenge} />);
 
     expect(markup).toContain("Alfabeto");
-    expect(markup).toContain(">18</strong>");
+    expect(markup).toContain(">16</strong>");
     expect(markup).toContain("Empezar desafío");
     expect(markup).toContain("Resumen del desafío");
     expect(markup).not.toContain("Estado de las letras");
@@ -44,9 +44,9 @@ describe("FlashPopAlphabetGame", () => {
     expect(source).not.toContain("localStorage");
   });
 
-  it("keeps the legacy six-column gameplay grid on Pop surfaces", () => {
+  it("keeps the complete eight-column gameplay grid on Pop surfaces", () => {
     expect(styles).toContain(".board {");
-    expect(styles).toContain("grid-template-columns: repeat(6, minmax(0, 1fr));");
+    expect(styles).toContain("grid-template-columns: repeat(8, minmax(0, 1fr));");
     expect(styles).not.toContain("--letter-index");
     expect(styles).not.toContain("translateY(calc(");
     expect(styles).toContain("min-height: auto;");
@@ -72,7 +72,7 @@ describe("FlashPopAlphabetGame", () => {
   });
 
   it("avoids duplicated vertical space before the gameplay grid", () => {
-    expect(styles).toContain("gap: var(--space-4);");
+    expect(styles).toContain("gap: var(--space-3);");
     expect(styles).toContain("padding: 0;");
   });
 

@@ -66,7 +66,9 @@ const alphabetItems = BETA_VIP_ALPHABET.entries.map((entry, index) => {
   return {
     ...entry,
     slug,
-    points: index < 10 ? 6 : 5,
+    points:
+      Math.floor(100 / BETA_VIP_ALPHABET.entries.length) +
+      (index < 100 % BETA_VIP_ALPHABET.entries.length ? 1 : 0),
     definitionId: stableId(`question:${slug}`),
     versionId: stableId(`question-version:${slug}`),
     itemId: stableId(`challenge-item:${slug}`),

@@ -132,7 +132,7 @@ npm run dev
 
 El setup reinicia la base local y crea 13 cuentas: Xesmona como superadmin fuera de la sala, Ches
 como propietario y jugador, y otros once miembros jugadores. Programa «Reino de animales» en
-Alphabet (18 letras, 135 segundos, 100 puntos), «Biblia y religiones abrahámicas» en Pirámide
+Alphabet (16 letras, 150 segundos, 100 puntos), «Biblia y religiones abrahámicas» en Pirámide
 (7 niveles, 100 puntos), Steel Ball Run (16 retos, 100 puntos) y Supervivencia: España
 (20 preguntas, 3 vidas, 100 puntos), en ese orden y en ventanas consecutivas de 24 horas.
 

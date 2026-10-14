@@ -289,7 +289,7 @@ describe("Tabarnia seed", () => {
         publication.pointsTotal,
       ]),
     ).toEqual([
-      ["alphabet", 18, 100],
+      ["alphabet", 16, 100],
       ["pyramid", 7, 100],
       ["flash", 16, 100],
       ["survival", 20, 100],

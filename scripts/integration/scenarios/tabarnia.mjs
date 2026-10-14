@@ -21,14 +21,14 @@ export const scenario = {
       target_room_slug: fixture.data.room.slug,
       target_publication_id: animals.id,
     });
-    assert(playableAlphabet.length === 18, "Ches recibe las dieciocho letras de Reino de animales");
+    assert(playableAlphabet.length === 16, "Ches recibe las dieciséis letras de Reino de animales");
     assert(
       playableAlphabet.reduce((total, row) => total + Number(row.item_points), 0) === 100,
       "Reino de animales conserva los 100 puntos",
     );
     assert(
       playableAlphabet.map((row) => row.alphabet_letter).join(",") ===
-        "A,B,C,D,E,F,G,H,I,J,L,M,O,P,R,S,T,Z",
+        "A,B,C,D,E,F,I,J,L,M,O,P,R,S,T,Z",
       "Reino de animales conserva las letras y el orden editorial",
     );
     assert(
@@ -92,15 +92,15 @@ export const scenario = {
       (await sqlCount(
         `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id join private.question_versions q on q.id = i.question_version_id where v.id = '${animals.challengeVersionId}' and v.mode = 'alphabet' and q.type = 'short-text' and i.mode_config ? 'letter';`,
         config.dbContainer,
-      )) === 18,
-      "Reino de animales persiste dieciocho items Alphabet con su letra",
+      )) === 16,
+      "Reino de animales persiste dieciséis items Alphabet con su letra",
     );
     assert(
       (await sqlCount(
-        `select count(*) from private.challenge_versions where id = '${animals.challengeVersionId}' and status = 'published' and mode = 'alphabet' and global_time_limit_ms = 135000;`,
+        `select count(*) from private.challenge_versions where id = '${animals.challengeVersionId}' and status = 'published' and mode = 'alphabet' and global_time_limit_ms = 150000;`,
         config.dbContainer,
       )) === 1,
-      "Reino de animales persiste el límite global de 135 segundos",
+      "Reino de animales persiste el límite global de 150 segundos",
     );
     assert(
       (await sqlCount(

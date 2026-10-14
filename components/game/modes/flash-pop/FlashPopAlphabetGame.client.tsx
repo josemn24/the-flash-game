@@ -1,8 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
-import { useState } from "react";
-import { CheckIcon, ClockIcon, CrossIcon, Canvas, Timer, TimerDisplay } from "@/components/ui";
+import { CheckIcon, ClockIcon, CrossIcon, Canvas, Timer } from "@/components/ui";
 import type { AlphabetState } from "@/features/alphabet/alphabetGame";
 import { useAlphabetSession } from "@/features/alphabet/useAlphabetSession";
 import { buildAlphabetAnswerReviews } from "@/features/alphabet/alphabetReview";
@@ -45,7 +44,6 @@ function Playing({
   challenge: AlphabetChallenge;
   session: AlphabetSession;
 }) {
-  const [remaining, setRemaining] = useState(challenge.timeLimit);
   const entry = session.activeEntry;
   if (!entry || entry.question.type !== "short-text") return null;
   const locked = session.phase === "feedback";
@@ -64,11 +62,7 @@ function Playing({
           onTimeUp={session.finish}
           resetKey={`${challenge.id}-alphabet`}
           size="compact"
-          onTick={(value) => setRemaining(Math.ceil(value))}
         />
-      }
-      dialogTimer={
-        <TimerDisplay duration={challenge.timeLimit} remaining={remaining} size="compact" />
       }
       letters={session.letters}
       question={{

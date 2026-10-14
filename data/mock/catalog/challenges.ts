@@ -157,37 +157,37 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
     slug: "animals-alphabet-definition",
     mode: "alphabet",
     title: "Reino de animales",
-    subtitle: "Dieciocho letras, una sola cuenta atrás",
+    subtitle: "Dieciséis letras, una sola cuenta atrás",
     description:
-      "Recorre dieciocho letras, responde un animal para cada una y pasa las que quieras recuperar antes de que se agote el tiempo.",
+      "Recorre dieciséis letras, responde un animal para cada una y pasa las que quieras recuperar antes de que se agote el tiempo.",
     modeConfig: {
-      timeLimitMs: 135000,
+      timeLimitMs: 150000,
     },
     items: [
       {
         questionSlug: "alphabet-animals-a",
-        points: 6,
+        points: 7,
         modeConfig: {
           letter: "A",
         },
       },
       {
         questionSlug: "alphabet-animals-b",
-        points: 6,
+        points: 7,
         modeConfig: {
           letter: "B",
         },
       },
       {
         questionSlug: "alphabet-animals-c",
-        points: 6,
+        points: 7,
         modeConfig: {
           letter: "C",
         },
       },
       {
         questionSlug: "alphabet-animals-d",
-        points: 6,
+        points: 7,
         modeConfig: {
           letter: "D",
         },
@@ -207,20 +207,6 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
         },
       },
       {
-        questionSlug: "alphabet-animals-g",
-        points: 6,
-        modeConfig: {
-          letter: "G",
-        },
-      },
-      {
-        questionSlug: "alphabet-animals-h",
-        points: 6,
-        modeConfig: {
-          letter: "H",
-        },
-      },
-      {
         questionSlug: "alphabet-animals-i",
         points: 6,
         modeConfig: {
@@ -236,56 +222,56 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "alphabet-animals-l",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "L",
         },
       },
       {
         questionSlug: "alphabet-animals-m",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "M",
         },
       },
       {
         questionSlug: "alphabet-animals-o",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "O",
         },
       },
       {
         questionSlug: "alphabet-animals-p",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "P",
         },
       },
       {
         questionSlug: "alphabet-animals-r",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "R",
         },
       },
       {
         questionSlug: "alphabet-animals-s",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "S",
         },
       },
       {
         questionSlug: "alphabet-animals-t",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "T",
         },
       },
       {
         questionSlug: "alphabet-animals-z",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "Z",
         },

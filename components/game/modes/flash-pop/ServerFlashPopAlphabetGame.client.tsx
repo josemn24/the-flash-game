@@ -3,8 +3,7 @@
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
 
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
-import { useState } from "react";
-import { Button, Card, Canvas, Timer, TimerDisplay } from "@/components/ui";
+import { Button, Card, Canvas, Timer } from "@/components/ui";
 import { ChallengeIntro, ChallengeResultScreen, StartCountdown } from "@/components/game/shared";
 import { buildReviewAnswerEntries } from "@/components/game/shared/ReviewAnswerList";
 import {
@@ -29,7 +28,6 @@ export function ServerFlashPopAlphabetGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const session = useServerAlphabetSession({ challenge, roomContext, terminalReview });
-  const [remaining, setRemaining] = useState(challenge.timeLimitMs / 1000);
   const isIntro = session.phase === "intro";
   const letters =
     session.progress?.letters ??
@@ -189,14 +187,6 @@ export function ServerFlashPopAlphabetGame({
               deadlineAt={session.deadlineAt ?? undefined}
               onTimeUp={session.onTimeUp}
               resetKey={challenge.id}
-              size="compact"
-              onTick={(value) => setRemaining(Math.ceil(value))}
-            />
-          }
-          dialogTimer={
-            <TimerDisplay
-              duration={challenge.timeLimitMs / 1000}
-              remaining={remaining}
               size="compact"
             />
           }
