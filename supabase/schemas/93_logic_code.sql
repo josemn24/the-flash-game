@@ -26,9 +26,6 @@ create table private.logic_code_attempt_events (
   check (received_at >= presented_at)
 );
 
-create index logic_code_events_item_idx
-  on private.logic_code_attempt_events(attempt_id, challenge_item_id, sequence);
-
 create function private.logic_code_progress(target_attempt uuid, target_item uuid) returns jsonb
 language sql stable security definer set search_path = '' as $$
   select jsonb_build_object(

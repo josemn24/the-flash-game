@@ -27,8 +27,6 @@ create table private.queens_placement_events (
   check (penalty_applied or penalty_points = 0)
 );
 
-create index queens_placement_events_item_idx
-  on private.queens_placement_events(attempt_id, challenge_item_id, sequence);
 create index queens_placement_events_cell_idx
   on private.queens_placement_events(attempt_id, challenge_item_id, cell, sequence desc);
 
@@ -447,9 +445,6 @@ create table private.queens_validation_events (
   check (not penalty_applied or penalty_points > 0),
   check (penalty_applied or penalty_points = 0)
 );
-
-create index queens_validation_events_item_idx
-  on private.queens_validation_events(attempt_id, challenge_item_id, sequence);
 
 create or replace function private.queens_progress(target_attempt uuid, target_item uuid) returns jsonb
 language plpgsql stable security definer set search_path = '' as $$

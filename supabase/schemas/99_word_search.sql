@@ -25,8 +25,6 @@ create table private.word_search_selection_events (
   check (start_cell <> end_cell)
 );
 
-create index word_search_selection_events_item_idx
-  on private.word_search_selection_events(attempt_id, challenge_item_id, sequence);
 create index word_search_selection_events_target_idx
   on private.word_search_selection_events(attempt_id, challenge_item_id, matched_target_id)
   where correct;
