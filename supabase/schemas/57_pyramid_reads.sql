@@ -134,7 +134,7 @@ returns table (
 )
 language sql stable security definer set search_path = '' as $$
   select attempt.id, attempt.scheduled_challenge_id, answer.challenge_item_id,
-    item.position, answer.challenge_version_id, question.type, question.payload_schema_version,
+    item.position, question.id, question.type, question.payload_schema_version,
     question.public_payload, solution.solution_payload, answer.answer, answer.status,
     answer.points, answer.result_details, answer.presented_at, answer.submitted_at,
     answer.time_used_ms, attempt.status, attempt.score, attempt.outcome,
