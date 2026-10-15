@@ -1,6 +1,6 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 83 archivos. La revisión más reciente aplicada
+Estado: el esquema declarativo vigente se compone de 84 archivos. La revisión más reciente aplicada
 es `20261014203717_maintenance_rpc`; el historial activo empieza con el baseline
 `20261011180045_initial_schema` y continúa con migraciones incrementales. Las migraciones anteriores
 al baseline permanecen en Git, fuera del historial activo. La validación local corresponde a
@@ -207,8 +207,9 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [63_question_asset_helpers.sql](63_question_asset_helpers.sql)                   | Validación interna de assets de preguntas listos para publicación/uso.                                                                                          |
 | [68_competitive_question_formats.sql](68_competitive_question_formats.sql)       | Allowlist y validadores de formatos competitivos compartidos entre Flash, Supervivencia y Pirámide.                                                             |
 | [98_question_asset_commands.sql](98_question_asset_commands.sql)                 | Subida, confirmación, aborto y resolución autorizada de assets privados de preguntas.                                                                           |
-| [99_queens.sql](99_queens.sql)                                                   | Eventos privados históricos de Queens, reconstrucción segura del tablero y comando transaccional legado 5×5.                                                    |
-| [99_queens_dynamic_grid.sql](99_queens_dynamic_grid.sql)                         | Validación, progreso y comandos de Queens para tableros cuadrados dinámicos de 4×4 a 8×8.                                                                       |
+| [99_queens_01_schema.sql](99_queens_01_schema.sql)                     | Tablas de eventos privados, índice de celdas y RLS para Queens legado y dinámico.                       |
+| [99_queens_02_rules.sql](99_queens_02_rules.sql)                       | Definiciones canónicas de validación, conflictos, tablero, progreso y respuesta.                         |
+| [99_queens_03_commands.sql](99_queens_03_commands.sql)                 | Comandos transaccionales de colocación, borrador y envío, con ACL server-only.                           |
 | [99_word_search.sql](99_word_search.sql)                                         | Eventos privados de Word-search, progreso seguro y comando transaccional de selección server-side.                                                              |
 | [99_escape.sql](99_escape.sql)                                                   | Validación inmutable de configuración y solución privada de Escape para publicación editorial.                                                                  |
 | [99_zip.sql](99_zip.sql)                                                         | Validación inmutable del contenido de Zip usado al publicar preguntas.                                                                                          |

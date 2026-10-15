@@ -19,7 +19,11 @@ select lives_ok($$
         'solutionPayload',jsonb_build_object('solution',jsonb_build_array(2,9,10,18,21)))
     )))
 $$, 'El validador acepta un Flash mixto con Queens');
-select is(to_regclass('private.queens_placement_events_item_idx')::text, 'private.queens_placement_events_item_idx', 'Existe el índice principal de eventos Queens');
+select ok(exists (
+  select 1 from pg_indexes
+  where schemaname = 'private' and tablename = 'queens_placement_events'
+    and indexdef like '%(attempt_id, challenge_item_id, sequence)%'
+), 'La restricción UNIQUE conserva la cobertura por intento/item/secuencia de Queens');
 select ok((select relrowsecurity from pg_class where oid = 'private.queens_placement_events'::regclass), 'RLS está habilitado para los eventos Queens');
 select ok(not has_table_privilege('service_role', 'private.queens_placement_events', 'SELECT'), 'service_role no lee los eventos Queens directamente');
 

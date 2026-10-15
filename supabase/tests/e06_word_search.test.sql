@@ -32,7 +32,11 @@ select throws_ok($$
     )))
 $$, '22023', 'incomplete_content', 'El documento no válido no llega a publicar un payload con posiciones');
 
-select is(to_regclass('private.word_search_selection_events_item_idx')::text, 'private.word_search_selection_events_item_idx', 'Existe el índice de eventos Word-search');
+select ok(exists (
+  select 1 from pg_indexes
+  where schemaname = 'private' and tablename = 'word_search_selection_events'
+    and indexdef like '%(attempt_id, challenge_item_id, sequence)%'
+), 'La restricción UNIQUE conserva la cobertura por intento/item/secuencia de Word-search');
 select ok((select relrowsecurity from pg_class where oid = 'private.word_search_selection_events'::regclass), 'RLS está habilitado para Word-search');
 select ok(not has_table_privilege('service_role', 'private.word_search_selection_events', 'SELECT'), 'service_role no lee eventos Word-search directamente');
 
