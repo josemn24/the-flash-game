@@ -161,6 +161,9 @@ isOneToOne: false
 "create_superadmin_season":
 { Args: { "input": Json }; Returns: Json
                            },
+"expire_stale_attempts":
+{ Args: { "input": Json }; Returns: Json
+                           },
 "get_challenge_ranking":
 { Args: { "target_publication_id": string }; Returns: {
               "avatar_path": string,"display_name": string,"duration_ms": number,"flash_points": number,"last_correct_elapsed_ms": number,"player_id": string,"position": number,"solved_count": number
@@ -323,6 +326,9 @@ isOneToOne: false
 { Args: { "input": Json }; Returns: Json
                            },
 "publish_superadmin_question":
+{ Args: { "input": Json }; Returns: Json
+                           },
+"run_calendar_tick":
 { Args: { "input": Json }; Returns: Json
                            },
 "update_superadmin_flash_draft":

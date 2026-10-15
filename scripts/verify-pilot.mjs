@@ -15,7 +15,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261014200324_authoritative_completion_score",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261014203717_maintenance_rpc",
 };
 
 async function run(label, command, args, options = {}) {
@@ -62,6 +62,13 @@ try {
   await run("schema-security", "npm", ["run", "supabase:schema:test"]);
   await run("schema-migrations", "npm", ["run", "supabase:schema:test", "--", "--migrations"]);
   await run("schema-reconciliation", "npm", ["run", "supabase:schema:reconciliation:test"]);
+  await run("maintenance-rpc-schema", "npm", ["run", "test:integration:maintenance-rpc"]);
+  await run("maintenance-rpc-migrations", "npm", [
+    "run",
+    "test:integration:maintenance-rpc",
+    "--",
+    "--migrations",
+  ]);
   await run("dictionary-load", "npm", ["run", "supabase:dictionary:load"]);
   await run("unit-tests", "npm", ["test"], {
     env: { ...pilotEnv, FLASH_RUNTIME_SCOPE: "test" },

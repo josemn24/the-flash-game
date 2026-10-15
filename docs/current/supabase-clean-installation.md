@@ -28,7 +28,15 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261014200324_authoritative_completion_score`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
+La revisión esperada es `20261014203717_maintenance_rpc`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
+
+Calendario y expiración independiente usan las RPC `run_calendar_tick` y `expire_stale_attempts`,
+exclusivas de `service_role`, con `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en
+servidor y sin cookies. Aplicar la migración antes de desplegar la app; su notificación recarga
+la caché de PostgREST. La expiración conserva un límite SQL de cinco segundos; el tick usa
+`statement_timeout = 0` y `lock_timeout = 0`, sujeto a los límites HTTP del proveedor. `SUPABASE_DB_URL` sigue siendo
+necesaria para comandos de juego y otros adaptadores. El workflow de [base de datos](../../supabase/README.md)
+describe validación y reversión.
 
 ## Herramientas y garantías
 
@@ -298,7 +306,7 @@ y reactivarla tras las comprobaciones.
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261014200324_authoritative_completion_score`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION=20261014203717_maintenance_rpc`. El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 

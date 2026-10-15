@@ -24,7 +24,7 @@ de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/READ
 
 El historial activo comienza con `20261011180045_initial_schema.sql`, un baseline generado desde los
 82 archivos declarativos, y continúa con las migraciones incrementales. La revisión más reciente es
-`20261014200324_authoritative_completion_score`; las migraciones anteriores al baseline permanecen en Git,
+`20261014203717_maintenance_rpc`; las migraciones anteriores al baseline permanecen en Git,
 pero no forman parte del historial activo.
 
 La migración de longitud de Alfabeto añade una lectura privada para el servidor. La API de preparación
@@ -33,6 +33,25 @@ expone solo `answerLength`, fuera del payload almacenado; no cambia las solucion
 La migración de [total autoritativo](../docs/current/attempt-lifecycle.md#total-autoritativo-al-completar)
 hace que `complete_attempt` sume las respuestas aceptadas en los seis modos. Su JSON privado
 rechaza `score`; debe aplicarse antes de servir la nueva versión de la app.
+
+La migración [maintenance_rpc](migrations/20261014203717_maintenance_rpc.sql) añade
+`public.run_calendar_tick(jsonb)` y `public.expire_stale_attempts(jsonb)`, con ejecución
+exclusiva de `service_role`. Los adaptadores usan `NEXT_PUBLIC_SUPABASE_URL` y
+`SUPABASE_SERVICE_ROLE_KEY` mediante un cliente sin sesión de usuario. La clave de servicio
+permanece en servidor; `private` sigue fuera de la Data API y los comandos de juego conservan `pg`.
+El tick usa `statement_timeout = 0` y `lock_timeout = 0` para evitar los límites heredados
+de `authenticator`; la expiración independiente mantiene
+cinco segundos, incluida la espera por bloqueos. Los límites HTTP del proveedor siguen vigentes.
+
+Aplicar primero la migración, que notifica la recarga de la caché de PostgREST, y después
+desplegar la aplicación. Las funciones privadas se conservan para permitir volver al adaptador
+anterior sin revertir el esquema. No hay reintentos ni fallback automático a PostgreSQL directo.
+La comprobación de salud exige las dos RPC y la nueva revisión canónica.
+
+`npm run test:integration:maintenance-rpc` ejecuta S12 y verifica permisos, expiración,
+timeouts de bloqueo y rollback de auditoría en una base y un proceso PostgREST desechables.
+Usar `-- --migrations` para probar el historial en lugar del esquema declarativo. Requiere
+Supabase local iniciado; el runner no ejecuta el tick sobre la base de la aplicación.
 
 La [validación SQL por formato](../docs/current/sql-question-validation-refactor.md) documenta
 los helpers privados, las pruebas de compatibilidad y la reversión del último refactor.

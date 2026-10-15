@@ -807,6 +807,18 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "public.expire_stale_attempts": {
+      "arguments": "input jsonb",
+      "securityDefiner": false,
+      "volatility": "v",
+      "executeRoles": ["service_role"]
+    },
+    "public.run_calendar_tick": {
+      "arguments": "input jsonb",
+      "securityDefiner": false,
+      "volatility": "v",
+      "executeRoles": ["service_role"]
+    },
     "public.get_challenge_ranking": {
       "arguments": "target_publication_id uuid",
       "securityDefiner": true,

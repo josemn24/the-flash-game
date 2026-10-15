@@ -1,4 +1,5 @@
-import { dockerSql, rpc } from "../../support/supabase-local.mjs";
+import { createClient } from "@supabase/supabase-js";
+import { rpc } from "../../support/supabase-local.mjs";
 
 export const scenario = {
   id: "s12",
@@ -17,7 +18,7 @@ export const scenario = {
     });
     assert(
       !nowOpen.error && nowOpen.data?.status === "scheduled",
-      "El superadmin programa una publicación",
+      `El superadmin programa una publicación: ${nowOpen.error?.message ?? nowOpen.data?.status}`,
     );
     const repeated = await clients.superadmin.rpc("create_superadmin_scheduled_challenge", {
       input: {
@@ -56,8 +57,28 @@ export const scenario = {
       "El superadmin ve el contexto de calendario",
     );
 
-    const tickSql = `set role service_role; select private.run_calendar_tick_command(jsonb_build_object('runId','integration-s12-tick'));`;
-    await dockerSql(tickSql, config.dbContainer);
+    const options = {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    };
+    const service = createClient(config.url, config.serviceRoleKey, options);
+    const anon = createClient(config.url, config.publishableKey, options);
+    for (const client of [anon, clients.superadmin, clients.owner, clients.member]) {
+      for (const name of ["run_calendar_tick", "expire_stale_attempts"]) {
+        const denied = await client.rpc(name, { input: { runId: "integration-s12-denied" } });
+        assert(Boolean(denied.error) && denied.data === null, `${name} solo acepta service_role`);
+      }
+    }
+    const tick = await service.rpc("run_calendar_tick", {
+      input: { runId: "integration-s12-tick" },
+    });
+    assert(!tick.error && tick.data?.opened === 1, "La RPC abre la publicación programada");
+    const repeatedTick = await service.rpc("run_calendar_tick", {
+      input: { runId: "integration-s12-repeat" },
+    });
+    assert(
+      !repeatedTick.error && repeatedTick.data?.opened === 0,
+      "Repetir el tick no duplica aperturas",
+    );
     const calendar = await rpc(clients.member, "get_room_calendar", {
       target_room_slug: fixture.data.roomSlug,
     });

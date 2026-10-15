@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261014200324_authoritative_completion_score";
+const canonicalSchemaRevision = "20261014203717_maintenance_rpc";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -75,6 +75,8 @@ async function checkDatabase() {
         and to_regprocedure('private.read_recorded_evaluation(uuid,text)') is not null
         and to_regprocedure('private.read_completed_attempt(uuid)') is not null
         and to_regprocedure('private.read_abandoned_attempt(uuid)') is not null
+        and to_regprocedure('public.run_calendar_tick(jsonb)') is not null
+        and to_regprocedure('public.expire_stale_attempts(jsonb)') is not null
         and to_regprocedure('private.authorize_attempt_replay(uuid,text)') is not null
         and to_regprocedure('public.get_my_competitive_challenge(text,uuid)') is not null
           and to_regprocedure('private.prepare_interaction(jsonb)') is not null

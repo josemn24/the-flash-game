@@ -20,6 +20,7 @@
     "sbr:asset:generate": "node scripts/generate-sbr-assets.mjs",
     "supabase:browser:setup": "node scripts/seed-browser.mjs",
     "test:integration:supabase": "node scripts/supabase-integration.mjs",
+    "test:integration:maintenance-rpc": "node scripts/test-maintenance-rpc.mjs",
     "calendar:tick": "node scripts/calendar-tick.mjs",
     "calendar:tick:watch": "node scripts/calendar-tick-watch.mjs",
     "supabase:migration:up": "supabase migration up",

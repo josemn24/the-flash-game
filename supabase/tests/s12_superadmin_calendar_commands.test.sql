@@ -14,7 +14,7 @@ select ok(has_function_privilege('authenticated', 'public.update_superadmin_sche
 select ok(has_function_privilege('authenticated', 'public.cancel_superadmin_scheduled_challenge(jsonb)', 'EXECUTE'),
   'Authenticated can cancel scheduled challenges through the portal boundary');
 select ok(has_function_privilege('service_role', 'private.run_calendar_tick_command(jsonb)', 'EXECUTE'),
-  'Only the local service role can execute the calendar tick');
+  'Only the service role can execute the calendar tick');
 select ok(not has_function_privilege('anon', 'public.create_superadmin_scheduled_challenge(jsonb)', 'EXECUTE'),
   'Anonymous users cannot schedule challenges');
 select ok(not has_function_privilege('anon', 'public.cancel_superadmin_scheduled_challenge(jsonb)', 'EXECUTE'),
@@ -209,11 +209,11 @@ select throws_ok($$select public.cancel_superadmin_scheduled_challenge(jsonb_bui
 
 reset role;
 set local role service_role;
-select is((private.run_calendar_tick_command(jsonb_build_object('runId', 's12-tick-open-01'))->>'opened')::integer, 1,
+select is((public.run_calendar_tick(jsonb_build_object('runId', 's12-tick-open-01'))->>'opened')::integer, 1,
   'The tick opens a schedule at its inclusive opening boundary');
 select is((select status from public.scheduled_challenges where id = current_setting('s12.schedule_id')::uuid), 'open',
   'An eligible schedule becomes open');
-select is((private.run_calendar_tick_command(jsonb_build_object('runId', 's12-tick-open-02'))->>'opened')::integer, 0,
+select is((public.run_calendar_tick(jsonb_build_object('runId', 's12-tick-open-02'))->>'opened')::integer, 0,
   'A repeated tick is idempotent for already open schedules');
 select is((select count(*) from private.audit_log where entity_id = current_setting('s12.schedule_id')::uuid and action = 'open_scheduled_challenge'), 1::bigint,
   'A repeated tick does not duplicate opening audit');
@@ -276,13 +276,13 @@ insert into public.scheduled_challenges(id, season_id, challenge_version_id, num
 values (test_support.id('s12-close-schedule'), test_support.id('s12-close-season'), test_support.id('s12-cv'), 1, 'scheduled', now() - interval '2 hours', now() - interval '1 minute', now());
 select set_config('s12.results_locked_at', (select results_locked_at::text from public.scheduled_challenges where id = test_support.id('s12-close-schedule')), true);
 set local role service_role;
-select is((private.run_calendar_tick_command(jsonb_build_object('runId', 's12-tick-close-01'))->>'closed')::integer, 1,
+select is((public.run_calendar_tick(jsonb_build_object('runId', 's12-tick-close-01'))->>'closed')::integer, 1,
   'A delayed tick closes an expired scheduled publication');
 select is((select status from public.scheduled_challenges where id = test_support.id('s12-close-schedule')), 'closed',
   'Expired schedules are closed rather than cancelled');
 select is((select results_locked_at::text from public.scheduled_challenges where id = test_support.id('s12-close-schedule')), current_setting('s12.results_locked_at'),
   'The tick leaves results_locked_at unchanged');
-select is((private.run_calendar_tick_command(jsonb_build_object('runId', 's12-tick-close-02'))->>'closed')::integer, 0,
+select is((public.run_calendar_tick(jsonb_build_object('runId', 's12-tick-close-02'))->>'closed')::integer, 0,
   'A repeated close tick is idempotent');
 reset role;
 

@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
 Estado: el esquema declarativo vigente se compone de 83 archivos. La revisión más reciente aplicada
-es `20261014200324_authoritative_completion_score`; el historial activo empieza con el baseline
+es `20261014203717_maintenance_rpc`; el historial activo empieza con el baseline
 `20261011180045_initial_schema` y continúa con migraciones incrementales. Las migraciones anteriores
 al baseline permanecen en Git, fuera del historial activo. La validación local corresponde a
 PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP, la conformidad y la concurrencia
@@ -92,8 +92,9 @@ el comportamiento provisional del mock.
 - `players.id` es una identidad propia, distinta del UUID de Auth. La identidad del actor se resuelve
   desde claims verificados por servidor y la asignación de superadmin desde la base de datos.
   Ningún comando de jugador acepta `playerId`, evaluación ni fechas autoritativas.
-- `private` permanece fuera de los schemas de Data API. Los comandos necesitan una conexión
-  PostgreSQL de servidor. `service_role` tiene lecturas internas y EXECUTE explícito, **sin DML
+- `private` permanece fuera de los schemas de Data API. Los comandos de juego necesitan una conexión
+  PostgreSQL de servidor; calendario y expiración independiente usan RPC exclusivas de `service_role`.
+  `service_role` tiene lecturas internas y EXECUTE explícito, **sin DML
   directo en ninguna tabla del dominio**. No se utiliza la credencial propietaria `postgres` en el
   adaptador. Los comandos se ejecutan como `SECURITY DEFINER`, propietario `postgres`, con
   `search_path = ''` y nombres cualificados.
@@ -195,7 +196,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [90_commands.sql](90_commands.sql)                                               | Validación de comandos, idempotencia, despacho, auditoría y wrappers server-only.                                                                               |
 | [91_attempt_recovery.sql](91_attempt_recovery.sql)                               | Contexto privado del evaluador y operaciones de recuperación/lectura de intentos.                                                                               |
 | [91_room_membership_commands.sql](91_room_membership_commands.sql)               | Gestión autenticada de roles y estado de membresías por el propietario, con idempotencia y auditoría.                                                           |
-| [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)                             | ACL explícita para el tick interno; `service_role` no recibe DML de tablas.                                                                                     |
+| [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)                             | RPC invoker de calendario y expiración, límites SQL y ACL exclusivas de `service_role`, sin DML de tablas.                                                      |
 | [92_mini_wordle_commands.sql](92_mini_wordle_commands.sql)                       | Comando transaccional de guess, idempotencia, secuencia, recepción terminal y evaluación posterior.                                                             |
 | [93_logic_code.sql](93_logic_code.sql)                                           | Eventos privados, progreso seguro y comando transaccional de intentos Logic-code.                                                                               |
 | [89_progressive_clues.sql](89_progressive_clues.sql)                             | Eventos privados, metadatos/prefijo seguro y cálculo de penalización de Progressive-clues.                                                                      |
@@ -272,8 +273,13 @@ No hay un proceso automático de timeout o recuperación de evaluaciones en este
 | `invalidate_attempt`, `adjust_result`                                                        | Superadmin activo, motivo y versión; saldo y auditoría atómicos.                                                                                          |
 | `create_superadmin_flash_draft`, `update_superadmin_flash_draft`, `publish_superadmin_flash` | Solo superadmin; grafo versionado, solución privada, locks, concurrencia optimista, publicación atómica y auditoría segura.                               |
 
-El dispatcher genérico y sus helpers no tienen EXECUTE para los roles API. No hay RPC de escritura
-pública. Los errores de versión/idempotencia usan SQLSTATE `40001`; autorización `42501`, input
+El dispatcher genérico y sus helpers no tienen EXECUTE para los roles API. Las RPC
+`public.run_calendar_tick(jsonb)` y `public.expire_stale_attempts(jsonb)` solo son ejecutables
+por `service_role`; sus envoltorios invoker delegan en las funciones privadas existentes.
+PostgREST aplica `statement_timeout = 0` al tick y `5s` a la expiración independiente; el envoltorio
+del tick fija también `lock_timeout = 0` para evitar el límite heredado de `authenticator`, sin cambiar
+la llamada privada de expiración del tick o de los comandos de juego.
+Los errores de versión/idempotencia usan SQLSTATE `40001`; autorización `42501`, input
 `22023` y estado incompatible `55000`. El adaptador mapeará también errores estructurales de
 constraints/triggers y reintentará transacciones completas cuando proceda, conservando la clave.
 

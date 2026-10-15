@@ -62,6 +62,8 @@ describe("readPrivateHealth", () => {
     expect(markerQuery).toContain("member_previews jsonb");
     expect(markerQuery).toContain("private.prepare_attempt_session(uuid)");
     expect(markerQuery).toContain("private.read_completed_attempt(uuid)");
+    expect(markerQuery).toContain("public.run_calendar_tick(jsonb)");
+    expect(markerQuery).toContain("public.expire_stale_attempts(jsonb)");
     expect(markerQuery).toContain("private.read_recorded_evaluation(uuid,text)");
     expect(markerQuery).toContain("private.read_avatar_upload_confirmation(jsonb)");
     expect(markerQuery).toContain("private.claim_archived_avatar_cleanup(jsonb)");
