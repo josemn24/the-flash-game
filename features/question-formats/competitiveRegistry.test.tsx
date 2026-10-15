@@ -12,7 +12,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { CompetitiveAdapterKey } from "./capabilities";
-import { COMPETITIVE_INPUT_RENDERERS } from "./competitiveInputRegistry";
+import { CompetitiveQuestionInput } from "./competitiveInputRegistry";
 import type { CompetitiveInputProps } from "./competitiveInputTypes";
 import { reviewQuestion } from "./reviewRegistry";
 
@@ -74,7 +74,7 @@ describe("competitive registries execute their declared implementations", () => 
       onRevealProgressiveClue: callback,
       onTimeUp: callback,
     };
-    const Renderer = COMPETITIVE_INPUT_RENDERERS[type];
+    const Renderer = CompetitiveQuestionInput;
     const markup = renderToStaticMarkup(createElement(Renderer, props));
     expect(markup).toMatch(/<(button|input|select|textarea)\b/);
     expect(() =>

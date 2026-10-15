@@ -1,23 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
 import { GameApp } from "@/components/game/shells/GameApp";
-import { CompetitiveResultScreen } from "@/components/game/shared";
 import { ArrowIcon, ButtonLink, Canvas, Card, TrophyIcon } from "@/components/ui";
-import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
-import { isTerminalCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
-import type { Challenge, ChallengeCompletionResult } from "@/types/gameplay";
-import type { GameRoomContext } from "@/types/view-models/room";
-import type {
-  ServerAlphabetChallenge,
-  ServerFlashChallenge,
-  ServerFlashTerminalReview,
-  ServerNarrativeChallenge,
-  ServerSurvivalChallenge,
-  ServerPyramidChallenge,
-  ServerTimeTrialChallenge,
-} from "@/types/gameplay/challenge";
-import type { FlashPopSocialSnapshot, GameplayPersistence } from "@/types/view-models";
+import type { GameRoomContext, CompetitiveChallengePageModel } from "@/types/view-models";
 
 function TerminalCompetitiveChallenge({
   roomContext,
@@ -90,124 +75,26 @@ export function RoomChallengeClient({
   challenge,
   roomContext,
   socialSnapshot,
-  persistence: persistenceProp,
   terminalReview,
-}: {
-  challenge:
-    | Challenge
-    | ServerFlashChallenge
-    | ServerAlphabetChallenge
-    | ServerSurvivalChallenge
-    | ServerPyramidChallenge
-    | ServerTimeTrialChallenge
-    | ServerNarrativeChallenge;
-  roomContext?: GameRoomContext;
-  socialSnapshot: FlashPopSocialSnapshot;
-  persistence?: GameplayPersistence;
-  terminalReview?: readonly ServerFlashTerminalReview[];
-}) {
-  const persistence = resolveGameplayPersistence(roomContext, persistenceProp);
-  const { recordCompletion, getCompletion } = useRoomSession();
-  // Server-backed competitive sessions must never be shadowed by the
-  // client-only demo store. The provider remains available for explicit
-  // practice/preview routes, but it is not part of the pilot data path.
-  const localCompletion =
-    persistence === "mock" && roomContext
-      ? getCompletion(roomContext.roomId, challenge.id)
-      : undefined;
-  const attemptStatus = localCompletion
-    ? localCompletion.completed
-      ? "completed"
-      : "notCompleted"
-    : roomContext?.attemptStatus;
-  const [hasActiveGame] = useState(
-    () =>
-      !roomContext ||
-      (!localCompletion && !isTerminalCompetitiveAttemptStatus(roomContext.attemptStatus)),
-  );
-  const onComplete = useCallback(
-    (result: ChallengeCompletionResult) => {
-      if (!roomContext || persistence !== "mock") return;
-      recordCompletion({ ...result, roomId: roomContext.roomId });
-    },
-    [persistence, recordCompletion, roomContext],
-  );
-
-  if (
-    roomContext &&
-    !localCompletion &&
-    attemptStatus === "available" &&
-    roomContext.availabilityStatus !== "available"
-  ) {
+}: Omit<CompetitiveChallengePageModel, "gameplayPersistence">) {
+  if (roomContext.attemptStatus === "available" && roomContext.availabilityStatus !== "available") {
     return <UnavailableCompetitiveChallenge roomContext={roomContext} />;
   }
-
   if (
-    persistence === "server" &&
-    roomContext &&
-    (!attemptStatus || !isTerminalCompetitiveAttemptStatus(attemptStatus))
+    roomContext.attemptStatus === "notCompleted" ||
+    (roomContext.attemptStatus === "completed" && !roomContext.result)
   ) {
     return (
-      <GameApp
-        challenge={challenge}
-        roomContext={roomContext}
-        socialSnapshot={socialSnapshot}
-        persistence="server"
-      />
+      <TerminalCompetitiveChallenge roomContext={roomContext} status={roomContext.attemptStatus} />
     );
   }
-
-  if (
-    persistence === "server" &&
-    roomContext &&
-    ("slots" in challenge || "entries" in challenge || "levels" in challenge) &&
-    attemptStatus === "completed" &&
-    roomContext.result
-  ) {
-    return (
-      <GameApp
-        challenge={challenge}
-        roomContext={roomContext}
-        socialSnapshot={socialSnapshot}
-        persistence="server"
-        terminalReview={terminalReview}
-      />
-    );
-  }
-
-  if (
-    roomContext &&
-    attemptStatus &&
-    isTerminalCompetitiveAttemptStatus(attemptStatus) &&
-    (!hasActiveGame || (persistence === "server" && attemptStatus === "notCompleted"))
-  ) {
-    const result = localCompletion ?? roomContext.result;
-    if (attemptStatus === "completed" && result) {
-      return (
-        <CompetitiveResultScreen
-          challenge={challenge as Challenge}
-          result={result}
-          returnTo={roomContext.returnTo}
-        />
-      );
-    }
-    return <TerminalCompetitiveChallenge roomContext={roomContext} status={attemptStatus} />;
-  }
-
   return (
     <GameApp
-      challenge={challenge as Challenge}
+      persistence="server"
+      challenge={challenge}
       roomContext={roomContext}
       socialSnapshot={socialSnapshot}
-      persistence={persistence}
-      onComplete={roomContext ? onComplete : undefined}
+      terminalReview={terminalReview}
     />
   );
-}
-
-export function resolveGameplayPersistence(
-  roomContext: GameRoomContext | undefined,
-  persistenceProp: GameplayPersistence | undefined,
-): GameplayPersistence {
-  return roomContext ? "server" : (persistenceProp ?? "mock");
 }

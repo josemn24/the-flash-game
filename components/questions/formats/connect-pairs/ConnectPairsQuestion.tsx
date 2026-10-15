@@ -450,9 +450,7 @@ export function ConnectPairsQuestion({
         </button>
       </div>
 
-      <p className={styles.instructions}>
-        Une los puntos iguales. No cruces ni compartas celdas;
-      </p>
+      <p className={styles.instructions}>Une los puntos iguales. No cruces ni compartas celdas;</p>
       <p className={styles.statusText} role="status" aria-live="polite">
         {announcement}
       </p>

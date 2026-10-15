@@ -90,8 +90,7 @@ export function ServerLogicCodeQuestion({
 
   const statusText =
     submissionState === "idle"
-      ? (submissionError ?? feedback) ||
-        "Cada intento incorrecto reduce la puntuación"
+      ? (submissionError ?? feedback) || "Cada intento incorrecto reduce la puntuación"
       : "";
 
   return (

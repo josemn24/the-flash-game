@@ -1,12 +1,7 @@
 import type { AnswerResult } from "@/types/gameplay/result";
 import type {
-  ServerAlphabetChallenge,
-  ServerTimeTrialChallenge,
-  ServerFlashChallenge,
-  ServerNarrativeChallenge,
+  CompetitiveChallenge,
   ServerNarrativeStep,
-  ServerPyramidChallenge,
-  ServerSurvivalChallenge,
   ServerFlashTerminalReview,
 } from "@/types/gameplay/challenge";
 import type { SessionPhase, SessionReview, SessionState } from "../core/sessionReducer";
@@ -24,13 +19,7 @@ import { narrativePolicy } from "./narrative";
 import { timeTrialPolicy } from "./timeTrial";
 import { alphabetPolicy } from "./alphabet";
 
-export type CompetitiveChallenge =
-  | ServerFlashChallenge
-  | ServerSurvivalChallenge
-  | ServerPyramidChallenge
-  | ServerNarrativeChallenge
-  | ServerAlphabetChallenge
-  | ServerTimeTrialChallenge;
+export type { CompetitiveChallenge } from "@/types/gameplay/challenge";
 export type ModeStep =
   | { type: "prepare" }
   | { type: "complete" }

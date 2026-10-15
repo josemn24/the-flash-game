@@ -1,7 +1,10 @@
 "use client";
 import type { CompetitiveQuestionType } from "@/lib/question-formats/definitions";
 import type { ReactNode } from "react";
-import type { CompetitiveInputProps } from "./competitiveInputTypes";
+import type {
+  CompetitiveInputProps,
+  MiniWordleCompetitiveInputProps,
+} from "./competitiveInputTypes";
 import { render as anagramInput } from "./formats/anagram/input";
 import { render as classificationInput } from "./formats/classification/input";
 import { render as connectPairsInput } from "./formats/connect-pairs/input";
@@ -45,8 +48,27 @@ export const COMPETITIVE_INPUT_RENDERERS = {
   "heat-map": heatMapInput,
   "multiple-choice": multipleChoiceInput,
   "short-text": shortTextInput,
-} satisfies Record<CompetitiveQuestionType, (props: CompetitiveInputProps) => ReactNode>;
+} satisfies {
+  [Format in CompetitiveQuestionType]: (
+    props: Format extends "mini-wordle" ? MiniWordleCompetitiveInputProps : CompetitiveInputProps,
+  ) => ReactNode;
+};
 export function CompetitiveQuestionInput(props: CompetitiveInputProps) {
-  const Renderer = COMPETITIVE_INPUT_RENDERERS[props.question.type];
+  const { question } = props;
+  if (question.type === "mini-wordle") {
+    const Renderer = COMPETITIVE_INPUT_RENDERERS["mini-wordle"];
+    return (
+      <Renderer
+        question={question}
+        locked={props.locked}
+        submissionState={props.submissionState}
+        submissionStatusVisible={props.submissionStatusVisible}
+        submissionError={props.submissionError}
+        onRetrySubmission={props.onRetrySubmission}
+        onMiniWordleGuess={props.onMiniWordleGuess}
+      />
+    );
+  }
+  const Renderer = COMPETITIVE_INPUT_RENDERERS[question.type];
   return <Renderer {...props} />;
 }

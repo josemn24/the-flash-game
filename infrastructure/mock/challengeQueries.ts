@@ -1,4 +1,4 @@
-import type { CompetitiveChallengeQueries, DemoChallengeQueries } from "@/application/queries";
+import type { DemoChallengeQueries } from "@/application/queries";
 import { projectLegacyAttempt } from "@/data/mock/compat/legacyAdapters";
 import { getCompetitiveAttemptStatus } from "@/lib/rooms/competitiveAttemptStatus";
 import { initials } from "@/lib/roomPresentation";
@@ -207,7 +207,8 @@ export class MockDemoChallengeQueries implements DemoChallengeQueries {
   }
 }
 
-export class MockCompetitiveChallengeQueries implements CompetitiveChallengeQueries {
+// Local prototype projections contain solutions and are not a production competitive port.
+export class MockCompetitiveChallengeQueries {
   constructor(private readonly delegate: MockChallengeReadProjection) {}
 
   getPlayable(roomKey: string, challengeKey: string, context: QueryContext) {

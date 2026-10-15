@@ -622,6 +622,14 @@ export type NarrativeChallenge = ChallengeBase & {
   beats: NarrativeBeat[];
 };
 
+export type CompetitiveChallenge =
+  | ServerFlashChallenge
+  | ServerAlphabetChallenge
+  | ServerSurvivalChallenge
+  | ServerPyramidChallenge
+  | ServerNarrativeChallenge
+  | ServerTimeTrialChallenge;
+
 /**
  * @deprecated Contrato gameplay completo del prototipo. En código nuevo combina
  * `ChallengeVersion`, `ChallengeItem` y `PublicQuestion`.

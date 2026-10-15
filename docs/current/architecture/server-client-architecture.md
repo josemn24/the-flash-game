@@ -347,10 +347,16 @@ Gameplay must prioritize minimal latency, continuity, and immediate responses.
 ```text
 app/desafios/[challengeId]/page.tsx  Server Component, dynamic
 └── RoomChallengeClient.client
-    └── GameApp                  Client mode dispatcher
-        ├── Flash Pop Flash / Alphabet / Survival / Pyramid
-        └── NarrativeGameApp.client
+    └── GameApp                  Explicit server/mock dispatcher
+        └── CompetitiveGameApp
+            ├── Server Flash / Alphabet / Survival / Pyramid / TimeTrial
+            └── ServerNarrativeGame.client
 ```
+
+`RoomChallengeClient` only accepts competitive projections and a required room context.
+Local demo composition uses the separate `MockGameApp` branch. The discriminated props reject
+local challenges in the competitive branch and competitive contexts in the local branch.
+The shared `CompetitiveChallenge` type lives in `types/gameplay/challenge.ts`.
 
 The server route:
 

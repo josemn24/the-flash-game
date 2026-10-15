@@ -1,14 +1,5 @@
 import type { PlayerId, UtcIsoDateTime } from "@/types/domain";
-import type {
-  Challenge,
-  ServerAlphabetChallenge,
-  ServerFlashChallenge,
-  ServerFlashTerminalReview,
-  ServerNarrativeChallenge,
-  ServerPyramidChallenge,
-  ServerSurvivalChallenge,
-  ServerTimeTrialChallenge,
-} from "@/types/gameplay";
+import type { Challenge, CompetitiveChallenge, ServerFlashTerminalReview } from "@/types/gameplay";
 import type {
   GameRoomContext,
   RoomCardModel,
@@ -101,17 +92,10 @@ export type PlayableChallengePageModel = {
 };
 
 export type CompetitiveChallengePageModel = {
-  readonly challenge:
-    | Challenge
-    | ServerFlashChallenge
-    | ServerAlphabetChallenge
-    | ServerSurvivalChallenge
-    | ServerPyramidChallenge
-    | ServerNarrativeChallenge
-    | ServerTimeTrialChallenge;
-  readonly roomContext?: GameRoomContext;
+  readonly challenge: CompetitiveChallenge;
+  readonly roomContext: GameRoomContext;
   readonly socialSnapshot: FlashPopSocialSnapshot;
-  readonly gameplayPersistence?: "mock" | "server";
+  readonly gameplayPersistence: "server";
   readonly terminalReview?: readonly ServerFlashTerminalReview[];
 };
 

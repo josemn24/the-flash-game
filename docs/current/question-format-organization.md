@@ -38,6 +38,24 @@ cumplen `QuestionFormatGuide<T>`, definido en `catalogTypes.ts`. `catalog.ts` co
 en su orden existente y conserva `QUESTION_FORMAT_CATALOG`, `questionFormats` y la consulta por slug.
 Las políticas de puntuación continúan referenciándose desde `scoringPolicies.ts`.
 
+## Composición de partidas y Mini-Wordle
+
+`GameApp` exige persistencia explícita y delega en `CompetitiveGameApp` o `MockGameApp`.
+La rama competitiva recibe el tipo compartido `CompetitiveChallenge`, contexto de sala obligatorio
+y revisión terminal opcional; la rama local conserva sus callbacks y no admite contexto competitivo.
+`CompetitiveChallengePageModel` solo representa proyecciones públicas de servidor. Los lectores
+mock que conservan soluciones son contratos locales y no implementan el puerto competitivo.
+
+`MiniWordleQuestion` y `ServerMiniWordleQuestion` mantienen sus exports y adaptan sus controladores
+a `MiniWordleView`, que comparte tablero y formulario sin recibir soluciones ni diccionarios.
+`usePracticeMiniWordle` coordina carga/reintento del diccionario y evaluación local; competición
+consume el progreso autorizado del motor existente. Cada adaptador conserva la limpieza del input
+y el foco de su recorrido. El temporizador de práctica empieza una vez, al cargar el diccionario.
+
+El registro competitivo estrecha Mini-Wordle antes de construir su contrato específico. Sus props
+solo incluyen pregunta pública, bloqueo, envío de palabra y estado/reintento de esa operación.
+Los demás formatos conservan temporalmente el contrato general para su migración posterior.
+
 ## Editor administrativo
 
 `EditorialManagement.client.tsx` conserva el estado del texto JSON, el documento validado derivado,

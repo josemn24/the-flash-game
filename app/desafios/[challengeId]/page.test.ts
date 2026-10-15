@@ -1,6 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { mockCompetitiveChallengeQueries } from "@/infrastructure/mock/composition";
-import { mockQueryContext } from "@/test-utils/mockRoom";
+import { competitivePageModel } from "@/test-utils/competitiveGameplay";
 
 const mocks = vi.hoisted(() => ({
   getPlayableChallengePageModel: vi.fn(),
@@ -20,13 +19,14 @@ vi.mock("next/navigation", () => ({
 
 describe("challenge route room context", () => {
   it("passes Tabarnia context to the canonical challenge route", async () => {
-    mocks.getPlayableChallengePageModel.mockResolvedValue(
-      await mockCompetitiveChallengeQueries.getPlayable(
-        "tabarnia-room",
-        "tabarnia-challenge-05",
-        await mockQueryContext(),
-      ),
-    );
+    mocks.getPlayableChallengePageModel.mockResolvedValue({
+      ...competitivePageModel,
+      roomContext: {
+        ...competitivePageModel.roomContext,
+        attemptStatus: "completed",
+        result: { flashPoints: 80, completed: true },
+      },
+    });
     const element = await ChallengePage({
       params: Promise.resolve({ challengeId: "tabarnia-challenge-05" }),
       searchParams: Promise.resolve({ roomId: "tabarnia-room" }),

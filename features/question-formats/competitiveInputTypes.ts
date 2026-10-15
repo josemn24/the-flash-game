@@ -1,5 +1,16 @@
 import type { AnswerValue } from "@/types/contracts";
-import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
+import type { ServerFlashQuestion, ServerMiniWordleQuestion } from "@/types/gameplay/challenge";
+
+export type MiniWordleCompetitiveInputProps = {
+  readonly question: ServerMiniWordleQuestion;
+  readonly locked: boolean;
+  readonly submissionState: "idle" | "submitting" | "error";
+  readonly submissionStatusVisible: boolean;
+  readonly submissionError?: string;
+  readonly onRetrySubmission?: () => void;
+  readonly onMiniWordleGuess: (guess: string) => void;
+};
+
 export type CompetitiveInputProps = {
   readonly question: ServerFlashQuestion;
   readonly questionNumber: number;
