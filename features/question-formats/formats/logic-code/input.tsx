@@ -1,7 +1,7 @@
 "use client";
 import { ServerLogicCodeQuestion } from "@/components/questions/formats/logic-code/ServerLogicCodeQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"logic-code">) {
   const {
     locked,
     submissionState,
@@ -10,10 +10,7 @@ export function render(props: CompetitiveInputProps) {
     onRetrySubmission,
     onLogicCodeAttempt,
   } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "logic-code" }
-  >;
+  const { question } = props;
   return (
     <ServerLogicCodeQuestion
       clues={question.clues}

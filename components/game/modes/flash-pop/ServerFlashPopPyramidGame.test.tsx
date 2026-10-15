@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ServerFlashPopPyramidGame } from "./ServerFlashPopPyramidGame.client";
+import { createCompetitiveInput } from "@/features/question-formats/createCompetitiveInput";
+import { competitiveInputSource } from "@/test-utils/competitiveInput";
 import { initialSessionState } from "@/features/game/competitive/core/sessionReducer";
 import { questionFromPayload } from "@/features/game/serverFlashQuestionAdapter";
 import type { GameRoomContext } from "@/types/view-models/room";
@@ -78,6 +80,7 @@ describe("Pyramid question loading", () => {
     useSession.mockReturnValue({
       ...initialSessionState("playing"),
       question,
+      questionInput: createCompetitiveInput(competitiveInputSource({ question })),
       questionPresentedAt: Date.now(),
       questionDeadlineAt: Date.now() + 30_000,
       retryLifecycle: vi.fn(),

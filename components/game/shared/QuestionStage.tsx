@@ -6,8 +6,8 @@ import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
 import { Timer } from "@/components/ui";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import { useQuestionStageTimer } from "@/features/game/useQuestionStageTimer";
-import type { AnswerValue } from "@/types/contracts";
-import type { PracticeQuestion } from "@/types/gameplay/practice";
+import type { PracticeInput } from "@/features/question-formats/practiceInputTypes";
+import { withPracticeTimedResponseStart } from "@/features/question-formats/withPracticeTimedResponseStart";
 import styles from "./QuestionStage.module.css";
 
 export type QuestionStageHeaderRenderParams = {
@@ -17,24 +17,10 @@ export type QuestionStageHeaderRenderParams = {
 };
 
 export type QuestionStageProps = {
-  question: PracticeQuestion;
+  input: PracticeInput;
   questionNumber: number;
   totalQuestions: number;
-  locked: boolean;
-  pendingAnswer?: AnswerValue | null;
-  submissionState?: "idle" | "submitting" | "error";
-  submissionStatusVisible?: boolean;
-  submissionError?: string;
-  onRetrySubmission?: () => void;
-  codeAttemptCount: number;
-  onSubmit: (answer: AnswerValue) => void;
   onTimeUp: () => void;
-  onCodeAttempt: (code: string) => boolean;
-  onProgress: (answer: AnswerValue) => void;
-  onIncorrectAttempt: () => void;
-  onProgressiveClueReveal: (revealedClues: number) => void;
-  onTimedResponseStart: () => void;
-  initialAnswer?: AnswerValue | null;
   deadlineAt?: number | null;
   onReady?: () => void;
   renderHeader: (params: QuestionStageHeaderRenderParams) => ReactNode;
@@ -56,24 +42,10 @@ function splitQuestionPrompt(prompt: string) {
 }
 
 export function QuestionStage({
-  question,
+  input,
   questionNumber,
   totalQuestions,
-  locked,
-  pendingAnswer,
-  submissionState,
-  submissionStatusVisible,
-  submissionError,
-  onRetrySubmission,
-  codeAttemptCount,
-  onSubmit,
   onTimeUp,
-  onCodeAttempt,
-  onProgress,
-  onIncorrectAttempt,
-  onProgressiveClueReveal,
-  onTimedResponseStart,
-  initialAnswer,
   deadlineAt,
   onReady,
   renderHeader,
@@ -81,6 +53,9 @@ export function QuestionStage({
   presentation,
   className,
 }: QuestionStageProps) {
+  const { question, locked } = input.props;
+  const onTimedResponseStart =
+    "onTimedResponseStart" in input.props ? input.props.onTimedResponseStart : undefined;
   const titleId = useId();
   const splitPrompt = presentation?.splitPrompt ?? true;
   const prominentMedia = presentation?.prominentMedia ?? true;
@@ -124,23 +99,7 @@ export function QuestionStage({
             <QuestionMedia media={question.media} prominent={prominentMedia} />
           </div>
         ) : null}
-        <QuestionInput
-          question={question}
-          locked={locked}
-          pendingAnswer={pendingAnswer}
-          submissionState={submissionState}
-          submissionStatusVisible={submissionStatusVisible}
-          submissionError={submissionError}
-          onRetrySubmission={onRetrySubmission}
-          onSubmit={onSubmit}
-          onProgress={onProgress}
-          onIncorrectAttempt={onIncorrectAttempt}
-          onProgressiveClueReveal={onProgressiveClueReveal}
-          onCodeAttempt={onCodeAttempt}
-          onTimedResponseStart={timer.start}
-          initialAnswer={initialAnswer}
-          codeAttemptCount={codeAttemptCount}
-        />
+        <QuestionInput input={withPracticeTimedResponseStart(input, timer.start)} />
       </section>
     </div>
   );

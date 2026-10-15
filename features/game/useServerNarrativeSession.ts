@@ -1,5 +1,6 @@
 "use client";
 import { useMemo } from "react";
+import { createCompetitiveInput } from "@/features/question-formats/createCompetitiveInput";
 import type { GameRoomContext } from "@/types/view-models/room";
 import type {
   FlashChallenge,
@@ -30,8 +31,15 @@ export function useServerNarrativeSession(options: {
   // The narrative stage uses submission feedback for generic and incremental answers.
   const submission =
     session.feedback?.channel === "answerVerification" ? session.feedback : undefined;
-  return {
+  const projected = {
     ...session,
+    submissionState: submission?.state ?? session.submissionState,
+    submissionStatusVisible: submission?.visible ?? session.submissionStatusVisible,
+    submissionError: submission?.message ?? session.submissionError,
+  };
+  return {
+    ...projected,
+    questionInput: createCompetitiveInput(projected),
     phase: session.phase as ServerNarrativePhase,
     question: session.question as ServerFlashQuestion | null,
     reviewChallenge: session.reviewChallenge as FlashChallenge | null,
@@ -39,8 +47,5 @@ export function useServerNarrativeSession(options: {
     questionNumber: sequence
       .slice(0, session.stepIndex + 1)
       .filter((step) => step.type === "question").length,
-    submissionState: submission?.state ?? session.submissionState,
-    submissionStatusVisible: submission?.visible ?? session.submissionStatusVisible,
-    submissionError: submission?.message ?? session.submissionError,
   };
 }

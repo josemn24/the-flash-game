@@ -2,12 +2,9 @@
 import { EstimationQuestion } from "@/components/questions/formats/estimation/EstimationQuestion";
 import { QuestionMedia } from "@/components/questions/shared";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"estimation">) {
   const { locked, pendingAnswer, onSubmit, onProgress } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "estimation" }
-  >;
+  const { question } = props;
   return (
     <>
       {question.media ? (

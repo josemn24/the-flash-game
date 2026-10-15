@@ -50,6 +50,20 @@ Los adaptadores de interacción componen comandos e interpretan progreso o evalu
 contratos de `features/game/competitive/formats`. El núcleo de sesiones conserva el transporte,
 la versión, la idempotencia, los reintentos, el estado y los temporizadores.
 
+## Contratos de presentación competitiva
+
+`features/question-formats/competitiveInputTypes.ts` define `CompetitiveInputByFormat` para los
+21 formatos. La base incluye pregunta pública del formato y bloqueo; cada entrada añade solo
+sus respuestas, borradores y operaciones actuales. Los callbacks genéricos utilizan
+`AnswerValueOfType<T>`. Mini-Wordle conserva `MiniWordleCompetitiveInputProps` como alias.
+
+`createCompetitiveInput` valida los borradores restaurados y conserva las funciones de la sesión,
+incluidos los reintentos del comando original. El registro acepta una unión discriminada
+`{ context: "competitive", format, props }` y utiliza un `switch` exhaustivo sin conversiones de pregunta o renderizador.
+El escenario, la numeración, las vidas y el deadline pertenecen a `ServerFlashQuestionStage`.
+Las fachadas aplican su proyección de feedback antes de construir el input; Narrative conserva
+por separado los errores de respuesta y de revelación de pistas.
+
 ## Compatibilidad y correcciones
 
 `multiple-choice` v1 y v2 se admiten en Flash, Supervivencia, Pirámide y Narrative. La variante v2

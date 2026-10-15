@@ -191,10 +191,14 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
   await switchKeyboard(page, "Usar teclado del juego");
   await expect(editor).toContainText("Una respuesta muy larga");
   const cursor = page.locator('[data-answer-slot="caret"]');
-  const last = await cursor.boundingBox();
-  const panel = await editor.boundingBox();
-  expect(last!.y).toBeGreaterThanOrEqual(panel!.y);
-  expect(last!.y + last!.height).toBeLessThanOrEqual(panel!.y + panel!.height);
+  // The effect and ResizeObserver scroll the caret into view after the mode changes.
+  await expect
+    .poll(async () => {
+      const last = await cursor.boundingBox();
+      const panel = await editor.boundingBox();
+      return Math.max(panel!.y - last!.y, last!.y + last!.height - panel!.y - panel!.height);
+    })
+    .toBeLessThanOrEqual(0);
   await page.screenshot({ path: "output/playwright/alphabet-long-answer.png" });
   await page.setViewportSize({ width: 844, height: 390 });
   await expect(page.getByRole("button", { name: "Mostrar teclado" })).toBeVisible();

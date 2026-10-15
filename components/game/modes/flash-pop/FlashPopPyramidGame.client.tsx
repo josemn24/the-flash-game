@@ -1,5 +1,9 @@
 "use client";
 
+import { createPracticeInput } from "@/features/question-formats/createPracticeInput";
+import type { PracticeInput } from "@/features/question-formats/practiceInputTypes";
+import { withPracticeTimedResponseStart } from "@/features/question-formats/withPracticeTimedResponseStart";
+
 import { useEffect, useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { ArrowIcon, BoltIcon, CheckIcon } from "@/components/ui";
@@ -24,7 +28,6 @@ import { getFlashPopResult, type FlashPopResult } from "@/features/flash-pop/dem
 import { useChallengeCompletionReporter } from "@/features/game/useChallengeCompletionReporter";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 import type {
-  AnswerValue,
   ChallengeCompletionResult,
   PyramidChallenge,
   PyramidLevel,
@@ -160,41 +163,23 @@ function getPromptScale(question: PyramidLevel["question"]) {
 }
 
 function Question({
-  level,
+  input,
   levelIndex,
   levelCount,
   deadlineAt,
   onReady,
-  locked,
-  onSubmit,
   onTimeUp,
-  onProgress,
-  onIncorrectAttempt,
-  onProgressiveClueReveal,
-  onCodeAttempt,
-  onTimedResponseStart,
-  initialAnswer,
-  attemptCount,
-  progressiveCluesRevealed,
 }: {
-  level: PyramidLevel;
+  input: PracticeInput;
   levelIndex: number;
   levelCount: number;
   deadlineAt: number | null;
   onReady: () => void;
-  locked: boolean;
-  onSubmit: (answer: AnswerValue) => void;
   onTimeUp: () => void;
-  onProgress: (answer: AnswerValue) => void;
-  onIncorrectAttempt: () => void;
-  onProgressiveClueReveal: (revealedClues: number) => void;
-  onCodeAttempt: (code: string) => boolean;
-  onTimedResponseStart: () => void;
-  initialAnswer: AnswerValue | null;
-  attemptCount: number;
-  progressiveCluesRevealed: number;
 }) {
-  const question = level.question;
+  const { question } = input.props;
+  const onTimedResponseStart =
+    "onTimedResponseStart" in input.props ? input.props.onTimedResponseStart : undefined;
   const delayedTimer = question.type === "mini-wordle";
 
   useEffect(() => {
@@ -226,20 +211,10 @@ function Question({
           {question.question}
         </h1>
         <QuestionInput
-          question={question}
-          locked={locked}
-          initialAnswer={initialAnswer}
-          onSubmit={onSubmit}
-          onProgress={onProgress}
-          onIncorrectAttempt={onIncorrectAttempt}
-          onProgressiveClueReveal={onProgressiveClueReveal}
-          onCodeAttempt={onCodeAttempt}
-          onTimedResponseStart={() => {
+          input={withPracticeTimedResponseStart(input, () => {
             if (delayedTimer) onReady();
-            onTimedResponseStart();
-          }}
-          progressiveCluesRevealed={progressiveCluesRevealed}
-          codeAttemptCount={attemptCount}
+            onTimedResponseStart?.();
+          })}
         />
       </Card>
     </div>
@@ -420,6 +395,19 @@ export function FlashPopPyramidGame({
   });
   useRoomAttemptSnapshot(roomContext, challenge.id, "pyramid", session.phase, session.record);
   const currentLevel = session.currentLevel ?? challenge.levels[0];
+  const input = createPracticeInput({
+    question: currentLevel?.question ?? null,
+    locked: session.locked,
+    initialAnswer: session.initialAnswer,
+    codeAttemptCount: session.codeAttempts.length,
+    progressiveCluesRevealed: session.record?.progressiveCluesRevealed ?? 1,
+    onSubmit: session.submitAnswer,
+    onProgress: session.handleAnswerProgress,
+    onIncorrectAttempt: session.handleIncorrectAttempt,
+    onProgressiveClueReveal: session.handleProgressiveClueReveal,
+    onCodeAttempt: session.handleCodeAttempt,
+    onTimedResponseStart: session.armCurrentLevel,
+  });
   const currentLevelIndex = session.record?.currentLevelIndex ?? 0;
 
   useChallengeCompletionReporter(
@@ -438,7 +426,7 @@ export function FlashPopPyramidGame({
     onComplete,
   );
 
-  if (challenge.mode !== "pyramid" || challenge.levels.length === 0 || !currentLevel) {
+  if (challenge.mode !== "pyramid" || challenge.levels.length === 0 || !currentLevel || !input) {
     return (
       <Canvas maxWidth="content">
         <Card>
@@ -512,22 +500,12 @@ export function FlashPopPyramidGame({
               exit={{ opacity: 0, x: -18 }}
             >
               <Question
-                level={currentLevel}
+                input={input}
                 levelIndex={currentLevelIndex}
                 levelCount={challenge.levels.length}
                 deadlineAt={session.deadlineAt}
-                locked={session.locked}
                 onReady={session.armCurrentLevel}
-                onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                onProgress={session.handleAnswerProgress}
-                onIncorrectAttempt={session.handleIncorrectAttempt}
-                onProgressiveClueReveal={session.handleProgressiveClueReveal}
-                onCodeAttempt={session.handleCodeAttempt}
-                onTimedResponseStart={session.armCurrentLevel}
-                initialAnswer={session.initialAnswer}
-                attemptCount={session.codeAttempts.length}
-                progressiveCluesRevealed={session.record?.progressiveCluesRevealed ?? 1}
               />
             </motion.div>
           ) : null}

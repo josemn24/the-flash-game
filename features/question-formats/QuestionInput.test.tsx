@@ -1,5 +1,6 @@
+import { practiceInput } from "@/test-utils/practiceInput";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
 import {
   getMockChallengeById as getChallengeById,
@@ -8,74 +9,12 @@ import {
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 
 describe("canonical question renderer", () => {
-  it("shows a pending multiple-choice answer without implying correctness", () => {
-    const question = questionsById["capital-canada"];
-    if (question?.type !== "multiple-choice") throw new Error("Expected multiple-choice question");
-
-    const markup = renderToStaticMarkup(
-      <QuestionInput
-        question={question}
-        locked
-        pendingAnswer="Ottawa"
-        submissionState="submitting"
-        submissionStatusVisible
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
-      />,
-    );
-
-    expect(markup).toContain("Comprobando respuesta…");
-    expect(markup).toContain('aria-busy="true"');
-    expect(markup).toContain('aria-pressed="true"');
-    expect(markup).toContain(">B<");
-    expect(markup).not.toContain("<svg");
-  });
-
-  it("shows a retry action when a multiple-choice submission fails", () => {
-    const question = questionsById["capital-canada"];
-    if (question?.type !== "multiple-choice") throw new Error("Expected multiple-choice question");
-
-    const markup = renderToStaticMarkup(
-      <QuestionInput
-        question={question}
-        locked
-        pendingAnswer="Ottawa"
-        submissionState="error"
-        submissionError="No hemos podido confirmar tu respuesta."
-        onRetrySubmission={vi.fn()}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
-      />,
-    );
-
-    expect(markup).toContain("No hemos podido confirmar tu respuesta.");
-    expect(markup).toContain("Reintentar");
-    expect(markup).not.toContain("Comprobando respuesta…");
-  });
-
   it("does not add submission feedback layout to local multiple-choice questions", () => {
     const question = questionsById["capital-canada"];
     if (question?.type !== "multiple-choice") throw new Error("Expected multiple-choice question");
 
     const markup = renderToStaticMarkup(
-      <QuestionInput
-        question={question}
-        locked={false}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
-      />,
+      <QuestionInput input={practiceInput(question, { locked: false })} />,
     );
 
     expect(markup).not.toContain("submissionStatusSlot");
@@ -88,16 +27,7 @@ describe("canonical question renderer", () => {
     const markup = challenge.levels
       .map((level) =>
         renderToStaticMarkup(
-          <QuestionInput
-            question={level.question}
-            locked={false}
-            onSubmit={vi.fn()}
-            onProgress={vi.fn()}
-            onIncorrectAttempt={vi.fn()}
-            onProgressiveClueReveal={vi.fn()}
-            onCodeAttempt={vi.fn(() => false)}
-            onTimedResponseStart={vi.fn()}
-          />,
+          <QuestionInput input={practiceInput(level.question, { locked: false })} />,
         ),
       )
       .join("\n");
@@ -116,16 +46,7 @@ describe("canonical question renderer", () => {
     const markup = challenge.levels
       .map((level) =>
         renderToStaticMarkup(
-          <QuestionInput
-            question={level.question}
-            locked={false}
-            onSubmit={vi.fn()}
-            onProgress={vi.fn()}
-            onIncorrectAttempt={vi.fn()}
-            onProgressiveClueReveal={vi.fn()}
-            onCodeAttempt={vi.fn(() => false)}
-            onTimedResponseStart={vi.fn()}
-          />,
+          <QuestionInput input={practiceInput(level.question, { locked: false })} />,
         ),
       )
       .join("\n");
@@ -146,18 +67,7 @@ describe("canonical question renderer", () => {
 
     const markup = challenge.questions
       .map((question) =>
-        renderToStaticMarkup(
-          <QuestionInput
-            question={question}
-            locked={false}
-            onSubmit={vi.fn()}
-            onProgress={vi.fn()}
-            onIncorrectAttempt={vi.fn()}
-            onProgressiveClueReveal={vi.fn()}
-            onCodeAttempt={vi.fn(() => false)}
-            onTimedResponseStart={vi.fn()}
-          />,
-        ),
+        renderToStaticMarkup(<QuestionInput input={practiceInput(question, { locked: false })} />),
       )
       .join("\n");
 
@@ -175,16 +85,7 @@ describe("canonical question renderer", () => {
 
     for (const question of challenge.questions) {
       const markup = renderToStaticMarkup(
-        <QuestionInput
-          question={question}
-          locked={false}
-          onSubmit={vi.fn()}
-          onProgress={vi.fn()}
-          onIncorrectAttempt={vi.fn()}
-          onProgressiveClueReveal={vi.fn()}
-          onCodeAttempt={vi.fn(() => false)}
-          onTimedResponseStart={vi.fn()}
-        />,
+        <QuestionInput input={practiceInput(question, { locked: false })} />,
       );
 
       expect(markup).toContain(`data-format="${question.type}"`);
@@ -194,16 +95,7 @@ describe("canonical question renderer", () => {
   it("renders every format available in the library without theme attributes", () => {
     for (const format of Object.values(QUESTION_FORMAT_CATALOG)) {
       const markup = renderToStaticMarkup(
-        <QuestionInput
-          question={format.examples[0].question}
-          locked={false}
-          onSubmit={vi.fn()}
-          onProgress={vi.fn()}
-          onIncorrectAttempt={vi.fn()}
-          onProgressiveClueReveal={vi.fn()}
-          onCodeAttempt={vi.fn(() => false)}
-          onTimedResponseStart={vi.fn()}
-        />,
+        <QuestionInput input={practiceInput(format.examples[0].question, { locked: false })} />,
       );
 
       expect(markup, format.id).not.toContain(["data-variant", "flash-pop"].join('="') + '"');
@@ -213,14 +105,7 @@ describe("canonical question renderer", () => {
   it("keeps the logic matrix on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
       <QuestionInput
-        question={questionsById["pyramid-shape-direction-matrix"]}
-        locked={false}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
+        input={practiceInput(questionsById["pyramid-shape-direction-matrix"], { locked: false })}
       />,
     );
 
@@ -230,14 +115,7 @@ describe("canonical question renderer", () => {
   it("keeps connect pairs on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
       <QuestionInput
-        question={questionsById["pyramid-connect-pairs-trap"]}
-        locked={false}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
+        input={practiceInput(questionsById["pyramid-connect-pairs-trap"], { locked: false })}
       />,
     );
 
@@ -247,14 +125,7 @@ describe("canonical question renderer", () => {
   it("keeps Queens on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
       <QuestionInput
-        question={questionsById["pyramid-summit-queens"]}
-        locked={false}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
+        input={practiceInput(questionsById["pyramid-summit-queens"], { locked: false })}
       />,
     );
 
@@ -264,14 +135,9 @@ describe("canonical question renderer", () => {
   it("keeps the word search on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
       <QuestionInput
-        question={questionsById["abrahamic-word-search-biblical-characters"]}
-        locked={false}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
+        input={practiceInput(questionsById["abrahamic-word-search-biblical-characters"], {
+          locked: false,
+        })}
       />,
     );
 
@@ -281,14 +147,7 @@ describe("canonical question renderer", () => {
   it("keeps Mini-Wordle on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
       <QuestionInput
-        question={questionsById["abrahamic-mini-wordle-josue"]}
-        locked={false}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
+        input={practiceInput(questionsById["abrahamic-mini-wordle-josue"], { locked: false })}
       />,
     );
 
@@ -298,14 +157,7 @@ describe("canonical question renderer", () => {
   it("keeps logic code on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
       <QuestionInput
-        question={questionsById["pyramid-secret-code"]}
-        locked={false}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
+        input={practiceInput(questionsById["pyramid-secret-code"], { locked: false })}
       />,
     );
 
@@ -315,14 +167,7 @@ describe("canonical question renderer", () => {
   it("keeps word hashtag on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
       <QuestionInput
-        question={questionsById["abrahamic-word-hashtag-references"]}
-        locked={false}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
+        input={practiceInput(questionsById["abrahamic-word-hashtag-references"], { locked: false })}
       />,
     );
 
@@ -332,14 +177,7 @@ describe("canonical question renderer", () => {
   it("keeps progressive clues on its native Flash Pop theme", () => {
     const markup = renderToStaticMarkup(
       <QuestionInput
-        question={questionsById["abrahamic-progressive-abraham"]}
-        locked={false}
-        onSubmit={vi.fn()}
-        onProgress={vi.fn()}
-        onIncorrectAttempt={vi.fn()}
-        onProgressiveClueReveal={vi.fn()}
-        onCodeAttempt={vi.fn(() => false)}
-        onTimedResponseStart={vi.fn()}
+        input={practiceInput(questionsById["abrahamic-progressive-abraham"], { locked: false })}
       />,
     );
 

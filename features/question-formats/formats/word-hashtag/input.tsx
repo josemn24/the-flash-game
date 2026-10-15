@@ -1,7 +1,7 @@
 "use client";
 import { ServerWordHashtagQuestion } from "@/components/questions/formats/word-hashtag/ServerWordHashtagQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"word-hashtag">) {
   const {
     locked,
     submissionState,
@@ -10,10 +10,7 @@ export function render(props: CompetitiveInputProps) {
     onRetrySubmission,
     onWordHashtagSwap,
   } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "word-hashtag" }
-  >;
+  const { question } = props;
   return (
     <ServerWordHashtagQuestion
       key={question.id}

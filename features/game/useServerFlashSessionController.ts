@@ -1,5 +1,6 @@
 "use client";
 import { useMemo } from "react";
+import { createCompetitiveInput } from "@/features/question-formats/createCompetitiveInput";
 import type { GameRoomContext } from "@/types/view-models/room";
 import type {
   FlashChallenge,
@@ -28,6 +29,7 @@ export function useServerFlashSession(options: {
   const display = useMemo(() => displayChallenge(challenge), [challenge]);
   return {
     ...session,
+    questionInput: createCompetitiveInput(session),
     phase: session.phase as ServerFlashPhase,
     question: session.question as ServerFlashQuestion | null,
     reviewChallenge: session.reviewChallenge as FlashChallenge | PyramidChallenge | null,

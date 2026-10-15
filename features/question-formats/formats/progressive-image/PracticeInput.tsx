@@ -1,15 +1,14 @@
 "use client";
 
 import { ProgressiveImageQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
   locked,
   onSubmit,
   onTimedResponseStart,
-}: QuestionInputProps<PracticeQuestionOfType<"progressive-image">>) {
+}: PracticeInputProps<"progressive-image">) {
   return (
     <ProgressiveImageQuestion
       key={question.id}

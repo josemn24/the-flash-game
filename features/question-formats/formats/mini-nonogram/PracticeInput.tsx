@@ -1,15 +1,14 @@
 "use client";
 
 import { MiniNonogramQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"mini-nonogram">>) {
+}: PracticeInputProps<"mini-nonogram">) {
   return (
     <MiniNonogramQuestion
       rowClues={question.rowClues}

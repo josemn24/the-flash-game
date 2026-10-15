@@ -1,6 +1,6 @@
 "use client";
 import { CompetitiveQuestionInput } from "@/features/question-formats/competitiveInputRegistry";
-import type { CompetitiveInputProps } from "@/features/question-formats/competitiveInputTypes";
+import type { CompetitiveInput } from "@/features/question-formats/competitiveInputTypes";
 
 import { GameHeader, Timer } from "@/components/ui";
 import { type ReactNode, useId } from "react";
@@ -15,18 +15,24 @@ function splitPrompt(prompt: string) {
     : { title: prompt };
 }
 
-export function ServerFlashQuestionStage(
-  props: CompetitiveInputProps & {
-    readonly showHeader?: boolean;
-    readonly titleOverride?: string;
-    readonly supportingText?: string;
-  },
-) {
+export function ServerFlashQuestionStage(props: {
+  readonly input: CompetitiveInput;
+  readonly questionNumber: number;
+  readonly totalQuestions: number;
+  readonly onTimeUp: () => void;
+  readonly deadlineAt?: number | null;
+  readonly livesRemaining?: number;
+  readonly totalLives?: number;
+  readonly presentation?: "default" | "pyramid" | "time-trial";
+  readonly showTimer?: boolean;
+  readonly showHeader?: boolean;
+  readonly titleOverride?: string;
+  readonly supportingText?: string;
+}) {
   const {
-    question,
+    input,
     questionNumber,
     totalQuestions,
-    locked,
     onTimeUp,
     deadlineAt,
     livesRemaining,
@@ -36,8 +42,9 @@ export function ServerFlashQuestionStage(
     showHeader = true,
     titleOverride,
     supportingText,
-    ...inputProps
   } = props;
+
+  const { question, locked } = input.props;
 
   const pyramidPresentation = presentation === "pyramid";
   const structuredPresentation = pyramidPresentation || presentation === "time-trial";
@@ -109,17 +116,7 @@ export function ServerFlashQuestionStage(
         supportingText={supportingText}
         variant={structuredPresentation ? "structured" : "default"}
       >
-        <CompetitiveQuestionInput
-          {...inputProps}
-          question={question}
-          questionNumber={questionNumber}
-          totalQuestions={totalQuestions}
-          locked={locked}
-          onTimeUp={onTimeUp}
-          deadlineAt={deadlineAt}
-          presentation={presentation}
-          showTimer={showTimer}
-        />
+        <CompetitiveQuestionInput input={input} />
       </ServerQuestionPanel>
     </div>
   );

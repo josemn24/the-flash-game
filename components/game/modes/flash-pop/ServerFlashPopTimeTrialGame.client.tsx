@@ -10,7 +10,7 @@ import {
   StartCountdown,
 } from "@/components/game/shared";
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
-import { useCompetitiveSession } from "@/features/game/competitive/core/useCompetitiveSession";
+import { useServerTimeTrialSession } from "@/features/game/useServerTimeTrialSession";
 import { TIME_TRIAL_END_LABELS } from "@/lib/timeTrial";
 import type {
   ServerTimeTrialChallenge,
@@ -30,7 +30,7 @@ export function ServerFlashPopTimeTrialGame({
   roomContext: GameRoomContext;
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
-  const session = useCompetitiveSession({ challenge, roomContext, terminalReview });
+  const session = useServerTimeTrialSession({ challenge, roomContext, terminalReview });
   const solved = session.results.filter((result) => result.status === "correct").length;
   const running =
     session.deadlineAt !== null && session.phase !== "results" && session.phase !== "review";
@@ -114,45 +114,17 @@ export function ServerFlashPopTimeTrialGame({
           />
         ) : null}
         {(session.phase === "playing" || session.phase === "checking") &&
-        session.question?.type === "queens" ? (
+        session.question?.type === "queens" &&
+        session.questionInput ? (
           <ServerFlashQuestionStage
+            input={session.questionInput}
             key={session.question.id}
-            question={session.question}
             titleOverride="Coloca una corona por fila, columna y región"
             supportingText="Las coronas no pueden tocarse entre sí."
             questionNumber={session.questionIndex + 1}
             totalQuestions={challenge.slots.length}
-            locked={session.locked}
-            pendingAnswer={session.pendingAnswer}
-            submissionState={session.submissionState}
-            submissionStatusVisible={session.submissionStatusVisible}
-            submissionError={session.submissionError}
-            onRetrySubmission={session.retrySubmit}
-            onSubmit={(answer) => void session.submit(answer)}
-            onProgress={session.updateDraft}
-            onMiniWordleGuess={session.submitMiniWordleGuess}
-            onLogicCodeAttempt={session.submitLogicCodeAttempt}
-            queensState={session.queensState}
-            queensStatusVisible={session.queensStatusVisible}
-            queensError={session.queensError}
-            onQueensDraft={session.updateQueensDraft}
-            onQueensValidate={session.validateQueensBoard}
-            onRetryQueensValidation={session.retryQueensValidation}
-            wordSearchState={session.wordSearchState}
-            wordSearchStatusVisible={session.wordSearchStatusVisible}
-            wordSearchError={session.wordSearchError}
-            lastWordSearchSelection={session.lastWordSearchSelection}
-            onWordSearchSelection={session.submitWordSearchSelection}
-            onRetryWordSearch={session.retryWordSearchSelection}
-            onWordHashtagSwap={session.submitWordHashtagSwap}
-            revealState={session.revealState}
-            revealStatusVisible={session.revealStatusVisible}
-            revealError={session.revealError}
-            onRevealProgressiveClue={session.revealProgressiveClue}
-            onRetryReveal={session.retryReveal}
             onTimeUp={session.onTimeUp}
             deadlineAt={session.questionDeadlineAt}
-            presentedAt={session.questionPresentedAt}
             presentation="time-trial"
             showHeader={false}
             showTimer={false}

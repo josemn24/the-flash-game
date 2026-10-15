@@ -1,5 +1,7 @@
 "use client";
 
+import { createPracticeInput } from "@/features/question-formats/createPracticeInput";
+
 import { useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import Link from "next/link";
@@ -307,6 +309,18 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
   const scoredChallenge = useMemo(() => withPyramidScoring(challenge), [challenge]);
   const session = usePyramidSession(scoredChallenge);
   const currentIndex = session.record?.currentLevelIndex ?? 0;
+  const input = createPracticeInput({
+    question: session.currentLevel?.question ?? null,
+    locked: session.locked,
+    initialAnswer: session.initialAnswer,
+    codeAttemptCount: session.codeAttempts.length,
+    onSubmit: session.submitAnswer,
+    onCodeAttempt: session.handleCodeAttempt,
+    onProgress: session.handleAnswerProgress,
+    onIncorrectAttempt: session.handleIncorrectAttempt,
+    onProgressiveClueReveal: () => {},
+    onTimedResponseStart: () => {},
+  });
   const latestPassed = Boolean(session.latestResult?.isCorrect);
 
   return (
@@ -345,24 +359,16 @@ export function PyramidGameApp({ challenge }: { challenge: PyramidChallenge }) {
               />
             )}
             {(session.phase === "playing" || session.phase === "answer-reveal") &&
-              session.currentLevel && (
+              session.currentLevel &&
+              input && (
                 <PyramidQuestionStage
                   key={session.currentLevel.question.id}
-                  question={session.currentLevel.question}
+                  input={input}
                   questionNumber={currentIndex + 1}
                   totalQuestions={scoredChallenge.levels.length}
-                  locked={session.locked}
-                  codeAttemptCount={session.codeAttempts.length}
                   deadlineAt={session.deadlineAt}
-                  initialAnswer={session.initialAnswer}
                   onReady={session.armCurrentLevel}
-                  onSubmit={(answer) => session.submitAnswer(answer)}
                   onTimeUp={session.handleTimeUp}
-                  onCodeAttempt={session.handleCodeAttempt}
-                  onProgress={session.handleAnswerProgress}
-                  onIncorrectAttempt={session.handleIncorrectAttempt}
-                  onProgressiveClueReveal={() => {}}
-                  onTimedResponseStart={() => {}}
                 />
               )}
             {session.phase === "transition" && session.record && (

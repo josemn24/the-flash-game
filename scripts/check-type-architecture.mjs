@@ -254,6 +254,41 @@ function isSupabaseDependency(specifier, importingFile) {
   );
 }
 
+// Context-specific input adapters may share views and algorithms, never each other.
+function inputContext(relative) {
+  const normalized = relative
+    .split(path.sep)
+    .join("/")
+    .replace(/\.(?:tsx?|jsx?)$/, "");
+  if (!normalized.startsWith("features/question-formats/")) return null;
+  const name = normalized.slice("features/question-formats/".length);
+  if (
+    /^formats\/[^/]+\/PracticeInput$/.test(name) ||
+    [
+      "practiceInputTypes",
+      "practiceInputRegistry",
+      "createPracticeInput",
+      "withPracticeTimedResponseStart",
+      "QuestionInput",
+    ].includes(name)
+  )
+    return "practice";
+  if (
+    /^formats\/[^/]+\/input$/.test(name) ||
+    ["competitiveInputTypes", "competitiveInputRegistry", "createCompetitiveInput"].includes(name)
+  )
+    return "competitive";
+  return null;
+}
+function resolvedProjectImport(specifier, file) {
+  const resolved = specifier.startsWith("@/")
+    ? path.resolve(process.cwd(), specifier.slice(2))
+    : specifier.startsWith(".")
+      ? path.resolve(path.dirname(file), specifier)
+      : null;
+  return resolved ? path.relative(process.cwd(), resolved) : null;
+}
+
 function isApplicationForbiddenImport(specifier) {
   return (
     specifier === "server-only" ||
@@ -286,6 +321,13 @@ for (const file of productionFiles) {
   const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
 
   for (const imported of importsIn(source, true)) {
+    const context = inputContext(relative);
+    const target = resolvedProjectImport(imported.specifier, file);
+    const targetContext = target ? inputContext(target) : null;
+    if (context && targetContext && context !== targetContext) {
+      violations.push(`${relative} crosses question input contexts via ${imported.specifier}`);
+    }
+
     if (
       isAdministrativeFacade &&
       relative !== `server${path.sep}composition${path.sep}admin.ts` &&

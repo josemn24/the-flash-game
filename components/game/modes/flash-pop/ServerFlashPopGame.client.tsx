@@ -83,7 +83,7 @@ export function ServerFlashPopGame({
       {session.phase === "countdown" ? (
         <StartCountdown label="Flash" key="countdown" onComplete={session.startQuestions} />
       ) : null}
-      {session.phase === "playing" && session.question ? (
+      {session.phase === "playing" && session.question && session.questionInput ? (
         <motion.div
           className={styles.stageFrame}
           key={session.question.id}
@@ -92,43 +92,10 @@ export function ServerFlashPopGame({
           exit={{ opacity: 0, x: -18 }}
         >
           <ServerFlashQuestionStage
-            question={session.question}
+            input={session.questionInput}
             questionNumber={session.questionIndex + 1}
             totalQuestions={challenge.slots.length}
-            locked={session.locked}
             deadlineAt={session.questionDeadlineAt}
-            presentedAt={session.questionPresentedAt}
-            pendingAnswer={session.pendingAnswer}
-            submissionState={session.submissionState}
-            submissionStatusVisible={session.submissionStatusVisible}
-            submissionError={session.submissionError}
-            onRetrySubmission={session.retrySubmit}
-            onSubmit={(answer) => void session.submit(answer)}
-            onProgress={session.updateDraft}
-            onMiniWordleGuess={session.submitMiniWordleGuess}
-            onLogicCodeAttempt={session.submitLogicCodeAttempt}
-            queensState={session.queensState}
-            queensStatusVisible={session.queensStatusVisible}
-            queensError={session.queensError}
-            onQueensDraft={session.updateQueensDraft}
-            onQueensValidate={(queens) => void session.validateQueensBoard(queens)}
-            onRetryQueensValidation={() => void session.retryQueensValidation()}
-            wordSearchState={session.wordSearchState}
-            wordSearchStatusVisible={session.wordSearchStatusVisible}
-            wordSearchError={session.wordSearchError}
-            lastWordSearchSelection={session.lastWordSearchSelection}
-            onWordSearchSelection={(startCell, endCell) =>
-              void session.submitWordSearchSelection(startCell, endCell)
-            }
-            onRetryWordSearch={() => void session.retryWordSearchSelection()}
-            onWordHashtagSwap={(fromCell, toCell) =>
-              void session.submitWordHashtagSwap(fromCell, toCell)
-            }
-            revealState={session.revealState}
-            revealStatusVisible={session.revealStatusVisible}
-            revealError={session.revealError}
-            onRevealProgressiveClue={() => void session.revealProgressiveClue()}
-            onRetryReveal={() => void session.retryReveal()}
             onTimeUp={() => void session.handleTimeUp()}
           />
         </motion.div>

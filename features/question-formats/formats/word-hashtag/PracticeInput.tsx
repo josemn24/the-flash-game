@@ -1,9 +1,7 @@
 "use client";
 
 import { WordHashtagQuestion } from "@/components/questions";
-import { isWordHashtagAnswer } from "@/lib/scoring";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -11,12 +9,12 @@ export function PracticeInput({
   initialAnswer,
   onProgress,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"word-hashtag">>) {
+}: PracticeInputProps<"word-hashtag">) {
   return (
     <WordHashtagQuestion
       key={question.id}
       question={question}
-      initialAnswer={isWordHashtagAnswer(initialAnswer) ? initialAnswer : undefined}
+      initialAnswer={initialAnswer}
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}

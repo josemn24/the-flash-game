@@ -1,7 +1,7 @@
 "use client";
 import { ServerWordSearchQuestion } from "@/components/questions/formats/word-search/ServerWordSearchQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"word-search">) {
   const {
     locked,
     wordSearchState,
@@ -11,10 +11,7 @@ export function render(props: CompetitiveInputProps) {
     onWordSearchSelection,
     onRetryWordSearch,
   } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "word-search" }
-  >;
+  const { question } = props;
   return (
     <ServerWordSearchQuestion
       question={question}

@@ -13,7 +13,8 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { CompetitiveAdapterKey } from "./capabilities";
 import { CompetitiveQuestionInput } from "./competitiveInputRegistry";
-import type { CompetitiveInputProps } from "./competitiveInputTypes";
+import { createCompetitiveInput } from "./createCompetitiveInput";
+import { competitiveInputSource } from "@/test-utils/competitiveInput";
 import { reviewQuestion } from "./reviewRegistry";
 
 const actions: Record<CompetitiveAdapterKey, FormatAction> = {
@@ -50,35 +51,15 @@ describe("competitive registries execute their declared implementations", () => 
     if (!publicResult.ok) throw new Error(JSON.stringify(publicResult.issues));
     const question = publicResult.value;
     const callback = vi.fn();
-    const props: CompetitiveInputProps = {
-      question,
-      questionNumber: 1,
-      totalQuestions: 2,
-      locked: false,
-      submissionState: "idle",
-      submissionStatusVisible: false,
-      onSubmit: callback,
-      onProgress: callback,
-      onMiniWordleGuess: callback,
-      onLogicCodeAttempt: callback,
-      queensState: "idle",
-      queensStatusVisible: false,
-      onQueensDraft: callback,
-      onQueensValidate: callback,
-      wordSearchState: "idle",
-      wordSearchStatusVisible: false,
-      onWordSearchSelection: callback,
-      onWordHashtagSwap: callback,
-      revealState: "idle",
-      revealStatusVisible: false,
-      onRevealProgressiveClue: callback,
-      onTimeUp: callback,
-    };
-    const Renderer = CompetitiveQuestionInput;
-    const markup = renderToStaticMarkup(createElement(Renderer, props));
+    const source = competitiveInputSource({ question, submit: callback });
+    const input = createCompetitiveInput(source);
+    if (!input) throw new Error("missing_input");
+    const markup = renderToStaticMarkup(createElement(CompetitiveQuestionInput, { input }));
     expect(markup).toMatch(/<(button|input|select|textarea)\b/);
+    const locked = createCompetitiveInput({ ...source, locked: true });
+    if (!locked) throw new Error("missing_locked_input");
     expect(() =>
-      renderToStaticMarkup(createElement(Renderer, { ...props, locked: true })),
+      renderToStaticMarkup(createElement(CompetitiveQuestionInput, { input: locked })),
     ).not.toThrow();
     const reviewed = reviewQuestion(question, {
       challengeItemId: question.id,

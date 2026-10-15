@@ -1,15 +1,14 @@
 "use client";
 
 import { MiniSudokuQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"mini-sudoku">>) {
+}: PracticeInputProps<"mini-sudoku">) {
   return (
     <MiniSudokuQuestion
       grid={question.grid}

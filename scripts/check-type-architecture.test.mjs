@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { rm, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
@@ -171,5 +171,47 @@ describe("type architecture boundary checker", () => {
       'import { RoomChallengeClient } from "@/components/game/production";\n\nvoid RoomChallengeClient;\n',
       "app/demo/__architecture-production-surface-test__.ts imports a non-demo game barrel from a demo route",
     );
+  });
+});
+
+describe("question input context boundaries", () => {
+  it.each([
+    [
+      "PracticeInput",
+      'import type { CompetitiveInput } from "@/features/question-formats/competitiveInputTypes";',
+    ],
+    ["PracticeInput", 'export { render } from "../mini-wordle/input";'],
+    ["input", 'import type { PracticeInput } from "../../practiceInputTypes";'],
+    ["input", 'const renderer = import("../mini-wordle/PracticeInput");'],
+  ])("rejects %s importing another input context", async (adapter, source) => {
+    const directory = "features/question-formats/formats/__architecture-context-test__";
+    await mkdir(directory, { recursive: true });
+    try {
+      await expectCheckerFailure(
+        `${directory}/${adapter}.tsx`,
+        source,
+        "crosses question input contexts",
+      );
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it("allows both contexts to use a neutral view and shared algorithms", async () => {
+    const directory = "features/question-formats/formats/__architecture-context-test__";
+    await mkdir(directory, { recursive: true });
+    try {
+      for (const adapter of ["PracticeInput", "input"]) {
+        await writeFile(
+          `${directory}/${adapter}.tsx`,
+          'export { ShortTextInput } from "../short-text/ShortTextInput";\nexport { normalizeMiniWordleWord } from "@/lib/miniWordle";\n',
+        );
+      }
+      await expect(runChecker()).resolves.toMatchObject({
+        stdout: expect.stringContaining("Type architecture OK"),
+      });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });

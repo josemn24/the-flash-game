@@ -2,12 +2,9 @@
 import { ConnectPairsQuestion } from "@/components/questions/formats/connect-pairs/ConnectPairsQuestion";
 import type { ConnectPairsQuestion as ClientConnectPairsQuestion } from "@/types/gameplay/practice";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"connect-pairs">) {
   const { locked, pendingAnswer, onSubmit, onProgress } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "connect-pairs" }
-  >;
+  const { question } = props;
   return (
     <ConnectPairsQuestion
       question={
@@ -26,17 +23,7 @@ export function render(props: CompetitiveInputProps) {
           explanation: "",
         } satisfies ClientConnectPairsQuestion
       }
-      initialAnswer={
-        pendingAnswer &&
-        typeof pendingAnswer === "object" &&
-        !Array.isArray(pendingAnswer) &&
-        "paths" in pendingAnswer &&
-        pendingAnswer.paths &&
-        typeof pendingAnswer.paths === "object" &&
-        !Array.isArray(pendingAnswer.paths)
-          ? (pendingAnswer as { paths: Record<string, number[]> })
-          : undefined
-      }
+      initialAnswer={pendingAnswer ?? undefined}
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}

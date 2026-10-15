@@ -1,12 +1,9 @@
 "use client";
 import { LogicMatrixQuestion } from "@/components/questions/formats/logic-matrix/LogicMatrixQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"logic-matrix">) {
   const { locked, onSubmit } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "logic-matrix" }
-  >;
+  const { question } = props;
   return (
     <>
       <LogicMatrixQuestion

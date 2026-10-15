@@ -1,7 +1,7 @@
 "use client";
 import { ServerZipQuestion } from "@/components/questions/formats/zip/ServerZipQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"zip">) {
   const {
     locked,
     pendingAnswer,
@@ -12,19 +12,11 @@ export function render(props: CompetitiveInputProps) {
     onSubmit,
     onProgress,
   } = props;
-  const question = props.question as Extract<CompetitiveInputProps["question"], { type: "zip" }>;
+  const { question } = props;
   return (
     <ServerZipQuestion
       question={question}
-      initialAnswer={
-        pendingAnswer &&
-        typeof pendingAnswer === "object" &&
-        !Array.isArray(pendingAnswer) &&
-        "path" in pendingAnswer &&
-        Array.isArray((pendingAnswer as { path?: unknown }).path)
-          ? (pendingAnswer as { path: number[] })
-          : undefined
-      }
+      initialAnswer={pendingAnswer ?? undefined}
       locked={locked}
       submissionState={submissionState}
       submissionStatusVisible={submissionStatusVisible}

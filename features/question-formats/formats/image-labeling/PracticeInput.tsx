@@ -1,13 +1,12 @@
 "use client";
 
 import { ImageLabelingQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
   locked,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"image-labeling">>) {
+}: PracticeInputProps<"image-labeling">) {
   return <ImageLabelingQuestion question={question} locked={locked} onSubmit={onSubmit} />;
 }

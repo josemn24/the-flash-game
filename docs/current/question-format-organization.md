@@ -52,9 +52,37 @@ a `MiniWordleView`, que comparte tablero y formulario sin recibir soluciones ni 
 consume el progreso autorizado del motor existente. Cada adaptador conserva la limpieza del input
 y el foco de su recorrido. El temporizador de práctica empieza una vez, al cargar el diccionario.
 
-El registro competitivo estrecha Mini-Wordle antes de construir su contrato específico. Sus props
-solo incluyen pregunta pública, bloqueo, envío de palabra y estado/reintento de esa operación.
-Los demás formatos conservan temporalmente el contrato general para su migración posterior.
+Los 21 formatos competitivos tienen contratos propios en `competitiveInputTypes.ts`.
+`CompetitiveInputByFormat` relaciona cada pregunta pública con sus respuestas `AnswerValueOfType<T>`
+y las operaciones que utiliza. `MiniWordleCompetitiveInputProps` conserva su alias público.
+`CompetitiveInput` es la unión discriminada `{ context: "competitive", format, props }`; el registro la despacha mediante
+un `switch` exhaustivo, sin conversiones para asociar pregunta y renderizador.
+
+`createCompetitiveInput` proyecta la sesión final y valida los borradores estructurados con los
+mismos valores iniciales alternativos. Las fachadas Flash, Narrative y Contrarreloj construyen
+ese input; Narrative adapta antes el canal `answerVerification`. `ServerFlashQuestionStage`
+recibe el input y las props de presentación (numeración, vidas, deadline y variante) por separado.
+Los comandos, versiones, reintentos y temporizadores siguen perteneciendo al motor competitivo.
+Los 31 formatos de práctica utilizan `PracticeInputByFormat` y `PracticeInputProps<T>`.
+`createPracticeInput` proyecta las operaciones locales en el envelope
+`{ context: "practice", format, props }`, valida los once borradores restaurables y conserva
+los valores iniciales y callbacks de cada composición. `QuestionInput` recibe solamente el input;
+los escenarios conservan presentación y temporizadores. Los contratos rechazan el intercambio
+entre contextos. Las capacidades y políticas de temporización se detallan en
+[contratos de práctica](practice-format-contracts.md).
+
+## Presentación narrativa
+
+`NarrativePresentation.tsx` comparte escena, epílogo, resultado y fondo polar entre práctica y
+competición. Los auxiliares de progreso y bloques de texto pertenecen al mismo módulo. La escena
+recibe contenido público, numeración y continuación; conserva las siete presentaciones, imágenes
+y la prioridad de la grabación inicial. El resultado recibe resultados de solo lectura, un máximo
+explícito y revisión opcional; `expired` vale `false` por defecto. Práctica mantiene su máximo
+actual y competición utiliza el máximo publicado del desafío.
+
+Los contenedores conservan hooks, persistencia, temporizadores, claves y transiciones de
+`AnimatePresence`. Las superficies de pregunta local y competitiva permanecen independientes.
+La extracción reutiliza el DOM y CSS existentes.
 
 ## Editor administrativo
 

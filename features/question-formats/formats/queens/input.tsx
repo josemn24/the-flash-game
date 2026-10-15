@@ -1,7 +1,7 @@
 "use client";
 import { ServerQueensQuestion } from "@/components/questions/formats/queens/ServerQueensQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"queens">) {
   const {
     locked,
     queensState,
@@ -11,7 +11,7 @@ export function render(props: CompetitiveInputProps) {
     onQueensValidate,
     onRetryQueensValidation,
   } = props;
-  const question = props.question as Extract<CompetitiveInputProps["question"], { type: "queens" }>;
+  const { question } = props;
   return (
     <ServerQueensQuestion
       key={question.id}

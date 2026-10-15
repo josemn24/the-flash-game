@@ -1,15 +1,14 @@
 "use client";
 
 import { EscapeQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"escape">>) {
+}: PracticeInputProps<"escape">) {
   return (
     <EscapeQuestion
       key={question.id}

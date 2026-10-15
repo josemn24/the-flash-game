@@ -1,5 +1,7 @@
 "use client";
 
+import { createPracticeInput } from "@/features/question-formats/createPracticeInput";
+
 import { useMemo } from "react";
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { Canvas } from "@/components/ui";
@@ -119,6 +121,17 @@ export function FlashPopSurvivalGame({
   );
   const session = useSurvivalSession(scoredChallenge, { resumeState });
   useRoomAttemptSnapshot(roomContext, challenge.id, "survival", session.phase, session.snapshot);
+  const input = createPracticeInput({
+    question: session.question,
+    locked: session.locked,
+    codeAttemptCount: session.codeAttempts.length,
+    onSubmit: session.submitAnswer,
+    onCodeAttempt: session.handleCodeAttempt,
+    onProgress: session.handleAnswerProgress,
+    onIncorrectAttempt: session.handleIncorrectAttempt,
+    onProgressiveClueReveal: session.handleProgressiveClueReveal,
+    onTimedResponseStart: session.handleTimedResponseStart,
+  });
   const latestResult = session.results.at(-1);
   const finished = session.phase === "results" || session.phase === "review";
   const summary = finished ? toSummary(scoredChallenge, session) : null;
@@ -167,7 +180,7 @@ export function FlashPopSurvivalGame({
             <StartCountdown label="Supervivencia" key="countdown" onComplete={session.start} />
           ) : null}
 
-          {session.phase === "playing" && session.question ? (
+          {session.phase === "playing" && session.question && input ? (
             <motion.div
               key={session.question.id}
               initial={{ opacity: 0, x: 18 }}
@@ -175,18 +188,10 @@ export function FlashPopSurvivalGame({
               exit={{ opacity: 0, x: -18 }}
             >
               <SurvivalQuestionStage
-                question={session.question}
+                input={input}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
-                locked={session.locked}
-                codeAttemptCount={session.codeAttempts.length}
-                onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                onCodeAttempt={session.handleCodeAttempt}
-                onProgress={session.handleAnswerProgress}
-                onIncorrectAttempt={session.handleIncorrectAttempt}
-                onProgressiveClueReveal={session.handleProgressiveClueReveal}
-                onTimedResponseStart={session.handleTimedResponseStart}
                 livesRemaining={session.livesRemaining}
                 totalLives={scoredChallenge.lives}
               />

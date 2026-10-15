@@ -1,7 +1,7 @@
 "use client";
 import { ServerProgressiveCluesQuestion } from "@/components/questions/formats/progressive-clues/ServerProgressiveCluesQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"progressive-clues">) {
   const {
     locked,
     submissionState,
@@ -15,10 +15,7 @@ export function render(props: CompetitiveInputProps) {
     onRevealProgressiveClue,
     onRetryReveal,
   } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "progressive-clues" }
-  >;
+  const { question } = props;
   return (
     <ServerProgressiveCluesQuestion
       progress={question.progress}

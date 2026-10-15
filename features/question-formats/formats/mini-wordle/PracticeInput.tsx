@@ -1,9 +1,7 @@
 "use client";
 
 import { MiniWordleQuestion } from "@/components/questions";
-import { isMiniWordleAnswer } from "@/lib/scoring";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -12,7 +10,7 @@ export function PracticeInput({
   onProgress,
   onSubmit,
   onTimedResponseStart,
-}: QuestionInputProps<PracticeQuestionOfType<"mini-wordle">>) {
+}: PracticeInputProps<"mini-wordle">) {
   return (
     <MiniWordleQuestion
       correctAnswer={question.correctAnswer}
@@ -20,9 +18,7 @@ export function PracticeInput({
       hint={question.hint}
       wordLength={question.wordLength}
       maxAttempts={question.maxAttempts}
-      initialAnswer={
-        initialAnswer !== undefined && isMiniWordleAnswer(initialAnswer) ? initialAnswer : undefined
-      }
+      initialAnswer={initialAnswer}
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}

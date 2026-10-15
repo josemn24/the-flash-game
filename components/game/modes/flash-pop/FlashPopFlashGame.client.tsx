@@ -1,5 +1,7 @@
 "use client";
 
+import { createPracticeInput } from "@/features/question-formats/createPracticeInput";
+
 import { useMemo } from "react";
 import { motion, MotionConfig } from "motion/react";
 import { ButtonLink, Card, Canvas } from "@/components/ui";
@@ -54,6 +56,17 @@ export function FlashPopFlashGame({
     resumeState,
   });
   useRoomAttemptSnapshot(roomContext, challenge.id, "flash", session.phase, session.snapshot);
+  const input = createPracticeInput({
+    question: session.question,
+    locked: session.locked,
+    codeAttemptCount: session.codeAttempts.length,
+    onSubmit: session.submitAnswer,
+    onCodeAttempt: session.handleCodeAttempt,
+    onProgress: session.handleAnswerProgress,
+    onIncorrectAttempt: session.handleIncorrectAttempt,
+    onProgressiveClueReveal: session.handleProgressiveClueReveal,
+    onTimedResponseStart: session.handleTimedResponseStart,
+  });
   const lastResult = session.results[session.results.length - 1];
 
   useChallengeCompletionReporter(
@@ -108,7 +121,7 @@ export function FlashPopFlashGame({
       {session.phase === "countdown" ? (
         <StartCountdown label="Flash" key="countdown" onComplete={session.start} />
       ) : null}
-      {session.phase === "playing" && session.question ? (
+      {session.phase === "playing" && session.question && input ? (
         <motion.div
           className={styles.stageFrame}
           key={session.question.id}
@@ -117,18 +130,10 @@ export function FlashPopFlashGame({
           exit={{ opacity: 0, x: -18 }}
         >
           <FlashQuestionStage
-            question={session.question}
+            input={input}
             questionNumber={session.questionIndex + 1}
             totalQuestions={scoredChallenge.questions.length}
-            locked={session.locked}
-            codeAttemptCount={session.codeAttempts.length}
-            onSubmit={session.submitAnswer}
             onTimeUp={session.handleTimeUp}
-            onProgress={session.handleAnswerProgress}
-            onIncorrectAttempt={session.handleIncorrectAttempt}
-            onProgressiveClueReveal={session.handleProgressiveClueReveal}
-            onCodeAttempt={session.handleCodeAttempt}
-            onTimedResponseStart={session.handleTimedResponseStart}
           />
         </motion.div>
       ) : null}

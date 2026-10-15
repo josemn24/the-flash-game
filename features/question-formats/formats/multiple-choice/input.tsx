@@ -1,12 +1,9 @@
 "use client";
 import { AnswerOption, QuestionMedia } from "@/components/questions/shared";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"multiple-choice">) {
   const { locked, onSubmit, pendingAnswer } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "multiple-choice" }
-  >;
+  const { question } = props;
   const selected = typeof pendingAnswer === "string" ? pendingAnswer : null;
   return (
     <>

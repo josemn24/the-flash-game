@@ -1,5 +1,8 @@
 "use client";
 
+import { createPracticeInput } from "@/features/question-formats/createPracticeInput";
+import type { PracticeInputSource } from "@/features/question-formats/practiceInputTypes";
+
 import { MotionConfig } from "motion/react";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { CrossIcon, RotateIcon } from "@/components/ui";
@@ -33,6 +36,11 @@ function hasDelayedTimedResponse(question: PracticeQuestion) {
     question.type === "mini-wordle" ||
     question.type === "progressive-image"
   );
+}
+
+function ExampleQuestionInput({ source }: { source: PracticeInputSource }) {
+  const input = createPracticeInput(source);
+  return input ? <QuestionInput input={input} /> : null;
 }
 
 export function PlayableFormatExample({
@@ -269,25 +277,27 @@ export function PlayableFormatExample({
                   <QuestionMedia media={question.media} />
                 </div>
               )}
-              <QuestionInput
+              <ExampleQuestionInput
                 key={`input-${attempt}`}
-                question={question}
-                locked={false}
-                onSubmit={submitAnswer}
-                codeAttemptCount={codeAttemptCount}
-                onCodeAttempt={handleCodeAttempt}
-                onProgress={(answer) => {
-                  draftAnswerRef.current = answer;
-                }}
-                onIncorrectAttempt={() => {
-                  incorrectAttemptsRef.current += 1;
-                }}
-                onProgressiveClueReveal={(revealedClues) => {
-                  progressiveCluesRevealedRef.current = revealedClues;
-                }}
-                onTimedResponseStart={() => {
-                  startedAtRef.current = performance.now();
-                  setTimedResponseStarted(true);
+                source={{
+                  question,
+                  locked: false,
+                  onSubmit: submitAnswer,
+                  codeAttemptCount,
+                  onCodeAttempt: handleCodeAttempt,
+                  onProgress: (answer) => {
+                    draftAnswerRef.current = answer;
+                  },
+                  onIncorrectAttempt: () => {
+                    incorrectAttemptsRef.current += 1;
+                  },
+                  onProgressiveClueReveal: (revealedClues) => {
+                    progressiveCluesRevealedRef.current = revealedClues;
+                  },
+                  onTimedResponseStart: () => {
+                    startedAtRef.current = performance.now();
+                    setTimedResponseStarted(true);
+                  },
                 }}
               />
             </div>

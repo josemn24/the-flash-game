@@ -1,8 +1,7 @@
 "use client";
 
 import { ProgressiveCluesQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -12,14 +11,14 @@ export function PracticeInput({
   onProgressiveClueReveal,
   onSubmit,
   progressiveCluesRevealed,
-}: QuestionInputProps<PracticeQuestionOfType<"progressive-clues">>) {
+}: PracticeInputProps<"progressive-clues">) {
   return (
     <ProgressiveCluesQuestion
       questionId={question.id}
       clues={question.clues}
       cluePenalty={question.cluePenalty}
       points={question.points}
-      initialAnswer={typeof initialAnswer === "string" ? initialAnswer : undefined}
+      initialAnswer={initialAnswer}
       initialRevealedClues={progressiveCluesRevealed}
       locked={locked}
       onReveal={onProgressiveClueReveal}

@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
-import type { PracticeQuestionOfType, PracticeQuestionType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "./rendererTypes";
+import type { PracticeQuestionType } from "@/types/gameplay/practice";
+import type { PracticeInput, PracticeInputProps } from "./practiceInputTypes";
 import { PracticeInput as MultipleChoiceInput } from "./formats/multiple-choice/PracticeInput";
 import { PracticeInput as OddOneOutInput } from "./formats/odd-one-out/PracticeInput";
 import { PracticeInput as MatchingInput } from "./formats/matching/PracticeInput";
@@ -66,5 +66,77 @@ export const QUESTION_INPUT_RENDERERS = {
   zip: ZipInput,
   pipes: PipesInput,
 } satisfies {
-  [T in PracticeQuestionType]: ComponentType<QuestionInputProps<PracticeQuestionOfType<T>>>;
+  [T in PracticeQuestionType]: ComponentType<PracticeInputProps<T>>;
 };
+
+export function renderPracticeInput(input: PracticeInput) {
+  switch (input.format) {
+    case "multiple-choice":
+      return <MultipleChoiceInput {...input.props} />;
+    case "odd-one-out":
+      return <OddOneOutInput {...input.props} />;
+    case "matching":
+      return <MatchingInput {...input.props} />;
+    case "connect-pairs":
+      return <ConnectPairsInput {...input.props} />;
+    case "true-false":
+      return <TrueFalseInput {...input.props} />;
+    case "short-text":
+      return <ShortTextInput {...input.props} />;
+    case "progressive-clues":
+      return <ProgressiveCluesInput {...input.props} />;
+    case "progressive-image":
+      return <ProgressiveImageInput {...input.props} />;
+    case "heat-map":
+      return <HeatMapInput {...input.props} />;
+    case "image-labeling":
+      return <ImageLabelingInput {...input.props} />;
+    case "ordering":
+      return <OrderingInput {...input.props} />;
+    case "classification":
+      return <ClassificationInput {...input.props} />;
+    case "flash-memory":
+      return <FlashMemoryInput {...input.props} />;
+    case "memory-pairs":
+      return <MemoryPairsInput {...input.props} />;
+    case "simon-sequence":
+      return <SimonSequenceInput {...input.props} />;
+    case "logic-matrix":
+      return <LogicMatrixInput {...input.props} />;
+    case "mini-sudoku":
+      return <MiniSudokuInput {...input.props} />;
+    case "mini-nonogram":
+      return <MiniNonogramInput {...input.props} />;
+    case "queens":
+      return <QueensInput {...input.props} />;
+    case "time-maze":
+      return <TimeMazeInput {...input.props} />;
+    case "sliding-puzzle":
+      return <SlidingPuzzleInput {...input.props} />;
+    case "escape":
+      return <EscapeInput {...input.props} />;
+    case "error-reconstruction":
+      return <ErrorReconstructionInput {...input.props} />;
+    case "anagram":
+      return <AnagramInput {...input.props} />;
+    case "word-hashtag":
+      return <WordHashtagInput {...input.props} />;
+    case "word-search":
+      return <WordSearchInput {...input.props} />;
+    case "mini-wordle":
+      return <MiniWordleInput {...input.props} />;
+    case "logic-code":
+      return <LogicCodeInput {...input.props} />;
+    case "estimation":
+      return <EstimationInput {...input.props} />;
+    case "zip":
+      return <ZipInput {...input.props} />;
+    case "pipes":
+      return <PipesInput {...input.props} />;
+    default:
+      return unreachable(input);
+  }
+}
+function unreachable(input: never): never {
+  throw new Error(`Unsupported practice input: ${JSON.stringify(input)}`);
+}

@@ -66,8 +66,10 @@ describe("practice Mini-Wordle interactions", () => {
     expect(input().disabled).toBe(true);
     expect(actions.onTimedResponseStart).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Reintentar" }));
-    await waitFor(() => expect(input().disabled).toBe(false));
-    expect(actions.onTimedResponseStart).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(input().disabled).toBe(false);
+      expect(actions.onTimedResponseStart).toHaveBeenCalledTimes(1);
+    });
     expect(dictionary).toHaveBeenCalledTimes(2);
   });
 

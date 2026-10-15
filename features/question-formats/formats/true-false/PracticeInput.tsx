@@ -1,12 +1,8 @@
 "use client";
 
 import { TrueFalseQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
-export function PracticeInput({
-  locked,
-  onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"true-false">>) {
+export function PracticeInput({ locked, onSubmit }: PracticeInputProps<"true-false">) {
   return <TrueFalseQuestion locked={locked} onSubmit={onSubmit} />;
 }

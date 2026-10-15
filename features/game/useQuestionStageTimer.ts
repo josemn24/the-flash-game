@@ -19,7 +19,7 @@ type UseQuestionStageTimerOptions = {
   locked: boolean;
   deadlineAt?: number | null;
   onTimeUp: () => void;
-  onTimedResponseStart: () => void;
+  onTimedResponseStart?: () => void;
 };
 
 export function useQuestionStageTimer({
@@ -38,7 +38,7 @@ export function useQuestionStageTimer({
 
   const start = useCallback(() => {
     setStartedState({ questionId: question.id, started: true });
-    onTimedResponseStart();
+    onTimedResponseStart?.();
   }, [onTimedResponseStart, question.id]);
 
   const active = !locked && started && (deadlineAt === undefined || typeof deadlineAt === "number");

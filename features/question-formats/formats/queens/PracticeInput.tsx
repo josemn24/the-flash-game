@@ -1,9 +1,7 @@
 "use client";
 
 import { QueensQuestion } from "@/components/questions";
-import { isQueensAnswer } from "@/lib/queens";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -12,12 +10,12 @@ export function PracticeInput({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"queens">>) {
+}: PracticeInputProps<"queens">) {
   return (
     <QueensQuestion
       key={question.id}
       question={question}
-      initialAnswer={isQueensAnswer(initialAnswer, question.grid) ? initialAnswer : undefined}
+      initialAnswer={initialAnswer}
       locked={locked}
       onProgress={onProgress}
       onIncorrectAttempt={onIncorrectAttempt}
