@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261014203717_maintenance_rpc";
+const canonicalSchemaRevision = "20261015192008_attempt_command_handlers_refactor";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -102,9 +102,23 @@ async function checkDatabase() {
         and substring(pg_get_functiondef(to_regprocedure('private.execute_command(text,jsonb)'))
           from $contract$when 'complete' then(.*?)when 'abandon' then$contract$)
           not like '%''score''%'
-        and pg_get_functiondef(to_regprocedure('private.handle_attempt_command(text,jsonb,jsonb,uuid,jsonb,timestamptz)'))
+        and not exists (
+          select 1 from (values
+            ('private.handle_attempt_start(jsonb,jsonb,uuid,jsonb,boolean)', 'private.handle_attempt_start('),
+            ('private.handle_attempt_takeover(jsonb,jsonb,public.attempts,timestamptz)', 'private.handle_attempt_takeover('),
+            ('private.handle_attempt_prepare(public.attempts,private.challenge_versions,timestamptz)', 'private.handle_attempt_prepare('),
+            ('private.handle_attempt_activate(jsonb,public.attempts,timestamptz)', 'private.handle_attempt_activate('),
+            ('private.handle_attempt_submission(text,jsonb,public.attempts,private.challenge_versions,timestamptz,timestamptz)', 'private.handle_attempt_submission('),
+            ('private.handle_attempt_evaluation(jsonb,public.attempts,private.challenge_versions)', 'private.handle_attempt_evaluation('),
+            ('private.handle_attempt_closure(text,jsonb,public.attempts,public.scheduled_challenges,private.challenge_versions,timestamptz)', 'private.handle_attempt_closure(')
+          ) required(signature, delegation)
+          where to_regprocedure(required.signature) is null
+            or coalesce(strpos(pg_get_functiondef(to_regprocedure('private.handle_attempt_command(text,jsonb,jsonb,uuid,jsonb,timestamptz)')),
+              required.delegation), 0) = 0
+        )
+        and pg_get_functiondef(to_regprocedure('private.handle_attempt_closure(text,jsonb,public.attempts,public.scheduled_challenges,private.challenge_versions,timestamptz)'))
           like '%select coalesce(sum(answer.points), 0)::integer into points%'
-        and pg_get_functiondef(to_regprocedure('private.handle_attempt_command(text,jsonb,jsonb,uuid,jsonb,timestamptz)'))
+        and pg_get_functiondef(to_regprocedure('private.handle_attempt_closure(text,jsonb,public.attempts,public.scheduled_challenges,private.challenge_versions,timestamptz)'))
           not like '%input->>''score''%'
           as schema_revision_marker
     `);

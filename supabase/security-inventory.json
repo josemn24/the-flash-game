@@ -1370,6 +1370,48 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"],
       "volatility": "s"
+    },
+    "private.handle_attempt_evaluation": {
+      "arguments": "input jsonb, target_attempt attempts, target_version private.challenge_versions",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_activate": {
+      "arguments": "input jsonb, target_attempt attempts, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_submission": {
+      "arguments": "op text, input jsonb, target_attempt attempts, target_version private.challenge_versions, instant timestamp with time zone, received_at timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_prepare": {
+      "arguments": "target_attempt attempts, target_version private.challenge_versions, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_takeover": {
+      "arguments": "input jsonb, safe_input jsonb, target_attempt attempts, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_closure": {
+      "arguments": "op text, input jsonb, target_attempt attempts, target_schedule scheduled_challenges, target_version private.challenge_versions, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_start": {
+      "arguments": "input jsonb, safe_input jsonb, actor uuid, cached_result jsonb, is_admin boolean",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
     }
   }
 }

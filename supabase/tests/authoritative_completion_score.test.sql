@@ -18,8 +18,8 @@ begin
 end;
 $$;
 
-select is(regexp_count(pg_get_functiondef('private.handle_attempt_command(text,jsonb,jsonb,uuid,jsonb,timestamptz)'::regprocedure), 'sum\(answer.points\)'),
-  1, 'The handler has a single completion aggregation for every mode');
+select is(regexp_count(pg_get_functiondef('private.handle_attempt_closure(text,jsonb,public.attempts,public.scheduled_challenges,private.challenge_versions,timestamptz)'::regprocedure), 'sum\(answer.points\)'),
+  1, 'The closure operation has a single completion aggregation for every mode');
 
 select test_support.as_actor('member');
 select test_support.run('start_attempt', jsonb_build_object('scheduledChallengeId',test_support.id('sc-flash'),'sessionToken',gen_random_uuid()::text));

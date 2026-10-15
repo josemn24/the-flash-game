@@ -1,7 +1,7 @@
 # Modo, estado y resultado de los intentos
 
 Estado: vigente. Contrato implementado en TypeScript y PostgreSQL; despliegue conjunto tras el
-reinicio local de datos acordado. Revisión activa: `20261014203717_maintenance_rpc`.
+reinicio local de datos acordado. Revisión activa: `20261015192008_attempt_command_handlers_refactor`.
 
 `status` describe el ciclo de vida. `outcome` conserva el desenlace oficial y no determina los
 puntos. El modo procede de la versión inmutable del desafío, sin una columna adicional en

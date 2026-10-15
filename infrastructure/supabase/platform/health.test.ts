@@ -76,6 +76,18 @@ describe("readPrivateHealth", () => {
     expect(markerQuery).toContain("private.raise_if_session_transferred");
     expect(markerQuery).toContain("when 'complete' then(.*?)when 'abandon' then");
     expect(markerQuery).toContain("not like '%''score''%'");
+    for (const operation of [
+      "start",
+      "takeover",
+      "prepare",
+      "activate",
+      "submission",
+      "evaluation",
+      "closure",
+    ]) {
+      expect(markerQuery).toContain(`private.handle_attempt_${operation}(`);
+    }
+    expect(markerQuery).toContain("required.delegation");
     expect(markerQuery).toContain("select coalesce(sum(answer.points), 0)::integer into points");
     expect(markerQuery).toContain("not like '%input->>''score''%'");
   });

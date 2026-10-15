@@ -24,8 +24,12 @@ de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/READ
 
 El historial activo comienza con `20261011180045_initial_schema.sql`, un baseline generado desde los
 82 archivos declarativos, y continúa con las migraciones incrementales. La revisión más reciente es
-`20261014203717_maintenance_rpc`; las migraciones anteriores al baseline permanecen en Git,
+`20261015192008_attempt_command_handlers_refactor`; las migraciones anteriores al baseline permanecen en Git,
 pero no forman parte del historial activo.
+
+La [extracción de operaciones de intentos](../docs/current/sql-attempt-command-handlers-refactor.md)
+reduce el coordinador a autorización y delegación, mantiene los contratos y se entrega en una
+única migración incremental. Su prueba de actualización usa partidas existentes en bases desechables.
 
 La migración de longitud de Alfabeto añade una lectura privada para el servidor. La API de preparación
 expone solo `answerLength`, fuera del payload almacenado; no cambia las soluciones ni las versiones publicadas.

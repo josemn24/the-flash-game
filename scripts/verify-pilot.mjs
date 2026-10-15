@@ -15,7 +15,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261014203717_maintenance_rpc",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261015192008_attempt_command_handlers_refactor",
 };
 
 async function run(label, command, args, options = {}) {
@@ -61,6 +61,7 @@ try {
   await run("schema-revision", "npm", ["run", "schema:revision:check"]);
   await run("schema-security", "npm", ["run", "supabase:schema:test"]);
   await run("schema-migrations", "npm", ["run", "supabase:schema:test", "--", "--migrations"]);
+  await run("schema-upgrade", "npm", ["run", "supabase:schema:upgrade:test"]);
   await run("schema-reconciliation", "npm", ["run", "supabase:schema:reconciliation:test"]);
   await run("maintenance-rpc-schema", "npm", ["run", "test:integration:maintenance-rpc"]);
   await run("maintenance-rpc-migrations", "npm", [
