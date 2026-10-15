@@ -1,5 +1,5 @@
--- S12 — Schedule published Flash content and reconcile the local calendar.
--- Administrative writes use the existing publication table; no client DML is exposed.
+-- S12 — Programación de publicaciones del calendario.
+-- Las escrituras administrativas usan la tabla de publicaciones existente; no exponen DML al cliente.
 
 create function private.assert_supported_calendar_content(version_id uuid) returns void
 language plpgsql stable security definer set search_path = '' as $$
@@ -85,6 +85,7 @@ begin
   end if;
 end;
 $$;
+
 
 create function private.create_scheduled_challenge_command(input jsonb) returns jsonb
 language plpgsql volatile security definer set search_path = '' as $$
@@ -239,6 +240,7 @@ begin
 end;
 $$;
 
+
 create function private.update_scheduled_challenge_command(input jsonb) returns jsonb
 language plpgsql volatile security definer set search_path = '' as $$
 declare
@@ -379,6 +381,7 @@ begin
 end;
 $$;
 
+
 create function private.cancel_scheduled_challenge_command(input jsonb) returns jsonb
 language plpgsql volatile security definer set search_path = '' as $$
 declare
@@ -514,437 +517,18 @@ begin
 end;
 $$;
 
-create function private.expire_stale_attempts(input jsonb) returns jsonb
-language plpgsql volatile security definer set search_path = '' as $$
-declare
-  run_id_value text;
-  attempt_id_value uuid;
-  room_slug_value text;
-  now_value timestamptz;
-  attempt_row public.attempts%rowtype;
-  abandoned_count integer := 0;
-begin
-  if coalesce(current_setting('role', true), '') <> 'service_role' then
-    raise exception 'attempt_expiration_unauthorized' using errcode = '42501';
-  end if;
-  if input is null or jsonb_typeof(input) is distinct from 'object'
-    or not input ? 'runId'
-    or exists (
-      select 1 from jsonb_object_keys(input) key_name
-      where key_name <> all(array['runId','attemptId','roomSlug'])
-    )
-    or jsonb_typeof(input->'runId') is distinct from 'string'
-    or (input ? 'attemptId' and jsonb_typeof(input->'attemptId') is distinct from 'string')
-    or (input ? 'roomSlug' and jsonb_typeof(input->'roomSlug') is distinct from 'string')
-    or (input ? 'attemptId' and input ? 'roomSlug') then
-    raise exception 'attempt_expiration_invalid' using errcode = '22023';
-  end if;
-
-  run_id_value := btrim(input->>'runId');
-  if char_length(run_id_value) not between 8 and 160 then
-    raise exception 'attempt_expiration_invalid' using errcode = '22023';
-  end if;
-  if input ? 'attemptId' then
-    begin
-      attempt_id_value := (input->>'attemptId')::uuid;
-    exception when others then
-      raise exception 'attempt_expiration_invalid' using errcode = '22023';
-    end;
-  end if;
-  if input ? 'roomSlug' then
-    room_slug_value := btrim(input->>'roomSlug');
-    if char_length(room_slug_value) = 0 or char_length(room_slug_value) > 160 then
-      raise exception 'attempt_expiration_invalid' using errcode = '22023';
-    end if;
-  end if;
-
-  perform pg_advisory_xact_lock(hashtextextended('calendar-tick-global', 0));
-  now_value := clock_timestamp();
-
-  for attempt_row in
-    select attempt.*
-    from public.attempts attempt
-    join public.scheduled_challenges schedule on schedule.id = attempt.scheduled_challenge_id
-    join public.seasons season on season.id = schedule.season_id
-    join public.rooms room on room.id = season.room_id
-    where attempt.kind = 'competitive'
-      and attempt.status = 'in_progress'
-      and coalesce(attempt.last_activity_at, attempt.started_at) <= now_value - interval '15 minutes'
-      and (private.publication_effective_status(
-        schedule.status, season.status, season.starts_at, season.ends_at,
-        schedule.opens_at, schedule.closes_at, now_value
-      ) = 'closed' or attempt.deadline_at <= now_value)
-      and (attempt_id_value is null or attempt.id = attempt_id_value)
-      and (room_slug_value is null or room.slug = room_slug_value)
-    order by attempt.id
-    for update of attempt skip locked
-  loop
-    if private.close_attempt_as_abandoned(
-      attempt_row.id,
-      now_value,
-      'inactivity_timeout',
-      null,
-      run_id_value || ':inactivity_timeout:' || attempt_row.id::text,
-      '15 minutes without activity after challenge closure or deadline'
-    ) then
-      abandoned_count := abandoned_count + 1;
-    end if;
-  end loop;
-
-  return jsonb_build_object(
-    'runId', run_id_value,
-    'evaluatedAt', now_value,
-    'abandonedAttempts', abandoned_count
-  );
-end;
-$$;
-
-create function private.run_calendar_tick_command(input jsonb) returns jsonb
-language plpgsql volatile security definer set search_path = '' as $$
-declare
-  run_id_value text;
-  now_value timestamptz;
-  room_id_value uuid;
-  schedule_row public.scheduled_challenges%rowtype;
-  season_row public.seasons%rowtype;
-  opened_count integer := 0;
-  closed_count integer := 0;
-  finished_count integer := 0;
-  abandoned_count integer := 0;
-  expiration_result jsonb;
-begin
-  if coalesce(current_setting('role', true), '') <> 'service_role' then
-    raise exception 'calendar_tick_unauthorized' using errcode = '42501';
-  end if;
-  if input is null or jsonb_typeof(input) is distinct from 'object'
-    or not input ? 'runId'
-    or exists (select 1 from jsonb_object_keys(input) key_name where key_name <> 'runId')
-    or jsonb_typeof(input->'runId') is distinct from 'string' then
-    raise exception 'calendar_tick_invalid' using errcode = '22023';
-  end if;
-  run_id_value := btrim(input->>'runId');
-  if char_length(run_id_value) not between 8 and 160 then
-    raise exception 'calendar_tick_invalid' using errcode = '22023';
-  end if;
-
-  perform pg_advisory_xact_lock(hashtextextended('calendar-tick-global', 0));
-  now_value := clock_timestamp();
-
-  -- Administrative commands and the tick always acquire room, then season,
-  -- then publication locks. This avoids cross-slice deadlocks.
-  for room_id_value in
-    select distinct season.room_id
-    from public.seasons season
-    left join public.scheduled_challenges schedule on schedule.season_id = season.id
-    where (season.status = 'active' and season.ends_at <= now_value)
-       or (schedule.status in ('scheduled', 'open') and schedule.closes_at <= now_value)
-    order by season.room_id
-  loop
-    perform 1 from public.rooms room where room.id = room_id_value for update;
-  end loop;
-
-  for season_row in
-    select season.*
-    from public.seasons season
-    where (season.status = 'active' and season.ends_at <= now_value)
-       or exists (
-         select 1 from public.scheduled_challenges schedule
-         where schedule.season_id = season.id
-           and schedule.status in ('scheduled', 'open')
-           and schedule.closes_at <= now_value
-       )
-    order by season.id
-  loop
-    perform 1 from public.seasons season where season.id = season_row.id for update;
-  end loop;
-
-  for schedule_row in
-    select schedule.*
-    from public.scheduled_challenges schedule
-    join public.seasons season on season.id = schedule.season_id
-    where schedule.status in ('scheduled', 'open')
-      and schedule.closes_at <= now_value
-    order by schedule.id
-  loop
-    perform 1 from public.scheduled_challenges schedule where schedule.id = schedule_row.id for update;
-    update public.scheduled_challenges
-    set status = 'closed'
-    where id = schedule_row.id and status in ('scheduled', 'open') and closes_at <= now_value;
-    if found then
-      closed_count := closed_count + 1;
-      insert into private.audit_log(
-        actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
-      ) values (
-        null, 'close_scheduled_challenge', 'scheduled_challenge', schedule_row.id, 'calendar tick', run_id_value,
-        jsonb_build_object('status', schedule_row.status), jsonb_build_object('status', 'closed')
-      );
-    end if;
-  end loop;
-
-  for schedule_row in
-    select schedule.*
-    from public.scheduled_challenges schedule
-    join public.seasons season on season.id = schedule.season_id
-    where schedule.status = 'scheduled'
-      and schedule.opens_at <= now_value and now_value < schedule.closes_at
-      and season.status = 'active'
-      and season.starts_at <= now_value and now_value < season.ends_at
-    order by schedule.id
-  loop
-    perform 1 from public.scheduled_challenges schedule where schedule.id = schedule_row.id for update;
-    update public.scheduled_challenges
-    set status = 'open'
-    where id = schedule_row.id and status = 'scheduled'
-      and opens_at <= now_value and now_value < closes_at;
-    if found then
-      opened_count := opened_count + 1;
-      insert into private.audit_log(
-        actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
-      ) values (
-        null, 'open_scheduled_challenge', 'scheduled_challenge', schedule_row.id, 'calendar tick', run_id_value,
-        jsonb_build_object('status', 'scheduled'), jsonb_build_object('status', 'open')
-      );
-    end if;
-  end loop;
-
-  for season_row in
-    select season.* from public.seasons season
-    where season.status = 'active' and season.ends_at <= now_value
-    order by season.id
-  loop
-    perform 1 from public.seasons season where season.id = season_row.id for update;
-    update public.seasons set status = 'finished'
-    where id = season_row.id and status = 'active' and ends_at <= now_value;
-    if found then
-      finished_count := finished_count + 1;
-      insert into private.audit_log(
-        actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
-      ) values (
-        null, 'finish_season', 'season', season_row.id, 'calendar tick', run_id_value,
-        jsonb_build_object('status', 'active'), jsonb_build_object('status', 'finished')
-      );
-    end if;
-  end loop;
-
-  select private.expire_stale_attempts(jsonb_build_object('runId', run_id_value))
-    into expiration_result;
-  abandoned_count := (expiration_result->>'abandonedAttempts')::integer;
-
-  return jsonb_build_object(
-    'runId', run_id_value, 'evaluatedAt', now_value,
-    'opened', opened_count, 'closed', closed_count, 'finishedSeasons', finished_count,
-    'abandonedAttempts', abandoned_count
-  );
-end;
-$$;
-
-create function public.get_superadmin_calendar_context() returns jsonb
-language plpgsql stable security definer set search_path = '' as $$
-declare
-  actor uuid := (select private.current_player_id());
-begin
-  if actor is null or not exists (
-    select 1 from private.platform_role_assignments assignment
-    where assignment.player_id = actor and assignment.role = 'superadmin'
-  ) then
-    raise exception 'not_authorized' using errcode = '42501';
-  end if;
-  return jsonb_build_object(
-    'entries', coalesce((
-      select jsonb_agg(jsonb_build_object(
-        'scheduledChallengeId', schedule.id,
-        'roomId', room.id,
-        'roomSlug', room.slug,
-        'roomTitle', room.title,
-        'timeZone', room.time_zone,
-        'seasonId', season.id,
-        'seasonTitle', season.title,
-        'seasonStatus', season.status,
-        'challengeVersionId', version.id,
-        'challengeSlug', definition.slug,
-        'versionNumber', version.version_number,
-        'challengeTitle', version.title,
-        'challengeSubtitle', version.subtitle,
-        'mode', version.mode,
-        'number', schedule.number,
-        'status', schedule.status,
-        'opensAt', schedule.opens_at,
-        'closesAt', schedule.closes_at,
-        'updatedAt', schedule.updated_at
-      ) order by schedule.opens_at desc, schedule.id)
-      from public.scheduled_challenges schedule
-      join public.seasons season on season.id = schedule.season_id
-      join public.rooms room on room.id = season.room_id
-      join private.challenge_versions version on version.id = schedule.challenge_version_id
-      join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where room.status = 'active' and version.status in ('published', 'archived') and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
-    ), '[]'::jsonb)
-  );
-end;
-$$;
-
-create function public.get_superadmin_room_calendar_context(target_room_id uuid) returns jsonb
-language plpgsql stable security definer set search_path = '' as $$
-declare
-  actor uuid := (select private.current_player_id());
-begin
-  if actor is null or not exists (
-    select 1 from private.platform_role_assignments assignment
-    where assignment.player_id = actor and assignment.role = 'superadmin'
-  ) then
-    raise exception 'not_authorized' using errcode = '42501';
-  end if;
-  return jsonb_build_object(
-    'entries', coalesce((
-      select jsonb_agg(jsonb_build_object(
-        'scheduledChallengeId', schedule.id,
-        'roomId', room.id,
-        'roomSlug', room.slug,
-        'roomTitle', room.title,
-        'timeZone', room.time_zone,
-        'seasonId', season.id,
-        'seasonTitle', season.title,
-        'seasonStatus', season.status,
-        'challengeVersionId', version.id,
-        'challengeSlug', definition.slug,
-        'versionNumber', version.version_number,
-        'challengeTitle', version.title,
-        'challengeSubtitle', version.subtitle,
-        'mode', version.mode,
-        'number', schedule.number,
-        'status', schedule.status,
-        'opensAt', schedule.opens_at,
-        'closesAt', schedule.closes_at,
-        'updatedAt', schedule.updated_at
-      ) order by schedule.opens_at desc, schedule.id)
-      from public.scheduled_challenges schedule
-      join public.seasons season on season.id = schedule.season_id
-      join public.rooms room on room.id = season.room_id
-      join private.challenge_versions version on version.id = schedule.challenge_version_id
-      join private.challenge_definitions definition on definition.id = version.challenge_definition_id
-      where room.id = target_room_id
-        and room.status = 'active'
-        and version.status in ('published', 'archived')
-        and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
-    ), '[]'::jsonb)
-  );
-end;
-$$;
-
-create function public.get_room_calendar(target_room_slug text)
-returns table (
-  room_id uuid,
-  room_slug text,
-  room_title text,
-  time_zone text,
-  membership_role text,
-  season_id uuid,
-  season_title text,
-  season_status text,
-  publication_id uuid,
-  publication_number integer,
-  publication_status text,
-  availability_status text,
-  opens_at timestamptz,
-  closes_at timestamptz,
-  challenge_title text,
-  challenge_subtitle text,
-  challenge_mode text,
-  question_count bigint,
-  own_attempt_status text,
-  can_start boolean,
-  can_continue boolean
-)
-language sql stable security definer set search_path = '' as $$
-  select
-    room.id, room.slug, room.title, room.time_zone, membership.role,
-    season.id, season.title, season.status,
-    schedule.id, schedule.number, schedule.status,
-    private.publication_effective_status(
-      schedule.status, season.status, season.starts_at, season.ends_at,
-      schedule.opens_at, schedule.closes_at, statement_timestamp()
-    ),
-    schedule.opens_at, schedule.closes_at,
-    version.title, version.subtitle, version.mode,
-    compatibility.question_count,
-    attempt.status,
-    membership.role <> 'spectator' and (
-      version.mode = 'flash' and version.mode_config = '{}'::jsonb
-      or version.mode = 'alphabet' and version.mode_config = '{}'::jsonb
-      or version.mode = 'survival'
-        and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
-        and jsonb_typeof(version.mode_config->'lives') = 'number'
-        and (version.mode_config->>'lives')::integer between 1 and compatibility.question_count
-      or version.mode = 'time-trial'
-        and version.mode_config = '{}'::jsonb
-        and version.global_time_limit_ms > 0
-      or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
-        and compatibility.question_count = 7
-      or version.mode = 'narrative'
-        and jsonb_typeof(version.mode_config) = 'object'
-        and jsonb_typeof(version.mode_config->'prologue') = 'object'
-        and jsonb_typeof(version.mode_config->'beats') = 'array'
-    ) and compatibility.is_supported and private.publication_is_effectively_open(
-      schedule.status, season.status, season.starts_at, season.ends_at,
-      schedule.opens_at, schedule.closes_at, statement_timestamp()
-    ),
-    coalesce(attempt.status = 'in_progress', false)
-  from public.rooms room
-  join public.room_memberships membership on membership.room_id = room.id
-  join public.seasons season on season.room_id = room.id and season.status in ('active', 'finished')
-  join public.scheduled_challenges schedule on schedule.season_id = season.id
-  join private.challenge_versions version on version.id = schedule.challenge_version_id
-  join lateral (
-    select
-      count(*)::bigint as question_count,
-      (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'time-trial')
-        or count(*) = 7 and version.mode = 'pyramid')
-        and coalesce(bool_and(item.position between 1 and case when version.mode = 'pyramid' then 7 else 20 end), false)
-        and coalesce(bool_and(item.points > 0), false)
-        and coalesce(bool_and(item.config_schema_version = 1 and (
-          version.mode = 'pyramid' and private.is_valid_pyramid_level_config(item.mode_config)
-          or version.mode = 'narrative'
-            and jsonb_typeof(item.mode_config) = 'object'
-            and jsonb_typeof(item.mode_config->'questionSlug') = 'string'
-          or version.mode = 'alphabet'
-            and jsonb_typeof(item.mode_config->'letter') = 'string'
-          or version.mode = 'time-trial'
-            and version.mode_config = '{}'::jsonb
-            and version.global_time_limit_ms > 0
-            and question.type = 'queens'
-            and item.mode_config = '{}'::jsonb
-          or version.mode not in ('pyramid', 'narrative', 'alphabet', 'time-trial')
-            and item.mode_config = '{}'::jsonb
-        )), false)
-        and (version.mode <> 'pyramid' or count(distinct item.mode_config->>'levelId') = 7)
-        and count(*) filter (where private.is_supported_flash_question(question.id)) = count(*)
-        and coalesce(sum(item.points), 0) = 100 as is_supported
-    from private.challenge_items item
-    join private.question_versions question on question.id = item.question_version_id
-    where item.challenge_version_id = version.id
-  ) compatibility on true
-  left join public.attempts attempt on attempt.scheduled_challenge_id = schedule.id
-    and attempt.player_id = private.current_player_id() and attempt.kind = 'competitive'
-  where room.slug = target_room_slug
-    and room.status = 'active'
-    and membership.player_id = private.current_player_id()
-    and membership.status = 'active'
-    and version.status in ('published', 'archived')
-    and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'pyramid', 'time-trial')
-    and version.config_schema_version = 1
-    and version.max_score = 100
-  order by schedule.number
-$$;
 
 create function public.create_superadmin_scheduled_challenge(input jsonb) returns jsonb
 language sql volatile security definer set search_path = '' as $$
   select private.create_scheduled_challenge_command(input);
 $$;
 
+
 create function public.update_superadmin_scheduled_challenge(input jsonb) returns jsonb
 language sql volatile security definer set search_path = '' as $$
   select private.update_scheduled_challenge_command(input);
 $$;
+
 
 create function public.cancel_superadmin_scheduled_challenge(input jsonb) returns jsonb
 language sql volatile security definer set search_path = '' as $$
@@ -955,25 +539,15 @@ alter function private.assert_supported_calendar_content(uuid) owner to postgres
 alter function private.create_scheduled_challenge_command(jsonb) owner to postgres;
 alter function private.update_scheduled_challenge_command(jsonb) owner to postgres;
 alter function private.cancel_scheduled_challenge_command(jsonb) owner to postgres;
-alter function private.expire_stale_attempts(jsonb) owner to postgres;
-alter function private.run_calendar_tick_command(jsonb) owner to postgres;
-alter function public.get_superadmin_calendar_context() owner to postgres;
-alter function public.get_superadmin_room_calendar_context(uuid) owner to postgres;
-alter function public.get_room_calendar(text) owner to postgres;
 alter function public.create_superadmin_scheduled_challenge(jsonb) owner to postgres;
 alter function public.update_superadmin_scheduled_challenge(jsonb) owner to postgres;
 alter function public.cancel_superadmin_scheduled_challenge(jsonb) owner to postgres;
-
 revoke all on function private.assert_supported_calendar_content(uuid),
   private.create_scheduled_challenge_command(jsonb), private.update_scheduled_challenge_command(jsonb),
-  private.cancel_scheduled_challenge_command(jsonb),
-  private.expire_stale_attempts(jsonb),
-  private.run_calendar_tick_command(jsonb) from public, anon, authenticated, service_role;
-revoke all on function public.get_superadmin_calendar_context(), public.get_superadmin_room_calendar_context(uuid), public.get_room_calendar(text),
-  public.create_superadmin_scheduled_challenge(jsonb), public.update_superadmin_scheduled_challenge(jsonb),
-  public.cancel_superadmin_scheduled_challenge(jsonb)
+  private.cancel_scheduled_challenge_command(jsonb) from public, anon, authenticated, service_role;
+revoke all on function public.create_superadmin_scheduled_challenge(jsonb),
+  public.update_superadmin_scheduled_challenge(jsonb), public.cancel_superadmin_scheduled_challenge(jsonb)
   from public, anon, service_role;
-grant execute on function public.get_superadmin_calendar_context(), public.get_superadmin_room_calendar_context(uuid), public.get_room_calendar(text),
-  public.create_superadmin_scheduled_challenge(jsonb), public.update_superadmin_scheduled_challenge(jsonb),
-  public.cancel_superadmin_scheduled_challenge(jsonb)
+grant execute on function public.create_superadmin_scheduled_challenge(jsonb),
+  public.update_superadmin_scheduled_challenge(jsonb), public.cancel_superadmin_scheduled_challenge(jsonb)
   to authenticated;

@@ -1,6 +1,6 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 84 archivos. La revisión más reciente aplicada
+Estado: el esquema declarativo vigente se compone de 85 archivos. La revisión más reciente aplicada
 es `20261014203717_maintenance_rpc`; el historial activo empieza con el baseline
 `20261011180045_initial_schema` y continúa con migraciones incrementales. Las migraciones anteriores
 al baseline permanecen en Git, fuera del historial activo. La validación local corresponde a
@@ -184,7 +184,9 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [59_superadmin_season_commands.sql](59_superadmin_season_commands.sql)           | Creación, actualización y activación auditadas de temporadas desde el portal de superadmin.                                                                     |
 | [61_question_library.sql](61_question_library.sql)                               | Biblioteca protegida de preguntas individuales, historial de versiones, publicación/archivo e índice anti-duplicados por desafío; usa el validador común.       |
 | [62_media_assets.sql](62_media_assets.sql)                                       | Registro privado de objetos de Storage, estados, metadatos, ownership e índices.                                                                                |
-| [59_superadmin_calendar_commands.sql](59_superadmin_calendar_commands.sql)       | Programación/reprogramación de Flash/Supervivencia/Pirámide publicados, lecturas de calendario y tick temporal con locks/auditoría.                             |
+| [59_superadmin_calendar_01_commands.sql](59_superadmin_calendar_01_commands.sql) | Validación de contenido y comandos de programación/reprogramación/cancelación con wrappers y ACL. |
+| [59_superadmin_calendar_02_reads.sql](59_superadmin_calendar_02_reads.sql)       | Lecturas protegidas del calendario de superadmin y del calendario de sala, con ACL. |
+| [59_superadmin_calendar_03_maintenance.sql](59_superadmin_calendar_03_maintenance.sql) | Tick, expiración de intentos y RPC de mantenimiento con límites; el EXECUTE privado de `service_role` se aplica tras la revocación global de `70_rls.sql`. |
 | [s20_superadmin_attempt_reads.sql](s20_superadmin_attempt_reads.sql)             | Lecturas protegidas por sala/publicación para inspección de intentos competitivos; cursor estable, score original/efectivo y detalle sin soluciones.            |
 | [60_integrity.sql](60_integrity.sql)                                             | Integridad estructural, admisión de intentos según la ventana efectiva, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción. |
 | [70_rls.sql](70_rls.sql)                                                         | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                                                           |
@@ -196,7 +198,6 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [90_commands.sql](90_commands.sql)                                               | Validación de comandos, idempotencia, despacho, auditoría y wrappers server-only.                                                                               |
 | [91_attempt_recovery.sql](91_attempt_recovery.sql)                               | Contexto privado del evaluador y operaciones de recuperación/lectura de intentos.                                                                               |
 | [91_room_membership_commands.sql](91_room_membership_commands.sql)               | Gestión autenticada de roles y estado de membresías por el propietario, con idempotencia y auditoría.                                                           |
-| [91_calendar_tick_acl.sql](91_calendar_tick_acl.sql)                             | RPC invoker de calendario y expiración, límites SQL y ACL exclusivas de `service_role`, sin DML de tablas.                                                      |
 | [92_mini_wordle_commands.sql](92_mini_wordle_commands.sql)                       | Comando transaccional de guess, idempotencia, secuencia, recepción terminal y evaluación posterior.                                                             |
 | [93_logic_code.sql](93_logic_code.sql)                                           | Eventos privados, progreso seguro y comando transaccional de intentos Logic-code.                                                                               |
 | [89_progressive_clues.sql](89_progressive_clues.sql)                             | Eventos privados, metadatos/prefijo seguro y cálculo de penalización de Progressive-clues.                                                                      |
