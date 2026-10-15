@@ -61,7 +61,7 @@ reset role;
 create trigger test_fail_audit before insert on private.audit_log for each row execute function test_support.fail_audit();
 set local role service_role;
 select throws_ok($$select test_support.run('take_over_attempt','{"newSessionToken":"tttttttttttttttttttttttttttttttttttttttt"}')$$,'P0001',null,'Takeover audit failure rolls back the transfer');
-select throws_ok($$select test_support.run('complete_attempt','{"score":50}')$$,'P0001',null,'Completion audit failure rolls back accreditation');
+select throws_ok($$select test_support.run('complete_attempt','{}')$$,'P0001',null,'Completion audit failure rolls back accreditation');
 reset role;
 select is((select count(*) from private.attempt_sessions where revoked_at is null),1::bigint,'Failed completion retains the original active session');
 select is((select count(*) from private.attempt_sessions),1::bigint,'Failed takeover does not create a new session');
@@ -69,7 +69,7 @@ select is((select status from public.attempts),'in_progress','Failed completion 
 select is((select count(*) from private.flash_point_entries),0::bigint,'Failed completion does not credit points');
 drop trigger test_fail_audit on private.audit_log;
 set local role service_role;
-select test_support.run('complete_attempt','{"score":50}');
+select test_support.run('complete_attempt','{}');
 reset role;
 select test_support.as_actor('superadmin');
 create trigger test_fail_audit before insert on private.audit_log for each row execute function test_support.fail_audit();
@@ -152,7 +152,7 @@ select test_support.run('record_evaluation','{"status":"unanswered","points":0}'
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer','{"answer":null}');
 select test_support.run('record_evaluation','{"status":"unanswered","points":0}');
-select lives_ok($$select test_support.run('complete_attempt','{"score":0}')$$,'Expired global session still authorizes timeout cleanup and atomic completion');
+select lives_ok($$select test_support.run('complete_attempt','{}')$$,'Expired global session still authorizes timeout cleanup and atomic completion');
 reset role;
 set constraints all immediate;
 select * from finish();

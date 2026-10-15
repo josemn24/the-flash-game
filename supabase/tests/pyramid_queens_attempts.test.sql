@@ -50,7 +50,7 @@ select test_support.run('record_evaluation', '{"status":"incorrect","points":0,"
 select is(test_support.repeat_last(), (select last_result from test_support.runtime), 'The exhausted result is recorded idempotently');
 select throws_ok($$select test_support.run('prepare_interaction')$$,
   '55000', 'pyramid_level_failed', 'The next level is unavailable after exhausting attempts');
-select is(test_support.run('complete_attempt', '{"score":0,"outcome":"failed"}')->>'outcome', 'failed', 'Exhaustion finishes Pyramid as failed');
+select is(test_support.run('complete_attempt', '{"outcome":"failed"}')->>'outcome', 'failed', 'Exhaustion finishes Pyramid as failed');
 select is(test_support.repeat_last(), (select last_result from test_support.runtime), 'Failure finalization is idempotent');
 reset role;
 select is((select count(*) from private.queens_validation_events
@@ -107,6 +107,6 @@ select is(private.read_evaluation_context(
   (select state->>'sessionToken' from test_support.runtime))->'incorrectValidations',
   '2'::jsonb, 'A late validation does not consume a third opportunity');
 select test_support.run('record_evaluation', '{"status":"unanswered","points":0}');
-select is(test_support.run('complete_attempt', '{"score":0,"outcome":"failed"}')->>'outcome', 'failed', 'Timeout retains Pyramid failure policy');
+select is(test_support.run('complete_attempt', '{"outcome":"failed"}')->>'outcome', 'failed', 'Timeout retains Pyramid failure policy');
 select * from finish();
 rollback;

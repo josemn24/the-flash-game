@@ -395,6 +395,78 @@ export async function testConcurrentCommands(sql) {
   );
   assert.equal((await sql("select count(*) from private.answer_receipts;")).trim(), "1");
 
+  // Finalization and the last evaluation share the attempt lock and version boundary.
+  const firstEvaluation = evaluations.find((result) => result.status === "fulfilled").value;
+  const lastPrepared = await run("owner", "prepare_interaction", {
+    attemptId: a.attemptId,
+    lockVersion: firstEvaluation.lockVersion,
+    sessionToken: response.sessionToken,
+    idempotencyKey: "final-answer-prepare",
+  });
+  const lastReceipt = await run("owner", "receive_answer", {
+    attemptId: a.attemptId,
+    lockVersion: lastPrepared.lockVersion,
+    sessionToken: response.sessionToken,
+    challengeItemId: lastPrepared.challengeItemId,
+    answer: true,
+    idempotencyKey: "final-answer-receive",
+  });
+  const completion = {
+    attemptId: a.attemptId,
+    lockVersion: lastReceipt.lockVersion,
+    sessionToken: response.sessionToken,
+    idempotencyKey: "final-answer-complete",
+  };
+  await assert.rejects(run("owner", "complete_attempt", completion), /unfinished_interaction/);
+  const lastEvaluation = await invoke(
+    "owner",
+    "record_evaluation",
+    {
+      ...completion,
+      receiptId: lastReceipt.receiptId,
+      status: "correct",
+      points: 19,
+      idempotencyKey: "final-answer-evaluate",
+    },
+    true,
+  );
+  const staleCompletion = await invoke("owner", "complete_attempt", {
+    ...completion,
+    idempotencyKey: "final-answer-stale-complete",
+  });
+  await assert.rejects(
+    staleCompletion.done,
+    /stale_version/,
+    "The closure waits for the last evaluation and rejects its old version",
+  );
+  const lastEvaluated = await lastEvaluation.done;
+  const currentCompletion = { ...completion, lockVersion: lastReceipt.lockVersion + 1 };
+  const closingAfterEvaluation = await invoke("owner", "complete_attempt", currentCompletion, true);
+  const duplicateCompletion = await invoke("owner", "complete_attempt", currentCompletion);
+  const [closed, duplicateClosed] = await Promise.allSettled([
+    closingAfterEvaluation.done,
+    duplicateCompletion.done,
+  ]);
+  assert.equal(lastEvaluated.lockVersion, currentCompletion.lockVersion);
+  assert.equal(closed.status, "fulfilled");
+  assert.equal(duplicateClosed.status, "fulfilled");
+  assert.equal(closed.value.score, 69, "Completion includes the last committed evaluation");
+  assert.deepEqual(closed.value, duplicateClosed.value);
+  assert.deepEqual(
+    await run("owner", "complete_attempt", currentCompletion),
+    closed.value,
+    "Lost final confirmation recovers the original total",
+  );
+  assert.equal(
+    (
+      await sql(`select score, (select sum(points) from private.attempt_answers where attempt_id=a.id),
+    (select sum(amount) from private.flash_point_entries where attempt_id=a.id and entry_type='accreditation'),
+    (select count(*) from private.flash_point_entries where attempt_id=a.id and entry_type='accreditation')
+    from public.attempts a where id=${quote(a.attemptId)};`)
+    ).trim(),
+    "69|69|69|1",
+  );
+
   // Early termination is allowed for survival, and the trusted evaluator determines its outcome.
   const b = await run("member", "start_attempt", {
     scheduledChallengeId: id("sc-survival"),
@@ -431,7 +503,6 @@ export async function testConcurrentCommands(sql) {
       attemptId: b.attemptId,
       lockVersion: e.lockVersion,
       sessionToken: "g".repeat(40),
-      score: 0,
       outcome: "eliminated",
       idempotencyKey: "survival-complete",
     },
@@ -495,7 +566,6 @@ export async function testConcurrentCommands(sql) {
     attemptId: alphabetStart.attemptId,
     sessionToken: alphabetToken,
     lockVersion: alphabetPrepare.lockVersion,
-    score: 0,
     idempotencyKey: "alphabet-race-stale-close",
   });
   const alphabetOutcomes = await Promise.allSettled([receiving.done, closing.done]);
@@ -509,7 +579,6 @@ export async function testConcurrentCommands(sql) {
     attemptId: alphabetStart.attemptId,
     sessionToken: alphabetToken,
     lockVersion: alphabetReceipt.lockVersion,
-    score: 0,
     idempotencyKey: "alphabet-race-final-close",
     pendingEvaluation: {
       receiptId: alphabetReceipt.receiptId,
@@ -754,7 +823,6 @@ export async function testConcurrentCommands(sql) {
     sessionToken: queensInput.sessionToken,
     lockVersion: evaluatedQueens.lockVersion,
     idempotencyKey: "queens-final-completion",
-    score: 0,
     outcome: "failed",
   };
   const completionRace = await race(

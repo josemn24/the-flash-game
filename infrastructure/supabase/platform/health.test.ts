@@ -72,6 +72,10 @@ describe("readPrivateHealth", () => {
     expect(markerQuery).toContain("private.execute_command(text,jsonb)");
     expect(markerQuery).toContain("case when terminal_reason_value = ''permission_revoked''");
     expect(markerQuery).toContain("private.raise_if_session_transferred");
+    expect(markerQuery).toContain("when 'complete' then(.*?)when 'abandon' then");
+    expect(markerQuery).toContain("not like '%''score''%'");
+    expect(markerQuery).toContain("select coalesce(sum(answer.points), 0)::integer into points");
+    expect(markerQuery).toContain("not like '%input->>''score''%'");
   });
 
   it("rejects an old expected revision", async () => {

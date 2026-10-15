@@ -82,7 +82,7 @@ select is((select private.read_attempt_recovery((state->>'attemptId')::uuid,stat
   from test_support.runtime),'null'::jsonb,'Recovery explicitly projects the persisted null result');
 select is((select private.read_attempt_recovery((state->>'attemptId')::uuid,state->>'sessionToken')->>'terminalOutcome'
   from test_support.runtime),'eliminated','Recovery independently derives elimination');
-select test_support.run('complete_attempt','{"score":100,"outcome":"survived"}');
+select test_support.run('complete_attempt','{"outcome":"survived"}');
 select is((select last_result->>'challengeMode' from test_support.runtime),'survival','Completion includes its frozen mode');
 select is((select last_result->>'outcome' from test_support.runtime),'eliminated','Completion ignores forged outcome');
 select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Retry retains exactly the same completion contract');
@@ -102,7 +102,7 @@ select test_support.run('record_evaluation','{"status":"incorrect","points":0}')
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer','{"answer":false}');
 select test_support.run('record_evaluation','{"status":"incorrect","points":0}');
-select test_support.run('complete_attempt','{"score":0,"outcome":"passed"}');
+select test_support.run('complete_attempt','{"outcome":"passed"}');
 select is((select last_result->'outcome' from test_support.runtime),'null'::jsonb,'Flash command ignores any caller outcome');
 select is((select private.read_completed_attempt((state->>'attemptId')::uuid)->'result'->'outcome'
   from test_support.runtime),'null'::jsonb,'Lost Flash confirmation retains explicit null');
@@ -114,7 +114,7 @@ select test_support.run('record_evaluation','{"status":"incorrect","points":0}')
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer','{"answer":false}');
 select test_support.run('record_evaluation','{"status":"incorrect","points":0}');
-select test_support.run('complete_attempt','{"score":0,"outcome":"failed"}');
+select test_support.run('complete_attempt','{"outcome":"failed"}');
 select is((select last_result->'outcome' from test_support.runtime),'null'::jsonb,'Narrative zero-point completion has null outcome');
 select is((select private.read_completed_attempt((state->>'attemptId')::uuid)->'result'->>'challengeMode'
   from test_support.runtime),'narrative','Terminal reads project the correct Narrative mode');

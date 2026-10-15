@@ -15,7 +15,7 @@ select test_support.run('receive_answer', '{"answer":true}');
 select test_support.run('record_evaluation', '{"status":"correct","points":50}');
 insert into s14_attempts values ('survive-first-item',
   (select (state->>'attemptId')::uuid from test_support.runtime));
-select throws_ok($$select test_support.run('complete_attempt', '{"score":100,"outcome":"eliminated"}')$$,
+select throws_ok($$select test_support.run('complete_attempt', '{"outcome":"eliminated"}')$$,
   '55000', 'survival_not_terminal', 'A client cannot close a surviving attempt before the last question');
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer', '{"answer":false}');
@@ -25,7 +25,6 @@ select is((select result->>'outcome' from (select private.complete_attempt(jsonb
   'attemptId', state->>'attemptId',
   'lockVersion', (state->>'lockVersion')::bigint,
   'sessionToken', repeat('v', 40),
-  'score', 100,
   'outcome', 'survived'
 )) as result from test_support.runtime) completed), 'eliminated',
   'The server derives elimination and ignores a falsified outcome');
@@ -51,7 +50,7 @@ insert into s14_attempts values ('recovered-elimination',
 select is(private.read_attempt_recovery(
   (select attempt_id from s14_attempts where label='recovered-elimination'), repeat('w', 40))->>'livesRemaining', '0',
   'Recovery derives zero remaining lives from its evaluated unanswered receipt');
-select test_support.run('complete_attempt', '{"score":100,"outcome":"survived"}');
+select test_support.run('complete_attempt', '{"outcome":"survived"}');
 reset role;
 select is((select outcome from public.attempts where id=(select attempt_id from s14_attempts where label='recovered-elimination')), 'eliminated',
   'Recovery after elimination finishes with the derived outcome');

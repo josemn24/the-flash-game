@@ -119,7 +119,7 @@ update s03_state set result = private.record_evaluation(jsonb_build_object(
 ));
 update s03_state set result = private.complete_attempt(jsonb_build_object(
   'idempotencyKey', 's03-test-complete', 'attemptId', result->>'attemptId',
-  'lockVersion', (result->>'lockVersion')::bigint, 'sessionToken', repeat('s', 40), 'score', 50
+  'lockVersion', (result->>'lockVersion')::bigint, 'sessionToken', repeat('s', 40)
 ));
 select is((select result->>'status' from s03_state), 'completed', 'Two evaluated answers complete the attempt');
 select is((select count(*) from private.flash_point_entries), 1::bigint, 'Completion creates one accreditation');

@@ -28,7 +28,6 @@ import type {
   TakeOverAttemptResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
-  FinishAttemptResult,
   RecoverAttemptResult,
   AttemptRecoverySnapshot,
   SubmitMiniWordleGuessResult,
@@ -510,25 +509,6 @@ export class SupabaseAttemptCommands implements Pick<
   completeFromPersistedAnswers(
     input: Parameters<AttemptCommands["completeFromPersistedAnswers"]>[0],
   ) {
-    return transaction<FinishAttemptResult>(this.identity, async (client) => {
-      await expireStaleAttempt(client, input.attemptId);
-      const scoreResult = await client.query<{ score: number }>(
-        "select coalesce(sum(points), 0)::integer as score from private.attempt_answers where attempt_id = $1::uuid",
-        [input.attemptId],
-      );
-      const score = scoreResult.rows[0]?.score ?? 0;
-      const command = await client.query<{ result: unknown }>(
-        "select private.complete_attempt($1::jsonb) as result",
-        [
-          JSON.stringify({
-            ...input,
-            score,
-          }),
-        ],
-      );
-      return decodeFinishAttemptResult(
-        await refreshTimeTrialReference(client, command.rows[0]?.result),
-      );
-    });
+    return callAttemptCommand(this.identity, "complete_attempt", input, decodeFinishAttemptResult);
   }
 }

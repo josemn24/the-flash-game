@@ -62,7 +62,7 @@ decisiones y después los documentos afectados.
   No forma parte de los cinco modos implementados. La [guía editorial](content/guidelines/contrarreloj.md)
   y las [decisiones pendientes](decisions/open-questions.md#contrarreloj-decisiones-pendientes)
   delimitan su preparación.
-- La revisión más reciente es `20261013173015_alphabet_answer_length`, aplicada sobre el baseline
+- La revisión más reciente es `20261014200324_authoritative_completion_score`, aplicada sobre el baseline
   `20261011180045_initial_schema`, generado desde 82 archivos declarativos de esquema, con 31 tablas,
   dos vistas, funciones públicas/privadas y políticas RLS.
 - El baseline local pasó `supabase:schema:test`, la validación por migraciones, reconciliación,

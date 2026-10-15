@@ -28,7 +28,7 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261013173015_alphabet_answer_length`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
+La revisión esperada es `20261014200324_authoritative_completion_score`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md).
 
 ## Herramientas y garantías
 
@@ -298,7 +298,7 @@ y reactivarla tras las comprobaciones.
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261013173015_alphabet_answer_length`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION=20261014200324_authoritative_completion_score`. El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 

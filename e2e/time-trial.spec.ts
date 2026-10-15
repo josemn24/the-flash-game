@@ -61,7 +61,7 @@ test("la intro y cuenta atrás no crean intento; el reloj continúa al cambiar d
   await page.reload();
   await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible();
   await page.getByRole("button", { name: "Ver respuestas" }).click();
-  await expect(page.getByRole("heading", { name: "Historial de pruebas" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible();
 });
 
 test("móvil: el tercer fallo termina la partida sin puntos ni ventaja por fallar antes", async ({

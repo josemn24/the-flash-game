@@ -14,7 +14,7 @@ insert into s14_timeout_attempt select (state->>'attemptId')::uuid from test_sup
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer', '{"answer":null}'::jsonb);
 select test_support.run('record_evaluation', '{"status":"timeout","points":0}'::jsonb);
-select test_support.run('complete_attempt', '{"score":100,"outcome":"survived"}'::jsonb);
+select test_support.run('complete_attempt', '{"outcome":"survived"}'::jsonb);
 reset role;
 
 select is((select outcome from public.attempts where id = (select attempt_id from s14_timeout_attempt)), 'eliminated',

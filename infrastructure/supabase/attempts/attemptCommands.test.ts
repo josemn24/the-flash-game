@@ -271,6 +271,107 @@ describe("Supabase attempt database connection", () => {
     expect(client.query).toHaveBeenLastCalledWith("ROLLBACK");
   });
 
+  it.each([false, true])(
+    "completes from SQL without querying or sending a total (pending=%s)",
+    async (pending) => {
+      const input = {
+        attemptId: attemptId as never,
+        lockVersion: 3,
+        sessionToken: "token",
+        idempotencyKey: "completion-key",
+        ...(pending
+          ? {
+              pendingEvaluation: {
+                receiptId: "00000000-0000-4000-8000-000000000004" as never,
+                status: "correct" as const,
+                points: 17,
+              },
+            }
+          : {}),
+      };
+      const result = {
+        attemptId,
+        lockVersion: 4,
+        challengeMode: "alphabet",
+        status: "completed",
+        outcome: null,
+        score: 37,
+        answers: [],
+      };
+      client.query.mockImplementation(async (sql: string) => ({
+        rows: [
+          { result: sql.includes("private.complete_attempt") ? result : { abandonedAttempts: 0 } },
+        ],
+      }));
+
+      await expect(commands.completeFromPersistedAnswers(input)).resolves.toEqual(result);
+      expect(client.query).toHaveBeenCalledWith(
+        "select private.complete_attempt($1::jsonb) as result",
+        [JSON.stringify(input)],
+      );
+      const queries = client.query.mock.calls.map(([sql]) => String(sql));
+      expect(
+        queries.some((sql) => sql.includes("sum(") || sql.includes("private.attempt_answers")),
+      ).toBe(false);
+      expect(queries.findIndex((sql) => sql.includes("request.jwt.claims"))).toBeLessThan(
+        queries.findIndex((sql) => sql.includes("expire_stale_attempts")),
+      );
+      expect(queries.findIndex((sql) => sql.includes("expire_stale_attempts"))).toBeLessThan(
+        queries.findIndex((sql) => sql.includes("private.complete_attempt")),
+      );
+      expect(client.query).toHaveBeenLastCalledWith("COMMIT");
+      expect(client.release).toHaveBeenCalledOnce();
+    },
+  );
+
+  it("refreshes the Time Trial clock inside the completion transaction", async () => {
+    const result = {
+      attemptId,
+      lockVersion: 4,
+      challengeMode: "time-trial",
+      status: "completed",
+      outcome: null,
+      score: 30,
+      timeTrial: { serverNow: "old", endReason: "all_solved" },
+    };
+    client.query.mockImplementation(async (sql: string) => ({
+      rows: [
+        sql.includes("clock_timestamp()")
+          ? { server_now: "fresh" }
+          : {
+              result: sql.includes("private.complete_attempt") ? result : { abandonedAttempts: 0 },
+            },
+      ],
+    }));
+    await expect(
+      commands.completeFromPersistedAnswers({
+        attemptId: attemptId as never,
+        lockVersion: 3,
+        sessionToken: "token",
+        idempotencyKey: "key",
+      }),
+    ).resolves.toEqual({ ...result, timeTrial: { ...result.timeTrial, serverNow: "fresh" } });
+    expect(client.query).toHaveBeenCalledWith("select clock_timestamp()::text as server_now");
+    expect(client.query).toHaveBeenLastCalledWith("COMMIT");
+  });
+
+  it("commits pre-expiry without invoking completion", async () => {
+    client.query.mockResolvedValue({ rows: [{ result: { abandonedAttempts: 1 } }] });
+    await expect(
+      commands.completeFromPersistedAnswers({
+        attemptId: attemptId as never,
+        lockVersion: 3,
+        sessionToken: "token",
+        idempotencyKey: "key",
+      }),
+    ).rejects.toMatchObject({ code: "attempt_inactivity_expired" });
+    expect(client.query.mock.calls.some(([sql]) => sql.includes("private.complete_attempt"))).toBe(
+      false,
+    );
+    expect(client.query).toHaveBeenLastCalledWith("COMMIT");
+    expect(client.release).toHaveBeenCalledOnce();
+  });
+
   it.each([
     "attempts_outcome_values_check",
     "attempts_outcome_status_check",

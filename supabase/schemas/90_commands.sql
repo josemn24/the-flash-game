@@ -34,7 +34,7 @@ begin
       required := array['idempotencyKey','attemptId','lockVersion','sessionToken','receiptId','status','points'];
       allowed := required || array['resultDetails'];
     when 'complete' then
-      required := array['idempotencyKey','attemptId','lockVersion','sessionToken','score'];
+      required := array['idempotencyKey','attemptId','lockVersion','sessionToken'];
       allowed := required || array['outcome','pendingEvaluation'];
     when 'abandon' then
       allowed := array['idempotencyKey','attemptId','lockVersion','sessionToken']; required := allowed;

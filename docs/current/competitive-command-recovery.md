@@ -6,7 +6,7 @@ Fecha: 2026-10-06.
 
 ## Garantías y límites
 
-Los cinco modos comparten el mismo motor de comandos. Un envío incierto conserva en memoria
+Los seis modos comparten el mismo motor de comandos. Un envío incierto conserva en memoria
 su operación, payload, versión y clave. Se bloquean acciones incompatibles; los retries repiten
 ese comando y una recarga reconstruye respuestas, puntos, progreso y tiempos desde PostgreSQL.
 No se guardan respuestas sin enviar ni se crea una cola offline.
@@ -25,6 +25,10 @@ y una indicación de recarga. Si ya existe un controlador, `start` devuelve `att
 con metadatos seguros; «Continuar aquí» usa la cookie candidata y una clave idempotente para
 transferir explícitamente el mismo intento. Perder la confirmación conserva la cookie candidata,
 por lo que el replay puede recuperar el resultado sin crear otra sesión.
+
+El [cierre autoritativo](attempt-lifecycle.md#total-autoritativo-al-completar) calcula el total
+en PostgreSQL para los seis modos, después de reconciliar las evaluaciones pendientes.
+Su payload privado no acepta `score`; la app debe desplegarse después de la migración.
 
 La recuperación prioriza recepciones pendientes y la evaluación usa el contenido congelado.
 Una evaluación registrada se lee sin recalcular; una carrera consulta el resultado persistido
@@ -103,7 +107,7 @@ ni un registro alternativo de respuestas/puntos.
 ## Despliegue
 
 1. Tras el reset acordado, reconstruir la base con el [baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql)
-   y las migraciones incrementales antes del cliente; verificar la revisión `20261013173015_alphabet_answer_length`. El baseline incluye
+   y las migraciones incrementales antes del cliente; verificar la revisión `20261014200324_authoritative_completion_score`. El baseline incluye
    recuperación, cierre por permisos, transferencia y reconciliación. El reset elimina los datos
    anteriores; no se migran intentos ni sesiones entre revisiones.
    La [reconciliación](competitive-command-reconciliation.md) documenta errores de transferencia,

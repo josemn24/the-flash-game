@@ -640,8 +640,6 @@ begin
               raise exception 'survival_not_terminal' using errcode = '55000';
             end if;
             completion_outcome := case when survival_lives = 0 then 'eliminated' else 'survived' end;
-            select coalesce(sum(answer.points), 0)::integer into points
-            from private.attempt_answers answer where answer.attempt_id = a.id;
           elsif cv.mode = 'pyramid' then
             select count(*)::integer into pyramid_total
             from private.challenge_items challenge_item
@@ -656,19 +654,16 @@ begin
             else
               raise exception 'pyramid_not_terminal' using errcode = '55000';
             end if;
-            select coalesce(sum(answer.points), 0)::integer into points
-            from private.attempt_answers answer where answer.attempt_id = a.id;
           elsif cv.mode in ('alphabet', 'time-trial') then
-            select coalesce(sum(answer.points), 0)::integer into points
-            from private.attempt_answers answer where answer.attempt_id = a.id;
             completion_outcome := null;
           else
             if cv.mode in ('flash','alphabet','narrative') and private.next_attempt_item(a.id) is not null then
               raise exception 'incomplete_challenge' using errcode = '55000';
             end if;
-            points := (input->>'score')::integer;
             completion_outcome := null;
           end if;
+          select coalesce(sum(answer.points), 0)::integer into points
+          from private.attempt_answers answer where answer.attempt_id = a.id;
           target_status := 'completed';
         else
           target_status := 'abandoned'; points := null; completion_outcome := null;

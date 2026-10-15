@@ -40,7 +40,7 @@ select is((select points from private.attempt_answers
   'A Pyramid failed level cannot retain evaluator points');
 select throws_ok($$select test_support.run('prepare_interaction')$$,
   '55000', 'pyramid_level_failed', 'The attempt cannot continue after a failed level');
-select is((test_support.run('complete_attempt', '{"score":100,"outcome":"summit"}')->>'outcome'),
+select is((test_support.run('complete_attempt', '{"outcome":"summit"}')->>'outcome'),
   'failed', 'The server derives failed and ignores a falsified summit outcome');
 reset role;
 select is((select score from public.attempts
@@ -63,7 +63,7 @@ select throws_ok($$select test_support.run('receive_answer', jsonb_build_object(
   '55000', 'interaction_not_presented', 'The caller cannot skip to a later level');
 select test_support.run('receive_answer', '{"answer":"A"}');
 select test_support.run('record_evaluation', '{"status":"correct","points":14}');
-select throws_ok($$select test_support.run('complete_attempt', '{"score":100,"outcome":"summit"}')$$,
+select throws_ok($$select test_support.run('complete_attempt', '{"outcome":"summit"}')$$,
   '55000', 'pyramid_not_terminal', 'A correct early checkpoint cannot be closed as a summit');
 select test_support.run('recover_attempt');
 select is(private.read_attempt_recovery(
@@ -96,14 +96,14 @@ begin
   end loop;
 end;
 $$;
-select is((test_support.run('complete_attempt', '{"score":0,"outcome":"failed"}')->>'outcome'),
+select is((test_support.run('complete_attempt', '{"outcome":"failed"}')->>'outcome'),
   'summit', 'Seven successful levels derive summit after the publication closes');
 select is((select score from public.attempts
   where id = (select attempt_id from s15_attempts where label = 'summit')), 100,
   'The persisted score is the sum of reached successful evaluations');
 select is(test_support.repeat_last(), (select last_result from test_support.runtime),
   'The Pyramid finalization command is idempotent');
-select throws_ok($$select test_support.run('complete_attempt', '{"score":100}')$$,
+select throws_ok($$select test_support.run('complete_attempt', '{}')$$,
   '42501', 'session_revoked', 'A second terminal command cannot accredit the attempt again');
 reset role;
 select is((select outcome from public.attempts

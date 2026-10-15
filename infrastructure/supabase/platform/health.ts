@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261013173015_alphabet_answer_length";
+const canonicalSchemaRevision = "20261014200324_authoritative_completion_score";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -94,6 +94,16 @@ async function checkDatabase() {
           where conrelid = to_regclass('public.attempts') and conname = 'attempts_outcome_status_check')
         and pg_get_functiondef(to_regprocedure('private.guard_attempt()')) like '%invalid_attempt_lifecycle%'
         and pg_get_functiondef(to_regprocedure('private.read_completed_attempt(uuid)')) like '%challengeMode%'
+        and substring(pg_get_functiondef(to_regprocedure('private.execute_command(text,jsonb)'))
+          from $contract$when 'complete' then(.*?)when 'abandon' then$contract$)
+          like '%required := array[''idempotencyKey'',''attemptId'',''lockVersion'',''sessionToken''];%'
+        and substring(pg_get_functiondef(to_regprocedure('private.execute_command(text,jsonb)'))
+          from $contract$when 'complete' then(.*?)when 'abandon' then$contract$)
+          not like '%''score''%'
+        and pg_get_functiondef(to_regprocedure('private.handle_attempt_command(text,jsonb,jsonb,uuid,jsonb,timestamptz)'))
+          like '%select coalesce(sum(answer.points), 0)::integer into points%'
+        and pg_get_functiondef(to_regprocedure('private.handle_attempt_command(text,jsonb,jsonb,uuid,jsonb,timestamptz)'))
+          not like '%input->>''score''%'
           as schema_revision_marker
     `);
     const row = result.rows[0];
