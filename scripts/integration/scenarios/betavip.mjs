@@ -45,7 +45,7 @@ export const scenario = {
     );
     assert(
       beta.questionCount === connectPairs.questionCount,
-      "El manifiesto conserva los cinco tableros de Conectar parejas",
+      "El manifiesto conserva los seis tableros de Conectar parejas",
     );
     assert(
       beta.pointsTotal === connectPairs.pointsTotal,
@@ -252,12 +252,17 @@ export const scenario = {
         target_publication_id: connectPairs.id,
       });
       assert(
-        connectPairsPlayable.length === 5,
+        connectPairsPlayable.length === 6,
         "Conectar parejas está disponible durante el primer día",
       );
       assert(
         connectPairsPlayable.reduce((total, row) => total + Number(row.item_points), 0) === 100,
         "Circuito de parejas suma 100 puntos durante el primer día",
+      );
+      assert(
+        connectPairsPlayable.map((row) => Number(row.item_points)).join(",") ===
+          "10,12,14,16,20,28",
+        "Circuito de parejas conserva los pesos progresivos de sus seis tableros",
       );
       assert(
         !JSON.stringify(connectPairsPlayable).match(
@@ -269,7 +274,7 @@ export const scenario = {
         connectPairsPlayable.every(
           (row) => row.question_type === "connect-pairs" && row.global_time_limit_ms === 180000,
         ),
-        "Los cinco tableros comparten tres minutos",
+        "Los seis tableros comparten tres minutos",
       );
       assert(
         (

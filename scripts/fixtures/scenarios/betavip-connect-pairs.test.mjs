@@ -4,7 +4,7 @@ import { parseFlashEditorialDocument } from "../../../lib/editorial/flashDocumen
 import { BETA_VIP_CONNECT_PAIRS, betaVipConnectPairsQuestions } from "./betavip-connect-pairs.mjs";
 
 describe("BetaVIP Conectar parejas", () => {
-  it("can publish the complete five-board time trial through the editorial validator", () => {
+  it("can publish the complete six-board time trial through the editorial validator", () => {
     const document = {
       challenge: {
         ...BETA_VIP_CONNECT_PAIRS,
@@ -14,25 +14,42 @@ describe("BetaVIP Conectar parejas", () => {
       },
       questions: betaVipConnectPairsQuestions,
     };
-    expect(parseFlashEditorialDocument(document).questions).toHaveLength(5);
+    expect(parseFlashEditorialDocument(document).questions).toHaveLength(6);
     expect(betaVipConnectPairsQuestions.reduce((sum, question) => sum + question.points, 0)).toBe(
       100,
     );
+  });
+
+  it("uses the planned dimensions, pair counts, and point weights", () => {
+    expect(
+      betaVipConnectPairsQuestions.map((question) => [
+        question.publicPayload.grid.rows,
+        question.publicPayload.grid.columns,
+        question.publicPayload.pairs.length,
+        question.points,
+      ]),
+    ).toEqual([
+      [4, 4, 3, 10],
+      [5, 5, 3, 12],
+      [5, 5, 4, 14],
+      [6, 6, 4, 16],
+      [6, 6, 5, 20],
+      [7, 7, 5, 28],
+    ]);
   });
 
   it.each(betaVipConnectPairsQuestions)(
     "$slug has a full legal solution and distinct endpoints",
     (item) => {
       const question = { ...item.publicPayload, solutionPaths: item.solutionPayload.paths };
-      expect(
-        calculateConnectPairsMetrics(question, { paths: question.solutionPaths }),
-      ).toMatchObject({
+      const metrics = calculateConnectPairsMetrics(question, { paths: question.solutionPaths });
+      expect(metrics).toMatchObject({
         valid: true,
         complete: true,
         exact: true,
-        coveredCells: 25,
         conflicts: 0,
       });
+      expect(metrics.coveredCells).toBe(question.grid.rows * question.grid.columns);
     },
   );
 });

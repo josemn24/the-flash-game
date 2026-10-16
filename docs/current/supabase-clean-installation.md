@@ -111,8 +111,9 @@ La fecha y hora configuradas se guardan en UTC en el manifiesto. El desafío que
 próximo y se podrá jugar al llegar el inicio; cada persona inicia su propia partida manualmente.
 
 Desde el inicio de temporada, «Circuito de parejas» está abierto durante las primeras 24 horas:
-cinco tableros de Conectar parejas 5×5, de tres a cinco parejas, un único reloj de tres minutos y
-pesos de 10, 15, 20, 25 y 30 puntos. Borrar y rehacer caminos no penaliza. Después se programan
+seis tableros de Conectar parejas de 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7, de tres a cinco parejas,
+un único reloj de tres minutos y pesos de 10, 12, 14, 16, 20 y 28 puntos. Borrar y rehacer caminos
+no penaliza. Después se programan
 «La vuelta al mundo» para el segundo día, «Cumbre lógica II» para el tercero, «Escalera de coronas»
 para el cuarto, «Supervivencia: Cultura pop» para el quinto y «Ecos de la Antigüedad» para el sexto.
 «Escalera de coronas» conserva sus seis tableros Queens de 4×4 a 7×7, 100 puntos, tres minutos

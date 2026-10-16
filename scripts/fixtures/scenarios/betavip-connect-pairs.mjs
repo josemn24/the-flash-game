@@ -1,16 +1,39 @@
 export const BETA_VIP_CONNECT_PAIRS = {
   slug: "betavip-circuito-de-parejas",
   title: "Circuito de parejas",
-  subtitle: "Cinco tableros 5×5, un único reloj",
+  subtitle: "Seis tableros de 4×4 a 7×7, un único reloj",
   description:
-    "Conecta todas las parejas y cubre las 25 casillas de cada tablero. Tienes tres minutos para completar cinco pruebas. Puedes borrar y rehacer caminos sin penalización.",
+    "Conecta todas las parejas y cubre cada tablero completo, desde 4×4 hasta 7×7. Tienes tres minutos para completar seis pruebas. Puedes borrar y rehacer caminos sin penalización.",
   globalTimeLimitMs: 180_000,
 };
 
-// Recorridos curados: cada conjunto ocupa exactamente las 25 casillas.
+function rowBandPaths(size, bandHeights) {
+  let firstRow = 0;
+  return Object.fromEntries(
+    bandHeights.map((height, pairIndex) => {
+      const cells = [];
+      for (let rowOffset = 0; rowOffset < height; rowOffset += 1) {
+        const row = firstRow + rowOffset;
+        const columns = Array.from({ length: size }, (_, column) => column);
+        if (rowOffset % 2 === 1) columns.reverse();
+        cells.push(...columns.map((column) => row * size + column));
+      }
+      firstRow += height;
+      return [String.fromCharCode(97 + pairIndex), cells];
+    }),
+  );
+}
+
+// Recorridos curados: cada conjunto ocupa exactamente todas las casillas.
 const boards = [
   {
     points: 10,
+    size: 4,
+    paths: rowBandPaths(4, [1, 1, 2]),
+  },
+  {
+    points: 12,
+    size: 5,
     paths: {
       a: [0, 1, 2, 3, 4],
       b: [5, 10, 15, 20, 21, 22, 23, 24],
@@ -18,7 +41,8 @@ const boards = [
     },
   },
   {
-    points: 15,
+    points: 14,
+    size: 5,
     paths: {
       a: [0, 1, 6, 7, 2, 3, 4, 9],
       b: [5, 10, 15, 20],
@@ -27,37 +51,23 @@ const boards = [
     },
   },
   {
+    points: 16,
+    size: 6,
+    paths: rowBandPaths(6, [2, 2, 1, 1]),
+  },
+  {
     points: 20,
-    paths: {
-      a: [0, 5, 10, 15, 20, 21, 16, 11, 6, 1],
-      b: [2, 3, 4, 9, 8, 7, 12, 17],
-      c: [14, 13, 18, 19, 24],
-      d: [22, 23],
-    },
+    size: 6,
+    paths: rowBandPaths(6, [1, 1, 1, 1, 2]),
   },
   {
-    points: 25,
-    paths: {
-      a: [0, 1, 2, 7, 6],
-      b: [3, 4, 9, 8, 13],
-      c: [5, 10, 15, 20, 21, 22],
-      d: [11, 16, 17, 12],
-      e: [14, 19, 18, 23, 24],
-    },
-  },
-  {
-    points: 30,
-    paths: {
-      a: [0, 5, 10, 11, 6],
-      b: [1, 2, 3, 4, 9, 14, 13, 8, 7],
-      c: [12, 17, 16, 15, 20],
-      d: [21, 22],
-      e: [18, 19, 24, 23],
-    },
+    points: 28,
+    size: 7,
+    paths: rowBandPaths(7, [1, 1, 1, 2, 2]),
   },
 ];
 
-export const betaVipConnectPairsQuestions = boards.map(({ points, paths }, index) => ({
+export const betaVipConnectPairsQuestions = boards.map(({ points, size, paths }, index) => ({
   slug: `${BETA_VIP_CONNECT_PAIRS.slug}-${index + 1}`,
   type: "connect-pairs",
   points,
@@ -72,8 +82,8 @@ export const betaVipConnectPairsQuestions = boards.map(({ points, paths }, index
       formatSkills: ["planning"],
       lifeSkills: [],
     },
-    question: `Tablero ${index + 1} de 5 · Conecta las parejas y cubre toda la cuadrícula.`,
-    grid: { rows: 5, columns: 5 },
+    question: `Tablero ${index + 1} de ${boards.length} · ${size}×${size}. Conecta las parejas y cubre toda la cuadrícula.`,
+    grid: { rows: size, columns: size },
     pairs: Object.entries(paths).map(([id, cells]) => ({
       id,
       label: `Pareja ${id.toUpperCase()}`,
@@ -84,7 +94,6 @@ export const betaVipConnectPairsQuestions = boards.map(({ points, paths }, index
   },
   solutionPayload: {
     paths,
-    explanation:
-      "Los caminos unen cada pareja mediante pasos ortogonales y cubren las 25 casillas sin cruces. También se admite cualquier otra solución completa válida.",
+    explanation: `Los caminos unen cada pareja mediante pasos ortogonales y cubren las ${size * size} casillas sin cruces. También se admite cualquier otra solución completa válida.`,
   },
 }));

@@ -99,8 +99,8 @@ contenido en línea y referencias de biblioteca; resultados e historial aceptan 
 La migración `20261016144218_time_trial_connect_pairs` añadió el formato; `20261016193510_connect_pairs_variable_square_boards`
 amplía las dimensiones permitidas. Ninguna cambia tablas ni RPC públicas.
 El escenario `time-trial-connect-pairs` permite verificarlo de forma independiente. El setup local
-habitual de BetaVIP incluye «Circuito de parejas» como primero de seis desafíos; sus cinco
-tableros 5×5 comparten tres minutos y suman 100 puntos.
+habitual de BetaVIP incluye «Circuito de parejas» como primero de seis desafíos; sus seis tableros
+4×4, 5×5, 5×5, 6×6, 6×6 y 7×7 comparten tres minutos y suman 100 puntos.
 La entrega no acredita un despliegue ni una calibración editorial en staging.
 
 Verificación de la ampliación: 245 suites y 2.407 pruebas unitarias aprobadas (`--maxWorkers=1`),

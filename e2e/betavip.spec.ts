@@ -46,7 +46,7 @@ function queensCell(page: Page, index: number, size: number) {
   });
 }
 
-test("BetaVIP empieza por Conectar parejas y permite completar sus cinco tableros", async ({
+test("BetaVIP empieza por Conectar parejas y permite completar sus seis tableros", async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -88,15 +88,16 @@ test("BetaVIP empieza por Conectar parejas y permite completar sus cinco tablero
   });
   await page.getByRole("button", { name: "Empezar desafío" }).click();
   for (const [index, question] of betaVipConnectPairsQuestions.entries()) {
-    await expect(page.getByText(`Prueba ${index + 1} de 5`, { exact: true })).toBeVisible({
+    await expect(page.getByText(`Prueba ${index + 1} de 6`, { exact: true })).toBeVisible({
       timeout: 15000,
     });
+    const size = question.publicPayload.grid.rows;
     for (const path of Object.values(question.solutionPayload.paths)) {
       for (const cell of path) {
         await page
           .getByRole("button", {
             name: new RegExp(
-              `^Fila ${Math.floor(cell / 5) + 1}, columna ${(cell % 5) + 1}(?:[:,]|$)`,
+              `^Fila ${Math.floor(cell / size) + 1}, columna ${(cell % size) + 1}(?:[:,]|$)`,
             ),
           })
           .click();
@@ -105,7 +106,7 @@ test("BetaVIP empieza por Conectar parejas y permite completar sus cinco tablero
   }
   await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible();
   await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
-  expect(deadlines).toHaveLength(5);
+  expect(deadlines).toHaveLength(6);
   expect(new Set(deadlines).size).toBe(1);
   expect(
     await sqlCount(
