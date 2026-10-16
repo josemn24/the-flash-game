@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261016144218_time_trial_connect_pairs";
+const canonicalSchemaRevision = "20261016193510_connect_pairs_variable_square_boards";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -122,6 +122,10 @@ async function checkDatabase() {
           like '%select coalesce(sum(answer.points), 0)::integer into points%'
         and pg_get_functiondef(to_regprocedure('private.handle_attempt_closure(text,jsonb,public.attempts,public.scheduled_challenges,private.challenge_versions,timestamptz)'))
           not like '%input->>''score''%'
+        and pg_get_functiondef(to_regprocedure('private.connect_pairs_answer_valid(jsonb,jsonb)'))
+          like '%cell_count%'
+        and pg_get_functiondef(to_regprocedure('private.validate_connect_pairs_question_document(jsonb)'))
+          like '%board_rows%'
           as schema_revision_marker
     `);
     const row = result.rows[0];

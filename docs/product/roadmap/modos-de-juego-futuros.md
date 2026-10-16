@@ -106,7 +106,8 @@ Partida individual rápida con preguntas cronometradas, puntuación por acierto 
 
 ### Contrarreloj
 
-Modo independiente implementado para Queens y Conectar parejas 5×5. El jugador resuelve una
+Modo independiente implementado para Queens y Conectar parejas con tableros cuadrados de 4×4 a 8×8.
+El jugador resuelve una
 secuencia finita de pruebas del mismo formato, con dificultad creciente y un único reloj global.
 Cada acierto concede puntos y permite avanzar; el fallo definitivo o el reloj agotado terminan la
 partida conservando los puntos. Resolver toda la secuencia detiene el reloj y concede 100 Flash Points.

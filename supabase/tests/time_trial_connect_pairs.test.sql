@@ -7,6 +7,27 @@ select no_plan();
 create function test_support.cp_public() returns jsonb language sql immutable as $$ select '{"question":"Conecta las parejas y cubre el tablero.","grid":{"rows":5,"columns":5},"pairs":[{"id":"a","label":"Pareja A","symbol":"A","endpoints":[0,4]},{"id":"b","label":"Pareja B","symbol":"B","endpoints":[5,9]},{"id":"c","label":"Pareja C","symbol":"C","endpoints":[10,14]}],"requireFullCoverage":true}'::jsonb $$;
 create function test_support.cp_answer() returns jsonb language sql immutable as $$ select '{"paths":{"a":[0,1,2,3,4],"b":[5,6,7,8,9],"c":[10,15,20,21,22,23,24,19,18,17,16,11,12,13,14]}}'::jsonb $$;
 create function test_support.cp_alternative() returns jsonb language sql immutable as $$ select '{"paths":{"a":[0,1,2,3,4],"b":[5,6,7,8,9],"c":[10,11,16,15,20,21,22,23,24,19,18,17,12,13,14]}}'::jsonb $$;
+create function test_support.cp_square(board_size integer) returns jsonb language sql immutable as $$
+  select jsonb_build_object(
+    'public', jsonb_build_object(
+      'question', 'Conecta las parejas y cubre el tablero.',
+      'grid', jsonb_build_object('rows', board_size, 'columns', board_size),
+      'pairs', (select jsonb_agg(jsonb_build_object(
+        'id', 'pair-'||generated_row,
+        'label', 'Pareja '||generated_row,
+        'symbol', generated_row::text,
+        'endpoints', jsonb_build_array((generated_row-1)*board_size, generated_row*board_size-1)
+      ) order by generated_row) from generate_series(1,board_size) as pair_rows(generated_row)),
+      'requireFullCoverage', true
+    ),
+    'answer', jsonb_build_object('paths', (
+      select jsonb_object_agg('pair-'||generated_row, (
+        select jsonb_agg((generated_row-1)*board_size+generated_column order by generated_column)
+        from generate_series(0,board_size-1) as path_columns(generated_column)
+      )) from generate_series(1,board_size) as path_rows(generated_row)
+    ))
+  )
+$$;
 select ok(private.connect_pairs_answer_valid(test_support.cp_public(),test_support.cp_answer()),'A full-coverage board is accepted');
 select ok(private.connect_pairs_answer_valid(test_support.cp_public(),test_support.cp_alternative()),'A different legal route is accepted');
 select is(private.connect_pairs_answer_valid(test_support.cp_public(),'null'::jsonb),false,'Rejects missing answer');
@@ -23,6 +44,61 @@ select is(private.connect_pairs_answer_valid(test_support.cp_public(),'{"paths":
 select is(private.connect_pairs_answer_valid(test_support.cp_public(),'{"paths":{"a":[1,2,3,4],"b":[5,6,7,8,9],"c":[10,15,20,21,22,23,24,19,18,17,16,11,12,13,14]}}'::jsonb),false,'Rejects wrong endpoints');
 select is(private.connect_pairs_answer_valid(test_support.cp_public(),'{"paths":{"a":[0,1,2,3,25],"b":[5,6,7,8,9],"c":[10,15,20,21,22,23,24,19,18,17,16,11,12,13,14]}}'::jsonb),false,'Rejects out of bounds');
 select is(private.connect_pairs_answer_valid(test_support.cp_public(),'{"paths":{"a":[0,"1",2,3,4],"b":[5,6,7,8,9],"c":[10,15,20,21,22,23,24,19,18,17,16,11,12,13,14]}}'::jsonb),false,'Rejects non numeric');
+select ok((select bool_and(private.connect_pairs_answer_valid(payload->'public',payload->'answer'))
+  from generate_series(4,8) as sizes(board_size)
+  cross join lateral (select test_support.cp_square(board_size) payload) square),
+  'Accepts valid full-coverage solutions with the maximum pair count for every supported size');
+select lives_ok(format('select private.validate_connect_pairs_question_document(%L::jsonb)',
+  jsonb_build_object('publicPayload', payload->'public', 'solutionPayload', payload->'answer')::text),
+  format('Editorial content validation accepts a %s×%s board', board_size, board_size))
+  from generate_series(4,8) as sizes(board_size)
+  cross join lateral (select test_support.cp_square(board_size) payload) square;
+select throws_ok($$select private.validate_connect_pairs_question_document(jsonb_build_object(
+  'publicPayload',jsonb_set(test_support.cp_square(4)->'public','{grid,columns}','5'::jsonb),
+  'solutionPayload',test_support.cp_square(4)->'answer'))$$,
+  '22023','invalid_public_payload','Editorial validation rejects rectangular boards');
+select throws_ok($$select private.validate_connect_pairs_question_document(jsonb_build_object(
+  'publicPayload',jsonb_set(test_support.cp_square(4)->'public','{grid,rows}','3'::jsonb),
+  'solutionPayload',test_support.cp_square(4)->'answer'))$$,
+  '22023','invalid_public_payload','Editorial validation rejects sizes below 4');
+select throws_ok($$select private.validate_connect_pairs_question_document(jsonb_build_object(
+  'publicPayload',jsonb_set(test_support.cp_square(4)->'public','{grid,rows}','9'::jsonb),
+  'solutionPayload',test_support.cp_square(4)->'answer'))$$,
+  '22023','invalid_public_payload','Editorial validation rejects sizes above 8');
+select throws_ok($$select private.validate_connect_pairs_question_document(jsonb_build_object(
+  'publicPayload',jsonb_set(test_support.cp_square(4)->'public','{pairs}',
+    (test_support.cp_square(4)->'public'->'pairs')||jsonb_build_array(
+      jsonb_build_object('id','pair-extra','label','Extra','symbol','X','endpoints',jsonb_build_array(1,2)))),
+  'solutionPayload',test_support.cp_square(4)->'answer'))$$,
+  '22023','invalid_public_payload','Editorial validation rejects pair counts above the board side');
+select throws_ok($$select private.validate_connect_pairs_question_document(jsonb_build_object(
+  'publicPayload',jsonb_set(test_support.cp_square(4)->'public','{pairs}',jsonb_build_array(
+    test_support.cp_square(4)->'public'->'pairs'->0,test_support.cp_square(4)->'public'->'pairs'->1)),
+  'solutionPayload',test_support.cp_square(4)->'answer'))$$,
+  '22023','invalid_public_payload','Editorial validation rejects fewer than three pairs');
+select throws_ok($$select private.validate_connect_pairs_question_document(jsonb_build_object(
+  'publicPayload',jsonb_set(test_support.cp_square(4)->'public','{pairs,3,endpoints,1}','16'::jsonb),
+  'solutionPayload',test_support.cp_square(4)->'answer'))$$,
+  '22023','invalid_public_payload','Editorial validation rejects endpoints outside the board');
+select is(private.connect_pairs_answer_valid(
+  jsonb_set((test_support.cp_square(4)->'public'),'{grid,columns}','5'::jsonb),
+  test_support.cp_square(4)->'answer'),false,'Rejects rectangular boards');
+select is(private.connect_pairs_answer_valid(
+  jsonb_set(jsonb_set((test_support.cp_square(4)->'public'),'{grid,rows}','3'::jsonb),'{grid,columns}','3'::jsonb),
+  test_support.cp_square(4)->'answer'),false,'Rejects boards smaller than 4×4');
+select is(private.connect_pairs_answer_valid(
+  jsonb_set(jsonb_set((test_support.cp_square(4)->'public'),'{grid,rows}','9'::jsonb),'{grid,columns}','9'::jsonb),
+  test_support.cp_square(4)->'answer'),false,'Rejects boards larger than 8×8');
+select is(private.connect_pairs_answer_valid(
+  jsonb_set(test_support.cp_square(4)->'public','{pairs}',
+    (test_support.cp_square(4)->'public'->'pairs')||jsonb_build_array(
+      jsonb_build_object('id','pair-extra','label','Extra','symbol','X','endpoints',jsonb_build_array(1,2)))),
+  test_support.cp_square(4)->'answer'),false,'Rejects more pairs than the board side');
+select is(private.connect_pairs_answer_valid(test_support.cp_square(4)->'public',
+  jsonb_set(test_support.cp_square(4)->'answer','{paths,pair-4,3}','16'::jsonb)),false,'Rejects an index beyond a 4×4 board');
+select is(private.connect_pairs_answer_valid(test_support.cp_square(4)->'public',
+  jsonb_set(test_support.cp_square(4)->'answer','{paths,pair-1}', '[0,1,2,3,4]'::jsonb)),
+  false,'Rejects row wrapping on a 4×4 board');
 insert into private.question_definitions(id,slug,created_by_player_id)
 select test_support.id('cp-qd-'||n),'cp-qd-'||n,test_support.id('owner') from generate_series(1,2) n;
 insert into private.question_versions(id,question_definition_id,version_number,type,time_limit_ms,public_payload,created_by_player_id)

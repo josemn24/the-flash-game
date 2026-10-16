@@ -5,6 +5,7 @@
  */
 import type { QuestionTagSet } from "@/types/domain/content";
 import type { LifeSkillTagId } from "@/types/domain/tags";
+import type { ConnectPairsGrid } from "@/types/contracts/question-shapes";
 
 export type PracticeQuestionTags = Omit<QuestionTagSet, "lifeSkills"> & {
   readonly lifeSkills?: readonly LifeSkillTagId[];
@@ -99,7 +100,7 @@ export type ConnectPairsPair = {
 
 export type ConnectPairsQuestion = BaseQuestion & {
   type: "connect-pairs";
-  grid: { rows: 5; columns: 5 };
+  grid: ConnectPairsGrid;
   pairs: ConnectPairsPair[];
   solutionPaths: Record<string, number[]>;
   requireFullCoverage: true;

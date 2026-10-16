@@ -8,8 +8,10 @@ Estado: vigente para Queens y Conectar parejas.
 
 Resolver una secuencia fija de pruebas de un mismo formato antes de agotar un único reloj global. Cada tablero
 resuelto concede su peso editorial completo y abre el siguiente. Cada desafío admite entre
-2 y 20 pruebas: todas Queens de 4×4 a 8×8 o todas Conectar parejas 5×5 con tres a cinco parejas.
-No se admiten secuencias mixtas. Escape, Mini-Wordle y Hashtag quedan fuera
+2 y 20 pruebas: todas Queens de 4×4 a 8×8 o todas Conectar parejas cuadradas de 4×4 a 8×8,
+con entre tres parejas y tantas como filas tenga cada tablero. Los tamaños pueden mezclarse
+dentro de una secuencia de Conectar parejas; no se admiten secuencias con formatos mezclados.
+Escape, Mini-Wordle y Hashtag quedan fuera
 hasta verificar sus combinaciones de modo y formato.
 
 Las [decisiones normativas](../../decisions/decisions.md#21-contrarreloj-reglas-acordadas), los
@@ -38,7 +40,8 @@ inválidas, incompletas o repetidas con la misma clave no consumen oportunidades
 ## Conectar parejas
 
 Conectar todos los extremos iguales con caminos ortogonales, sin casillas repetidas ni solapamientos,
-y cubrir las 25 casillas resuelve el tablero. Borrar, recortar y rehacer rutas no consume oportunidades
+y cubrir todas las casillas resuelve el tablero. Cada cuadrícula es cuadrada y mide entre 4×4 y 8×8;
+el número de parejas va de tres al lado del tablero. Borrar, recortar y rehacer rutas no consume oportunidades
 ni puntos. La UI envía automáticamente el tablero completo; PostgreSQL valida las reglas públicas
 antes de crear la recepción y acepta cualquier solución legal, aunque difiera de la editorial.
 Una respuesta inválida o incompleta devuelve `invalid_connect_pairs_answer` (HTTP 422), sin consumir
@@ -149,5 +152,7 @@ ambos formatos en un stack desechable. El escenario incluye dos tableros curados
 y pesos de 30 y 70 puntos; es contenido de prueba y no modifica los calendarios de BetaVIP o Tabarnia.
 El setup habitual `npm run supabase:betavip:setup` también incluye «Circuito de parejas» como
 primer desafío de BetaVIP: cinco tableros 5×5, tres minutos y pesos 10, 15, 20, 25 y 30.
-La migración `20261016144218_time_trial_connect_pairs` se genera desde el esquema declarativo;
-no añade tablas, columnas ni RPC públicas. Debe preceder al despliegue de la aplicación.
+La migración `20261016144218_time_trial_connect_pairs` añadió el formato a Contrarreloj.
+`20261016193510_connect_pairs_variable_square_boards` habilita los nuevos tamaños y debe aplicarse
+antes de desplegar la aplicación y publicar contenido con dimensiones nuevas; conserva el payload v1
+y no añade tablas, columnas ni RPC públicas.

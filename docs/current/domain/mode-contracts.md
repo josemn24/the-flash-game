@@ -330,7 +330,7 @@ pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se va
 
 ## 6. Contrarreloj
 
-- **Identificador y contenido:** `time-trial`; 2–20 pruebas de un mismo formato: Queens 4×4 a 8×8 o Conectar parejas 5×5, en orden fijo creciente.
+- **Identificador y contenido:** `time-trial`; 2–20 pruebas de un mismo formato: Queens 4×4 a 8×8 o Conectar parejas cuadradas 4×4 a 8×8, con entre tres parejas y tantas como filas. Los tamaños de Conectar parejas pueden mezclarse; el formato no.
 - **Duración:** segundos enteros positivos obligatorios, sin default. La primera preparación posterior
   a la cuenta atrás fija el deadline una sola vez; intro y cuenta atrás no crean intento.
   Todas las pruebas comparten reloj, incluidas validaciones, cargas y transiciones de 1,1 segundos.
@@ -338,7 +338,7 @@ pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se va
 - **Oportunidades Queens:** dos validaciones completas incorrectas permiten continuar; la tercera termina.
   Movimientos exploratorios y solicitudes inválidas no consumen oportunidades.
 - **Conectar parejas:** rehacer caminos es libre; solo conectar todas las parejas sin cruces y cubrir
-  las 25 casillas concede puntos. Entradas incompletas o inválidas se rechazan sin finalizar el tablero.
+  todas las casillas concede puntos. Entradas incompletas o inválidas se rechazan sin finalizar el tablero.
 - **Finalización:** `completed`, `outcome = null`; `all_solved`, `validation_limit`, `time_limit` o
   `recovery_interrupted`. Conservar puntos previos; conciliar recepciones aceptadas antes de cerrar.
   Una recepción debe ocurrir después de bloqueos y estrictamente antes del deadline.

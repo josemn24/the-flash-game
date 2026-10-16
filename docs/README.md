@@ -58,10 +58,10 @@ decisiones y después los documentos afectados.
 - 31 formatos de pregunta, seis modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
   y E01–E06/E10 sobre Supabase local.
-- Contrarreloj está implementado para Queens y Conectar parejas 5×5 en secuencias homogéneas.
+- Contrarreloj está implementado para Queens y Conectar parejas de 4×4 a 8×8; una secuencia de Conectar parejas puede mezclar tamaños.
   Las [reglas](current/domain/contrarreloj.md) y la [guía editorial](content/guidelines/contrarreloj.md)
   describen el reloj global, la edición libre de caminos y la recuperación estricta.
-- La migración más reciente es `20261016144218_time_trial_connect_pairs`, verificada sobre el baseline
+- La migración más reciente es `20261016193510_connect_pairs_variable_square_boards`, verificada sobre el baseline
   `20261011180045_initial_schema`, generado desde 82 archivos declarativos de esquema, con 31 tablas,
   dos vistas, funciones públicas/privadas y políticas RLS.
 - El baseline local pasó `supabase:schema:test`, la validación por migraciones, reconciliación,

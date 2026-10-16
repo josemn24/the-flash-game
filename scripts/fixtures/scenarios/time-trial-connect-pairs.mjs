@@ -1,87 +1,39 @@
 import { sessionFixture } from "./competitive-session-fixture.mjs";
-// Curated full-coverage boards. Durations are test data, not editorial calibration.
+
+function squareQuestion(size, points, question) {
+  const pairs = Array.from({ length: size }, (_, row) => ({
+    id: `pair-${row + 1}`,
+    label: `Pareja ${row + 1}`,
+    symbol: String(row + 1),
+    endpoints: [row * size, row * size + size - 1],
+  }));
+  const paths = Object.fromEntries(
+    pairs.map((pair, row) => [
+      pair.id,
+      Array.from({ length: size }, (_, column) => row * size + column),
+    ]),
+  );
+
+  return {
+    type: "connect-pairs",
+    points,
+    timeLimitMs: 1000,
+    publicPayload: {
+      question,
+      grid: { rows: size, columns: size },
+      pairs,
+      requireFullCoverage: true,
+    },
+    solution: { paths },
+  };
+}
+
+// The sequence deliberately mixes dimensions while keeping one global clock.
 export const connectPairsQuestions = [
-  {
-    type: "connect-pairs",
-    points: 30,
-    timeLimitMs: 1000,
-    publicPayload: {
-      question: "Conecta las parejas y cubre el tablero.",
-      grid: {
-        rows: 5,
-        columns: 5,
-      },
-      pairs: [
-        {
-          id: "a",
-          label: "Pareja A",
-          symbol: "A",
-          endpoints: [0, 4],
-        },
-        {
-          id: "b",
-          label: "Pareja B",
-          symbol: "B",
-          endpoints: [5, 9],
-        },
-        {
-          id: "c",
-          label: "Pareja C",
-          symbol: "C",
-          endpoints: [10, 14],
-        },
-      ],
-      requireFullCoverage: true,
-    },
-    solution: {
-      paths: {
-        a: [0, 1, 2, 3, 4],
-        b: [5, 6, 7, 8, 9],
-        c: [10, 15, 20, 21, 22, 23, 24, 19, 18, 17, 16, 11, 12, 13, 14],
-      },
-    },
-  },
-  {
-    type: "connect-pairs",
-    points: 70,
-    timeLimitMs: 1000,
-    publicPayload: {
-      question: "Encuentra otra distribución de caminos.",
-      grid: {
-        rows: 5,
-        columns: 5,
-      },
-      pairs: [
-        {
-          id: "a",
-          label: "Pareja A",
-          symbol: "A",
-          endpoints: [0, 4],
-        },
-        {
-          id: "b",
-          label: "Pareja B",
-          symbol: "B",
-          endpoints: [5, 9],
-        },
-        {
-          id: "c",
-          label: "Pareja C",
-          symbol: "C",
-          endpoints: [10, 14],
-        },
-      ],
-      requireFullCoverage: true,
-    },
-    solution: {
-      paths: {
-        a: [0, 1, 2, 3, 4],
-        b: [5, 6, 7, 8, 9],
-        c: [10, 11, 16, 15, 20, 21, 22, 23, 24, 19, 18, 17, 12, 13, 14],
-      },
-    },
-  },
+  squareQuestion(4, 30, "Conecta las parejas y cubre el tablero. (4×4)"),
+  squareQuestion(6, 70, "Encuentra otra distribución de caminos. (6×6)"),
 ];
+
 const fixture = sessionFixture({
   id: "time-trial-connect-pairs",
   mode: "time-trial",

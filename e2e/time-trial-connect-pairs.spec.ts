@@ -18,14 +18,22 @@ async function start(page: Page, player: string) {
   await page.getByRole("button", { name: "Empezar desafío" }).click();
   await expect(page.getByText("Prueba 1 de 2", { exact: true })).toBeVisible({ timeout: 15000 });
 }
-function cell(page: Page, index: number) {
+function cell(page: Page, questionIndex: number, index: number) {
+  const size = connectPairsQuestions[questionIndex].publicPayload.grid.rows;
   return page.getByRole("button", {
-    name: new RegExp(`^Fila ${Math.floor(index / 5) + 1}, columna ${(index % 5) + 1}(?:[:,]|$)`),
+    name: new RegExp(
+      `^Fila ${Math.floor(index / size) + 1}, columna ${(index % size) + 1}(?:[:,]|$)`,
+    ),
   });
+}
+async function touchCell(page: Page, questionIndex: number, index: number) {
+  const bounds = await cell(page, questionIndex, index).boundingBox();
+  if (!bounds) throw new Error("Connect Pairs cell is not visible");
+  await page.touchscreen.tap(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
 }
 async function solve(page: Page, index: number, keyboard = false) {
   for (const path of Object.values(connectPairsQuestions[index].solution.paths)) {
-    await cell(page, path[0]).click();
+    await cell(page, index, path[0]).click();
     for (let i = 1; i < path.length; i++) {
       if (keyboard) {
         const previous = path[i - 1],
@@ -39,7 +47,7 @@ async function solve(page: Page, index: number, keyboard = false) {
                 ? "ArrowDown"
                 : "ArrowUp",
         );
-      } else await cell(page, path[i]).click();
+      } else await cell(page, index, path[i]).click();
     }
   }
 }
@@ -51,38 +59,49 @@ test("Conectar parejas: edición libre, reloj compartido, puntos y revisión", a
       deadlines.push((await response.json()).deadlineAt);
   });
   await start(page, "alice");
+  await expect(page.getByRole("grid", { name: /4×4/ })).toBeVisible();
   await page.waitForTimeout(1200);
-  await cell(page, 0).click();
-  await cell(page, 1).click();
+  await cell(page, 0, 0).click();
+  await cell(page, 0, 1).click();
   await page.getByRole("button", { name: "Borrar ruta" }).click();
   await expect(page.getByText(/intentos restantes/)).toHaveCount(0);
   await solve(page, 0);
   await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
+  await expect(page.getByRole("grid", { name: /6×6/ })).toBeVisible();
   expect(deadlines).toHaveLength(2);
   expect(deadlines[0]).toBe(deadlines[1]);
   await solve(page, 1);
   await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible();
   await expect(page.getByText("2/2", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Ver respuestas" }).click();
   await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible();
+  const firstReview = page.locator("details").nth(0);
+  await firstReview.locator("summary").click();
+  await expect(firstReview.getByLabel(/Tablero de conexiones 4×4/)).toBeVisible();
+  const secondReview = page.locator("details").nth(1);
+  await secondReview.locator("summary").click();
+  await expect(secondReview.getByLabel(/Tablero de conexiones 6×6/)).toBeVisible();
 });
-test("móvil y teclado: recuperar el tablero activo conserva los aciertos anteriores", async ({
-  page,
-}) => {
-  test.setTimeout(90000);
-  await page.setViewportSize({ width: 390, height: 844 });
-  await start(page, "bob");
-  await solve(page, 0, true);
-  await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
-  await cell(page, 0).click();
-  await page.keyboard.press("ArrowRight");
-  await page.reload();
-  await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible();
-  await expect(
-    page.getByText("Prueba interrumpida sin respuesta recibida", { exact: true }),
-  ).toBeVisible();
-  await expect(page.getByText("1/2", { exact: true })).toBeVisible();
+test.describe("móvil y teclado", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
+
+  test("recuperar el tablero activo conserva los aciertos anteriores", async ({ page }) => {
+    test.setTimeout(90000);
+    await start(page, "bob");
+    await solve(page, 0, true);
+    await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
+    await expect(page.getByRole("grid", { name: /6×6/ })).toBeVisible();
+    await touchCell(page, 1, 0);
+    await touchCell(page, 1, 1);
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible();
+    await expect(
+      page.getByText("Prueba interrumpida sin respuesta recibida", { exact: true }),
+    ).toBeVisible();
+    await expect(page.getByText("1/2", { exact: true })).toBeVisible();
+  });
 });
 test("una confirmación perdida reintenta la misma respuesta y avanza una sola vez", async ({
   page,

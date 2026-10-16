@@ -545,8 +545,9 @@
 Aprobadas el 2026-10-11. Identificador `time-trial`, como modo competitivo independiente de Flash.
 La [especificación funcional](../current/domain/contrarreloj.md) desarrolla el recorrido completo.
 
-- Entre 2 y 20 pruebas de un mismo formato: Queens de 4×4 a 8×8 o Conectar parejas 5×5
-  con tres a cinco parejas. Orden fijo de dificultad creciente; no se admiten secuencias mixtas.
+- Entre 2 y 20 pruebas de un mismo formato: Queens de 4×4 a 8×8 o Conectar parejas cuadradas de
+  4×4 a 8×8, con entre tres parejas y tantas como filas. Los tamaños de Conectar parejas pueden
+  mezclarse en una secuencia; no se admiten formatos mezclados. Orden fijo de dificultad creciente.
   Todos juegan las mismas versiones. Otros formatos quedan para ampliaciones.
 - Duración global obligatoria, sin default, en segundos enteros positivos almacenados como
   milisegundos dentro del rango integer existente. Los límites por pregunta no se aplican.
@@ -555,7 +556,7 @@ La [especificación funcional](../current/domain/contrarreloj.md) desarrolla el 
 - Cada tablero Queens permite dos validaciones completas incorrectas; la tercera termina el desafío.
   Movimientos exploratorios, solicitudes inválidas e idempotencia no consumen oportunidades.
 - Conectar parejas permite rehacer caminos libremente. Solo resolver todas las parejas sin cruces y
-  cubrir las 25 casillas concede el peso completo. Cualquier solución legal es válida. Solicitudes
+  cubrir el tablero completo concede el peso completo. Cualquier solución legal es válida. Solicitudes
   incompletas o inválidas se rechazan con HTTP 422 sin recepción final ni pérdida de oportunidades.
 - Intro y cuenta atrás no crean intento ni entregan tableros. `start` crea el intento sin deadline;
   la primera preparación fija atómicamente inicio, deadline e intervalo y libera el tablero.

@@ -54,7 +54,7 @@ export function parseStored(
       throw new Error("invalid_content");
   } catch {
     throw new FlashEditorialValidationError([
-      `questions[${index}] requiere un tablero Conectar parejas 5×5 y una solución válida.`,
+      `questions[${index}] requiere un tablero Conectar parejas cuadrado de 4×4 a 8×8 y una solución válida.`,
     ]);
   }
   return {

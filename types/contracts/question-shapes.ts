@@ -150,6 +150,7 @@ export type QueensBoardSize = 4 | 5 | 6 | 7 | 8;
 export type QueensGrid = {
   [Size in QueensBoardSize]: { rows: Size; columns: Size };
 }[QueensBoardSize];
+export type ConnectPairsGrid = QueensGrid;
 export type QueensAnswer = { readonly queens: number[]; readonly marks: number[] };
 
 export type MazeCell = "wall" | "path" | "start" | "exit";

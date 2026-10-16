@@ -13,7 +13,7 @@ se utilizan en local o staging y no definen un entorno remoto adicional.
 ## Qué incluye
 
 - Una sala demo mock y escenarios Supabase locales con temporada activa, desafíos y publicaciones.
-- Contrarreloj con secuencias de Queens o Conectar parejas 5×5, reloj global y puntos por tablero resuelto.
+- Contrarreloj con secuencias de Queens o Conectar parejas de 4×4 a 8×8, reloj global y puntos por tablero resuelto.
 - Treinta y un formatos: elección múltiple, encontrar el intruso, emparejar conceptos, conectar parejas, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico, estimación, adivinanzas por pistas, mapa de calor, etiquetar imagen, memoria relámpago, memoria de parejas, Simon, matrices lógicas, mini-sudoku, mini-nonograma, Queens, rompecabezas deslizante, Escape, reconstrucción del error, anagramas, Hashtag de palabras, Mini-Wordle, sopa de letras, imagen progresivamente revelada, laberinto contrarreloj, Zip y Tuberías.
 - Mapa de calor con coordenadas normalizadas, marcador corregible, control por puntero o teclado, confirmación explícita y puntuación por precisión y velocidad.
 - Etiquetado de imágenes en dos variantes: asociar varias etiquetas con crédito parcial o identificar una única zona mediante elección o texto libre.
@@ -278,7 +278,7 @@ La imagen progresiva espera a que el activo visual esté listo antes de iniciar 
 
 El laberinto contrarreloj usa una cuadrícula ortogonal controlada mediante cruceta o flechas. Conserva el recorrido para la revisión, finaliza al alcanzar la salida y no penaliza los movimientos adicionales.
 
-Conectar parejas usa una cuadrícula 5 × 5 con rutas ortogonales entre símbolos iguales. Conserva rutas parciales en timeout, concede crédito por parejas conectadas y cobertura, y exige cubrir todo el tablero para resolver.
+Conectar parejas admite cuadrículas cuadradas de 4 × 4 a 8 × 8, con entre tres parejas y tantas como filas. Las rutas ortogonales unen símbolos iguales sin solapamientos y deben cubrir todo el tablero para resolver. Conserva rutas parciales en timeout y concede crédito por parejas conectadas y cobertura.
 
 Memoria de parejas usa losetas ocultas en una cuadrícula compacta con símbolos, emojis o imágenes y etiqueta accesible. Conserva el historial de intentos para la revisión, concede crédito por cada pareja encontrada y resta un 10 % de los puntos base por cada fallo.
 

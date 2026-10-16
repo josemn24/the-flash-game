@@ -1,28 +1,55 @@
 import type { ConnectPairsAnswer, ConnectPairsQuestion } from "@/types/gameplay";
 
-export const CONNECT_PAIRS_ROWS = 5;
-export const CONNECT_PAIRS_COLUMNS = 5;
-export const CONNECT_PAIRS_CELL_COUNT = CONNECT_PAIRS_ROWS * CONNECT_PAIRS_COLUMNS;
+import type { ConnectPairsGrid } from "@/types/contracts/question-shapes";
+
+export const CONNECT_PAIRS_MIN_SIZE = 4;
+export const CONNECT_PAIRS_MAX_SIZE = 8;
 export const CONNECT_PAIRS_MIN_PAIRS = 3;
-export const CONNECT_PAIRS_MAX_PAIRS = 5;
 export const CONNECT_PAIRS_DEFAULT_COLORS = [
   "#35e8ff",
   "#d7ff18",
   "#ff6d73",
   "#43deb7",
   "#b994ff",
+  "#ffb642",
+  "#7bf07b",
+  "#f293cf",
 ] as const;
 
 export function getConnectPairsPairColor(color: string | undefined, pairIndex: number) {
   return color ?? CONNECT_PAIRS_DEFAULT_COLORS[pairIndex % CONNECT_PAIRS_DEFAULT_COLORS.length];
 }
 
-export function connectPairsRoutePoints(path: number[]) {
+export function isConnectPairsGrid(value: unknown): value is ConnectPairsGrid {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const grid = value as Record<string, unknown>;
+  return (
+    typeof grid.rows === "number" &&
+    Number.isInteger(grid.rows) &&
+    grid.rows === grid.columns &&
+    Number(grid.rows) >= CONNECT_PAIRS_MIN_SIZE &&
+    Number(grid.rows) <= CONNECT_PAIRS_MAX_SIZE
+  );
+}
+
+function isBoardIndex(index: number, grid: ConnectPairsGrid) {
+  return Number.isInteger(index) && index >= 0 && index < grid.rows * grid.columns;
+}
+
+function areOrthogonalNeighbors(left: number, right: number, grid: ConnectPairsGrid) {
+  const leftRow = Math.floor(left / grid.columns);
+  const rightRow = Math.floor(right / grid.columns);
+  const leftColumn = left % grid.columns;
+  const rightColumn = right % grid.columns;
+  return Math.abs(leftRow - rightRow) + Math.abs(leftColumn - rightColumn) === 1;
+}
+
+export function connectPairsRoutePoints(path: number[], grid: ConnectPairsGrid) {
   return path
-    .filter(isBoardIndex)
+    .filter((cell) => isBoardIndex(cell, grid))
     .map((cell) => {
-      const row = Math.floor(cell / CONNECT_PAIRS_COLUMNS);
-      const column = cell % CONNECT_PAIRS_COLUMNS;
+      const row = Math.floor(cell / grid.columns);
+      const column = cell % grid.columns;
       return `${column + 0.5},${row + 0.5}`;
     })
     .join(" ");
@@ -49,18 +76,6 @@ export type ConnectPairsCellSelectionResult = {
   changed: boolean;
 };
 
-function isBoardIndex(index: number) {
-  return Number.isInteger(index) && index >= 0 && index < CONNECT_PAIRS_CELL_COUNT;
-}
-
-function areOrthogonalNeighbors(left: number, right: number) {
-  const leftRow = Math.floor(left / CONNECT_PAIRS_COLUMNS);
-  const rightRow = Math.floor(right / CONNECT_PAIRS_COLUMNS);
-  const leftColumn = left % CONNECT_PAIRS_COLUMNS;
-  const rightColumn = right % CONNECT_PAIRS_COLUMNS;
-  return Math.abs(leftRow - rightRow) + Math.abs(leftColumn - rightColumn) === 1;
-}
-
 function pathConnectsEndpoints(path: number[], endpoints: readonly [number, number]) {
   const first = path[0];
   const last = path.at(-1);
@@ -70,8 +85,10 @@ function pathConnectsEndpoints(path: number[], endpoints: readonly [number, numb
   );
 }
 
-function isContiguousPath(path: number[]) {
-  return path.every((cell, index) => index === 0 || areOrthogonalNeighbors(path[index - 1], cell));
+function isContiguousPath(path: number[], grid: ConnectPairsGrid) {
+  return path.every(
+    (cell, index) => index === 0 || areOrthogonalNeighbors(path[index - 1], cell, grid),
+  );
 }
 
 function uniquePathCells(path: number[]) {
@@ -94,6 +111,7 @@ function canCloseActivePair(
   pair: ConnectPairsQuestion["pairs"][number],
   path: number[],
   cell: number,
+  grid: ConnectPairsGrid,
 ) {
   const lastCell = path.at(-1);
   return (
@@ -103,7 +121,7 @@ function canCloseActivePair(
     pair.endpoints.includes(cell) &&
     path[0] !== cell &&
     !path.includes(cell) &&
-    areOrthogonalNeighbors(lastCell, cell)
+    areOrthogonalNeighbors(lastCell, cell, grid)
   );
 }
 
@@ -126,7 +144,7 @@ export function isRestorableConnectPairsDraft(
   question: ConnectPairsQuestion,
   answer: unknown,
 ): answer is ConnectPairsAnswer {
-  if (!isValidConnectPairsAnswer(answer)) return false;
+  if (!isConnectPairsGrid(question.grid) || !isValidConnectPairsAnswer(answer)) return false;
 
   const pairsById = new Map(question.pairs.map((pair) => [pair.id, pair]));
   const allEndpoints = new Set(question.pairs.flatMap((pair) => pair.endpoints));
@@ -136,7 +154,11 @@ export function isRestorableConnectPairsDraft(
     const pair = pairsById.get(pairId);
     if (!pair) return false;
     if (path.length === 0) continue;
-    if (!uniquePathCells(path) || !isContiguousPath(path) || !pair.endpoints.includes(path[0])) {
+    if (
+      !uniquePathCells(path) ||
+      !isContiguousPath(path, question.grid) ||
+      !pair.endpoints.includes(path[0])
+    ) {
       return false;
     }
 
@@ -144,7 +166,7 @@ export function isRestorableConnectPairsDraft(
     for (let index = 0; index < path.length; index += 1) {
       const cell = path[index];
       if (
-        !isBoardIndex(cell) ||
+        !isBoardIndex(cell, question.grid) ||
         occupiedCells.has(cell) ||
         (index > 0 && allEndpoints.has(cell) && cell !== otherEndpoint) ||
         (cell === otherEndpoint && index !== path.length - 1)
@@ -167,11 +189,10 @@ export function isValidConnectPairsConfiguration(question: ConnectPairsQuestion)
   });
 
   return (
-    question.grid.rows === CONNECT_PAIRS_ROWS &&
-    question.grid.columns === CONNECT_PAIRS_COLUMNS &&
+    isConnectPairsGrid(question.grid) &&
     question.requireFullCoverage === true &&
     question.pairs.length >= CONNECT_PAIRS_MIN_PAIRS &&
-    question.pairs.length <= CONNECT_PAIRS_MAX_PAIRS &&
+    question.pairs.length <= question.grid.rows &&
     new Set(pairIds).size === pairIds.length &&
     new Set(endpoints).size === endpoints.length &&
     question.pairs.every(
@@ -180,7 +201,7 @@ export function isValidConnectPairsConfiguration(question: ConnectPairsQuestion)
         Boolean(pair.label.trim()) &&
         Boolean(pair.symbol.trim()) &&
         pair.endpoints.length === 2 &&
-        pair.endpoints.every(isBoardIndex) &&
+        pair.endpoints.every((endpoint) => isBoardIndex(endpoint, question.grid)) &&
         pair.endpoints[0] !== pair.endpoints[1],
     ) &&
     Object.keys(question.solutionPaths).length === question.pairs.length &&
@@ -200,20 +221,21 @@ export function calculateConnectPairsMetrics(
   const occupancy = new Map<number, string>();
   let conflicts = 0;
   let connectedPairs = 0;
-  let structurallyValid = true;
+  let structurallyValid = isConnectPairsGrid(question.grid);
 
   if (options.validateQuestion !== false) {
     const pairIds = question.pairs.map((pair) => pair.id);
     const endpoints = question.pairs.flatMap((pair) => pair.endpoints);
     structurallyValid =
-      question.grid.rows === CONNECT_PAIRS_ROWS &&
-      question.grid.columns === CONNECT_PAIRS_COLUMNS &&
+      isConnectPairsGrid(question.grid) &&
       question.requireFullCoverage === true &&
       question.pairs.length >= CONNECT_PAIRS_MIN_PAIRS &&
-      question.pairs.length <= CONNECT_PAIRS_MAX_PAIRS &&
+      question.pairs.length <= question.grid.rows &&
       new Set(pairIds).size === pairIds.length &&
       new Set(endpoints).size === endpoints.length &&
-      question.pairs.every((pair) => pair.endpoints.every(isBoardIndex));
+      question.pairs.every((pair) =>
+        pair.endpoints.every((endpoint) => isBoardIndex(endpoint, question.grid)),
+      );
   }
 
   const validPairIds = new Set(question.pairs.map((pair) => pair.id));
@@ -227,9 +249,9 @@ export function calculateConnectPairsMetrics(
 
     const pathIsValid =
       path.length >= 2 &&
-      path.every(isBoardIndex) &&
+      path.every((cell) => isBoardIndex(cell, question.grid)) &&
       uniquePathCells(path) &&
-      isContiguousPath(path) &&
+      isContiguousPath(path, question.grid) &&
       pathConnectsEndpoints(path, pair.endpoints);
 
     if (!pathIsValid) structurallyValid = false;
@@ -307,7 +329,7 @@ export function applyConnectPairsCellSelection(
   if (
     activePair &&
     endpointPair?.id === activePair.id &&
-    canCloseActivePair(activePair, activePath, cell)
+    canCloseActivePair(activePair, activePath, cell, question.grid)
   ) {
     const nextPaths = { ...paths, [activePair.id]: [...activePath, cell] };
     return {
@@ -390,7 +412,7 @@ export function applyConnectPairsCellSelection(
   }
 
   const lastCell = activePath.at(-1);
-  if (lastCell === undefined || !areOrthogonalNeighbors(lastCell, cell)) {
+  if (lastCell === undefined || !areOrthogonalNeighbors(lastCell, cell, question.grid)) {
     return {
       paths,
       activePairId,

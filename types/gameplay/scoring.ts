@@ -26,6 +26,7 @@ export type ImageSurface = ContractShapes.ImageSurface;
 type ResolvedHeatMapSurface = QuestionContractMap["heat-map"]["public"]["surface"];
 export type NormalizedPoint = ContractShapes.NormalizedPoint;
 export type QueensGrid = ContractShapes.QueensGrid;
+export type ConnectPairsGrid = ContractShapes.ConnectPairsGrid;
 export type MazeCell = ContractShapes.MazeCell;
 export type PipesTileKind = ContractShapes.PipesTileKind;
 export type ZipCheckpoint = ContractShapes.ZipCheckpoint;
@@ -104,7 +105,7 @@ export type MatchingQuestion = ResolvedBaseQuestion & {
 
 export type ConnectPairsQuestion = ResolvedBaseQuestion & {
   type: "connect-pairs";
-  grid: { rows: 5; columns: 5 };
+  grid: ConnectPairsGrid;
   pairs: Array<ContractShapes.ConnectPairsPair>;
   solutionPaths: Record<string, number[]>;
   requireFullCoverage: true;

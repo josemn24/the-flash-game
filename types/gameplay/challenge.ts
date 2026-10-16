@@ -8,6 +8,7 @@ import type {
   AnagramTile,
   QuestionMedia,
   QueensGrid,
+  ConnectPairsGrid,
   ZipCheckpoint,
   EscapeBlock,
 } from "@/types/contracts";
@@ -433,7 +434,7 @@ export type ServerEscapeQuestion = ServerFlashQuestionBase & {
 
 export type ServerConnectPairsQuestion = ServerFlashQuestionBase & {
   readonly type: "connect-pairs";
-  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly grid: ConnectPairsGrid;
   readonly pairs: readonly ConnectPairsPair[];
   readonly requireFullCoverage: true;
 };

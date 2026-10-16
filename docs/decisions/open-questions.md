@@ -54,7 +54,8 @@ y la [especificación implementada](../current/domain/contrarreloj.md) contienen
 | CT-04 | Primera preparación inicia reloj; esperas sin compensación; recuperación activa sin recepción termina sin replay. |
 | CT-05 | Recepción BD después de bloqueos, estrictamente antes del deadline; conciliación previa a cierre.                 |
 
-Desde el 2026-10-16 también se admite Conectar parejas 5×5, con tres a cinco parejas y edición
+Desde el 2026-10-16 también se admite Conectar parejas con tableros cuadrados de 4×4 a 8×8,
+entre tres parejas y tantas como filas, con edición
 libre de caminos. Cada desafío mantiene un único formato. La recuperación estricta es común.
 Sigue pendiente habilitar más formatos y calibrar contenido real en staging. Los fixtures técnicos
 no son una secuencia editorial validada para publicación real.

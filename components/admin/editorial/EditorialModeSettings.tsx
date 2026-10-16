@@ -95,11 +95,12 @@ export function EditorialModeSettings({
             )}
           </FormField>
           <p className={styles.helper}>
-            Entre 2 y 20 pruebas de un mismo formato: Queens de 4×4 a 8×8 o Conectar parejas 5×5,
-            ordenadas por dificultad creciente. En Conectar parejas puedes rehacer caminos sin
-            penalización; en Queens el tercer error termina el desafío. Los tiempos individuales no
-            se aplican. Los pesos deben ser enteros positivos y sumar exactamente 100; guardar y
-            reordenar conservan los pesos.
+            Entre 2 y 20 pruebas de un mismo formato: Queens o Conectar parejas con tableros
+            cuadrados de 4×4 a 8×8; en Conectar parejas puedes mezclar tamaños y usar entre tres
+            parejas y tantas como filas. Ordena las pruebas por dificultad creciente. Puedes rehacer
+            caminos sin penalización; en Queens el tercer error termina el desafío. Los tiempos
+            individuales no se aplican. Los pesos deben ser enteros positivos y sumar exactamente
+            100; guardar y reordenar conservan los pesos.
           </p>
           {parsedDocument.questions.map((question, index) => (
             <div key={"source" in question ? question.questionVersionId : question.slug}>

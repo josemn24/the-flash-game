@@ -6,8 +6,9 @@ Estado: vigente para Queens y Conectar parejas.
 
 ## Preparación del contenido
 
-Crear entre 2 y 20 pruebas de un mismo formato: Queens de 4×4 a 8×8 o Conectar parejas 5×5
-con tres a cinco parejas. No mezclar formatos. Se pueden escribir documentos en el editor o
+Crear entre 2 y 20 pruebas de un mismo formato: Queens de 4×4 a 8×8 o Conectar parejas con
+tableros cuadrados de 4×4 a 8×8 y de tres parejas al lado del tablero. Los tamaños de Conectar
+parejas pueden mezclarse dentro de una secuencia; no mezclar formatos. Se pueden escribir documentos en el editor o
 reutilizar versiones publicadas de la biblioteca. Todos los jugadores recibirán el mismo orden y
 contenido. La versión publicada congela preguntas, soluciones privadas, orden, pesos y duración;
 las correcciones requieren una nueva revisión editorial y publicación.
@@ -16,7 +17,7 @@ Ordenar por dificultad creciente comprobada mediante resoluciones. El tamaño po
 la dificultad: quitar pistas o encadenar deducciones puede hacer más complejo un tablero del mismo
 tamaño. Verificar conectividad de regiones, solución, pistas, legibilidad y navegación por teclado.
 En Conectar parejas, comprobar que todas las rutas sean ortogonales, unan los extremos, no se
-solapen y cubran las 25 casillas. Se aceptan soluciones legales alternativas. Calibrar la dificultad
+solapen y cubran el tablero completo. Se aceptan soluciones legales alternativas. Calibrar la dificultad
 por las deducciones y tiempos observados, no solo por el número de parejas.
 Escape, Mini-Wordle y Hashtag requieren ampliaciones posteriores.
 

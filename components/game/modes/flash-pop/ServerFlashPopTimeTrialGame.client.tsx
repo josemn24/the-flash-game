@@ -222,8 +222,8 @@ export function ServerFlashPopTimeTrialGame({
                 subtitle:
                   question?.type === "queens"
                     ? `Queens · ${question.grid.rows}×${question.grid.columns}`
-                    : format === "connect-pairs"
-                      ? "Conectar parejas · 5×5"
+                    : question?.type === "connect-pairs"
+                      ? `Conectar parejas · ${question.grid.rows}×${question.grid.columns}`
                       : "Queens",
                 question,
                 result,

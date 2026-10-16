@@ -13,8 +13,6 @@ import {
   applyConnectPairsCellSelection,
   calculateConnectPairsMetrics,
   connectPairsRoutePoints,
-  CONNECT_PAIRS_COLUMNS,
-  CONNECT_PAIRS_ROWS,
   getConnectPairsPairColor,
   isRestorableConnectPairsDraft,
   startConnectPairsDrag,
@@ -45,22 +43,21 @@ type DragState = {
 
 const DRAG_THRESHOLD = 6;
 
-function neighborForKey(index: number, key: string) {
-  const row = Math.floor(index / CONNECT_PAIRS_COLUMNS);
-  const column = index % CONNECT_PAIRS_COLUMNS;
-  if (key === "ArrowUp" && row > 0) return index - CONNECT_PAIRS_COLUMNS;
-  if (key === "ArrowDown" && row < CONNECT_PAIRS_ROWS - 1) return index + CONNECT_PAIRS_COLUMNS;
+function neighborForKey(index: number, key: string, grid: { rows: number; columns: number }) {
+  const row = Math.floor(index / grid.columns);
+  const column = index % grid.columns;
+  if (key === "ArrowUp" && row > 0) return index - grid.columns;
+  if (key === "ArrowDown" && row < grid.rows - 1) return index + grid.columns;
   if (key === "ArrowLeft" && column > 0) return index - 1;
-  if (key === "ArrowRight" && column < CONNECT_PAIRS_COLUMNS - 1) return index + 1;
+  if (key === "ArrowRight" && column < grid.columns - 1) return index + 1;
   return null;
 }
 
-function areNeighbors(left: number, right: number) {
+function areNeighbors(left: number, right: number, columns: number) {
   return (
-    neighborForKey(left, "ArrowUp") === right ||
-    neighborForKey(left, "ArrowDown") === right ||
-    neighborForKey(left, "ArrowLeft") === right ||
-    neighborForKey(left, "ArrowRight") === right
+    Math.abs(Math.floor(left / columns) - Math.floor(right / columns)) +
+      Math.abs((left % columns) - (right % columns)) ===
+    1
   );
 }
 
@@ -97,6 +94,7 @@ export function ConnectPairsQuestion({
   const [announcement, setAnnouncement] = useState("");
 
   const activePair = question.pairs.find((pair) => pair.id === activePairId) ?? question.pairs[0];
+  const { rows, columns } = question.grid;
   const answer = useMemo(() => ({ paths }), [paths]);
   const metrics = useMemo(() => calculateConnectPairsMetrics(question, answer), [answer, question]);
 
@@ -155,7 +153,7 @@ export function ConnectPairsQuestion({
     }
 
     const lastCell = currentPath.at(-1);
-    if (lastCell === undefined || !areNeighbors(lastCell, cell)) {
+    if (lastCell === undefined || !areNeighbors(lastCell, cell, columns)) {
       setAnnouncement("Solo puedes avanzar a una casilla ortogonal adyacente.");
       return;
     }
@@ -210,9 +208,9 @@ export function ConnectPairsQuestion({
     ) {
       return null;
     }
-    const column = Math.floor(((point.x - rect.left) / rect.width) * CONNECT_PAIRS_COLUMNS);
-    const row = Math.floor(((point.y - rect.top) / rect.height) * CONNECT_PAIRS_ROWS);
-    return row * CONNECT_PAIRS_COLUMNS + column;
+    const column = Math.floor(((point.x - rect.left) / rect.width) * columns);
+    const row = Math.floor(((point.y - rect.top) / rect.height) * rows);
+    return row * columns + column;
   };
 
   const tracePointerSegment = (from: Point, to: Point) => {
@@ -220,8 +218,7 @@ export function ConnectPairsQuestion({
     const drag = dragRef.current;
     if (!board || !drag) return;
     const rect = board.getBoundingClientRect();
-    const sampleDistance =
-      Math.min(rect.width / CONNECT_PAIRS_COLUMNS, rect.height / CONNECT_PAIRS_ROWS) / 2;
+    const sampleDistance = Math.min(rect.width / columns, rect.height / rows) / 2;
     const distance = Math.hypot(to.x - from.x, to.y - from.y);
     const steps = Math.max(1, Math.ceil(distance / sampleDistance));
     let previousCell = drag.lastCell;
@@ -312,7 +309,7 @@ export function ConnectPairsQuestion({
     const currentPath = pathsRef.current[currentActivePair.id] ?? [];
     const currentCell = currentPath.at(-1);
     if (currentCell === undefined) return;
-    const nextCell = neighborForKey(currentCell, event.key);
+    const nextCell = neighborForKey(currentCell, event.key, question.grid);
     if (nextCell === null) return;
     event.preventDefault();
     extendActivePath(nextCell);
@@ -358,9 +355,9 @@ export function ConnectPairsQuestion({
       <div
         ref={boardRef}
         className={styles.board}
-        style={{ gridTemplateColumns: `repeat(${CONNECT_PAIRS_COLUMNS}, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
         role="grid"
-        aria-label="Tablero de Conectar parejas. Arrastra desde un extremo hasta su pareja o usa las flechas."
+        aria-label={`Tablero de Conectar parejas de ${rows}×${columns}. Arrastra desde un extremo hasta su pareja o usa las flechas.`}
         tabIndex={0}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -370,7 +367,7 @@ export function ConnectPairsQuestion({
       >
         <svg
           className={styles.routeOverlay}
-          viewBox={`0 0 ${CONNECT_PAIRS_COLUMNS} ${CONNECT_PAIRS_ROWS}`}
+          viewBox={`0 0 ${columns} ${rows}`}
           preserveAspectRatio="none"
           aria-hidden="true"
         >
@@ -382,18 +379,18 @@ export function ConnectPairsQuestion({
               <polyline
                 key={pair.id}
                 className={styles.routeLine}
-                points={connectPairsRoutePoints(path)}
+                points={connectPairsRoutePoints(path, question.grid)}
                 style={{ "--pair-color": color } as CSSProperties}
               />
             );
           })}
         </svg>
 
-        {Array.from({ length: CONNECT_PAIRS_ROWS * CONNECT_PAIRS_COLUMNS }, (_, cell) => {
+        {Array.from({ length: rows * columns }, (_, cell) => {
           const owner = cellOwners.get(cell);
           const active = owner?.pair.id === activePairId;
-          const row = Math.floor(cell / CONNECT_PAIRS_COLUMNS) + 1;
-          const column = (cell % CONNECT_PAIRS_COLUMNS) + 1;
+          const row = Math.floor(cell / columns) + 1;
+          const column = (cell % columns) + 1;
           return (
             <div
               key={cell}

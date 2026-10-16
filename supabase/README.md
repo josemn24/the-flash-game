@@ -24,7 +24,7 @@ de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/READ
 
 El historial activo comienza con `20261011180045_initial_schema.sql`, un baseline generado desde los
 82 archivos declarativos, y continúa con las migraciones incrementales. La revisión más reciente es
-`20261016144218_time_trial_connect_pairs`; las migraciones anteriores al baseline permanecen en Git,
+`20261016193510_connect_pairs_variable_square_boards`; las migraciones anteriores al baseline permanecen en Git,
 pero no forman parte del historial activo.
 
 La [extracción de operaciones de intentos](../docs/current/sql-attempt-command-handlers-refactor.md)
@@ -227,9 +227,9 @@ esta documentación. `.temp/` y `.branches/` son estado local de la CLI y no se 
 
 ## Contrarreloj con Conectar parejas
 
-La migración `20261016144218_time_trial_connect_pairs` amplía las secuencias homogéneas de
-Contrarreloj con tableros Conectar parejas 5×5. La validación privada rechaza rutas incompletas
-antes de crear una recepción y conserva el reloj, la puntuación y la recuperación existentes.
-La consulta editorial conserva la duración global al reabrir borradores de Contrarreloj y Alfabeto.
-No añade tablas, columnas ni RPC públicas. Aplicar primero la migración y después la aplicación.
-Su validación se realiza en bases desechables; no se despliega automáticamente en local o staging.
+La migración `20261016144218_time_trial_connect_pairs` añadió Conectar parejas a Contrarreloj.
+`20261016193510_connect_pairs_variable_square_boards` amplía su contrato a tableros cuadrados de
+4×4 a 8×8 y de tres parejas al lado del tablero, sin cambiar el payload v1 ni los tableros 5×5
+existentes. PostgreSQL valida las dimensiones, los endpoints y las rutas completas antes de recibir
+una respuesta. No añade tablas, columnas ni RPC públicas. Aplicar la migración antes de desplegar la
+aplicación y publicar contenido con tamaños nuevos. No se despliega automáticamente en local o staging.

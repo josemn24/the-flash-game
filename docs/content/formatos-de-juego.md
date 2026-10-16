@@ -33,7 +33,7 @@ La aplicación soporta de forma nativa:
 - estimación con puntuación por proximidad;
 - encontrar el intruso con elementos de texto o imagen;
 - emparejar conceptos con validación inmediata y crédito por pareja;
-- conectar parejas en cuadrícula 5 × 5 con rutas ortogonales y cobertura completa;
+- conectar parejas en cuadrículas cuadradas de 4 × 4 a 8 × 8, con rutas ortogonales y cobertura completa;
 - adivinanzas por pistas con respuesta abierta, máximo decreciente y un único intento;
 - mapa de calor con selección espacial y crédito por proximidad;
 - etiquetar imagen con asociación múltiple o identificación de una única zona;
@@ -255,7 +255,7 @@ El jugador une pares de puntos iguales dentro de una cuadrícula trazando camino
 - **Interacción actual:** seleccionar un extremo y construir el camino celda a celda hasta su pareja. Tocar una ruta existente puede recortarla, rehacerla o borrarla; en teclado, el jugador elige una pareja y extiende la ruta activa con flechas.
 - **Encaje:** reglas visuales inmediatas, muy buen soporte táctil y tensión clara entre resolver rápido y evitar bloquear rutas futuras. Funciona como puzzle de cuadrícula más fluido que sudoku o nonograma.
 - **Puntuación actual:** crédito parcial por parejas conectadas y porcentaje de cobertura, ajustado por velocidad. La solución perfecta exige cubrir el 100 % del tablero; el timeout conserva rutas parciales y puntúa progreso válido.
-- **Uso recomendado:** tableros 5 × 5 con tres a cinco parejas para rondas rápidas, y tamaños mayores solo como desafío especial futuro. Los retos deben estar curados o generados con solución única y dificultad controlada por número de pares, distancia entre extremos y necesidad de cobertura completa.
+- **Uso recomendado:** tableros cuadrados de 4 × 4 a 8 × 8 con entre tres parejas y tantas como filas. Los retos deben estar curados o generados con solución única y dificultad controlada por tamaño, número de parejas, distancia entre extremos y necesidad de cobertura completa.
 - **Accesibilidad actual:** no depende solo del color; cada pareja tiene símbolo, etiqueta accesible, foco visible y controles de teclado. Las rutas pueden recortarse o borrarse sin precisión milimétrica.
 - **Riesgo:** el arrastre libre queda fuera de la v1 para evitar fragilidad en pantallas pequeñas. La validación resuelve solapamientos, retrocesos y caminos parciales de forma determinista.
 

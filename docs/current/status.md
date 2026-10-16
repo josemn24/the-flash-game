@@ -59,7 +59,7 @@ rutas competitivas. Consulta
 
 ## Contrarreloj
 
-`time-trial` integra Queens y Conectar parejas 5×5 sobre el runtime competitivo, editor, ledger y consultas comunes.
+`time-trial` integra Queens y Conectar parejas (tableros cuadrados 4×4 a 8×8) sobre el runtime competitivo, editor, ledger y consultas comunes.
 Incluye reloj global iniciado al entregar la primera prueba, pesos editoriales, tres validaciones en Queens y edición libre de caminos en Conectar parejas,
 recuperación estricta, ranking por resueltas y último acierto, y revisión sin contenido futuro.
 Las [decisiones CT-01 a CT-05](../decisions/open-questions.md#contrarreloj-decisiones-pendientes)
@@ -92,10 +92,12 @@ Verificación local de implementación (2026-10-11):
 
 ### Ampliación Conectar parejas (2026-10-16)
 
-Secuencias homogéneas 5×5, tres a cinco parejas, validación SQL de cobertura completa antes de
-recibir la respuesta, edición libre, puntuación binaria y recuperación estricta. El editor admite
+Secuencias de Conectar parejas con tableros cuadrados 4×4 a 8×8 y entre tres parejas y tantas como
+filas; pueden mezclarse los tamaños. PostgreSQL valida cobertura completa antes de recibir la respuesta,
+con edición libre, puntuación binaria y recuperación estricta. El editor admite
 contenido en línea y referencias de biblioteca; resultados e historial aceptan ambos formatos.
-La migración incremental `20261016144218_time_trial_connect_pairs` no cambia tablas ni RPC públicas.
+La migración `20261016144218_time_trial_connect_pairs` añadió el formato; `20261016193510_connect_pairs_variable_square_boards`
+amplía las dimensiones permitidas. Ninguna cambia tablas ni RPC públicas.
 El escenario `time-trial-connect-pairs` permite verificarlo de forma independiente. El setup local
 habitual de BetaVIP incluye «Circuito de parejas» como primero de seis desafíos; sus cinco
 tableros 5×5 comparten tres minutos y suman 100 puntos.
@@ -112,7 +114,7 @@ publicación, móvil, teclado, recuperación y confirmación perdida. El stack a
 ## Capacidades actuales
 
 - 31 formatos de pregunta nativos, con ejemplos jugables en la biblioteca.
-- Seis modos: `flash`, `alphabet`, `survival`, `narrative`, `pyramid` y `time-trial` (Queens o Conectar parejas).
+- Seis modos: `flash`, `alphabet`, `survival`, `narrative`, `pyramid` y `time-trial` (Queens o Conectar parejas con tamaños mixtos).
 - Autenticación Supabase local, provisioning idempotente de `Player`, logout y edición del nombre.
 - Home, detalle de sala e introducción con lecturas autorizadas reales (S02).
 - Flash competitivo real de 2 a 20 preguntas, 100 puntos totales, con sesiones exclusivas, tiempos,

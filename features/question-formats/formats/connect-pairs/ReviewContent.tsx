@@ -1,9 +1,5 @@
 import type { CSSProperties } from "react";
-import {
-  connectPairsRoutePoints,
-  CONNECT_PAIRS_COLUMNS,
-  getConnectPairsPairColor,
-} from "@/lib/connectPairs";
+import { connectPairsRoutePoints, getConnectPairsPairColor } from "@/lib/connectPairs";
 import styles from "@/components/game/shared/ReviewAnswers.module.css";
 import { isConnectPairsAnswer } from "@/lib/scoring";
 import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
@@ -50,12 +46,12 @@ export function ReviewContent({
     <div className="grid gap-3">
       <div
         className={styles.connectPairsReviewGrid}
-        style={{ gridTemplateColumns: `repeat(${CONNECT_PAIRS_COLUMNS}, minmax(0, 1fr))` }}
-        aria-label={`Tablero de conexiones. ${pathLayerLabel}.`}
+        style={{ gridTemplateColumns: `repeat(${question.grid.columns}, minmax(0, 1fr))` }}
+        aria-label={`Tablero de conexiones ${question.grid.rows}×${question.grid.columns}. ${pathLayerLabel}.`}
       >
         <svg
           className={styles.connectPairsReviewRouteOverlay}
-          viewBox={`0 0 ${CONNECT_PAIRS_COLUMNS} ${question.grid.rows}`}
+          viewBox={`0 0 ${question.grid.columns} ${question.grid.rows}`}
           preserveAspectRatio="none"
           aria-hidden="true"
         >
@@ -66,7 +62,7 @@ export function ReviewContent({
               <polyline
                 key={`solution-${pair.id}`}
                 className={styles.connectPairsReviewRouteLine}
-                points={connectPairsRoutePoints(solutionPath)}
+                points={connectPairsRoutePoints(solutionPath, question.grid)}
                 style={{ "--pair-color": color } as CSSProperties}
               />
             ) : null;
@@ -79,7 +75,7 @@ export function ReviewContent({
                   <polyline
                     key={`submitted-${pair.id}`}
                     className={styles.connectPairsReviewSubmittedLine}
-                    points={connectPairsRoutePoints(submittedPath)}
+                    points={connectPairsRoutePoints(submittedPath, question.grid)}
                     style={{ "--pair-color": color } as CSSProperties}
                   />
                 ) : null;
