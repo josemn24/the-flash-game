@@ -28,7 +28,7 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261015192008_attempt_command_handlers_refactor`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md). La [extracción del handler](sql-attempt-command-handlers-refactor.md) conserva estos contratos con siete operaciones privadas.
+La revisión esperada es `20261015212231_question_library_pagination`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md). La [extracción del handler](sql-attempt-command-handlers-refactor.md) conserva estos contratos con siete operaciones privadas. La [biblioteca de preguntas](sql-question-library-refactor.md) tiene dos migraciones y un orden de despliegue específico: autorización, aplicación y paginación.
 
 Calendario y expiración independiente usan las RPC `run_calendar_tick` y `expire_stale_attempts`,
 exclusivas de `service_role`, con `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en
@@ -306,7 +306,7 @@ y reactivarla tras las comprobaciones.
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261015192008_attempt_command_handlers_refactor`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION=20261015212231_question_library_pagination`. El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 

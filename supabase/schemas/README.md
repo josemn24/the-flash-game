@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 93 archivos. La revisión más reciente declarada
-es `20261015192008_attempt_command_handlers_refactor`; el historial activo empieza con el baseline
+Estado: el esquema declarativo vigente se compone de 95 archivos. La revisión más reciente declarada
+es `20261015212231_question_library_pagination`; el historial activo empieza con el baseline
 `20261011180045_initial_schema` y continúa con migraciones incrementales. Las migraciones anteriores
 al baseline permanecen en Git, fuera del historial activo. La validación local corresponde a
 PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP, la conformidad y la concurrencia
@@ -9,8 +9,12 @@ pasan desde schemas y desde el historial de migraciones. No se ejecutaron comand
 remotas.
 La [extracción de operaciones de intentos](../../docs/current/sql-attempt-command-handlers-refactor.md)
 mantiene el dispatcher y las fachadas; el coordinador delega en siete operaciones privadas.
-La nueva revisión está aplicada en la base local desde el 2026-10-15, sin reset: se conservan
+La revisión `20261015192008_attempt_command_handlers_refactor` está aplicada en la base local desde el 2026-10-15, sin reset: se conservan
 todas las filas de las 31 tablas y el endpoint de health devuelve HTTP 200. No se ha aplicado en remoto.
+Las dos migraciones de [biblioteca de preguntas](../../docs/current/sql-question-library-refactor.md)
+están aplicadas en local desde el 2026-10-16, tras un reset con restauración de los datos existentes:
+se conservan las 31 tablas de dominio, Auth, Storage y las dos partidas; health devuelve HTTP 200.
+La verificación y las copias se documentan en esa guía. No se han aplicado en remoto.
 S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
 parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
 D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
@@ -174,6 +178,7 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [57_pyramid_reads.sql](57_pyramid_reads.sql)                                           | Proyección de briefings/niveles permitidos y lectura propia de resultado/revisión terminal.                                                                     |
 | [40_indexes.sql](40_indexes.sql)                                                       | Índices de autorización, calendario, unicidad y consultas competitivas.                                                                                         |
 | [50_access_helpers.sql](50_access_helpers.sql)                                         | Resolución del jugador y ayudas RLS sin recursión.                                                                                                              |
+| [52_question_documents.sql](52_question_documents.sql)                                 | Construcción compartida del documento privado, también usada por validación competitiva; sin concesiones de ejecución directa.                                  |
 | `53_question_validation_<formato>.sql`                                                 | 21 archivos planos con validación editorial y, en 12 formatos, elegibilidad publicada.                                                                          |
 | [54_question_validation.sql](54_question_validation.sql)                               | Fachadas: envelope general, versiones, publicación, coordinación y tratamiento de excepciones.                                                                  |
 | [54z_challenge_validation.sql](54z_challenge_validation.sql)                           | Validación del desafío completo: modos, referencias, puntos, cantidades y niveles.                                                                              |
@@ -186,13 +191,14 @@ vacía; no son scripts repetibles sobre una base poblada.
 | [59_superadmin_editorial_commands.sql](59_superadmin_editorial_commands.sql)           | Lectura protegida y comandos auditados/idempotentes para crear, editar y publicar Flash/Supervivencia/Pirámide; delega la validación documental compartida.     |
 | [64_superadmin_editorial_versioning.sql](64_superadmin_editorial_versioning.sql)       | Clonación de correcciones, archivado optimista y comparación editorial segura de versiones de Flash/Supervivencia/Pirámide.                                     |
 | [59_superadmin_season_commands.sql](59_superadmin_season_commands.sql)                 | Creación, actualización y activación auditadas de temporadas desde el portal de superadmin.                                                                     |
-| [61_question_library.sql](61_question_library.sql)                                     | Biblioteca protegida de preguntas individuales, historial de versiones, publicación/archivo e índice anti-duplicados por desafío; usa el validador común.       |
 | [62_media_assets.sql](62_media_assets.sql)                                             | Registro privado de objetos de Storage, estados, metadatos, ownership e índices.                                                                                |
 | [59_superadmin_calendar_01_commands.sql](59_superadmin_calendar_01_commands.sql)       | Validación de contenido y comandos de programación/reprogramación/cancelación con wrappers y ACL.                                                               |
 | [59_superadmin_calendar_02_reads.sql](59_superadmin_calendar_02_reads.sql)             | Lecturas protegidas del calendario de superadmin y del calendario de sala, con ACL.                                                                             |
 | [59_superadmin_calendar_03_maintenance.sql](59_superadmin_calendar_03_maintenance.sql) | Tick, expiración de intentos y RPC de mantenimiento con límites; el EXECUTE privado de `service_role` se aplica tras la revocación global de `70_rls.sql`.      |
 | [s20_superadmin_attempt_reads.sql](s20_superadmin_attempt_reads.sql)                   | Lecturas protegidas por sala/publicación para inspección de intentos competitivos; cursor estable, score original/efectivo y detalle sin soluciones.            |
 | [60_integrity.sql](60_integrity.sql)                                                   | Integridad estructural, admisión de intentos según la ventana efectiva, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción. |
+| [61_question_library_01_reads.sql](61_question_library_01_reads.sql)                   | Lecturas autorizadas de biblioteca e historial, paginación previa al agregado, fachadas y ACL.                                                                  |
+| [61_question_library_02_commands.sql](61_question_library_02_commands.sql)             | Creación, edición, publicación y archivo, con fachadas y permisos junto a cada función.                                                                         |
 | [70_rls.sql](70_rls.sql)                                                               | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                                                           |
 | [71_storage_acl.sql](71_storage_acl.sql)                                               | Lectura pública de `avatars` y ausencia de lectura de `question-assets` para roles de navegador.                                                                |
 | [80_rankings.sql](80_rankings.sql)                                                     | Vista privada invoker y funciones públicas autorizadas por membresía.                                                                                           |

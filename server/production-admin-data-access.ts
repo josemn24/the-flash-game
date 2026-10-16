@@ -58,5 +58,5 @@ export const getSuperadminAttemptInspectionPageModel = cache(
 export const getSuperadminSeasonsPageModel = getSuperadminRoomsPageModel;
 
 export const getSuperadminQuestionLibraryPageModel = cache(() =>
-  productionAdminServices.reads.getQuestionLibrary({ status: "all" }),
+  productionAdminServices.reads.getCompleteQuestionLibrary({ status: "all" }),
 );

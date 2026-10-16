@@ -95,7 +95,7 @@ describe("format capability manifest", () => {
     expect(sql("54_question_validation.sql")).toContain(
       "private.is_supported_competitive_question_extension",
     );
-    expect(sql("59_superadmin_calendar_commands.sql")).toContain(
+    expect(sql("59_superadmin_calendar_01_commands.sql")).toContain(
       "private.is_supported_flash_question",
     );
   });

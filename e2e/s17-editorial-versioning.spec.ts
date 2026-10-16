@@ -2,7 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
 type FixtureAccount = { email: string; password: string };
-type Fixture = { users: { superadmin: FixtureAccount; member: FixtureAccount } };
+type Fixture = {
+  users: { superadmin: FixtureAccount; member: FixtureAccount };
+  data: { libraryTailQuestionVersionId: string };
+};
 
 async function fixture() {
   return JSON.parse(await readFile("output/fixtures/s17.json", "utf8")) as Fixture;
@@ -58,6 +61,69 @@ async function publishQuestions(page: Page, suffix: string) {
 }
 
 test.describe("S17 — corrección y versionado editorial", () => {
+  test("busca y reutiliza una pregunta posterior a las primeras 100 entradas", async ({
+    page,
+    request,
+  }) => {
+    const data = await fixture();
+    const health = await request.get("/api/internal/health", {
+      headers: {
+        authorization: `Bearer ${process.env.HEALTHCHECK_SECRET || "local-s22-health-secret"}`,
+      },
+    });
+    expect(health.status()).toBe(200);
+    expect(await health.json()).toMatchObject({
+      status: "ok",
+      checks: { auth: true, database: true, schema: true },
+    });
+    await signIn(page, data.users.superadmin);
+    await page.goto("/admin/questions");
+    await page.getByLabel("Buscar").fill("s17-library-tail");
+    const link = page.locator(
+      `a[href='/admin/questions/${data.data.libraryTailQuestionVersionId}']`,
+    );
+    await expect(link).toBeVisible();
+    await link.click();
+    await expect(page).toHaveURL(
+      new RegExp(`/admin/questions/${data.data.libraryTailQuestionVersionId}$`),
+    );
+
+    await page.goto("/admin/challenges/new");
+    const editor = page.locator("section[aria-labelledby='editorial-management-title']");
+    await editor
+      .getByLabel("Versión publicada de biblioteca")
+      .selectOption(data.data.libraryTailQuestionVersionId);
+    await editor.getByRole("button", { name: "Usar versión", exact: true }).click();
+    const textarea = editor.getByLabel("Documento editorial JSON");
+    const document = JSON.parse(await textarea.inputValue());
+    expect(document.questions[0]).toMatchObject({
+      source: "library",
+      questionVersionId: data.data.libraryTailQuestionVersionId,
+    });
+    document.challenge.slug = `library-tail-e2e-${Date.now().toString(36)}`;
+    document.challenge.title = "Biblioteca completa S17";
+    await textarea.fill(JSON.stringify(document, null, 2));
+    await editor
+      .getByLabel("Motivo de auditoría")
+      .first()
+      .fill("Reutilizar versión fuera de la primera página");
+    await editor.getByRole("button", { name: "Guardar borrador", exact: true }).click();
+    await expect(page).toHaveURL(/editorial=saved/);
+    await page.reload();
+    expect(
+      JSON.parse(await editor.getByLabel("Documento editorial JSON").inputValue()).questions[0],
+    ).toMatchObject({
+      source: "library",
+      questionVersionId: data.data.libraryTailQuestionVersionId,
+    });
+    // Editing an existing challenge must also load every page for the selector.
+    await expect(
+      editor
+        .getByLabel("Versión publicada de biblioteca")
+        .locator(`option[value='${data.data.libraryTailQuestionVersionId}']`),
+    ).toHaveCount(1);
+  });
+
   test("clona, modifica, compara, publica y archiva una versión Flash", async ({ page }) => {
     const data = await fixture();
     const suffix = Date.now().toString(36);

@@ -338,37 +338,44 @@
     "private.create_question_draft_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.update_question_draft_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.publish_question_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.archive_question_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.question_version_document": {
       "arguments": "target_question_version uuid",
       "securityDefiner": false,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.question_version_detail": {
       "arguments": "target_question_version uuid",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.read_superadmin_question_library": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.validate_flash_question_document": {
       "arguments": "document jsonb",
@@ -1032,32 +1039,38 @@
     "public.create_superadmin_question_draft": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
     },
     "public.update_superadmin_question_draft": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
     },
     "public.publish_superadmin_question": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
     },
     "public.archive_superadmin_question": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
     },
     "public.get_superadmin_question_library": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "s"
     },
     "public.get_superadmin_question_version": {
       "arguments": "question_version_id uuid",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "s"
     },
     "public.create_superadmin_scheduled_challenge": {
       "arguments": "input jsonb",

@@ -48,7 +48,7 @@
     "docs:check": "node scripts/check-doc-links.mjs",
     "schema:revision:check": "node scripts/check-schema-revision.mjs",
     "supabase:schema:test": "node scripts/check-supabase-schema.mjs",
-    "supabase:schema:upgrade:test": "node scripts/test-attempt-handler-upgrade.mjs",
+    "supabase:schema:upgrade:test": "node scripts/test-attempt-handler-upgrade.mjs && node scripts/test-question-library-upgrade.mjs",
     "supabase:schema:reconciliation:test": "node scripts/audit-supabase-function-drift.mjs --assert-reconciled",
     "verify:pilot": "node scripts/verify-pilot.mjs",
     "test:e2e:isolated": "node scripts/run-isolated-e2e.mjs",
