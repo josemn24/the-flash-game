@@ -11,7 +11,7 @@ import {
 } from "@/components/game/shared";
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
 import { useServerTimeTrialSession } from "@/features/game/useServerTimeTrialSession";
-import { TIME_TRIAL_END_LABELS } from "@/lib/timeTrial";
+import { timeTrialFormat, TIME_TRIAL_END_LABELS } from "@/lib/timeTrial";
 import type {
   ServerTimeTrialChallenge,
   ServerFlashTerminalReview,
@@ -30,6 +30,7 @@ export function ServerFlashPopTimeTrialGame({
   roomContext: GameRoomContext;
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
+  const format = timeTrialFormat(challenge.slots.map((slot) => slot.questionType));
   const session = useServerTimeTrialSession({ challenge, roomContext, terminalReview });
   const solved = session.results.filter((result) => result.status === "correct").length;
   const running =
@@ -90,6 +91,7 @@ export function ServerFlashPopTimeTrialGame({
               questionCount: challenge.slots.length,
               maxScore: 100,
               timeLimitMs: challenge.timeLimitMs,
+              timeTrialFormat: format,
             }}
             onStart={session.begin}
             canStart
@@ -114,13 +116,21 @@ export function ServerFlashPopTimeTrialGame({
           />
         ) : null}
         {(session.phase === "playing" || session.phase === "checking") &&
-        session.question?.type === "queens" &&
+        session.question &&
         session.questionInput ? (
           <ServerFlashQuestionStage
             input={session.questionInput}
             key={session.question.id}
-            titleOverride="Coloca una corona por fila, columna y región"
-            supportingText="Las coronas no pueden tocarse entre sí."
+            titleOverride={
+              format === "queens"
+                ? "Coloca una corona por fila, columna y región"
+                : "Conecta las parejas y cubre el tablero"
+            }
+            supportingText={
+              format === "queens"
+                ? "Las coronas no pueden tocarse entre sí."
+                : "Los caminos no pueden cruzarse. Puedes rehacerlos libremente."
+            }
             questionNumber={session.questionIndex + 1}
             totalQuestions={challenge.slots.length}
             onTimeUp={session.onTimeUp}
@@ -212,7 +222,9 @@ export function ServerFlashPopTimeTrialGame({
                 subtitle:
                   question?.type === "queens"
                     ? `Queens · ${question.grid.rows}×${question.grid.columns}`
-                    : "Queens",
+                    : format === "connect-pairs"
+                      ? "Conectar parejas · 5×5"
+                      : "Queens",
                 question,
                 result,
                 status: result?.status ?? "locked",

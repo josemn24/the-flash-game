@@ -1,14 +1,15 @@
 # Contrarreloj
 
-Estado: vigente para la primera versión competitiva Queens.
+Estado: vigente para Queens y Conectar parejas.
 
-Última actualización: 2026-10-11. Identificador técnico: `time-trial`.
+Última actualización: 2026-10-16. Identificador técnico: `time-trial`.
 
 ## Propósito y alcance
 
-Resolver una secuencia fija de pruebas Queens antes de agotar un único reloj global. Cada tablero
-resuelto concede su peso editorial completo y abre el siguiente. La primera versión admite entre
-2 y 20 pruebas Queens de 4×4 a 8×8. Escape, Conectar parejas, Mini-Wordle y Hashtag quedan fuera
+Resolver una secuencia fija de pruebas de un mismo formato antes de agotar un único reloj global. Cada tablero
+resuelto concede su peso editorial completo y abre el siguiente. Cada desafío admite entre
+2 y 20 pruebas: todas Queens de 4×4 a 8×8 o todas Conectar parejas 5×5 con tres a cinco parejas.
+No se admiten secuencias mixtas. Escape, Mini-Wordle y Hashtag quedan fuera
 hasta verificar sus combinaciones de modo y formato.
 
 Las [decisiones normativas](../../decisions/decisions.md#21-contrarreloj-reglas-acordadas), los
@@ -30,9 +31,19 @@ conserva el peso y guardar nunca redistribuye puntos. Un acierto concede todo el
 crédito parcial, bonus por velocidad ni penalización de puntos por validaciones incorrectas.
 Los tiempos individuales publicados en las preguntas no tienen efecto competitivo en este modo.
 
-Dos validaciones completas incorrectas permiten continuar en ese tablero; la tercera termina la
+En Queens, dos validaciones completas incorrectas permiten continuar en ese tablero; la tercera termina la
 partida. El contador se reinicia al avanzar. Las ediciones exploratorias y las solicitudes
 inválidas, incompletas o repetidas con la misma clave no consumen oportunidades.
+
+## Conectar parejas
+
+Conectar todos los extremos iguales con caminos ortogonales, sin casillas repetidas ni solapamientos,
+y cubrir las 25 casillas resuelve el tablero. Borrar, recortar y rehacer rutas no consume oportunidades
+ni puntos. La UI envía automáticamente el tablero completo; PostgreSQL valida las reglas públicas
+antes de crear la recepción y acepta cualquier solución legal, aunque difiera de la editorial.
+Una respuesta inválida o incompleta devuelve `invalid_connect_pairs_answer` (HTTP 422), sin consumir
+la interacción; el tablero permanece editable con el reloj activo. No hay límite de errores ni cierre
+por `validation_limit` en este formato. Las reglas de recuperación estricta se conservan.
 
 ## Reloj y finalización
 
@@ -90,12 +101,12 @@ requiriendo autorización; las soluciones nunca aparecen durante el juego.
 
 ```mermaid
 flowchart TD
-  Editor[Editor y biblioteca Queens] --> Version[Versión publicada inmutable]
+  Editor[Editor y biblioteca de preguntas] --> Version[Versión publicada inmutable]
   Version --> Publicacion[Publicación en sala y temporada]
   Publicacion --> Intro[Introducción y cuenta atrás: solo metadatos]
   Intro --> Start[Start: intento sin deadline]
   Start --> Prepare[Prepare: inicio y deadline global atómicos]
-  Prepare --> UI[Shell Flash Pop: reloj persistente y Queens]
+  Prepare --> UI[Shell Flash Pop: reloj persistente y formato seleccionado]
   UI --> Validacion[Guardar borrador y validar tablero]
   Validacion --> Recepcion[Recepción privada después de bloqueos]
   Recepcion --> Evaluacion[Evaluación y respuesta con peso publicado]
@@ -110,11 +121,11 @@ flowchart TD
 
 Se reutilizan versiones, publicaciones, intentos, sesiones, unidades temporales, intervalos,
 recepciones, respuestas y ledger; no se añaden tablas. `private.time_trial_progress` deriva el
-progreso separado de Queens. `get_my_time_trial_challenge` entrega metadatos y
+progreso independiente del formato. `get_my_time_trial_challenge` entrega metadatos y
 `get_my_time_trial_result` entrega el resultado propio y revisión protegida. El dispatcher común,
 los comandos competitivos y las rutas HTTP existentes integran el modo.
 
-La UI reutiliza `ChallengeIntro`, `StartCountdown`, `FlashPopGameShell`, `ServerQueensQuestion`,
+La UI reutiliza `ChallengeIntro`, `StartCountdown`, `FlashPopGameShell`, `ServerQueensQuestion`, `ConnectPairsQuestion`,
 `Timer`, avisos de sesión, resultados y revisión. El reloj permanece montado durante la prueba,
 validación, transición y preparación. Los controles desaparecen durante la confirmación final.
 El resultado muestra puntos, resueltas/total, tiempo hasta el último acierto o «Sin aciertos» y motivo.
@@ -126,6 +137,15 @@ primero la migración compatible y después la aplicación. Las suites SQL, unit
 Supabase y E2E aisladas cubren reglas, permisos y regresiones; la evidencia de cada ejecución se
 registra en [estado del proyecto](../status.md).
 
-Antes de habilitar publicaciones reales, resolver una secuencia Queens calibrada en staging,
+Antes de habilitar publicaciones reales, resolver una secuencia del formato seleccionado calibrada en staging,
 comprobar móvil/escritorio y revisión, y verificar soluciones, pistas, progresión y duración. Los
 fixtures de pruebas validan contratos técnicos y no constituyen contenido editorial calibrado.
+
+### Escenario local dedicado
+
+`npm run supabase:fixture -- --scenario time-trial-connect-pairs` prepara una sala local independiente.
+`npm run test:e2e:isolated -- e2e/time-trial-connect-pairs.spec.ts e2e/time-trial.spec.ts` comprueba
+ambos formatos en un stack desechable. El escenario incluye dos tableros curados, 120 segundos globales
+y pesos de 30 y 70 puntos; es contenido de prueba y no modifica los calendarios de BetaVIP o Tabarnia.
+La migración `20261016144218_time_trial_connect_pairs` se genera desde el esquema declarativo;
+no añade tablas, columnas ni RPC públicas. Debe preceder al despliegue de la aplicación.

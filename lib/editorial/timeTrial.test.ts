@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { guide as connectGuide } from "@/features/question-formats/formats/connect-pairs/guide";
 import { competitiveCapabilityFor } from "@/lib/question-formats/definitions";
 import {
   parseEditableEditorialJson,
@@ -118,9 +119,64 @@ describe("Contrarreloj editorial contract", () => {
     expect(parseEditableEditorialJson(JSON.stringify(edited)).questions[1].points).toBe(70);
     expect(() => parseFlashEditorialDocument(edited)).toThrow(/sumar 100/);
   });
-  it("enables only Queens for the new mode", () => {
+  it("enables Queens and leaves unrelated formats disabled", () => {
     expect(competitiveCapabilityFor("queens", "time-trial")).toBeTruthy();
     for (const type of ["escape", "matching", "mini-wordle", "word-hashtag"] as const)
       expect(competitiveCapabilityFor(type, "time-trial")).toBeNull();
+  });
+});
+
+const connectExample = connectGuide.examples[0].question;
+const connectBoard = {
+  slug: "connect-1",
+  type: "connect-pairs",
+  payloadSchemaVersion: 1,
+  timeLimitMs: 1000,
+  points: 30,
+  publicPayload: {
+    question: connectExample.question,
+    grid: connectExample.grid,
+    pairs: connectExample.pairs,
+    requireFullCoverage: true,
+  },
+  solutionPayload: { paths: connectExample.solutionPaths },
+};
+describe("Contrarreloj Conectar parejas", () => {
+  it("admits a homogeneous sequence and preserves editorial weights", () => {
+    const parsed = parseFlashEditorialDocument({
+      ...document(),
+      questions: [connectBoard, { ...connectBoard, slug: "connect-2", points: 70 }],
+    });
+    expect(parsed.questions.map((q) => q.points)).toEqual([30, 70]);
+    expect(competitiveCapabilityFor("connect-pairs", "time-trial")).toBeTruthy();
+  });
+  it("rejects mixed sequences and invalid board solutions", () => {
+    expect(() =>
+      parseFlashEditorialDocument({
+        ...document(),
+        questions: [connectBoard, document().questions[1]],
+      }),
+    ).toThrow(/mismo formato/);
+    expect(() =>
+      parseFlashEditorialDocument({
+        ...document(),
+        questions: [
+          { ...connectBoard, solutionPayload: { paths: {} } },
+          { ...connectBoard, slug: "connect-2", points: 70 },
+        ],
+      }),
+    ).toThrow();
+    expect(() =>
+      parseFlashEditorialDocument({
+        ...document(),
+        questions: [
+          {
+            ...connectBoard,
+            publicPayload: { ...connectBoard.publicPayload, grid: { rows: 6, columns: 6 } },
+          },
+          { ...connectBoard, slug: "connect-2", points: 70 },
+        ],
+      }),
+    ).toThrow();
   });
 });

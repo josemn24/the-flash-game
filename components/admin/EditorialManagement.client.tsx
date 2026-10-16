@@ -1,5 +1,6 @@
 "use client";
 
+import { isTimeTrialFormat } from "@/lib/timeTrial";
 import { randomUuid } from "@/lib/randomUuid";
 
 import {
@@ -204,7 +205,7 @@ export function EditorialManagement({
 
   function selectLibraryQuestion() {
     const compatible = publishedLibraryEntries.filter(
-      (entry) => editableDocument?.challenge.mode !== "time-trial" || entry.type === "queens",
+      (entry) => editableDocument?.challenge.mode !== "time-trial" || isTimeTrialFormat(entry.type),
     );
     const entry =
       compatible.find((candidate) => candidate.questionVersionId === libraryQuestionId) ??
@@ -265,7 +266,7 @@ export function EditorialManagement({
               fieldId={fieldId}
               entries={
                 editableDocument?.challenge.mode === "time-trial"
-                  ? publishedLibraryEntries.filter((entry) => entry.type === "queens")
+                  ? publishedLibraryEntries.filter((entry) => isTimeTrialFormat(entry.type))
                   : publishedLibraryEntries
               }
               selectedId={libraryQuestionId}

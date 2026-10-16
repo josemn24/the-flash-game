@@ -15,7 +15,14 @@ export function ReviewContent({
 }: ReviewProps<PracticeQuestionOfType<"connect-pairs">>) {
   const answer = isConnectPairsAnswer(result.answer) ? result.answer : null;
   const details = result.details?.type === "connect-pairs" ? result.details : undefined;
-  const showSubmittedPaths = answer !== null && !result.isCorrect;
+  const matchesSolution =
+    answer !== null &&
+    question.pairs.every((pair) => {
+      const submitted = (answer.paths[pair.id] ?? []).join(",");
+      const solution = question.solutionPaths[pair.id] ?? [];
+      return submitted === solution.join(",") || submitted === [...solution].reverse().join(",");
+    });
+  const showSubmittedPaths = answer !== null && (!result.isCorrect || !matchesSolution);
   const solutionCells = new Set(Object.values(question.solutionPaths).flat());
   const solutionOwner = new Map<number, (typeof question.pairs)[number]>();
   const submittedOwner = new Map<number, (typeof question.pairs)[number]>();

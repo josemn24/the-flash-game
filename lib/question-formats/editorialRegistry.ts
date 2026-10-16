@@ -1,3 +1,4 @@
+import { parseStored as connectPairsParser } from "./connect-pairs/stored";
 import type { FlashEditorialQuestion } from "@/types/contracts/stored-questions";
 import { parseStored as anagramParser } from "./anagram/stored";
 import { parseStored as classificationParser } from "./classification/stored";
@@ -22,6 +23,7 @@ import { parseStored as zipParser } from "./zip/stored";
 import { parseStored as queensParser } from "./queens/stored";
 export const EDITORIAL_FORMAT_PARSERS = {
   queens: queensParser,
+  "connect-pairs": connectPairsParser,
   "word-search": wordSearchParser,
   "word-hashtag": wordHashtagParser,
   zip: zipParser,

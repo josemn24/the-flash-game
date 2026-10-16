@@ -117,6 +117,7 @@ export type SuperadminQuestionLibraryEntry = {
   readonly slug: string;
   readonly type:
     | "queens"
+    | "connect-pairs"
     | "multiple-choice"
     | "estimation"
     | "heat-map"

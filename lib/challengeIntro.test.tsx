@@ -9,6 +9,7 @@ describe("challenge intro model", () => {
   it("explains the shared three-minute Contrarreloj clock and third-error limit", () => {
     const model = buildSafeChallengeIntroModel({
       title: "Escalera de coronas",
+      timeTrialFormat: "queens",
       mode: "time-trial",
       questionCount: 6,
       maxScore: 100,
@@ -98,4 +99,18 @@ describe("ChallengeIntro", () => {
 
     expect(markup).toContain('href="/salas/tabarnia-room"');
   });
+});
+
+it("explains free path edits and strict recovery for Conectar parejas", () => {
+  const model = buildSafeChallengeIntroModel({
+    title: "Caminos",
+    mode: "time-trial",
+    timeTrialFormat: "connect-pairs",
+    questionCount: 2,
+    maxScore: 100,
+    timeLimitMs: 60000,
+  });
+  expect(model.rules[1].description).toContain("no penaliza");
+  expect(model.rules[1].description).not.toContain("tercera");
+  expect(model.rules[2].description).toContain("sin respuesta recibida termina");
 });

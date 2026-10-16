@@ -332,6 +332,7 @@ export function mapAttemptError(error: unknown): AttemptApiError {
     return new AttemptApiError("invalid_attempt_lifecycle", 500);
   }
   if (error instanceof AttemptCommandError) {
+    if (error.code === "invalid_connect_pairs_answer") return new AttemptApiError(error.code, 422);
     const status =
       error.code === "invalid_mini_wordle_guess" ||
       error.code === "mini_wordle_requires_guess_command" ||

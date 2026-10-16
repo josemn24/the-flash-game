@@ -1425,6 +1425,18 @@
       "securityDefiner": false,
       "executeRoles": [],
       "volatility": "v"
+    },
+    "private.connect_pairs_answer_valid": {
+      "arguments": "public_payload jsonb, answer jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "i"
+    },
+    "private.is_supported_time_trial_question": {
+      "arguments": "target_question uuid",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
     }
   }
 }

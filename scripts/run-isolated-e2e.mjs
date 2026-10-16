@@ -43,6 +43,7 @@ const specs = requested.length
       "format-contracts-pyramid",
       "pyramid-queens",
       "time-trial",
+      "time-trial-connect-pairs",
       "s03",
       "s04",
       "s05",

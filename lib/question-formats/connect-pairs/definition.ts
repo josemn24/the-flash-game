@@ -10,5 +10,11 @@ export const definition = {
     payloadSchemaVersions: [1],
     ...competitiveExtension,
   },
-  competitive: { flash: generic, survival: generic, pyramid: generic, narrative: generic },
+  competitive: {
+    flash: generic,
+    survival: generic,
+    pyramid: generic,
+    narrative: generic,
+    "time-trial": generic,
+  },
 } as const satisfies FormatDefinition<"connect-pairs">;

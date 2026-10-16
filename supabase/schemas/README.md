@@ -1,7 +1,7 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 95 archivos. La revisión más reciente declarada
-es `20261015212231_question_library_pagination`; el historial activo empieza con el baseline
+Estado: el esquema declarativo vigente se compone de 96 archivos. La revisión más reciente declarada
+es `20261016144218_time_trial_connect_pairs`; el historial activo empieza con el baseline
 `20261011180045_initial_schema` y continúa con migraciones incrementales. Las migraciones anteriores
 al baseline permanecen en Git, fuera del historial activo. La validación local corresponde a
 PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP, la conformidad y la concurrencia
@@ -450,3 +450,12 @@ Referencias oficiales consultadas el 2026-09-14:
 [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
 [funciones](https://supabase.com/docs/guides/database/functions) y
 [ALTER DEFAULT PRIVILEGES PostgreSQL 17](https://www.postgresql.org/docs/17/sql-alterdefaultprivileges.html).
+
+## Contrarreloj con Conectar parejas
+
+La migración `20261016144218_time_trial_connect_pairs` amplía las secuencias homogéneas de
+Contrarreloj con tableros Conectar parejas 5×5. La validación privada rechaza rutas incompletas
+antes de crear una recepción y conserva el reloj, la puntuación y la recuperación existentes.
+La consulta editorial conserva la duración global al reabrir borradores de Contrarreloj y Alfabeto.
+No añade tablas, columnas ni RPC públicas. Aplicar primero la migración y después la aplicación.
+Su validación se realiza en bases desechables; no se despliega automáticamente en local o staging.

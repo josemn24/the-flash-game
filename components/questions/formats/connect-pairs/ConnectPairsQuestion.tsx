@@ -291,7 +291,13 @@ export function ConnectPairsQuestion({
     dragRef.current = null;
     if (cancelled) {
       suppressClickRef.current = false;
-    } else if (drag.moved) {
+    } else {
+      // Pointer capture retargets the native click to the grid. Commit a tap
+      // here, and suppress a subsequent cell click when the browser emits one.
+      if (!drag.moved) {
+        suppressClickRef.current = true;
+        handleCell(drag.startCell);
+      }
       window.setTimeout(() => {
         suppressClickRef.current = false;
       }, 0);

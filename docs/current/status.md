@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-10-11.
+Última actualización documental: 2026-10-16.
 
 # Estado actual del proyecto
 
@@ -59,8 +59,8 @@ rutas competitivas. Consulta
 
 ## Contrarreloj
 
-`time-trial` integra Queens sobre el runtime competitivo, editor, ledger y consultas comunes.
-Incluye reloj global iniciado al entregar la primera prueba, pesos editoriales, tres validaciones,
+`time-trial` integra Queens y Conectar parejas 5×5 sobre el runtime competitivo, editor, ledger y consultas comunes.
+Incluye reloj global iniciado al entregar la primera prueba, pesos editoriales, tres validaciones en Queens y edición libre de caminos en Conectar parejas,
 recuperación estricta, ranking por resueltas y último acierto, y revisión sin contenido futuro.
 Las [decisiones CT-01 a CT-05](../decisions/open-questions.md#contrarreloj-decisiones-pendientes)
 están cerradas; [especificación](domain/contrarreloj.md) y
@@ -90,10 +90,27 @@ Verificación local de implementación (2026-10-11):
 - Las pruebas usan fixtures desechables. No sustituyen la calibración de contenido real ni la
   comprobación de staging requerida por la guía editorial.
 
+### Ampliación Conectar parejas (2026-10-16)
+
+Secuencias homogéneas 5×5, tres a cinco parejas, validación SQL de cobertura completa antes de
+recibir la respuesta, edición libre, puntuación binaria y recuperación estricta. El editor admite
+contenido en línea y referencias de biblioteca; resultados e historial aceptan ambos formatos.
+La migración incremental `20261016144218_time_trial_connect_pairs` no cambia tablas ni RPC públicas.
+El escenario `time-trial-connect-pairs` permite verificarlo sin modificar BetaVIP o Tabarnia.
+La entrega no acredita un despliegue ni una calibración editorial en staging.
+
+Verificación de la ampliación: 245 suites y 2.407 pruebas unitarias aprobadas (`--maxWorkers=1`),
+67 suites SQL completas desde schemas y migraciones, y 43 comprobaciones focales de Conectar parejas
+por ambas vías. Pasan además conformidad, caracterización, carreras concurrentes de Queens y Conectar parejas, compilación,
+tipos, arquitectura, enlaces y ESLint del código fuente (excluyendo los artefactos de `output/`).
+Los tipos públicos generados desde el stack aislado coinciden con el archivo versionado.
+Las 24 pruebas E2E pasan en los seis modos, incluidas las cuatro de Conectar parejas con editor,
+publicación, móvil, teclado, recuperación y confirmación perdida. El stack aislado se elimina al terminar.
+
 ## Capacidades actuales
 
 - 31 formatos de pregunta nativos, con ejemplos jugables en la biblioteca.
-- Seis modos: `flash`, `alphabet`, `survival`, `narrative`, `pyramid` y `time-trial` (Queens).
+- Seis modos: `flash`, `alphabet`, `survival`, `narrative`, `pyramid` y `time-trial` (Queens o Conectar parejas).
 - Autenticación Supabase local, provisioning idempotente de `Player`, logout y edición del nombre.
 - Home, detalle de sala e introducción con lecturas autorizadas reales (S02).
 - Flash competitivo real de 2 a 20 preguntas, 100 puntos totales, con sesiones exclusivas, tiempos,

@@ -1,3 +1,4 @@
+import { isTimeTrialFormat } from "@/lib/timeTrial";
 import { isValidAttemptLifecycle } from "@/lib/attemptLifecycle";
 import type { GameMode } from "@/types/gameplay/challenge";
 import type { RoomMembershipRole } from "@/types/view-models";
@@ -410,7 +411,7 @@ function hasReviewModeConfiguration(row: ReadRow) {
 
   if (row.challenge_mode === "time-trial")
     return (
-      row.question_type === "queens" &&
+      isTimeTrialFormat(row.question_type) &&
       typeof row.global_time_limit_ms === "number" &&
       row.global_time_limit_ms > 0 &&
       row.alphabet_letter === null

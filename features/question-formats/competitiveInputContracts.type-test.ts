@@ -16,7 +16,16 @@ type AllTrue<T> = Exclude<T, true> extends never ? true : false;
 type ExpectedKeys = {
   anagram: "question" | "locked" | "onSubmit";
   classification: "question" | "locked" | "onSubmit" | "onProgress" | "pendingAnswer";
-  "connect-pairs": "question" | "locked" | "onSubmit" | "onProgress" | "pendingAnswer";
+  "connect-pairs":
+    | "question"
+    | "locked"
+    | "onSubmit"
+    | "onProgress"
+    | "pendingAnswer"
+    | "submissionState"
+    | "submissionStatusVisible"
+    | "submissionError"
+    | "onRetrySubmission";
   escape:
     | "question"
     | "locked"

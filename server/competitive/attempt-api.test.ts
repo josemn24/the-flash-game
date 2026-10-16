@@ -192,6 +192,13 @@ describe("competitive HTTP contract", () => {
     });
   });
 
+  it("maps incomplete Connect pairs to a recoverable 422", () => {
+    expect(mapAttemptError(new AttemptCommandError("invalid_connect_pairs_answer"))).toMatchObject({
+      code: "invalid_connect_pairs_answer",
+      status: 422,
+    });
+  });
+
   it("maps Queens overflow to a definitive bad request", () => {
     expect(mapAttemptError(new AttemptCommandError("queens_answer_overflow"))).toMatchObject({
       code: "queens_answer_overflow",

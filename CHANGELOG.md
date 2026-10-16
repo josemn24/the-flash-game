@@ -8,6 +8,12 @@ actualizar esa sección y enlazar la entrada con su pull request o commit de ori
 
 ## [Unreleased]
 
+### Añadido
+
+- Contrarreloj admite secuencias de Conectar parejas 5×5, con edición libre de caminos, reloj global,
+  validación del servidor, editor y revisión. Queens conserva sus reglas. La migración incremental
+  `20261016144218_time_trial_connect_pairs` debe aplicarse antes de actualizar la aplicación.
+
 ### Mejorado
 
 - Se ha refinado el feedback visual de las respuestas y sus estados de acierto o error. ([`053bb0f`][commit-053bb0f])

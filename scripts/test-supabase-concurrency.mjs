@@ -1,3 +1,5 @@
+import { sessionFixture } from "./fixtures/scenarios/competitive-session-fixture.mjs";
+import { connectPairsQuestions } from "./fixtures/scenarios/time-trial-connect-pairs.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createHash, randomUUID } from "node:crypto";
@@ -965,4 +967,61 @@ export async function testConcurrentCommands(sql) {
     "A blocked late validation consumes no opportunity and accepts no receipt",
   );
   console.log("Contrarreloj post-lock deadline race passed.");
+  const cpSession = "concurrent-connect-pairs-session-token";
+  const cpRace = sessionFixture({
+    id: "cp-deadline-race",
+    mode: "time-trial",
+    title: "CP deadline race",
+    globalTimeLimitMs: 1000,
+    questions: connectPairsQuestions,
+  });
+  await sql(
+    cpRace.buildDomainSql({
+      accounts: { alice: { playerId: id("owner") } },
+      sqlString: quote,
+      sqlUuid: (label) => quote(id(`cp-race-${label}`)),
+    }),
+  );
+  const cpStarted = await run("owner", "start_attempt", {
+    scheduledChallengeId: id("cp-race-publication"),
+    sessionToken: cpSession,
+    idempotencyKey: "cp-race-start",
+  });
+  const cpPrepared = await invoke(
+    "owner",
+    "prepare_interaction",
+    {
+      attemptId: cpStarted.attemptId,
+      sessionToken: cpSession,
+      lockVersion: cpStarted.lockVersion,
+      idempotencyKey: "cp-race-prepare",
+    },
+    true,
+  );
+  const cpBlocked = await invoke("owner", "receive_answer", {
+    attemptId: cpStarted.attemptId,
+    sessionToken: cpSession,
+    lockVersion: cpStarted.lockVersion + 2,
+    challengeItemId: id("cp-race-item-0"),
+    answer: { paths: connectPairsQuestions[0].solution.paths },
+    idempotencyKey: "cp-race-answer",
+  });
+  const cpOutcomes = await Promise.allSettled([cpPrepared.done, cpBlocked.done]);
+  assert.equal(cpOutcomes[0].status, "fulfilled");
+  assert.equal(cpOutcomes[1].status, "rejected");
+  assert.match(
+    cpOutcomes[1].reason.message,
+    /deadline_reached/,
+    "Complete routes received after acquiring the lock cannot predate the deadline",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.answer_receipts where attempt_id=${quote(cpStarted.attemptId)};`,
+      )
+    ).trim(),
+    "0",
+    "A blocked late Connect pairs answer creates no receipt",
+  );
+  console.log("Conectar parejas post-lock deadline race passed.");
 }

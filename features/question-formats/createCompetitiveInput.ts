@@ -57,6 +57,7 @@ export function createCompetitiveInput(source: CompetitiveInputSource): Competit
           locked,
           ...answer,
           ...progress,
+          ...submission,
           pendingAnswer: isValidConnectPairsAnswer(pendingAnswer) ? pendingAnswer : undefined,
         },
       };

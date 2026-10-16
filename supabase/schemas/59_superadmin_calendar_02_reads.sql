@@ -175,12 +175,13 @@ language sql stable security definer set search_path = '' as $$
           or version.mode = 'time-trial'
             and version.mode_config = '{}'::jsonb
             and version.global_time_limit_ms > 0
-            and question.type = 'queens'
+            and private.is_supported_time_trial_question(question.id)
             and item.mode_config = '{}'::jsonb
           or version.mode not in ('pyramid', 'narrative', 'alphabet', 'time-trial')
             and item.mode_config = '{}'::jsonb
         )), false)
         and (version.mode <> 'pyramid' or count(distinct item.mode_config->>'levelId') = 7)
+        and (version.mode <> 'time-trial' or count(distinct question.type) = 1)
         and count(*) filter (where private.is_supported_flash_question(question.id)) = count(*)
         and coalesce(sum(item.points), 0) = 100 as is_supported
     from private.challenge_items item

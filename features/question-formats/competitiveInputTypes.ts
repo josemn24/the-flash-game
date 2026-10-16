@@ -29,7 +29,8 @@ export type CompetitiveInputByFormat = {
     Draft<"classification">;
   readonly "connect-pairs": Base<"connect-pairs"> &
     Answer<"connect-pairs"> &
-    Draft<"connect-pairs">;
+    Draft<"connect-pairs"> &
+    Submission;
   readonly escape: Base<"escape"> & Answer<"escape"> & Progress<"escape"> & Submission;
   readonly estimation: Base<"estimation"> & Answer<"estimation"> & Draft<"estimation">;
   readonly "heat-map": Base<"heat-map"> & Answer<"heat-map"> & Draft<"heat-map">;

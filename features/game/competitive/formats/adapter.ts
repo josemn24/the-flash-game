@@ -27,7 +27,7 @@ const genericAdapter: InteractionAdapter = {
     return {
       operation: "answer",
       data: { challengeItemId: question.id, answer: action.answer },
-      channel: "answerVerification",
+      channel: question.type === "connect-pairs" ? "submission" : "answerVerification",
     };
   },
   normalize(question, command, response) {

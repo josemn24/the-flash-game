@@ -1,6 +1,18 @@
 -- Contrarreloj facts remain private. Public callers only see authorized projections.
 set local check_function_bodies = off;
 
+create function private.is_supported_time_trial_question(target_question uuid) returns boolean
+language sql stable security invoker set search_path = '' as $$
+  select coalesce((select private.is_supported_flash_question(q.id)
+    and q.type in ('queens','connect-pairs') and q.payload_schema_version = 1
+    and (q.type = 'queens' or private.connect_pairs_answer_valid(q.public_payload,
+      jsonb_build_object('paths',s.solution_payload->'paths')))
+    from private.question_versions q join private.question_version_solutions s on s.question_version_id = q.id
+    where q.id = target_question),false)
+$$;
+alter function private.is_supported_time_trial_question(uuid) owner to postgres;
+revoke all on function private.is_supported_time_trial_question(uuid) from public,anon,authenticated,service_role;
+
 create function private.assert_time_trial_content(target_version uuid) returns void
 language plpgsql volatile set search_path = '' as $$
 declare version private.challenge_versions%rowtype;
@@ -16,10 +28,13 @@ begin
       select 1 from private.challenge_items i join private.question_versions q on q.id = i.question_version_id
       where i.challenge_version_id = target_version and (
         i.points <= 0 or i.config_schema_version <> 1 or i.mode_config <> '{}'::jsonb
-        or q.type <> 'queens' or q.payload_schema_version <> 1
-        or not private.is_supported_flash_question(q.id)
+        or q.type not in ('queens','connect-pairs') or q.payload_schema_version <> 1
+        or not private.is_supported_time_trial_question(q.id)
       )
-    ) or (select max(position) from private.challenge_items where challenge_version_id = target_version)
+    ) or (select count(distinct q.type) from private.challenge_items i
+      join private.question_versions q on q.id = i.question_version_id
+      where i.challenge_version_id = target_version) <> 1
+    or (select max(position) from private.challenge_items where challenge_version_id = target_version)
       <> (select count(*) from private.challenge_items where challenge_version_id = target_version) then
     raise exception 'invalid_time_trial_content' using errcode = '22023';
   end if;

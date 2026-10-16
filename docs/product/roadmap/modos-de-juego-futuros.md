@@ -106,7 +106,7 @@ Partida individual rápida con preguntas cronometradas, puntuación por acierto 
 
 ### Contrarreloj
 
-Modo independiente con reglas acordadas y pendiente de implementación. El jugador resuelve una
+Modo independiente implementado para Queens y Conectar parejas 5×5. El jugador resuelve una
 secuencia finita de pruebas del mismo formato, con dificultad creciente y un único reloj global.
 Cada acierto concede puntos y permite avanzar; el fallo definitivo o el reloj agotado terminan la
 partida conservando los puntos. Resolver toda la secuencia detiene el reloj y concede 100 Flash Points.
@@ -114,7 +114,8 @@ partida conservando los puntos. Resolver toda la secuencia detiene el reloj y co
 - **Motivación principal:** razonamiento, superación y gestión del tiempo.
 - **Relación entre jugadores:** solo / todos contra todos, con la misma secuencia para cada participante.
 - **Ritmo inicial:** asíncrono dentro de salas y temporadas.
-- **Formatos candidatos:** Queens, Escape, Conectar parejas, Mini-Wordle y Hashtag de palabras;
+- **Formatos actuales:** Queens y Conectar parejas, en desafíos de un solo formato.
+- **Formatos candidatos:** Escape, Mini-Wordle y Hashtag de palabras;
   cada combinación requiere verificación competitiva específica.
 - **Comparación:** más pruebas resueltas; a igualdad, menor tiempo global hasta el último acierto.
   Los puntos acreditados se suman al ranking de temporada de la sala.

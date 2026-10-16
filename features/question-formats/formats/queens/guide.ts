@@ -11,7 +11,7 @@ export const guide = {
   description: [
     "El tablero se divide en N regiones. El jugador coloca exactamente una corona en cada fila, columna y región mientras descarta candidatos con marcas X opcionales.",
     "Las colocaciones conflictivas se permiten y se señalan al instante. Completar N coronas, incluidas las pistas fijas, valida el tablero automáticamente; editar coronas o marcas no tiene coste. Durante la validación el tablero queda bloqueado.",
-    "En Pirámide competitivo hay tres oportunidades: los dos primeros tableros incorrectos permiten continuar y el tercer fallo termina el ascenso. Acertar en la tercera oportunidad supera el nivel. El contador muestra los intentos restantes confirmados por el servidor.",
+    "En Pirámide y Contrarreloj competitivos hay tres oportunidades: los dos primeros tableros incorrectos permiten continuar y el tercer fallo termina el ascenso. Acertar en la tercera oportunidad supera el nivel. El contador muestra los intentos restantes confirmados por el servidor.",
   ],
   recommendations: [
     "Deducción espacial compacta",
@@ -29,7 +29,7 @@ export const guide = {
     "Dos coronas no pueden tocarse, tampoco en diagonal",
     "Usa marcas X para descartar celdas; no se colocan automáticamente",
     "Completar N coronas valida el tablero automáticamente, incluidas las pistas fijas",
-    "En Pirámide competitivo, tres validaciones incorrectas terminan la partida",
+    "En Pirámide y Contrarreloj competitivos, tres validaciones incorrectas terminan la partida",
   ],
   authoringTips: [
     "Usa una cuadrícula cuadrada de 4 × 4 a 8 × 8 con N regiones ortogonalmente conectadas",
@@ -47,7 +47,7 @@ export const guide = {
   timing: {
     recommendedSeconds: "45–75 s",
     notes:
-      "Las reglas se leen antes de iniciar. Solo resolver puntúa; cada validación completa incorrecta resta un 5 % de los puntos base hasta un mínimo de cero. En Pirámide competitivo el tercer fallo cierra el nivel con cero puntos para Queens y conserva los puntos de niveles anteriores. Flash, Supervivencia, Narrative y práctica mantienen sus reglas.",
+      "Las reglas se leen antes de iniciar. Solo resolver puntúa; cada validación completa incorrecta resta un 5 % de los puntos base hasta un mínimo de cero. En Pirámide competitivo el tercer fallo cierra el nivel con cero puntos para Queens y conserva los puntos de niveles anteriores. En Contrarreloj cada tablero resuelto concede su peso completo sin penalización de puntos por errores. Flash, Supervivencia, Narrative y práctica mantienen sus reglas.",
   },
   scoring: SCORING_POLICIES.queens,
   examples: [

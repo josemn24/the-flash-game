@@ -1,5 +1,7 @@
 import type { UtcIsoDateTime } from "./values";
 
+export type TimeTrialFormat = "queens" | "connect-pairs";
+
 export type TimeTrialEndReason =
   "all_solved" | "validation_limit" | "time_limit" | "recovery_interrupted";
 

@@ -3,6 +3,7 @@ export const E2E_BY_SCENARIO = Object.freeze({
   "format-contracts-pyramid": ["e2e/format-contracts-pyramid.spec.ts"],
   "pyramid-queens": ["e2e/pyramid-queens.spec.ts"],
   "time-trial": ["e2e/time-trial.spec.ts"],
+  "time-trial-connect-pairs": ["e2e/time-trial-connect-pairs.spec.ts"],
   portal: [
     "e2e/admin-portal.spec.ts",
     "e2e/auth-login.spec.ts",
@@ -52,6 +53,7 @@ export const PILOT_E2E_BY_SCENARIO = Object.freeze({
   "narrative-interactive": E2E_BY_SCENARIO["narrative-interactive"],
   s05: E2E_BY_SCENARIO.s05,
   "time-trial": E2E_BY_SCENARIO["time-trial"],
+  "time-trial-connect-pairs": E2E_BY_SCENARIO["time-trial-connect-pairs"],
   e01: E2E_BY_SCENARIO.e01,
   e02: E2E_BY_SCENARIO.e02,
   e03: E2E_BY_SCENARIO.e03,

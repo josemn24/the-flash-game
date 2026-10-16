@@ -25,7 +25,8 @@ variantes versionadas. Los tipos editoriales anteriores se reexportan como facha
 
 1. **Publicación:** `stored.ts` valida el documento editorial, delega el payload público a
    `validation.ts` y comprueba que la solución corresponde a sus opciones, referencias o geometría.
-   Queens y Connect Pairs conservan su entrada desde la biblioteca de preguntas publicadas.
+   Queens y Conectar parejas admiten documentos en línea y referencias de biblioteca. Contrarreloj
+   exige secuencias homogéneas de uno de esos formatos; Conectar parejas mantiene el tablero 5×5.
 2. **Evaluación:** `storedRegistry` comprueba modo, versiones y configuración. Reutiliza los
    validadores públicos y privados del formato y convierte el contenido almacenado en un
    `PublicQuestion` y una `QuestionSolution`. El compositor del servidor produce la pregunta que

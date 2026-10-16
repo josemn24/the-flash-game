@@ -46,7 +46,10 @@ export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
 
     if (context.mode === "time-trial") {
       const correct =
-        !context.timedOut && result.details?.type === "queens" && result.details.solved;
+        !context.timedOut &&
+        (context.questionType === "queens"
+          ? result.details?.type === "queens" && result.details.solved
+          : context.questionType === "connect-pairs" && result.status === "correct");
       return {
         status: correct ? "correct" : context.timedOut ? "unanswered" : "incorrect",
         points: correct ? context.itemPoints : 0,

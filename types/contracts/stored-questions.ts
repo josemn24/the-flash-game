@@ -593,7 +593,24 @@ export type FlashEditorialQueensQuestion = {
   readonly solutionPayload: { readonly solution: readonly number[]; readonly explanation?: string };
 };
 
+export type FlashEditorialConnectPairsQuestion = {
+  readonly slug: string;
+  readonly type: "connect-pairs";
+  readonly payloadSchemaVersion: 1;
+  readonly timeLimitMs: number;
+  readonly points: number;
+  readonly publicPayload: {
+    readonly question: string;
+    readonly category?: string;
+    readonly tags?: EditorialJsonObject;
+  } & QuestionContractMap["connect-pairs"]["public"];
+  readonly solutionPayload: QuestionContractMap["connect-pairs"]["solution"] & {
+    readonly explanation?: string;
+  };
+};
+
 export type FlashEditorialQuestion =
+  | FlashEditorialConnectPairsQuestion
   | FlashEditorialQueensQuestion
   | FlashEditorialMultipleChoiceQuestion
   | FlashEditorialEstimationQuestion
@@ -628,6 +645,7 @@ export type FlashEditorialQuestion =
  * to the challenge item that uses a published question version.
  */
 export type FlashEditorialQuestionDocument =
+  | Omit<FlashEditorialConnectPairsQuestion, "points">
   | Omit<FlashEditorialQueensQuestion, "points">
   | Omit<FlashEditorialMultipleChoiceQuestion, "points">
   | Omit<FlashEditorialEstimationQuestion, "points">

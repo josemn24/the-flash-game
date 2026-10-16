@@ -12,7 +12,7 @@ La política de recuperación de interacción iniciada que figura en este docume
 por la decisión y ADR de 2026-09-15.
 
 Los cinco modos anteriores se describen en las secciones 1 a 5. La sección 6 describe Contrarreloj,
-implementado inicialmente para Queens. El modo existente se
+implementado para Queens y Conectar parejas. El modo existente se
 denomina únicamente **Flash**.
 
 La jerarquía documental aplicable es la descrita en [`README.md`](README.md): los ADR y las
@@ -330,13 +330,15 @@ pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se va
 
 ## 6. Contrarreloj
 
-- **Identificador y contenido:** `time-trial`; 2–20 Queens 4×4 a 8×8 en orden fijo creciente.
+- **Identificador y contenido:** `time-trial`; 2–20 pruebas de un mismo formato: Queens 4×4 a 8×8 o Conectar parejas 5×5, en orden fijo creciente.
 - **Duración:** segundos enteros positivos obligatorios, sin default. La primera preparación posterior
   a la cuenta atrás fija el deadline una sola vez; intro y cuenta atrás no crean intento.
   Todas las pruebas comparten reloj, incluidas validaciones, cargas y transiciones de 1,1 segundos.
 - **Puntuación:** pesos enteros positivos que suman 100; acierto completo sin bonus, parcial ni penalización.
-- **Oportunidades:** dos validaciones completas incorrectas permiten continuar; la tercera termina.
+- **Oportunidades Queens:** dos validaciones completas incorrectas permiten continuar; la tercera termina.
   Movimientos exploratorios y solicitudes inválidas no consumen oportunidades.
+- **Conectar parejas:** rehacer caminos es libre; solo conectar todas las parejas sin cruces y cubrir
+  las 25 casillas concede puntos. Entradas incompletas o inválidas se rechazan sin finalizar el tablero.
 - **Finalización:** `completed`, `outcome = null`; `all_solved`, `validation_limit`, `time_limit` o
   `recovery_interrupted`. Conservar puntos previos; conciliar recepciones aceptadas antes de cerrar.
   Una recepción debe ocurrir después de bloqueos y estrictamente antes del deadline.

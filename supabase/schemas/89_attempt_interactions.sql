@@ -65,6 +65,8 @@ declare
   a public.attempts%rowtype := target_attempt;
   cv private.challenge_versions%rowtype := target_version;
   received timestamptz := received_at;
+  question_type text;
+  question_payload jsonb;
   segment private.interaction_intervals%rowtype;
   item private.challenge_items%rowtype;
   unit private.attempt_timing_units%rowtype;
@@ -76,18 +78,26 @@ declare
   result jsonb;
 begin
   clear_progress := false;
-  if cv.mode = 'time-trial' then
-    received := clock_timestamp();
-    if op = 'pass' or received < a.deadline_at then
-      raise exception 'queens_requires_validation_command' using errcode = '22023';
-    end if;
-  end if;
+  if cv.mode = 'time-trial' then received := clock_timestamp(); end if;
   select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null;
   if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
     raise exception 'interaction_not_presented' using errcode = '55000';
   end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
   select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+  if cv.mode = 'time-trial' then
+    select q.type, q.public_payload into question_type, question_payload
+      from private.question_versions q where q.id = item.question_version_id;
+    if question_type = 'queens' and (op = 'pass' or received < a.deadline_at) then
+      raise exception 'queens_requires_validation_command' using errcode = '22023';
+    elsif question_type = 'connect-pairs' then
+      if op = 'pass' then raise exception 'pass_unavailable' using errcode = '55000'; end if;
+      if received >= a.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
+      if not private.connect_pairs_answer_valid(question_payload, input->'answer') then
+        raise exception 'invalid_connect_pairs_answer' using errcode = '22023';
+      end if;
+    end if;
+  end if;
   if op = 'receive' and exists (
     select 1 from private.question_versions q
     where q.id = item.question_version_id and q.type = 'matching'

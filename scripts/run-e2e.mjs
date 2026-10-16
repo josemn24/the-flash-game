@@ -116,7 +116,7 @@ export async function runSelectedE2E(args) {
   const failedScenarios = [];
   for (const [scenario, specs] of groups) {
     await prepareScenario(scenario);
-    if (scenario === "time-trial")
+    if (["time-trial", "time-trial-connect-pairs"].includes(scenario))
       await run("npm", ["run", "test:integration:supabase", "--", "--scenario", scenario]);
     try {
       if ((process.env.E2E_INTEGRATION_SCENARIOS ?? "").split(",").includes(scenario)) {

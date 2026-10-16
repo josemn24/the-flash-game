@@ -128,6 +128,7 @@ function commandCode(error: unknown) {
     "duplicate_logic_code",
     "logic_code_requires_attempt_command",
     "invalid_matching_answer",
+    "invalid_connect_pairs_answer",
     "invalid_word_search_selection",
     "word_search_target_already_found",
     "word_search_requires_selection_command",

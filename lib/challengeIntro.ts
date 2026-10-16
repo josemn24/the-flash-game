@@ -1,3 +1,4 @@
+import type { TimeTrialFormat } from "@/types/domain/time-trial";
 import { getChallengeDisplayTitle } from "@/lib/roomPresentation";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
@@ -78,6 +79,7 @@ function getModeLabelForMode(mode: GameMode) {
 function buildSafeRules(
   mode: GameMode,
   timeLimitMs?: number,
+  format?: TimeTrialFormat,
 ): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   switch (mode) {
     case "time-trial":
@@ -89,9 +91,18 @@ function buildSafeRules(
             : "El mismo reloj global corre durante todas las pruebas. Validaciones y transiciones consumen tiempo.",
         },
         {
-          title: "Tercer error",
+          title:
+            format === "connect-pairs"
+              ? "Rehaz los caminos libremente"
+              : format === "queens"
+                ? "Tercer error"
+                : "Resuelve para avanzar",
           description:
-            "La tercera validación completa incorrecta de un tablero termina el desafío. Los movimientos no consumen oportunidades.",
+            format === "connect-pairs"
+              ? "Conecta todas las parejas y cubre el tablero sin cruces. Borrar, recortar y rehacer caminos no penaliza."
+              : format === "queens"
+                ? "La tercera validación completa incorrecta de un tablero termina el desafío. Los movimientos no consumen oportunidades."
+                : "Completar una prueba abre la siguiente. Consulta las reglas del formato antes de empezar.",
         },
         {
           title: "Conserva tus aciertos",
@@ -118,6 +129,7 @@ export type SafeChallengeIntroduction = {
   questionCount: number;
   maxScore: number;
   timeLimitMs?: number;
+  timeTrialFormat?: TimeTrialFormat;
 };
 
 export function buildSafeChallengeIntroModel(
@@ -138,7 +150,11 @@ export function buildSafeChallengeIntroModel(
         : []),
       { value: introduction.maxScore, label: "Puntos" },
     ],
-    rules: buildSafeRules(introduction.mode, introduction.timeLimitMs),
+    rules: buildSafeRules(
+      introduction.mode,
+      introduction.timeLimitMs,
+      introduction.timeTrialFormat,
+    ),
   };
 }
 

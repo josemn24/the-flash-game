@@ -18,7 +18,7 @@ capacidades aún pendientes no deben interpretarse como funcionalidades ya dispo
 | Cómo funcionan las fronteras servidor/cliente   | [`current/architecture/server-client-architecture.md`](current/architecture/server-client-architecture.md) |
 | Qué decisiones son normativas                   | [`decisions/README.md`](decisions/README.md)                                                               |
 | Cómo se crean formatos y desafíos               | [`content/README.md`](content/README.md)                                                                   |
-| Cómo se ha definido el futuro modo Contrarreloj | [`current/domain/contrarreloj.md`](current/domain/contrarreloj.md)                                         |
+| Cómo funciona el modo Contrarreloj              | [`current/domain/contrarreloj.md`](current/domain/contrarreloj.md)                                         |
 | Qué estrategia e hipótesis siguen activas       | [`product/README.md`](product/README.md)                                                                   |
 | Cómo utilizar los colores y estados de la UI    | [`current/design-tokens.md`](current/design-tokens.md)                                                     |
 | Cómo consultar y ampliar el design system       | [`current/design-system.md`](current/design-system.md)                                                     |
@@ -55,14 +55,13 @@ decisiones y después los documentos afectados.
 ## Estado de la última revisión
 
 - Revisión funcional general: 2026-09-30; actualización de Supabase local: 2026-10-11.
-- 31 formatos de pregunta, cinco modos, desafíos editoriales y publicaciones mock; las slices persistidas
+- 31 formatos de pregunta, seis modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
   y E01–E06/E10 sobre Supabase local.
-- Contrarreloj tiene [reglas acordadas y un diseño previo a implementación](current/domain/contrarreloj.md).
-  No forma parte de los cinco modos implementados. La [guía editorial](content/guidelines/contrarreloj.md)
-  y las [decisiones pendientes](decisions/open-questions.md#contrarreloj-decisiones-pendientes)
-  delimitan su preparación.
-- La revisión más reciente es `20261014200324_authoritative_completion_score`, aplicada sobre el baseline
+- Contrarreloj está implementado para Queens y Conectar parejas 5×5 en secuencias homogéneas.
+  Las [reglas](current/domain/contrarreloj.md) y la [guía editorial](content/guidelines/contrarreloj.md)
+  describen el reloj global, la edición libre de caminos y la recuperación estricta.
+- La migración más reciente es `20261016144218_time_trial_connect_pairs`, verificada sobre el baseline
   `20261011180045_initial_schema`, generado desde 82 archivos declarativos de esquema, con 31 tablas,
   dos vistas, funciones públicas/privadas y políticas RLS.
 - El baseline local pasó `supabase:schema:test`, la validación por migraciones, reconciliación,

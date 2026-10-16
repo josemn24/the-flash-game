@@ -1,7 +1,7 @@
 # The Flash
 
 The Flash es un juego de preguntas diseñado como un sprint contra el reloj. La versión actual
-combina una experiencia de práctica local con recorridos competitivos persistidos de Flash y Narrative sobre Supabase,
+combina una experiencia de práctica local con seis modos competitivos persistidos sobre Supabase,
 además de consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva
 de 31 formatos.
 
@@ -13,6 +13,7 @@ se utilizan en local o staging y no definen un entorno remoto adicional.
 ## Qué incluye
 
 - Una sala demo mock y escenarios Supabase locales con temporada activa, desafíos y publicaciones.
+- Contrarreloj con secuencias de Queens o Conectar parejas 5×5, reloj global y puntos por tablero resuelto.
 - Treinta y un formatos: elección múltiple, encontrar el intruso, emparejar conceptos, conectar parejas, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico, estimación, adivinanzas por pistas, mapa de calor, etiquetar imagen, memoria relámpago, memoria de parejas, Simon, matrices lógicas, mini-sudoku, mini-nonograma, Queens, rompecabezas deslizante, Escape, reconstrucción del error, anagramas, Hashtag de palabras, Mini-Wordle, sopa de letras, imagen progresivamente revelada, laberinto contrarreloj, Zip y Tuberías.
 - Mapa de calor con coordenadas normalizadas, marcador corregible, control por puntero o teclado, confirmación explícita y puntuación por precisión y velocidad.
 - Etiquetado de imágenes en dos variantes: asociar varias etiquetas con crédito parcial o identificar una única zona mediante elección o texto libre.

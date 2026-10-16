@@ -10,6 +10,7 @@ export const guide = {
   description: [
     "El jugador traza caminos ortogonales entre extremos con el mismo símbolo. Cada casilla pertenece como máximo a una ruta.",
     "La v1 usa tableros 5 × 5 con cobertura completa: resolver implica conectar todas las parejas y ocupar todas las casillas.",
+    "En Contrarreloj puedes rehacer caminos libremente. Resolver un tablero concede su peso completo, sin bonus por velocidad ni puntos parciales; todas las pruebas comparten el reloj.",
   ],
   recommendations: [
     "Puzzles visuales rápidos",

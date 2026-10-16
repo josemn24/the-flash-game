@@ -215,3 +215,23 @@ resuelven assets privados. Se actualizaron esas expectativas sin cambiar el cont
 autorización SQL, y se añadió el caso sin filas de revisión autorizadas. La comprobación de carpetas
 ignora `.DS_Store` y el fixture temporal reservado del checker de arquitectura para evitar que
 las pruebas concurrentes interfieran. Se retiraron dos variables sin uso en helpers de pruebas.
+
+## Contrarreloj: Conectar parejas — 2026-10-16
+
+- 245 suites unitarias y 2.407 pruebas aprobadas con `npm test -- --maxWorkers=1`.
+- 67 suites SQL completas aprobadas desde el esquema declarativo y desde migraciones, con inventario
+  de permisos, 158 casos de conformidad, 904 observaciones de validación y carreras concurrentes.
+- La suite focal `time_trial_connect_pairs.test.sql` añade 43 comprobaciones: geometría de caminos,
+  soluciones alternativas, contenido homogéneo, edición/publicación, reloj único, idempotencia,
+  recuperación, revisión protegida y recepciones evaluadas después del límite.
+- Compilación, TypeScript, arquitectura de tipos y estilos, revisión de esquema y enlaces aprobados.
+  ESLint del código fuente pasa con `--ignore-pattern 'output/**'`; el comando sin exclusión detecta
+  un warning previo en un script de backup generado bajo `output/local/backups/`.
+- Los tipos generados de `public` coinciden byte a byte con `database.types.ts`: no hay nuevas firmas públicas.
+- 24 pruebas E2E aprobadas en el stack aislado: Conectar parejas 4/4 (incluido editor y publicación),
+  Contrarreloj Queens 4/4, Flash 5/5, Alfabeto 7/7, Supervivencia 1/1, Pirámide 1/1 y Narrativa 2/2.
+  Las integraciones Auth/PostgREST/RLS de ambos formatos de Contrarreloj también pasan.
+- Una carrera real de Conectar parejas verifica que adquirir el bloqueo después del deadline
+  rechaza la respuesta completa sin crear recepción; pasa desde schemas y migraciones.
+- Solo se utilizan contenedores y bases desechables. No se aplica la migración a los datos existentes
+  ni se ejecutan operaciones de staging; la calibración editorial sigue pendiente.

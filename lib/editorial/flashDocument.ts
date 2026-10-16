@@ -1,3 +1,4 @@
+import { isTimeTrialFormat } from "@/lib/timeTrial";
 import { parseEditorialQuestion as parseQuestion } from "@/lib/question-formats/editorialRegistry";
 import {
   challengeKeys,
@@ -259,14 +260,15 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
       ]);
     }
   }
-  if (
-    challenge.mode === "time-trial" &&
-    !editing &&
-    parsedQuestions.some((question) => !("source" in question) && question.type !== "queens")
-  ) {
-    throw new FlashEditorialValidationError([
-      "Contrarreloj admite únicamente pruebas Queens compatibles.",
-    ]);
+  if (challenge.mode === "time-trial" && !editing) {
+    const types = parsedQuestions.flatMap((question) =>
+      "source" in question ? [] : [question.type],
+    );
+    if (types.some((type) => !isTimeTrialFormat(type)) || new Set(types).size > 1) {
+      throw new FlashEditorialValidationError([
+        "Contrarreloj admite únicamente secuencias de un mismo formato: Queens o Conectar parejas.",
+      ]);
+    }
   }
   const inlineSlugs = parsedQuestions
     .filter((question): question is FlashEditorialQuestion => !("source" in question))

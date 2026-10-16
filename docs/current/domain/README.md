@@ -20,8 +20,8 @@ temporadas, publicaciones, intentos, puntuaciones, rankings e historial.
   la documentación del backend ni del esquema SQL.
 - Persistencia: PostgreSQL y autenticación mediante Supabase; Storage y el resto de capacidades se
   incorporan por slices posteriores.
-- Contrarreloj: primera versión competitiva Queens implementada. Su especificación
-  distingue acuerdos, propuestas y decisiones abiertas; no amplía todavía los tipos ni el esquema.
+- Contrarreloj: Queens y Conectar parejas competitivos implementados; secuencias homogéneas,
+  reloj global y recuperación estricta.
 
 En la beta cerrada, la interfaz pública consulta y ejecuta competición sobre salas ya provisionadas.
 La creación de salas, el provisioning directo de miembros, la preparación de temporadas y la
@@ -68,7 +68,7 @@ son fuentes de verdad independientes en la primera versión.
 10. [`../data-model.md`](../data-model.md): propuesta de persistencia relacional y sus garantías;
     no sustituye al modelo conceptual de esta carpeta.
 11. [`contrarreloj.md`](contrarreloj.md): contrato funcional y recorrido E2E del modo competitivo
-    Contrarreloj, con reglas cerradas para Queens.
+    Contrarreloj, con reglas cerradas para Queens y Conectar parejas.
 
 Los casos de uso transversales del producto están en [`../use-cases.md`](../use-cases.md).
 

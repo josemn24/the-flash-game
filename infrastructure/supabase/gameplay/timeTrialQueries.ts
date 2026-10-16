@@ -1,5 +1,5 @@
 import "server-only";
-import { readTimeTrialResult } from "@/lib/timeTrial";
+import { isTimeTrialFormat, readTimeTrialResult, timeTrialFormat } from "@/lib/timeTrial";
 import type { QueryContext } from "@/types/view-models";
 import type {
   ServerTimeTrialChallenge,
@@ -21,7 +21,7 @@ function isReadRow(value: unknown): value is ReadRow {
   const row = value as Record<string, unknown>;
   return (
     row.challenge_mode === "time-trial" &&
-    row.question_type === "queens" &&
+    isTimeTrialFormat(row.question_type) &&
     typeof row.global_time_limit_ms === "number" &&
     Number.isSafeInteger(row.global_time_limit_ms) &&
     row.global_time_limit_ms > 0 &&
@@ -44,6 +44,7 @@ export class SupabaseTimeTrialQueries {
     const rows = validateCompetitiveRows(raw, isReadRow);
     const first = rows[0];
     if (!first || first.publication_status === "cancelled") return null;
+    timeTrialFormat(rows.map((row) => row.question_type));
     if (
       rows.length !== first.question_count ||
       rows.reduce((sum, row) => sum + row.item_points, 0) !== 100

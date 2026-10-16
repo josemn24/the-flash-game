@@ -8,6 +8,8 @@ declare
   challenge jsonb;
   question jsonb;
   question_slug text;
+  trial_format text;
+  question_format text;
   seen_slugs text[] := array[]::text[];
   question_index integer;
   question_points numeric;
@@ -76,6 +78,20 @@ begin
     select value, ordinality::integer
     from jsonb_array_elements(document->'questions') with ordinality
   loop
+    if challenge->>'mode' = 'time-trial' then
+      if question->>'source' = 'library' then
+        select q.type into question_format from private.question_versions q
+          where q.id = case when question->>'questionVersionId' ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            then (question->>'questionVersionId')::uuid else null end and q.status = 'published';
+      else
+        question_format := question->>'type';
+      end if;
+      if question_format is null or question_format not in ('queens','connect-pairs')
+        or (trial_format is not null and trial_format <> question_format) then
+        raise exception 'unsupported_question' using errcode = '22023';
+      end if;
+      trial_format := question_format;
+    end if;
     if challenge->>'mode' = 'pyramid' then
       if not private.is_valid_pyramid_level_config(question->'modeConfig') then
         raise exception 'invalid_content' using errcode = '22023';
@@ -107,7 +123,7 @@ begin
       end if;
       if challenge->>'mode' = 'time-trial' and not exists (
         select 1 from private.question_versions q where q.id = (question->>'questionVersionId')::uuid
-          and q.status = 'published' and q.type = 'queens' and private.is_supported_flash_question(q.id)
+          and q.status = 'published' and private.is_supported_time_trial_question(q.id)
       ) then raise exception 'unsupported_question' using errcode = '22023'; end if;
       seen_question_versions := seen_question_versions || (question->>'questionVersionId');
       if challenge->>'mode' in ('survival', 'pyramid') and not exists (
@@ -131,10 +147,15 @@ begin
       raise exception 'invalid_content' using errcode = '22023';
     end if;
 
-    if challenge->>'mode' = 'time-trial' and question->>'type' <> 'queens' then
+    if challenge->>'mode' = 'time-trial' and question->>'type' not in ('queens','connect-pairs') then
       raise exception 'unsupported_question' using errcode = '22023';
     end if;
     perform private.validate_flash_question_document(question - 'points' - 'modeConfig');
+    if challenge->>'mode' = 'time-trial' and question->>'type' = 'connect-pairs'
+      and not private.connect_pairs_answer_valid(question->'publicPayload',
+        jsonb_build_object('paths',question->'solutionPayload'->'paths')) then
+      raise exception 'invalid_solution_payload' using errcode = '22023';
+    end if;
     question_slug := btrim(question->>'slug');
     if question_slug = any(seen_slugs) then
       raise exception 'invalid_content' using errcode = '22023';

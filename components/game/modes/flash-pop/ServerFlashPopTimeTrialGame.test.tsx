@@ -1,3 +1,4 @@
+import { guide as connectGuide } from "@/features/question-formats/formats/connect-pairs/guide";
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
@@ -168,4 +169,36 @@ it("uses the Pyramid review layout with Contrarreloj progress labels", () => {
   expect(panel?.firstElementChild).toBe(
     screen.getByRole("button", { name: "Volver al resultado" }),
   );
+});
+
+it("renders Conectar parejas with the global clock and no Queens error counter", () => {
+  const board = connectGuide.examples[0].question;
+  const connectionChallenge: ServerTimeTrialChallenge = {
+    ...challenge,
+    slots: challenge.slots.map((slot) => ({ ...slot, questionType: "connect-pairs" })),
+  };
+  vi.mocked(useCompetitiveSession).mockImplementation(
+    () =>
+      ({
+        phase: "playing",
+        results: [],
+        deadlineAt: Date.now() + 10000,
+        questionIndex: 0,
+        busy: false,
+        locked: false,
+        question: { ...board, points: 30, solutionPaths: undefined },
+        pendingAnswer: null,
+        updateDraft: vi.fn(),
+        submit: vi.fn(),
+        onTimeUp: vi.fn(),
+        retryLifecycle: vi.fn(),
+      }) as unknown as ReturnType<typeof useCompetitiveSession>,
+  );
+  render(<ServerFlashPopTimeTrialGame challenge={connectionChallenge} roomContext={context} />);
+  expect(
+    screen.getByRole("heading", { name: "Conecta las parejas y cubre el tablero" }),
+  ).toBeTruthy();
+  expect(screen.getByRole("grid", { name: /Tablero de Conectar parejas/ })).toBeTruthy();
+  expect(screen.getAllByRole("timer")).toHaveLength(1);
+  expect(screen.queryByText(/intentos restantes/)).toBeNull();
 });

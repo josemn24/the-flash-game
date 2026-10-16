@@ -18,6 +18,8 @@ const rejectedInput: Record<string, string> = {
   invalid_queens_answer:
     "La configuración de Queens no es válida. Revisa las coronas y las casillas.",
   invalid_matching_answer: "La respuesta de parejas no es válida. Revisa todas las asociaciones.",
+  invalid_connect_pairs_answer:
+    "Conecta todas las parejas sin cruces y cubre el tablero completo. Puedes rehacer los caminos.",
 };
 const uncertainInput: Partial<Record<Operation, string>> = {
   answer: "No hemos podido confirmar tu respuesta.",
@@ -43,9 +45,15 @@ export function formatFailure(
     "No hemos podido confirmar la operación. Puedes reintentarlo.";
   const feedback: Feedback | undefined = channel
     ? {
-        channel: code === "invalid_matching_answer" ? "submission" : channel,
+        channel:
+          code === "invalid_matching_answer" || code === "invalid_connect_pairs_answer"
+            ? "submission"
+            : channel,
         state:
-          definitive && code !== "invalid_word_hashtag_swap" && code !== "invalid_matching_answer"
+          definitive &&
+          code !== "invalid_word_hashtag_swap" &&
+          code !== "invalid_matching_answer" &&
+          code !== "invalid_connect_pairs_answer"
             ? "idle"
             : "error",
         visible: true,

@@ -1,12 +1,13 @@
 # Guía editorial de Contrarreloj
 
-Estado: vigente para la primera versión competitiva Queens.
+Estado: vigente para Queens y Conectar parejas.
 
-Última actualización: 2026-10-11. Alcance inicial: Queens, identificador `time-trial`.
+Última actualización: 2026-10-16. Formatos: Queens y Conectar parejas, identificador `time-trial`.
 
 ## Preparación del contenido
 
-Crear entre 2 y 20 pruebas Queens de 4×4 a 8×8. Se pueden escribir documentos Queens en el editor o
+Crear entre 2 y 20 pruebas de un mismo formato: Queens de 4×4 a 8×8 o Conectar parejas 5×5
+con tres a cinco parejas. No mezclar formatos. Se pueden escribir documentos en el editor o
 reutilizar versiones publicadas de la biblioteca. Todos los jugadores recibirán el mismo orden y
 contenido. La versión publicada congela preguntas, soluciones privadas, orden, pesos y duración;
 las correcciones requieren una nueva revisión editorial y publicación.
@@ -14,7 +15,10 @@ las correcciones requieren una nueva revisión editorial y publicación.
 Ordenar por dificultad creciente comprobada mediante resoluciones. El tamaño por sí solo no prueba
 la dificultad: quitar pistas o encadenar deducciones puede hacer más complejo un tablero del mismo
 tamaño. Verificar conectividad de regiones, solución, pistas, legibilidad y navegación por teclado.
-Escape, Conectar parejas, Mini-Wordle y Hashtag requieren ampliaciones posteriores.
+En Conectar parejas, comprobar que todas las rutas sean ortogonales, unan los extremos, no se
+solapen y cubran las 25 casillas. Se aceptan soluciones legales alternativas. Calibrar la dificultad
+por las deducciones y tiempos observados, no solo por el número de parejas.
+Escape, Mini-Wordle y Hashtag requieren ampliaciones posteriores.
 
 ## Duración y puntos
 
@@ -34,14 +38,15 @@ Registrar tiempo hasta el último acierto, pruebas resueltas antes del límite y
 El reloj incluye validaciones, cargas y los 1,1 segundos de transición; no hay pausas ni compensaciones.
 Elegir la duración a partir de esas resoluciones, evitando una cifra basada solo en tamaños.
 
-Cada tablero permite dos validaciones completas incorrectas; la tercera termina el desafío. Los
-movimientos exploratorios no consumen oportunidades. Recuperar una prueba activa sin recepción final
+Cada tablero Queens permite dos validaciones completas incorrectas; la tercera termina el desafío. Los
+movimientos exploratorios no consumen oportunidades. En Conectar parejas se pueden borrar, recortar
+y rehacer caminos libremente, sin contador de errores. Recuperar una prueba activa sin recepción final
 la cierra sin respuesta y termina el intento, conservando los aciertos anteriores. La introducción
 debe explicar estas reglas antes de iniciar.
 
 ## Revisión antes de publicar
 
-- Cantidad admitida y únicamente Queens compatible, con solución y pistas verificadas.
+- Cantidad admitida, un único formato compatible y soluciones verificadas.
 - Progresión de dificultad justificada por resoluciones completas.
 - Duración global explícita, calibrada en móvil y escritorio.
 - Pesos positivos que suman 100 y orden compartido para todos.
