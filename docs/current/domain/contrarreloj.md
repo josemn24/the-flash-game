@@ -147,5 +147,7 @@ fixtures de pruebas validan contratos técnicos y no constituyen contenido edito
 `npm run test:e2e:isolated -- e2e/time-trial-connect-pairs.spec.ts e2e/time-trial.spec.ts` comprueba
 ambos formatos en un stack desechable. El escenario incluye dos tableros curados, 120 segundos globales
 y pesos de 30 y 70 puntos; es contenido de prueba y no modifica los calendarios de BetaVIP o Tabarnia.
+El setup habitual `npm run supabase:betavip:setup` también incluye «Circuito de parejas» como
+primer desafío de BetaVIP: cinco tableros 5×5, tres minutos y pesos 10, 15, 20, 25 y 30.
 La migración `20261016144218_time_trial_connect_pairs` se genera desde el esquema declarativo;
 no añade tablas, columnas ni RPC públicas. Debe preceder al despliegue de la aplicación.

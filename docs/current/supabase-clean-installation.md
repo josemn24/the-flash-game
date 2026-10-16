@@ -94,12 +94,12 @@ npm run supabase:betavip:setup
 npm run dev
 ```
 
-El setup reinicia la base local, prepara Tabarnia y añade BetaVIP con sus cinco desafíos y el asset
+El setup reinicia la base local, prepara Tabarnia y añade BetaVIP con sus seis desafíos y el asset
 del casete. Las cuentas y los IDs quedan en `output/fixtures/tabarnia.json` y
 `output/fixtures/betavip.json`; este último incluye las credenciales locales de Manuel y Genís.
 Las credenciales de ejemplo son exclusivamente locales.
 
-Por defecto, ambas temporadas empiezan al ejecutar el setup y «La vuelta al mundo» queda abierta.
+Por defecto, ambas temporadas empiezan al ejecutar el setup y «Circuito de parejas» queda abierto en BetaVIP.
 Para programar un inicio futuro, pasar una fecha y hora ISO 8601 con zona horaria; el primer desafío
 quedará programado hasta esa hora. La opción también está disponible en `supabase:tabarnia:setup`:
 
@@ -110,16 +110,19 @@ npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
 La fecha y hora configuradas se guardan en UTC en el manifiesto. El desafío queda visible como
 próximo y se podrá jugar al llegar el inicio; cada persona inicia su propia partida manualmente.
 
-Desde el inicio de temporada, «La vuelta al mundo» está abierto durante las primeras 24 horas,
-«Cumbre lógica II» queda programado para el segundo día, «Escalera de coronas» para el tercero,
-«Supervivencia: Cultura pop» para el cuarto y «Ecos de la Antigüedad» para el quinto. «Escalera de
-coronas» es un Contrarreloj Queens de seis tableros, de 4×4 a 7×7, con 100 puntos y un único reloj
-de tres minutos. La tercera validación incorrecta de un tablero termina la partida. La temporada
-dura 120 horas. El perfil rápido conserva cinco ventanas consecutivas de cinco minutos (25 minutos
-en total); el calendario normal usa cinco ventanas de 24 horas. El manifiesto lista las publicaciones
-en ese orden; `data.publicationId` apunta a La vuelta al mundo y los campos
+Desde el inicio de temporada, «Circuito de parejas» está abierto durante las primeras 24 horas:
+cinco tableros de Conectar parejas 5×5, de tres a cinco parejas, un único reloj de tres minutos y
+pesos de 10, 15, 20, 25 y 30 puntos. Borrar y rehacer caminos no penaliza. Después se programan
+«La vuelta al mundo» para el segundo día, «Cumbre lógica II» para el tercero, «Escalera de coronas»
+para el cuarto, «Supervivencia: Cultura pop» para el quinto y «Ecos de la Antigüedad» para el sexto.
+«Escalera de coronas» conserva sus seis tableros Queens de 4×4 a 7×7, 100 puntos, tres minutos
+globales y finalización por la tercera validación incorrecta de un tablero.
+La temporada dura 144 horas. El perfil rápido usa seis ventanas consecutivas de cinco minutos
+(30 minutos en total). El manifiesto lista las publicaciones en ese orden; `data.publicationId`
+y `data.connectPairsPublicationId` apuntan a «Circuito de parejas». Los campos
 `data.alphabetPublicationId`, `data.pyramidPublicationId`, `data.timeTrialPublicationId`,
-`data.survivalPublicationId` y `data.antiquityPublicationId` identifican cada publicación.
+`data.survivalPublicationId` y `data.antiquityPublicationId` siguen identificando los cinco
+originales; `data.timeTrialPublicationId` corresponde al Contrarreloj Queens.
 `data.questionAssets` contiene el recurso del casete. Los
 [perfiles y comandos de calendario](../../README.md#comandos-disponibles) explican
 cómo recorrer las ventanas localmente.

@@ -96,7 +96,9 @@ Secuencias homogéneas 5×5, tres a cinco parejas, validación SQL de cobertura 
 recibir la respuesta, edición libre, puntuación binaria y recuperación estricta. El editor admite
 contenido en línea y referencias de biblioteca; resultados e historial aceptan ambos formatos.
 La migración incremental `20261016144218_time_trial_connect_pairs` no cambia tablas ni RPC públicas.
-El escenario `time-trial-connect-pairs` permite verificarlo sin modificar BetaVIP o Tabarnia.
+El escenario `time-trial-connect-pairs` permite verificarlo de forma independiente. El setup local
+habitual de BetaVIP incluye «Circuito de parejas» como primero de seis desafíos; sus cinco
+tableros 5×5 comparten tres minutos y suman 100 puntos.
 La entrega no acredita un despliegue ni una calibración editorial en staging.
 
 Verificación de la ampliación: 245 suites y 2.407 pruebas unitarias aprobadas (`--maxWorkers=1`),

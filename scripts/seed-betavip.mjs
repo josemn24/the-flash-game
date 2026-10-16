@@ -22,6 +22,10 @@ import {
   betaVipTimeTrialQuestions,
 } from "./fixtures/scenarios/betavip-time-trial.mjs";
 import {
+  BETA_VIP_CONNECT_PAIRS,
+  betaVipConnectPairsQuestions,
+} from "./fixtures/scenarios/betavip-connect-pairs.mjs";
+import {
   createAuthAccounts,
   deterministicUuid,
   dockerSql,
@@ -100,6 +104,13 @@ const timeTrialItems = betaVipTimeTrialQuestions.map((item, index) => ({
   versionId: stableId(`question-version:${item.slug}`),
   itemId: stableId(`challenge-item:${item.slug}`),
 }));
+const connectPairsItems = betaVipConnectPairsQuestions.map((item, index) => ({
+  ...item,
+  position: index + 1,
+  definitionId: stableId(`question:${item.slug}`),
+  versionId: stableId(`question-version:${item.slug}`),
+  itemId: stableId(`challenge-item:${item.slug}`),
+}));
 
 export async function prepareCassetteAsset() {
   const tempDirectory = await mkdtemp(path.join(os.tmpdir(), "betavip-cassette-"));
@@ -151,15 +162,23 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
   const profile = resolveScheduleProfile(schedule);
   const normalizedStartAt = normalizeStartAt(startsAt);
   const steel = steelBallRun(tabarniaFixture);
-  const scheduleData = scheduleManifest(
-    profile,
-    5,
-    profile.name === "fast" ? 25 : 120 * 60,
-    normalizedStartAt,
-  );
+  const scheduleData = scheduleManifest(profile, 6, profile.windowMinutes * 6, normalizedStartAt);
+  const connectPairs = {
+    id: stableId("publication:beta-vip-circuito-de-parejas"),
+    number: 1,
+    slug: BETA_VIP_CONNECT_PAIRS.slug,
+    title: BETA_VIP_CONNECT_PAIRS.title,
+    mode: "time-trial",
+    challengeId: stableId(`challenge:${BETA_VIP_CONNECT_PAIRS.slug}`),
+    challengeVersionId: stableId(`challenge-version:${BETA_VIP_CONNECT_PAIRS.slug}-v1`),
+    questionCount: connectPairsItems.length,
+    pointsTotal: connectPairsItems.reduce((total, item) => total + item.points, 0),
+    ...scheduleData.publications[0],
+    status: normalizedStartAt ? "scheduled" : "open",
+  };
   const alphabet = {
     id: stableId("publication:beta-vip-la-vuelta-al-mundo"),
-    number: 1,
+    number: 2,
     slug: BETA_VIP_ALPHABET.slug,
     title: BETA_VIP_ALPHABET.title,
     mode: "alphabet",
@@ -167,12 +186,12 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_ALPHABET.definitionSlug}-v1`),
     questionCount: alphabetItems.length,
     pointsTotal: alphabetItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[0],
-    status: normalizedStartAt ? "scheduled" : "open",
+    ...scheduleData.publications[1],
+    status: "scheduled",
   };
   const pyramid = {
     id: stableId("publication:beta-vip-cumbre-logica-ii"),
-    number: 2,
+    number: 3,
     slug: BETA_VIP_PYRAMID.slug,
     title: BETA_VIP_PYRAMID.title,
     mode: "pyramid",
@@ -180,12 +199,12 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_PYRAMID.slug}-v1`),
     questionCount: pyramidItems.length,
     pointsTotal: pyramidItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[1],
+    ...scheduleData.publications[2],
     status: "scheduled",
   };
   const survivalPublication = {
     id: stableId("publication:beta-vip-pop-culture-survival"),
-    number: 4,
+    number: 5,
     slug: BETA_VIP_SURVIVAL.slug,
     title: BETA_VIP_SURVIVAL.title,
     mode: "survival",
@@ -193,12 +212,12 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_SURVIVAL.slug}-v1`),
     questionCount: survivalItems.length,
     pointsTotal: survivalItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[3],
+    ...scheduleData.publications[4],
     status: "scheduled",
   };
   const antiquity = {
     id: stableId("publication:beta-vip-ecos-de-la-antiguedad"),
-    number: 5,
+    number: 6,
     slug: BETA_VIP_ANTIQUITY.slug,
     title: BETA_VIP_ANTIQUITY.title,
     mode: "pyramid",
@@ -206,12 +225,12 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_ANTIQUITY.slug}-v1`),
     questionCount: antiquityItems.length,
     pointsTotal: antiquityItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[4],
+    ...scheduleData.publications[5],
     status: "scheduled",
   };
   const timeTrial = {
     id: stableId("publication:beta-vip-escalera-de-coronas"),
-    number: 3,
+    number: 4,
     slug: BETA_VIP_TIME_TRIAL.slug,
     title: BETA_VIP_TIME_TRIAL.title,
     mode: "time-trial",
@@ -219,7 +238,7 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     challengeVersionId: stableId(`challenge-version:${BETA_VIP_TIME_TRIAL.slug}-v1`),
     questionCount: timeTrialItems.length,
     pointsTotal: timeTrialItems.reduce((total, item) => total + item.points, 0),
-    ...scheduleData.publications[2],
+    ...scheduleData.publications[3],
     status: "scheduled",
   };
   return {
@@ -229,17 +248,18 @@ export function betaVipManifest(tabarniaFixture, schedule = "production", starts
     seasonDurationMinutes: scheduleData.seasonDurationMinutes,
     ...(normalizedStartAt ? { seasonStartsAt: normalizedStartAt } : {}),
     seasonId: stableId("season:beta-vip"),
-    publicationId: alphabet.id,
-    challengeId: alphabet.challengeId,
-    challengeVersionId: alphabet.challengeVersionId,
-    questionCount: alphabet.questionCount,
-    pointsTotal: alphabet.pointsTotal,
+    publicationId: connectPairs.id,
+    challengeId: connectPairs.challengeId,
+    challengeVersionId: connectPairs.challengeVersionId,
+    questionCount: connectPairs.questionCount,
+    pointsTotal: connectPairs.pointsTotal,
+    connectPairsPublicationId: connectPairs.id,
     pyramidPublicationId: pyramid.id,
     alphabetPublicationId: alphabet.id,
     survivalPublicationId: survivalPublication.id,
     antiquityPublicationId: antiquity.id,
     timeTrialPublicationId: timeTrial.id,
-    publications: [alphabet, pyramid, timeTrial, survivalPublication, antiquity],
+    publications: [connectPairs, alphabet, pyramid, timeTrial, survivalPublication, antiquity],
     questionAssets: [
       {
         id: cassetteAssetId,
@@ -266,7 +286,6 @@ export function buildBetaVipDomainSql({
   const profile = resolveScheduleProfile(schedule);
   const normalizedStartAt = normalizeStartAt(startsAt);
   const seasonStart = scheduleStartExpression(normalizedStartAt);
-  const firstPublicationStatus = normalizedStartAt ? "scheduled" : "open";
   const data = betaVipManifest(tabarniaFixture, profile.name, normalizedStartAt);
   const players = {
     ches: tabarniaFixture.users.ches?.playerId,
@@ -290,6 +309,9 @@ export function buildBetaVipDomainSql({
   const timeTrial = data.publications.find(
     (publication) => publication.slug === BETA_VIP_TIME_TRIAL.slug,
   );
+  const connectPairs = data.publications.find(
+    (publication) => publication.slug === BETA_VIP_CONNECT_PAIRS.slug,
+  );
   if (!cassetteAssetMetadata) {
     throw new Error("Faltan metadatos del recurso de imagen de BetaVIP.");
   }
@@ -299,6 +321,7 @@ export function buildBetaVipDomainSql({
     ...pyramidItems,
     ...antiquityItems,
     ...timeTrialItems,
+    ...connectPairsItems,
   ]
     .map(
       (item) =>
@@ -343,6 +366,24 @@ export function buildBetaVipDomainSql({
     .map(
       (item) =>
         `(${sqlString(item.versionId)}, ${sqlString(item.definitionId)}, 1, ${item.payloadSchemaVersion}, 'draft', ${sqlString(item.type)}, ${item.timeLimitMs}, ${sqlString(JSON.stringify(item.publicPayload))}, ${sqlString(authorId)})`,
+    )
+    .join(",\n");
+  const connectPairsQuestionVersions = connectPairsItems
+    .map(
+      (item) =>
+        `(${sqlString(item.versionId)}, ${sqlString(item.definitionId)}, 1, ${item.payloadSchemaVersion}, 'draft', ${sqlString(item.type)}, ${item.timeLimitMs}, ${sqlString(JSON.stringify(item.publicPayload))}, ${sqlString(authorId)})`,
+    )
+    .join(",\n");
+  const connectPairsQuestionSolutions = connectPairsItems
+    .map(
+      (item) =>
+        `(${sqlString(item.versionId)}, ${sqlString(JSON.stringify(item.solutionPayload))})`,
+    )
+    .join(",\n");
+  const connectPairsChallengeItems = connectPairsItems
+    .map(
+      (item) =>
+        `(${sqlString(item.itemId)}, ${sqlString(connectPairs.challengeVersionId)}, ${sqlString(item.versionId)}, ${item.position}, ${item.points}, 1, '{}')`,
     )
     .join(",\n");
   const alphabetQuestionSolutions = alphabetItems
@@ -451,7 +492,8 @@ ${alphabetQuestionVersions},
 ${survivalQuestionVersions},
 ${pyramidQuestionVersions},
 ${antiquityQuestionVersions},
-${timeTrialQuestionVersions};
+${timeTrialQuestionVersions},
+${connectPairsQuestionVersions};
 
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
@@ -459,14 +501,16 @@ ${alphabetQuestionSolutions},
 ${survivalQuestionSolutions},
 ${pyramidQuestionSolutions},
 ${antiquityQuestionSolutions},
-${timeTrialQuestionSolutions};
+${timeTrialQuestionSolutions},
+${connectPairsQuestionSolutions};
 
 update private.question_versions
 set status = 'published', published_at = now()
-where id in (${[...alphabetItems, ...survivalItems, ...pyramidItems, ...antiquityItems, ...timeTrialItems].map((item) => sqlString(item.versionId)).join(", ")});
+where id in (${[...alphabetItems, ...survivalItems, ...pyramidItems, ...antiquityItems, ...timeTrialItems, ...connectPairsItems].map((item) => sqlString(item.versionId)).join(", ")});
 
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values
+  (${sqlString(connectPairs.challengeId)}, ${sqlString(BETA_VIP_CONNECT_PAIRS.slug)}, ${sqlString(authorId)}),
   (${sqlString(alphabet.challengeId)}, ${sqlString(BETA_VIP_ALPHABET.definitionSlug)}, ${sqlString(authorId)}),
   (${sqlString(survival.challengeId)}, ${sqlString(BETA_VIP_SURVIVAL.slug)}, ${sqlString(authorId)}),
   (${sqlString(pyramid.challengeId)}, ${sqlString(BETA_VIP_PYRAMID.slug)}, ${sqlString(authorId)}),
@@ -478,6 +522,10 @@ insert into private.challenge_versions
    title, subtitle, description, max_score, global_time_limit_ms, mode_config,
    created_by_player_id, published_at)
 values
+  (${sqlString(connectPairs.challengeVersionId)}, ${sqlString(connectPairs.challengeId)}, 1, 1, 'draft',
+   'time-trial', ${sqlString(BETA_VIP_CONNECT_PAIRS.title)}, ${sqlString(BETA_VIP_CONNECT_PAIRS.subtitle)},
+   ${sqlString(BETA_VIP_CONNECT_PAIRS.description)}, 100, ${BETA_VIP_CONNECT_PAIRS.globalTimeLimitMs}, '{}',
+   ${sqlString(authorId)}, null),
   (${sqlString(alphabet.challengeVersionId)}, ${sqlString(alphabet.challengeId)}, 1, 1, 'draft',
    'alphabet', ${sqlString(BETA_VIP_ALPHABET.title)}, ${sqlString(BETA_VIP_ALPHABET.subtitle)},
    ${sqlString(BETA_VIP_ALPHABET.description)}, 100, ${BETA_VIP_ALPHABET.globalTimeLimitMs}, '{}',
@@ -506,30 +554,29 @@ ${alphabetChallengeItems},
 ${survivalChallengeItems},
 ${pyramidChallengeItems},
 ${antiquityChallengeItems},
-${timeTrialChallengeItems};
+${timeTrialChallengeItems},
+${connectPairsChallengeItems};
 
 update private.challenge_versions
 set status = 'published', published_at = now()
-where id in (${sqlString(alphabet.challengeVersionId)}, ${sqlString(survival.challengeVersionId)}, ${sqlString(pyramid.challengeVersionId)}, ${sqlString(antiquity.challengeVersionId)}, ${sqlString(timeTrial.challengeVersionId)});
+where id in (${sqlString(alphabet.challengeVersionId)}, ${sqlString(survival.challengeVersionId)}, ${sqlString(pyramid.challengeVersionId)}, ${sqlString(antiquity.challengeVersionId)}, ${sqlString(timeTrial.challengeVersionId)}, ${sqlString(connectPairs.challengeVersionId)});
 
 select private.assert_supported_calendar_content(${sqlString(survival.challengeVersionId)});
 select private.assert_supported_calendar_content(${sqlString(pyramid.challengeVersionId)});
 select private.assert_supported_calendar_content(${sqlString(antiquity.challengeVersionId)});
 select private.assert_supported_calendar_content(${sqlString(timeTrial.challengeVersionId)});
+select private.assert_supported_calendar_content(${sqlString(connectPairs.challengeVersionId)});
 
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-  (${sqlString(alphabet.id)}, ${sqlString(data.seasonId)}, ${sqlString(alphabet.challengeVersionId)}, 1,
-   '${firstPublicationStatus}', ${seasonStart}, ${scheduleInterval(profile, 1, normalizedStartAt)}),
-  (${sqlString(pyramid.id)}, ${sqlString(data.seasonId)}, ${sqlString(pyramid.challengeVersionId)}, 2,
-   'scheduled', ${scheduleInterval(profile, 1, normalizedStartAt)}, ${scheduleInterval(profile, 2, normalizedStartAt)}),
-  (${sqlString(timeTrial.id)}, ${sqlString(data.seasonId)}, ${sqlString(timeTrial.challengeVersionId)}, 3,
-   'scheduled', ${scheduleInterval(profile, 2, normalizedStartAt)}, ${scheduleInterval(profile, 3, normalizedStartAt)}),
-  (${sqlString(survival.id)}, ${sqlString(data.seasonId)}, ${sqlString(survival.challengeVersionId)}, 4,
-   'scheduled', ${scheduleInterval(profile, 3, normalizedStartAt)}, ${scheduleInterval(profile, 4, normalizedStartAt)}),
-  (${sqlString(antiquity.id)}, ${sqlString(data.seasonId)}, ${sqlString(antiquity.challengeVersionId)}, 5,
-   'scheduled', ${scheduleInterval(profile, 4, normalizedStartAt)}, ${scheduleInterval(profile, 5, normalizedStartAt)});
+  ${data.publications
+    .map(
+      (publication) =>
+        `(${sqlString(publication.id)}, ${sqlString(data.seasonId)}, ${sqlString(publication.challengeVersionId)}, ${publication.number},
+   '${publication.status}', ${publication.number === 1 ? seasonStart : scheduleInterval(profile, publication.number - 1, normalizedStartAt)}, ${scheduleInterval(profile, publication.number, normalizedStartAt)})`,
+    )
+    .join(",\n  ")};
 set constraints all immediate;
 commit;
 `;

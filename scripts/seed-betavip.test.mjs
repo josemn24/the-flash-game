@@ -353,7 +353,7 @@ describe("BetaVIP seed", () => {
     }
   });
 
-  it("publishes all five BetaVIP challenges on consecutive days", () => {
+  it("publishes all six BetaVIP challenges on consecutive days", () => {
     const data = betaVipManifest(tabarniaFixture);
     const sql = buildBetaVipDomainSql({
       tabarniaFixture,
@@ -389,15 +389,16 @@ describe("BetaVIP seed", () => {
     expect(
       data.publications.map((item) => [item.number, item.title, item.mode, item.status]),
     ).toEqual([
-      [1, "La vuelta al mundo", "alphabet", "open"],
-      [2, "Cumbre lógica II", "pyramid", "scheduled"],
-      [3, "Escalera de coronas", "time-trial", "scheduled"],
-      [4, "Supervivencia: Cultura pop", "survival", "scheduled"],
-      [5, "Ecos de la Antigüedad", "pyramid", "scheduled"],
+      [1, "Circuito de parejas", "time-trial", "open"],
+      [2, "La vuelta al mundo", "alphabet", "scheduled"],
+      [3, "Cumbre lógica II", "pyramid", "scheduled"],
+      [4, "Escalera de coronas", "time-trial", "scheduled"],
+      [5, "Supervivencia: Cultura pop", "survival", "scheduled"],
+      [6, "Ecos de la Antigüedad", "pyramid", "scheduled"],
     ]);
     expect(
       data.publications
-        .slice(0, 3)
+        .slice(1, 4)
         .map(({ id, challengeId, challengeVersionId }) => [id, challengeId, challengeVersionId]),
     ).toEqual([
       [
@@ -428,14 +429,17 @@ describe("BetaVIP seed", () => {
         ),
       ],
     ]);
-    expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48, 72, 96]);
-    expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100, 100]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([16, 7, 6, 20, 7]);
-    expect(data.alphabetPublicationId).toBe(data.publications[0].id);
-    expect(data.pyramidPublicationId).toBe(data.publications[1].id);
-    expect(data.timeTrialPublicationId).toBe(data.publications[2].id);
-    expect(data.survivalPublicationId).toBe(data.publications[3].id);
-    expect(data.antiquityPublicationId).toBe(data.publications[4].id);
+    expect(data.publications.map((item) => item.opensAfterHours)).toEqual([0, 24, 48, 72, 96, 120]);
+    expect(data.publications.map((item) => item.pointsTotal)).toEqual([
+      100, 100, 100, 100, 100, 100,
+    ]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([5, 16, 7, 6, 20, 7]);
+    expect(data.connectPairsPublicationId).toBe(data.publications[0].id);
+    expect(data.alphabetPublicationId).toBe(data.publications[1].id);
+    expect(data.pyramidPublicationId).toBe(data.publications[2].id);
+    expect(data.timeTrialPublicationId).toBe(data.publications[3].id);
+    expect(data.survivalPublicationId).toBe(data.publications[4].id);
+    expect(data.antiquityPublicationId).toBe(data.publications[5].id);
     expect(data.publications.some((item) => item.slug === "steel-ball-run")).toBe(false);
     expect(sql).toContain("'BetaVIP'");
     expect(sql).toContain("'Temporada BetaVIP'");
@@ -443,7 +447,7 @@ describe("BetaVIP seed", () => {
     expect(sql).toContain("'La vuelta al mundo'");
     expect(sql).toContain("'alphabet'");
     expect(sql).toContain("'short-text'");
-    expect(sql).toContain("'active', now(), now() + interval '120 hours'");
+    expect(sql).toContain("'active', now(), now() + interval '144 hours'");
     expect(sql).toContain("'open', now(), now() + interval '24 hours'");
     expect(sql).toContain("'scheduled', now() + interval '24 hours', now() + interval '48 hours'");
     expect(sql).toContain("'scheduled', now() + interval '48 hours', now() + interval '72 hours'");
@@ -458,35 +462,14 @@ describe("BetaVIP seed", () => {
     expect(sql).toContain("'time-trial'");
     expect(sql).toContain("'Escalera de coronas'");
     expect(sql).toContain("180000");
-    for (const [publication, status, start, end] of [
-      [data.publications[0], "open", "now()", "now() + interval '24 hours'"],
-      [
-        data.publications[1],
-        "scheduled",
-        "now() + interval '24 hours'",
-        "now() + interval '48 hours'",
-      ],
-      [
-        data.publications[2],
-        "scheduled",
-        "now() + interval '48 hours'",
-        "now() + interval '72 hours'",
-      ],
-      [
-        data.publications[3],
-        "scheduled",
-        "now() + interval '72 hours'",
-        "now() + interval '96 hours'",
-      ],
-      [
-        data.publications[4],
-        "scheduled",
-        "now() + interval '96 hours'",
-        "now() + interval '120 hours'",
-      ],
-    ]) {
+    for (const publication of data.publications) {
+      const start =
+        publication.number === 1
+          ? "now()"
+          : `now() + interval '${(publication.number - 1) * 24} hours'`;
+      const end = `now() + interval '${publication.number * 24} hours'`;
       expect(sql).toContain(
-        `('${publication.id}', '${data.seasonId}', '${publication.challengeVersionId}', ${publication.number},\n   '${status}', ${start}, ${end})`,
+        `('${publication.id}', '${data.seasonId}', '${publication.challengeVersionId}', ${publication.number},\n   '${publication.status}', ${start}, ${end})`,
       );
     }
     expect(sql.match(/'owner', 'active'/g)).toHaveLength(1);
@@ -506,7 +489,7 @@ describe("BetaVIP seed", () => {
     expect(sql).not.toContain("insert into public.attempts");
   });
 
-  it("publishes the five BetaVIP windows every five minutes in the fast schedule", () => {
+  it("publishes the six BetaVIP windows every five minutes in the fast schedule", () => {
     const data = betaVipManifest(tabarniaFixture, "fast");
     const sql = buildBetaVipDomainSql({
       tabarniaFixture,
@@ -518,7 +501,7 @@ describe("BetaVIP seed", () => {
     expect(data).toMatchObject({
       scheduleProfile: "fast",
       scheduleWindowMinutes: 5,
-      seasonDurationMinutes: 25,
+      seasonDurationMinutes: 30,
     });
     expect(
       data.publications.map((publication) => [
@@ -531,8 +514,9 @@ describe("BetaVIP seed", () => {
       [10, 5],
       [15, 5],
       [20, 5],
+      [25, 5],
     ]);
-    expect(sql).toContain("'active', now(), now() + interval '25 minutes'");
+    expect(sql).toContain("'active', now(), now() + interval '30 minutes'");
     expect(sql).toContain("'open', now(), now() + interval '5 minutes'");
     expect(sql).toContain(
       "'scheduled', now() + interval '5 minutes', now() + interval '10 minutes'",
@@ -547,6 +531,29 @@ describe("BetaVIP seed", () => {
       "'scheduled', now() + interval '20 minutes', now() + interval '25 minutes'",
     );
   });
+
+  it.each(["production", "fast"])(
+    "schedules all six challenges from a future start (%s)",
+    (schedule) => {
+      const startsAt = "2099-10-20T19:00:00+02:00";
+      const data = betaVipManifest(tabarniaFixture, schedule, startsAt);
+      const sql = buildBetaVipDomainSql({
+        tabarniaFixture,
+        accounts: newAccounts,
+        cassetteAssetMetadata,
+        schedule,
+        startsAt,
+      });
+      expect(data.seasonStartsAt).toBe("2099-10-20T17:00:00.000Z");
+      expect(data.publications).toHaveLength(6);
+      expect(data.publications.every((publication) => publication.status === "scheduled")).toBe(
+        true,
+      );
+      expect(data.connectPairsPublicationId).toBe(data.publicationId);
+      expect(sql).toContain("'scheduled', '2099-10-20T17:00:00.000Z'::timestamptz");
+      expect(sql).not.toContain("'open'");
+    },
+  );
 
   it("creates both rooms and writes BetaVIP only after its SQL succeeds", async () => {
     const setupTabarniaDataset = vi.fn();
