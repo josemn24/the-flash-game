@@ -300,7 +300,7 @@ describe("staging bootstrap", () => {
     expect(content.timeTrial.map((item) => item.publicPayload.grid.rows)).toEqual([
       4, 5, 5, 6, 6, 7,
     ]);
-    expect(content.timeTrial.map((item) => item.points)).toEqual([10, 12, 14, 16, 20, 28]);
+    expect(content.timeTrial.map((item) => item.points)).toEqual([12, 14, 16, 18, 19, 21]);
     expect(content.timeTrial.reduce((total, item) => total + item.points, 0)).toBe(100);
     expect(data.timeTrialPublicationId).toBe(data.publications[2].id);
     expect(data.publications.map((item) => item.questionCount)).toEqual([16, 7, 6, 20, 7]);
@@ -318,7 +318,7 @@ describe("staging bootstrap", () => {
     }
     expect(sql).toContain("now() + interval '120 hours'");
     expect(sql).toContain("'time-trial'");
-    expect(sql).toContain("180000");
+    expect(sql).toContain("150000");
     expect(sql).toContain('"title":"Identifica al personaje"');
     expect(sql).toContain("¿Quién gobernó Egipto?");
     expect(sql.toLowerCase()).not.toContain("tabarnia");

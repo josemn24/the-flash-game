@@ -261,7 +261,7 @@ export const scenario = {
       );
       assert(
         connectPairsPlayable.map((row) => Number(row.item_points)).join(",") ===
-          "10,12,14,16,20,28",
+          "12,14,16,18,19,21",
         "Circuito de parejas conserva los pesos progresivos de sus seis tableros",
       );
       assert(
@@ -272,9 +272,9 @@ export const scenario = {
       );
       assert(
         connectPairsPlayable.every(
-          (row) => row.question_type === "connect-pairs" && row.global_time_limit_ms === 180000,
+          (row) => row.question_type === "connect-pairs" && row.global_time_limit_ms === 150000,
         ),
-        "Los seis tableros comparten tres minutos",
+        "Los seis tableros comparten dos minutos y medio",
       );
       assert(
         (
@@ -578,9 +578,9 @@ commit;
       timeTrialRows.every(
         (row) =>
           row.challenge_mode === "time-trial" &&
-          row.global_time_limit_ms === 180000 &&
+          row.global_time_limit_ms === 150000 &&
           Number(row.question_count) === 6,
-      ) && timeTrialRows.map((row) => Number(row.item_points)).join(",") === "10,12,14,16,20,28",
+      ) && timeTrialRows.map((row) => Number(row.item_points)).join(",") === "12,14,16,18,19,21",
       "Contrarreloj entrega el reloj global y los seis pesos publicados",
     );
     assert(

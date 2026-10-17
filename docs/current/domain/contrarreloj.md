@@ -151,8 +151,8 @@ fixtures de pruebas validan contratos técnicos y no constituyen contenido edito
 ambos formatos en un stack desechable. El escenario incluye dos tableros curados, 120 segundos globales
 y pesos de 30 y 70 puntos; es contenido de prueba y no modifica los calendarios de BetaVIP o Tabarnia.
 El setup habitual `npm run supabase:betavip:setup` también incluye «Circuito de parejas» como
-primer desafío de BetaVIP: seis tableros 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7; tres minutos y pesos
-10, 12, 14, 16, 20 y 28.
+primer desafío de BetaVIP: seis tableros 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7; 150 segundos y pesos
+12, 14, 16, 18, 19 y 21.
 La migración `20261016144218_time_trial_connect_pairs` añadió el formato a Contrarreloj.
 `20261016193510_connect_pairs_variable_square_boards` habilita los nuevos tamaños y debe aplicarse
 antes de desplegar la aplicación y publicar contenido con dimensiones nuevas; conserva el payload v1

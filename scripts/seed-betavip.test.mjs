@@ -310,13 +310,13 @@ describe("BetaVIP seed", () => {
     );
   });
 
-  it("defines six valid, distinct Queens boards for the three-minute time trial", () => {
+  it("defines six valid, distinct Queens boards for the 150-second time trial", () => {
     expect(BETA_VIP_TIME_TRIAL).toMatchObject({
       slug: "betavip-escalera-de-coronas",
       title: "Escalera de coronas",
-      globalTimeLimitMs: 180_000,
+      globalTimeLimitMs: 150_000,
     });
-    expect(BETA_VIP_TIME_TRIAL.description).toMatch(/único reloj compartido de tres minutos/i);
+    expect(BETA_VIP_TIME_TRIAL.description).toMatch(/único reloj compartido de dos minutos y medio/i);
     expect(BETA_VIP_TIME_TRIAL.description).toMatch(/tercera validación incorrecta/i);
     expect(betaVipTimeTrialQuestions).toHaveLength(6);
     expect(new Set(betaVipTimeTrialQuestions.map((item) => item.slug)).size).toBe(6);
@@ -327,7 +327,7 @@ describe("BetaVIP seed", () => {
       4, 5, 5, 6, 6, 7,
     ]);
     expect(betaVipTimeTrialQuestions.map((item) => item.type)).toEqual(Array(6).fill("queens"));
-    expect(betaVipTimeTrialQuestions.map((item) => item.points)).toEqual([10, 12, 14, 16, 20, 28]);
+    expect(betaVipTimeTrialQuestions.map((item) => item.points)).toEqual([12, 14, 16, 18, 19, 21]);
     expect(betaVipTimeTrialQuestions.reduce((total, item) => total + item.points, 0)).toBe(100);
     for (const item of betaVipTimeTrialQuestions) {
       expect(validateQuestionTags(item.publicPayload.tags).valid).toBe(true);
@@ -461,7 +461,7 @@ describe("BetaVIP seed", () => {
     expect(sql).toContain("'connect-pairs'");
     expect(sql).toContain("'time-trial'");
     expect(sql).toContain("'Escalera de coronas'");
-    expect(sql).toContain("180000");
+    expect(sql).toContain("150000");
     for (const publication of data.publications) {
       const start =
         publication.number === 1

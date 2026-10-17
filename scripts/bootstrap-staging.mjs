@@ -371,7 +371,7 @@ async function validateDomain(client, accounts, assetMetadata, startsAt = null) 
       row.item_count !== publication.questionCount ||
       row.points_total !== publication.pointsTotal ||
       (publication.mode === "time-trial" &&
-        (row.max_score !== 100 || row.global_time_limit_ms !== 180000))
+        (row.max_score !== 100 || row.global_time_limit_ms !== 150000))
     ) {
       throw new Error(`El desafío ${publication.title} no coincide con lo esperado.`);
     }
