@@ -31,6 +31,15 @@ export function ServerFlashPopTimeTrialGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const format = timeTrialFormat(challenge.slots.map((slot) => slot.questionType));
+  const formatName = format === "queens" ? "Queens" : "Conectar parejas";
+  const rules =
+    format === "queens"
+      ? [
+          "1 corona por región de color",
+          "1 corona por fila y columna",
+          "No pueden tocarse, ni en diagonal",
+        ]
+      : ["Une los puntos iguales", "Cubre todo el tablero", "No cruces ni compartas casillas"];
   const session = useServerTimeTrialSession({ challenge, roomContext, terminalReview });
   const solved = session.results.filter((result) => result.status === "correct").length;
   const running =
@@ -121,15 +130,16 @@ export function ServerFlashPopTimeTrialGame({
           <ServerFlashQuestionStage
             input={session.questionInput}
             key={session.question.id}
-            titleOverride={
-              format === "queens"
-                ? "Coloca una corona por fila, columna y región"
-                : "Conecta las parejas y cubre el tablero"
-            }
-            supportingText={
-              format === "queens"
-                ? "Las coronas no pueden tocarse entre sí."
-                : "Los caminos no pueden cruzarse. Puedes rehacerlos libremente."
+            titleOverride={formatName}
+            promptContent={
+              <ul
+                className={`${styles.rulesCards} ${format === "connect-pairs" ? styles.connectPairsRules : ""}`}
+                aria-label={`Reglas de ${formatName}`}
+              >
+                {rules.map((rule) => (
+                  <li key={rule}>{rule}</li>
+                ))}
+              </ul>
             }
             questionNumber={session.questionIndex + 1}
             totalQuestions={challenge.slots.length}

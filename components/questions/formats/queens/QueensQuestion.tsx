@@ -88,7 +88,7 @@ export function QueensBoard({
           <>
             {queen && <QueensCrownIcon className={styles.queensCrownIcon} />}
             {prefilled && <span className={styles.prefilledLabel}>Pista</span>}
-            {mark && <CrossIcon className={styles.markIcon} />}
+            {mark && <CrossIcon className={styles.markIcon} viewBox="4 4 16 16" />}
             {conflictTypes.length > 0 && <WarningIcon className={styles.warningIcon} />}
           </>
         );
@@ -122,6 +122,50 @@ export function QueensBoard({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+export function QueensFooter({
+  placedQueens,
+  targetQueens,
+  conflictingQueens,
+  remainingAttempts,
+}: {
+  placedQueens: number;
+  targetQueens: number;
+  conflictingQueens: number;
+  remainingAttempts?: number | null;
+}) {
+  const lastAttempt = remainingAttempts === 1;
+
+  return (
+    <div className={styles.footer}>
+      <div className={styles.progress}>
+        <strong aria-live="polite" aria-atomic="true">
+          {placedQueens}/{targetQueens} coronas
+        </strong>
+        {remainingAttempts != null ? (
+          <p
+            className={`${styles.attempts} ${lastAttempt ? styles.lastAttempt : ""}`}
+            role="status"
+            aria-label={lastAttempt ? "Último intento" : undefined}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {lastAttempt ? <WarningIcon /> : null}
+            {lastAttempt ? "1 intento restante" : `${remainingAttempts} intentos restantes`}
+          </p>
+        ) : null}
+      </div>
+      {conflictingQueens > 0 ? (
+        <p className={styles.conflictNotice} role="status" aria-live="polite">
+          {conflictingQueens === 1
+            ? "1 corona en conflicto"
+            : `${conflictingQueens} coronas en conflicto`}
+        </p>
+      ) : null}
+      <p className={styles.instructions}>Se valida al colocar las {targetQueens} coronas.</p>
     </div>
   );
 }
@@ -301,20 +345,11 @@ export function QueensQuestion({
         disabled={locked}
       />
 
-      <div className={styles.progress} aria-live="polite">
-        <strong>
-          {metrics.placedQueens}/{question.grid.rows} coronas
-        </strong>
-        <span>
-          {metrics.conflictingQueens
-            ? `${metrics.conflictingQueens} en conflicto`
-            : "Sin conflictos"}
-        </span>
-      </div>
-      <p className={styles.instructions}>
-        La corona marcada como pista es fija. Coloca una por fila, columna y región sin que se
-        toquen.
-      </p>
+      <QueensFooter
+        placedQueens={metrics.placedQueens}
+        targetQueens={question.grid.rows}
+        conflictingQueens={metrics.conflictingQueens}
+      />
       <p className="sr-only" role="status" aria-live="polite">
         {announcement}
       </p>

@@ -75,9 +75,7 @@ test("móvil: el tercer fallo termina la partida sin puntos ni ventaja por falla
   await expect(page.getByText("2 intentos restantes", { exact: true })).toBeVisible();
   await cell(page, 14).click();
   await cell(page, 20).click();
-  await expect(
-    page.getByText("1 intento restante · Último intento", { exact: true }),
-  ).toBeVisible();
+  await expect(page.getByText("1 intento restante", { exact: true })).toBeVisible();
   await cell(page, 20).click();
   await cell(page, 24).click();
   await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible();

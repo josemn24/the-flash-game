@@ -344,13 +344,13 @@ export function ConnectPairsQuestion({
 
   return (
     <section className={`${styles.root}`} aria-label="Conectar parejas">
-      <div className={styles.header}>
-        <span>Conecta sin cruzar rutas</span>
+      <p className={styles.header}>
         <strong>
-          {metrics.connectedPairs}/{metrics.totalPairs} · {Math.round(metrics.coverageRatio * 100)}{" "}
-          %
+          {metrics.connectedPairs}/{metrics.totalPairs} parejas
         </strong>
-      </div>
+        <span aria-hidden="true">·</span>
+        <span>{Math.round(metrics.coverageRatio * 100)} % cubierto</span>
+      </p>
 
       <div
         ref={boardRef}
@@ -453,7 +453,7 @@ export function ConnectPairsQuestion({
         </button>
       </div>
 
-      <p className={styles.instructions}>Une los puntos iguales. No cruces ni compartas celdas;</p>
+      <p className={styles.instructions}>Puedes recortar y rehacer las rutas.</p>
       <p className={styles.statusText} role="status" aria-live="polite">
         {announcement}
       </p>

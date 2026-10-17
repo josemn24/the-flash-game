@@ -28,6 +28,7 @@ export function ServerFlashQuestionStage(props: {
   readonly showHeader?: boolean;
   readonly titleOverride?: string;
   readonly supportingText?: string;
+  readonly promptContent?: ReactNode;
 }) {
   const {
     input,
@@ -42,6 +43,7 @@ export function ServerFlashQuestionStage(props: {
     showHeader = true,
     titleOverride,
     supportingText,
+    promptContent,
   } = props;
 
   const { question, locked } = input.props;
@@ -114,6 +116,7 @@ export function ServerFlashQuestionStage(props: {
         title={titleOverride ?? prompt.title}
         context={prompt.context}
         supportingText={supportingText}
+        promptContent={promptContent}
         variant={structuredPresentation ? "structured" : "default"}
       >
         <CompetitiveQuestionInput input={input} />
@@ -126,12 +129,14 @@ function ServerQuestionPanel({
   title,
   context,
   supportingText,
+  promptContent,
   children,
   variant = "default",
 }: {
   title: string;
   context?: string;
   supportingText?: string;
+  promptContent?: ReactNode;
   children: ReactNode;
   variant?: "default" | "structured";
 }) {
@@ -141,9 +146,20 @@ function ServerQuestionPanel({
       className={`${styles.questionCard} ${variant === "structured" ? styles.structuredQuestionCard : ""}`}
       aria-labelledby={titleId}
     >
-      {context ? <p className={styles.promptContext}>{context}</p> : null}
-      <h1 id={titleId}>{title}</h1>
-      {supportingText ? <p className={styles.promptSupportingText}>{supportingText}</p> : null}
+      {promptContent ? (
+        <>
+          <h1 id={titleId} className="sr-only">
+            {title}
+          </h1>
+          {promptContent}
+        </>
+      ) : (
+        <>
+          {context ? <p className={styles.promptContext}>{context}</p> : null}
+          <h1 id={titleId}>{title}</h1>
+          {supportingText ? <p className={styles.promptSupportingText}>{supportingText}</p> : null}
+        </>
+      )}
       {children}
     </section>
   );

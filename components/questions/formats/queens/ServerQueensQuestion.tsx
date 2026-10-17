@@ -3,7 +3,7 @@
 import { type KeyboardEvent, useMemo, useRef, useState } from "react";
 import { CrownIcon, CrossIcon } from "@/components/ui";
 import { ServerOperationStatus } from "@/components/questions/shared";
-import { QueensBoard } from "./QueensQuestion";
+import { QueensBoard, QueensFooter } from "./QueensQuestion";
 import type {
   ServerQueensProgress,
   ServerQueensQuestion as ServerQuestion,
@@ -161,27 +161,17 @@ export function ServerQueensQuestion({
         onCellKeyDown={handleKeyDown}
         disabled={disabled}
       />
-      <div className={styles.progress} aria-live="polite">
-        <strong>
-          {totalQueenCount}/{targetQueens} coronas
-        </strong>
-        <span>{conflicts.size ? `${conflicts.size} en conflicto` : "Sin conflictos"}</span>
-      </div>
-      {remainingAttempts !== null ? (
-        <p className={styles.instructions} role="status" aria-live="polite" aria-atomic="true">
-          {remainingAttempts === 1
-            ? "1 intento restante · Último intento"
-            : `${remainingAttempts} intentos restantes`}
-        </p>
-      ) : null}
+      <QueensFooter
+        placedQueens={totalQueenCount}
+        targetQueens={targetQueens}
+        conflictingQueens={conflicts.size}
+        remainingAttempts={remainingAttempts}
+      />
       {placementNotice ? (
         <p className={styles.placementNotice} role="status" aria-live="polite">
           {placementNotice}
         </p>
       ) : null}
-      <p className={styles.instructions}>
-        El tablero se valida automáticamente al completar las {targetQueens} coronas.
-      </p>
       <ServerOperationStatus
         state={validationState}
         visible={validationStatusVisible}

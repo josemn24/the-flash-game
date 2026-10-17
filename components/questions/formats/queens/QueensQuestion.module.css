@@ -102,11 +102,13 @@
   .markIcon {
     position: relative;
     z-index: 1;
-    filter: drop-shadow(0 2px 1px rgb(255 255 255 / 0.5));
-    width: clamp(1.2rem, 6vw, 1.8rem);
-    height: clamp(1.2rem, 6vw, 1.8rem);
-    color: rgb(17 21 26 / 0.52);
-    stroke-width: 2.7;
+    width: 60%;
+    height: 60%;
+    color: var(--ds-color-fg-secondary);
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.7;
   }
   .conflict::after {
     position: absolute;
@@ -147,7 +149,7 @@
     place-items: center;
     min-width: 0;
     padding: 0;
-    border-radius: 0.58rem;
+    border-radius: 5px;
     color: #11151a;
     box-shadow: 0 1px 2px rgb(17 21 26 / 0.12);
     isolation: isolate;
@@ -160,16 +162,22 @@
       0 1px 2px rgb(23 23 32 / 16%);
   }
   .conflict {
-    border-radius: inherit;
     animation: conflict-in 180ms ease-out;
     box-shadow:
       inset 0 0 0 4px var(--ds-color-border-error),
       0 1px 2px rgb(23 23 32 / 16%);
   }
+  .footer {
+    display: grid;
+    gap: var(--space-2);
+    width: min(100%, 27rem);
+    margin-inline: auto;
+  }
   .progress {
     display: flex;
-    justify-content: center;
-    gap: 0.7rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
     color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.7rem;
@@ -177,7 +185,39 @@
     text-transform: uppercase;
   }
   .progress strong {
-    color: var(--ds-color-fg-on-inverse);
+    color: var(--ds-color-fg-primary);
+    white-space: nowrap;
+  }
+  .attempts {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    font-family: var(--type-ui);
+    font-size: clamp(0.6875rem, 2.8vw, 0.75rem);
+    font-weight: 600;
+    text-transform: none;
+    white-space: nowrap;
+  }
+  .lastAttempt {
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-control);
+    color: var(--ds-color-fg-error);
+    background: var(--ds-color-bg-error-soft);
+    font-weight: 800;
+  }
+  .lastAttempt svg {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+  }
+  .conflictNotice {
+    margin: 0;
+    color: var(--ds-color-fg-error);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
   }
   .placementNotice {
     margin: 0;
@@ -190,7 +230,7 @@
   .instructions {
     margin: 0;
     color: var(--ds-color-fg-secondary);
-    font-size: 0.82rem;
+    font-size: 0.75rem;
     line-height: 1.5;
     text-align: center;
   }

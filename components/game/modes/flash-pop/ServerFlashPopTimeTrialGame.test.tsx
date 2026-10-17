@@ -134,12 +134,9 @@ it("renders Queens in the shared question stage and shows only the global timer"
 
   render(<ServerFlashPopTimeTrialGame challenge={challenge} roomContext={context} />);
 
-  expect(
-    screen.getByRole("heading", {
-      name: "Coloca una corona por fila, columna y región",
-    }),
-  ).toBeTruthy();
-  expect(screen.getByText("Las coronas no pueden tocarse entre sí.")).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Queens" })).toBeTruthy();
+  expect(screen.getByRole("list", { name: "Reglas de Queens" })).toBeTruthy();
+  expect(screen.queryByText("Las coronas no pueden tocarse entre sí.")).toBeNull();
   expect(screen.queryByRole("button", { name: "Abandonar" })).toBeNull();
   expect(screen.getByRole("grid", { name: "Tablero Queens de 4 por 4" })).toBeTruthy();
   expect(screen.getAllByRole("timer")).toHaveLength(1);
@@ -195,9 +192,8 @@ it("renders Conectar parejas with the global clock and no Queens error counter",
       }) as unknown as ReturnType<typeof useCompetitiveSession>,
   );
   render(<ServerFlashPopTimeTrialGame challenge={connectionChallenge} roomContext={context} />);
-  expect(
-    screen.getByRole("heading", { name: "Conecta las parejas y cubre el tablero" }),
-  ).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Conectar parejas" })).toBeTruthy();
+  expect(screen.getByRole("list", { name: "Reglas de Conectar parejas" })).toBeTruthy();
   expect(screen.getByRole("grid", { name: /Tablero de Conectar parejas/ })).toBeTruthy();
   expect(screen.getAllByRole("timer")).toHaveLength(1);
   expect(screen.queryByText(/intentos restantes/)).toBeNull();
