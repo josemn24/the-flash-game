@@ -1,5 +1,6 @@
 import type { CommandData } from "./commandExecutor";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
+import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type {
   FeedbackChannel,
   Operation,
@@ -9,7 +10,11 @@ import type {
 } from "./sessionReducer";
 import type { CompetitiveChallenge, ModePolicy } from "../modes/policy";
 export type CommandStep = {
-  accept: (response: CompetitiveJsonObject, command: PendingCommand) => void;
+  accept: (
+    response: AuthoritativeSessionUpdate,
+    command: PendingCommand,
+    review?: readonly ServerFlashTerminalReview[],
+  ) => void;
   after?: () => Promise<void>;
   channel?: FeedbackChannel;
 };
@@ -27,4 +32,5 @@ export type SessionRuntime = {
   cancel: (name: string) => void;
   cancelAll: () => void;
   refresh: () => void;
+  now: () => number;
 };

@@ -29,9 +29,26 @@ select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,20]}');
 select is((select last_result->'incorrectValidations' from test_support.runtime), '1'::jsonb, 'First failure leaves two opportunities');
 select is((select last_result->'terminal' from test_support.runtime), 'false'::jsonb, 'First failure keeps the level open');
 select is(test_support.repeat_last(), (select last_result from test_support.runtime), 'A replay consumes no additional opportunity');
+select throws_ok($$select test_support.repeat_last('{"queens":[0,2,5,14,24]}')$$,
+  '40001', 'idempotency_conflict', 'The same validation key cannot accept a different board');
+reset role;
+select is((select count(*) from private.answer_receipts
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)
+    and challenge_item_id = test_support.id('pyramid-queens-item-2')), 0::bigint,
+  'PYR-05: the first failed validation is progress, not a terminal receipt');
+select is((select status from public.attempts
+  where id = (select (state->>'attemptId')::uuid from test_support.runtime)), 'in_progress',
+  'The attempt remains in progress after the first failed validation');
+set local role service_role;
 select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,24]}');
 select is((select last_result->'incorrectValidations' from test_support.runtime), '2'::jsonb, 'Second failure leaves one opportunity');
 select is((select last_result->'terminal' from test_support.runtime), 'false'::jsonb, 'Second failure keeps the level open');
+reset role;
+select is((select count(*) from private.attempt_answers
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)
+    and challenge_item_id = test_support.id('pyramid-queens-item-2')), 0::bigint,
+  'PYR-05: the second failed validation has no final level evaluation');
+set local role service_role;
 select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,21]}');
 select is((select last_result->'incorrectValidations' from test_support.runtime), '3'::jsonb, 'Third failure exhausts the opportunities');
 select is((select last_result->'terminal' from test_support.runtime), 'true'::jsonb, 'Third failure closes the level');

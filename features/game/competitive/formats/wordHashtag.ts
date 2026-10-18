@@ -1,12 +1,12 @@
 import { WORD_HASHTAG_ACTIVE_CELLS } from "@/lib/wordHashtag";
 import type { SessionQuestion } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { evaluated, numbers, type FormatOutcome } from "./types";
 export function wordHashtagOutcome(
   question: SessionQuestion,
   fromCell: number,
   toCell: number,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): FormatOutcome {
   if (question.type !== "word-hashtag") throw new Error("unexpected_question_format");
   const letters = Array.isArray(response.letters)

@@ -1,41 +1,19 @@
-import type { AnswerValue } from "@/types/contracts";
-import type { AnswerResult } from "@/types/gameplay/result";
-import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerAlphabetProgress } from "@/types/gameplay/challenge";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { questionFromAlphabetPayload } from "../../serverAlphabetQuestionAdapter";
 import { questionFromPayload } from "../../serverFlashQuestionAdapter";
 import { slotsFor } from "../modes/policy";
-import { parseCompetitiveTimestamp, type CompetitiveJsonObject } from "../transport";
 import type { SessionRuntime } from "./runtime";
 import type { SessionEvent } from "./sessionReducer";
-export function initialResults(context: GameRoomContext): AnswerResult[] {
-  return (context.result?.attempt?.answers ?? []).map((answer) => ({
-    questionId: answer.questionId,
-    answer: answer.answer,
-    status: answer.status,
-    isCorrect: answer.isCorrect,
-    points: answer.points ?? 0,
-    timeUsed: answer.timeUsed ?? 0,
-    ...(answer.details ? { details: answer.details } : {}),
-  }));
+export function timestamp(value: string | null | undefined) {
+  if (value === null || value === undefined) return null;
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) throw new Error("invalid_session_timestamp");
+  return parsed;
 }
-export function recoveredResults(value: unknown): AnswerResult[] {
-  if (!Array.isArray(value)) return [];
-  return value.map((item) => ({
-    questionId: String(item.challengeItemId),
-    answer: item.answer as AnswerValue | null,
-    status: item.status as AnswerResult["status"],
-    isCorrect: item.status === "correct" || item.status === "partial",
-    points: Number(item.points ?? 0),
-    timeUsed: Number(item.timeUsedMs ?? 0) / 1000,
-    ...(item.resultDetails ? { details: item.resultDetails as AnswerResult["details"] } : {}),
-  }));
-}
-export const timestamp = (value: unknown) =>
-  value === null || value === undefined ? null : parseCompetitiveTimestamp(value);
 export function preparedEvent(
   runtime: SessionRuntime,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): Extract<SessionEvent, { type: "prepared" }> {
   const { challenge, policy } = runtime;
   const itemId = String(response.challengeItemId);
@@ -67,7 +45,7 @@ export function preparedEvent(
   const timedOutAlphabet = isAlphabet && response.timedOut === true;
   return {
     type: "prepared",
-    attempt: { id: attempt.id, lockVersion: Number(response.lockVersion) },
+    attempt: { id: attempt.id, revision: Number(response.revision) },
     question,
     questionIndex,
     stepIndex: challenge.mode === "narrative" ? policy.position(itemId) : 0,

@@ -101,7 +101,7 @@ describe("competitive registries execute their declared implementations", () => 
       expect(spec.data.challengeItemId).toBe(question.id);
       const command = {
         operation: spec.operation,
-        input: { ...spec.data, attemptId: "attempt", lockVersion: 1, idempotencyKey: "key" },
+        input: { ...spec.data, sessionId: "attempt", revision: 1, idempotencyKey: "key" },
       } as PendingCommand;
       const outcome = adapter.normalize(question, command, {
         terminal: true,

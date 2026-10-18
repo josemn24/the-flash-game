@@ -1,14 +1,17 @@
-import { terminalReviewFromResponse } from "../../serverFlashQuestionAdapter";
+import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import { reviewFor } from "../modes/policy";
 import { createAdvancement } from "./advance";
-import { preparedEvent, recoveredResults, timestamp } from "./projection";
+import { preparedEvent, timestamp } from "./projection";
 import type { SessionRuntime } from "./runtime";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 
 export function createAttemptLifecycle(runtime: SessionRuntime) {
   let finalizationRequested = false;
-  const finish = (response: CompetitiveJsonObject) => {
-    const review = reviewFor(runtime.challenge, terminalReviewFromResponse(response.review));
+  const finish = (
+    response: AuthoritativeSessionUpdate,
+    terminalReview?: readonly ServerFlashTerminalReview[],
+  ) => {
+    const review = reviewFor(runtime.challenge, terminalReview ?? []);
     const permissionRevoked = response.terminalReason === "permission_revoked";
     runtime.cancelAll();
     runtime.commit({
@@ -23,7 +26,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
       reviewPending: response.reviewPending === true,
       terminalReason:
         typeof response.terminalReason === "string" ? response.terminalReason : undefined,
-      ...(Array.isArray(response.answers) ? { results: recoveredResults(response.answers) } : {}),
+      ...(Array.isArray(response.answers) ? { results: [...(response.answers ?? [])] } : {}),
     });
   };
   const complete = async () => {
@@ -31,7 +34,11 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
       finalizationRequested = true;
       runtime.commit({ type: "phase", phase: "finalizing" });
     }
-    await runtime.run("complete", {}, { accept: finish });
+    await runtime.run(
+      "complete",
+      {},
+      { accept: (response, _command, review) => finish(response, review) },
+    );
   };
   const finalizeAlphabet = async () => {
     finalizationRequested = true;
@@ -71,20 +78,20 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
   };
   const advance = createAdvancement(runtime, prepare, complete);
   const recoverCurrent = async () => {
-    let snapshot: CompetitiveJsonObject | undefined;
+    let snapshot: AuthoritativeSessionUpdate | undefined;
     await runtime.run(
       "recover",
       {},
       {
-        accept: (response) => {
+        accept: (response, _command, review) => {
           snapshot = response;
           const attempt = runtime.state().attempt!;
           runtime.commit({
             type: "recovered",
-            attempt: { id: attempt.id, lockVersion: Number(response.lockVersion) },
-            results: recoveredResults(response.answers),
+            attempt: { id: attempt.id, revision: Number(response.revision) },
+            results: [...(response.answers ?? [])],
           });
-          if (response.phase === "results") finish(response);
+          if (response.phase === "results") finish(response, review);
         },
         after: async () => {
           if (!snapshot || snapshot.phase === "results") return;
@@ -96,7 +103,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
             return;
           }
           if (snapshot.resolved) {
-            const resolved = snapshot.resolved as CompetitiveJsonObject;
+            const resolved = snapshot.resolved;
             const position = runtime.policy.position(String(resolved.challengeItemId));
             runtime.commit({
               type: "phase",
@@ -121,13 +128,13 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     }
     await runtime.run(
       "prepareSession",
-      { scheduledChallengeId: runtime.challenge.id },
+      { challengeId: runtime.challenge.id },
       {
         accept: () => {},
         after: async () => {
           await runtime.run(
             "start",
-            { scheduledChallengeId: runtime.challenge.id },
+            { challengeId: runtime.challenge.id },
             {
               accept: () =>
                 runtime.commit({
@@ -148,13 +155,13 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     // Start restores the session cookie and obtains the current authoritative version.
     await runtime.run(
       "prepareSession",
-      { scheduledChallengeId: runtime.challenge.id },
+      { challengeId: runtime.challenge.id },
       {
         accept: () => {},
         after: async () => {
           await runtime.run(
             "start",
-            { scheduledChallengeId: runtime.challenge.id },
+            { challengeId: runtime.challenge.id },
             {
               accept: (response) => {
                 const deadline =
@@ -164,7 +171,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
                 if (
                   ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
                   deadline !== null &&
-                  deadline <= Date.now()
+                  deadline <= runtime.now()
                 ) {
                   finalizationRequested = true;
                   runtime.commit({ type: "phase", phase: "finalizing" });
@@ -190,11 +197,11 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
       "recover",
       {},
       {
-        accept: (response) => {
+        accept: (response, _command, review) => {
           if (response.phase !== "results" && response.status !== "abandoned")
             throw new Error("terminal_recovery_not_terminal");
           terminal = true;
-          finish(response);
+          finish(response, review);
         },
       },
     );
@@ -223,7 +230,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
             throw new Error("invalid_activation_deadline");
           runtime.commit({
             type: "prepared",
-            attempt: { id: runtime.state().attempt!.id, lockVersion: Number(response.lockVersion) },
+            attempt: { id: runtime.state().attempt!.id, revision: Number(response.revision) },
             question: state.question,
             questionIndex: state.questionIndex,
             stepIndex: state.stepIndex,
@@ -242,14 +249,14 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
   const startTimeTrial = async () => {
     await runtime.run(
       "prepareSession",
-      { scheduledChallengeId: runtime.challenge.id },
+      { challengeId: runtime.challenge.id },
       {
         accept: () => {},
         after: async () => {
           let resumed = false;
           await runtime.run(
             "start",
-            { scheduledChallengeId: runtime.challenge.id },
+            { challengeId: runtime.challenge.id },
             {
               accept: (response) => {
                 resumed = response.resumed === true;
@@ -267,7 +274,12 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
   };
   return {
     startTimeTrial,
-    reloadResult: () => runtime.run("recover", {}, { accept: finish }),
+    reloadResult: () =>
+      runtime.run(
+        "recover",
+        {},
+        { accept: (response, _command, review) => finish(response, review) },
+      ),
     begin,
     prepare,
     complete,

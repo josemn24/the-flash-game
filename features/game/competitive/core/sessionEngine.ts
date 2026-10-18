@@ -1,12 +1,14 @@
-import { readTimeTrialProgress } from "@/lib/timeTrial";
-import type { GameRoomContext } from "@/types/view-models/room";
-import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
-import { createCompetitiveAttemptClient, type CompetitiveAttemptClient } from "../attemptClient";
 import {
-  CompetitiveCommandError,
-  createCompetitiveIdempotencyKey,
-  type CompetitiveJsonObject,
-} from "../transport";
+  GameSessionCommandError,
+  type GameSessionProvider,
+  type SessionClock,
+} from "@/application/ports/game-session";
+import type {
+  GameSessionBootstrap,
+  GameSessionResult,
+} from "@/types/gameplay/authoritative-session";
+import { systemSessionClock } from "../../session/clock";
+import { createSessionCommandId } from "../../session/commandId";
 import { createModePolicy, reviewFor, type CompetitiveChallenge } from "../modes/policy";
 import { CommandExecutor, PendingCommandBlocked, type CommandData } from "./commandExecutor";
 import {
@@ -17,7 +19,6 @@ import {
   type SessionState,
   type PendingCommand,
 } from "./sessionReducer";
-import { initialResults } from "./projection";
 import { PhaseTimers } from "./phaseTimers";
 import { createAttemptLifecycle } from "./attemptLifecycle";
 import { createInteractions } from "./interactions";
@@ -38,16 +39,17 @@ const lifecycleOperations = new Set<Operation>([
 ]);
 export type SessionOptions = {
   challenge: CompetitiveChallenge;
-  roomContext: GameRoomContext;
-  terminalReview?: readonly ServerFlashTerminalReview[];
-  client?: CompetitiveAttemptClient;
+  initialSession: GameSessionBootstrap;
+  provider: GameSessionProvider;
+  clock?: SessionClock;
   refresh?: () => void;
 };
 /** Owns the snapshot, pending command and effect lifetime. React only subscribes. */
 export class CompetitiveSessionEngine {
   private snapshot: SessionState;
   private listeners = new Set<() => void>();
-  private timers = new PhaseTimers();
+  private timers: PhaseTimers;
+  private readonly clock: SessionClock;
   private executor: CommandExecutor;
   private pendingStep?: CommandStep;
   private active = true;
@@ -63,37 +65,39 @@ export class CompetitiveSessionEngine {
   private terminalRecoveryAttempted = false;
   private terminalRecoveryRequested = false;
   private refresh: () => void;
-  private readonly client: CompetitiveAttemptClient;
   readonly policy;
   readonly lifecycle;
   readonly interactions;
   constructor(readonly options: SessionOptions) {
-    const { challenge, roomContext, terminalReview } = options;
+    const { challenge, initialSession } = options;
+    const terminalReview = initialSession.review;
+    this.clock = options.clock ?? systemSessionClock;
+    this.timers = new PhaseTimers(this.clock);
     this.policy = createModePolicy(challenge);
     this.refresh = options.refresh ?? (() => {});
     this.snapshot = initialSessionState(
-      roomContext.result
+      initialSession.status === "completed"
         ? "results"
-        : roomContext.attemptStatus === "inProgress"
+        : initialSession.status === "inProgress"
           ? "recovering"
           : "intro",
-      initialResults(roomContext),
-      roomContext.result?.flashPoints ?? 0,
+      [...initialSession.results],
+      initialSession.score,
       terminalReview?.length ? reviewFor(challenge, terminalReview) : null,
     );
-    if (roomContext.timeTrial) this.snapshot.timeTrial = roomContext.timeTrial;
-    if (roomContext.result && !terminalReview?.length) {
+    if (initialSession.timeTrial) this.snapshot.timeTrial = initialSession.timeTrial;
+    if (initialSession.status === "completed" && !terminalReview?.length) {
       this.snapshot.lifecycleError = {
         operation: "projection",
         code: "review_pending",
         message: "Revisión temporalmente no disponible. Puedes volver a cargarla.",
       };
     }
-    this.client = options.client ?? createCompetitiveAttemptClient(this.abortController.signal);
     this.executor = new CommandExecutor(
-      this.client,
+      options.provider,
       () => this.snapshot.attempt,
       () => this.snapshot.pendingCommand,
+      this.abortController.signal,
     );
     const runtime: SessionRuntime = {
       challenge,
@@ -102,6 +106,7 @@ export class CompetitiveSessionEngine {
       commit: this.commit,
       run: this.run,
       refresh: this.refresh,
+      now: () => this.clock.now(),
       schedule: (name, delay, callback) =>
         this.timers.schedule(name, delay, () => {
           if (this.active) callback();
@@ -124,7 +129,7 @@ export class CompetitiveSessionEngine {
   };
   connect = () => {
     this.connections++;
-    if (this.options.roomContext.attemptStatus === "inProgress" && !this.recoveryStarted) {
+    if (this.options.initialSession.status === "inProgress" && !this.recoveryStarted) {
       this.recoveryStarted = true;
       void this.lifecycle.recover();
     }
@@ -145,7 +150,7 @@ export class CompetitiveSessionEngine {
   };
   private send = async (
     command: PendingCommand,
-    invoke: () => Promise<CompetitiveJsonObject>,
+    invoke: () => Promise<GameSessionResult>,
     step: CommandStep,
   ): Promise<boolean> => {
     if (!this.active) return false;
@@ -155,28 +160,30 @@ export class CompetitiveSessionEngine {
     if (step.channel)
       this.timers.schedule("status", 250, () => this.commit({ type: "feedback_visible" }));
     try {
-      const response = await invoke();
+      const result = await invoke();
+      if (result.kind !== "accepted") throw new GameSessionCommandError(result);
+      const response = result.state;
       if (!this.active || generation !== this.generation) return false;
       const attemptId =
         command.operation === "start" || command.operation === "takeover"
-          ? String(response.attemptId)
+          ? response.sessionId
           : this.snapshot.attempt?.id;
-      const lockVersion =
-        response.lockVersion === undefined
-          ? this.snapshot.attempt?.lockVersion
-          : Number(response.lockVersion);
+      const revision =
+        response.revision === undefined
+          ? this.snapshot.attempt?.revision
+          : Number(response.revision);
       if (
         command.operation !== "abandon" &&
         command.operation !== "prepareSession" &&
-        (!attemptId || !Number.isSafeInteger(lockVersion))
+        (!attemptId || !Number.isSafeInteger(revision))
       )
         throw new Error("invalid_attempt_response");
       if (this.options.challenge.mode === "time-trial" && response.timeTrial)
-        this.commit({ type: "time_trial", progress: readTimeTrialProgress(response.timeTrial) });
-      step.accept(response, command);
+        this.commit({ type: "time_trial", progress: response.timeTrial, now: this.clock.now() });
+      step.accept(response, command, result.review);
       this.commit({
         type: "command_succeeded",
-        attempt: attemptId ? { id: attemptId, lockVersion: lockVersion! } : null,
+        attempt: attemptId ? { id: attemptId, revision: revision! } : null,
       });
       this.pendingStep = undefined;
       this.retryAt = 0;
@@ -187,33 +194,20 @@ export class CompetitiveSessionEngine {
       if (!this.active || generation !== this.generation) return false;
       if (
         command.operation === "start" &&
-        error instanceof CompetitiveCommandError &&
-        error.code === "attempt_control_required"
+        error instanceof GameSessionCommandError &&
+        error.failure.code === "attempt_control_required"
       ) {
-        const attempt = error.details?.attempt;
-        const attemptObject =
-          attempt && typeof attempt === "object" && !Array.isArray(attempt)
-            ? (attempt as Record<string, unknown>)
-            : undefined;
-        const attemptId =
-          attemptObject && typeof attemptObject.attemptId === "string"
-            ? attemptObject.attemptId
-            : null;
-        const lockVersion = attemptObject ? Number(attemptObject.lockVersion) : Number.NaN;
-        const deadlineAt =
-          attemptObject?.deadlineAt === null || typeof attemptObject?.deadlineAt === "string"
-            ? (attemptObject.deadlineAt as string | null)
-            : null;
-        if (attemptId && Number.isSafeInteger(lockVersion) && lockVersion > 0) {
+        const control = error.failure.controlRequired;
+        if (control) {
           this.pendingStep = undefined;
           this.commit({
             type: "control_required",
             transfer: {
-              attemptId,
-              lockVersion,
-              deadlineAt,
-              scheduledChallengeId: this.options.challenge.id,
-              idempotencyKey: createCompetitiveIdempotencyKey("takeover"),
+              sessionId: control.sessionId,
+              revision: control.revision,
+              deadlineAt: control.deadlineAt,
+              challengeId: this.options.challenge.id,
+              idempotencyKey: createSessionCommandId("takeover"),
             },
           });
           return false;
@@ -281,7 +275,7 @@ export class CompetitiveSessionEngine {
     return accepted;
   };
   private async failed(command: PendingCommand, step: CommandStep, error: unknown) {
-    const code = error instanceof CompetitiveCommandError ? error.code : undefined;
+    const code = error instanceof GameSessionCommandError ? error.failure.code : undefined;
     if (
       command.operation === "alphabetPass" &&
       this.options.challenge.mode === "alphabet" &&
@@ -317,7 +311,10 @@ export class CompetitiveSessionEngine {
           notice: "La partida ha cambiado en otro dispositivo. Vuelve a comprobar su estado.",
         });
         return;
-      } else if (!(error instanceof CompetitiveCommandError) || error.status === 0) {
+      } else if (
+        !(error instanceof GameSessionCommandError) ||
+        error.failure.kind === "uncertain"
+      ) {
         console.info(JSON.stringify({ event: "takeover_uncertain" }));
       }
     }
@@ -346,8 +343,8 @@ export class CompetitiveSessionEngine {
         "unauthorized",
         "attempt_permission_revoked",
       ].includes(code ?? "") ||
-      (error instanceof CompetitiveCommandError &&
-        error.status === 401 &&
+      (error instanceof GameSessionCommandError &&
+        error.failure.authorizationLost &&
         code !== "attempt_session_missing")
     ) {
       this.timers.clear();
@@ -409,24 +406,14 @@ export class CompetitiveSessionEngine {
       return;
     }
     const seconds =
-      error instanceof CompetitiveCommandError &&
-      (error.retryAfterSeconds !== undefined ||
-        error.status === 429 ||
-        code === "alphabet_deadline_not_reached" ||
-        code === "time_trial_not_terminal")
-        ? Math.max(1, error.retryAfterSeconds ?? 1)
+      error instanceof GameSessionCommandError && error.failure.retryAfterSeconds !== undefined
+        ? Math.max(1, error.failure.retryAfterSeconds)
         : undefined;
-    this.retryAt = seconds === undefined ? 0 : Date.now() + seconds * 1000;
+    this.retryAt = seconds === undefined ? 0 : this.clock.now() + seconds * 1000;
     const failure = formatFailure(command.operation, code, step.channel);
     const retryable =
       !failure.definitive &&
-      (!(error instanceof CompetitiveCommandError) ||
-        error.status === 0 ||
-        error.status >= 500 ||
-        error.status === 429 ||
-        code === "invalid_json_response" ||
-        code === "alphabet_deadline_not_reached" ||
-        code === "time_trial_not_terminal");
+      (!(error instanceof GameSessionCommandError) || error.failure.retryable);
     const limit = command.operation === "complete" ? 3 : 1;
     const message =
       retryable && this.automaticRetries >= limit
@@ -501,7 +488,7 @@ export class CompetitiveSessionEngine {
       this.snapshot.busy ||
       this.retrying ||
       this.snapshot.lifecycleError?.retryable === false ||
-      Date.now() < this.retryAt
+      this.clock.now() < this.retryAt
     )
       return;
     if (!automatic) {
@@ -569,7 +556,7 @@ export class CompetitiveSessionEngine {
       !this.active ||
       this.snapshot.busy ||
       this.snapshot.lifecycleError?.retryable === false ||
-      Date.now() < this.retryAt
+      this.clock.now() < this.retryAt
     )
       return;
     this.reconciling = true;
@@ -612,9 +599,9 @@ export class CompetitiveSessionEngine {
       await this.executor.executeInput(
         "takeover",
         {
-          attemptId: transfer.attemptId,
-          scheduledChallengeId: transfer.scheduledChallengeId,
-          lockVersion: transfer.lockVersion,
+          sessionId: transfer.sessionId,
+          challengeId: transfer.challengeId,
+          revision: transfer.revision,
           idempotencyKey: transfer.idempotencyKey,
         },
         async (command, invoke) => {

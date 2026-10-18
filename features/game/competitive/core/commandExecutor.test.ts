@@ -1,11 +1,13 @@
 import { expect, it, vi } from "vitest";
 import { createCompetitiveAttemptClient } from "../attemptClient";
 import type { CompetitiveJsonObject } from "../transport";
+import type { GameSessionResult } from "@/types/gameplay/authoritative-session";
+import { createRemoteGameSessionProvider } from "../../session/providers/remote";
 import { CommandExecutor } from "./commandExecutor";
 import type { Attempt, PendingCommand } from "./sessionReducer";
 it("captures queued payloads before callers mutate them and resolves the version at dispatch", async () => {
   const client = createCompetitiveAttemptClient();
-  let attempt: Attempt | null = { id: "attempt", lockVersion: 1 };
+  let attempt: Attempt | null = { id: "attempt", revision: 1 };
   let pending: PendingCommand | null = null;
   let resolve!: (value: CompetitiveJsonObject) => void;
   client.queensDraft = vi.fn(
@@ -16,14 +18,15 @@ it("captures queued payloads before callers mutate them and resolves the version
   );
   client.queensValidation = vi.fn(async () => ({ lockVersion: 3 }));
   const executor = new CommandExecutor(
-    client,
+    createRemoteGameSessionProvider({ client }),
     () => attempt,
     () => pending,
   );
-  const send = async (command: PendingCommand, invoke: () => Promise<CompetitiveJsonObject>) => {
+  const send = async (command: PendingCommand, invoke: () => Promise<GameSessionResult>) => {
     pending = command;
     const response = await invoke();
-    attempt = { id: "attempt", lockVersion: Number(response.lockVersion) };
+    if (response.kind !== "accepted") throw new Error(response.code);
+    attempt = { id: "attempt", revision: Number(response.state.revision) };
     pending = null;
   };
   const first = executor.execute("queensDraft", { challengeItemId: "item", queens: [2, 4] }, send);

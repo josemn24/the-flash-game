@@ -3,15 +3,24 @@ import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { CompetitiveSessionEngine, type SessionOptions } from "./sessionEngine";
 import type { FeedbackChannel } from "./sessionReducer";
-export function useCompetitiveSession(options: Omit<SessionOptions, "client" | "refresh">) {
+import type { GameRoomContext } from "@/types/view-models/room";
+import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
+import { createRemoteGameSessionProvider } from "../../session/providers/remote";
+import { remoteSessionBootstrap } from "../../session/providers/remoteBootstrap";
+
+type CompetitiveSessionOptions = Pick<SessionOptions, "challenge"> & {
+  roomContext: GameRoomContext;
+  terminalReview?: readonly ServerFlashTerminalReview[];
+};
+export function useCompetitiveSession(options: CompetitiveSessionOptions) {
   const router = useRouter();
   const { challenge, roomContext, terminalReview } = options;
   const engine = useMemo(
     () =>
       new CompetitiveSessionEngine({
         challenge,
-        roomContext,
-        terminalReview,
+        initialSession: remoteSessionBootstrap(roomContext, terminalReview),
+        provider: createRemoteGameSessionProvider(),
         refresh: () => router.refresh(),
       }),
     [challenge, roomContext, terminalReview, router],

@@ -6,8 +6,8 @@ describe("server flash session reducer", () => {
     const command = {
       operation: "answer" as const,
       input: {
-        attemptId: "attempt-1",
-        lockVersion: 2,
+        sessionId: "attempt-1",
+        revision: 2,
         challengeItemId: "question-1",
         answer: "A" as const,
         idempotencyKey: "answer-1",
@@ -36,7 +36,7 @@ describe("server flash session reducer", () => {
 
     const confirmed = sessionReducer(reconciled, {
       type: "recovered",
-      attempt: { id: "attempt-1", lockVersion: 3 },
+      attempt: { id: "attempt-1", revision: 3 },
       results: [],
     });
     expect(confirmed.commandStatus).toBe("confirmed");
@@ -51,7 +51,7 @@ describe("server flash session reducer", () => {
   });
 
   it("handles start, answer, transition and terminal result events", () => {
-    const attempt = { id: "attempt-1", lockVersion: 2 };
+    const attempt = { id: "attempt-1", revision: 2 };
     const result = {
       questionId: "question-1",
       answer: "A",

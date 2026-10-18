@@ -1,9 +1,9 @@
 import type { SessionQuestion } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { evaluated, strings, type FormatOutcome } from "./types";
 export function miniWordleOutcome(
   question: SessionQuestion,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): FormatOutcome {
   if (question.type !== "mini-wordle") throw new Error("unexpected_question_format");
   const guesses = Array.isArray(response.guesses)

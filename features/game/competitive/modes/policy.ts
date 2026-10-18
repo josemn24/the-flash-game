@@ -5,7 +5,7 @@ import type {
   ServerFlashTerminalReview,
 } from "@/types/gameplay/challenge";
 import type { SessionPhase, SessionReview, SessionState } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { alphabetChallengeWithReview } from "../../serverAlphabetQuestionAdapter";
 import {
   challengeWithReview,
@@ -29,7 +29,7 @@ export type ModePolicy = {
   sequence: readonly ServerNarrativeStep[];
   position: (itemId: string) => number;
   next: (state: SessionState) => ModeStep;
-  recover: (state: SessionState, response: CompetitiveJsonObject) => ModeStep;
+  recover: (state: SessionState, response: AuthoritativeSessionUpdate) => ModeStep;
   terminal: (results: readonly AnswerResult[], questionIndex: number) => boolean;
 };
 export function slotsFor(challenge: CompetitiveChallenge) {

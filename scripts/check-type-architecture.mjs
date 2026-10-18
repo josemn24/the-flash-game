@@ -323,6 +323,18 @@ for (const file of productionFiles) {
   for (const imported of importsIn(source, true)) {
     const context = inputContext(relative);
     const target = resolvedProjectImport(imported.specifier, file);
+    const sessionCore =
+      /^features\/game\/competitive\/(?:core|formats|modes)\//.test(relative) &&
+      relative !== "features/game/competitive/core/useCompetitiveSession.ts";
+    if (
+      sessionCore &&
+      target &&
+      (target.startsWith("types/view-models/") ||
+        /^features\/game\/competitive\/(?:attemptClient|transport)$/.test(target) ||
+        target.startsWith("features/game/session/providers/"))
+    ) {
+      violations.push(`${relative} bypasses the game session port via ${imported.specifier}`);
+    }
     const targetContext = target ? inputContext(target) : null;
     if (context && targetContext && context !== targetContext) {
       violations.push(`${relative} crosses question input contexts via ${imported.specifier}`);

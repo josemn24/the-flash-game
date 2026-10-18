@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Última actualización: 2026-10-11.
+Última actualización: 2026-10-18 (contrato de referencia de La Pirámide).
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -279,13 +279,19 @@ segundo log narrativo.
 
 ## 5. La Pirámide (`pyramid`)
 
-### Contrato recomendado
+### Contrato competitivo de referencia
+
+La [especificación de Pirámide y su matriz de pruebas](../pyramid-session-contract.md) fija el
+comportamiento actual para la fase 0 de la unificación de proveedores. Las propuestas de proveedor
+local y vista común todavía no están implementadas; la práctica conserva su controlador propio.
 
 - **Inicio:** iniciar el ascenso crea o recupera el intento. Cada nivel tiene un briefing y después
   una pregunta; cambiar de briefing no consume otro intento.
-- **Duración:** un `timeLimit` por nivel, limitado por la ventana o deadline aplicable al desafío.
-  El cierre de la publicación sin intento sigue siendo `expired`; no debe confundirse con el
-  timeout de un nivel ya iniciado.
+- **Duración:** cada nivel recibe su duración publicada completa desde la activación. Preparar
+  entrega el contenido autorizado sin iniciar el reloj; la vista lo oculta hasta confirmar
+  `activate`. Repetir la activación no reinicia su plazo. No hay deadline global de Pirámide;
+  un intento válido puede continuar después del cierre ordinario de la publicación. Ese cierre
+  impide un intento nuevo, mientras que cancelación, permisos e inactividad conservan sus reglas.
 - **Agotamiento del tiempo:** registra el nivel como no superado y finaliza La Pirámide según su
   regla actual. El resultado temporal es `unanswered`, pero el intento global es `completed` porque
   el modo llegó a su final reglamentario.
@@ -301,13 +307,15 @@ segundo log narrativo.
 - **Estado global:** `inProgress` mientras el jugador está en briefing o resolviendo un nivel;
   `completed` después de cima o fallo de nivel; `abandoned` por abandono explícito o por pérdida
   del permiso competitivo.
-- **Recuperación y abandono:** un briefing previo al inicio del temporizador se reanuda. Si el nivel
-  temporizado ya se preparó y no existe recepción, se registra como `unanswered`, no se supera y La
-  Pirámide termina con resultado interno `failed` y estado global `completed`; no hay vuelta a ese
-  nivel. Abandonar explícitamente marca `abandoned`.
-- **Checkpoint recomendado:** reutilizar `PyramidAttemptRecord`: nivel actual, resultados,
-  códigos enviados y aceptados, intentos incorrectos, pistas reveladas, `levelStartedAt`, deadline,
-  fase y versión del contenido. Al finalizar, el snapshot deja de ser reanudable.
+- **Recuperación y abandono:** un briefing o preparación sin activación se conserva sin reloj ni
+  respuesta ficticia. Una recepción final pendiente se evalúa antes de resolver la interrupción.
+  Si se interrumpe un nivel activo, el servidor cierra el intervalo y reconstruye la resolución
+  desde recepción y eventos del formato: una respuesta nula produce `unanswered` y cero puntos;
+  una resolución no correcta termina como `completed` / `failed`. La conformidad de recuperación
+  de cada formato requiere su prueba específica. Abandonar explícitamente marca `abandoned`.
+- **Progreso confirmado:** nivel autorizado, evaluaciones, eventos de formato y plazos del servidor.
+  `PyramidAttemptRecord` sigue siendo el modelo del controlador local legacy, no un contrato común
+  ya implementado ni la fuente del resultado competitivo.
 - **Resultado y feedback:** mostrar Flash Points y niveles alcanzados. “Cima conquistada” se reserva
   para `summit`; “Ascenso terminado” describe `failed` sin convertirlo en un fallo global. Tras un
   intento terminal iniciado, mostrar respuestas propias y soluciones.
@@ -322,8 +330,9 @@ La ruta competitiva carga una proyección de siete briefings sin payloads de pre
 nivel obtiene solo su pregunta preparada. Las unidades temporales usan scope `level`. El servidor
 guarda recibos y evaluaciones, deriva los niveles superados, `summit`/`failed`, el score y el cierre,
 y no permite preparar después de una respuesta no correcta. La recuperación en briefing reanuda sin
-iniciar reloj; si se interrumpe un nivel temporizado lo resuelve como `unanswered` y finaliza el
-intento. Los roles autorizados pueden leer el resultado terminal y la revisión; la revisión histórica
+iniciar reloj; si se interrumpe un nivel activo, resuelve su recepción y eventos según el
+[contrato de recuperación](../pyramid-session-contract.md#5-reintento-y-recuperación-son-operaciones-distintas).
+Una resolución no correcta finaliza el intento. Los roles autorizados pueden leer el resultado terminal y la revisión; la revisión histórica
 muestra los siete niveles y bloquea los no alcanzados sin payload. El
 editor/calendario y rankings existentes incluyen `pyramid`; no se añaden tablas. La migración,
 pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se validó despliegue remoto.

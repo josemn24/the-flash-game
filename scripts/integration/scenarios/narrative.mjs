@@ -10,7 +10,7 @@ export const scenario = {
     });
     assert(playable.length === 2, "Alice recibe las dos preguntas narrativas");
     assert(
-      playable.map((row) => row.question_type).join(",") === "multiple-choice,multiple-choice",
+      playable.map((row) => row.question_type).join(",") === "multiple-choice,short-text",
       "Narrative conserva el orden de sus preguntas",
     );
     assert(

@@ -9,7 +9,7 @@ import type {
   ServerAlphabetQuestion,
   ServerFlashQuestion,
 } from "@/types/gameplay/challenge";
-import type { CompetitiveAttemptClient } from "../attemptClient";
+import type { GameSessionCommand, GameSessionOperation } from "@/types/contracts/game-session";
 
 export type SessionPhase =
   | "intro"
@@ -25,23 +25,18 @@ export type SessionPhase =
   | "transition"
   | "results"
   | "review";
-export type Attempt = { readonly id: string; readonly lockVersion: number };
+export type Attempt = { readonly id: string; readonly revision: number };
 export type TransferContext = {
-  readonly attemptId: string;
-  readonly lockVersion: number;
+  readonly sessionId: string;
+  readonly revision: number;
   readonly deadlineAt: string | null;
-  readonly scheduledChallengeId: string;
+  readonly challengeId: string;
   readonly idempotencyKey: string;
 };
 export type SessionQuestion = ServerFlashQuestion | ServerAlphabetQuestion;
 export type SessionReview = FlashChallenge | PyramidChallenge | AlphabetChallenge;
-export type Operation = keyof CompetitiveAttemptClient;
-export type PendingCommand = {
-  [K in Operation]: {
-    readonly operation: K;
-    readonly input: Parameters<CompetitiveAttemptClient[K]>[0];
-  };
-}[Operation];
+export type Operation = GameSessionOperation;
+export type PendingCommand = GameSessionCommand;
 export type FeedbackChannel =
   "submission" | "answerVerification" | "reveal" | "queens" | "wordSearch";
 export type Feedback = {
@@ -100,7 +95,7 @@ export type SessionState = {
   };
 };
 export type SessionEvent =
-  | { type: "time_trial"; progress: TimeTrialProgress }
+  | { type: "time_trial"; progress: TimeTrialProgress; now?: number }
   | {
       type: "phase";
       phase: SessionPhase;
@@ -200,7 +195,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         deadlineAt: event.progress.deadlineAt
           ? state.timeTrial?.deadlineAt === event.progress.deadlineAt && state.deadlineAt !== null
             ? state.deadlineAt
-            : Date.now() +
+            : (event.now ?? Date.now()) +
               Date.parse(event.progress.deadlineAt) -
               Date.parse(event.progress.serverNow)
           : null,

@@ -122,7 +122,7 @@ si no necesitan interacción.
 
 Las fachadas `useServerFlashSession`, `useServerNarrativeSession` y
 `useServerAlphabetSession` conservan los contratos de las pantallas y se suscriben al mismo
-núcleo en `features/game/competitive/`. Flash, Supervivencia, Pirámide, Narrative y Alfabeto
+núcleo en `features/game/competitive/`. Flash, Supervivencia, Pirámide, Narrative, Alfabeto y Contrarreloj
 comparten este flujo; práctica y mock mantienen sus controladores actuales.
 
 ```text
@@ -134,11 +134,12 @@ Pantalla → fachada del modo → useCompetitiveSession
                                   ├── core/advance: feedback y siguiente paso
                                   ├── modes: secuencia, presentación y cursor recuperado
                                   └── formats: comando, progreso y resultado normalizado
-                                          → attemptClient → Route Handler existente
+                                          → GameSessionProvider
+                                              → remote → attemptClient → Route Handler existente
 ```
 
 El motor actualiza el snapshot utilizado por las operaciones asíncronas y notifica a React
-mediante un único `commit(event)` y `useSyncExternalStore`. No hay una copia de `lockVersion`
+mediante un único `commit(event)` y `useSyncExternalStore`. No hay una copia de `revision`
 en cada modo o formato. El reducer deduplica resultados por interacción y guarda intento,
 interacción, deadlines recibidos, resultados, comando pendiente y error de lifecycle.
 
@@ -175,6 +176,26 @@ proyecto no se reinicia.
 El servidor de pruebas usa un `distDir` propio para convivir con `next dev`; elimina su salida y
 los paths de tipos generados al terminar. `E2E_INTEGRATION_SCENARIOS=s05,s07,s12` ejecuta también
 las integraciones de esos escenarios sobre el mismo stack antes de sus pruebas de navegador.
+
+### Evolución de Pirámide: contrato y proveedor remoto
+
+El [contrato de referencia de Pirámide](pyramid-session-contract.md) y su matriz de pruebas
+caracterizan el recorrido competitivo antes de introducir un proveedor local. La fase 0 añadió
+documentación y pruebas; la [fase 1](game-session-providers.md) introduce el puerto y su adaptador
+remoto sobre ese mismo motor, sin cambiar las reglas, los endpoints ni el esquema.
+
+El motor consume `GameSessionProvider` y un estado inicial independiente de `GameRoomContext`.
+El hook competitivo compone el adaptador remoto, que traduce identidad/revisión, respuestas y
+fallos del transporte. El controlador conserva comandos pendientes, reintentos y transiciones;
+el backend conserva la autoridad sobre contenido, progreso, plazos, evaluación y cierre. La
+revisión terminal viaja separada de la actualización pública. Proveedor y reloj son inyectables.
+
+El proveedor local y la unificación de las presentaciones siguen pendientes; las presentaciones
+de Pirámide y sus controladores locales y remotos siguen separados. La práctica actual no
+certifica equivalencia competitiva. Las fases
+posteriores deberán reutilizar la coordinación existente y ampliar la conformidad por formato,
+conservando autorización, transacciones y acreditación en el backend. No se añade fallback mock a
+las rutas competitivas.
 
 ### 2.2 Entrada al backend
 

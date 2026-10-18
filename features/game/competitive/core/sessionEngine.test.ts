@@ -10,6 +10,8 @@ import type {
 import { createCompetitiveAttemptClient } from "../attemptClient";
 import { CompetitiveCommandError } from "../transport";
 import { CompetitiveSessionEngine } from "./sessionEngine";
+import { createRemoteGameSessionProvider } from "../../session/providers/remote";
+import { remoteSessionBootstrap } from "../../session/providers/remoteBootstrap";
 import { initialSessionState, sessionReducer } from "./sessionReducer";
 
 const context = { attemptStatus: null, result: null } as unknown as GameRoomContext;
@@ -81,7 +83,12 @@ function setup(
   calls.answer.mockResolvedValue(accepted(3));
   calls.complete.mockResolvedValue({ score: 20, lockVersion: 6, review: [] });
   const refresh = vi.fn();
-  const engine = new CompetitiveSessionEngine({ challenge, roomContext, client: calls, refresh });
+  const engine = new CompetitiveSessionEngine({
+    challenge,
+    initialSession: remoteSessionBootstrap(roomContext),
+    provider: createRemoteGameSessionProvider({ client: calls }),
+    refresh,
+  });
   engines.push(engine);
   return { engine, calls, refresh };
 }
@@ -335,7 +342,7 @@ describe("competitive session ownership", () => {
     await engine.lifecycle.begin();
     expect(engine.getSnapshot()).toMatchObject({
       phase: "intro",
-      transfer: { attemptId: "attempt", lockVersion: 7 },
+      transfer: { sessionId: "attempt", revision: 7 },
       startNotice: "Existe una sesión activa en otro dispositivo.",
     });
     await engine.takeOver();
@@ -344,7 +351,7 @@ describe("competitive session ownership", () => {
     );
     expect(calls.start).toHaveBeenCalledTimes(1);
     expect(calls.recover).toHaveBeenCalledWith({ attemptId: "attempt", lockVersion: 8 });
-    expect(engine.getSnapshot()).toMatchObject({ attempt: { id: "attempt", lockVersion: 9 } });
+    expect(engine.getSnapshot()).toMatchObject({ attempt: { id: "attempt", revision: 9 } });
   });
 
   it("treats a transferred session as terminal and cancels retries", async () => {
@@ -374,7 +381,8 @@ describe("competitive session ownership", () => {
     await engine.interactions.submit("B");
     await engine.retry();
     expect(calls.answer).toHaveBeenCalledTimes(2);
-    expect(calls.answer.mock.calls[1][0]).toEqual(command?.input);
+    expect(calls.answer.mock.calls[1]).toEqual(calls.answer.mock.calls[0]);
+    expect(command?.input).toMatchObject({ sessionId: "attempt", revision: 2, answer: "A" });
     expect(engine.getSnapshot().results).toHaveLength(1);
   });
   it("honors Retry-After without polling or changing the rejected command", async () => {
@@ -408,7 +416,7 @@ describe("competitive session ownership", () => {
     expect(calls.answer.mock.calls[0][0].lockVersion).toBe(2);
     expect(calls.recover).toHaveBeenCalledWith({ attemptId: "attempt", lockVersion: 8 });
     expect(engine.getSnapshot()).toMatchObject({
-      attempt: { lockVersion: 10 },
+      attempt: { revision: 10 },
       results: [result],
       question: { id: "b" },
     });
@@ -507,6 +515,76 @@ describe("mode policies", () => {
     expect(calls.prepare).toHaveBeenCalledTimes(1);
     expect(calls.complete).toHaveBeenCalledTimes(1);
   });
+  it.each([1, 2])(
+    "PYR-05: keeps a Pyramid level active after %i confirmed Queens failures",
+    async (failures) => {
+      const challenge: ServerPyramidChallenge = {
+        ...base,
+        mode: "pyramid",
+        maxScore: 100,
+        attemptVersion: 1,
+        availableFrom: "",
+        availableUntil: "",
+        levels: Array.from({ length: 7 }, (_, index) => ({
+          ...slot(`level-${index + 1}`, index + 1),
+          questionType: index === 0 ? "queens" : "multiple-choice",
+          points: index < 5 ? 14 : 15,
+          levelId: `level-${index + 1}`,
+          label: `Nivel ${index + 1}`,
+          briefing: { title: "", format: "", description: "" },
+        })),
+      };
+      const progress = (incorrectValidations: number) => ({
+        queens: [0, 2, 5, 14, 20],
+        placedQueens: 5,
+        completedRows: 4,
+        completedColumns: 4,
+        completedRegions: 4,
+        conflictingQueens: 2,
+        solved: false,
+        incorrectValidations,
+        maxIncorrectValidations: 3,
+      });
+      const { engine, calls } = setup(challenge);
+      calls.prepare.mockResolvedValue({
+        ...prepared("level-1", 2, {
+          question: "Coloca cinco coronas",
+          grid: { rows: 5, columns: 5 },
+          regions: [0, 0, 0, 1, 1, 2, 0, 1, 1, 1, 2, 2, 1, 3, 1, 2, 3, 3, 3, 3, 2, 4, 3, 3, 3],
+          prefilledQueens: [2],
+        }),
+        presentedAt: null,
+        deadlineAt: null,
+        progress: { kind: "queens", ...progress(failures - 1) },
+      });
+      calls.activate.mockResolvedValue(prepared("level-1", 3));
+      calls.queensDraft.mockResolvedValue({ lockVersion: 4, ...progress(failures - 1) });
+      calls.queensValidation.mockResolvedValue({
+        lockVersion: 5,
+        terminal: false,
+        correct: false,
+        ...progress(failures),
+      });
+      await play(engine);
+      await engine.lifecycle.activate();
+      const deadline = engine.getSnapshot().questionDeadlineAt;
+
+      await engine.interactions.validateQueensBoard([0, 2, 5, 14, 20]);
+      await vi.advanceTimersByTimeAsync(2000);
+
+      expect(engine.getSnapshot()).toMatchObject({
+        phase: "playing",
+        questionIndex: 0,
+        questionDeadlineAt: deadline,
+        locked: false,
+        pendingCommand: null,
+        results: [],
+        question: { progress: { incorrectValidations: failures, maxIncorrectValidations: 3 } },
+      });
+      expect(calls.prepare).toHaveBeenCalledTimes(1);
+      expect(calls.complete).not.toHaveBeenCalled();
+    },
+  );
   it("keeps Pyramid preparation and activation separate and starts the clock at activation", async () => {
     const challenge: ServerPyramidChallenge = {
       ...base,
@@ -1464,7 +1542,7 @@ describe("bounded gameplay retries", () => {
       status: "abandoned",
       terminalReason: "permission_revoked",
       score: 0,
-      answers: [accepted(4)],
+      answers: [{ ...accepted(4), challengeItemId: "a", answer: "A" }],
     });
     await play(engine);
     calls.answer

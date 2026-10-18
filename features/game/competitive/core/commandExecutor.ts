@@ -1,25 +1,28 @@
-import type { CompetitiveAttemptClient } from "../attemptClient";
-import { createCompetitiveIdempotencyKey, type CompetitiveJsonObject } from "../transport";
+import type { GameSessionProvider } from "@/application/ports/game-session";
+import type { GameSessionCommandInputs } from "@/types/contracts/game-session";
+import type { GameSessionResult } from "@/types/gameplay/authoritative-session";
+import { createSessionCommandId } from "../../session/commandId";
 import type { Attempt, Operation, PendingCommand } from "./sessionReducer";
 
 export class PendingCommandBlocked extends Error {}
 export type CommandData<K extends Operation> = Omit<
-  Parameters<CompetitiveAttemptClient[K]>[0],
-  "attemptId" | "lockVersion" | "idempotencyKey"
+  GameSessionCommandInputs[K],
+  "sessionId" | "revision" | "idempotencyKey"
 >;
 /** One queue for every mutation of an attempt, including draft persistence. */
 export class CommandExecutor {
   private queue: Promise<unknown> = Promise.resolve();
   private scheduled = new Set<Operation>();
   constructor(
-    private readonly client: CompetitiveAttemptClient,
+    private readonly provider: GameSessionProvider,
     private readonly attempt: () => Attempt | null,
     private readonly pending: () => PendingCommand | null,
+    private readonly signal?: AbortSignal,
   ) {}
   execute<K extends Operation>(
     operation: K,
     data: CommandData<K>,
-    send: (command: PendingCommand, invoke: () => Promise<CompetitiveJsonObject>) => Promise<void>,
+    send: (command: PendingCommand, invoke: () => Promise<GameSessionResult>) => Promise<void>,
   ) {
     if (operation !== "queensDraft" && this.scheduled.has(operation))
       return Promise.reject(new PendingCommandBlocked());
@@ -38,20 +41,20 @@ export class CommandExecutor {
       const input = {
         ...originalData,
         ...(attempt && operation !== "start" && operation !== "prepareSession"
-          ? { attemptId: attempt.id, lockVersion: attempt.lockVersion }
+          ? { sessionId: attempt.id, revision: attempt.revision }
           : {}),
-        ...(operation !== "recover" && operation !== "abandon"
-          ? { idempotencyKey: createCompetitiveIdempotencyKey(operation) }
+        ...(operation !== "recover" && operation !== "abandon" && operation !== "prepareSession"
+          ? { idempotencyKey: createSessionCommandId(operation) }
           : {}),
-      } as Parameters<CompetitiveAttemptClient[K]>[0];
+      } as GameSessionCommandInputs[K];
       const command = { operation, input } as PendingCommand;
       await send(command, () => this.invoke(command));
     }).finally(() => this.scheduled.delete(operation));
   }
   executeInput<K extends Operation>(
     operation: K,
-    input: Parameters<CompetitiveAttemptClient[K]>[0],
-    send: (command: PendingCommand, invoke: () => Promise<CompetitiveJsonObject>) => Promise<void>,
+    input: GameSessionCommandInputs[K],
+    send: (command: PendingCommand, invoke: () => Promise<GameSessionResult>) => Promise<void>,
   ) {
     if (operation !== "queensDraft" && this.scheduled.has(operation))
       return Promise.reject(new PendingCommandBlocked());
@@ -65,16 +68,12 @@ export class CommandExecutor {
   }
   retry(
     command: PendingCommand,
-    send: (command: PendingCommand, invoke: () => Promise<CompetitiveJsonObject>) => Promise<void>,
+    send: (command: PendingCommand, invoke: () => Promise<GameSessionResult>) => Promise<void>,
   ) {
     return this.enqueue(() => send(command, () => this.invoke(command)));
   }
-  private invoke(command: PendingCommand): Promise<CompetitiveJsonObject> {
-    // The discriminated command preserves the client method's original wire input.
-    const method = this.client[command.operation] as (
-      input: PendingCommand["input"],
-    ) => Promise<CompetitiveJsonObject>;
-    return method(command.input);
+  private invoke(command: PendingCommand): Promise<GameSessionResult> {
+    return this.provider.execute(command, { signal: this.signal });
   }
   private enqueue(work: () => Promise<void>) {
     const next = this.queue.then(work);

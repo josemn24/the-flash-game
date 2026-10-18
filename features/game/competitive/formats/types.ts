@@ -6,7 +6,7 @@ import type {
   PendingCommand,
   FeedbackChannel,
 } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 export type FormatOutcome =
   | {
       kind: "progress";
@@ -37,7 +37,7 @@ export type InteractionSpec = {
     operation: K;
     data: Omit<
       Extract<PendingCommand, { operation: K }>["input"],
-      "attemptId" | "lockVersion" | "idempotencyKey"
+      "sessionId" | "revision" | "idempotencyKey"
     >;
     channel?: FeedbackChannel;
   };
@@ -45,7 +45,7 @@ export type InteractionSpec = {
 export function evaluated(
   question: SessionQuestion,
   answer: AnswerValue | null,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): FormatOutcome {
   const status = response.status;
   if (

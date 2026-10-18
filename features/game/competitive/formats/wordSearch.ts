@@ -1,11 +1,11 @@
 import type { SessionQuestion } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { evaluated, strings, type FormatOutcome } from "./types";
 export function wordSearchOutcome(
   question: SessionQuestion,
   startCell: number,
   endCell: number,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): FormatOutcome {
   if (question.type !== "word-search") throw new Error("unexpected_question_format");
   const foundSelections = Array.isArray(response.foundSelections)

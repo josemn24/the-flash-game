@@ -30,6 +30,10 @@ contenido Flash/Supervivencia y programa su calendario local.
   diagnóstico opcional y comparación local del camino competitivo.
 - [`competitive-format-contracts.md`](competitive-format-contracts.md): representaciones,
   validación y registros por capa de los formatos competitivos.
+- [`pyramid-session-contract.md`](pyramid-session-contract.md): contrato funcional de Pirámide,
+  matriz de referencia y frontera prevista para sus proveedores local y remoto; fase 0.
+- [`game-session-providers.md`](game-session-providers.md): contrato de sesión, composición
+  remota y regresiones de los seis modos; fase 1 de la unificación.
 - [`avatar-confirmation-recovery.md`](avatar-confirmation-recovery.md): confirmación recuperable,
   autorización transaccional de limpieza y validación de avatares.
 - [`glosario.md`](glosario.md): vocabulario del producto.

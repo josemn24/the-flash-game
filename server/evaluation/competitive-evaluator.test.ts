@@ -231,6 +231,29 @@ describe("competitive Pyramid Queens evaluation", () => {
       ).toMatchObject({ status: "correct", points: 100 - failures * 5 });
     },
   );
+  it.each([
+    { failures: 0, points: 14 },
+    { failures: 1, points: 13 },
+    { failures: 2, points: 12 },
+  ])("PYR-05: uses the level weight after $failures failed validations", ({ failures, points }) => {
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(
+        queensContext({
+          itemPoints: 14,
+          answer: { queens: solution, marks: [] },
+          incorrectAttempts: failures,
+          incorrectValidations: failures,
+        }),
+      ),
+    ).toMatchObject({ status: "correct", points });
+  });
+  it("PYR-08: treats an interrupted level with no accepted answer as unanswered", () => {
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(
+        queensContext({ answer: null, timedOut: false, incorrectAttempts: 2 }),
+      ),
+    ).toEqual({ status: "unanswered", points: 0 });
+  });
   it.each(["flash", "survival", "narrative"] as const)(
     "leaves %s Queens scoring unchanged",
     (mode) => {

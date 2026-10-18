@@ -4,7 +4,7 @@ import {
 } from "@/features/question-formats/capabilities";
 import type { PendingCommand, SessionQuestion } from "../core/sessionReducer";
 import type { CompetitiveChallenge } from "../modes/policy";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { logicCodeOutcome } from "./logicCode";
 import { miniWordleOutcome } from "./miniWordle";
 import { progressiveCluesOutcome } from "./progressiveClues";
@@ -18,7 +18,7 @@ type InteractionAdapter = {
   normalize: (
     question: SessionQuestion,
     command: PendingCommand,
-    response: CompetitiveJsonObject,
+    response: AuthoritativeSessionUpdate,
   ) => FormatOutcome;
 };
 const genericAdapter: InteractionAdapter = {
@@ -149,7 +149,7 @@ const adapterByOperation: Partial<Record<PendingCommand["operation"], Competitiv
 export function normalizeInteraction(
   question: SessionQuestion,
   command: PendingCommand,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): FormatOutcome {
   const key = adapterByOperation[command.operation];
   if (!key) throw new Error("unexpected_interaction_command");
