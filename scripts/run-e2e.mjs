@@ -127,7 +127,12 @@ export async function runSelectedE2E(args) {
       }
       const scenarioEnv = {
         ...(scenario === "e01" ? { FLASH_RATE_LIMIT_BURST: "30" } : {}),
-        ...(specs.includes("e2e/flash-session-conformance.spec.ts")
+        ...(specs.some((spec) =>
+          [
+            "e2e/flash-session-conformance.spec.ts",
+            "e2e/survival-session-conformance.spec.ts",
+          ].includes(spec),
+        )
           ? { FLASH_RATE_LIMIT_BURST: "10000" }
           : {}),
         PLAYWRIGHT_JSON_OUTPUT_FILE: `output/playwright/competitive-${scenario}.json`,

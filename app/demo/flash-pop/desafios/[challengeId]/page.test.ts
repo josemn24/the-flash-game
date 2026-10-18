@@ -3,19 +3,25 @@ import { describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getLocalPyramidDemoDefinition: vi.fn(),
   getLocalFlashDemoDefinition: vi.fn(),
+  getLocalSurvivalDemoDefinition: vi.fn(),
   notFound: vi.fn(() => {
     throw new Error("NOT_FOUND");
   }),
   LocalPyramidGameApp: vi.fn(() => null),
   LocalFlashGameApp: vi.fn(() => null),
+  LocalSurvivalGameApp: vi.fn(() => null),
 }));
 
 vi.mock("@/server/demo-data-access", () => ({
   getLocalPyramidDemoDefinition: mocks.getLocalPyramidDemoDefinition,
   getLocalFlashDemoDefinition: mocks.getLocalFlashDemoDefinition,
+  getLocalSurvivalDemoDefinition: mocks.getLocalSurvivalDemoDefinition,
 }));
 vi.mock("@/components/game/shells/LocalFlashGameApp.client", () => ({
   LocalFlashGameApp: mocks.LocalFlashGameApp,
+}));
+vi.mock("@/components/game/shells/LocalSurvivalGameApp.client", () => ({
+  LocalSurvivalGameApp: mocks.LocalSurvivalGameApp,
 }));
 vi.mock("@/components/game/shells/LocalPyramidGameApp.client", () => ({
   LocalPyramidGameApp: mocks.LocalPyramidGameApp,
@@ -29,8 +35,9 @@ import { generateMetadata } from "./page";
 import PyramidDemoPage from "./page";
 import { LocalPyramidGameApp } from "@/components/game/shells/LocalPyramidGameApp.client";
 import { LocalFlashGameApp } from "@/components/game/shells/LocalFlashGameApp.client";
+import { LocalSurvivalGameApp } from "@/components/game/shells/LocalSurvivalGameApp.client";
 
-describe("Flash Pop Pyramid demo route", () => {
+describe("Flash Pop local demo route", () => {
   it("resolves preview aliases dynamically", () => {
     expect(dynamic).toBe("force-dynamic");
   });
@@ -56,9 +63,25 @@ describe("Flash Pop Pyramid demo route", () => {
     expect(page).toMatchObject({ type: LocalFlashGameApp, props: { definition } });
   });
 
+  it("renders the shared Survival rehearsal for its approved challenge id", async () => {
+    const definition = {
+      challenge: { mode: "survival", id: "tabarnia-challenge-03", lives: 3 },
+      levels: Array.from({ length: 20 }),
+    };
+    mocks.getLocalPyramidDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalFlashDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalSurvivalDemoDefinition.mockResolvedValue(definition);
+
+    const page = await PyramidDemoPage({
+      params: Promise.resolve({ challengeId: "tabarnia-challenge-03" }),
+    });
+    expect(page).toMatchObject({ type: LocalSurvivalGameApp, props: { definition } });
+  });
+
   it("returns 404 for demo identifiers outside the explicit composition allowlist", async () => {
     mocks.getLocalPyramidDemoDefinition.mockResolvedValue(null);
     mocks.getLocalFlashDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalSurvivalDemoDefinition.mockResolvedValue(null);
     await expect(
       PyramidDemoPage({ params: Promise.resolve({ challengeId: "tabarnia-challenge-06" }) }),
     ).rejects.toThrow("NOT_FOUND");

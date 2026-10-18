@@ -7,8 +7,13 @@ import type {
   LocalFlashDefinition,
   LocalPyramidDefinition,
   LocalQuestionLevel,
+  LocalSurvivalDefinition,
 } from "@/types/gameplay/local-pyramid";
-import type { ServerFlashQuestion, ServerPyramidChallenge } from "@/types/gameplay/challenge";
+import type {
+  ServerFlashQuestion,
+  ServerPyramidChallenge,
+  ServerSurvivalChallenge,
+} from "@/types/gameplay/challenge";
 
 /** Canonical mock composition only; competitive routes never select or import this adapter. */
 export function createMockLocalPyramidDefinition(
@@ -103,10 +108,63 @@ export function createMockLocalFlashDefinition(
   };
 }
 
+export function createMockLocalSurvivalDefinition(
+  publicationId: string,
+  store: DomainStore = mockDomainStore,
+): LocalSurvivalDefinition {
+  const publication = store.scheduledChallenges.find((row) => row.id === publicationId);
+  const version = store.challengeVersions.find((row) => row.id === publication?.challengeVersionId);
+  if (!publication || !version || version.mode !== "survival" || version.status !== "published")
+    throw new Error("mock_survival_not_found");
+  const items = store.challengeItems
+    .filter((row) => row.challengeVersionId === version.id)
+    .sort((a, b) => a.position - b.position);
+  const levels = items.map((item) => localQuestionLevel(item, store, "survival"));
+  const lives = (version.modeConfig as Record<string, unknown>).lives;
+  if (!Number.isSafeInteger(lives) || Number(lives) < 1)
+    throw new Error("invalid_mock_survival_lives");
+  const slots = items.map((item, index) => {
+    const question = levels[index]!.publicQuestion;
+    return {
+      id: item.id,
+      position: item.position,
+      questionType: question.type as ServerFlashQuestion["type"],
+      payloadSchemaVersion: levels[index]!.payloadSchemaVersion,
+      timeLimitMs: question.timeLimitMs,
+      points: item.points,
+    };
+  });
+  return {
+    challenge: {
+      id: publication.id,
+      definitionId: version.challengeDefinitionId,
+      number: publication.number,
+      title: version.title,
+      subtitle: version.subtitle,
+      description: version.description,
+      mode: "survival",
+      lives: Number(lives),
+      maxScore: slots.reduce((sum, slot) => sum + slot.points, 0),
+      slots,
+    } satisfies ServerSurvivalChallenge,
+    levels,
+  };
+}
+
 /** Canonical fixture for the date-independent local competitive Flash rehearsal. */
 export function createMockFlashPopFlashDemoDefinition(): LocalFlashDefinition {
   const routeId = "tabarnia-flash-01" as const;
   const definition = createMockLocalFlashDefinition(scheduledChallengeRouteAliases[routeId]);
+  return {
+    ...definition,
+    challenge: { ...definition.challenge, id: routeId },
+  };
+}
+
+/** Canonical fixture for the date-independent local competitive Survival rehearsal. */
+export function createMockFlashPopSurvivalDemoDefinition(): LocalSurvivalDefinition {
+  const routeId = "tabarnia-challenge-03" as const;
+  const definition = createMockLocalSurvivalDefinition(scheduledChallengeRouteAliases[routeId]);
   return {
     ...definition,
     challenge: { ...definition.challenge, id: routeId },
@@ -131,7 +189,7 @@ export function createMockFlashPopPyramidDemoDefinition(): LocalPyramidDefinitio
 function localQuestionLevel(
   item: DomainStore["challengeItems"][number],
   store: DomainStore,
-  mode: "flash" | "pyramid",
+  mode: "flash" | "pyramid" | "survival",
 ): LocalQuestionLevel {
   const raw = store.questionVersions.find((row) => row.id === item.questionVersionId);
   if (!raw || !isCompetitiveQuestionType(raw.type, mode) || raw.status !== "published")

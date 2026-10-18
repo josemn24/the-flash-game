@@ -9,7 +9,11 @@ import {
   isDesignSystemPath,
   isKnownDesignSystemPath,
 } from "@/features/design-system/access";
-import { FLASH_POP_CHALLENGE_ID, FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
+import {
+  FLASH_POP_CHALLENGE_ID,
+  FLASH_POP_FLASH_PILOT_ID,
+  FLASH_POP_SURVIVAL_PILOT_ID,
+} from "@/features/flash-pop/demoSocial";
 
 const pyramidDemoPrefix = "/demo/flash-pop/desafios/";
 
@@ -17,7 +21,13 @@ function localCompetitiveDemoResponse(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (!/^\/demo\/flash-pop\/desafios\/[^/]+\/?$/.test(pathname)) return null;
   const challengeId = pathname.slice(pyramidDemoPrefix.length).replace(/\/$/, "");
-  if (![FLASH_POP_CHALLENGE_ID, FLASH_POP_FLASH_PILOT_ID].includes(challengeId)) {
+  if (
+    ![
+      FLASH_POP_CHALLENGE_ID,
+      FLASH_POP_FLASH_PILOT_ID,
+      FLASH_POP_SURVIVAL_PILOT_ID,
+    ].includes(challengeId)
+  ) {
     return new NextResponse("Not Found", {
       status: 404,
       headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" },

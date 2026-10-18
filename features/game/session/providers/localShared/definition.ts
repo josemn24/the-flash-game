@@ -6,6 +6,7 @@ import type {
   LocalFlashDefinition,
   LocalPyramidDefinition,
   LocalQuestionLevel,
+  LocalSurvivalDefinition,
 } from "@/types/gameplay/local-pyramid";
 import type { ResolvedQuestion } from "@/types/gameplay/scoring";
 import type { JsonValue, DurationMs } from "@/types/domain/values";
@@ -74,23 +75,41 @@ export function compileFlashDefinition(input: LocalFlashDefinition): {
   definition: LocalFlashDefinition;
   levels: CompiledLevel[];
 } {
+  return compileSequentialDefinition(input, "flash");
+}
+
+export function compileSurvivalDefinition(input: LocalSurvivalDefinition): {
+  definition: LocalSurvivalDefinition;
+  levels: CompiledLevel[];
+} {
+  return compileSequentialDefinition(input, "survival");
+}
+
+function compileSequentialDefinition<T extends LocalFlashDefinition | LocalSurvivalDefinition>(
+  input: T,
+  mode: "flash" | "survival",
+): { definition: T; levels: CompiledLevel[] } {
   const definition = structuredClone(input);
   const { challenge, levels } = definition;
   if (
-    challenge.mode !== "flash" ||
+    challenge.mode !== mode ||
     !challenge.id ||
     !challenge.slots.length ||
     challenge.slots.length !== levels.length ||
     challenge.maxScore !== challenge.slots.reduce((sum, slot) => sum + slot.points, 0) ||
     new Set(challenge.slots.map((slot) => slot.id)).size !== challenge.slots.length ||
-    new Set(levels.map((level) => level.challengeItemId)).size !== levels.length
+    new Set(levels.map((level) => level.challengeItemId)).size !== levels.length ||
+    (challenge.mode === "survival" &&
+      (!Number.isSafeInteger(challenge.lives) ||
+        challenge.lives < 1 ||
+        challenge.lives > challenge.slots.length))
   )
-    throw new Error("invalid_local_flash_definition");
+    throw new Error(`invalid_local_${mode}_definition`);
   return { definition, levels: compileLocalQuestions(definition) };
 }
 
 function compileLocalQuestions(
-  input: LocalPyramidDefinition | LocalFlashDefinition,
+  input: LocalPyramidDefinition | LocalFlashDefinition | LocalSurvivalDefinition,
 ): CompiledLevel[] {
   const { challenge, levels } = input;
   const mode = challenge.mode;

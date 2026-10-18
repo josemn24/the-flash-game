@@ -1,11 +1,12 @@
-# Autoridades locales de Flash y Pirámide
+# Autoridades locales de Flash, Pirámide y Supervivencia
 
-Estado: ensayo local de Pirámide y Flash; Flash comparte vista y adaptador con competición, 2026-10-18.
+Estado: ensayos locales de Flash, Pirámide y Supervivencia; Flash y Supervivencia comparten sus
+vistas y adaptadores de sesión con competición.
 
-Ambas autoridades locales implementan el mismo puerto que consume el motor competitivo. La
+Las autoridades locales implementan el mismo puerto que consume el motor competitivo. La
 composición de producción conserva el proveedor remoto; las composiciones bajo `/demo/` crean
-proveedores locales en memoria. Flash comparte además la vista competitiva y los controles de
-pregunta entre ambas autoridades. El [contrato funcional](pyramid-session-contract.md) y el
+proveedores locales en memoria. Flash y Supervivencia comparten sus vistas competitivas y controles
+de pregunta entre ambas autoridades. El [contrato funcional](pyramid-session-contract.md) y el
 [puerto de sesión](game-session-providers.md) siguen siendo las referencias de comportamiento.
 
 ## Composición
@@ -42,14 +43,16 @@ permanecen en los controles actuales.
 | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | [`local-pyramid.ts`](../../types/gameplay/local-pyramid.ts)                                                                            | Entrada privada y canónica de composición.                                                                   |
 | [`localPyramid.ts`](../../features/game/session/providers/localPyramid.ts)                                                             | Autoridad en memoria específica de progresión, puntuación y cierre de Pirámide.                              |
-| [`localFlash.ts`](../../features/game/session/providers/localFlash.ts)                                                                 | Autoridad en memoria específica de secuencia, puntuación y cierre de Flash.                                  |
-| [`runtime.ts`](../../features/game/session/providers/localShared/runtime.ts)                                                           | Cola de comandos serializada e idempotencia compartida por ambas autoridades.                                |
-| [`definition.ts`](../../features/game/session/providers/localShared/definition.ts)                                                     | Validación, resolución privada y construcción de payloads públicos para Flash y Pirámide.                    |
+| [`localFlash.ts`](../../features/game/session/providers/localFlash.ts), [`localSurvival.ts`](../../features/game/session/providers/localSurvival.ts) | Fachadas locales tipadas que componen la autoridad secuencial compartida.                           |
+| [`sequentialProvider.ts`](../../features/game/session/providers/localShared/sequentialProvider.ts)                                     | Cola, evaluación y sesión lineal compartidas por Flash y Supervivencia; cada política conserva sus reglas.   |
+| [`runtime.ts`](../../features/game/session/providers/localShared/runtime.ts)                                                           | Cola de comandos serializada e idempotencia compartida.                                                     |
+| [`definition.ts`](../../features/game/session/providers/localShared/definition.ts)                                                     | Validación, resolución privada y payloads públicos para Flash, Pirámide y Supervivencia.                     |
 | [`formats.ts`](../../features/game/session/providers/localShared/formats.ts)                                                           | Transiciones puras de los protocolos de interacción especiales.                                              |
 | [`resolution/`](../../lib/scoringCore/resolution/registry.ts)                                                                          | Los 21 resolutores competitivos puros, compartidos con las fachadas del servidor.                            |
 | [`competitiveReceipt.ts`](../../lib/scoringCore/competitiveReceipt.ts), [`pyramid.ts`](../../lib/scoringCore/pyramid.ts)               | Evaluación de recepciones y consecuencias específicas de Pirámide.                                           |
 | [`pyramidProgress.ts`](../../lib/gameplay/pyramidProgress.ts)                                                                          | Progreso compartido: solo `correct` supera un nivel; los demás resultados aportan cero y cierran el ascenso. |
-| [`localPyramidDefinition.ts`](../../infrastructure/mock/localPyramidDefinition.ts)                                                     | Composición de publicaciones mock canónicas, fuera del proveedor y sin contratos legacy de práctica.         |
+| [`survivalProgress.ts`](../../lib/gameplay/survivalProgress.ts)                                                                        | Deriva vidas, pruebas alcanzadas y eliminación a partir de resultados evaluados.                             |
+| [`localPyramidDefinition.ts`](../../infrastructure/mock/localPyramidDefinition.ts)                                                     | Composición de publicaciones mock canónicas, fuera de los proveedores y de la práctica legacy.               |
 | [`corpus.ts`](../../test-utils/game-session-conformance/corpus.ts), [`driver.ts`](../../test-utils/game-session-conformance/driver.ts) | Casos comunes, soluciones, errores y herramientas de reloj/entrega.                                          |
 | [`pyramid-session-conformance.spec.ts`](../../e2e/pyramid-session-conformance.spec.ts)                                                 | Comparación del proveedor local con el adaptador remoto real y del motor con ambas autoridades.              |
 
@@ -117,6 +120,18 @@ otra instancia y una recarga completa inicia otro ensayo.
 El ensayo canónico está disponible en
 `/demo/flash-pop/desafios/tabarnia-flash-01`. La práctica didáctica de
 `/demo/flash-pop/flash/tabarnia-flash-01` permanece separada.
+
+### Supervivencia
+
+Supervivencia comparte el proveedor secuencial de Flash y conserva su progresión propia mediante
+`survivalPolicy` y `deriveSurvivalProgress`. Un resultado incorrecto o sin respuesta consume una
+vida; Queens también consume vida si hubo validaciones incorrectas. El intento termina al agotarse
+las vidas o al alcanzar todas las preguntas. La revisión local contiene las preguntas alcanzadas y
+la puntuación usa los mismos resolutores competitivos.
+
+El ensayo canónico de 20 retos y tres vidas está disponible en
+`/demo/flash-pop/desafios/tabarnia-challenge-03`. La definición se limita al identificador de demo,
+contiene soluciones y se entrega al proveedor local; no se selecciona desde las rutas competitivas.
 
 ## Verificación reproducible
 

@@ -250,6 +250,22 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
             </ButtonLink>
           </Card>
 
+          <Card as="section" className={styles.classicPreviewCard}>
+            <p className={styles.eyebrow}>Ensayo local</p>
+            <h2>Supervivencia</h2>
+            <p className={styles.challengeCopy}>
+              Prueba el recorrido de España con tres vidas y el mismo flujo competitivo.
+            </p>
+            <ButtonLink
+              href="/demo/flash-pop/desafios/tabarnia-challenge-03"
+              variant="secondary"
+              fullWidth
+              trailingIcon={<ArrowIcon />}
+            >
+              Ensayar Supervivencia
+            </ButtonLink>
+          </Card>
+
           <Card as="section" className={styles.activitySection}>
             <div className={styles.cardHeading}>
               <div>

@@ -320,7 +320,9 @@ for (const file of productionFiles) {
   const isMockAdapter = isMockInfrastructure(relative);
   const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
   const isLocalSessionProvider =
-    /^features\/game\/session\/providers\/local(?:Pyramid|Flash)(?:\/|\.ts$)/.test(relative);
+    /^features\/game\/session\/providers\/local(?:Pyramid|Flash|Survival)(?:\/|\.ts$)/.test(
+      relative,
+    );
   const isLocalSessionShared = relative.startsWith(
     `features${path.sep}game${path.sep}session${path.sep}providers${path.sep}localShared${path.sep}`,
   );
@@ -328,6 +330,7 @@ for (const file of productionFiles) {
   const isLocalSessionDemoComposition = [
     "components/game/shells/LocalPyramidGameApp.client.tsx",
     "components/game/shells/LocalFlashGameApp.client.tsx",
+    "components/game/shells/LocalSurvivalGameApp.client.tsx",
   ].includes(relative);
   const isPureResolution = relative.startsWith("lib/scoringCore/resolution/");
 

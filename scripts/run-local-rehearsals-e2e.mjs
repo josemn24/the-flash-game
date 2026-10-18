@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { readFile, writeFile } from "node:fs/promises";
 
-const distDir = ".next/local-pyramid-e2e";
+const distDir = ".next/local-rehearsals-e2e";
 const env = {
   ...process.env,
   FLASH_NEXT_DIST_DIR: distDir,
@@ -29,7 +29,7 @@ try {
     "playwright",
     "test",
     "--config",
-    "playwright.local-pyramid.config.ts",
+    "playwright.local-rehearsals.config.ts",
     ...process.argv.slice(2),
   ]);
 } catch (error) {

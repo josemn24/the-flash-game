@@ -96,8 +96,8 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
         surface: {
           src: "/visuals/spain-survival/canary_islands_map.svg",
           alt: "Mapa mudo de las Islas Canarias",
-          width: 1474.6973,
-          height: 655.01733,
+          width: 1475,
+          height: 655,
           fit: "contain",
         },
         targetLabel: "Santa Cruz de Tenerife",

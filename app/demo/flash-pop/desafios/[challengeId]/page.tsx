@@ -2,11 +2,17 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LocalFlashGameApp } from "@/components/game/shells/LocalFlashGameApp.client";
 import { LocalPyramidGameApp } from "@/components/game/shells/LocalPyramidGameApp.client";
+import { LocalSurvivalGameApp } from "@/components/game/shells/LocalSurvivalGameApp.client";
 import {
   getLocalFlashDemoDefinition,
   getLocalPyramidDemoDefinition,
+  getLocalSurvivalDemoDefinition,
 } from "@/server/demo-data-access";
-import type { LocalFlashDefinition, LocalPyramidDefinition } from "@/types/gameplay/local-pyramid";
+import type {
+  LocalFlashDefinition,
+  LocalPyramidDefinition,
+  LocalSurvivalDefinition,
+} from "@/types/gameplay/local-pyramid";
 
 type Props = { params: Promise<{ challengeId: string }> };
 
@@ -15,14 +21,23 @@ export const dynamic = "force-dynamic";
 async function getLocalDefinition(challengeId: string) {
   return (
     (await getLocalPyramidDemoDefinition(challengeId)) ??
-    (await getLocalFlashDemoDefinition(challengeId))
+    (await getLocalFlashDemoDefinition(challengeId)) ??
+    (await getLocalSurvivalDemoDefinition(challengeId))
   );
 }
 
+type LocalDefinition = LocalPyramidDefinition | LocalFlashDefinition | LocalSurvivalDefinition;
+
 function isFlashDefinition(
-  definition: LocalPyramidDefinition | LocalFlashDefinition,
+  definition: LocalDefinition,
 ): definition is LocalFlashDefinition {
   return definition.challenge.mode === "flash";
+}
+
+function isSurvivalDefinition(
+  definition: LocalDefinition,
+): definition is LocalSurvivalDefinition {
+  return definition.challenge.mode === "survival";
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -43,6 +58,8 @@ export default async function FlashPopChallengePage({ params }: Props) {
   // This route is a mock rehearsal. Its fixture includes solutions by design.
   return isFlashDefinition(definition) ? (
     <LocalFlashGameApp definition={definition} />
+  ) : isSurvivalDefinition(definition) ? (
+    <LocalSurvivalGameApp definition={definition} />
   ) : (
     <LocalPyramidGameApp definition={definition} />
   );

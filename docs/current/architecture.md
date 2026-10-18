@@ -121,11 +121,10 @@ si no necesitan interacción.
 ### Sesiones competitivas en el navegador
 
 Las fachadas de modo se suscriben al mismo núcleo en `features/game/competitive/`. Flash usa
-`useFlashGameSession` para adaptar la sesión compartida a su vista y puede inyectar autoridad
-remota o local; Pirámide también comparte su presentación entre autoridades. Supervivencia
-conserva `useServerFlashSession`, y Narrativa y Alfabeto usan sus adaptadores específicos. Los
-seis modos mantienen sus políticas y progresiones competitivas; práctica conserva sus
-controladores propios.
+`useFlashGameSession` y Supervivencia `useSurvivalGameSession` para adaptar la sesión compartida a
+su vista y permitir inyectar autoridad remota o local; Pirámide también comparte su presentación
+entre autoridades. Narrativa y Alfabeto conservan sus adaptadores específicos. Los seis modos
+mantienen sus políticas y progresiones competitivas; práctica conserva sus controladores propios.
 
 ```text
 Pantalla → fachada del modo → useCompetitiveSession

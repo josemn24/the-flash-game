@@ -112,10 +112,9 @@ Refresh durante la edición; sus cinco casos pasan con el código inmóvil.
 El motor conserva su nombre y ubicación bajo `competitive/` para evitar una migración de
 importaciones adicional. La nueva frontera es el puerto inyectado, no un motor paralelo.
 
-## Frontera siguiente
+## Extensión de Supervivencia
 
-La siguiente extensión puede aplicar la presentación compartida por modo a Supervivencia. La
-entrega vigente ya implementa autoridades locales para Pirámide y Flash sobre este puerto; sus
-reglas de progresión y cierre permanecen específicas de cada modo.
-La fase de presentación podrá consumir ese proveedor desde el mismo controlador y retirar la
-duplicación de UI. Las rutas competitivas siguen seleccionando explícitamente el remoto.
+Supervivencia usa ahora el mismo puerto y motor con autoridad remota o local. Su vista compartida
+conserva vidas, eliminación, feedback, resultados y revisión; la política de modo decide cuándo
+terminar el recorrido. La composición productiva sigue seleccionando explícitamente el proveedor
+remoto, y las rutas `/demo/` seleccionan el local solo para fixtures aprobados.
