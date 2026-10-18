@@ -23,3 +23,8 @@ export const getLocalFlashDemoDefinition = cache(async (challengeId: string) =>
 export const getLocalSurvivalDemoDefinition = cache(async (challengeId: string) =>
   demoReadServices.localSurvival.getDefinition(challengeId),
 );
+
+/** Local Time Trial fixtures for Queens and Connect Pairs, independent of publication dates. */
+export const getLocalTimeTrialDemoDefinition = cache(async (challengeId: string) =>
+  demoReadServices.localTimeTrial.getDefinition(challengeId),
+);

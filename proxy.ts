@@ -13,12 +13,20 @@ import {
   FLASH_POP_CHALLENGE_ID,
   FLASH_POP_FLASH_PILOT_ID,
   FLASH_POP_SURVIVAL_PILOT_ID,
+  FLASH_POP_TIME_TRIAL_CONNECT_PAIRS_ID,
+  FLASH_POP_TIME_TRIAL_QUEENS_ID,
 } from "@/features/flash-pop/demoSocial";
 
 const pyramidDemoPrefix = "/demo/flash-pop/desafios/";
 
 function localCompetitiveDemoResponse(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  if (pathname === "/demo/flash-pop" || pathname === "/demo/flash-pop/") {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.delete(AUTH_DEADLINE_HEADER);
+    requestHeaders.delete(AUTH_FAILURE_HEADER);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
   if (!/^\/demo\/flash-pop\/desafios\/[^/]+\/?$/.test(pathname)) return null;
   const challengeId = pathname.slice(pyramidDemoPrefix.length).replace(/\/$/, "");
   if (
@@ -26,6 +34,8 @@ function localCompetitiveDemoResponse(request: NextRequest) {
       FLASH_POP_CHALLENGE_ID,
       FLASH_POP_FLASH_PILOT_ID,
       FLASH_POP_SURVIVAL_PILOT_ID,
+      FLASH_POP_TIME_TRIAL_QUEENS_ID,
+      FLASH_POP_TIME_TRIAL_CONNECT_PAIRS_ID,
     ].includes(challengeId)
   ) {
     return new NextResponse("Not Found", {

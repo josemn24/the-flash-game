@@ -8,6 +8,7 @@ import type {
   LocalQuestionLevel,
   LocalSurvivalDefinition,
 } from "@/types/gameplay/local-pyramid";
+import type { LocalTimeTrialDefinition } from "@/types/gameplay/local-time-trial";
 import type { ResolvedQuestion } from "@/types/gameplay/scoring";
 import type { JsonValue, DurationMs } from "@/types/domain/values";
 
@@ -85,6 +86,56 @@ export function compileSurvivalDefinition(input: LocalSurvivalDefinition): {
   return compileSequentialDefinition(input, "survival");
 }
 
+export function compileTimeTrialDefinition(input: LocalTimeTrialDefinition): {
+  definition: LocalTimeTrialDefinition;
+  levels: CompiledLevel[];
+} {
+  const definition = structuredClone(input);
+  const { challenge, levels } = definition;
+  const slots = challenge.slots;
+  const format = slots[0]?.questionType;
+  if (
+    challenge.mode !== "time-trial" ||
+    !challenge.id ||
+    !Number.isSafeInteger(challenge.timeLimitMs) ||
+    challenge.timeLimitMs <= 0 ||
+    challenge.timeLimitMs % 1000 !== 0 ||
+    slots.length < 2 ||
+    slots.length > 20 ||
+    slots.length !== levels.length ||
+    challenge.maxScore !== 100 ||
+    slots.reduce((sum, slot) => sum + slot.points, 0) !== 100 ||
+    slots.some(
+      (slot) =>
+        !Number.isSafeInteger(slot.points) ||
+        slot.points <= 0 ||
+        !["queens", "connect-pairs"].includes(slot.questionType) ||
+        slot.questionType !== format ||
+        levels.find((level) => level.challengeItemId === slot.id)?.payloadSchemaVersion !==
+          slot.payloadSchemaVersion,
+    ) ||
+    new Set(slots.map((slot) => slot.id)).size !== slots.length ||
+    new Set(levels.map((level) => level.challengeItemId)).size !== levels.length ||
+    slots.some((slot, index) => levels[index]?.challengeItemId !== slot.id)
+  )
+    throw new Error("invalid_local_time_trial_definition");
+  const compiled = compileLocalQuestions(definition);
+  return {
+    definition,
+    levels: compiled.map((level) => {
+      const tags = level.publicPayload.tags;
+      const hasTags =
+        tags !== null &&
+        typeof tags === "object" &&
+        Object.values(tags).some((value) => Array.isArray(value) && value.length > 0);
+      if (hasTags) return level;
+      const publicPayload = { ...level.publicPayload };
+      delete publicPayload.tags;
+      return { ...level, publicPayload };
+    }),
+  };
+}
+
 function compileSequentialDefinition<T extends LocalFlashDefinition | LocalSurvivalDefinition>(
   input: T,
   mode: "flash" | "survival",
@@ -109,7 +160,11 @@ function compileSequentialDefinition<T extends LocalFlashDefinition | LocalSurvi
 }
 
 function compileLocalQuestions(
-  input: LocalPyramidDefinition | LocalFlashDefinition | LocalSurvivalDefinition,
+  input:
+    | LocalPyramidDefinition
+    | LocalFlashDefinition
+    | LocalSurvivalDefinition
+    | LocalTimeTrialDefinition,
 ): CompiledLevel[] {
   const { challenge, levels } = input;
   const mode = challenge.mode;

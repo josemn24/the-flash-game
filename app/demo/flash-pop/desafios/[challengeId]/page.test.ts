@@ -4,18 +4,21 @@ const mocks = vi.hoisted(() => ({
   getLocalPyramidDemoDefinition: vi.fn(),
   getLocalFlashDemoDefinition: vi.fn(),
   getLocalSurvivalDemoDefinition: vi.fn(),
+  getLocalTimeTrialDemoDefinition: vi.fn(),
   notFound: vi.fn(() => {
     throw new Error("NOT_FOUND");
   }),
   LocalPyramidGameApp: vi.fn(() => null),
   LocalFlashGameApp: vi.fn(() => null),
   LocalSurvivalGameApp: vi.fn(() => null),
+  LocalTimeTrialGameApp: vi.fn(() => null),
 }));
 
 vi.mock("@/server/demo-data-access", () => ({
   getLocalPyramidDemoDefinition: mocks.getLocalPyramidDemoDefinition,
   getLocalFlashDemoDefinition: mocks.getLocalFlashDemoDefinition,
   getLocalSurvivalDemoDefinition: mocks.getLocalSurvivalDemoDefinition,
+  getLocalTimeTrialDemoDefinition: mocks.getLocalTimeTrialDemoDefinition,
 }));
 vi.mock("@/components/game/shells/LocalFlashGameApp.client", () => ({
   LocalFlashGameApp: mocks.LocalFlashGameApp,
@@ -25,6 +28,9 @@ vi.mock("@/components/game/shells/LocalSurvivalGameApp.client", () => ({
 }));
 vi.mock("@/components/game/shells/LocalPyramidGameApp.client", () => ({
   LocalPyramidGameApp: mocks.LocalPyramidGameApp,
+}));
+vi.mock("@/components/game/shells/LocalTimeTrialGameApp.client", () => ({
+  LocalTimeTrialGameApp: mocks.LocalTimeTrialGameApp,
 }));
 vi.mock("next/navigation", () => ({
   notFound: mocks.notFound,
@@ -36,6 +42,7 @@ import PyramidDemoPage from "./page";
 import { LocalPyramidGameApp } from "@/components/game/shells/LocalPyramidGameApp.client";
 import { LocalFlashGameApp } from "@/components/game/shells/LocalFlashGameApp.client";
 import { LocalSurvivalGameApp } from "@/components/game/shells/LocalSurvivalGameApp.client";
+import { LocalTimeTrialGameApp } from "@/components/game/shells/LocalTimeTrialGameApp.client";
 
 describe("Flash Pop local demo route", () => {
   it("resolves preview aliases dynamically", () => {
@@ -78,10 +85,28 @@ describe("Flash Pop local demo route", () => {
     expect(page).toMatchObject({ type: LocalSurvivalGameApp, props: { definition } });
   });
 
+  it.each([
+    ["tabarnia-time-trial-queens-01", "queens"],
+    ["tabarnia-time-trial-connect-pairs-01", "connect-pairs"],
+  ] as const)("renders the local Time Trial rehearsal for %s", async (id, format) => {
+    const definition = {
+      challenge: { mode: "time-trial", id, slots: [{ questionType: format }] },
+      levels: [],
+    };
+    mocks.getLocalPyramidDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalFlashDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalSurvivalDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalTimeTrialDemoDefinition.mockResolvedValue(definition);
+
+    const page = await PyramidDemoPage({ params: Promise.resolve({ challengeId: id }) });
+    expect(page).toMatchObject({ type: LocalTimeTrialGameApp, props: { definition } });
+  });
+
   it("returns 404 for demo identifiers outside the explicit composition allowlist", async () => {
     mocks.getLocalPyramidDemoDefinition.mockResolvedValue(null);
     mocks.getLocalFlashDemoDefinition.mockResolvedValue(null);
     mocks.getLocalSurvivalDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalTimeTrialDemoDefinition.mockResolvedValue(null);
     await expect(
       PyramidDemoPage({ params: Promise.resolve({ challengeId: "tabarnia-challenge-06" }) }),
     ).rejects.toThrow("NOT_FOUND");

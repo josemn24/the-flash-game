@@ -131,6 +131,9 @@ export async function runSelectedE2E(args) {
           [
             "e2e/flash-session-conformance.spec.ts",
             "e2e/survival-session-conformance.spec.ts",
+            "e2e/time-trial-session-conformance.spec.ts",
+            "e2e/time-trial-connect-pairs-session-conformance.spec.ts",
+            "e2e/time-trial-timeout-conformance.spec.ts",
           ].includes(spec),
         )
           ? { FLASH_RATE_LIMIT_BURST: "10000" }

@@ -147,7 +147,7 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
                 {primaryChallenge.levels.length}
               </p>
             ) : null}
-            <div className={styles.socialRow}>
+            <div className={styles.timeTrialLinks}>
               <AvatarStack
                 items={players}
                 maxVisible={3}
@@ -264,6 +264,32 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
             >
               Ensayar Supervivencia
             </ButtonLink>
+          </Card>
+
+          <Card as="section" className={styles.classicPreviewCard}>
+            <p className={styles.eyebrow}>Ensayo local</p>
+            <h2>Contrarreloj</h2>
+            <p className={styles.challengeCopy}>
+              Resuelve Queens o Conectar parejas antes de que termine el reloj global.
+            </p>
+            <div className={styles.socialRow}>
+              <ButtonLink
+                href="/demo/flash-pop/desafios/tabarnia-time-trial-queens-01"
+                variant="secondary"
+                fullWidth
+                trailingIcon={<ArrowIcon />}
+              >
+                Ensayar Queens
+              </ButtonLink>
+              <ButtonLink
+                href="/demo/flash-pop/desafios/tabarnia-time-trial-connect-pairs-01"
+                variant="secondary"
+                fullWidth
+                trailingIcon={<ArrowIcon />}
+              >
+                Ensayar Conectar parejas
+              </ButtonLink>
+            </div>
           </Card>
 
           <Card as="section" className={styles.activitySection}>

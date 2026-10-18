@@ -38,3 +38,22 @@ describe("demo local Flash composition", () => {
     expect(createDemoReadServices().localFlash.getDefinition("tabarnia-flash-02")).toBeNull();
   });
 });
+
+describe("demo local Time Trial composition", () => {
+  it.each([
+    ["tabarnia-time-trial-queens-01", "queens", "Contrarreloj Queens"],
+    ["tabarnia-time-trial-connect-pairs-01", "connect-pairs", "Contrarreloj Conectar parejas"],
+  ] as const)("loads the approved %s fixture", (id, format, title) => {
+    const definition = createDemoReadServices().localTimeTrial.getDefinition(id);
+    expect(definition?.challenge).toMatchObject({ id, mode: "time-trial", title });
+    expect(definition?.challenge.slots).toHaveLength(2);
+    expect(definition?.challenge.slots.every((slot) => slot.questionType === format)).toBe(true);
+    expect(definition?.challenge.timeLimitMs).toBe(120_000);
+  });
+
+  it("does not compose other identifiers as local Time Trial rehearsals", () => {
+    expect(
+      createDemoReadServices().localTimeTrial.getDefinition("tabarnia-time-trial-queens-02"),
+    ).toBeNull();
+  });
+});

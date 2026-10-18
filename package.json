@@ -56,6 +56,7 @@
     "test:e2e:design-system:production": "node scripts/run-design-system-e2e.mjs --production",
     "test:e2e:local-pyramid": "node scripts/run-local-rehearsals-e2e.mjs e2e/local-pyramid-rehearsal.spec.ts",
     "test:e2e:local-survival": "node scripts/run-local-rehearsals-e2e.mjs e2e/local-survival-rehearsal.spec.ts",
+    "test:e2e:local-time-trial": "node scripts/run-local-rehearsals-e2e.mjs e2e/local-time-trial-rehearsal.spec.ts",
     "test:e2e:local-rehearsals": "node scripts/run-local-rehearsals-e2e.mjs"
   },
   "dependencies": {

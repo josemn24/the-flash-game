@@ -44,6 +44,7 @@ commit;
         room: { id: stableId("room"), slug: `${id}-main` },
         publicationId: stableId("publication"),
         challengeItemIds: questions.map((q, i) => stableId(`item-${i}`)),
+        globalTimeLimitMs,
       };
     },
   };

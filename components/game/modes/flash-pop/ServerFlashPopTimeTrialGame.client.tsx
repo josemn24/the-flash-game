@@ -11,6 +11,7 @@ import {
 } from "@/components/game/shared";
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
 import { useServerTimeTrialSession } from "@/features/game/useServerTimeTrialSession";
+import type { useTimeTrialGameSession } from "@/features/game/useServerTimeTrialSession";
 import { timeTrialFormat, TIME_TRIAL_END_LABELS } from "@/lib/timeTrial";
 import type {
   ServerTimeTrialChallenge,
@@ -30,6 +31,30 @@ export function ServerFlashPopTimeTrialGame({
   roomContext: GameRoomContext;
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
+  const session = useServerTimeTrialSession({ challenge, roomContext, terminalReview });
+  return (
+    <FlashPopTimeTrialGameView
+      challenge={challenge}
+      returnTo={roomContext.returnTo}
+      session={session}
+    />
+  );
+}
+
+type TimeTrialGameSession = ReturnType<typeof useTimeTrialGameSession>;
+
+/** Shared presentation for competitive and local Time Trial session providers. */
+export function FlashPopTimeTrialGameView({
+  challenge,
+  returnTo,
+  session,
+  onReplay,
+}: {
+  challenge: ServerTimeTrialChallenge;
+  returnTo: string;
+  session: TimeTrialGameSession;
+  onReplay?: () => void;
+}) {
   const format = timeTrialFormat(challenge.slots.map((slot) => slot.questionType));
   const formatName = format === "queens" ? "Queens" : "Conectar parejas";
   const rules =
@@ -40,7 +65,6 @@ export function ServerFlashPopTimeTrialGame({
           "No pueden tocarse, ni en diagonal",
         ]
       : ["Une los puntos iguales", "Cubre todo el tablero", "No cruces ni compartas casillas"];
-  const session = useServerTimeTrialSession({ challenge, roomContext, terminalReview });
   const solved = session.results.filter((result) => result.status === "correct").length;
   const running =
     session.deadlineAt !== null && session.phase !== "results" && session.phase !== "review";
@@ -105,7 +129,7 @@ export function ServerFlashPopTimeTrialGame({
             onStart={session.begin}
             canStart
             notice={session.startNotice}
-            returnTo={roomContext.returnTo}
+            returnTo={returnTo}
             transfer={
               session.transfer
                 ? {
@@ -206,9 +230,10 @@ export function ServerFlashPopTimeTrialGame({
                 { label: "Hasta el último acierto", value: timeLabel },
               ],
             }}
-            returnTo={roomContext.returnTo}
+            returnTo={returnTo}
             expired={session.attemptExpired}
             onReview={session.reviewChallenge ? session.showReview : undefined}
+            onReplay={onReplay}
           />
         ) : null}
         {session.phase === "review" && reviewChallenge ? (

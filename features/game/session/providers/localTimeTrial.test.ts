@@ -1,0 +1,151 @@
+import { describe, expect, it } from "vitest";
+import {
+  createMockFlashPopTimeTrialConnectPairsDemoDefinition,
+  createMockFlashPopTimeTrialQueensDemoDefinition,
+} from "@/infrastructure/mock/localTimeTrialDefinition";
+import {
+  confirmed,
+  manualClock,
+  SessionDriver,
+} from "@/test-utils/game-session-conformance/driver";
+import { createLocalTimeTrialSessionProvider } from "./localTimeTrial";
+import { compileTimeTrialDefinition } from "./localShared/definition";
+
+function setup(definition = createMockFlashPopTimeTrialQueensDemoDefinition()) {
+  const clock = manualClock();
+  const provider = createLocalTimeTrialSessionProvider({
+    definition,
+    clock,
+    createSessionId: () => "local-time-trial-session",
+  });
+  const driver = new SessionDriver(
+    provider,
+    definition.challenge.id,
+    definition.challenge.slots.map((slot) => slot.id),
+  );
+  return { definition, clock, provider, driver };
+}
+
+describe("local Time Trial authority", () => {
+  it.each([
+    createMockFlashPopTimeTrialQueensDemoDefinition(),
+    createMockFlashPopTimeTrialConnectPairsDemoDefinition(),
+  ])("validates a homogeneous local format and its private solutions", (definition) => {
+    const compiled = compileTimeTrialDefinition(definition);
+    expect(compiled.levels).toHaveLength(2);
+    expect(new Set(compiled.levels.map((level) => level.question.type)).size).toBe(1);
+    expect(compiled.definition.challenge.timeLimitMs).toBe(120_000);
+  });
+
+  it("keeps the global deadline across Queens boards and returns a private terminal review", async () => {
+    const { definition, clock, driver } = setup();
+    const compiled = compileTimeTrialDefinition(definition);
+    await driver.begin();
+    const first = await driver.issue("prepare", {}, 0);
+    const sharedDeadline = first.state.deadlineAt;
+    expect(first.state.timeTrial?.endReason).toBeNull();
+    expect(JSON.stringify(first)).not.toMatch(/solution|explanation/);
+
+    // The board's one-second limit is presentation metadata; only the two-minute clock is terminal.
+    clock.advance(2_000);
+    const firstAction = compiled.levels[0]!.question;
+    if (firstAction.type !== "queens") throw new Error("expected Queens fixture");
+    const firstResult = await driver.issue("queensValidation", { queens: firstAction.solution }, 0);
+    expect(firstResult).toMatchObject({ effect: "evaluated", state: { status: "correct" } });
+
+    const second = await driver.issue("prepare", {}, 1);
+    expect(second.state.deadlineAt).toBe(sharedDeadline);
+    clock.advance(2_000);
+    const secondAction = compiled.levels[1]!.question;
+    if (secondAction.type !== "queens") throw new Error("expected Queens fixture");
+    const command = driver.command("queensValidation", { queens: secondAction.solution }, 1);
+    const result = confirmed(await driver.execute(command));
+    expect(confirmed(await driver.execute(command))).toEqual(result);
+    expect(result).toMatchObject({ effect: "evaluated", state: { status: "correct" } });
+
+    const completed = await driver.issue("complete");
+    expect(completed).toMatchObject({
+      effect: "completed",
+      state: {
+        phase: "results",
+        score: 100,
+        terminalReason: "all_solved",
+        timeTrial: { endReason: "all_solved", solvedCount: 2, totalCount: 2 },
+      },
+    });
+    if (completed.effect !== "completed") throw new Error("expected terminal review");
+    expect(completed.review).toHaveLength(2);
+    expect(completed.review?.[0]?.solutionPayload).toBeTruthy();
+  });
+
+  it("finishes Queens after three incorrect validations without applying local penalties", async () => {
+    const { driver } = setup();
+    await driver.begin();
+    await driver.issue("prepare", {}, 0);
+    const badQueens = [0, 2, 9, 15, 20];
+    await driver.issue("queensValidation", { queens: badQueens }, 0);
+    await driver.issue("queensValidation", { queens: badQueens }, 0);
+    const last = await driver.issue("queensValidation", { queens: badQueens }, 0);
+    expect(last).toMatchObject({
+      effect: "evaluated",
+      state: { status: "incorrect", timeTrial: { endReason: "validation_limit" } },
+    });
+
+    const completed = await driver.issue("complete");
+    expect(completed.state).toMatchObject({ score: 0, terminalReason: "validation_limit" });
+    if (completed.effect !== "completed") throw new Error("expected terminal review");
+    expect(completed.review).toHaveLength(1);
+  });
+
+  it("closes the active board as unanswered at the global deadline and limits review to reached boards", async () => {
+    const { definition, clock, driver } = setup();
+    await driver.begin();
+    const prepared = await driver.issue("prepare", {}, 0);
+    clock.set(Date.parse(prepared.state.deadlineAt!));
+
+    const completed = await driver.issue("complete");
+    expect(completed).toMatchObject({
+      effect: "completed",
+      state: {
+        terminalReason: "time_limit",
+        answers: [{ status: "unanswered", points: 0 }],
+        timeTrial: { endReason: "time_limit", elapsedTimeMs: definition.challenge.timeLimitMs },
+      },
+    });
+    expect(completed.state.answers?.[0]).not.toHaveProperty("details");
+    if (completed.effect !== "completed") throw new Error("expected terminal review");
+    expect(completed.review).toHaveLength(1);
+  });
+
+  it("evaluates Connect Pairs answers through the canonical scorer", async () => {
+    const definition = createMockFlashPopTimeTrialConnectPairsDemoDefinition();
+    const { clock, driver } = setup(definition);
+    const compiled = compileTimeTrialDefinition(definition);
+    await driver.begin();
+    const firstPrepared = await driver.issue("prepare", {}, 0);
+    clock.advance(1_200);
+    const firstQuestion = compiled.levels[0]!.question;
+    if (firstQuestion.type !== "connect-pairs") throw new Error("expected Connect Pairs fixture");
+    const firstResult = await driver.issue(
+      "answer",
+      { answer: { paths: firstQuestion.solutionPaths } },
+      0,
+    );
+    expect(firstResult.state.status).toBe("correct");
+
+    await driver.issue("prepare", {}, 1);
+    clock.advance(1_200);
+    const second = compiled.levels[1]!.question;
+    if (second.type !== "connect-pairs") throw new Error("expected Connect Pairs fixture");
+    const secondResult = await driver.issue(
+      "answer",
+      { answer: { paths: second.solutionPaths } },
+      1,
+    );
+    expect(secondResult.state.status).toBe("correct");
+    expect(secondResult.state.timeTrial?.deadlineAt).toBe(firstPrepared.state.deadlineAt);
+
+    const completed = await driver.issue("complete");
+    expect(completed.state).toMatchObject({ score: 100, terminalReason: "all_solved" });
+  });
+});
