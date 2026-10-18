@@ -575,6 +575,8 @@ export type SurvivalChallenge = ChallengeBase & {
 export type AlphabetChallengeEntry = {
   letter: string;
   question: PracticeQuestion;
+  /** Editorial weight retained at the legacy mock boundary. */
+  points?: number;
 };
 
 export type AlphabetChallenge = ChallengeBase & {

@@ -320,7 +320,7 @@ for (const file of productionFiles) {
   const isMockAdapter = isMockInfrastructure(relative);
   const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
   const isLocalSessionProvider =
-    /^features\/game\/session\/providers\/local(?:Pyramid|Flash|Survival|TimeTrial)(?:\/|\.ts$)/.test(
+    /^features\/game\/session\/providers\/local(?:Pyramid|Flash|Survival|TimeTrial|Alphabet)(?:\/|\.ts$)/.test(
       relative,
     );
   const isLocalSessionShared = relative.startsWith(
@@ -332,6 +332,7 @@ for (const file of productionFiles) {
     "components/game/shells/LocalFlashGameApp.client.tsx",
     "components/game/shells/LocalSurvivalGameApp.client.tsx",
     "components/game/shells/LocalTimeTrialGameApp.client.tsx",
+    "components/game/shells/LocalAlphabetGameApp.client.tsx",
   ].includes(relative);
   const isPureResolution = relative.startsWith("lib/scoringCore/resolution/");
 
@@ -358,7 +359,7 @@ for (const file of productionFiles) {
     }
     if (
       target &&
-      /^features\/game\/session\/providers\/local(?:Pyramid|Flash|Survival|TimeTrial|Shared)(?:\/|$)/.test(
+      /^features\/game\/session\/providers\/local(?:Pyramid|Flash|Survival|TimeTrial|Alphabet|Shared)(?:\/|$)/.test(
         target,
       ) &&
       !isLocalSessionProvider &&

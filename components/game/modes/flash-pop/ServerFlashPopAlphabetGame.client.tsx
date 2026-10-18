@@ -28,6 +28,25 @@ export function ServerFlashPopAlphabetGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const session = useServerAlphabetSession({ challenge, roomContext, terminalReview });
+  return (
+    <AlphabetGameView challenge={challenge} session={session} returnTo={roomContext.returnTo} />
+  );
+}
+
+type AlphabetSession = ReturnType<typeof useServerAlphabetSession>;
+
+/** Shared Alphabet screen; its composition supplies a remote or in-memory session. */
+export function AlphabetGameView({
+  challenge,
+  session,
+  returnTo,
+  onReplay,
+}: {
+  challenge: ServerAlphabetChallenge;
+  session: AlphabetSession;
+  returnTo: string;
+  onReplay?: () => void;
+}) {
   const isIntro = session.phase === "intro";
   const letters =
     session.progress?.letters ??
@@ -64,7 +83,7 @@ export function ServerFlashPopAlphabetGame({
                 }
               : undefined
           }
-          returnTo={roomContext.returnTo}
+          returnTo={returnTo}
         />
       </motion.div>
     );
@@ -135,7 +154,7 @@ export function ServerFlashPopAlphabetGame({
           }}
           onReview={session.reviewChallenge ? session.showReview : undefined}
           expired={session.attemptExpired}
-          returnTo={roomContext.returnTo}
+          returnTo={returnTo}
         />
       </motion.div>
     );
@@ -159,7 +178,11 @@ export function ServerFlashPopAlphabetGame({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0, y: -12 }}
       >
-        <AlphabetReviewPresentation entries={entries} onBack={session.showResults} />
+      <AlphabetReviewPresentation
+        entries={entries}
+        onBack={session.showResults}
+        onReplay={onReplay}
+      />
       </motion.div>
     );
   } else {

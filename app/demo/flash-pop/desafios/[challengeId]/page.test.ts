@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   getLocalPyramidDemoDefinition: vi.fn(),
   getLocalFlashDemoDefinition: vi.fn(),
+  getLocalAlphabetDemoDefinition: vi.fn(),
   getLocalSurvivalDemoDefinition: vi.fn(),
   getLocalTimeTrialDemoDefinition: vi.fn(),
   notFound: vi.fn(() => {
@@ -10,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   }),
   LocalPyramidGameApp: vi.fn(() => null),
   LocalFlashGameApp: vi.fn(() => null),
+  LocalAlphabetGameApp: vi.fn(() => null),
   LocalSurvivalGameApp: vi.fn(() => null),
   LocalTimeTrialGameApp: vi.fn(() => null),
 }));
@@ -17,11 +19,15 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/server/demo-data-access", () => ({
   getLocalPyramidDemoDefinition: mocks.getLocalPyramidDemoDefinition,
   getLocalFlashDemoDefinition: mocks.getLocalFlashDemoDefinition,
+  getLocalAlphabetDemoDefinition: mocks.getLocalAlphabetDemoDefinition,
   getLocalSurvivalDemoDefinition: mocks.getLocalSurvivalDemoDefinition,
   getLocalTimeTrialDemoDefinition: mocks.getLocalTimeTrialDemoDefinition,
 }));
 vi.mock("@/components/game/shells/LocalFlashGameApp.client", () => ({
   LocalFlashGameApp: mocks.LocalFlashGameApp,
+}));
+vi.mock("@/components/game/shells/LocalAlphabetGameApp.client", () => ({
+  LocalAlphabetGameApp: mocks.LocalAlphabetGameApp,
 }));
 vi.mock("@/components/game/shells/LocalSurvivalGameApp.client", () => ({
   LocalSurvivalGameApp: mocks.LocalSurvivalGameApp,
@@ -41,6 +47,7 @@ import { generateMetadata } from "./page";
 import PyramidDemoPage from "./page";
 import { LocalPyramidGameApp } from "@/components/game/shells/LocalPyramidGameApp.client";
 import { LocalFlashGameApp } from "@/components/game/shells/LocalFlashGameApp.client";
+import { LocalAlphabetGameApp } from "@/components/game/shells/LocalAlphabetGameApp.client";
 import { LocalSurvivalGameApp } from "@/components/game/shells/LocalSurvivalGameApp.client";
 import { LocalTimeTrialGameApp } from "@/components/game/shells/LocalTimeTrialGameApp.client";
 
@@ -102,8 +109,23 @@ describe("Flash Pop local demo route", () => {
     expect(page).toMatchObject({ type: LocalTimeTrialGameApp, props: { definition } });
   });
 
+  it("renders the full local Alphabet rehearsal for the approved challenge id", async () => {
+    const definition = {
+      challenge: { mode: "alphabet", id: "tabarnia-challenge-02", entries: Array.from({ length: 16 }) },
+      levels: Array.from({ length: 16 }),
+    };
+    mocks.getLocalPyramidDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalAlphabetDemoDefinition.mockResolvedValue(definition);
+
+    const page = await PyramidDemoPage({
+      params: Promise.resolve({ challengeId: "tabarnia-challenge-02" }),
+    });
+    expect(page).toMatchObject({ type: LocalAlphabetGameApp, props: { definition } });
+  });
+
   it("returns 404 for demo identifiers outside the explicit composition allowlist", async () => {
     mocks.getLocalPyramidDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalAlphabetDemoDefinition.mockResolvedValue(null);
     mocks.getLocalFlashDemoDefinition.mockResolvedValue(null);
     mocks.getLocalSurvivalDemoDefinition.mockResolvedValue(null);
     mocks.getLocalTimeTrialDemoDefinition.mockResolvedValue(null);

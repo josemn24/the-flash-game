@@ -1,5 +1,6 @@
 import dynamic from "next/dynamic";
 import type { MockGameAppProps } from "./gameAppTypes";
+import { localAlphabetDefinitionFromChallenge } from "@/features/alphabet/localAlphabetDefinition";
 
 const Flash = dynamic(() =>
   import("@/components/game/modes/flash-pop/FlashPopFlashGame.client").then(
@@ -7,8 +8,8 @@ const Flash = dynamic(() =>
   ),
 );
 const Alphabet = dynamic(() =>
-  import("@/components/game/modes/flash-pop/FlashPopAlphabetGame.client").then(
-    (m) => m.FlashPopAlphabetGame,
+  import("@/components/game/shells/LocalAlphabetGameApp.client").then(
+    (m) => m.LocalAlphabetGameApp,
   ),
 );
 const Survival = dynamic(() =>
@@ -32,7 +33,9 @@ export function MockGameApp({ challenge, onComplete, socialSnapshot }: MockGameA
     case "flash":
       return <Flash challenge={challenge} onComplete={onComplete} />;
     case "alphabet":
-      return <Alphabet challenge={challenge} onComplete={onComplete} />;
+      return (
+        <Alphabet definition={localAlphabetDefinitionFromChallenge(challenge)} onComplete={onComplete} />
+      );
     case "survival":
       return (
         <Survival challenge={challenge} onComplete={onComplete} socialSnapshot={socialSnapshot} />

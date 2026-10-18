@@ -11,6 +11,7 @@ import {
 } from "@/features/design-system/access";
 import {
   FLASH_POP_CHALLENGE_ID,
+  FLASH_POP_ALPHABET_PILOT_ID,
   FLASH_POP_FLASH_PILOT_ID,
   FLASH_POP_SURVIVAL_PILOT_ID,
   FLASH_POP_TIME_TRIAL_CONNECT_PAIRS_ID,
@@ -33,6 +34,7 @@ function localCompetitiveDemoResponse(request: NextRequest) {
     ![
       FLASH_POP_CHALLENGE_ID,
       FLASH_POP_FLASH_PILOT_ID,
+      FLASH_POP_ALPHABET_PILOT_ID,
       FLASH_POP_SURVIVAL_PILOT_ID,
       FLASH_POP_TIME_TRIAL_QUEENS_ID,
       FLASH_POP_TIME_TRIAL_CONNECT_PAIRS_ID,

@@ -344,7 +344,7 @@ const SBR_QUESTIONS = [
       category: "Química",
       tags: tags(["natural_sciences"], ["chemistry_elements"], ["memory"], ["recall"]),
       question: "¿Qué dos elementos forman principalmente el acero?",
-      options: ["Cobre y estaño", "Hierro y carbono", "Oro y plata", "Sodio y cloro"],
+      options: ["Hierro y carbono", "Cobre y estaño", "Oro y plata", "Sodio y cloro"],
       media: null,
       promptVisual: null,
     },
@@ -435,7 +435,7 @@ const SBR_QUESTIONS = [
     points: 6,
     timeLimitMs: 14000,
     publicPayload: {
-      category: "Cultura",
+      category: "Steel Ball Run",
       tags: tags(
         ["media_entertainment", "culture"],
         ["cinema", "popular_music"],
@@ -450,6 +450,63 @@ const SBR_QUESTIONS = [
     solutionPayload: {
       correctAnswer: "Hirohiko Araki",
       explanation: "Steel Ball Run es obra de Hirohiko Araki, autor de JoJo's Bizarre Adventure.",
+    },
+  }),
+];
+
+const SBR_SURVIVAL_QUESTIONS = [
+  question({
+    slug: "sbr-survival-capital",
+    type: "multiple-choice",
+    points: 34,
+    timeLimitMs: 15000,
+    publicPayload: {
+      category: "Geografía",
+      tags: tags(["geography"], ["countries_flags"], ["memory"], ["recall"]),
+      question: "¿Cuál es la capital de Portugal?",
+      options: ["Lisboa", "Oporto"],
+      media: null,
+      promptVisual: null,
+    },
+    solutionPayload: {
+      correctAnswer: "Lisboa",
+      explanation: "Lisboa es la capital de Portugal.",
+    },
+  }),
+  question({
+    slug: "sbr-survival-red-planet",
+    type: "multiple-choice",
+    points: 33,
+    timeLimitMs: 15000,
+    publicPayload: {
+      category: "Ciencia",
+      tags: tags(["natural_sciences"], ["space"], ["memory"], ["recall"]),
+      question: "¿Qué planeta es conocido como el planeta rojo?",
+      options: ["Marte", "Venus"],
+      media: null,
+      promptVisual: null,
+    },
+    solutionPayload: {
+      correctAnswer: "Marte",
+      explanation: "Marte es conocido como el planeta rojo.",
+    },
+  }),
+  question({
+    slug: "sbr-survival-teide",
+    type: "multiple-choice",
+    points: 33,
+    timeLimitMs: 15000,
+    publicPayload: {
+      category: "Geografía",
+      tags: tags(["geography"], ["landmarks"], ["memory"], ["recall"]),
+      question: "¿Cuál es el pico más alto de España?",
+      options: ["Teide", "Mulhacén"],
+      media: null,
+      promptVisual: null,
+    },
+    solutionPayload: {
+      correctAnswer: "Teide",
+      explanation: "El Teide, en Tenerife, es el pico más alto de España.",
     },
   }),
 ];
@@ -525,6 +582,22 @@ export const scenario = {
   (${sqlUuid(`challenge-item:${item.slug}`)}, ${sqlUuid("challenge-version:steel-ball-run-v1")}, ${sqlUuid(`question-version:${item.slug}`)}, ${index + 1}, ${item.points}, 1, '{}')`,
       )
       .join(",");
+    const survivalQuestionDefinitionsSql = SBR_SURVIVAL_QUESTIONS.map(
+      (item) =>
+        `\n  (${sqlUuid(`question:${item.slug}`)}, ${sqlString(item.slug)}, ${sqlString(accounts.owner.playerId)})`,
+    ).join(",");
+    const survivalQuestionVersionsSql = SBR_SURVIVAL_QUESTIONS.map(
+      (item) =>
+        `\n  (${sqlUuid(`question-version:${item.slug}`)}, ${sqlUuid(`question:${item.slug}`)}, 1, ${item.payloadSchemaVersion}, 'draft', ${sqlString(item.type)}, ${item.timeLimitMs}, ${sqlString(JSON.stringify(item.publicPayload))}, ${sqlString(accounts.owner.playerId)})`,
+    ).join(",");
+    const survivalSolutionsSql = SBR_SURVIVAL_QUESTIONS.map(
+      (item) =>
+        `\n  (${sqlUuid(`question-version:${item.slug}`)}, ${sqlString(JSON.stringify(item.solutionPayload))})`,
+    ).join(",");
+    const survivalChallengeItemsSql = SBR_SURVIVAL_QUESTIONS.map(
+      (item, index) =>
+        `\n  (${sqlUuid(`challenge-item:${item.slug}`)}, ${sqlUuid("challenge-version:steel-ball-run-survival-v1")}, ${sqlUuid(`question-version:${item.slug}`)}, ${index + 1}, ${item.points}, 1, '{}')`,
+    ).join(",");
 
     return `
 begin;
@@ -533,12 +606,18 @@ insert into private.platform_role_assignments (player_id, role)
 values (${sqlString(accounts.superadmin.playerId)}, 'superadmin');
 insert into public.rooms (id, slug, title, description)
 values (${sqlUuid("room:steel-ball-run")}, 'sbr-main', 'Steel Ball Run', 'Carrera, ingenio y reflejos');
+insert into public.rooms (id, slug, title, description)
+values (${sqlUuid("room:steel-ball-run-survival")}, 'sbr-survival-main', 'Supervivencia SBR', 'Sala aislada para la conformidad local/remota de Supervivencia');
 insert into public.room_memberships (room_id, player_id, role, status, joined_at)
 values
   (${sqlUuid("room:steel-ball-run")}, ${sqlString(accounts.owner.playerId)}, 'owner', 'active', ${sqlString(dateStart)}),
   (${sqlUuid("room:steel-ball-run")}, ${sqlString(accounts.spectator.playerId)}, 'spectator', 'active', ${sqlString(dateStart)});
+insert into public.room_memberships (room_id, player_id, role, status, joined_at)
+values (${sqlUuid("room:steel-ball-run-survival")}, ${sqlString(accounts.owner.playerId)}, 'owner', 'active', ${sqlString(dateStart)});
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
 values (${sqlUuid("season:steel-ball-run")}, ${sqlUuid("room:steel-ball-run")}, 'Steel Ball Run', 'active', ${sqlString(dateStart)}, ${sqlString(dateEnd)});
+insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
+values (${sqlUuid("season:steel-ball-run-survival")}, ${sqlUuid("room:steel-ball-run-survival")}, 'Steel Ball Run · Supervivencia', 'active', ${sqlString(dateStart)}, ${sqlString(dateEnd)});
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
 values
@@ -549,8 +628,15 @@ values ${questionDefinitionsSql};
 insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, status, type, time_limit_ms, public_payload, created_by_player_id)
 values ${questionVersionsSql};
+insert into private.question_definitions (id, slug, created_by_player_id)
+values ${survivalQuestionDefinitionsSql};
+insert into private.question_versions
+  (id, question_definition_id, version_number, payload_schema_version, status, type, time_limit_ms, public_payload, created_by_player_id)
+values ${survivalQuestionVersionsSql};
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values ${solutionsSql};
+insert into private.question_version_solutions (question_version_id, solution_payload)
+values ${survivalSolutionsSql};
 update private.question_versions set status = 'published', published_at = ${sqlString(dateStart)};
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values (${sqlUuid("challenge-definition:steel-ball-run")}, 'demo-challenge-definition', ${sqlString(accounts.owner.playerId)});
@@ -563,9 +649,23 @@ insert into private.challenge_items
 values ${challengeItemsSql};
 update private.challenge_versions set status = 'published', published_at = ${sqlString(dateStart)}
 where id = ${sqlUuid("challenge-version:steel-ball-run-v1")};
+insert into private.challenge_definitions (id, slug, created_by_player_id)
+values (${sqlUuid("challenge-definition:steel-ball-run-survival")}, 'survival-conformance-definition', ${sqlString(accounts.owner.playerId)});
+insert into private.challenge_versions
+  (id, challenge_definition_id, version_number, config_schema_version, status, mode, title, subtitle, description, max_score, mode_config, created_by_player_id, published_at)
+values (${sqlUuid("challenge-version:steel-ball-run-survival-v1")}, ${sqlUuid("challenge-definition:steel-ball-run-survival")}, 1, 1, 'draft', 'survival',
+  'Supervivencia de conformidad', 'Tres preguntas de control', 'Fixture local/remota para verificar la autoridad de Supervivencia.', 100, '{"lives":1}', ${sqlString(accounts.owner.playerId)}, null);
+insert into private.challenge_items
+  (id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
+values ${survivalChallengeItemsSql};
+update private.challenge_versions set status = 'published', published_at = ${sqlString(dateStart)}
+where id = ${sqlUuid("challenge-version:steel-ball-run-survival-v1")};
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values (${sqlUuid("publication:steel-ball-run")}, ${sqlUuid("season:steel-ball-run")}, ${sqlUuid("challenge-version:steel-ball-run-v1")}, 1, 'open', ${sqlString(dateStart)}, ${sqlString(dateEnd)});
+insert into public.scheduled_challenges
+  (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
+values (${sqlUuid("publication:steel-ball-run-survival")}, ${sqlUuid("season:steel-ball-run-survival")}, ${sqlUuid("challenge-version:steel-ball-run-survival-v1")}, 1, 'open', ${sqlString(dateStart)}, ${sqlString(dateEnd)});
 set constraints all immediate;
 commit;
 `;
@@ -594,6 +694,17 @@ commit;
       questionSlugs: SBR_QUESTIONS.map((item) => item.slug),
       questionVersionIds: SBR_QUESTIONS.map((item) => questionVersionId(stableId, item.slug)),
       challengeItemIds: SBR_QUESTIONS.map((item) => challengeItemId(stableId, item.slug)),
+      survivalChallengeId: stableId("challenge-definition:steel-ball-run-survival"),
+      survivalChallengeVersionId: stableId("challenge-version:steel-ball-run-survival-v1"),
+      survivalPublicationId: stableId("publication:steel-ball-run-survival"),
+      survivalQuestionSlugs: SBR_SURVIVAL_QUESTIONS.map((item) => item.slug),
+      survivalQuestions: SBR_SURVIVAL_QUESTIONS,
+      survivalQuestionVersionIds: SBR_SURVIVAL_QUESTIONS.map((item) =>
+        questionVersionId(stableId, item.slug),
+      ),
+      survivalChallengeItemIds: SBR_SURVIVAL_QUESTIONS.map((item) =>
+        challengeItemId(stableId, item.slug),
+      ),
       pointsTotal: SBR_QUESTIONS.reduce((total, item) => total + item.points, 0),
       asset: {
         id: stableId(assetLabel),

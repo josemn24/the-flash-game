@@ -5,11 +5,14 @@ import type { DomainStore } from "@/types/domain";
 import type { TypedQuestionVersion } from "@/types/contracts";
 import type {
   LocalFlashDefinition,
-  LocalPyramidDefinition,
   LocalQuestionLevel,
+  LocalPyramidDefinition,
   LocalSurvivalDefinition,
 } from "@/types/gameplay/local-pyramid";
+import type { LocalAlphabetDefinition } from "@/types/gameplay/local-alphabet";
+import { FLASH_POP_ALPHABET_PILOT_ID } from "@/features/flash-pop/demoSocial";
 import type {
+  ServerAlphabetChallenge,
   ServerFlashQuestion,
   ServerPyramidChallenge,
   ServerSurvivalChallenge,
@@ -151,6 +154,49 @@ export function createMockLocalSurvivalDefinition(
   };
 }
 
+export function createMockLocalAlphabetDefinition(
+  publicationId: string,
+  store: DomainStore = mockDomainStore,
+): LocalAlphabetDefinition {
+  const publication = store.scheduledChallenges.find((row) => row.id === publicationId);
+  const version = store.challengeVersions.find((row) => row.id === publication?.challengeVersionId);
+  if (!publication || !version || version.mode !== "alphabet" || version.status !== "published")
+    throw new Error("mock_alphabet_not_found");
+  const items = store.challengeItems
+    .filter((row) => row.challengeVersionId === version.id)
+    .sort((a, b) => a.position - b.position);
+  const levels = items.map((item) => localQuestionLevel(item, store, "alphabet"));
+  const entries = items.map((item, index) => {
+    const config = item.modeConfig as Record<string, unknown>;
+    const question = levels[index]!.publicQuestion;
+    if (typeof config.letter !== "string" || question.type !== "short-text")
+      throw new Error("invalid_mock_alphabet_entry");
+    return {
+      id: item.id,
+      position: item.position,
+      letter: config.letter,
+      questionType: "short-text" as const,
+      payloadSchemaVersion: levels[index]!.payloadSchemaVersion,
+      timeLimitMs: question.timeLimitMs,
+      points: item.points,
+    };
+  });
+  const modeConfig = version.modeConfig as Record<string, unknown>;
+  const challenge: ServerAlphabetChallenge = {
+    id: publication.id,
+    definitionId: version.challengeDefinitionId,
+    number: publication.number,
+    title: version.title,
+    subtitle: version.subtitle,
+    description: version.description,
+    mode: "alphabet",
+    timeLimitMs: Number(modeConfig.timeLimitMs),
+    maxScore: version.maxScore,
+    entries,
+  };
+  return { challenge, levels };
+}
+
 /** Canonical fixture for the date-independent local competitive Flash rehearsal. */
 export function createMockFlashPopFlashDemoDefinition(): LocalFlashDefinition {
   const routeId = "tabarnia-flash-01" as const;
@@ -165,6 +211,16 @@ export function createMockFlashPopFlashDemoDefinition(): LocalFlashDefinition {
 export function createMockFlashPopSurvivalDemoDefinition(): LocalSurvivalDefinition {
   const routeId = "tabarnia-challenge-03" as const;
   const definition = createMockLocalSurvivalDefinition(scheduledChallengeRouteAliases[routeId]);
+  return {
+    ...definition,
+    challenge: { ...definition.challenge, id: routeId },
+  };
+}
+
+/** Canonical fixture for the full 16-letter, date-independent local Alphabet rehearsal. */
+export function createMockFlashPopAlphabetDemoDefinition(): LocalAlphabetDefinition {
+  const routeId = FLASH_POP_ALPHABET_PILOT_ID;
+  const definition = createMockLocalAlphabetDefinition(scheduledChallengeRouteAliases[routeId]);
   return {
     ...definition,
     challenge: { ...definition.challenge, id: routeId },
@@ -189,7 +245,7 @@ export function createMockFlashPopPyramidDemoDefinition(): LocalPyramidDefinitio
 function localQuestionLevel(
   item: DomainStore["challengeItems"][number],
   store: DomainStore,
-  mode: "flash" | "pyramid" | "survival",
+  mode: "flash" | "pyramid" | "survival" | "alphabet",
 ): LocalQuestionLevel {
   const raw = store.questionVersions.find((row) => row.id === item.questionVersionId);
   if (!raw || !isCompetitiveQuestionType(raw.type, mode) || raw.status !== "published")

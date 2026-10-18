@@ -7,6 +7,7 @@ import {
 } from "@/infrastructure/mock/composition";
 import {
   createMockFlashPopFlashDemoDefinition,
+  createMockFlashPopAlphabetDemoDefinition,
   createMockFlashPopPyramidDemoDefinition,
   createMockFlashPopSurvivalDemoDefinition,
 } from "@/infrastructure/mock/localPyramidDefinition";
@@ -17,6 +18,7 @@ import {
 import {
   FLASH_POP_CHALLENGE_ID,
   FLASH_POP_FLASH_PILOT_ID,
+  FLASH_POP_ALPHABET_PILOT_ID,
   FLASH_POP_SURVIVAL_PILOT_ID,
   FLASH_POP_TIME_TRIAL_CONNECT_PAIRS_ID,
   FLASH_POP_TIME_TRIAL_QUEENS_ID,
@@ -38,6 +40,12 @@ export function createDemoReadServices() {
       getDefinition(challengeId: string) {
         if (challengeId !== FLASH_POP_FLASH_PILOT_ID) return null;
         return createMockFlashPopFlashDemoDefinition();
+      },
+    },
+    localAlphabet: {
+      getDefinition(challengeId: string) {
+        if (challengeId !== FLASH_POP_ALPHABET_PILOT_ID) return null;
+        return createMockFlashPopAlphabetDemoDefinition();
       },
     },
     localSurvival: {

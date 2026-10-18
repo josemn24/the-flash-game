@@ -19,6 +19,11 @@ export const getLocalFlashDemoDefinition = cache(async (challengeId: string) =>
   demoReadServices.localFlash.getDefinition(challengeId),
 );
 
+/** Local Alphabet rehearsal fixture, independent of the scheduled challenge dates. */
+export const getLocalAlphabetDemoDefinition = cache(async (challengeId: string) =>
+  demoReadServices.localAlphabet.getDefinition(challengeId),
+);
+
 /** Local Survival rehearsal fixture, independent of the scheduled challenge dates. */
 export const getLocalSurvivalDemoDefinition = cache(async (challengeId: string) =>
   demoReadServices.localSurvival.getDefinition(challengeId),

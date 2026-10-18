@@ -19,7 +19,7 @@ export const E2E_BY_SCENARIO = Object.freeze({
   s03: ["e2e/s03-flash.spec.ts"],
   narrative: ["e2e/narrative.spec.ts"],
   "narrative-interactive": ["e2e/narrative-interactive.spec.ts"],
-  s05: ["e2e/s05-alphabet.spec.ts"],
+  s05: ["e2e/s05-alphabet.spec.ts", "e2e/alphabet-session-conformance.spec.ts"],
   e01: ["e2e/e01-mini-wordle.spec.ts"],
   e02: ["e2e/e02-logic-code.spec.ts"],
   e03: ["e2e/e03-progressive-clues.spec.ts"],

@@ -38,6 +38,9 @@ vi.mock("@/components/game/modes/flash-pop/ServerFlashPopAlphabetGame.client", (
 vi.mock("@/components/game/modes/flash-pop/FlashPopAlphabetGame.client", () => ({
   FlashPopAlphabetGame: targets["mock-alphabet"],
 }));
+vi.mock("@/components/game/shells/LocalAlphabetGameApp.client", () => ({
+  LocalAlphabetGameApp: targets["mock-alphabet"],
+}));
 vi.mock("@/components/game/modes/flash-pop/ServerFlashPopSurvivalGame.client", () => ({
   ServerFlashPopSurvivalGame: targets["server-survival"],
 }));
@@ -106,7 +109,15 @@ describe("GameApp routing", () => {
       expect(GameApp(props).type).toBe(MockGameApp);
       const element = MockGameApp(props);
       expect(await loadedShell(element)).toBe(targets[`mock-${mode}`]);
-      expect(element.props).toMatchObject({ challenge, onComplete });
+      if (mode === "alphabet") {
+        expect(element.props).toMatchObject({
+          definition: { challenge: { mode: "alphabet", id: challenge.id } },
+          onComplete,
+        });
+        expect(element.props.definition.challenge.entries).toHaveLength(16);
+      } else {
+        expect(element.props).toMatchObject({ challenge, onComplete });
+      }
       expect(element.props).not.toHaveProperty("roomContext");
       expect(element.props).not.toHaveProperty("terminalReview");
     },

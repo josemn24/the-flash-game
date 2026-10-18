@@ -4,10 +4,11 @@ import { COMPETITIVE_RESOLVERS } from "@/lib/scoringCore/resolution/registry";
 import type { CompetitiveQuestionType } from "@/lib/question-formats/definitions";
 import type {
   LocalFlashDefinition,
-  LocalPyramidDefinition,
   LocalQuestionLevel,
+  LocalPyramidDefinition,
   LocalSurvivalDefinition,
 } from "@/types/gameplay/local-pyramid";
+import type { LocalAlphabetDefinition } from "@/types/gameplay/local-alphabet";
 import type { LocalTimeTrialDefinition } from "@/types/gameplay/local-time-trial";
 import type { ResolvedQuestion } from "@/types/gameplay/scoring";
 import type { JsonValue, DurationMs } from "@/types/domain/values";
@@ -136,6 +137,54 @@ export function compileTimeTrialDefinition(input: LocalTimeTrialDefinition): {
   };
 }
 
+export function compileAlphabetDefinition(input: LocalAlphabetDefinition): {
+  definition: LocalAlphabetDefinition;
+  levels: CompiledLevel[];
+} {
+  const definition = structuredClone(input);
+  const { challenge, levels } = definition;
+  const entries = challenge.entries;
+  if (
+    challenge.mode !== "alphabet" ||
+    !challenge.id ||
+    !Number.isSafeInteger(challenge.timeLimitMs) ||
+    challenge.timeLimitMs <= 0 ||
+    entries.length < 2 ||
+    entries.length > 20 ||
+    entries.length !== levels.length ||
+    challenge.maxScore !== 100 ||
+    entries.reduce((sum, entry) => sum + entry.points, 0) !== challenge.maxScore ||
+    entries.some(
+      (entry, index) =>
+        !entry.letter.trim() ||
+        !Number.isSafeInteger(entry.points) ||
+        entry.points <= 0 ||
+        entry.questionType !== "short-text" ||
+        entry.position !== index + 1 ||
+        levels[index]?.challengeItemId !== entry.id ||
+        levels[index]?.payloadSchemaVersion !== entry.payloadSchemaVersion,
+    ) ||
+    new Set(entries.map((entry) => entry.id)).size !== entries.length ||
+    new Set(entries.map((entry) => entry.letter.toLocaleUpperCase("es"))).size !== entries.length
+  )
+    throw new Error("invalid_local_alphabet_definition");
+  const compiled = compileLocalQuestions(definition);
+  return {
+    definition,
+    levels: compiled.map((level) => {
+      const tags = level.publicPayload.tags;
+      const hasTags =
+        tags !== null &&
+        typeof tags === "object" &&
+        Object.values(tags).some((value) => Array.isArray(value) && value.length > 0);
+      if (hasTags) return level;
+      const publicPayload = { ...level.publicPayload };
+      delete publicPayload.tags;
+      return { ...level, publicPayload };
+    }),
+  };
+}
+
 function compileSequentialDefinition<T extends LocalFlashDefinition | LocalSurvivalDefinition>(
   input: T,
   mode: "flash" | "survival",
@@ -164,11 +213,17 @@ function compileLocalQuestions(
     | LocalPyramidDefinition
     | LocalFlashDefinition
     | LocalSurvivalDefinition
-    | LocalTimeTrialDefinition,
+    | LocalTimeTrialDefinition
+    | LocalAlphabetDefinition,
 ): CompiledLevel[] {
   const { challenge, levels } = input;
   const mode = challenge.mode;
-  const slots = challenge.mode === "pyramid" ? challenge.levels : challenge.slots;
+  const slots =
+    challenge.mode === "pyramid"
+      ? challenge.levels
+      : challenge.mode === "alphabet"
+        ? challenge.entries
+        : challenge.slots;
   return slots.map((slot, index) => {
     const level = levels.find((row) => row.challengeItemId === slot.id);
     if (

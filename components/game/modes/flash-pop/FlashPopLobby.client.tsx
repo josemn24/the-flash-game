@@ -252,6 +252,22 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
 
           <Card as="section" className={styles.classicPreviewCard}>
             <p className={styles.eyebrow}>Ensayo local</p>
+            <h2>Alfabeto</h2>
+            <p className={styles.challengeCopy}>
+              Recorre las 16 letras del Reino de animales, pasa preguntas y vuelve a ellas antes del límite global.
+            </p>
+            <ButtonLink
+              href="/demo/flash-pop/desafios/tabarnia-challenge-02"
+              variant="secondary"
+              fullWidth
+              trailingIcon={<ArrowIcon />}
+            >
+              Ensayar Alfabeto
+            </ButtonLink>
+          </Card>
+
+          <Card as="section" className={styles.classicPreviewCard}>
+            <p className={styles.eyebrow}>Ensayo local</p>
             <h2>Supervivencia</h2>
             <p className={styles.challengeCopy}>
               Prueba el recorrido de España con tres vidas y el mismo flujo competitivo.

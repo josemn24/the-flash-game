@@ -9,6 +9,7 @@ import type { FlashPopSocialSnapshot } from "@/types/view-models";
 
 export const FLASH_POP_FLASH_PILOT_ID = "tabarnia-flash-01";
 export const FLASH_POP_SURVIVAL_PILOT_ID = "tabarnia-challenge-03";
+export const FLASH_POP_ALPHABET_PILOT_ID = "tabarnia-challenge-02";
 export const FLASH_POP_TIME_TRIAL_QUEENS_ID = "tabarnia-time-trial-queens-01";
 export const FLASH_POP_TIME_TRIAL_CONNECT_PAIRS_ID = "tabarnia-time-trial-connect-pairs-01";
 export const FLASH_POP_CHALLENGE_ID = "tabarnia-challenge-05";
