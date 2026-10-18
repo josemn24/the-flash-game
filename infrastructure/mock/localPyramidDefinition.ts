@@ -1,4 +1,5 @@
 import { mockDomainStore } from "@/data/mock/store";
+import { scheduledChallengeRouteAliases } from "@/data/mock/constants";
 import { isCompetitiveQuestionType } from "@/lib/question-formats/definitions";
 import type { DomainStore } from "@/types/domain";
 import type { TypedQuestionVersion } from "@/types/contracts";
@@ -76,5 +77,20 @@ export function createMockLocalPyramidDefinition(
       levels: slots,
     } as ServerPyramidChallenge,
     levels,
+  };
+}
+
+/** Canonical fixture composition for the date-independent Flash Pop rehearsal route. */
+export function createMockFlashPopPyramidDemoDefinition(): LocalPyramidDefinition {
+  const routeId = "tabarnia-challenge-05" as const;
+  const definition = createMockLocalPyramidDefinition(scheduledChallengeRouteAliases[routeId]);
+  return {
+    ...definition,
+    challenge: {
+      ...definition.challenge,
+      id: routeId,
+      availableFrom: "1970-01-01T00:00:00.000Z",
+      availableUntil: "9999-12-31T23:59:59.999Z",
+    },
   };
 }

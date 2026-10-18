@@ -8,8 +8,12 @@ import { questionFromPayload } from "@/features/game/serverFlashQuestionAdapter"
 import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerPyramidChallenge } from "@/types/gameplay/challenge";
 
-const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }));
-vi.mock("@/features/game/useServerFlashSession", () => ({ useServerFlashSession: useSession }));
+const { useSession, useRouter } = vi.hoisted(() => ({
+  useSession: vi.fn(),
+  useRouter: vi.fn(() => ({ refresh: vi.fn() })),
+}));
+vi.mock("@/features/game/usePyramidGameSession", () => ({ usePyramidGameSession: useSession }));
+vi.mock("next/navigation", () => ({ useRouter }));
 
 const challenge: ServerPyramidChallenge = {
   id: "challenge-1",

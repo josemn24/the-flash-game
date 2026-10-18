@@ -66,45 +66,6 @@
     background: var(--ds-color-bg-surface-raised);
   }
 
-  .lifeHearts {
-    display: inline-flex;
-    min-height: 1.75rem;
-    align-items: center;
-    gap: 0.22rem;
-    border: 1px solid var(--ds-color-border-default);
-    border-radius: 999px;
-    padding: 0.32rem 0.48rem;
-    background: var(--ds-color-bg-surface);
-  }
-
-  .lifeHeart {
-    width: 1rem;
-    height: 1rem;
-    flex: 0 0 auto;
-    transition:
-      color 180ms,
-      fill 180ms,
-      opacity 180ms,
-      transform 180ms;
-  }
-
-  .lifeHeartActive {
-    color: var(--ds-color-fg-error);
-    fill: color-mix(in srgb, var(--ds-color-fg-error) 18%, transparent);
-  }
-
-  .lifeHeartLost {
-    color: var(--ds-color-fg-secondary);
-    fill: transparent;
-    opacity: 0.75;
-    transform: scale(0.92);
-  }
-
-  .lifeHeartLast {
-    fill: var(--ds-color-fg-error);
-    transform: scale(1.12);
-  }
-
   .legacyStage {
     min-height: calc(100dvh - 48px);
   }

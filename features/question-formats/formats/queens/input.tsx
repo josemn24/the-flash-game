@@ -1,5 +1,5 @@
 "use client";
-import { ServerQueensQuestion } from "@/components/questions/formats/queens/ServerQueensQuestion";
+import { QueensSessionQuestion } from "@/components/questions/formats/queens/QueensSessionQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
 export function render(props: CompetitiveInputProps<"queens">) {
   const {
@@ -13,7 +13,7 @@ export function render(props: CompetitiveInputProps<"queens">) {
   } = props;
   const { question } = props;
   return (
-    <ServerQueensQuestion
+    <QueensSessionQuestion
       key={question.id}
       question={question}
       progress={question.progress}

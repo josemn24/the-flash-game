@@ -1,25 +1,27 @@
 import type { Metadata } from "next";
-import { notFound, permanentRedirect } from "next/navigation";
-import { isFlashPopPreviewChallenge } from "@/features/flash-pop/demoSocial";
-import { getFlashPopChallengePageModel } from "@/server/demo-data-access";
+import { notFound } from "next/navigation";
+import { LocalPyramidGameApp } from "@/components/game/shells/LocalPyramidGameApp.client";
+import { getLocalPyramidDemoDefinition } from "@/server/demo-data-access";
 
 type Props = { params: Promise<{ challengeId: string }> };
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const model = await getFlashPopChallengePageModel((await params).challengeId);
-  return model?.challenge.mode === "pyramid"
-    ? { title: `${model.challenge.title} — The Flash`, description: model.challenge.description }
+  const definition = await getLocalPyramidDemoDefinition((await params).challengeId);
+  return definition
+    ? {
+        title: `${definition.challenge.title} — Ensayo local — The Flash`,
+        description: definition.challenge.description,
+      }
     : { title: "Reto no disponible — The Flash" };
 }
 
 export default async function FlashPopChallengePage({ params }: Props) {
   const challengeId = (await params).challengeId;
-  const model = await getFlashPopChallengePageModel(challengeId);
-  if (!isFlashPopPreviewChallenge(challengeId) || model?.challenge.mode !== "pyramid") {
-    notFound();
-  }
+  const definition = await getLocalPyramidDemoDefinition(challengeId);
+  if (!definition) notFound();
 
-  permanentRedirect(`/desafios/${challengeId}`);
+  // This route is a mock rehearsal. Its fixture includes solutions by design.
+  return <LocalPyramidGameApp definition={definition} />;
 }

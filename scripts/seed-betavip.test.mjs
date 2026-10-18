@@ -433,7 +433,7 @@ describe("BetaVIP seed", () => {
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([
       100, 100, 100, 100, 100, 100,
     ]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([5, 16, 7, 6, 20, 7]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([6, 16, 7, 6, 20, 7]);
     expect(data.connectPairsPublicationId).toBe(data.publications[0].id);
     expect(data.alphabetPublicationId).toBe(data.publications[1].id);
     expect(data.pyramidPublicationId).toBe(data.publications[2].id);

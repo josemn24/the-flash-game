@@ -30,9 +30,11 @@ function toneClass(tone: ResultMetricTone | undefined) {
 export function ChallengeResultScreen({
   model,
   onReview,
+  onReplay,
   expired = false,
   returnTo,
   returnLabel = "Volver",
+  prefetchReturnLink = true,
 }: ChallengeResultScreenProps) {
   const displayModel = expired
     ? {
@@ -91,6 +93,7 @@ export function ChallengeResultScreen({
               {returnTo ? (
                 <ButtonLink
                   href={returnTo}
+                  prefetch={prefetchReturnLink ? undefined : false}
                   variant="primary"
                   fullWidth
                   trailingIcon={<ArrowIcon />}
@@ -101,6 +104,11 @@ export function ChallengeResultScreen({
               {onReview ? (
                 <Button variant="secondary" fullWidth onClick={onReview} leadingIcon={<EyeIcon />}>
                   Ver respuestas
+                </Button>
+              ) : null}
+              {onReplay ? (
+                <Button variant="secondary" fullWidth onClick={onReplay}>
+                  Repetir ensayo
                 </Button>
               ) : null}
             </div>

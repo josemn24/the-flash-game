@@ -2,7 +2,7 @@
 
 import { type KeyboardEvent, type MutableRefObject, useMemo, useRef, useState } from "react";
 import { CrownIcon, CrossIcon, QueensCrownIcon, WarningIcon } from "@/components/ui";
-import { LifeHearts } from "@/components/game/shared/LifeHearts";
+import { LifeHearts } from "@/components/questions/shared/LifeHearts";
 import {
   calculateQueensMetrics,
   getQueensConflicts,

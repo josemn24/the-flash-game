@@ -25,7 +25,9 @@ export type ChallengeResultModel = {
 export type ChallengeResultScreenProps = {
   model: ChallengeResultModel;
   onReview?: () => void;
+  onReplay?: () => void;
   expired?: boolean;
   returnTo?: string;
   returnLabel?: string;
+  prefetchReturnLink?: boolean;
 };

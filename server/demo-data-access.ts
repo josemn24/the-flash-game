@@ -8,3 +8,8 @@ export const getFlashPopLobbyPageModel = cache(async () => demoReadServices.chal
 export const getFlashPopChallengePageModel = cache(async (challengeKey: string) =>
   demoReadServices.challenges.getPreview(challengeKey),
 );
+
+/** Local rehearsal fixture, intentionally independent of publication availability dates. */
+export const getLocalPyramidDemoDefinition = cache(async (challengeId: string) =>
+  demoReadServices.localPyramid.getDefinition(challengeId),
+);

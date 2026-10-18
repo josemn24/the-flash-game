@@ -10,6 +10,7 @@ export type {
 export { ProgressBar } from "./ProgressBar";
 export { QuestionStage } from "./QuestionStage";
 export { ServerFlashQuestionStage } from "./ServerFlashQuestionStage";
+export { SessionQuestionStage } from "./SessionQuestionStage";
 export type { QuestionStageProps, QuestionStageHeaderRenderParams } from "./QuestionStage";
 export {
   FlashQuestionStage,

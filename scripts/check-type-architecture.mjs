@@ -321,6 +321,9 @@ for (const file of productionFiles) {
   const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
   const isLocalPyramidProvider =
     /^features\/game\/session\/providers\/localPyramid(?:\/|\.ts$)/.test(relative);
+  // The local rehearsal shell is the sole fixture-backed provider composition root.
+  const isLocalPyramidDemoComposition =
+    relative === "components/game/shells/LocalPyramidGameApp.client.tsx";
   const isPureResolution = relative.startsWith("lib/scoringCore/resolution/");
 
   if (isLocalPyramidProvider && /\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/.test(source)) {
@@ -343,7 +346,8 @@ for (const file of productionFiles) {
     }
     if (
       target?.startsWith("features/game/session/providers/localPyramid") &&
-      !isLocalPyramidProvider
+      !isLocalPyramidProvider &&
+      !isLocalPyramidDemoComposition
     ) {
       violations.push(`${relative} selects the local provider before the presentation phase`);
     }

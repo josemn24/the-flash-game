@@ -24,6 +24,7 @@ type FullChallengeIntroProps = {
   note?: ReactNode;
   notice?: string;
   returnTo?: string;
+  prefetchReturnLink?: boolean;
   canStart?: boolean;
   startHref?: string;
   transfer?: TransferPrompt;
@@ -37,6 +38,7 @@ type SafeChallengeIntroProps = {
   note?: ReactNode;
   notice?: string;
   returnTo?: string;
+  prefetchReturnLink?: boolean;
   canStart: boolean;
   startHref?: string;
   transfer?: TransferPrompt;
@@ -49,6 +51,7 @@ export function ChallengeIntro({
   note,
   notice,
   returnTo = "/",
+  prefetchReturnLink = true,
   canStart = true,
   startHref,
   transfer,
@@ -65,7 +68,15 @@ export function ChallengeIntro({
       exit={{ opacity: 0, y: -18 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
     >
-      <GameHeader left={<BackLink href={returnTo} label="Volver a desafíos" />} />
+      <GameHeader
+        left={
+          <BackLink
+            href={returnTo}
+            label="Volver a desafíos"
+            prefetch={prefetchReturnLink ? undefined : false}
+          />
+        }
+      />
 
       <div className={styles.content}>
         <section className={styles.stageCard} aria-labelledby="challenge-intro-title">
