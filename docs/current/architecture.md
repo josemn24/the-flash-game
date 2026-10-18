@@ -177,7 +177,7 @@ El servidor de pruebas usa un `distDir` propio para convivir con `next dev`; eli
 los paths de tipos generados al terminar. `E2E_INTEGRATION_SCENARIOS=s05,s07,s12` ejecuta también
 las integraciones de esos escenarios sobre el mismo stack antes de sus pruebas de navegador.
 
-### Evolución de Pirámide: contrato y proveedor remoto
+### Evolución de Pirámide: contrato y proveedores
 
 El [contrato de referencia de Pirámide](pyramid-session-contract.md) y su matriz de pruebas
 caracterizan el recorrido competitivo antes de introducir un proveedor local. La fase 0 añadió
@@ -190,9 +190,11 @@ fallos del transporte. El controlador conserva comandos pendientes, reintentos y
 el backend conserva la autoridad sobre contenido, progreso, plazos, evaluación y cierre. La
 revisión terminal viaja separada de la actualización pública. Proveedor y reloj son inyectables.
 
-El proveedor local y la unificación de las presentaciones siguen pendientes; las presentaciones
-de Pirámide y sus controladores locales y remotos siguen separados. La práctica actual no
-certifica equivalencia competitiva. Las fases
+La [fase 2](local-pyramid-session.md) incorpora una autoridad local en memoria y comparte los
+resolutores y reglas puras con el servidor. Contrasta sus 21 formatos mediante el adaptador
+remoto real, autenticación, HTTP y Supabase temporal. La selección de producción sigue siendo
+remota; la unificación de las presentaciones corresponde a la fase siguiente. La práctica
+actual conserva su presentación y controlador anteriores. Las fases
 posteriores deberán reutilizar la coordinación existente y ampliar la conformidad por formato,
 conservando autorización, transacciones y acreditación en el backend. No se añade fallback mock a
 las rutas competitivas.

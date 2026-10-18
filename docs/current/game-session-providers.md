@@ -1,6 +1,7 @@
 # Proveedores de sesión: fase 1
 
-Estado: implementado el contrato y el proveedor remoto el 2026-10-18; autoridad local pendiente.
+Estado: implementado el contrato y el proveedor remoto el 2026-10-18. La autoridad local de
+Pirámide se documenta en [la fase 2](local-pyramid-session.md).
 
 El motor competitivo existente recibe ahora una autoridad de sesión mediante un puerto. La
 composición de producción selecciona el proveedor remoto, que usa los mismos endpoints,
@@ -8,8 +9,9 @@ cookies, comandos idempotentes y tiempos de espera del transporte anterior. La P
 otros cinco modos conservan sus políticas, evaluadores, transiciones y pantallas.
 
 El [contrato funcional de Pirámide](pyramid-session-contract.md) sigue siendo la referencia.
-Esta fase prepara la sustitución de autoridad; el proveedor local y la vista unificada se
-implementarán después. La práctica existente todavía no certifica equivalencia competitiva.
+Esta fase prepara la sustitución de autoridad. La fase 2 incorpora el proveedor local; la vista
+unificada corresponde a una fase posterior. La práctica existente todavía no certifica
+equivalencia competitiva.
 
 ## Archivos y responsabilidades
 
@@ -111,7 +113,8 @@ importaciones adicional. La nueva frontera es el puerto inyectado, no un motor p
 
 ## Siguiente frontera
 
-La fase 2 debe implementar la autoridad local en memoria sobre este puerto y compartir reglas
-puras con la evaluación actual, incluyendo idempotencia, activación, recuperación y revisión.
+La [fase 2](local-pyramid-session.md) implementa la autoridad local en memoria sobre este puerto
+y comparte reglas puras con la evaluación actual, incluyendo idempotencia, activación,
+recuperación y revisión.
 La fase de presentación podrá consumir ese proveedor desde el mismo controlador y retirar la
 duplicación de UI. Las rutas competitivas siguen seleccionando explícitamente el remoto.

@@ -34,6 +34,8 @@ contenido Flash/Supervivencia y programa su calendario local.
   matriz de referencia y frontera prevista para sus proveedores local y remoto; fase 0.
 - [`game-session-providers.md`](game-session-providers.md): contrato de sesión, composición
   remota y regresiones de los seis modos; fase 1 de la unificación.
+- [`local-pyramid-session.md`](local-pyramid-session.md): autoridad local en memoria,
+  reglas compartidas y conformidad HTTP con el remoto; fase 2.
 - [`avatar-confirmation-recovery.md`](avatar-confirmation-recovery.md): confirmación recuperable,
   autorización transaccional de limpieza y validación de avatares.
 - [`glosario.md`](glosario.md): vocabulario del producto.

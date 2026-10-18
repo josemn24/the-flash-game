@@ -115,7 +115,7 @@ export type QuestionContractMap = {
     readonly reveal: never;
   };
   readonly "short-text": {
-    readonly public: null;
+    readonly public: { readonly answerPlaceholder?: string | null } | null;
     readonly solution: {
       readonly correctAnswer: string;
       readonly acceptedAnswers: readonly string[];

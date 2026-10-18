@@ -1,4 +1,6 @@
 /** Storage compatibility defaults; public progress and private solution remain separate. */
-export function canonicalPayload(): unknown {
-  return null;
+export function canonicalPayload(payload: Record<string, unknown>): unknown {
+  return payload.answerPlaceholder === undefined
+    ? null
+    : { answerPlaceholder: payload.answerPlaceholder };
 }

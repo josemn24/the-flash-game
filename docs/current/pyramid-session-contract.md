@@ -7,7 +7,8 @@ local, no modifica las reglas ni cambia componentes, endpoints o funciones de pr
 Las [decisiones aprobadas](../decisions/decisions.md), la
 [política de recuperación](../decisions/adr/0003-attempt-lifecycle-and-concurrency.md) y el
 [contrato del intento](attempt-lifecycle.md) conservan su precedencia. Los requisitos de un
-proveedor local futuro descritos al final son un objetivo, no funcionalidad ya implementada.
+proveedor local descritos al final fijan el objetivo de la fase 0; su implementación posterior
+se documenta en [Autoridad local: fase 2](local-pyramid-session.md).
 La introducción posterior del puerto y del adaptador remoto se documenta en
 [Proveedores de sesión: fase 1](game-session-providers.md); los resultados de verificación de
 este documento corresponden a la fase 0.

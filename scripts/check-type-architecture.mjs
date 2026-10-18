@@ -319,10 +319,41 @@ for (const file of productionFiles) {
   const isRoomAdapter = isRoomSupabaseAdapter(relative);
   const isMockAdapter = isMockInfrastructure(relative);
   const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
+  const isLocalPyramidProvider =
+    /^features\/game\/session\/providers\/localPyramid(?:\/|\.ts$)/.test(relative);
+  const isPureResolution = relative.startsWith("lib/scoringCore/resolution/");
+
+  if (isLocalPyramidProvider && /\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/.test(source)) {
+    violations.push(`${relative} performs I/O inside the local session authority`);
+  }
 
   for (const imported of importsIn(source, true)) {
     const context = inputContext(relative);
     const target = resolvedProjectImport(imported.specifier, file);
+    if (
+      (isLocalPyramidProvider || isPureResolution) &&
+      (imported.specifier === "server-only" ||
+        /^(?:node:|next(?:\/|$)|react(?:\/|$)|@supabase\/)/.test(imported.specifier) ||
+        (target && /^(?:server|infrastructure|data|test-utils|app|components)\//.test(target)) ||
+        (target && /features\/game\/competitive\/(?:attemptClient|transport)$/.test(target)))
+    ) {
+      violations.push(
+        `${relative} imports an impure local authority dependency ${imported.specifier}`,
+      );
+    }
+    if (
+      target?.startsWith("features/game/session/providers/localPyramid") &&
+      !isLocalPyramidProvider
+    ) {
+      violations.push(`${relative} selects the local provider before the presentation phase`);
+    }
+    if (
+      relative === "infrastructure/mock/localPyramidDefinition.ts" &&
+      (LEGACY_DATA_SOURCES.has(imported.specifier) ||
+        imported.specifier.startsWith("@/types/practice/"))
+    ) {
+      violations.push(`${relative} adapts legacy practice instead of canonical questions`);
+    }
     const sessionCore =
       /^features\/game\/competitive\/(?:core|formats|modes)\//.test(relative) &&
       relative !== "features/game/competitive/core/useCompetitiveSession.ts";
