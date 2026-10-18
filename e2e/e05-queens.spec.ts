@@ -38,7 +38,7 @@ test.describe("E05 — Queens competitivo", () => {
     });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: "Coloca las seis coronas" })).toBeVisible();
-    await expect(page.getByText("1/6 coronas")).toBeVisible();
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("1/6");
     expect(await page.content()).not.toContain('"solution"');
 
     const board = page.getByRole("grid", { name: "Tablero Queens de 6 por 6" });
@@ -64,12 +64,12 @@ test.describe("E05 — Queens competitivo", () => {
         response.url().includes("/queens/draft") && response.request().method() === "POST",
     );
     await board.getByRole("gridcell", { name: /Fila 2, columna 4/ }).click();
-    await expect(page.getByText("2/6 coronas")).toBeVisible();
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("2/6");
     expect((await draftResponse).ok()).toBe(true);
     expect(validationBodies).toHaveLength(0);
     await page.reload();
     await expect(page.getByRole("heading", { name: "Coloca las seis coronas" })).toBeVisible();
-    await expect(page.getByText("2/6 coronas")).toBeVisible();
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("2/6");
 
     await board.getByRole("gridcell", { name: /Fila 3, columna 2/ }).click();
     await board.getByRole("gridcell", { name: /Fila 4, columna 5/ }).click();
@@ -92,11 +92,11 @@ test.describe("E05 — Queens competitivo", () => {
 
     const miniBoard = page.getByRole("grid", { name: "Tablero Queens de 4 por 4" });
     await expect(page.getByRole("heading", { name: "Coloca las cuatro coronas" })).toBeVisible();
-    await expect(page.getByText("1/4 coronas")).toBeVisible();
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("1/4");
     await miniBoard.getByRole("gridcell", { name: /Fila 2, columna 1/ }).click();
     await miniBoard.getByRole("gridcell", { name: /Fila 3, columna 4/ }).click();
     await miniBoard.getByRole("gridcell", { name: /Fila 4, columna 2/ }).click();
-    await expect(page.getByText("4/4 coronas")).toBeVisible();
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("4/4");
     await expect.poll(() => validationBodies).toHaveLength(5);
     await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();

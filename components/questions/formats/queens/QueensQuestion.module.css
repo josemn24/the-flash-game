@@ -173,43 +173,37 @@
     width: min(100%, 27rem);
     margin-inline: auto;
   }
-  .progress {
+  .statusRow {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-2);
-    color: var(--ds-color-fg-secondary);
-    font-family: var(--type-mono);
-    font-size: 0.7rem;
-    font-weight: 800;
-    text-transform: uppercase;
+    gap: var(--space-3);
+    width: min(100%, 27rem);
+    margin-inline: auto;
   }
-  .progress strong {
-    color: var(--ds-color-fg-primary);
-    white-space: nowrap;
-  }
-  .attempts {
+  .crownProgress {
     display: inline-flex;
+    min-height: 32px;
     align-items: center;
-    gap: var(--space-1);
-    margin: 0;
-    font-family: var(--type-ui);
-    font-size: clamp(0.6875rem, 2.8vw, 0.75rem);
-    font-weight: 600;
-    text-transform: none;
+    gap: var(--space-2);
+    padding: var(--space-1) 10px;
+    border: 1px solid var(--ds-color-border-default);
+    border-radius: var(--radius-pill);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
+    font-family: var(--type-mono);
+    font-size: 1rem;
+    font-weight: 800;
     white-space: nowrap;
   }
-  .lastAttempt {
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-control);
-    color: var(--ds-color-fg-error);
-    background: var(--ds-color-bg-error-soft);
-    font-weight: 800;
-  }
-  .lastAttempt svg {
+  .progressCrown {
     flex-shrink: 0;
-    width: 14px;
-    height: 14px;
+    width: 24px;
+    height: 24px;
+  }
+  .statusRow .attemptsCapsule {
+    min-height: 34px;
+    padding: var(--space-1) 10px;
   }
   .conflictNotice {
     margin: 0;
@@ -283,14 +277,6 @@
     border-radius: var(--radius-card);
     background: var(--ds-color-bg-surface-raised);
     box-shadow: var(--shadow-card);
-  }
-
-  .root .progress {
-    color: var(--ds-color-fg-secondary);
-  }
-
-  .root .progress strong {
-    color: var(--ds-color-fg-primary);
   }
 
   .root .instructions {

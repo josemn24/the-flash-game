@@ -16,9 +16,11 @@ async function startQueens(page: Page, player: "alice" | "bob" | "carol" | "dave
   await expect(page.getByRole("heading", { name: "Briefing 2" })).toBeVisible();
   await page.getByRole("button", { name: "Empezar nivel" }).click();
   await expect(page.getByRole("heading", { name: "Coloca las cinco coronas" })).toBeVisible();
-  await expect(page.getByText("3 intentos restantes", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("3 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText(/Tres fallos terminan la partida/)).toBeVisible();
-  await expect(page.getByText("1/5 coronas")).toBeVisible();
+  await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("1/5");
 }
 
 function cell(page: Page, index: number) {
@@ -29,7 +31,9 @@ function cell(page: Page, index: number) {
 
 async function wrongBoard(page: Page) {
   for (const index of [0, 5, 14, 20]) await cell(page, index).click();
-  await expect(page.getByText("2 intentos restantes", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("2 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
 }
 
 test("el tercer fallo termina el ascenso; perder la confirmación no descuenta otro intento", async ({
@@ -63,21 +67,29 @@ test("el tercer fallo termina el ascenso; perder la confirmación no descuenta o
     for (const index of [0, 5, 14, 20]) await cell(page, index).click();
     await expect.poll(() => requests.length).toBe(1);
     await expect(cell(page, 20)).toBeDisabled();
-    await expect(page.getByText("3 intentos restantes", { exact: true })).toBeVisible();
+    await expect(
+      page.getByLabel("3 de 3 intentos restantes en este tablero", { exact: true }),
+    ).toBeVisible();
   } finally {
     releaseFirst();
   }
-  await expect(page.getByText("2 intentos restantes", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("2 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
   await expect(cell(page, 20)).toBeEnabled();
   await cell(page, 20).click();
   await cell(page, 24).click();
-  await expect(page.getByText("1 intento restante", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
   await cell(page, 24).click();
   await cell(page, 21).click();
   await expect(
     page.getByRole("button", { name: "Reintentar validación", exact: true }),
   ).toBeVisible();
-  await expect(page.getByText("1 intento restante", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Reintentar validación", exact: true }).click();
   await expect(
     page.getByText("Has agotado los tres intentos. El ascenso termina en este nivel."),
@@ -114,7 +126,9 @@ for (const [player, failures] of [
       if (failures === 2) {
         await cell(page, 20).click();
         await cell(page, 24).click();
-        await expect(page.getByText("1 intento restante", { exact: true })).toBeVisible();
+        await expect(
+          page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
+        ).toBeVisible();
       }
       for (const index of [0, 5, 14, failures === 2 ? 24 : 20]) await cell(page, index).click();
     }

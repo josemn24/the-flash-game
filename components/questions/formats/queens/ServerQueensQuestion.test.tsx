@@ -57,7 +57,7 @@ describe("ServerQueensQuestion", () => {
 
     expect(onDraft).not.toHaveBeenCalled();
     expect(onValidate).not.toHaveBeenCalled();
-    expect(screen.getByText("5/5 coronas")).toBeTruthy();
+    expect(screen.getByText("5/5", { exact: true })).toBeTruthy();
     expect(
       screen.getByText("Ya tienes cinco coronas. Retira una antes de colocar otra."),
     ).toBeTruthy();
@@ -91,7 +91,7 @@ describe("ServerQueensQuestion", () => {
     fireEvent.keyDown(queenCell, { key: "Delete" });
 
     expect(onDraft).toHaveBeenCalledWith([2, 5, 16, 21]);
-    expect(screen.getByText("4/5 coronas")).toBeTruthy();
+    expect(screen.getByText("4/5", { exact: true })).toBeTruthy();
   });
 
   it("counts a prefilled queen even when it is absent from progress", () => {
@@ -115,7 +115,7 @@ describe("ServerQueensQuestion", () => {
     fireEvent.click(screen.getByRole("gridcell", { name: /Fila 1, columna 1/ }));
 
     expect(onDraft).not.toHaveBeenCalled();
-    expect(screen.getByText("5/5 coronas")).toBeTruthy();
+    expect(screen.getByText("5/5", { exact: true })).toBeTruthy();
     expect(
       screen.getByText("Ya tienes cinco coronas. Retira una antes de colocar otra."),
     ).toBeTruthy();
@@ -133,18 +133,18 @@ describe("ServerQueensQuestion", () => {
     };
     const limited = { ...progress, maxIncorrectValidations: 3 };
     const { rerender } = render(<ServerQueensQuestion {...props} progress={limited} />);
-    expect(screen.getByText("3 intentos restantes")).toBeTruthy();
+    expect(screen.getByLabelText("3 de 3 intentos restantes en este tablero")).toBeTruthy();
     expect(screen.getByText("Se valida al colocar las 5 coronas.")).toBeTruthy();
     fireEvent.click(screen.getByRole("gridcell", { name: /Fila 5, columna 5/ }));
-    expect(screen.getByText("3 intentos restantes")).toBeTruthy();
+    expect(screen.getByLabelText("3 de 3 intentos restantes en este tablero")).toBeTruthy();
     rerender(
       <ServerQueensQuestion {...props} progress={{ ...limited, incorrectValidations: 1 }} />,
     );
-    expect(screen.getByText("2 intentos restantes")).toBeTruthy();
+    expect(screen.getByLabelText("2 de 3 intentos restantes en este tablero")).toBeTruthy();
     rerender(
       <ServerQueensQuestion {...props} progress={{ ...limited, incorrectValidations: 2 }} />,
     );
-    expect(screen.getByText("1 intento restante")).toBeTruthy();
+    expect(screen.getByLabelText("1 de 3 intentos restantes en este tablero")).toBeTruthy();
     rerender(
       <ServerQueensQuestion
         {...props}
@@ -154,7 +154,7 @@ describe("ServerQueensQuestion", () => {
         validationError="Sin conexión"
       />,
     );
-    expect(screen.getByText("1 intento restante")).toBeTruthy();
+    expect(screen.getByLabelText("1 de 3 intentos restantes en este tablero")).toBeTruthy();
     rerender(
       <ServerQueensQuestion {...props} progress={{ ...limited, incorrectValidations: 3 }} />,
     );
@@ -183,6 +183,6 @@ describe("ServerQueensQuestion", () => {
     fireEvent.click(screen.getByRole("gridcell", { name: /Fila 1, columna 1/ }));
     expect(onDraft).not.toHaveBeenCalled();
     expect(onValidate).not.toHaveBeenCalled();
-    expect(screen.getByText("3 intentos restantes")).toBeTruthy();
+    expect(screen.getByLabelText("3 de 3 intentos restantes en este tablero")).toBeTruthy();
   });
 });

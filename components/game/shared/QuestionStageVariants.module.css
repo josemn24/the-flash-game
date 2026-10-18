@@ -100,6 +100,11 @@
     transform: scale(0.92);
   }
 
+  .lifeHeartLast {
+    fill: var(--ds-color-fg-error);
+    transform: scale(1.12);
+  }
+
   .legacyStage {
     min-height: calc(100dvh - 48px);
   }

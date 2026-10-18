@@ -95,13 +95,13 @@ function buildSafeRules(
             format === "connect-pairs"
               ? "Rehaz los caminos libremente"
               : format === "queens"
-                ? "Tercer error"
+                ? "3 intentos por tablero"
                 : "Resuelve para avanzar",
           description:
             format === "connect-pairs"
               ? "Conecta todas las parejas y cubre el tablero sin cruces. Borrar, recortar y rehacer caminos no penaliza."
               : format === "queens"
-                ? "La tercera validación completa incorrecta de un tablero termina el desafío. Los movimientos no consumen oportunidades."
+                ? "Tienes 3 intentos por tablero; se renuevan al avanzar. La tercera validación completa incorrecta de un tablero termina el desafío. Los movimientos no consumen oportunidades."
                 : "Completar una prueba abre la siguiente. Consulta las reglas del formato antes de empezar.",
         },
         {

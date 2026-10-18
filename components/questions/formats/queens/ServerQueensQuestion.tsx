@@ -3,7 +3,7 @@
 import { type KeyboardEvent, useMemo, useRef, useState } from "react";
 import { CrownIcon, CrossIcon } from "@/components/ui";
 import { ServerOperationStatus } from "@/components/questions/shared";
-import { QueensBoard, QueensFooter } from "./QueensQuestion";
+import { QueensBoard, QueensFooter, QueensStatus } from "./QueensQuestion";
 import type {
   ServerQueensProgress,
   ServerQueensQuestion as ServerQuestion,
@@ -128,6 +128,23 @@ export function ServerQueensQuestion({
 
   return (
     <section className={styles.root} aria-label={`Queens, puzzle de ${targetQueens} coronas`}>
+      <QueensStatus
+        placedQueens={totalQueenCount}
+        targetQueens={targetQueens}
+        remainingAttempts={remainingAttempts}
+        totalAttempts={progress.maxIncorrectValidations}
+      />
+      <QueensBoard
+        question={question}
+        answer={{ queens: [...draftQueens], marks }}
+        label={`Tablero Queens de ${question.grid.rows} por ${question.grid.columns}`}
+        focusedCell={focusedCell}
+        cellRefs={cellRefs}
+        onCellAction={applyAction}
+        onCellFocus={setFocusedCell}
+        onCellKeyDown={handleKeyDown}
+        disabled={disabled}
+      />
       <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
         <button
           type="button"
@@ -150,23 +167,7 @@ export function ServerQueensQuestion({
           <CrossIcon /> Marcar
         </button>
       </div>
-      <QueensBoard
-        question={question}
-        answer={{ queens: [...draftQueens], marks }}
-        label={`Tablero Queens de ${question.grid.rows} por ${question.grid.columns}`}
-        focusedCell={focusedCell}
-        cellRefs={cellRefs}
-        onCellAction={applyAction}
-        onCellFocus={setFocusedCell}
-        onCellKeyDown={handleKeyDown}
-        disabled={disabled}
-      />
-      <QueensFooter
-        placedQueens={totalQueenCount}
-        targetQueens={targetQueens}
-        conflictingQueens={conflicts.size}
-        remainingAttempts={remainingAttempts}
-      />
+      <QueensFooter targetQueens={targetQueens} conflictingQueens={conflicts.size} />
       {placementNotice ? (
         <p className={styles.placementNotice} role="status" aria-live="polite">
           {placementNotice}

@@ -72,10 +72,14 @@ test("móvil: el tercer fallo termina la partida sin puntos ni ventaja por falla
   await start(page, "bob");
   // The first board has two fixed crowns.
   for (const index of [0, 5, 14]) await cell(page, index).click();
-  await expect(page.getByText("2 intentos restantes", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("2 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
   await cell(page, 14).click();
   await cell(page, 20).click();
-  await expect(page.getByText("1 intento restante", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
   await cell(page, 20).click();
   await cell(page, 24).click();
   await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible();
@@ -96,7 +100,9 @@ test("teclado y recarga: una prueba activa sin recepción se cierra y no se reen
   await expect(cell(page, 5)).toBeFocused();
   await page.keyboard.press("x");
   await page.keyboard.press("Space");
-  await expect(page.getByText("3 intentos restantes", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("3 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible();
   await expect(

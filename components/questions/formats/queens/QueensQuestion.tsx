@@ -2,6 +2,7 @@
 
 import { type KeyboardEvent, type MutableRefObject, useMemo, useRef, useState } from "react";
 import { CrownIcon, CrossIcon, QueensCrownIcon, WarningIcon } from "@/components/ui";
+import { LifeHearts } from "@/components/game/shared/LifeHearts";
 import {
   calculateQueensMetrics,
   getQueensConflicts,
@@ -126,38 +127,61 @@ export function QueensBoard({
   );
 }
 
-export function QueensFooter({
+export function QueensStatus({
   placedQueens,
   targetQueens,
-  conflictingQueens,
   remainingAttempts,
+  totalAttempts,
 }: {
   placedQueens: number;
   targetQueens: number;
-  conflictingQueens: number;
   remainingAttempts?: number | null;
+  totalAttempts?: number | null;
 }) {
-  const lastAttempt = remainingAttempts === 1;
+  return (
+    <div className={styles.statusRow}>
+      <span
+        className={styles.crownProgress}
+        role="status"
+        aria-label="Progreso de coronas"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <QueensCrownIcon className={styles.progressCrown} />
+        <strong>
+          {placedQueens}/{targetQueens}
+        </strong>
+        <span className="sr-only">coronas colocadas</span>
+      </span>
+      {remainingAttempts != null && totalAttempts != null ? (
+        <span
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          title={`${totalAttempts} intentos por tablero. Se renuevan al avanzar.`}
+        >
+          <LifeHearts
+            livesRemaining={remainingAttempts}
+            totalLives={totalAttempts}
+            ariaLabel={`${remainingAttempts} de ${totalAttempts} intentos restantes en este tablero`}
+            className={styles.attemptsCapsule}
+            emphasizeLastLife
+          />
+        </span>
+      ) : null}
+    </div>
+  );
+}
 
+export function QueensFooter({
+  targetQueens,
+  conflictingQueens,
+}: {
+  targetQueens: number;
+  conflictingQueens: number;
+}) {
   return (
     <div className={styles.footer}>
-      <div className={styles.progress}>
-        <strong aria-live="polite" aria-atomic="true">
-          {placedQueens}/{targetQueens} coronas
-        </strong>
-        {remainingAttempts != null ? (
-          <p
-            className={`${styles.attempts} ${lastAttempt ? styles.lastAttempt : ""}`}
-            role="status"
-            aria-label={lastAttempt ? "Último intento" : undefined}
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            {lastAttempt ? <WarningIcon /> : null}
-            {lastAttempt ? "1 intento restante" : `${remainingAttempts} intentos restantes`}
-          </p>
-        ) : null}
-      </div>
       {conflictingQueens > 0 ? (
         <p className={styles.conflictNotice} role="status" aria-live="polite">
           {conflictingQueens === 1
@@ -310,6 +334,19 @@ export function QueensQuestion({
       className={`${styles.root}`}
       aria-label={`Queens, puzzle de ${question.grid.rows} coronas`}
     >
+      <QueensStatus placedQueens={metrics.placedQueens} targetQueens={question.grid.rows} />
+      <QueensBoard
+        question={question}
+        answer={answer}
+        label={`Tablero Queens de ${question.grid.rows} por ${question.grid.columns}`}
+        focusedCell={focusedCell}
+        cellRefs={cellRefs}
+        onCellAction={applyTool}
+        onCellFocus={setFocusedCell}
+        onCellKeyDown={handleCellKeyDown}
+        disabled={locked}
+      />
+
       <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
         <button
           type="button"
@@ -333,20 +370,7 @@ export function QueensQuestion({
         </button>
       </div>
 
-      <QueensBoard
-        question={question}
-        answer={answer}
-        label={`Tablero Queens de ${question.grid.rows} por ${question.grid.columns}`}
-        focusedCell={focusedCell}
-        cellRefs={cellRefs}
-        onCellAction={applyTool}
-        onCellFocus={setFocusedCell}
-        onCellKeyDown={handleCellKeyDown}
-        disabled={locked}
-      />
-
       <QueensFooter
-        placedQueens={metrics.placedQueens}
         targetQueens={question.grid.rows}
         conflictingQueens={metrics.conflictingQueens}
       />
