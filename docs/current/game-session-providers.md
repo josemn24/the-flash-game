@@ -1,17 +1,19 @@
 # Proveedores de sesión: fase 1
 
-Estado: implementado el contrato y el proveedor remoto el 2026-10-18. La autoridad local de
-Pirámide se documenta en [la fase 2](local-pyramid-session.md).
+Estado: contrato y proveedor remoto implementados el 2026-10-18. Las ampliaciones locales de
+Pirámide y Flash, incluida la vista compartida Flash, se documentan en
+[autoridades locales](local-pyramid-session.md).
 
 El motor competitivo existente recibe ahora una autoridad de sesión mediante un puerto. La
 composición de producción selecciona el proveedor remoto, que usa los mismos endpoints,
-cookies, comandos idempotentes y tiempos de espera del transporte anterior. La Pirámide y los
-otros cinco modos conservan sus políticas, evaluadores, transiciones y pantallas.
+cookies, comandos idempotentes y tiempos de espera del transporte anterior. Los seis modos
+conservan sus políticas, evaluadores y transiciones; Flash y Pirámide también admiten un
+proveedor local en sus composiciones de ensayo.
 
 El [contrato funcional de Pirámide](pyramid-session-contract.md) sigue siendo la referencia.
-Esta fase prepara la sustitución de autoridad. La fase 2 incorpora el proveedor local; la vista
-unificada corresponde a una fase posterior. La práctica existente todavía no certifica
-equivalencia competitiva.
+La fase 1 preparó la sustitución de autoridad. Las fases posteriores añadieron proveedores y
+ensayos locales para Pirámide, y extendieron a Flash el adaptador y la presentación compartidos.
+La práctica didáctica permanece separada y no certifica por sí sola la equivalencia competitiva.
 
 ## Archivos y responsabilidades
 
@@ -80,26 +82,25 @@ E2E_INTEGRATION_SCENARIOS=s03,s05,s14,narrative,s15,time-trial npm run test:e2e:
 El runner recrea únicamente su stack Supabase temporal y lo elimina al terminar. Los tests de
 referencia SQL de fase 0 siguen vigentes; esta fase no modifica SQL, rutas ni evaluadores.
 
-### Resultado del 2026-10-18
+### Resultado previo a la entrega Flash — 2026-10-18
 
-| Comprobación                                                       | Resultado                                                                                                   |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Vitest focal: sesión, proveedores, formatos, fachadas y Pirámide   | 164 pruebas correctas en 12 archivos, incluidas 34 nuevas pruebas del puerto y su integración con el motor. |
-| E2E Flash                                                          | 5 correctos.                                                                                                |
-| E2E Alfabeto                                                       | 7 correctos.                                                                                                |
-| E2E Supervivencia                                                  | 1 correcto.                                                                                                 |
-| E2E Narrativa                                                      | 2 correctos.                                                                                                |
-| E2E Pirámide                                                       | 5 correctos: recorrido S15 y cuatro casos Queens.                                                           |
-| E2E Contrarreloj                                                   | 4 correctos.                                                                                                |
-| Total de navegador                                                 | 24 correctos, sin casos omitidos ni casos marcados como inestables por Playwright.                          |
-| Integración de los seis modos                                      | Auth, PostgREST, RLS y escenarios funcionales correctos.                                                    |
-| TypeScript, ESLint focal, formato, arquitectura de tipos y enlaces | Correctos.                                                                                                  |
-| Vitest completo                                                    | 2480 pruebas correctas y dos fallos preexistentes, reproducidos también sobre una copia limpia de `HEAD`.   |
+| Comprobación                                                       | Resultado                                                                                                       |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Vitest focal: sesión, proveedores, formatos, fachadas y Pirámide   | 164 pruebas correctas en 12 archivos, incluidas 34 nuevas pruebas del puerto y su integración con el motor.     |
+| E2E Flash                                                          | 5 correctos.                                                                                                    |
+| E2E Alfabeto                                                       | 7 correctos.                                                                                                    |
+| E2E Supervivencia                                                  | 1 correcto.                                                                                                     |
+| E2E Narrativa                                                      | 2 correctos.                                                                                                    |
+| E2E Pirámide                                                       | 5 correctos: recorrido S15 y cuatro casos Queens.                                                               |
+| E2E Contrarreloj                                                   | 4 correctos.                                                                                                    |
+| Total de navegador                                                 | 24 correctos, sin casos omitidos ni casos marcados como inestables por Playwright.                              |
+| Integración de los seis modos                                      | Auth, PostgREST, RLS y escenarios funcionales correctos.                                                        |
+| TypeScript, ESLint focal, formato, arquitectura de tipos y enlaces | Correctos.                                                                                                      |
+| Vitest completo de ese corte                                       | 2480 pruebas correctas; el resultado posterior está registrado en la [entrega Flash](local-pyramid-session.md). |
 
-Los dos fallos de la suite general son la expectativa de cinco preguntas frente a las seis
-actuales en [`seed-betavip.test.mjs`](../../scripts/seed-betavip.test.mjs) y el ciclo entre dominios
-de componentes detectado por [`flashPopTokenGuard.test.ts`](../../components/game/modes/flash-pop/flashPopTokenGuard.test.ts).
-No dependen del puerto de sesión y quedan fuera de esta fase.
+Ese corte precede a la corrección de las regresiones generales y a las pruebas de autoridades
+locales. La verificación más reciente de Flash y Pirámide registra 2672 pruebas correctas en
+[`local-pyramid-session.md`](local-pyramid-session.md).
 
 Se actualizó una referencia obsoleta de la
 [integración de Narrativa](../../scripts/integration/scenarios/narrative.mjs): ahora espera
@@ -111,10 +112,10 @@ Refresh durante la edición; sus cinco casos pasan con el código inmóvil.
 El motor conserva su nombre y ubicación bajo `competitive/` para evitar una migración de
 importaciones adicional. La nueva frontera es el puerto inyectado, no un motor paralelo.
 
-## Siguiente frontera
+## Frontera siguiente
 
-La [fase 2](local-pyramid-session.md) implementa la autoridad local en memoria sobre este puerto
-y comparte reglas puras con la evaluación actual, incluyendo idempotencia, activación,
-recuperación y revisión.
+La siguiente extensión puede aplicar la presentación compartida por modo a Supervivencia. La
+entrega vigente ya implementa autoridades locales para Pirámide y Flash sobre este puerto; sus
+reglas de progresión y cierre permanecen específicas de cada modo.
 La fase de presentación podrá consumir ese proveedor desde el mismo controlador y retirar la
 duplicación de UI. Las rutas competitivas siguen seleccionando explícitamente el remoto.

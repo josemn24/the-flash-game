@@ -1,10 +1,11 @@
-# Autoridad local de La Pirámide
+# Autoridades locales de Flash y Pirámide
 
-Estado: fase 2 implementada y verificada, 2026-10-18. Presentación y selección de proveedor sin cambios.
+Estado: ensayo local de Pirámide y Flash; Flash comparte vista y adaptador con competición, 2026-10-18.
 
-La fase 2 añade `createLocalPyramidSessionProvider` sobre el mismo puerto que consume el motor
-competitivo. La composición de producción sigue seleccionando el remoto. No se añaden rutas,
-pantallas ni controles de ensayo. El [contrato funcional](pyramid-session-contract.md) y el
+Ambas autoridades locales implementan el mismo puerto que consume el motor competitivo. La
+composición de producción conserva el proveedor remoto; las composiciones bajo `/demo/` crean
+proveedores locales en memoria. Flash comparte además la vista competitiva y los controles de
+pregunta entre ambas autoridades. El [contrato funcional](pyramid-session-contract.md) y el
 [puerto de sesión](game-session-providers.md) siguen siendo las referencias de comportamiento.
 
 ## Composición
@@ -40,9 +41,11 @@ permanecen en los controles actuales.
 | Archivo                                                                                                                                | Responsabilidad                                                                                              |
 | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | [`local-pyramid.ts`](../../types/gameplay/local-pyramid.ts)                                                                            | Entrada privada y canónica de composición.                                                                   |
-| [`localPyramid.ts`](../../features/game/session/providers/localPyramid.ts)                                                             | Cola, revisión, sesión, idempotencia, recepciones, evaluación, recuperación y cierre.                        |
-| [`definition.ts`](../../features/game/session/providers/localPyramid/definition.ts)                                                    | Validación, resolución privada y construcción de payloads públicos.                                          |
-| [`formats.ts`](../../features/game/session/providers/localPyramid/formats.ts)                                                          | Transiciones puras de los seis protocolos de interacción especiales.                                         |
+| [`localPyramid.ts`](../../features/game/session/providers/localPyramid.ts)                                                             | Autoridad en memoria específica de progresión, puntuación y cierre de Pirámide.                              |
+| [`localFlash.ts`](../../features/game/session/providers/localFlash.ts)                                                                 | Autoridad en memoria específica de secuencia, puntuación y cierre de Flash.                                  |
+| [`runtime.ts`](../../features/game/session/providers/localShared/runtime.ts)                                                           | Cola de comandos serializada e idempotencia compartida por ambas autoridades.                                |
+| [`definition.ts`](../../features/game/session/providers/localShared/definition.ts)                                                     | Validación, resolución privada y construcción de payloads públicos para Flash y Pirámide.                    |
+| [`formats.ts`](../../features/game/session/providers/localShared/formats.ts)                                                           | Transiciones puras de los protocolos de interacción especiales.                                              |
 | [`resolution/`](../../lib/scoringCore/resolution/registry.ts)                                                                          | Los 21 resolutores competitivos puros, compartidos con las fachadas del servidor.                            |
 | [`competitiveReceipt.ts`](../../lib/scoringCore/competitiveReceipt.ts), [`pyramid.ts`](../../lib/scoringCore/pyramid.ts)               | Evaluación de recepciones y consecuencias específicas de Pirámide.                                           |
 | [`pyramidProgress.ts`](../../lib/gameplay/pyramidProgress.ts)                                                                          | Progreso compartido: solo `correct` supera un nivel; los demás resultados aportan cero y cierran el ascenso. |
@@ -62,10 +65,12 @@ grafía editorial de las soluciones de Mini-Wordle para la revisión; las reglas
 las palabras al validar y puntuar los intentos.
 
 El control de arquitectura impide importar transporte, React, Next, servidor, catálogos mock o
-infraestructura desde la autoridad local y los resolutores puros. También impide seleccionar
-el proveedor local en código de producto durante esta fase.
+infraestructura desde las autoridades locales y los resolutores puros. Solo las composiciones
+dedicadas de `/demo/` pueden seleccionar proveedores locales.
 
 ## Semántica de sesión
+
+### Pirámide
 
 Los 15 comandos aplicables comparten el contrato existente. `alphabetPass` y `takeover`
 responden `invalid_command`. Las revisiones son numéricas, pero el motor conserva su valor como
@@ -99,6 +104,20 @@ Solo `failed` o `summit` permiten completar normalmente. El abandono se distingu
 resultado y no entrega soluciones. La revisión se devuelve exclusivamente al completar o
 recuperar un resultado terminal y solo comprende niveles autorizados y resueltos.
 
+### Flash
+
+Flash reutiliza la cola, firma idempotente, compilación de preguntas y transiciones de formato.
+Su autoridad mantiene una secuencia lineal: preparar inicia el plazo de la pregunta, y una
+respuesta incorrecta o una pregunta sin respuesta no interrumpe el recorrido. Completar se
+acepta cuando se han resuelto las 16 preguntas; la revisión terminal conserva sus payloads
+privados dentro de la instancia local. No hay activación por separado, oportunidades de Queens
+que afecten niveles futuros ni dependencia de la ventana de publicación. Una repetición crea
+otra instancia y una recarga completa inicia otro ensayo.
+
+El ensayo canónico está disponible en
+`/demo/flash-pop/desafios/tabarnia-flash-01`. La práctica didáctica de
+`/demo/flash-pop/flash/tabarnia-flash-01` permanece separada.
+
 ## Verificación reproducible
 
 El corpus deriva de los ejemplos publicados de contratos: 25 combinaciones cubren los 21
@@ -112,6 +131,10 @@ detalles de evaluación. El reloj local reproduce los milisegundos efectivos ace
 servidor; no se admiten tolerancias de puntuación. Los diagnósticos locales opcionales pueden
 ser más ricos, pero cada campo público remoto debe coincidir.
 
+La conformidad de Flash recorre las 16 preguntas canónicas contra una publicación SBR sembrada
+en Supabase. Compara también los payloads públicos y de revisión, respuestas, puntos y tiempos
+aceptados. El fixture SBR conserva el contenido editorial compartido con el mock canónico.
+
 Los cambios de tiempo y la interrupción de evaluación de los tests se limitan a la base temporal.
 Las confirmaciones perdidas y cancelaciones se inyectan desde herramientas de prueba; el
 proveedor no incorpora latencia artificial. Las pruebas de permisos, límites de solicitudes y
@@ -122,6 +145,9 @@ juego.
 ```bash
 npm test -- features/game/session/providers features/game/competitive/core/localPyramidEngine.test.ts infrastructure/mock/localPyramidDefinition.test.ts
 FLASH_RATE_LIMIT_BURST=10000 npm run test:e2e:isolated -- e2e/pyramid-session-conformance.spec.ts
+npm run test:e2e:isolated -- e2e/flash-session-conformance.spec.ts
+npm run test:e2e:local-rehearsals
+E2E_INTEGRATION_SCENARIOS=sbr npm run test:e2e:isolated -- e2e/sbr-persisted.spec.ts
 E2E_INTEGRATION_SCENARIOS=s03,s05,s14,narrative,s15,time-trial npm run test:e2e:isolated -- e2e/s03-flash.spec.ts e2e/s05-alphabet.spec.ts e2e/s14-survival.spec.ts e2e/narrative.spec.ts e2e/s15-pyramid.spec.ts e2e/pyramid-queens.spec.ts e2e/time-trial.spec.ts
 npm run supabase:schema:test
 npm run type-architecture
@@ -132,11 +158,11 @@ npx tsc --noEmit --incremental false
 El comando SQL requiere un contenedor PostgreSQL de pruebas mediante `SUPABASE_DB_CONTAINER`;
 crea y elimina una base independiente. El runner E2E crea y elimina su propio stack Supabase.
 
-Los dos fallos generales preexistentes se registran aparte: la expectativa de cinco preguntas
-frente a seis en [`seed-betavip.test.mjs`](../../scripts/seed-betavip.test.mjs) y el ciclo entre
-dominios de componentes en [`flashPopTokenGuard.test.ts`](../../components/game/modes/flash-pop/flashPopTokenGuard.test.ts).
+El resultado fechado a continuación corresponde a la primera entrega de Pirámide. La ejecución
+posterior de la suite completa y las validaciones añadidas al ampliar Flash se registran en la
+sección de la entrega Flash.
 
-## Resultado del 2026-10-18
+## Resultado de la primera entrega de Pirámide — 2026-10-18
 
 | Comprobación                               | Resultado                                                                                                                                                                       |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -145,7 +171,7 @@ dominios de componentes en [`flashPopTokenGuard.test.ts`](../../components/game/
 | Motor compartido con ambas autoridades     | 25 recorridos de siete niveles, incluidos en la matriz real; comparación de fases, preguntas, respuestas, puntuación y bloqueo.                                                 |
 | Regresión de los seis modos                | 24 E2E correctos: Flash 5, Alfabeto 7, Supervivencia 1, Narrativa 2, Pirámide 5 y Contrarreloj 4; sin omitidos ni inestables. Integraciones de Auth, PostgREST y RLS correctas. |
 | Referencia SQL                             | 67 suites correctas, 158 casos compartidos de formatos, 904 observaciones de validación y pruebas de concurrencia correctas.                                                    |
-| Vitest completo                            | 2652 correctos y los dos fallos preexistentes indicados arriba.                                                                                                                 |
+| Vitest completo de esa entrega             | 2652 pruebas correctas; el resultado actualizado aparece en la sección siguiente.                                                                                               |
 | Controles estáticos                        | TypeScript, ESLint de los archivos modificados, formato, arquitectura y enlaces correctos.                                                                                      |
 
 La repetición focal conserva las reglas actuales de Word Search: una selección degenerada se
@@ -159,3 +185,13 @@ temporal, recuperación y repetición sin duplicar puntuación, confirmaciones p
 penalizaciones intermedias, tres fallos de Queens, acierto después de uno y dos fallos, agotamiento
 de Wordle y de movimientos Hashtag, recuperación específica por formato, revisión autorizada y
 cima de siete niveles. Las comparaciones mantienen íntegros los puntos y los tiempos aceptados.
+
+### Entrega Flash local y competitiva (2026-10-18)
+
+| Comprobación                            | Resultado                                                                                                       |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Suite Vitest                            | 255 archivos y 2672 tests correctos.                                                                            |
+| Ensayos locales de Pirámide y Flash     | 6 E2E correctos; Flash completa 16 preguntas, revisa y repite sin llamadas a Auth, Storage o juego competitivo. |
+| Regresión competitiva SBR               | 2 E2E correctos contra el stack Supabase aislado.                                                               |
+| Conformidad de Flash local con Supabase | 1 E2E correcto; 16 preguntas, respuestas, payloads, puntuación, tiempos y revisión.                             |
+| TypeScript, ESLint, arquitectura y docs | Correctos para la entrega.                                                                                      |

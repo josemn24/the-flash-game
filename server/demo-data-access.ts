@@ -13,3 +13,8 @@ export const getFlashPopChallengePageModel = cache(async (challengeKey: string) 
 export const getLocalPyramidDemoDefinition = cache(async (challengeId: string) =>
   demoReadServices.localPyramid.getDefinition(challengeId),
 );
+
+/** Local Flash rehearsal fixture, independent of the scheduled challenge dates. */
+export const getLocalFlashDemoDefinition = cache(async (challengeId: string) =>
+  demoReadServices.localFlash.getDefinition(challengeId),
+);

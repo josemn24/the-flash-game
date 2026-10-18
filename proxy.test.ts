@@ -37,6 +37,13 @@ describe("design system availability before authentication", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
     expect(mocks.updateSession).not.toHaveBeenCalled();
   });
+  it("serves the approved local Flash rehearsal without contacting authentication", async () => {
+    const response = await proxy(
+      new NextRequest("http://localhost/demo/flash-pop/desafios/tabarnia-flash-01"),
+    );
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+    expect(mocks.updateSession).not.toHaveBeenCalled();
+  });
   it("returns 404 for other demo challenge identifiers before authentication", async () => {
     const response = await proxy(
       new NextRequest("http://localhost/demo/flash-pop/desafios/tabarnia-challenge-06"),
@@ -80,6 +87,7 @@ describe("design system availability before authentication", () => {
     "/admin",
     "/salas/demo",
     "/desafios/tabarnia-challenge-05",
+    "/desafios/tabarnia-flash-01",
     "/design-system-extra",
     "/demo/flash-pop/ui-kit-extra",
   ])("preserves authentication for other routes: %s", async (path) => {

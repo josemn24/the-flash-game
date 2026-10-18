@@ -19,14 +19,15 @@ import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progres
 import { isMatchingAnswer } from "@/lib/scoringCore/questions/matching";
 import type { DurationMs } from "@/types/domain/values";
 import { systemSessionClock } from "../clock";
-import { compileDefinition, type CompiledLevel } from "./localPyramid/definition";
+import { createLocalCommandQueue, localCommandSignature } from "./localShared/runtime";
+import { compileDefinition, type CompiledLevel } from "./localShared/definition";
 import {
   initialFormatState,
   formatProgress,
   transitionFormat,
   LocalRejection,
   reject,
-} from "./localPyramid/formats";
+} from "./localShared/formats";
 
 export type LocalPyramidOptions = {
   definition: LocalPyramidDefinition;
@@ -47,12 +48,6 @@ type Cached = {
   receipt?: Receipt;
   update?: AuthoritativeSessionUpdate;
 };
-const canonical = (value: unknown): string =>
-  JSON.stringify(value, (_key, item: unknown) =>
-    item && typeof item === "object" && !Array.isArray(item)
-      ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b)))
-      : item,
-  );
 const iso = (time: number | null) => (time === null ? null : new Date(time).toISOString());
 
 /** Single in-memory authority. It never imports mock data, transport, React or server modules. */
@@ -81,7 +76,7 @@ export function createLocalPyramidSessionProvider(
   const answers: AnswerResult[] = [];
   const formats = levels.map(initialFormatState);
   const cache = new Map<string, Cached>();
-  let queue: Promise<unknown> = Promise.resolve();
+  const enqueue = createLocalCommandQueue();
   const accept = (
     effect: GameSessionAcceptance["effect"],
     state: AuthoritativeSessionUpdate,
@@ -240,7 +235,7 @@ export function createLocalPyramidSessionProvider(
         : command.operation === "recover"
           ? `recovery:${command.input.sessionId}:${command.input.revision}`
           : undefined;
-    const signature = canonical(command);
+    const signature = localCommandSignature(command);
     const cached = key ? cache.get(key) : undefined;
     if (cached) {
       if (cached.signature !== signature) return reject("idempotency_conflict");
@@ -390,7 +385,7 @@ export function createLocalPyramidSessionProvider(
     execute(command, execution) {
       const captured = structuredClone(command);
       const receivedAt = clock.now();
-      const next = queue.then(async () => {
+      return enqueue(async () => {
         try {
           return structuredClone(await run(captured, execution?.signal, receivedAt));
         } catch (error) {
@@ -400,8 +395,6 @@ export function createLocalPyramidSessionProvider(
           return { kind: "uncertain" as const, code: "provider_unavailable", retryable: true };
         }
       });
-      queue = next.catch(() => undefined);
-      return next;
     },
   };
 }

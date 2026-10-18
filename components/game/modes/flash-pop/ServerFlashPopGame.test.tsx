@@ -4,11 +4,12 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { competitiveFlash, competitiveRoomContext } from "@/test-utils/competitiveGameplay";
 import { competitiveInputFor } from "@/test-utils/competitiveInput";
-import type { ServerFlashSession } from "@/features/game/useServerFlashSession";
+import type { FlashGameSession } from "@/features/game/useFlashGameSession";
 import { ServerFlashPopGame } from "./ServerFlashPopGame.client";
 
 const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }));
-vi.mock("@/features/game/useServerFlashSession", () => ({ useServerFlashSession: useSession }));
+vi.mock("@/features/game/useFlashGameSession", () => ({ useFlashGameSession: useSession }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("motion/react", async (importOriginal) => ({
   ...(await importOriginal<typeof import("motion/react")>()),
   AnimatePresence: ({ children }: { children: ReactNode }) => <>{children}</>,
@@ -24,7 +25,7 @@ describe("competitive answer feedback stays in the competitive shell", () => {
     const option = initial.props.question.options[0];
     const input = competitiveInputFor("multiple-choice", { pendingAnswer: option, locked: true });
     const retrySubmit = vi.fn();
-    let session: Partial<ServerFlashSession> = {
+    let session: Partial<FlashGameSession> = {
       phase: "playing",
       question: input.props.question,
       questionInput: input,

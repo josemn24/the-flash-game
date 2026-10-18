@@ -126,7 +126,7 @@ intentos e historial admiten `archived` cuando la publicación ya existente refe
 la creación o reprogramación de una publicación vuelve a exigir `published`.
 
 Eventos Mini-Wordle del Flash competitivo
-→ `features/game/useServerFlashSession.ts`
+→ `features/game/useFlashGameSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/mini-wordle/guess`
 → `server/competitive/attempt-api.ts`
 → `infrastructure/supabase/attempts/attemptCommands.ts`
@@ -135,7 +135,7 @@ Eventos Mini-Wordle del Flash competitivo
 → evaluador confiable desde la respuesta final construida por PostgreSQL
 
 Eventos Logic-code del Flash competitivo
-→ `features/game/useServerFlashSession.ts`
+→ `features/game/useFlashGameSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/logic-code/attempt`
 → `server/competitive/attempt-api.ts`
 → `infrastructure/supabase/attempts/attemptCommands.ts`
@@ -144,7 +144,7 @@ Eventos Logic-code del Flash competitivo
 → evaluador confiable desde `submittedCodes` e `incorrectAttempts` reconstruidos por PostgreSQL
 
 Eventos Progressive-clues del Flash competitivo
-→ `features/game/useServerFlashSession.ts`
+→ `features/game/useFlashGameSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/progressive-clues/reveal`
 → `server/competitive/attempt-api.ts`
 → `infrastructure/supabase/attempts/attemptCommands.ts`

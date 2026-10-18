@@ -5,7 +5,7 @@ const baseURL = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
   testDir: "./e2e",
-  testMatch: "local-pyramid-rehearsal.spec.ts",
+  testMatch: /local-(?:pyramid|flash)-rehearsal\.spec\.ts/,
   timeout: 120_000,
   fullyParallel: false,
   reporter: "line",

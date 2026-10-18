@@ -21,3 +21,20 @@ describe("demo local Pyramid composition", () => {
     expect(createDemoReadServices().localPyramid.getDefinition("tabarnia-challenge-06")).toBeNull();
   });
 });
+
+describe("demo local Flash composition", () => {
+  it("loads the canonical 16-question Steel Ball Run fixture independent of its window", () => {
+    const definition = createDemoReadServices().localFlash.getDefinition("tabarnia-flash-01");
+    expect(definition?.challenge).toMatchObject({ id: "tabarnia-flash-01", mode: "flash" });
+    expect(definition?.challenge.title).toBe("Steel Ball Run");
+    expect(definition?.challenge.slots).toHaveLength(16);
+    expect(definition?.levels).toHaveLength(16);
+    expect(definition?.challenge.slots.reduce((sum, slot) => sum + slot.points, 0)).toBe(
+      definition?.challenge.maxScore,
+    );
+  });
+
+  it("does not compose other scheduled ids as a local Flash rehearsal", () => {
+    expect(createDemoReadServices().localFlash.getDefinition("tabarnia-flash-02")).toBeNull();
+  });
+});

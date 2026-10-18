@@ -19,7 +19,7 @@ import {
   loseConfirmation,
 } from "@/test-utils/game-session-conformance/driver";
 import type { LocalPyramidDefinition } from "@/types/gameplay/local-pyramid";
-import { compileDefinition } from "./localPyramid/definition";
+import { compileDefinition } from "./localShared/definition";
 
 function setup(test = sessionCases[0]!, definition: LocalPyramidDefinition = definitionFor(test)) {
   const clock = manualClock();

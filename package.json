@@ -54,7 +54,8 @@
     "test:e2e:isolated": "node scripts/run-isolated-e2e.mjs",
     "test:e2e:design-system": "node scripts/run-design-system-e2e.mjs",
     "test:e2e:design-system:production": "node scripts/run-design-system-e2e.mjs --production",
-    "test:e2e:local-pyramid": "node scripts/run-local-pyramid-e2e.mjs"
+    "test:e2e:local-pyramid": "node scripts/run-local-pyramid-e2e.mjs",
+    "test:e2e:local-rehearsals": "node scripts/run-local-pyramid-e2e.mjs"
   },
   "dependencies": {
     "@next/env": "16.2.10",

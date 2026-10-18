@@ -2,19 +2,23 @@ import { competitiveCapabilityFor } from "@/lib/question-formats/definitions";
 import { readResolvedStoredQuestion } from "@/lib/question-formats/storedRegistry";
 import { COMPETITIVE_RESOLVERS } from "@/lib/scoringCore/resolution/registry";
 import type { CompetitiveQuestionType } from "@/lib/question-formats/definitions";
-import type { LocalPyramidDefinition, LocalPyramidLevel } from "@/types/gameplay/local-pyramid";
+import type {
+  LocalFlashDefinition,
+  LocalPyramidDefinition,
+  LocalQuestionLevel,
+} from "@/types/gameplay/local-pyramid";
 import type { ResolvedQuestion } from "@/types/gameplay/scoring";
 import type { JsonValue, DurationMs } from "@/types/domain/values";
 
 export type CompiledLevel = {
-  source: LocalPyramidLevel;
+  source: LocalQuestionLevel;
   question: ResolvedQuestion;
   publicPayload: Record<string, unknown>;
   solutionPayload: Record<string, unknown>;
 };
 
 /** Only fixture composition calls this projection; public updates never spread a solution. */
-export function levelPayloads(level: LocalPyramidLevel) {
+export function levelPayloads(level: LocalQuestionLevel) {
   const { publicQuestion: question, solution } = level;
   const publicPayload: Record<string, unknown> = {
     ...(question.category ? { category: question.category } : {}),
@@ -47,8 +51,7 @@ export function compileDefinition(input: LocalPyramidDefinition): {
   definition: LocalPyramidDefinition;
   levels: CompiledLevel[];
 } {
-  const definition = structuredClone(input);
-  const { challenge, levels } = definition;
+  const { challenge, levels } = input;
   if (
     challenge.mode !== "pyramid" ||
     !challenge.id ||
@@ -63,7 +66,36 @@ export function compileDefinition(input: LocalPyramidDefinition): {
     new Set(levels.map((level) => level.challengeItemId)).size !== 7
   )
     throw new Error("invalid_local_pyramid_definition");
-  const compiled = challenge.levels.map((slot, index) => {
+  const compiled = compileLocalQuestions(structuredClone(input));
+  return { definition: structuredClone(input), levels: compiled };
+}
+
+export function compileFlashDefinition(input: LocalFlashDefinition): {
+  definition: LocalFlashDefinition;
+  levels: CompiledLevel[];
+} {
+  const definition = structuredClone(input);
+  const { challenge, levels } = definition;
+  if (
+    challenge.mode !== "flash" ||
+    !challenge.id ||
+    !challenge.slots.length ||
+    challenge.slots.length !== levels.length ||
+    challenge.maxScore !== challenge.slots.reduce((sum, slot) => sum + slot.points, 0) ||
+    new Set(challenge.slots.map((slot) => slot.id)).size !== challenge.slots.length ||
+    new Set(levels.map((level) => level.challengeItemId)).size !== levels.length
+  )
+    throw new Error("invalid_local_flash_definition");
+  return { definition, levels: compileLocalQuestions(definition) };
+}
+
+function compileLocalQuestions(
+  input: LocalPyramidDefinition | LocalFlashDefinition,
+): CompiledLevel[] {
+  const { challenge, levels } = input;
+  const mode = challenge.mode;
+  const slots = challenge.mode === "pyramid" ? challenge.levels : challenge.slots;
+  return slots.map((slot, index) => {
     const level = levels.find((row) => row.challengeItemId === slot.id);
     if (
       !level ||
@@ -75,11 +107,11 @@ export function compileDefinition(input: LocalPyramidDefinition): {
       level.publicQuestion.id !== level.solution.questionVersionId ||
       level.publicQuestion.timeLimitMs !== slot.timeLimitMs ||
       level.payloadSchemaVersion !== slot.payloadSchemaVersion ||
-      !competitiveCapabilityFor(slot.questionType, "pyramid")?.payloadSchemaVersions.includes(
+      !competitiveCapabilityFor(slot.questionType, mode)?.payloadSchemaVersions.includes(
         slot.payloadSchemaVersion,
       )
     )
-      throw new Error("invalid_local_pyramid_level");
+      throw new Error(`invalid_local_${mode}_level`);
     if (level.publicQuestion.type === "progressive-clues") {
       const reveals = level.reveals ?? [];
       if (
@@ -104,7 +136,7 @@ export function compileDefinition(input: LocalPyramidDefinition): {
       timeLimitMs: slot.timeLimitMs as DurationMs,
       itemPoints: slot.points,
       receiptId: slot.id,
-      mode: "pyramid",
+      mode,
       itemConfigSchemaVersion: 1,
       modeConfigSchemaVersion: 1,
       itemConfig: {},
@@ -122,5 +154,4 @@ export function compileDefinition(input: LocalPyramidDefinition): {
       payloads.publicPayload.category = null;
     return { source: level, question: { ...resolved, id: slot.id }, ...payloads };
   });
-  return { definition, levels: compiled };
 }

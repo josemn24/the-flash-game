@@ -9,15 +9,15 @@ import {
   isDesignSystemPath,
   isKnownDesignSystemPath,
 } from "@/features/design-system/access";
-import { FLASH_POP_CHALLENGE_ID } from "@/features/flash-pop/demoSocial";
+import { FLASH_POP_CHALLENGE_ID, FLASH_POP_FLASH_PILOT_ID } from "@/features/flash-pop/demoSocial";
 
 const pyramidDemoPrefix = "/demo/flash-pop/desafios/";
 
-function localPyramidDemoResponse(request: NextRequest) {
+function localCompetitiveDemoResponse(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (!/^\/demo\/flash-pop\/desafios\/[^/]+\/?$/.test(pathname)) return null;
   const challengeId = pathname.slice(pyramidDemoPrefix.length).replace(/\/$/, "");
-  if (challengeId !== FLASH_POP_CHALLENGE_ID) {
+  if (![FLASH_POP_CHALLENGE_ID, FLASH_POP_FLASH_PILOT_ID].includes(challengeId)) {
     return new NextResponse("Not Found", {
       status: 404,
       headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" },
@@ -46,8 +46,8 @@ export async function proxy(request: NextRequest) {
     requestHeaders.delete(AUTH_FAILURE_HEADER);
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
-  const localPyramidResponse = localPyramidDemoResponse(request);
-  if (localPyramidResponse) return localPyramidResponse;
+  const localCompetitiveResponse = localCompetitiveDemoResponse(request);
+  if (localCompetitiveResponse) return localCompetitiveResponse;
   return updateSession(request);
 }
 

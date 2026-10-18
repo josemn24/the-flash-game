@@ -2,14 +2,20 @@ import { describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   getLocalPyramidDemoDefinition: vi.fn(),
+  getLocalFlashDemoDefinition: vi.fn(),
   notFound: vi.fn(() => {
     throw new Error("NOT_FOUND");
   }),
   LocalPyramidGameApp: vi.fn(() => null),
+  LocalFlashGameApp: vi.fn(() => null),
 }));
 
 vi.mock("@/server/demo-data-access", () => ({
   getLocalPyramidDemoDefinition: mocks.getLocalPyramidDemoDefinition,
+  getLocalFlashDemoDefinition: mocks.getLocalFlashDemoDefinition,
+}));
+vi.mock("@/components/game/shells/LocalFlashGameApp.client", () => ({
+  LocalFlashGameApp: mocks.LocalFlashGameApp,
 }));
 vi.mock("@/components/game/shells/LocalPyramidGameApp.client", () => ({
   LocalPyramidGameApp: mocks.LocalPyramidGameApp,
@@ -22,6 +28,7 @@ import { dynamic } from "./page";
 import { generateMetadata } from "./page";
 import PyramidDemoPage from "./page";
 import { LocalPyramidGameApp } from "@/components/game/shells/LocalPyramidGameApp.client";
+import { LocalFlashGameApp } from "@/components/game/shells/LocalFlashGameApp.client";
 
 describe("Flash Pop Pyramid demo route", () => {
   it("resolves preview aliases dynamically", () => {
@@ -38,8 +45,20 @@ describe("Flash Pop Pyramid demo route", () => {
     expect(page).toMatchObject({ type: LocalPyramidGameApp, props: { definition } });
   });
 
+  it("renders the shared Flash rehearsal for the approved Steel Ball Run id", async () => {
+    const definition = { challenge: { mode: "flash", id: "tabarnia-flash-01" }, levels: [] };
+    mocks.getLocalPyramidDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalFlashDemoDefinition.mockResolvedValue(definition);
+
+    const page = await PyramidDemoPage({
+      params: Promise.resolve({ challengeId: "tabarnia-flash-01" }),
+    });
+    expect(page).toMatchObject({ type: LocalFlashGameApp, props: { definition } });
+  });
+
   it("returns 404 for demo identifiers outside the explicit composition allowlist", async () => {
     mocks.getLocalPyramidDemoDefinition.mockResolvedValue(null);
+    mocks.getLocalFlashDemoDefinition.mockResolvedValue(null);
     await expect(
       PyramidDemoPage({ params: Promise.resolve({ challengeId: "tabarnia-challenge-06" }) }),
     ).rejects.toThrow("NOT_FOUND");

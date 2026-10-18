@@ -37,7 +37,7 @@ export const E2E_BY_SCENARIO = Object.freeze({
   s14: ["e2e/s14-survival.spec.ts"],
   s15: ["e2e/s15-pyramid.spec.ts"],
   s17: ["e2e/s17-editorial-versioning.spec.ts"],
-  sbr: ["e2e/sbr-persisted.spec.ts"],
+  sbr: ["e2e/sbr-persisted.spec.ts", "e2e/flash-session-conformance.spec.ts"],
 });
 
 export const E2E_SCENARIO_BY_SPEC = new Map(

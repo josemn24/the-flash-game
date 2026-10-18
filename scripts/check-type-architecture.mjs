@@ -319,14 +319,22 @@ for (const file of productionFiles) {
   const isRoomAdapter = isRoomSupabaseAdapter(relative);
   const isMockAdapter = isMockInfrastructure(relative);
   const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
-  const isLocalPyramidProvider =
-    /^features\/game\/session\/providers\/localPyramid(?:\/|\.ts$)/.test(relative);
-  // The local rehearsal shell is the sole fixture-backed provider composition root.
-  const isLocalPyramidDemoComposition =
-    relative === "components/game/shells/LocalPyramidGameApp.client.tsx";
+  const isLocalSessionProvider =
+    /^features\/game\/session\/providers\/local(?:Pyramid|Flash)(?:\/|\.ts$)/.test(relative);
+  const isLocalSessionShared = relative.startsWith(
+    `features${path.sep}game${path.sep}session${path.sep}providers${path.sep}localShared${path.sep}`,
+  );
+  // Fixture-backed local rehearsal shells are the only provider composition roots.
+  const isLocalSessionDemoComposition = [
+    "components/game/shells/LocalPyramidGameApp.client.tsx",
+    "components/game/shells/LocalFlashGameApp.client.tsx",
+  ].includes(relative);
   const isPureResolution = relative.startsWith("lib/scoringCore/resolution/");
 
-  if (isLocalPyramidProvider && /\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/.test(source)) {
+  if (
+    (isLocalSessionProvider || isLocalSessionShared) &&
+    /\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/.test(source)
+  ) {
     violations.push(`${relative} performs I/O inside the local session authority`);
   }
 
@@ -334,7 +342,7 @@ for (const file of productionFiles) {
     const context = inputContext(relative);
     const target = resolvedProjectImport(imported.specifier, file);
     if (
-      (isLocalPyramidProvider || isPureResolution) &&
+      (isLocalSessionProvider || isLocalSessionShared || isPureResolution) &&
       (imported.specifier === "server-only" ||
         /^(?:node:|next(?:\/|$)|react(?:\/|$)|@supabase\/)/.test(imported.specifier) ||
         (target && /^(?:server|infrastructure|data|test-utils|app|components)\//.test(target)) ||
@@ -345,9 +353,11 @@ for (const file of productionFiles) {
       );
     }
     if (
-      target?.startsWith("features/game/session/providers/localPyramid") &&
-      !isLocalPyramidProvider &&
-      !isLocalPyramidDemoComposition
+      target &&
+      /^features\/game\/session\/providers\/local(?:Pyramid|Flash|Shared)(?:\/|$)/.test(target) &&
+      !isLocalSessionProvider &&
+      !isLocalSessionShared &&
+      !isLocalSessionDemoComposition
     ) {
       violations.push(`${relative} selects the local provider before the presentation phase`);
     }

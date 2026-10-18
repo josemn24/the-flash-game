@@ -3,8 +3,12 @@ import { scheduledChallengeRouteAliases } from "@/data/mock/constants";
 import { isCompetitiveQuestionType } from "@/lib/question-formats/definitions";
 import type { DomainStore } from "@/types/domain";
 import type { TypedQuestionVersion } from "@/types/contracts";
-import type { LocalPyramidDefinition, LocalPyramidLevel } from "@/types/gameplay/local-pyramid";
-import type { ServerPyramidChallenge } from "@/types/gameplay/challenge";
+import type {
+  LocalFlashDefinition,
+  LocalPyramidDefinition,
+  LocalQuestionLevel,
+} from "@/types/gameplay/local-pyramid";
+import type { ServerFlashQuestion, ServerPyramidChallenge } from "@/types/gameplay/challenge";
 
 /** Canonical mock composition only; competitive routes never select or import this adapter. */
 export function createMockLocalPyramidDefinition(
@@ -18,27 +22,7 @@ export function createMockLocalPyramidDefinition(
   const items = store.challengeItems
     .filter((row) => row.challengeVersionId === version.id)
     .sort((a, b) => a.position - b.position);
-  const levels = items.map((item): LocalPyramidLevel => {
-    const raw = store.questionVersions.find((row) => row.id === item.questionVersionId);
-    if (!raw || !isCompetitiveQuestionType(raw.type, "pyramid") || raw.status !== "published")
-      throw new Error("unsupported_mock_pyramid_question");
-    const question = raw as unknown as TypedQuestionVersion;
-    return {
-      challengeItemId: item.id,
-      payloadSchemaVersion: question.payloadSchemaVersion,
-      publicQuestion: { ...question.publicPayload, id: question.id, type: question.type },
-      solution: {
-        ...question.solutionPayload.solution,
-        questionVersionId: question.id,
-        type: question.type,
-      },
-      reveals: question.solutionPayload.reveals.map((payload) => ({
-        questionVersionId: question.id,
-        type: question.type,
-        payload,
-      })),
-    } as LocalPyramidLevel;
-  });
+  const levels = items.map((item) => localQuestionLevel(item, store, "pyramid"));
   const slots = items.map((item, index) => {
     const level = levels[index]!;
     const config = item.modeConfig as Record<string, unknown>;
@@ -80,6 +64,55 @@ export function createMockLocalPyramidDefinition(
   };
 }
 
+export function createMockLocalFlashDefinition(
+  publicationId: string,
+  store: DomainStore = mockDomainStore,
+): LocalFlashDefinition {
+  const publication = store.scheduledChallenges.find((row) => row.id === publicationId);
+  const version = store.challengeVersions.find((row) => row.id === publication?.challengeVersionId);
+  if (!publication || !version || version.mode !== "flash" || version.status !== "published")
+    throw new Error("mock_flash_not_found");
+  const items = store.challengeItems
+    .filter((row) => row.challengeVersionId === version.id)
+    .sort((a, b) => a.position - b.position);
+  const levels = items.map((item) => localQuestionLevel(item, store, "flash"));
+  const slots = items.map((item, index) => {
+    const question = levels[index]!.publicQuestion;
+    return {
+      id: item.id,
+      position: item.position,
+      questionType: question.type as ServerFlashQuestion["type"],
+      payloadSchemaVersion: levels[index]!.payloadSchemaVersion,
+      timeLimitMs: question.timeLimitMs,
+      points: item.points,
+    };
+  });
+  return {
+    challenge: {
+      id: publication.id,
+      definitionId: version.challengeDefinitionId,
+      number: publication.number,
+      title: version.title,
+      subtitle: version.subtitle,
+      description: version.description,
+      mode: "flash",
+      maxScore: slots.reduce((sum, slot) => sum + slot.points, 0),
+      slots,
+    },
+    levels,
+  };
+}
+
+/** Canonical fixture for the date-independent local competitive Flash rehearsal. */
+export function createMockFlashPopFlashDemoDefinition(): LocalFlashDefinition {
+  const routeId = "tabarnia-flash-01" as const;
+  const definition = createMockLocalFlashDefinition(scheduledChallengeRouteAliases[routeId]);
+  return {
+    ...definition,
+    challenge: { ...definition.challenge, id: routeId },
+  };
+}
+
 /** Canonical fixture composition for the date-independent Flash Pop rehearsal route. */
 export function createMockFlashPopPyramidDemoDefinition(): LocalPyramidDefinition {
   const routeId = "tabarnia-challenge-05" as const;
@@ -93,4 +126,30 @@ export function createMockFlashPopPyramidDemoDefinition(): LocalPyramidDefinitio
       availableUntil: "9999-12-31T23:59:59.999Z",
     },
   };
+}
+
+function localQuestionLevel(
+  item: DomainStore["challengeItems"][number],
+  store: DomainStore,
+  mode: "flash" | "pyramid",
+): LocalQuestionLevel {
+  const raw = store.questionVersions.find((row) => row.id === item.questionVersionId);
+  if (!raw || !isCompetitiveQuestionType(raw.type, mode) || raw.status !== "published")
+    throw new Error(`unsupported_mock_${mode}_question`);
+  const question = raw as unknown as TypedQuestionVersion;
+  return {
+    challengeItemId: item.id,
+    payloadSchemaVersion: question.payloadSchemaVersion,
+    publicQuestion: { ...question.publicPayload, id: question.id, type: question.type },
+    solution: {
+      ...question.solutionPayload.solution,
+      questionVersionId: question.id,
+      type: question.type,
+    },
+    reveals: question.solutionPayload.reveals.map((payload) => ({
+      questionVersionId: question.id,
+      type: question.type,
+      payload,
+    })),
+  } as LocalQuestionLevel;
 }
