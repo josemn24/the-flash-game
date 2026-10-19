@@ -18,9 +18,7 @@ const Survival = dynamic(() =>
   ),
 );
 const Pyramid = dynamic(() =>
-  import("@/components/game/modes/flash-pop/FlashPopPyramidGame.client").then(
-    (m) => m.FlashPopPyramidGame,
-  ),
+  import("@/components/game/shells/LocalPyramidGameApp.client").then((m) => m.LocalPyramidGameApp),
 );
 const Narrative = dynamic(() =>
   import("@/components/game/modes/narrative/NarrativeGameApp.client").then(
@@ -28,21 +26,30 @@ const Narrative = dynamic(() =>
   ),
 );
 
-export function MockGameApp({ challenge, onComplete, socialSnapshot }: MockGameAppProps) {
+export function MockGameApp(props: MockGameAppProps) {
+  if (props.definition) {
+    return (
+      <Pyramid
+        definition={props.definition}
+        onComplete={props.onComplete}
+        returnTo={props.returnTo}
+      />
+    );
+  }
+  const { challenge, onComplete, socialSnapshot } = props;
   switch (challenge.mode) {
     case "flash":
       return <Flash challenge={challenge} onComplete={onComplete} />;
     case "alphabet":
       return (
-        <Alphabet definition={localAlphabetDefinitionFromChallenge(challenge)} onComplete={onComplete} />
+        <Alphabet
+          definition={localAlphabetDefinitionFromChallenge(challenge)}
+          onComplete={onComplete}
+        />
       );
     case "survival":
       return (
         <Survival challenge={challenge} onComplete={onComplete} socialSnapshot={socialSnapshot} />
-      );
-    case "pyramid":
-      return (
-        <Pyramid challenge={challenge} onComplete={onComplete} socialSnapshot={socialSnapshot} />
       );
     case "narrative":
       return <Narrative challenge={challenge} onComplete={onComplete} />;

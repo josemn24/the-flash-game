@@ -1,17 +1,17 @@
 # La Pirámide: contrato funcional y referencia para proveedores
 
-Estado: referencia de la fase 0 de la unificación, documentada el 2026-10-18. La referencia es el recorrido
-competitivo existente. Esta fase solo añade documentación y pruebas: no introduce un proveedor
-local, no modifica las reglas ni cambia componentes, endpoints o funciones de producción.
+Estado: contrato vigente de Pirámide. La referencia de la fase 0 se documentó el 2026-10-18 sobre
+el recorrido competitivo existente; aquella entrega añadió documentación y pruebas. La unificación
+se completó con el [cierre de la fase 6 el 2026-10-19](qa.md#cierre-de-la-fase-6--2026-10-19).
 
 Las [decisiones aprobadas](../decisions/decisions.md), la
 [política de recuperación](../decisions/adr/0003-attempt-lifecycle-and-concurrency.md) y el
 [contrato del intento](attempt-lifecycle.md) conservan su precedencia. Los requisitos de un
-proveedor local descritos al final fijan el objetivo de la fase 0; su implementación posterior
-se documenta en [Autoridad local: fase 2](local-pyramid-session.md).
+proveedor local descritos al final fijaron el objetivo de la fase 0; su implementación y composición
+consolidadas se documentan en [Autoridades locales](local-pyramid-session.md).
 La introducción posterior del puerto y del adaptador remoto se documenta en
-[Proveedores de sesión: fase 1](game-session-providers.md); los resultados de verificación de
-este documento corresponden a la fase 0.
+[Proveedores de sesión](game-session-providers.md). La sección 8 conserva los resultados de la
+fase 0 y la sección 9 describe la frontera compartida vigente.
 
 ## 1. Partida, contenido y autoridad
 
@@ -196,18 +196,22 @@ runner recrea su contenedor entre escenarios y no debe usarse simultáneamente p
 Se eliminaron los entornos temporales al terminar. No se reinició la base habitual del proyecto
 ni se ejecutaron operaciones remotas. Solo se modifican documentación y pruebas.
 
-## 9. Frontera prevista para las fases siguientes
+## 9. Frontera compartida tras la fase 6
 
-La misma vista y el mismo controlador de experiencia consumirán un proveedor de sesión remoto o
-uno local en memoria. El proveedor local aplicará estas consecuencias con datos mock, reloj
-inyectable, revisión e idempotencia; repetir un ensayo creará una sesión local nueva. El remoto
-mantendrá la autoridad y los comandos del backend.
+Estado: completada el 2026-10-19; [criterios de cierre y evidencia](qa.md#cierre-de-la-fase-6--2026-10-19).
 
-La práctica actual todavía usa `usePyramidSession` y preguntas completas. No se considera
-equivalente a la competición: Queens cuenta conflictos de colocación en práctica, mientras el
-recorrido competitivo cuenta validaciones completas. `PyramidAttemptRecord` pertenece a ese
-controlador legacy y no será el contrato obligatorio del proveedor nuevo.
+Todas las entradas jugables de Pirámide usan `usePyramidGameSession` y `PyramidGameView`.
+La composición competitiva conecta el proveedor remoto; la local recibe `LocalPyramidDefinition`
+y crea una autoridad en memoria. El catálogo, los controles y los resolutores de la biblioteca
+didáctica no constituyen otra composición de partidas de Pirámide.
 
-Las fases posteriores deberán preservar las reglas comprobadas, ampliar la conformidad por
-formato y mantener separado el contenido privado. Este documento no crea endpoints, no elige
-implementaciones del puerto y no presenta la unificación como ya realizada.
+El resumen de resultado y el progreso mínimo del lobby son tipos neutrales de gameplay. Se
+retiraron el controlador local anterior, sus transiciones, su almacenamiento y las dos vistas
+sustituidas. La entrada local antigua con preguntas de práctica ya no se admite. Las soluciones
+mock pertenecen a la definición privada y al proveedor, y solo se proyectan para revisión terminal.
+
+Repetir, cambiar de desafío o versión y recargar crean una ejecución nueva. Los diccionarios
+públicos de Mini-Wordle se preparan antes de construir el proveedor; su carga no activa plazos.
+El callback local de resultado se emite una vez por cierre confirmado, tanto para cima como para
+ascenso fallido, sin duplicarse al revisar o volver al resultado. El backend conserva su contrato,
+autorización, evaluación, ranking y acreditación.

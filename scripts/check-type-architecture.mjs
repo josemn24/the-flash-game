@@ -343,6 +343,20 @@ for (const file of productionFiles) {
     violations.push(`${relative} performs I/O inside the local session authority`);
   }
 
+  const pyramidPublicPresentation = [
+    "components/game/modes/flash-pop/PyramidGameView.tsx",
+    "components/game/modes/flash-pop/FlashPopReview.tsx",
+    "features/game/usePyramidGameSession.ts",
+  ].includes(relative);
+  const remoteSessionComposition =
+    relative === "features/game/session/providers/remote.ts" ||
+    relative === "features/game/session/providers/remoteBootstrap.ts" ||
+    /^components\/game\/modes\/.*\/Server[^/]+\.client\.tsx$/.test(relative);
+  const removedPyramidModule =
+    /^(?:features\/pyramid\/(?:usePyramidSession|pyramidAttempt)|components\/game\/modes\/(?:pyramid\/PyramidGameApp\.client|flash-pop\/FlashPopPyramidGame\.client))$/;
+  if (removedPyramidModule.test(relative.replace(/\.tsx?$/, "")))
+    violations.push(`${relative} reintroduces a retired Pyramid implementation`);
+
   for (const imported of importsIn(source, true)) {
     const context = inputContext(relative);
     const target = resolvedProjectImport(imported.specifier, file);
@@ -387,6 +401,16 @@ for (const file of productionFiles) {
     ) {
       violations.push(`${relative} bypasses the game session port via ${imported.specifier}`);
     }
+    if (target && removedPyramidModule.test(target.replace(/\.tsx?$/, "")))
+      violations.push(`${relative} imports a retired Pyramid implementation ${imported.specifier}`);
+    if (
+      (pyramidPublicPresentation || remoteSessionComposition) &&
+      target &&
+      (/^(?:data|infrastructure\/mock|test-utils)\//.test(target) ||
+        target === "types/gameplay/local-pyramid" ||
+        /^features\/game\/session\/providers\/local/.test(target))
+    )
+      violations.push(`${relative} imports private local session data ${imported.specifier}`);
     const targetContext = target ? inputContext(target) : null;
     if (context && targetContext && context !== targetContext) {
       violations.push(`${relative} crosses question input contexts via ${imported.specifier}`);

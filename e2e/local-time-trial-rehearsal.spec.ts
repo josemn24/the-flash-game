@@ -6,13 +6,11 @@ const connectPairsPath = "/demo/flash-pop/desafios/tabarnia-time-trial-connect-p
 const backendPath = /\/auth\/v1(?:\/|$)|\/storage\/v1(?:\/|$)|\/api\/competitive(?:\/|$)/i;
 
 async function finishCountdown(page: Page) {
-  await expect(page.locator('main [role="status"] strong').last()).toHaveText("3");
-  for (const count of ["2", "1"]) {
-    await page.clock.runFor(1_000);
+  // Keep performance.now() aligned with the native animation timeline. Advancing
+  // Playwright's clock delays Motion's exit animations and blocks the next screen.
+  for (const count of ["3", "2", "1"]) {
     await expect(page.locator('main [role="status"] strong').last()).toHaveText(count);
   }
-  await page.clock.runFor(1_000);
-  await page.waitForTimeout(25);
 }
 
 function queensCell(page: Page, index: number) {
@@ -44,7 +42,6 @@ async function solveConnectPairs(page: Page, questionIndex: number) {
 test("local Queens Time Trial shares the competitive view, can be reviewed and replayed without backend calls", async ({
   page,
 }) => {
-  await page.clock.install({ time: new Date("2026-10-18T12:00:00Z") });
   const backendRequests: string[] = [];
   page.on("request", (request) => {
     if (backendPath.test(new URL(request.url()).pathname)) backendRequests.push(request.url());
@@ -56,40 +53,39 @@ test("local Queens Time Trial shares the competitive view, can be reviewed and r
     queensPath,
   );
   await page.goto(queensPath);
-  await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
-  await page.getByRole("button", { name: "Empezar desafío" }).click();
-  await expect(page.getByText("Prepárate", { exact: true })).toBeVisible();
-  await finishCountdown(page);
+  for (const run of [1, 2]) {
+    await test.step(`complete and review Queens run ${run}`, async () => {
+      await page.getByRole("button", { name: "Empezar desafío" }).click();
+      await expect(page.getByText("Prepárate", { exact: true })).toBeVisible();
+      await finishCountdown(page);
 
-  await expect(page.getByRole("heading", { name: "Queens" })).toBeVisible();
-  await expect(page.getByRole("timer")).toBeVisible();
-  await page.clock.runFor(1_500);
-  await expect(queensCell(page, 10)).toBeEnabled();
-  await solveQueens(page, 0);
-  await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
-  await solveQueens(page, 1);
-  await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible({
-    timeout: 15_000,
-  });
-  await expect(page.getByText("2/2", { exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Ver respuestas" }).click();
-  await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible({
-    timeout: 10_000,
-  });
-  await page.getByRole("button", { name: "Volver al resultado" }).click();
-  await page.getByRole("button", { name: "Repetir ensayo" }).click();
-  await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
-  await page.getByRole("button", { name: "Empezar desafío" }).click();
-  await expect(page.getByText("Prepárate", { exact: true })).toBeVisible();
-  await finishCountdown(page);
-  await expect(page.getByText("Prueba 1 de 2", { exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Queens" })).toBeVisible();
+      await expect(page.getByRole("timer")).toBeVisible();
+      await expect(page.getByText("Prueba 1 de 2", { exact: true })).toBeVisible();
+      await expect(queensCell(page, 10)).toBeEnabled();
+      await solveQueens(page, 0);
+      await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
+      await solveQueens(page, 1);
+      await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible({
+        timeout: 15_000,
+      });
+      await expect(page.getByText("2/2", { exact: true })).toBeVisible();
+      await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
+      await page.getByRole("button", { name: "Ver respuestas" }).click();
+      await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible({
+        timeout: 10_000,
+      });
+      await expect(page.getByText("2 de 2 resueltas")).toBeVisible();
+      await page.getByRole("button", { name: "Volver al resultado" }).click();
+      if (run === 1) await page.getByRole("button", { name: "Repetir ensayo" }).click();
+    });
+  }
   expect(backendRequests).toEqual([]);
 });
 
-test("local Connect Pairs Time Trial uses the same view and reviews the two board sizes", async ({
+test("local Connect Pairs Time Trial reviews and replays both board sizes without backend calls", async ({
   page,
 }) => {
-  await page.clock.install({ time: new Date("2026-10-18T12:00:00Z") });
   const backendRequests: string[] = [];
   page.on("request", (request) => {
     if (backendPath.test(new URL(request.url()).pathname)) backendRequests.push(request.url());
@@ -101,24 +97,32 @@ test("local Connect Pairs Time Trial uses the same view and reviews the two boar
     connectPairsPath,
   );
   await page.goto(connectPairsPath);
-  await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
-  await page.getByRole("button", { name: "Empezar desafío" }).click();
-  await expect(page.getByText("Prepárate", { exact: true })).toBeVisible();
-  await finishCountdown(page);
+  for (const run of [1, 2]) {
+    await test.step(`complete and review Connect Pairs run ${run}`, async () => {
+      await page.getByRole("button", { name: "Empezar desafío" }).click();
+      await expect(page.getByText("Prepárate", { exact: true })).toBeVisible();
+      await finishCountdown(page);
 
-  await expect(page.getByRole("heading", { name: "Conectar parejas" })).toBeVisible();
-  await expect(page.getByRole("timer")).toBeVisible();
-  await page.clock.runFor(1_500);
-  await solveConnectPairs(page, 0);
-  await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
-  await expect(page.getByRole("grid", { name: /6×6/ })).toBeVisible();
-  await solveConnectPairs(page, 1);
-  await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible();
-  await expect(page.getByText("2/2", { exact: true })).toBeVisible();
-  await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
-  await page.getByRole("button", { name: "Ver respuestas" }).click();
-  await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible();
-  await expect(page.getByText("2 de 2 resueltas")).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Conectar parejas" })).toBeVisible();
+      await expect(page.getByRole("timer")).toBeVisible();
+      await expect(page.getByText("Prueba 1 de 2", { exact: true })).toBeVisible();
+      await expect(page.getByRole("grid", { name: /4×4/ })).toBeVisible();
+      await solveConnectPairs(page, 0);
+      await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
+      await expect(page.getByRole("grid", { name: /6×6/ })).toBeVisible();
+      await solveConnectPairs(page, 1);
+      await expect(
+        page.getByRole("heading", { name: "Todas las pruebas resueltas" }),
+      ).toBeVisible();
+      await expect(page.getByText("2/2", { exact: true })).toBeVisible();
+      await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
+      await page.getByRole("button", { name: "Ver respuestas" }).click();
+      await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible();
+      await expect(page.getByText("2 de 2 resueltas")).toBeVisible();
+      await page.getByRole("button", { name: "Volver al resultado" }).click();
+      if (run === 1) await page.getByRole("button", { name: "Repetir ensayo" }).click();
+    });
+  }
   expect(backendRequests).toEqual([]);
 });
 

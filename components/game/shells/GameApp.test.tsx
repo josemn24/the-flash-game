@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { ReactElement } from "react";
+import { createMockFlashPopPyramidDemoDefinition } from "@/infrastructure/mock/localPyramidDefinition";
 import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
 import {
   competitiveChallenges,
@@ -50,8 +51,8 @@ vi.mock("@/components/game/modes/flash-pop/FlashPopSurvivalGame.client", () => (
 vi.mock("@/components/game/modes/flash-pop/ServerFlashPopPyramidGame.client", () => ({
   ServerFlashPopPyramidGame: targets["server-pyramid"],
 }));
-vi.mock("@/components/game/modes/flash-pop/FlashPopPyramidGame.client", () => ({
-  FlashPopPyramidGame: targets["mock-pyramid"],
+vi.mock("@/components/game/shells/LocalPyramidGameApp.client", () => ({
+  LocalPyramidGameApp: targets["mock-pyramid"],
 }));
 vi.mock("@/components/game/modes/narrative/ServerNarrativeGame.client", () => ({
   ServerNarrativeGame: targets["server-narrative"],
@@ -76,6 +77,21 @@ async function loadedShell(element: ReactElement) {
 }
 
 describe("GameApp routing", () => {
+  it("routes canonical local Pyramid to the shared composition with completion and return navigation", async () => {
+    const definition = createMockFlashPopPyramidDemoDefinition();
+    const onComplete = vi.fn();
+    const props = {
+      persistence: "mock" as const,
+      definition,
+      onComplete,
+      returnTo: "/demo/flash-pop",
+    };
+    expect(GameApp(props).type).toBe(MockGameApp);
+    const element = MockGameApp(props);
+    expect(await loadedShell(element)).toBe(targets["mock-pyramid"]);
+    expect(element.props).toEqual({ definition, onComplete, returnTo: "/demo/flash-pop" });
+    expect(element.props).not.toHaveProperty("roomContext");
+  });
   it.each(competitiveChallenges)(
     "routes competitive $mode and forwards server context",
     async (challenge) => {
@@ -99,11 +115,12 @@ describe("GameApp routing", () => {
     },
   );
 
-  it.each(["flash", "alphabet", "survival", "pyramid", "narrative"] as const)(
+  it.each(["flash", "alphabet", "survival", "narrative"] as const)(
     "routes local %s and preserves completion",
     async (mode) => {
       const challenge = legacyChallenges.find((item) => item.mode === mode);
-      if (!challenge) throw new Error(`Missing local fixture: ${mode}`);
+      if (!challenge || challenge.mode === "pyramid")
+        throw new Error(`Missing local fixture: ${mode}`);
       const onComplete = vi.fn();
       const props = { persistence: "mock" as const, challenge, socialSnapshot, onComplete };
       expect(GameApp(props).type).toBe(MockGameApp);

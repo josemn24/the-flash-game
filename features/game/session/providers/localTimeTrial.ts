@@ -13,14 +13,13 @@ import type { LocalTimeTrialDefinition } from "@/types/gameplay/local-time-trial
 import { evaluateCompetitiveReceipt } from "@/lib/scoringCore/competitiveReceipt";
 import { randomUuid } from "@/lib/randomUuid";
 import { systemSessionClock } from "../clock";
-import { compileTimeTrialDefinition, type CompiledLevel } from "./localShared/definition";
+import { compileTimeTrialDefinition } from "./localShared/definition";
 import {
   formatProgress,
   initialFormatState,
   LocalRejection,
   reject,
   transitionFormat,
-  type FormatState,
 } from "./localShared/formats";
 import { createLocalCommandQueue, localCommandSignature } from "./localShared/runtime";
 

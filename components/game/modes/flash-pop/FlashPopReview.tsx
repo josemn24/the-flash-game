@@ -1,7 +1,7 @@
 "use client";
 
 import { ReviewAnswerPanel } from "@/components/game/shared";
-import { type PyramidAttemptSummary } from "@/features/pyramid/pyramidAttempt";
+import { type PyramidResultSummary } from "@/types/gameplay/pyramid";
 import { isPyramidLevelPassed } from "@/lib/gameplay/pyramidProgress";
 import type { AnswerResult, PyramidChallenge } from "@/types/gameplay";
 import type { PracticeQuestion } from "@/types/gameplay/practice";
@@ -25,7 +25,7 @@ export function FlashPopReview({
 }: {
   challenge: PyramidChallenge;
   results: AnswerResult[];
-  summary: PyramidAttemptSummary;
+  summary: PyramidResultSummary;
   onBack: () => void;
   onReplay?: () => void;
   levelMetadata?: readonly PyramidReviewLevel[];

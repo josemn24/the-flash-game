@@ -19,7 +19,7 @@ import {
   calculateResultAccuracy,
   getAnswerResultAccuracyUnit,
 } from "@/features/game/resultSummary";
-import type { PyramidAttemptSummary } from "@/features/pyramid/pyramidAttempt";
+import type { PyramidResultSummary } from "@/types/gameplay/pyramid";
 import type { AnswerResult } from "@/types/gameplay";
 import type { ServerPyramidChallenge } from "@/types/gameplay/challenge";
 import styles from "./FlashPopPyramidGame.module.css";
@@ -137,7 +137,7 @@ export function PyramidGameView({
       ...(reached ? { question: reached.question } : {}),
     };
   });
-  const reviewSummary: PyramidAttemptSummary = {
+  const reviewSummary: PyramidResultSummary = {
     challengeId: challenge.id,
     startedAt: 0,
     levelsCleared: session.pyramidProgress?.levelsCleared ?? 0,

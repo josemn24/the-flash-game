@@ -12,7 +12,7 @@ const challengeContent = { title: "La Pirámide", subtitle: "Cumbre lógica" };
 describe("Flash Pop demo social adapter", () => {
   it("derives lobby status from the canonical attempt state", () => {
     expect(getFlashPopAttemptStatus(null)).toBe("available");
-    expect(getFlashPopAttemptStatus({ status: "in-progress" })).toBe("inProgress");
+    expect(getFlashPopAttemptStatus({ status: "inProgress" })).toBe("inProgress");
     expect(getFlashPopAttemptStatus({ status: "completed" })).toBe("completed");
     expect(
       getFlashPopLobbyChallenge(

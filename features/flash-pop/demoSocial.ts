@@ -1,8 +1,5 @@
 import type { AvatarTone } from "@/components/ui";
-import type {
-  PyramidAttemptRecord,
-  PyramidAttemptSummary,
-} from "@/features/pyramid/pyramidAttempt";
+import type { PyramidDemoProgress, PyramidResultSummary } from "@/types/gameplay/pyramid";
 import { FLASH_POINTS_MAX, normalizeFlashPoints } from "@/features/flash-pop/flashPoints";
 import { compareChallengeRankingMetrics, rankChallengeEntries } from "@/lib/challengeRanking";
 import type { FlashPopSocialSnapshot } from "@/types/view-models";
@@ -18,7 +15,6 @@ export const FLASH_POP_PREVIEW_CHALLENGE_IDS = [
   FLASH_POP_CHALLENGE_ID,
   FLASH_POP_SECONDARY_CHALLENGE_ID,
 ] as const;
-export const FLASH_POP_STORAGE_NAMESPACE = "flash-pop-pyramid-v2";
 
 export type FlashPopAttemptStatus = "available" | "inProgress" | "completed" | "notCompleted";
 export type FlashPopChallengeId = (typeof FLASH_POP_PREVIEW_CHALLENGE_IDS)[number];
@@ -99,11 +95,7 @@ function activitiesFor(snapshot: FlashPopSocialSnapshot): FlashPopActivity[] {
 }
 
 export function getFlashPopAttemptStatus(
-  record:
-    | Pick<PyramidAttemptRecord, "status" | "summary">
-    | Pick<PyramidAttemptRecord, "status">
-    | null
-    | undefined,
+  record: PyramidDemoProgress | null | undefined,
 ): FlashPopAttemptStatus {
   if (!record) return "available";
   if (record.status !== "completed") return "inProgress";
@@ -111,7 +103,7 @@ export function getFlashPopAttemptStatus(
 }
 
 export function getFlashPopResult(
-  summary: PyramidAttemptSummary,
+  summary: PyramidResultSummary,
   socialSnapshot: FlashPopSocialSnapshot,
   config: FlashPopScoringConfig = {},
 ): FlashPopResult {
@@ -148,10 +140,7 @@ export function getFlashPopResult(
 }
 
 export function getFlashPopLobbyChallenge(
-  record:
-    | (Pick<PyramidAttemptRecord, "status" | "summary"> & { currentLevelIndex?: number })
-    | null
-    | undefined,
+  record: PyramidDemoProgress | null | undefined,
   challengeId: FlashPopChallengeId,
   socialSnapshot: FlashPopSocialSnapshot,
   content: { title: string; subtitle: string },

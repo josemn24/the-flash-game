@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Última actualización: 2026-10-18 (contrato de referencia de La Pirámide).
+Última actualización: 2026-10-19 (composición compartida de La Pirámide).
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -282,8 +282,8 @@ segundo log narrativo.
 ### Contrato competitivo de referencia
 
 La [especificación de Pirámide y su matriz de pruebas](../pyramid-session-contract.md) fija el
-comportamiento actual para la fase 0 de la unificación de proveedores. Las propuestas de proveedor
-local y vista común todavía no están implementadas; la práctica conserva su controlador propio.
+comportamiento competitivo de referencia. Competición y ensayo local usan el mismo controlador y
+vista con proveedores remoto y en memoria; la biblioteca didáctica conserva sus controles de formato.
 
 - **Inicio:** iniciar el ascenso crea o recupera el intento. Cada nivel tiene un briefing y después
   una pregunta; cambiar de briefing no consume otro intento.
@@ -314,14 +314,14 @@ local y vista común todavía no están implementadas; la práctica conserva su 
   una resolución no correcta termina como `completed` / `failed`. La conformidad de recuperación
   de cada formato requiere su prueba específica. Abandonar explícitamente marca `abandoned`.
 - **Progreso confirmado:** nivel autorizado, evaluaciones, eventos de formato y plazos del servidor.
-  `PyramidAttemptRecord` sigue siendo el modelo del controlador local legacy, no un contrato común
-  ya implementado ni la fuente del resultado competitivo.
+  El ensayo confirma esos mismos hechos en una autoridad en memoria a través de `GameSessionProvider`;
+  la composición recibe una definición canónica privada y la vista recibe estado público.
 - **Resultado y feedback:** mostrar Flash Points y niveles alcanzados. “Cima conquistada” se reserva
   para `summit`; “Ascenso terminado” describe `failed` sin convertirlo en un fallo global. Tras un
   intento terminal iniciado, mostrar respuestas propias y soluciones.
 - **Ranking:** aplica el comparador común de ranking por desafío; `levelsCleared` y `outcome` son
   métricas del modo, no criterios adicionales de desempate.
-- **Replay:** el preview independiente conserva replay; con `roomContext` el resultado y la revisión
+- **Replay:** el ensayo independiente crea una ejecución nueva en memoria; con `roomContext` el resultado y la revisión
   solo ofrecen navegación y consulta.
 
 ### Implementación S15 (verificada en Supabase local)

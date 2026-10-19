@@ -1,7 +1,8 @@
-# Proveedores de sesión: fase 1
+# Proveedores de sesión
 
-Estado: contrato y proveedor remoto implementados el 2026-10-18. Las ampliaciones locales de
-Pirámide y Flash, incluida la vista compartida Flash, se documentan en
+Estado: contrato y proveedor remoto implementados el 2026-10-18; consolidación de Pirámide
+completada el 2026-10-19, con [criterios de cierre acreditados](qa.md#cierre-de-la-fase-6--2026-10-19).
+Las ampliaciones locales de Pirámide y Flash, incluida la vista compartida Flash, se documentan en
 [autoridades locales](local-pyramid-session.md).
 
 El motor competitivo existente recibe ahora una autoridad de sesión mediante un puerto. La
@@ -99,8 +100,9 @@ referencia SQL de fase 0 siguen vigentes; esta fase no modifica SQL, rutas ni ev
 | Vitest completo de ese corte                                       | 2480 pruebas correctas; el resultado posterior está registrado en la [entrega Flash](local-pyramid-session.md). |
 
 Ese corte precede a la corrección de las regresiones generales y a las pruebas de autoridades
-locales. La verificación más reciente de Flash y Pirámide registra 2672 pruebas correctas en
-[`local-pyramid-session.md`](local-pyramid-session.md).
+locales. Esa entrega de Flash y Pirámide registró 2672 pruebas correctas en
+[`local-pyramid-session.md`](local-pyramid-session.md). La evidencia posterior de la consolidación
+de Pirámide se registra por separado en [QA](qa.md#consolidación-de-pirámide-fase-6--2026-10-19).
 
 Se actualizó una referencia obsoleta de la
 [integración de Narrativa](../../scripts/integration/scenarios/narrative.mjs): ahora espera
@@ -118,3 +120,20 @@ Supervivencia usa ahora el mismo puerto y motor con autoridad remota o local. Su
 conserva vidas, eliminación, feedback, resultados y revisión; la política de modo decide cuándo
 terminar el recorrido. La composición productiva sigue seleccionando explícitamente el proveedor
 remoto, y las rutas `/demo/` seleccionan el local solo para fixtures aprobados.
+
+## Consolidación de Pirámide: fase 6
+
+Estado: completada el 2026-10-19. La [matriz de cierre](qa.md#cierre-de-la-fase-6--2026-10-19)
+enlaza criterios, implementación y verificaciones.
+
+Todas las composiciones de partidas de Pirámide seleccionan proveedor y comparten
+`usePyramidGameSession` y `PyramidGameView`. La variante local de `GameApp` recibe una
+`LocalPyramidDefinition`; ya no admite el agregado anterior con preguntas de práctica.
+`LocalPyramidGameApp` prepara diccionarios públicos, conserva una autoridad por ejecución y
+emite `onComplete` solo tras confirmación terminal. Replay o cambio de desafío/versión descartan
+esa autoridad. Los tipos de resumen y progreso están en `types/gameplay/pyramid.ts`.
+
+El hook compartido crea el motor con dependencias explícitas: recrear el objeto de opciones no
+reinicia la sesión. Cambiar proveedor o desafío desmonta el motor anterior y cancela sus efectos.
+La arquitectura rechaza módulos retirados y definiciones locales privadas en la presentación
+pública o las composiciones remotas.

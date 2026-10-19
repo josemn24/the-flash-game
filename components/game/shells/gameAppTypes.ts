@@ -5,6 +5,7 @@ import type {
   ServerFlashTerminalReview,
 } from "@/types/gameplay";
 import type { FlashPopSocialSnapshot, GameRoomContext } from "@/types/view-models";
+import type { LocalPyramidDefinition } from "@/types/gameplay/local-pyramid";
 
 export type CompetitiveGameAppProps = {
   persistence: "server";
@@ -13,15 +14,29 @@ export type CompetitiveGameAppProps = {
   socialSnapshot: FlashPopSocialSnapshot;
   terminalReview?: readonly ServerFlashTerminalReview[];
   onComplete?: never;
+  definition?: never;
 };
 
-export type MockGameAppProps = {
+type MockGameAppCommon = {
   persistence: "mock";
-  challenge: Challenge;
-  socialSnapshot: FlashPopSocialSnapshot;
   onComplete?: (result: ChallengeCompletionResult) => void;
   roomContext?: never;
   terminalReview?: never;
 };
+
+export type MockGameAppProps = MockGameAppCommon &
+  (
+    | {
+        definition: LocalPyramidDefinition;
+        challenge?: never;
+        returnTo?: string;
+        socialSnapshot?: never;
+      }
+    | {
+        challenge: Exclude<Challenge, { mode: "pyramid" }>;
+        socialSnapshot: FlashPopSocialSnapshot;
+        definition?: never;
+      }
+  );
 
 export type GameAppProps = CompetitiveGameAppProps | MockGameAppProps;

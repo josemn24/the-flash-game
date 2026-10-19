@@ -1,11 +1,12 @@
 # Autoridades locales de Flash, Pirámide y Supervivencia
 
-Estado: ensayos locales de Flash, Pirámide y Supervivencia; Flash y Supervivencia comparten sus
-vistas y adaptadores de sesión con competición.
+Estado: fase 6 de Pirámide completada el 2026-10-19, con controlador y vista compartidos en todas
+sus entradas jugables y [criterios de cierre acreditados](qa.md#cierre-de-la-fase-6--2026-10-19).
+También existen ensayos locales de Flash, Supervivencia, Alfabeto y Contrarreloj.
 
 Las autoridades locales implementan el mismo puerto que consume el motor competitivo. La
 composición de producción conserva el proveedor remoto; las composiciones bajo `/demo/` crean
-proveedores locales en memoria. Flash y Supervivencia comparten sus vistas competitivas y controles
+proveedores locales en memoria. Pirámide, Flash y Supervivencia comparten sus vistas competitivas y controles
 de pregunta entre ambas autoridades. El [contrato funcional](pyramid-session-contract.md) y el
 [puerto de sesión](game-session-providers.md) siguen siendo las referencias de comportamiento.
 
@@ -39,22 +40,22 @@ permanecen en los controles actuales.
 
 ## Organización
 
-| Archivo                                                                                                                                | Responsabilidad                                                                                              |
-| -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| [`local-pyramid.ts`](../../types/gameplay/local-pyramid.ts)                                                                            | Entrada privada y canónica de composición.                                                                   |
-| [`localPyramid.ts`](../../features/game/session/providers/localPyramid.ts)                                                             | Autoridad en memoria específica de progresión, puntuación y cierre de Pirámide.                              |
-| [`localFlash.ts`](../../features/game/session/providers/localFlash.ts), [`localSurvival.ts`](../../features/game/session/providers/localSurvival.ts) | Fachadas locales tipadas que componen la autoridad secuencial compartida.                           |
-| [`sequentialProvider.ts`](../../features/game/session/providers/localShared/sequentialProvider.ts)                                     | Cola, evaluación y sesión lineal compartidas por Flash y Supervivencia; cada política conserva sus reglas.   |
-| [`runtime.ts`](../../features/game/session/providers/localShared/runtime.ts)                                                           | Cola de comandos serializada e idempotencia compartida.                                                     |
-| [`definition.ts`](../../features/game/session/providers/localShared/definition.ts)                                                     | Validación, resolución privada y payloads públicos para Flash, Pirámide y Supervivencia.                     |
-| [`formats.ts`](../../features/game/session/providers/localShared/formats.ts)                                                           | Transiciones puras de los protocolos de interacción especiales.                                              |
-| [`resolution/`](../../lib/scoringCore/resolution/registry.ts)                                                                          | Los 21 resolutores competitivos puros, compartidos con las fachadas del servidor.                            |
-| [`competitiveReceipt.ts`](../../lib/scoringCore/competitiveReceipt.ts), [`pyramid.ts`](../../lib/scoringCore/pyramid.ts)               | Evaluación de recepciones y consecuencias específicas de Pirámide.                                           |
-| [`pyramidProgress.ts`](../../lib/gameplay/pyramidProgress.ts)                                                                          | Progreso compartido: solo `correct` supera un nivel; los demás resultados aportan cero y cierran el ascenso. |
-| [`survivalProgress.ts`](../../lib/gameplay/survivalProgress.ts)                                                                        | Deriva vidas, pruebas alcanzadas y eliminación a partir de resultados evaluados.                             |
-| [`localPyramidDefinition.ts`](../../infrastructure/mock/localPyramidDefinition.ts)                                                     | Composición de publicaciones mock canónicas, fuera de los proveedores y de la práctica legacy.               |
-| [`corpus.ts`](../../test-utils/game-session-conformance/corpus.ts), [`driver.ts`](../../test-utils/game-session-conformance/driver.ts) | Casos comunes, soluciones, errores y herramientas de reloj/entrega.                                          |
-| [`pyramid-session-conformance.spec.ts`](../../e2e/pyramid-session-conformance.spec.ts)                                                 | Comparación del proveedor local con el adaptador remoto real y del motor con ambas autoridades.              |
+| Archivo                                                                                                                                              | Responsabilidad                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| [`local-pyramid.ts`](../../types/gameplay/local-pyramid.ts)                                                                                          | Entrada privada y canónica de composición.                                                                   |
+| [`localPyramid.ts`](../../features/game/session/providers/localPyramid.ts)                                                                           | Autoridad en memoria específica de progresión, puntuación y cierre de Pirámide.                              |
+| [`localFlash.ts`](../../features/game/session/providers/localFlash.ts), [`localSurvival.ts`](../../features/game/session/providers/localSurvival.ts) | Fachadas locales tipadas que componen la autoridad secuencial compartida.                                    |
+| [`sequentialProvider.ts`](../../features/game/session/providers/localShared/sequentialProvider.ts)                                                   | Cola, evaluación y sesión lineal compartidas por Flash y Supervivencia; cada política conserva sus reglas.   |
+| [`runtime.ts`](../../features/game/session/providers/localShared/runtime.ts)                                                                         | Cola de comandos serializada e idempotencia compartida.                                                      |
+| [`definition.ts`](../../features/game/session/providers/localShared/definition.ts)                                                                   | Validación, resolución privada y payloads públicos para Flash, Pirámide y Supervivencia.                     |
+| [`formats.ts`](../../features/game/session/providers/localShared/formats.ts)                                                                         | Transiciones puras de los protocolos de interacción especiales.                                              |
+| [`resolution/`](../../lib/scoringCore/resolution/registry.ts)                                                                                        | Los 21 resolutores competitivos puros, compartidos con las fachadas del servidor.                            |
+| [`competitiveReceipt.ts`](../../lib/scoringCore/competitiveReceipt.ts), [`pyramid.ts`](../../lib/scoringCore/pyramid.ts)                             | Evaluación de recepciones y consecuencias específicas de Pirámide.                                           |
+| [`pyramidProgress.ts`](../../lib/gameplay/pyramidProgress.ts)                                                                                        | Progreso compartido: solo `correct` supera un nivel; los demás resultados aportan cero y cierran el ascenso. |
+| [`survivalProgress.ts`](../../lib/gameplay/survivalProgress.ts)                                                                                      | Deriva vidas, pruebas alcanzadas y eliminación a partir de resultados evaluados.                             |
+| [`localPyramidDefinition.ts`](../../infrastructure/mock/localPyramidDefinition.ts)                                                                   | Composición de publicaciones mock canónicas, fuera de los proveedores y de la práctica legacy.               |
+| [`corpus.ts`](../../test-utils/game-session-conformance/corpus.ts), [`driver.ts`](../../test-utils/game-session-conformance/driver.ts)               | Casos comunes, soluciones, errores y herramientas de reloj/entrega.                                          |
+| [`pyramid-session-conformance.spec.ts`](../../e2e/pyramid-session-conformance.spec.ts)                                                               | Comparación del proveedor local con el adaptador remoto real y del motor con ambas autoridades.              |
 
 Las fachadas bajo `server/evaluation/formats/` mantienen `server-only` y su API anterior; delegan
 en las implementaciones puras. Los resolutores exclusivos de práctica conservan su tratamiento.
@@ -70,6 +71,24 @@ las palabras al validar y puntuar los intentos.
 El control de arquitectura impide importar transporte, React, Next, servidor, catálogos mock o
 infraestructura desde las autoridades locales y los resolutores puros. Solo las composiciones
 dedicadas de `/demo/` pueden seleccionar proveedores locales.
+
+## Composición consolidada de Pirámide
+
+`LocalPyramidGameApp` es la entrada local única, tanto desde `/demo/` como desde la variante mock
+de `GameApp`. Recibe `definition: LocalPyramidDefinition`, `onComplete?` y `returnTo?` (por defecto
+`/demo/flash-pop`). No convierte preguntas de práctica ni recibe contexto de sala. La ruta demo
+mantiene su lista de identificadores aprobados.
+
+La definición es estable durante cada ejecución. Cambiar su desafío o `attemptVersion`, repetir o
+recargar inicia otra autoridad; un render ordinario no lo hace. Las definiciones con Mini-Wordle
+cargan los diccionarios públicos existentes antes de construir el proveedor, con carga, error y
+reintento. No hay reloj de partida durante esa preparación y las cargas tardías se ignoran al salir.
+
+`onComplete` conserva el inicio confirmado, respuestas, puntuación y duración efectiva. Se emite
+una sola vez por ejecución completada (cima o fallo), no al abandonar o perder la confirmación,
+y tampoco se repite al navegar entre resultado y revisión. El replay permite otro resultado.
+El resumen y el progreso social mínimo residen en `types/gameplay/pyramid.ts`; no existe un
+registro persistido del controlador local anterior.
 
 ## Semántica de sesión
 

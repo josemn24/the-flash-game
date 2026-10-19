@@ -1,3 +1,5 @@
+import type { LocalPyramidDefinition } from "@/types/gameplay/local-pyramid";
+import type { PyramidChallenge } from "@/types/gameplay/challenge";
 import type { GameAppProps } from "./gameAppTypes";
 import type { Challenge, CompetitiveChallenge, ChallengeCompletionResult } from "@/types/gameplay";
 import type {
@@ -12,6 +14,27 @@ type Assert<T extends true> = T;
 type Rejected<T> = T extends GameAppProps ? false : true;
 type Common = { socialSnapshot: FlashPopSocialSnapshot };
 export type GameAppContractAssertions = [
+  Assert<Rejected<Common & { persistence: "mock"; challenge: PyramidChallenge }>>,
+  Assert<
+    { persistence: "mock"; definition: LocalPyramidDefinition } extends GameAppProps ? true : false
+  >,
+  Assert<
+    Rejected<{
+      persistence: "mock";
+      definition: LocalPyramidDefinition;
+      roomContext: GameRoomContext;
+    }>
+  >,
+  Assert<
+    Rejected<
+      Common & {
+        persistence: "server";
+        challenge: CompetitiveChallenge;
+        roomContext: GameRoomContext;
+        definition: LocalPyramidDefinition;
+      }
+    >
+  >,
   Assert<Rejected<Common & { persistence: "server"; challenge: CompetitiveChallenge }>>,
   Assert<
     Rejected<Common & { persistence: "server"; challenge: Challenge; roomContext: GameRoomContext }>

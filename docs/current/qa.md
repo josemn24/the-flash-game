@@ -1,8 +1,84 @@
-> Estado: vigente. La sección de baseline registra las comprobaciones de 2026-10-10; las secciones
-> fechadas mantienen sus resultados históricos y no sustituyen esa verificación actual.
-> no sustituye una auditoría manual de accesibilidad o interacción.
+> Estado: vigente. Las secciones fechadas registran las comprobaciones de cada entrega y
+> conservan sus resultados históricos. No sustituyen una auditoría manual de accesibilidad o interacción.
 
 # QA actual
+
+## Cierre de la fase 6 — 2026-10-19
+
+**Estado: completada.** Se han contrastado los criterios de cierre con el código actual y con
+las ejecuciones registradas en esta entrega. La unificación de Pirámide queda cerrada en el
+repositorio, con validación local y contra Supabase aislado.
+
+| Criterio                                            | Evidencia de cumplimiento                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Todas las partidas comparten controlador y vista    | Las composiciones local y competitiva usan `usePyramidGameSession` y `PyramidGameView`, seleccionando sus proveedores respectivos. Los [contratos de tipos](../../components/game/shells/GameAppContracts.type-test.ts) aceptan `LocalPyramidDefinition` para la entrada mock y rechazan la entrada antigua y las definiciones privadas en competición.                                                                           |
+| Ejecuciones locales aisladas y resultado confirmado | Las ocho [pruebas de composición local](../../components/game/shells/LocalPyramidGameApp.test.tsx) cubren callback único para `summit` y `failed`, respuestas, puntos, duración, inicio estable, revisión, replay, cambio de desafío/versión, diccionarios con carga/error/reintento y descarte de cargas tardías.                                                                                                                |
+| Tipos neutrales y retirada completa                 | Resumen y progreso mínimo viven en [tipos de gameplay](../../types/gameplay/pyramid.ts); `PyramidAttemptOutcome` permanece en dominio. El controlador, almacenamiento, presentaciones, exportaciones y helpers sustituidos ya no tienen consumidores. Se conservan las reglas puras y los estilos de la vista compartida.                                                                                                         |
+| Fronteras protegidas y motor estable                | El [checker](../../scripts/check-type-architecture.mjs) impide reintroducir los módulos retirados o importar datos locales privados desde la presentación pública y la composición remota. Las [pruebas del hook](../../features/game/competitive/core/useCompetitiveSession.test.tsx) acreditan estabilidad con dependencias iguales, cancelación al cambiar proveedor/desafío o desmontar e invalidación de respuestas tardías. |
+| Suite unitaria y controles de calidad               | 2700 pruebas en 260 archivos; TypeScript, arquitectura de tipos y estilos, ESLint sin avisos, Stylelint, enlaces, formato de archivos modificados y build correctos. Los ignores globales excluyen `output/**` y se conserva `--max-warnings=0`.                                                                                                                                                                                  |
+| E2E local completo en paralelo                      | 39/39 correctos: los 13 casos repetidos tres veces con cinco workers, sin reintentos ni omitidos. El [diagnóstico de Contrarreloj](#replay-local-de-contrarreloj--2026-10-19) registra la corrección del reloj del E2E y la comprobación de dos partidas completas por formato.                                                                                                                                                   |
+| Conformidad y regresiones competitivas              | 161 escenarios de Pirámide con los 21 formatos y 25 combinaciones de formato/versión, incluidos Queens, recuperación, idempotencia, deadlines y revisión bloqueada. Otros 24 E2E y las integraciones Auth/PostgREST/RLS acreditan la regresión de los seis modos.                                                                                                                                                                 |
+| SQL completo en base desechable                     | 67 suites desde los 96 archivos declarativos, inventario de seguridad, 158 casos compartidos, 904 observaciones y pruebas de concurrencia/deadlines correctos. Se ejecutó con Docker, en un contenedor independiente y secuencialmente respecto del runner E2E. Ambos entornos se eliminaron al terminar.                                                                                                                         |
+
+Las secciones siguientes conservan la evidencia fechada de la implementación y del diagnóstico
+posterior; sus resultados históricos no se sustituyen por los del cierre.
+
+## Replay local de Contrarreloj — 2026-10-19
+
+La investigación reprodujo el fallo del segundo arranque de Queens: la suite completa pasó
+12/13 con cinco workers y el caso focal falló en sus tres repeticiones con tres workers. La traza
+confirma que el controlador cambia a la cuenta atrás (`data-gameplay-layout="game"`), mientras
+`AnimatePresence` conserva la introducción hasta terminar su animación de salida.
+
+El reloj simulado adelantaba `performance.now()` respecto de `document.timeline.currentTime`,
+que utiliza Web Animations. En las tres capturas de diagnóstico la diferencia era de unos
+4,6 segundos; Motion asignaba a las animaciones nativas un inicio futuro y la espera superaba
+los cinco segundos de la aserción. El problema se originaba en el E2E.
+
+`local-time-trial-rehearsal.spec.ts` utiliza ahora el reloj real del navegador y espera los estados
+visibles de la cuenta atrás 3–2–1, sin adelantos artificiales ni pausas fijas. Queens y Conectar
+parejas completan y revisan dos partidas consecutivas, comprobando el reinicio desde la primera
+prueba, ambos tamaños de tablero, 100 puntos y ausencia de llamadas al backend.
+
+- Suite E2E local completa: `npm run test:e2e:local-rehearsals -- --workers=5 --repeat-each=3`,
+  39/39 correctos (13 casos repetidos tres veces) en 2,3 minutos, sin reintentos ni omitidos.
+  Se mantienen las animaciones y los timeouts existentes.
+- Motor, adaptador React y proveedor local de Contrarreloj: 69 pruebas unitarias correctas en
+  tres archivos.
+- TypeScript, arquitectura de tipos, ESLint con cero avisos, enlaces y formato de los archivos
+  modificados: correctos.
+
+## Consolidación de Pirámide: fase 6 — 2026-10-19
+
+La entrada local recibe definiciones canónicas y comparte controlador y vista con competición.
+Se retiraron las dos presentaciones y el controlador anteriores, junto con sus transiciones y
+almacenamiento. Los tipos de resultado y progreso del lobby son neutrales. Las pruebas nuevas
+cubren emisión única del resultado, revisión, replay, cambio de desafío/versión, preparación y
+reintento de diccionarios, estabilidad del motor e invalidación de respuestas tardías.
+
+- Suite unitaria completa: 260 archivos y 2700 pruebas correctas.
+- ESLint completo: correcto con cero avisos. `output/**` se excluye como artefactos generados;
+  las reglas de dependencias de hooks y variables sin uso permanecen activas.
+- Arquitectura de tipos y estilos, Stylelint, enlaces y formato de los archivos modificados: correctos.
+- TypeScript y build de producción de Next.js: correctos.
+- Ensayos locales sin backend: 13 E2E correctos en una ejecución completa con un worker. La primera
+  ejecución concurrente pasó 12/13 y falló en el segundo arranque tras replay de Contrarreloj Queens;
+  su repetición aislada pasó 3/3, y la repetición completa pasó 13/13 sin cambios de código o pruebas.
+- Conformidad de Pirámide: 161 escenarios correctos con HTTP, Auth y Supabase temporal reales,
+  incluidos los 21 formatos y 25 combinaciones de formato/versión, consecuencias y tiempos exactos,
+  tres fallos de Queens, recuperación, idempotencia, pérdida de confirmación y revisión autorizada.
+- Regresión competitiva de los seis modos: 24 E2E correctos (Flash 5, Alfabeto 7, Supervivencia 1,
+  Narrativa 2, Pirámide 5 y Contrarreloj 4), sin omitidos ni reintentos de Playwright. Las integraciones
+  de Auth, PostgREST y RLS de los seis escenarios también finalizaron correctamente.
+- Total del runner remoto: 185 E2E correctos en un stack Supabase desechable.
+
+- SQL completo: 67 suites correctas desde los 96 archivos declarativos, inventario de seguridad,
+  158 casos compartidos de formatos y 904 observaciones de validación correctos. También pasan las
+  pruebas concurrentes y las carreras de deadline tras adquirir el bloqueo de Contrarreloj y Conectar parejas.
+
+El stack E2E y el contenedor SQL independientes se eliminaron al terminar. Las comprobaciones
+se ejecutaron secuencialmente entre ambos entornos; no se modificaron esquemas, endpoints ni
+bases existentes. Las secciones históricas siguientes se conservan.
 
 ## Primer baseline de Supabase — 2026-10-11 (histórico)
 

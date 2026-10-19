@@ -215,3 +215,27 @@ describe("question input context boundaries", () => {
     }
   });
 });
+
+describe("shared Pyramid session boundaries", () => {
+  it("rejects references to the retired controller", async () => {
+    await expectCheckerFailure(
+      "features/__architecture-pyramid-retired-test__.ts",
+      'import { usePyramidSession } from "@/features/pyramid/usePyramidSession";\nvoid usePyramidSession;',
+      "imports a retired Pyramid implementation",
+    );
+  });
+  it("rejects a recreated legacy controller file", async () => {
+    await expectCheckerFailure(
+      "features/pyramid/usePyramidSession.ts",
+      "export const usePyramidSession = () => null;",
+      "reintroduces a retired Pyramid implementation",
+    );
+  });
+  it("rejects private local definitions in a remote composition", async () => {
+    await expectCheckerFailure(
+      "components/game/modes/flash-pop/ServerArchitecturePyramid.client.tsx",
+      'import type { LocalPyramidDefinition } from "@/types/gameplay/local-pyramid";\nexport type Input = LocalPyramidDefinition;',
+      "imports private local session data",
+    );
+  });
+});

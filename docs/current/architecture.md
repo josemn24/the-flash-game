@@ -124,7 +124,8 @@ Las fachadas de modo se suscriben al mismo núcleo en `features/game/competitive
 `useFlashGameSession` y Supervivencia `useSurvivalGameSession` para adaptar la sesión compartida a
 su vista y permitir inyectar autoridad remota o local; Pirámide también comparte su presentación
 entre autoridades. Narrativa y Alfabeto conservan sus adaptadores específicos. Los seis modos
-mantienen sus políticas y progresiones competitivas; práctica conserva sus controladores propios.
+mantienen sus políticas y progresiones competitivas. Pirámide usa el mismo controlador y vista
+en todas sus entradas jugables; los controles didácticos de la biblioteca permanecen separados.
 
 ```text
 Pantalla → fachada del modo → useCompetitiveSession
@@ -191,14 +192,20 @@ fallos del transporte. El controlador conserva comandos pendientes, reintentos y
 el backend conserva la autoridad sobre contenido, progreso, plazos, evaluación y cierre. La
 revisión terminal viaja separada de la actualización pública. Proveedor y reloj son inyectables.
 
-La [fase 2](local-pyramid-session.md) incorpora una autoridad local en memoria y comparte los
-resolutores y reglas puras con el servidor. Contrasta sus 21 formatos mediante el adaptador
-remoto real, autenticación, HTTP y Supabase temporal. La selección de producción sigue siendo
-remota; la unificación de las presentaciones corresponde a la fase siguiente. La práctica
-actual conserva su presentación y controlador anteriores. Las fases
-posteriores deberán reutilizar la coordinación existente y ampliar la conformidad por formato,
-conservando autorización, transacciones y acreditación en el backend. No se añade fallback mock a
-las rutas competitivas.
+La [autoridad local](local-pyramid-session.md) comparte los resolutores y reglas puras con el
+servidor y contrasta sus 21 formatos mediante autenticación, HTTP y Supabase temporal. La fase 6,
+[completada el 2026-10-19](qa.md#cierre-de-la-fase-6--2026-10-19), consolidó todas las composiciones
+de Pirámide sobre `usePyramidGameSession` y `PyramidGameView`.
+`MockGameApp` recibe `LocalPyramidDefinition` para este modo y selecciona `LocalPyramidGameApp`;
+la composición competitiva selecciona el proveedor remoto. Las definiciones privadas se quedan
+en la composición local y el proveedor; la vista solo recibe metadatos y estado público.
+
+Cada ejecución local mantiene su autoridad en memoria. Replay, cambio de desafío o versión y
+recarga completa inician otra ejecución. Los diccionarios públicos de Mini-Wordle se cargan antes
+de construir el proveedor, sin iniciar el reloj. La confirmación terminal local puede emitir
+`onComplete` una sola vez por ejecución; la revisión no lo repite. Se retiraron el controlador,
+las presentaciones y el almacenamiento de partidas de Pirámide anteriores. La práctica didáctica
+de formatos sigue separada, y el ensayo continúa limitado a los identificadores demo autorizados.
 
 ### 2.2 Entrada al backend
 

@@ -15,15 +15,16 @@ type CompetitiveSessionOptions = Pick<SessionOptions, "challenge"> & {
 
 /** Shared React adapter for a session with an explicitly composed runtime. */
 export function useCompetitiveSessionWithProvider(options: SessionOptions) {
+  const { challenge, initialSession, provider, clock, refresh } = options;
   const engine = useMemo(
-    () => new CompetitiveSessionEngine(options),
-    [options.challenge, options.initialSession, options.provider, options.clock, options.refresh],
+    () => new CompetitiveSessionEngine({ challenge, initialSession, provider, clock, refresh }),
+    [challenge, initialSession, provider, clock, refresh],
   );
   const state = useSyncExternalStore(engine.subscribe, engine.getSnapshot, engine.getSnapshot);
   useEffect(() => engine.connect(), [engine]);
   useEffect(() => {
     if (
-      options.challenge.mode !== "pyramid" ||
+      challenge.mode !== "pyramid" ||
       state.phase !== "preparing" ||
       !state.question ||
       state.pendingCommand ||
@@ -35,7 +36,7 @@ export function useCompetitiveSessionWithProvider(options: SessionOptions) {
     });
     return () => window.cancelAnimationFrame(frame);
   }, [
-    options.challenge.mode,
+    challenge.mode,
     engine,
     state.phase,
     state.question,

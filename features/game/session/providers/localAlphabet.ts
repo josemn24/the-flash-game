@@ -18,7 +18,7 @@ import { evaluateCompetitiveReceipt } from "@/lib/scoringCore/competitiveReceipt
 import { countAlphabetAnswerCharacters } from "@/lib/gameplay/alphabetAnswerSlots";
 import { randomUuid } from "@/lib/randomUuid";
 import { systemSessionClock } from "../clock";
-import { compileAlphabetDefinition, type CompiledLevel } from "./localShared/definition";
+import { compileAlphabetDefinition } from "./localShared/definition";
 import { LocalRejection, reject } from "./localShared/formats";
 import { createLocalCommandQueue, localCommandSignature } from "./localShared/runtime";
 
@@ -125,9 +125,7 @@ export function createLocalAlphabetSessionProvider(
     active = null;
   };
   const pendingIndexes = () =>
-    challenge.entries
-      .map((_entry, index) => index)
-      .filter((index) => !answers.has(index));
+    challenge.entries.map((_entry, index) => index).filter((index) => !answers.has(index));
   const nextPendingIndex = () => {
     const pending = pendingIndexes();
     const unseen = pending.find((index) => !letters[index]!.visited);
@@ -233,7 +231,8 @@ export function createLocalAlphabetSessionProvider(
     const signature = localCommandSignature(command);
     const prior = key ? cached.get(key) : undefined;
     if (prior) return prior.signature === signature ? prior.result : reject("idempotency_conflict");
-    if ("challengeId" in input && input.challengeId !== challenge.id) return reject("invalid_command");
+    if ("challengeId" in input && input.challengeId !== challenge.id)
+      return reject("invalid_command");
     if (operation === "prepareSession") return accepted("acknowledged", { ready: true });
 
     if (operation === "start") {
@@ -270,7 +269,10 @@ export function createLocalAlphabetSessionProvider(
       result = finish(receivedAt, true);
     } else if (operation === "recover") {
       if (active) {
-        result = accepted("acknowledged", { ...prepared(active.index, receivedAt), phase: "playing" });
+        result = accepted("acknowledged", {
+          ...prepared(active.index, receivedAt),
+          phase: "playing",
+        });
       } else {
         result = accepted("acknowledged", {
           sessionId,
@@ -319,7 +321,8 @@ export function createLocalAlphabetSessionProvider(
           progress: progress(receivedAt),
         });
       } else {
-        if (input.answer !== null && typeof input.answer !== "string") return reject("invalid_answer");
+        if (input.answer !== null && typeof input.answer !== "string")
+          return reject("invalid_answer");
         const timedOut = receivedAt >= (deadlineAt ?? 0);
         closeActive(timedOut ? (deadlineAt ?? receivedAt) : receivedAt);
         const answer = timedOut ? null : input.answer;

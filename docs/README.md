@@ -55,6 +55,9 @@ decisiones y después los documentos afectados.
 ## Estado de la última revisión
 
 - Revisión funcional general: 2026-09-30; actualización de Supabase local: 2026-10-11.
+- Cierre de la fase 6 de unificación de Pirámide: 2026-10-19. Todas sus entradas jugables comparten
+  controlador y vista con proveedores remoto y local; código anterior retirado y criterios
+  acreditados en la [matriz de cierre](current/qa.md#cierre-de-la-fase-6--2026-10-19).
 - 31 formatos de pregunta, seis modos, desafíos editoriales y publicaciones mock; las slices persistidas
   actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
   y E01–E06/E10 sobre Supabase local.

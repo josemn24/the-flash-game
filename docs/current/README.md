@@ -11,6 +11,10 @@ La beta cerrada se provisionará y operará desde un portal privado de superadmi
 crea salas ni gestiona invitaciones. El portal privado también prepara y activa temporadas, publica
 contenido Flash/Supervivencia y programa su calendario local.
 
+La unificación de Pirámide está completada desde el 2026-10-19: competición y ensayo local
+comparten controlador y vista. La [matriz de cierre de la fase 6](qa.md#cierre-de-la-fase-6--2026-10-19)
+recoge el cumplimiento de los criterios y las verificaciones de la entrega.
+
 - [`status.md`](status.md): fotografía breve del producto y de sus limitaciones.
 - [`domain/README.md`](domain/README.md): modelo de dominio, tipos, fixtures y consultas.
 - [`use-cases.md`](use-cases.md): casos de uso funcionales, prioridades, permisos y límites.
@@ -31,11 +35,11 @@ contenido Flash/Supervivencia y programa su calendario local.
 - [`competitive-format-contracts.md`](competitive-format-contracts.md): representaciones,
   validación y registros por capa de los formatos competitivos.
 - [`pyramid-session-contract.md`](pyramid-session-contract.md): contrato funcional de Pirámide,
-  matriz de referencia y frontera prevista para sus proveedores local y remoto; fase 0.
+  matriz de referencia y frontera compartida entre proveedores local y remoto.
 - [`game-session-providers.md`](game-session-providers.md): contrato de sesión, composición
-  remota y regresiones de los seis modos; fase 1 de la unificación.
+  de proveedores y regresiones de los seis modos; incluye el cierre de la fase 6 de Pirámide.
 - [`local-pyramid-session.md`](local-pyramid-session.md): autoridad local en memoria,
-  reglas compartidas y conformidad HTTP con el remoto; fase 2.
+  entrada canónica, reglas compartidas, ciclo de ejecución y conformidad HTTP con el remoto.
 - [`avatar-confirmation-recovery.md`](avatar-confirmation-recovery.md): confirmación recuperable,
   autorización transaccional de limpieza y validación de avatares.
 - [`glosario.md`](glosario.md): vocabulario del producto.

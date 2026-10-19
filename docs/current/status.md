@@ -1,6 +1,6 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-10-16.
+Última actualización documental: 2026-10-19.
 
 # Estado actual del proyecto
 
@@ -110,6 +110,24 @@ tipos, arquitectura, enlaces y ESLint del código fuente (excluyendo los artefac
 Los tipos públicos generados desde el stack aislado coinciden con el archivo versionado.
 Las 24 pruebas E2E pasan en los seis modos, incluidas las cuatro de Conectar parejas con editor,
 publicación, móvil, teclado, recuperación y confirmación perdida. El stack aislado se elimina al terminar.
+
+## Unificación de partidas de Pirámide
+
+**Fase 6 completada el 2026-10-19.** Todos los criterios de cierre están acreditados en la
+[matriz de cierre y QA](qa.md#cierre-de-la-fase-6--2026-10-19).
+
+Competición y ensayo local comparten controlador, vista y controles de pregunta. La entrada local
+recibe una definición canónica privada y selecciona la autoridad en memoria; la competitiva mantiene
+el proveedor remoto. Las presentaciones y el controlador local anteriores están retirados. El ensayo
+sigue limitado a las rutas demo autorizadas, sin migración de partidas guardadas antiguas. La práctica
+didáctica de formatos continúa separada. El contrato y el alcance están en
+[autoridades locales](local-pyramid-session.md) y [proveedores](game-session-providers.md).
+
+La verificación comprende 2700 pruebas unitarias, 161 escenarios de conformidad de Pirámide,
+24 E2E competitivos de los seis modos, las integraciones Auth/PostgREST/RLS y 67 suites SQL en
+entornos desechables, además de tipos, arquitectura, lint sin avisos, estilos, enlaces, formato y
+build. La suite E2E local completa pasa sus 13 casos repetidos tres veces con cinco workers
+(39/39), tras corregir la desincronización del reloj del E2E de replay de Contrarreloj.
 
 ## Capacidades actuales
 
