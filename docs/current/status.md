@@ -1,13 +1,15 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-10-19.
+Última actualización documental: 2026-10-20.
 
 # Estado actual del proyecto
 
 ## Resumen
 
-The Flash combina dos recorridos explícitos. La práctica, las previews y las capacidades aún no
-migradas usan fixtures y un store mock normalizado. Las slices S01–S15, S17, S17a, S18b parcial, S20,
+Los [ensayos antes del intento competitivo](rehearsals.md) usan un catálogo propio en el repositorio,
+una asociación privada opcional por versión competitiva y sesiones locales en memoria. Cubren
+Flash, Pirámide, Supervivencia, Alfabeto y Contrarreloj. Las demos y capacidades aún no
+migradas mantienen sus fixtures y store mock normalizado. Las slices S01–S15, S17, S17a, S18b parcial, S20,
 D08a/D08b,
 S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, S15 y E01–E06/E10, junto con la base transversal del
 portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de

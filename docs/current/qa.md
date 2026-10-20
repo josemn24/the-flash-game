@@ -3,6 +3,39 @@
 
 # QA actual
 
+## Ensayos antes del intento competitivo — 2026-10-20
+
+La implementación de [pruebas antes de competir](rehearsals.md) está verificada localmente.
+Los siete artefactos iniciales cubren las seis publicaciones de BetaVIP y el Flash de referencia.
+La asociación es opcional y la migración no añade asociaciones a publicaciones existentes.
+
+- Suite unitaria completa: **2.757 pruebas en 266 archivos**. Incluye compatibilidad mecánica,
+  resolución perfecta de los siete ensayos con las autoridades reales, ausencia de enunciados
+  y respuestas textuales significativas duplicados respecto a las fixtures oficiales iniciales,
+  autorización, acciones editoriales y preparación/cancelación/reintento de recursos.
+- Navegador: **17 casos distintos correctos**. La suite inicial pasó 16/16; la tanda final
+  pasó 6/6, repitiendo cinco y añadiendo asociación real desde el portal. Cubre los cinco modos,
+  ambas variantes de Contrarreloj, revisión y repetición, fallo de ascenso, pérdida de vidas,
+  timeout, errores de imágenes, recarga, retorno, preview privada y congelación editorial.
+- El navegador compara los datos completos de intentos, respuestas y ledger antes y después
+  de cada recorrido de práctica. No detecta modificaciones competitivas. El caso que inicia
+  expresamente una partida oficial confirma después la denegación de la URL de prueba.
+- SQL completo: **68 suites** desde **97 archivos declarativos** y desde las **13 migraciones**,
+  con inventario de seguridad correcto. Se mantienen los 158 casos de formatos, 904 observaciones
+  de validación y las pruebas de concurrencia y deadlines. La suite propia aporta 31 comprobaciones.
+- Actualización incremental: conserva las filas de las **31 tablas existentes**, incluidos
+  intentos activos y completados, respuestas y ledger. No crea asociaciones automáticas.
+- Reconciliación: **240 funciones**, cero diferencias de definición y de comportamiento entre
+  instalación declarativa e historial; 41 contratos y las carreras adicionales correctos.
+- Los tipos públicos generados de Supabase permanecen idénticos. TypeScript, arquitectura,
+  ESLint sin avisos, Stylelint, enlaces documentales, catálogo, formato de archivos modificados
+  y build de producción son correctos. Se inspeccionó también la presentación móvil a 390 px.
+
+Las verificaciones SQL y de navegador utilizan bases y stacks temporales; no se ha desplegado
+esta entrega ni aplicado su migración a la base habitual o a un entorno remoto.
+La dificultad y las similitudes semánticas requieren revisión editorial al publicar nuevo contenido;
+la comprobación automática no pretende medirlas.
+
 ## Cierre de la fase 6 — 2026-10-19
 
 **Estado: completada.** Se han contrastado los criterios de cierre con el código actual y con

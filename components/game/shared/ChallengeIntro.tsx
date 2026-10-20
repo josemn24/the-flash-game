@@ -2,7 +2,16 @@
 
 import type { ReactNode } from "react";
 import { motion } from "motion/react";
-import { ArrowIcon, BackLink, Button, ButtonLink, Chip, GameHeader } from "@/components/ui";
+import {
+  ArrowIcon,
+  BackButton,
+  BackLink,
+  Button,
+  ButtonLink,
+  Chip,
+  FlaskIcon,
+  GameHeader,
+} from "@/components/ui";
 import {
   buildChallengeIntroModel,
   buildSafeChallengeIntroModel,
@@ -10,6 +19,7 @@ import {
 } from "@/lib/challengeIntro";
 import type { PracticeChallenge } from "@/types/gameplay/practice";
 import styles from "./ChallengeIntro.module.css";
+import { useRehearsalPresentation, useChallengeRehearsalLink } from "./RehearsalPresentation";
 
 type TransferPrompt = {
   busy: boolean;
@@ -56,6 +66,8 @@ export function ChallengeIntro({
   startHref,
   transfer,
 }: FullChallengeIntroProps | SafeChallengeIntroProps) {
+  const practice = useRehearsalPresentation();
+  const rehearsal = useChallengeRehearsalLink();
   const model = challenge
     ? buildChallengeIntroModel(challenge)
     : buildSafeChallengeIntroModel(introduction);
@@ -70,18 +82,25 @@ export function ChallengeIntro({
     >
       <GameHeader
         left={
-          <BackLink
-            href={returnTo}
-            label="Volver a desafíos"
-            prefetch={prefetchReturnLink ? undefined : false}
-          />
+          practice ? (
+            <BackButton
+              label="Volver al desafío"
+              onClick={() => window.location.assign(practice.returnTo)}
+            />
+          ) : (
+            <BackLink
+              href={returnTo}
+              label="Volver a desafíos"
+              prefetch={prefetchReturnLink ? undefined : false}
+            />
+          )
         }
       />
 
       <div className={styles.content}>
         <section className={styles.stageCard} aria-labelledby="challenge-intro-title">
           <div className={styles.cardContent}>
-            <Chip tone="social">{model.contextLabel}</Chip>
+            <Chip tone="social">{practice ? "Partida de prueba" : model.contextLabel}</Chip>
             <h1 id="challenge-intro-title">{model.title}</h1>
 
             <div
@@ -142,7 +161,7 @@ export function ChallengeIntro({
             {!transfer && (challenge || canStart) ? (
               startHref ? (
                 <ButtonLink href={startHref} size="hero" fullWidth trailingIcon={<ArrowIcon />}>
-                  Empezar desafío
+                  {practice ? "Empezar prueba" : "Empezar desafío"}
                 </ButtonLink>
               ) : (
                 <Button
@@ -152,9 +171,20 @@ export function ChallengeIntro({
                   disabled={!(challenge || introduction)}
                   trailingIcon={<ArrowIcon />}
                 >
-                  Empezar desafío
+                  {practice ? "Empezar prueba" : "Empezar desafío"}
                 </Button>
               )
+            ) : null}
+            {rehearsal && !practice ? (
+              <ButtonLink
+                href={rehearsal.href}
+                prefetch={false}
+                variant="secondary"
+                fullWidth
+                leadingIcon={<FlaskIcon />}
+              >
+                Probar primero
+              </ButtonLink>
             ) : null}
             {note ? <p className={styles.note}>{note}</p> : null}
           </div>

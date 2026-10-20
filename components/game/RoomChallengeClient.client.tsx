@@ -1,5 +1,7 @@
 "use client";
 
+import { ChallengeRehearsalLink } from "./shared/RehearsalPresentation";
+import type { RehearsalAvailability } from "@/types/gameplay/rehearsal";
 import { GameApp } from "@/components/game/shells/GameApp";
 import { ArrowIcon, ButtonLink, Canvas, Card, TrophyIcon } from "@/components/ui";
 import type { GameRoomContext, CompetitiveChallengePageModel } from "@/types/view-models";
@@ -76,7 +78,10 @@ export function RoomChallengeClient({
   roomContext,
   socialSnapshot,
   terminalReview,
-}: Omit<CompetitiveChallengePageModel, "gameplayPersistence">) {
+  rehearsal,
+}: Omit<CompetitiveChallengePageModel, "gameplayPersistence"> & {
+  rehearsal?: RehearsalAvailability;
+}) {
   if (roomContext.attemptStatus === "available" && roomContext.availabilityStatus !== "available") {
     return <UnavailableCompetitiveChallenge roomContext={roomContext} />;
   }
@@ -88,7 +93,7 @@ export function RoomChallengeClient({
       <TerminalCompetitiveChallenge roomContext={roomContext} status={roomContext.attemptStatus} />
     );
   }
-  return (
+  const game = (
     <GameApp
       persistence="server"
       challenge={challenge}
@@ -96,5 +101,10 @@ export function RoomChallengeClient({
       socialSnapshot={socialSnapshot}
       terminalReview={terminalReview}
     />
+  );
+  return rehearsal ? (
+    <ChallengeRehearsalLink.Provider value={rehearsal}>{game}</ChallengeRehearsalLink.Provider>
+  ) : (
+    game
   );
 }

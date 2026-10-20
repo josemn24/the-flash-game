@@ -98,6 +98,16 @@
     margin-top: 28px;
   }
 
+  .practiceNotice {
+    margin: var(--space-4) 0 0;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-control);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface-soft);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
   .returnLink {
     justify-self: center;
     margin-top: 2px;

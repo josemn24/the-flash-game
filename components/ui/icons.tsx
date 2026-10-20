@@ -10,6 +10,7 @@ import {
   Clock,
   Crown,
   Eye,
+  FlaskConical,
   Heart,
   Lock,
   MoreHorizontal,
@@ -182,6 +183,10 @@ export function HeartIcon(props: IconProps) {
 
 export function EyeIcon(props: IconProps) {
   return <Eye {...baseProps} {...props} />;
+}
+
+export function FlaskIcon(props: IconProps) {
+  return <FlaskConical {...baseProps} {...props} />;
 }
 
 export function NotebookIcon(props: IconProps) {

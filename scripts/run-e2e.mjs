@@ -69,6 +69,19 @@ function run(command, args, options = {}) {
 }
 
 async function prepareScenario(scenario) {
+  if (scenario === "rehearsals") {
+    await run("npx", [
+      "supabase",
+      "db",
+      "reset",
+      "--local",
+      ...(process.env.SUPABASE_TEST_WORKDIR
+        ? ["--workdir", process.env.SUPABASE_TEST_WORKDIR]
+        : []),
+    ]);
+    await run(process.execPath, ["scripts/seed-betavip.mjs"]);
+    return;
+  }
   await run("npm", ["run", "supabase:fixture", "--", "--scenario", scenario, "--clean"]);
   await run("npx", [
     "supabase",
@@ -84,6 +97,7 @@ async function prepareScenario(scenario) {
 }
 
 async function cleanScenario(scenario) {
+  if (scenario === "rehearsals") return;
   await run("npm", ["run", "supabase:fixture", "--", "--scenario", scenario, "--clean"]);
 }
 

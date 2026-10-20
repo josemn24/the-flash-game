@@ -1,0 +1,37 @@
+[
+  {
+    "id": "betavip-logica",
+    "version": 1,
+    "contentHash": "4ae5d573e8602fda13aefb4b885195b6f19e8dbe141e8999785b611a24add31d"
+  },
+  {
+    "id": "betavip-antiguedad",
+    "version": 1,
+    "contentHash": "60ed05ef5b46f705abe8f46242be49b43b8591eab368c5d9c96d02fc5a68cc1d"
+  },
+  {
+    "id": "betavip-queens",
+    "version": 1,
+    "contentHash": "2aac2db5ef24241f4c946efe0f2c34d4e80a78a4da8ad8fe399e6fb2fc05a09e"
+  },
+  {
+    "id": "betavip-parejas",
+    "version": 1,
+    "contentHash": "9a06b8c14c9c23d8e288bf0fedd71fc3f36fa4cc894830cdc6313f86fddd23fc"
+  },
+  {
+    "id": "betavip-supervivencia",
+    "version": 1,
+    "contentHash": "484dc70a43c1e4a79c1199ca62c7953b57f867b72ebcb40fe6aa004081d3221c"
+  },
+  {
+    "id": "betavip-alfabeto",
+    "version": 1,
+    "contentHash": "a6b827d9962226ebe44a4308793fd3d0b4673aa2cabfe8da097e3f0b6123b6af"
+  },
+  {
+    "id": "flash-referencia",
+    "version": 1,
+    "contentHash": "ea12747db7dcdccb94a2215c57dd2b9b64a22dcd52684e8946d377b8208d835f"
+  }
+]

@@ -1,5 +1,7 @@
 "use client";
 
+import { ChallengeRehearsalLink } from "./RehearsalPresentation";
+import type { RehearsalAvailability } from "@/types/gameplay/rehearsal";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import type { RoomIntroductionModel } from "@/types/view-models";
 
@@ -24,8 +26,14 @@ function getAvailabilityNote(model: RoomIntroductionModel) {
  * The playable case is rendered by the gameplay controller so it can start
  * the authoritative attempt explicitly from its own button.
  */
-export function RoomChallengeIntroduction({ model }: { model: RoomIntroductionModel }) {
-  return (
+export function RoomChallengeIntroduction({
+  model,
+  rehearsal,
+}: {
+  model: RoomIntroductionModel;
+  rehearsal?: RehearsalAvailability;
+}) {
+  const intro = (
     <ChallengeIntro
       introduction={{
         title: model.challengeTitle,
@@ -37,5 +45,10 @@ export function RoomChallengeIntroduction({ model }: { model: RoomIntroductionMo
       note={getAvailabilityNote(model)}
       returnTo={`/salas/${model.roomId}`}
     />
+  );
+  return rehearsal ? (
+    <ChallengeRehearsalLink.Provider value={rehearsal}>{intro}</ChallengeRehearsalLink.Provider>
+  ) : (
+    intro
   );
 }

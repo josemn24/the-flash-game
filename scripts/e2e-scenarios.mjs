@@ -1,4 +1,5 @@
 export const E2E_BY_SCENARIO = Object.freeze({
+  rehearsals: ["e2e/rehearsals.spec.ts"],
   "pyramid-session-conformance": ["e2e/pyramid-session-conformance.spec.ts"],
   "format-contracts": ["e2e/format-contracts.spec.ts"],
   "format-contracts-pyramid": ["e2e/format-contracts-pyramid.spec.ts"],

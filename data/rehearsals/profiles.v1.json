@@ -1,0 +1,969 @@
+{
+  "betavip-logica": {
+    "mode": "pyramid",
+    "globalTimeLimitMs": null,
+    "lives": null,
+    "questions": [
+      {
+        "position": 1,
+        "type": "zip",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 30000,
+        "points": 13,
+        "letter": null,
+        "mechanics": {
+          "rows": 5,
+          "columns": 5,
+          "checkpoints": 6
+        }
+      },
+      {
+        "position": 2,
+        "type": "logic-matrix",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 35000,
+        "points": 12,
+        "letter": null,
+        "mechanics": {
+          "cells": 9,
+          "missing": 1,
+          "pieces": 11,
+          "options": 4,
+          "showPieceLabels": false
+        }
+      },
+      {
+        "position": 3,
+        "type": "odd-one-out",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 30000,
+        "points": 10,
+        "letter": null,
+        "mechanics": {
+          "items": 5
+        }
+      },
+      {
+        "position": 4,
+        "type": "connect-pairs",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 45000,
+        "points": 14,
+        "letter": null,
+        "mechanics": {
+          "rows": 5,
+          "columns": 5,
+          "pairs": 4,
+          "requireFullCoverage": true
+        }
+      },
+      {
+        "position": 5,
+        "type": "escape",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 45000,
+        "points": 15,
+        "letter": null,
+        "mechanics": {
+          "rows": 6,
+          "columns": 6,
+          "exitSide": "right",
+          "blocks": [
+            "obstacle:horizontal:2",
+            "obstacle:horizontal:3",
+            "obstacle:horizontal:3",
+            "obstacle:vertical:2",
+            "obstacle:vertical:2",
+            "obstacle:vertical:3",
+            "target:horizontal:2"
+          ]
+        }
+      },
+      {
+        "position": 6,
+        "type": "logic-code",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 17,
+        "letter": null,
+        "mechanics": {
+          "codeLength": 3,
+          "clues": 4
+        }
+      },
+      {
+        "position": 7,
+        "type": "queens",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 19,
+        "letter": null,
+        "mechanics": {
+          "rows": 5,
+          "columns": 5,
+          "prefilled": 1
+        }
+      }
+    ]
+  },
+  "betavip-antiguedad": {
+    "mode": "pyramid",
+    "globalTimeLimitMs": null,
+    "lives": null,
+    "questions": [
+      {
+        "position": 1,
+        "type": "matching",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 18000,
+        "points": 10,
+        "letter": null,
+        "mechanics": {
+          "left": 4,
+          "right": 4
+        }
+      },
+      {
+        "position": 2,
+        "type": "progressive-clues",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 35000,
+        "points": 12,
+        "letter": null,
+        "mechanics": {
+          "clues": 3,
+          "penalty": 20
+        }
+      },
+      {
+        "position": 3,
+        "type": "mini-wordle",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 55000,
+        "points": 14,
+        "letter": null,
+        "mechanics": {
+          "wordLength": 5,
+          "maxAttempts": 6,
+          "dictionaryId": "es-general-5.v1"
+        }
+      },
+      {
+        "position": 4,
+        "type": "ordering",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 30000,
+        "points": 13,
+        "letter": null,
+        "mechanics": {
+          "items": 4
+        }
+      },
+      {
+        "position": 5,
+        "type": "word-search",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 15,
+        "letter": null,
+        "mechanics": {
+          "rows": 10,
+          "columns": 10,
+          "targets": 5,
+          "wordLengths": [5, 6, 7, 8, 10]
+        }
+      },
+      {
+        "position": 6,
+        "type": "classification",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 50000,
+        "points": 17,
+        "letter": null,
+        "mechanics": {
+          "items": 8,
+          "categories": 4
+        }
+      },
+      {
+        "position": 7,
+        "type": "word-hashtag",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 45000,
+        "points": 19,
+        "letter": null,
+        "mechanics": {
+          "rows": 5,
+          "columns": 5,
+          "maxMoves": 7
+        }
+      }
+    ]
+  },
+  "betavip-queens": {
+    "mode": "time-trial",
+    "globalTimeLimitMs": 150000,
+    "lives": null,
+    "questions": [
+      {
+        "position": 1,
+        "type": "queens",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 12,
+        "letter": null,
+        "mechanics": {
+          "rows": 4,
+          "columns": 4,
+          "prefilled": 1
+        }
+      },
+      {
+        "position": 2,
+        "type": "queens",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 14,
+        "letter": null,
+        "mechanics": {
+          "rows": 5,
+          "columns": 5,
+          "prefilled": 2
+        }
+      },
+      {
+        "position": 3,
+        "type": "queens",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 16,
+        "letter": null,
+        "mechanics": {
+          "rows": 5,
+          "columns": 5,
+          "prefilled": 1
+        }
+      },
+      {
+        "position": 4,
+        "type": "queens",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 18,
+        "letter": null,
+        "mechanics": {
+          "rows": 6,
+          "columns": 6,
+          "prefilled": 3
+        }
+      },
+      {
+        "position": 5,
+        "type": "queens",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 19,
+        "letter": null,
+        "mechanics": {
+          "rows": 6,
+          "columns": 6,
+          "prefilled": 2
+        }
+      },
+      {
+        "position": 6,
+        "type": "queens",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 21,
+        "letter": null,
+        "mechanics": {
+          "rows": 7,
+          "columns": 7,
+          "prefilled": 2
+        }
+      }
+    ]
+  },
+  "betavip-parejas": {
+    "mode": "time-trial",
+    "globalTimeLimitMs": 150000,
+    "lives": null,
+    "questions": [
+      {
+        "position": 1,
+        "type": "connect-pairs",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 12,
+        "letter": null,
+        "mechanics": {
+          "rows": 4,
+          "columns": 4,
+          "pairs": 3,
+          "requireFullCoverage": true
+        }
+      },
+      {
+        "position": 2,
+        "type": "connect-pairs",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 14,
+        "letter": null,
+        "mechanics": {
+          "rows": 5,
+          "columns": 5,
+          "pairs": 5,
+          "requireFullCoverage": true
+        }
+      },
+      {
+        "position": 3,
+        "type": "connect-pairs",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 16,
+        "letter": null,
+        "mechanics": {
+          "rows": 5,
+          "columns": 5,
+          "pairs": 4,
+          "requireFullCoverage": true
+        }
+      },
+      {
+        "position": 4,
+        "type": "connect-pairs",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 18,
+        "letter": null,
+        "mechanics": {
+          "rows": 6,
+          "columns": 6,
+          "pairs": 6,
+          "requireFullCoverage": true
+        }
+      },
+      {
+        "position": 5,
+        "type": "connect-pairs",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 19,
+        "letter": null,
+        "mechanics": {
+          "rows": 6,
+          "columns": 6,
+          "pairs": 5,
+          "requireFullCoverage": true
+        }
+      },
+      {
+        "position": 6,
+        "type": "connect-pairs",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 60000,
+        "points": 21,
+        "letter": null,
+        "mechanics": {
+          "rows": 7,
+          "columns": 7,
+          "pairs": 7,
+          "requireFullCoverage": true
+        }
+      }
+    ]
+  },
+  "betavip-supervivencia": {
+    "mode": "survival",
+    "globalTimeLimitMs": null,
+    "lives": 3,
+    "questions": [
+      {
+        "position": 1,
+        "type": "true-false",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 12000,
+        "points": 4,
+        "letter": null,
+        "mechanics": {}
+      },
+      {
+        "position": 2,
+        "type": "multiple-choice",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 14000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "options": 4,
+          "media": false,
+          "visual": false
+        }
+      },
+      {
+        "position": 3,
+        "type": "progressive-image",
+        "payloadSchemaVersion": 2,
+        "timeLimitMs": 20000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "revealDurationMs": 5000
+        }
+      },
+      {
+        "position": 4,
+        "type": "true-false",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 12000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {}
+      },
+      {
+        "position": 5,
+        "type": "progressive-clues",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 25000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "clues": 3,
+          "penalty": 30
+        }
+      },
+      {
+        "position": 6,
+        "type": "matching",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 18000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "left": 3,
+          "right": 3
+        }
+      },
+      {
+        "position": 7,
+        "type": "matching",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 18000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "left": 3,
+          "right": 3
+        }
+      },
+      {
+        "position": 8,
+        "type": "matching",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 18000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "left": 3,
+          "right": 3
+        }
+      },
+      {
+        "position": 9,
+        "type": "multiple-choice",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 14000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "options": 4,
+          "media": false,
+          "visual": false
+        }
+      },
+      {
+        "position": 10,
+        "type": "progressive-clues",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 25000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "clues": 3,
+          "penalty": 30
+        }
+      },
+      {
+        "position": 11,
+        "type": "estimation",
+        "payloadSchemaVersion": 2,
+        "timeLimitMs": 16000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "min": 1970,
+          "max": 1995,
+          "step": 1,
+          "initialValue": 1980,
+          "tolerance": 2,
+          "media": false
+        }
+      },
+      {
+        "position": 12,
+        "type": "multiple-choice",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 14000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "options": 4,
+          "media": false,
+          "visual": false
+        }
+      },
+      {
+        "position": 13,
+        "type": "ordering",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 20000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "items": 4
+        }
+      },
+      {
+        "position": 14,
+        "type": "progressive-clues",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 25000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "clues": 3,
+          "penalty": 30
+        }
+      },
+      {
+        "position": 15,
+        "type": "true-false",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 12000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {}
+      },
+      {
+        "position": 16,
+        "type": "ordering",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 20000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "items": 4
+        }
+      },
+      {
+        "position": 17,
+        "type": "matching",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 18000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "left": 3,
+          "right": 3
+        }
+      },
+      {
+        "position": 18,
+        "type": "progressive-clues",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 25000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "clues": 3,
+          "penalty": 30
+        }
+      },
+      {
+        "position": 19,
+        "type": "multiple-choice",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 14000,
+        "points": 5,
+        "letter": null,
+        "mechanics": {
+          "options": 4,
+          "media": false,
+          "visual": false
+        }
+      },
+      {
+        "position": 20,
+        "type": "ordering",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 20000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "items": 4
+        }
+      }
+    ]
+  },
+  "betavip-alfabeto": {
+    "mode": "alphabet",
+    "globalTimeLimitMs": 150000,
+    "lives": null,
+    "questions": [
+      {
+        "position": 1,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 7,
+        "letter": "A",
+        "mechanics": {}
+      },
+      {
+        "position": 2,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 7,
+        "letter": "B",
+        "mechanics": {}
+      },
+      {
+        "position": 3,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 7,
+        "letter": "C",
+        "mechanics": {}
+      },
+      {
+        "position": 4,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 7,
+        "letter": "D",
+        "mechanics": {}
+      },
+      {
+        "position": 5,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "E",
+        "mechanics": {}
+      },
+      {
+        "position": 6,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "F",
+        "mechanics": {}
+      },
+      {
+        "position": 7,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "I",
+        "mechanics": {}
+      },
+      {
+        "position": 8,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "J",
+        "mechanics": {}
+      },
+      {
+        "position": 9,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "L",
+        "mechanics": {}
+      },
+      {
+        "position": 10,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "M",
+        "mechanics": {}
+      },
+      {
+        "position": 11,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "O",
+        "mechanics": {}
+      },
+      {
+        "position": 12,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "P",
+        "mechanics": {}
+      },
+      {
+        "position": 13,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "R",
+        "mechanics": {}
+      },
+      {
+        "position": 14,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "S",
+        "mechanics": {}
+      },
+      {
+        "position": 15,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "T",
+        "mechanics": {}
+      },
+      {
+        "position": 16,
+        "type": "short-text",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 120000,
+        "points": 6,
+        "letter": "Z",
+        "mechanics": {}
+      }
+    ]
+  },
+  "flash-referencia": {
+    "mode": "flash",
+    "globalTimeLimitMs": null,
+    "lives": null,
+    "questions": [
+      {
+        "position": 1,
+        "type": "multiple-choice",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 18000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "options": 4,
+          "media": true,
+          "visual": false
+        }
+      },
+      {
+        "position": 2,
+        "type": "odd-one-out",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 14000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "items": 4
+        }
+      },
+      {
+        "position": 3,
+        "type": "matching",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 22000,
+        "points": 7,
+        "letter": null,
+        "mechanics": {
+          "left": 4,
+          "right": 4
+        }
+      },
+      {
+        "position": 4,
+        "type": "ordering",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 26000,
+        "points": 7,
+        "letter": null,
+        "mechanics": {
+          "items": 4
+        }
+      },
+      {
+        "position": 5,
+        "type": "progressive-image",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 20000,
+        "points": 7,
+        "letter": null,
+        "mechanics": {
+          "revealDurationMs": 11
+        }
+      },
+      {
+        "position": 6,
+        "type": "heat-map",
+        "payloadSchemaVersion": 2,
+        "timeLimitMs": 18000,
+        "points": 7,
+        "letter": null,
+        "mechanics": {
+          "fullCreditRadius": 0.04,
+          "toleranceRadius": 0.12
+        }
+      },
+      {
+        "position": 7,
+        "type": "estimation",
+        "payloadSchemaVersion": 2,
+        "timeLimitMs": 22000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "min": 10,
+          "max": 60,
+          "step": 1,
+          "initialValue": 30,
+          "tolerance": 18,
+          "media": false
+        }
+      },
+      {
+        "position": 8,
+        "type": "classification",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 22000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "items": 5,
+          "categories": 2
+        }
+      },
+      {
+        "position": 9,
+        "type": "anagram",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 30000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "tiles": 7
+        }
+      },
+      {
+        "position": 10,
+        "type": "multiple-choice",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 16000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "options": 4,
+          "media": false,
+          "visual": false
+        }
+      },
+      {
+        "position": 11,
+        "type": "true-false",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 12000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {}
+      },
+      {
+        "position": 12,
+        "type": "multiple-choice",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 16000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "options": 4,
+          "media": false,
+          "visual": false
+        }
+      },
+      {
+        "position": 13,
+        "type": "ordering",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 20000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "items": 3
+        }
+      },
+      {
+        "position": 14,
+        "type": "multiple-choice",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 20000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "options": 4,
+          "media": false,
+          "visual": false
+        }
+      },
+      {
+        "position": 15,
+        "type": "true-false",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 12000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {}
+      },
+      {
+        "position": 16,
+        "type": "multiple-choice",
+        "payloadSchemaVersion": 1,
+        "timeLimitMs": 14000,
+        "points": 6,
+        "letter": null,
+        "mechanics": {
+          "options": 4,
+          "media": false,
+          "visual": false
+        }
+      }
+    ]
+  }
+}

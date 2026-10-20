@@ -38,6 +38,7 @@ recoge el cumplimiento de los criterios y las verificaciones de la entrega.
   matriz de referencia y frontera compartida entre proveedores local y remoto.
 - [`game-session-providers.md`](game-session-providers.md): contrato de sesión, composición
   de proveedores y regresiones de los seis modos; incluye el cierre de la fase 6 de Pirámide.
+- [`rehearsals.md`](rehearsals.md): catálogo versionado, asociación editorial y pruebas locales antes de competir.
 - [`local-pyramid-session.md`](local-pyramid-session.md): autoridad local en memoria,
   entrada canónica, reglas compartidas, ciclo de ejecución y conformidad HTTP con el remoto.
 - [`avatar-confirmation-recovery.md`](avatar-confirmation-recovery.md): confirmación recuperable,

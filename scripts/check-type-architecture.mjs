@@ -326,14 +326,20 @@ for (const file of productionFiles) {
   const isLocalSessionShared = relative.startsWith(
     `features${path.sep}game${path.sep}session${path.sep}providers${path.sep}localShared${path.sep}`,
   );
-  // Fixture-backed local rehearsal shells are the only provider composition roots.
+  // Explicit demo shells and the authorized product rehearsal compose local providers.
   const isLocalSessionDemoComposition = [
     "components/game/shells/LocalPyramidGameApp.client.tsx",
+    "components/game/shells/RehearsalGameApp.client.tsx",
     "components/game/shells/LocalFlashGameApp.client.tsx",
     "components/game/shells/LocalSurvivalGameApp.client.tsx",
     "components/game/shells/LocalTimeTrialGameApp.client.tsx",
     "components/game/shells/LocalAlphabetGameApp.client.tsx",
   ].includes(relative);
+  if (
+    relative.startsWith("data/rehearsals/") &&
+    /@\/(?:data\/mock|infrastructure|server|test-utils)\//.test(source)
+  )
+    violations.push(`${relative} imports non-rehearsal content`);
   const isPureResolution = relative.startsWith("lib/scoringCore/resolution/");
 
   if (
@@ -532,7 +538,11 @@ for (const file of productionFiles) {
     if (
       layer === "infrastructure" &&
       area === "data" &&
-      !relative.startsWith(`infrastructure${path.sep}mock${path.sep}`)
+      !relative.startsWith(`infrastructure${path.sep}mock${path.sep}`) &&
+      !(
+        relative === "infrastructure/rehearsals/catalog.ts" &&
+        imported.specifier.startsWith("@/data/rehearsals/")
+      )
     ) {
       violations.push(`${relative} imports mock data outside infrastructure/mock`);
     }
@@ -540,7 +550,11 @@ for (const file of productionFiles) {
     if (
       layer === "infrastructure" &&
       imported.specifier.startsWith("@/data/") &&
-      !imported.specifier.startsWith("@/data/mock/")
+      !imported.specifier.startsWith("@/data/mock/") &&
+      !(
+        relative === "infrastructure/rehearsals/catalog.ts" &&
+        imported.specifier.startsWith("@/data/rehearsals/")
+      )
     ) {
       violations.push(`${relative} imports a legacy data projection ${imported.specifier}`);
     }
@@ -568,6 +582,7 @@ const serverFacadeFiles = [
   "server/production-room-data-access.ts",
   "server/production-challenge-data-access.ts",
   "server/production-admin-data-access.ts",
+  "server/production-rehearsal-data-access.ts",
   "server/demo-data-access.ts",
   "server/production-room-members.ts",
 ];
@@ -600,6 +615,7 @@ for (const relative of serverFacadeFiles) {
       "server/production-home-data-access.ts",
       "server/production-room-data-access.ts",
       "server/production-challenge-data-access.ts",
+      "server/production-rehearsal-data-access.ts",
     ].includes(relative) &&
     /@\/infrastructure\//.test(facadeSource)
   ) {
@@ -623,6 +639,7 @@ for (const relative of [
   "server/production-room-data-access.ts",
   "server/production-challenge-data-access.ts",
   "server/production-admin-data-access.ts",
+  "server/production-rehearsal-data-access.ts",
   "server/production-room-members.ts",
 ]) {
   const source = await readFile(path.join(process.cwd(), relative), "utf8");

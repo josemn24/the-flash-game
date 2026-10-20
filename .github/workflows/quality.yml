@@ -49,6 +49,9 @@ jobs:
       - name: Style architecture
         run: npm run style-architecture
 
+      - name: Rehearsal catalog
+        run: npm run rehearsals:check
+
       - name: Unit tests
         run: npm test
 
@@ -86,6 +89,12 @@ jobs:
 
       - name: Schema tests from migration history
         run: npm run supabase:schema:test -- --migrations
+
+      - name: Schema upgrades
+        run: npm run supabase:schema:upgrade:test
+
+      - name: Generated Supabase types
+        run: npm run supabase:types:check
 
       - name: Schema reconciliation
         run: npm run supabase:schema:reconciliation:test
@@ -138,6 +147,7 @@ jobs:
           e2e/f16-zip.spec.ts
           e2e/f18-escape.spec.ts
           e2e/f19-word-hashtag.spec.ts
+          e2e/rehearsals.spec.ts
 
   quality:
     name: quality

@@ -7,3 +7,5 @@ export { FlashPopRoomMemberDetail } from "./modes/flash-pop/FlashPopRoomMemberDe
 export { FlashPopRoomRanking } from "./modes/flash-pop/FlashPopRoomRanking";
 export { FlashPopRoomSettings } from "./modes/flash-pop/FlashPopRoomSettings";
 export { ServerNarrativeGame } from "./modes/narrative/ServerNarrativeGame.client";
+
+export { RehearsalGameApp } from "./shells/RehearsalGameApp.client";
