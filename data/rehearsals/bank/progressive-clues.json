@@ -99,7 +99,7 @@
     },
     "solutionPayload": {
       "correctAnswer": "bicicleta",
-      "acceptedAnswers": ["bicicleta"],
+      "acceptedAnswers": ["bicicleta", "bici"],
       "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
     },
     "modes": ["flash", "survival", "pyramid"],

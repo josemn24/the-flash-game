@@ -5,33 +5,37 @@
     "type": "logic-code",
     "payloadSchemaVersion": 1,
     "publicPayload": {
-      "question": "Descifra el código de tres cifras con las pistas.",
+      "question": "Descifra el código de tres cifras.",
       "codeLength": 3,
       "clues": [
         {
-          "code": "500",
-          "hint": "La primera cifra es 5."
+          "code": "685",
+          "hint": "Exactamente una cifra pertenece al código y está en la posición correcta."
         },
         {
-          "code": "070",
-          "hint": "La cifra central es 7."
+          "code": "627",
+          "hint": "Exactamente una cifra pertenece al código, pero está en otra posición."
         },
         {
-          "code": "003",
-          "hint": "La última cifra es 3."
+          "code": "516",
+          "hint": "Exactamente dos cifras pertenecen al código y ambas están en otras posiciones."
         },
         {
-          "code": "246",
-          "hint": "Ninguna de estas cifras aparece."
+          "code": "938",
+          "hint": "Ninguna cifra pertenece al código."
+        },
+        {
+          "code": "981",
+          "hint": "Exactamente una cifra pertenece al código, pero está en otra posición."
         }
       ]
     },
     "solutionPayload": {
-      "correctAnswer": "573",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "correctAnswer": "175",
+      "explanation": "938 descarta 9, 3 y 8. En 981, la única cifra posible es 1, que no va al final. La pista 516 indica que 1 y otra cifra entre 5 y 6 pertenecen al código, ambas mal colocadas. Como 1 tampoco puede ir en el centro, va primero. En 685, 8 está descartado y 6 no puede ocupar el primer lugar, así que el 5 está bien colocado al final y el 6 no pertenece al código. Por tanto, 516 confirma que el 1 y el 5 son las dos cifras correctas de esa pista. En 627, como 6 está descartado, solo una de 2 y 7 pertenece y está mal colocada: el 2 no puede estar en el centro porque allí aparece en la pista, así que el 7 va en el centro. El código es 175."
     },
     "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
+    "difficulty": "medium",
     "referenceTimeLimitMs": 60000,
     "familyId": "betavip-logica-q6"
   },
@@ -73,30 +77,38 @@
     "type": "logic-code",
     "payloadSchemaVersion": 1,
     "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
+    "difficulty": "hard",
     "referenceTimeLimitMs": 60000,
     "familyId": "bank-codigo-cuadrados",
     "publicPayload": {
-      "question": "Abre la caja usando las tres pistas numéricas: codigo cuadrados.",
+      "question": "Descifra el código de tres cifras.",
       "codeLength": 3,
       "clues": [
         {
-          "code": "400",
-          "hint": "La primera cifra es el cuadrado de dos."
+          "code": "682",
+          "hint": "Exactamente una cifra pertenece al código y está en la posición correcta."
         },
         {
-          "code": "090",
-          "hint": "La cifra central es el cuadrado de tres."
+          "code": "614",
+          "hint": "Exactamente una cifra pertenece al código, pero está en otra posición."
         },
         {
-          "code": "001",
-          "hint": "La última cifra es la unidad."
+          "code": "206",
+          "hint": "Exactamente dos cifras pertenecen al código y ambas están en otras posiciones."
+        },
+        {
+          "code": "738",
+          "hint": "Ninguna cifra pertenece al código."
+        },
+        {
+          "code": "780",
+          "hint": "Exactamente una cifra pertenece al código, pero está en otra posición."
         }
       ]
     },
     "solutionPayload": {
-      "correctAnswer": "491",
-      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+      "correctAnswer": "042",
+      "explanation": "738 descarta 7, 3 y 8. En 780, la única cifra posible es 0, pero no va al final. En 206, 0 y 2 pertenecen al código, ambos mal colocados; así, 0 va primero. Como 6 está descartado, la pista 682 coloca el 2 al final. La pista 614 deja el 4 en el centro. El código es 042."
     }
   }
 ]

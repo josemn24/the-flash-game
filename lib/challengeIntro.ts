@@ -78,7 +78,6 @@ function getModeLabelForMode(mode: GameMode) {
 
 function buildSafeRules(
   mode: GameMode,
-  timeLimitMs?: number,
   format?: TimeTrialFormat,
 ): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   switch (mode) {
@@ -86,9 +85,7 @@ function buildSafeRules(
       return [
         {
           title: "Un solo reloj compartido",
-          description: timeLimitMs
-            ? `El reloj de ${formatGlobalDuration(timeLimitMs)} es único para todas las pruebas. Validaciones y transiciones también consumen tiempo.`
-            : "El mismo reloj global corre durante todas las pruebas. Validaciones y transiciones consumen tiempo.",
+          description: "Validar y cambiar de prueba también consumen tiempo.",
         },
         {
           title:
@@ -99,7 +96,7 @@ function buildSafeRules(
                 : "Resuelve para avanzar",
           description:
             format === "connect-pairs"
-              ? "Conecta todas las parejas y cubre el tablero sin cruces. Borrar, recortar y rehacer caminos no penaliza."
+              ? "Conecta las parejas, cubre el tablero sin cruces; rehacer no penaliza."
               : format === "queens"
                 ? "Tienes 3 intentos por tablero; se renuevan al avanzar. La tercera validación completa incorrecta de un tablero termina el desafío. Los movimientos no consumen oportunidades."
                 : "Completar una prueba abre la siguiente. Consulta las reglas del formato antes de empezar.",
@@ -107,7 +104,7 @@ function buildSafeRules(
         {
           title: "Conserva tus aciertos",
           description:
-            "Cada prueba resuelta suma sus puntos. Recuperar una prueba activa sin respuesta recibida termina la partida.",
+            "Cada prueba suma puntos; interrumpirla sin respuesta termina la partida.",
         },
       ];
     case "flash":
@@ -150,11 +147,7 @@ export function buildSafeChallengeIntroModel(
         : []),
       { value: introduction.maxScore, label: "Puntos" },
     ],
-    rules: buildSafeRules(
-      introduction.mode,
-      introduction.timeLimitMs,
-      introduction.timeTrialFormat,
-    ),
+    rules: buildSafeRules(introduction.mode, introduction.timeTrialFormat),
   };
 }
 
@@ -235,8 +228,8 @@ function buildPyramidRules(): [ChallengeIntroRule, ChallengeIntroRule, Challenge
       description: "Solo un acierto completo abre la siguiente prueba.",
     },
     {
-      title: "Prepárate antes de competir",
-      description: "Practica los formatos disponibles antes de realizar tu intento competitivo.",
+      title: "Un intento por desafío",
+      description: "Si fallas un nivel, termina el ascenso y no puedes repetir este reto.",
     },
     {
       title: "Llega a la cima",
