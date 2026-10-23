@@ -1,4 +1,3 @@
-import { rehearsalAssociationSql } from "./support/rehearsal-catalog.mjs";
 import { createHash } from "node:crypto";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -617,13 +616,6 @@ export function buildTabarniaDomainSql({
     })
     .join(",\n");
 
-  const rehearsalSql = rehearsalAssociationSql({
-    rehearsalId: "flash-referencia",
-    versionId: challenges.find((challenge) => challenge.slug === "steel-ball-run").versionId,
-    source: { mode: "flash", globalTimeLimitMs: null, modeConfig: {}, questions: SBR_QUESTIONS },
-    actorPlayerId: xesmona,
-  });
-
   return `
 begin;
 set constraints all deferred;
@@ -696,7 +688,6 @@ insert into public.scheduled_challenges
 values
 ${scheduledSql};
 
-${rehearsalSql}
 
 set constraints all immediate;
 commit;

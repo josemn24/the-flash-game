@@ -1,0 +1,106 @@
+[
+  {
+    "id": "betavip-supervivencia-q3",
+    "version": 1,
+    "type": "progressive-image",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "Identifica la figura que se va revelando.",
+      "surface": {
+        "src": "/rehearsals/v1/triangle.svg",
+        "alt": "Figura geométrica de práctica",
+        "width": 600,
+        "height": 400
+      },
+      "revealDurationMs": 5000
+    },
+    "solutionPayload": {
+      "correctAnswer": "triángulo",
+      "acceptedAnswers": ["triángulo"],
+      "solutionAlt": "Un triángulo azul",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "progressive-image-triangulo"
+  },
+  {
+    "id": "flash-referencia-q5",
+    "version": 1,
+    "type": "progressive-image",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Identifica la figura que se va revelando.",
+      "surface": {
+        "src": "/rehearsals/v1/triangle.svg",
+        "alt": "Figura geométrica de práctica",
+        "width": 600,
+        "height": 400
+      },
+      "revealDurationMs": 11
+    },
+    "solutionPayload": {
+      "correctAnswer": "triángulo",
+      "acceptedAnswers": ["triángulo"],
+      "solutionAlt": "Un triángulo azul",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "progressive-image-triangulo"
+  },
+  {
+    "id": "bank-imagen-cuadrado",
+    "version": 1,
+    "type": "progressive-image",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-imagen-cuadrado",
+    "publicPayload": {
+      "question": "¿Qué figura roja se descubre en este ejercicio?",
+      "surface": {
+        "src": "/rehearsals/v2/square.svg",
+        "alt": "Una figura roja de cuatro lados iguales",
+        "width": 600,
+        "height": 400
+      },
+      "revealDurationMs": 4000
+    },
+    "solutionPayload": {
+      "correctAnswer": "cuadrado",
+      "acceptedAnswers": ["cuadrado"],
+      "solutionAlt": "Un cuadrado rojo",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-imagen-circulo",
+    "version": 1,
+    "type": "progressive-image",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "¿Qué figura naranja se descubre en la imagen?",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Una figura naranja sobre una cuadrícula",
+        "width": 600,
+        "height": 400
+      },
+      "revealDurationMs": 3500
+    },
+    "solutionPayload": {
+      "correctAnswer": "círculo",
+      "acceptedAnswers": ["círculo"],
+      "solutionAlt": "Un círculo naranja sobre una cuadrícula",
+      "explanation": "La figura naranja es un círculo."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-imagen-circulo"
+  }
+]

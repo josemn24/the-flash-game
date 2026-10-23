@@ -116,6 +116,7 @@ begin
                   'type', question.type,
                   'payloadSchemaVersion', question.payload_schema_version,
                   'timeLimitMs', question.time_limit_ms,
+        'difficulty', question.difficulty,
                   'points', item.points,
                   'publicPayload', question.public_payload,
                   'solutionPayload', solution.solution_payload

@@ -49,7 +49,10 @@ jobs:
       - name: Style architecture
         run: npm run style-architecture
 
-      - name: Rehearsal catalog
+      - name: Stylelint
+        run: npm run stylelint
+
+      - name: Rehearsal bank, providers and coverage
         run: npm run rehearsals:check
 
       - name: Unit tests
@@ -148,6 +151,17 @@ jobs:
           e2e/f18-escape.spec.ts
           e2e/f19-word-hashtag.spec.ts
           e2e/rehearsals.spec.ts
+
+      - name: Session authority conformance
+        run: >-
+          npm run test:e2e:isolated --
+          e2e/flash-session-conformance.spec.ts
+          e2e/survival-session-conformance.spec.ts
+          e2e/alphabet-session-conformance.spec.ts
+          e2e/pyramid-session-conformance.spec.ts
+          e2e/time-trial-session-conformance.spec.ts
+          e2e/time-trial-connect-pairs-session-conformance.spec.ts
+          e2e/time-trial-timeout-conformance.spec.ts
 
   quality:
     name: quality

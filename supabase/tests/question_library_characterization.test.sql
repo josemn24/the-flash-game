@@ -18,7 +18,7 @@ select is((select jsonb_agg(entry->'versionNumber' order by ordinal)
   'Detail orders versions descending');
 select is((select result->'versions'->3->'document' from test_support.library_results where label = 'detail'),
   jsonb_build_object('slug', 'library-fixture-001', 'type', 'true-false', 'payloadSchemaVersion', 1,
-    'timeLimitMs', 30000, 'publicPayload', jsonb_build_object('question', 'Library original 1',
+    'difficulty', 'medium', 'timeLimitMs', 30000, 'publicPayload', jsonb_build_object('question', 'Library original 1',
       'category', 'Library', 'tags', jsonb_build_object('topic', 'original', 'group', 1)),
     'solutionPayload', '{"correctAnswer":true,"explanation":"Library solution"}'::jsonb),
   'Authorized detail preserves the complete private document');

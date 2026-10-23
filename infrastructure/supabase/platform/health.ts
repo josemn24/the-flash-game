@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261020140000_challenge_rehearsals";
+const canonicalSchemaRevision = "20261020210000_dynamic_rehearsals";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -126,6 +126,10 @@ async function checkDatabase() {
           like '%cell_count%'
         and pg_get_functiondef(to_regprocedure('private.validate_connect_pairs_question_document(jsonb)'))
           like '%board_rows%'
+          and to_regprocedure('private.read_player_rehearsal_template(text,uuid)') is not null
+          and to_regprocedure('private.set_rehearsal_publication_policy(jsonb)') is not null
+          and to_regclass('private.rehearsal_publication_policies') is not null
+          and exists (select 1 from information_schema.columns where table_schema='private' and table_name='question_versions' and column_name='difficulty')
           as schema_revision_marker
     `);
     const row = result.rows[0];

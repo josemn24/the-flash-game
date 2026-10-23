@@ -1,0 +1,110 @@
+[
+  {
+    "id": "betavip-antiguedad-q2",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué objeto describen estas pistas?",
+      "clues": [
+        "Es un instrumento musical.",
+        "Se toca con los dedos.",
+        "Suele tener seis cuerdas."
+      ],
+      "cluePenalty": 20
+    },
+    "solutionPayload": {
+      "correctAnswer": "guitarra",
+      "acceptedAnswers": ["guitarra"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 35000,
+    "familyId": "progressive-clues-577310512452b39514dd"
+  },
+  {
+    "id": "betavip-supervivencia-q5",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué objeto describen estas pistas?",
+      "clues": ["Ayuda a orientarse.", "Puede llevar una aguja.", "Señala el norte."],
+      "cluePenalty": 30
+    },
+    "solutionPayload": {
+      "correctAnswer": "brújula",
+      "acceptedAnswers": ["brújula"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 25000,
+    "familyId": "progressive-clues-ff436ad15054dd4d6880"
+  },
+  {
+    "id": "betavip-supervivencia-q10",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué objeto describen estas pistas?",
+      "clues": ["Ayuda a orientarse.", "Puede llevar una aguja.", "Señala el norte."],
+      "cluePenalty": 30
+    },
+    "solutionPayload": {
+      "correctAnswer": "brújula",
+      "acceptedAnswers": ["brújula"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 25000,
+    "familyId": "progressive-clues-ff436ad15054dd4d6880"
+  },
+  {
+    "id": "betavip-supervivencia-q14",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué objeto describen estas pistas?",
+      "clues": [
+        "Sirve para medir.",
+        "Puede utilizarse en casa o en un laboratorio.",
+        "Indica la temperatura."
+      ],
+      "cluePenalty": 30
+    },
+    "solutionPayload": {
+      "correctAnswer": "termómetro",
+      "acceptedAnswers": ["termómetro"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 25000,
+    "familyId": "progressive-clues-c1a992035b9eb4f795bb"
+  },
+  {
+    "id": "betavip-supervivencia-q18",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué objeto describen estas pistas?",
+      "clues": ["Sirve para desplazarse.", "Tiene dos ruedas.", "Se mueve al pedalear."],
+      "cluePenalty": 30
+    },
+    "solutionPayload": {
+      "correctAnswer": "bicicleta",
+      "acceptedAnswers": ["bicicleta"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 25000,
+    "familyId": "progressive-clues-cf05668ac3be6c8edd8e"
+  }
+]

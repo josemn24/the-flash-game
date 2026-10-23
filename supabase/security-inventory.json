@@ -202,7 +202,7 @@
       },
       "boundary": "Internal invoker view; service SELECT only. Public ranking functions enforce active room membership and project social fields."
     },
-    "private.challenge_rehearsals": {
+    "private.rehearsal_publication_policies": {
       "kind": "r"
     }
   },
@@ -1441,41 +1441,29 @@
       "executeRoles": [],
       "volatility": "s"
     },
-    "private.rehearsal_source": {
+    "private.rehearsal_template": {
       "arguments": "version_id uuid",
       "securityDefiner": true,
       "executeRoles": [],
       "volatility": "s"
     },
-    "private.guard_rehearsal_binding": {
-      "arguments": "",
-      "securityDefiner": false,
-      "executeRoles": [],
-      "volatility": "v"
-    },
-    "private.invalidate_draft_rehearsal": {
-      "arguments": "",
-      "securityDefiner": true,
-      "executeRoles": [],
-      "volatility": "v"
-    },
-    "private.read_editorial_rehearsal": {
-      "arguments": "version_id uuid",
-      "securityDefiner": true,
-      "executeRoles": ["service_role"],
-      "volatility": "s"
-    },
-    "private.set_challenge_rehearsal": {
-      "arguments": "input jsonb",
-      "securityDefiner": true,
-      "executeRoles": ["service_role"],
-      "volatility": "v"
-    },
-    "private.read_player_rehearsal": {
+    "private.read_player_rehearsal_template": {
       "arguments": "room_slug text, publication_id uuid",
       "securityDefiner": true,
       "executeRoles": ["service_role"],
       "volatility": "s"
+    },
+    "private.read_editorial_rehearsal_template": {
+      "arguments": "version_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "s"
+    },
+    "private.set_rehearsal_publication_policy": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "v"
     }
   }
 }

@@ -1,0 +1,178 @@
+[
+  {
+    "id": "betavip-antiguedad-q4",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["15", "14", "13", "12"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["12", "13", "14", "15"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "betavip-supervivencia-q13",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["42", "41", "40", "39"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["39", "40", "41", "42"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "betavip-supervivencia-q16",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["51", "50", "49", "48"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["48", "49", "50", "51"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "betavip-supervivencia-q20",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["63", "62", "61", "60"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["60", "61", "62", "63"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "flash-referencia-q4",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["15", "14", "13", "12"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["12", "13", "14", "15"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 26000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "flash-referencia-q13",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["41", "40", "39"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["39", "40", "41"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "bank-ordenar-ciclo-agua",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estas etapas a partir del agua líquida de un lago calentada por el Sol.",
+      "items": ["Precipitación", "Evaporación", "Condensación"],
+      "directionLabels": {
+        "start": "Primera etapa",
+        "end": "Última etapa"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["Evaporación", "Condensación", "Precipitación"],
+      "explanation": "El agua se evapora, el vapor se condensa en gotas y después puede caer como precipitación."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-ciclo-agua"
+  },
+  {
+    "id": "bank-ordenar-masa",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estas masas de menor a mayor.",
+      "items": ["1 kilogramo", "500 gramos", "2 toneladas", "50 gramos"],
+      "directionLabels": {
+        "start": "Menor masa",
+        "end": "Mayor masa"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["50 gramos", "500 gramos", "1 kilogramo", "2 toneladas"],
+      "explanation": "Un kilogramo equivale a mil gramos y una tonelada a mil kilogramos."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-masa"
+  }
+]

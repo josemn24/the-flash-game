@@ -1,0 +1,149 @@
+[
+  {
+    "id": "betavip-logica-q1",
+    "version": 1,
+    "type": "zip",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Recorre todas las casillas siguiendo los puntos en orden.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "checkpoints": [
+        {
+          "value": 1,
+          "cell": 0
+        },
+        {
+          "value": 2,
+          "cell": 2
+        },
+        {
+          "value": 3,
+          "cell": 21
+        },
+        {
+          "value": 4,
+          "cell": 7
+        },
+        {
+          "value": 5,
+          "cell": 16
+        },
+        {
+          "value": 6,
+          "cell": 12
+        }
+      ]
+    },
+    "solutionPayload": {
+      "solution": [
+        0, 1, 2, 3, 4, 9, 14, 19, 24, 23, 22, 21, 20, 15, 10, 5, 6, 7, 8, 13, 18, 17, 16, 11, 12
+      ],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "betavip-logica-q1"
+  },
+  {
+    "id": "bank-zip-1",
+    "version": 1,
+    "type": "zip",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-zip-1",
+    "publicPayload": {
+      "question": "Completa el recorrido de la serpiente numerada.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "checkpoints": [
+        {
+          "value": 1,
+          "cell": 0
+        },
+        {
+          "value": 2,
+          "cell": 8
+        },
+        {
+          "value": 3,
+          "cell": 11
+        },
+        {
+          "value": 4,
+          "cell": 18
+        },
+        {
+          "value": 5,
+          "cell": 21
+        },
+        {
+          "value": 6,
+          "cell": 24
+        }
+      ]
+    },
+    "solutionPayload": {
+      "solution": [
+        0, 1, 2, 3, 4, 9, 8, 7, 6, 5, 10, 11, 12, 13, 14, 19, 18, 17, 16, 15, 20, 21, 22, 23, 24
+      ],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-zip-2",
+    "version": 1,
+    "type": "zip",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-zip-2",
+    "publicPayload": {
+      "question": "Conecta los controles hasta llegar al centro del tablero.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "checkpoints": [
+        {
+          "value": 1,
+          "cell": 0
+        },
+        {
+          "value": 2,
+          "cell": 2
+        },
+        {
+          "value": 3,
+          "cell": 1
+        },
+        {
+          "value": 4,
+          "cell": 8
+        },
+        {
+          "value": 5,
+          "cell": 7
+        },
+        {
+          "value": 6,
+          "cell": 12
+        }
+      ]
+    },
+    "solutionPayload": {
+      "solution": [
+        0, 5, 10, 15, 20, 21, 22, 23, 24, 19, 14, 9, 4, 3, 2, 1, 6, 11, 16, 17, 18, 13, 8, 7, 12
+      ],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  }
+]

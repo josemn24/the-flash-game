@@ -1,0 +1,102 @@
+[
+  {
+    "id": "betavip-logica-q6",
+    "version": 1,
+    "type": "logic-code",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Descifra el código de tres cifras con las pistas.",
+      "codeLength": 3,
+      "clues": [
+        {
+          "code": "500",
+          "hint": "La primera cifra es 5."
+        },
+        {
+          "code": "070",
+          "hint": "La cifra central es 7."
+        },
+        {
+          "code": "003",
+          "hint": "La última cifra es 3."
+        },
+        {
+          "code": "246",
+          "hint": "Ninguna de estas cifras aparece."
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "573",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "betavip-logica-q6"
+  },
+  {
+    "id": "bank-codigo-aritmetico",
+    "version": 1,
+    "type": "logic-code",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-codigo-aritmetico",
+    "publicPayload": {
+      "question": "Abre la caja usando las tres pistas numéricas: codigo aritmetico.",
+      "codeLength": 3,
+      "clues": [
+        {
+          "code": "800",
+          "hint": "La primera cifra es el doble de cuatro."
+        },
+        {
+          "code": "020",
+          "hint": "La cifra central es el único primo par."
+        },
+        {
+          "code": "006",
+          "hint": "La última cifra es el triple de dos."
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "826",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-codigo-cuadrados",
+    "version": 1,
+    "type": "logic-code",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-codigo-cuadrados",
+    "publicPayload": {
+      "question": "Abre la caja usando las tres pistas numéricas: codigo cuadrados.",
+      "codeLength": 3,
+      "clues": [
+        {
+          "code": "400",
+          "hint": "La primera cifra es el cuadrado de dos."
+        },
+        {
+          "code": "090",
+          "hint": "La cifra central es el cuadrado de tres."
+        },
+        {
+          "code": "001",
+          "hint": "La última cifra es la unidad."
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "491",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  }
+]

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { dockerSql, sqlCount } from "../scripts/support/supabase-local.mjs";
-import { repositoryRehearsals } from "../scripts/support/rehearsal-catalog.mjs";
+import { repositoryRehearsalQuestions } from "../scripts/support/rehearsal-catalog.mjs";
 
 type Account = { email: string; password: string; playerId: string };
 type Publication = { id: string; mode: string; challengeVersionId: string; challengeId: string };
@@ -40,20 +40,11 @@ function entry(index: number) {
     return {
       id: fixture("tabarnia").data.publications.find((p) => p.mode === "flash")!.id,
       room: "tabarnia",
-      rehearsalId: "flash-referencia",
     };
   const publication = fixture("betavip").data.publications[index]!;
   return {
     id: publication.id,
     room: "beta-vip",
-    rehearsalId: [
-      "betavip-parejas",
-      "betavip-alfabeto",
-      "betavip-logica",
-      "betavip-queens",
-      "betavip-supervivencia",
-      "betavip-antiguedad",
-    ][index]!,
   };
 }
 async function expectGameReady(page: Page, index: number) {
@@ -83,8 +74,14 @@ for (let index = 0; index < 7; index++) {
         writes.push(request.url());
     });
     const selected = await open(page, index);
+    const firstSession = JSON.parse(
+      (await page.locator("script[data-rehearsal-recipe]").textContent())!,
+    ).sessionId;
     await page.reload();
     await expectGameReady(page, index);
+    expect(
+      JSON.parse((await page.locator("script[data-rehearsal-recipe]").textContent())!).sessionId,
+    ).not.toBe(firstSession);
     await page.goto(`/desafios/${selected.id}?roomId=${selected.room}`);
     await expect(page).toHaveURL(new RegExp(`/desafios/${selected.id}\\?roomId=${selected.room}$`));
     expect(writes).toEqual([]);
@@ -100,16 +97,14 @@ test("practice uses the full Queens flow, review and return without writing offi
 }) => {
   test.setTimeout(120_000);
   await login(page, fixture("betavip").users.ches!);
-  const selected = await open(page, 3);
-  const artifact = repositoryRehearsals().find(
-    (a: { ref: { id: string } }) => a.ref.id === selected.rehearsalId,
-  )!;
+  await open(page, 3);
+  const questions = await selectedQuestions(page);
   const writes: string[] = [];
   page.on("request", (request) => {
     if (new URL(request.url()).pathname.startsWith("/api/competitive/attempts"))
       writes.push(request.url());
   });
-  for (const [index, q] of artifact.source.questions.entries()) {
+  for (const [index, q] of questions.entries()) {
     await expect(page.getByText(`Prueba ${index + 1} de 6`, { exact: true })).toBeVisible({
       timeout: 15_000,
     });
@@ -127,10 +122,14 @@ test("practice uses the full Queens flow, review and return without writing offi
   expect(writes).toEqual([]);
 });
 
-function artifactFor(index: number) {
-  return repositoryRehearsals().find(
-    (a: { ref: { id: string } }) => a.ref.id === entry(index).rehearsalId,
-  )!;
+async function selectedQuestions(page: Page) {
+  const recipe = JSON.parse((await page.locator("script[data-rehearsal-recipe]").textContent())!);
+  const bank = repositoryRehearsalQuestions();
+  return recipe.questions.map((ref: { id: string; version: number }) =>
+    bank.find(
+      (q: { id: string; version: number }) => q.id === ref.id && q.version === ref.version,
+    )!,
+  );
 }
 async function reviewAndReturn(page: Page, index: number) {
   await expect(page.getByText("Puntos de prueba", { exact: false })).toBeVisible({
@@ -165,7 +164,7 @@ test("Connect Pairs completes and reviews all six practice boards", async ({ pag
   test.setTimeout(120_000);
   await login(page, fixture("betavip").users.ches!);
   await open(page, 0);
-  const questions = artifactFor(0).source.questions;
+  const questions = await selectedQuestions(page);
   for (const [index, q] of questions.entries()) {
     await expect(page.getByText(`Prueba ${index + 1} de 6`, { exact: true })).toBeVisible({
       timeout: 15_000,
@@ -188,7 +187,7 @@ test("Alphabet passes and revisits a letter, then reviews the whole practice", a
   test.setTimeout(120_000);
   await login(page, fixture("betavip").users.ches!);
   await open(page, 1);
-  const questions = artifactFor(1).source.questions;
+  const questions = await selectedQuestions(page);
   await expect(
     page.getByRole("heading", { name: questions[0].publicPayload.question, exact: true }),
   ).toBeVisible();
@@ -213,7 +212,7 @@ test("Pyramid failed ascent keeps later levels out of review and returns to the 
   await page.getByRole("button", { name: "Empezar nivel" }).click();
   const left = page.getByRole("region", { name: "Conceptos" }).getByRole("button");
   const right = page.getByRole("region", { name: "Parejas" }).getByRole("button");
-  const q = artifactFor(5).source.questions[0];
+  const q = (await selectedQuestions(page))[0];
   for (const [index, item] of q.publicPayload.leftItems.entries()) {
     await left.nth(index).click();
     const correct = q.solutionPayload.matches[item.id];
@@ -232,8 +231,17 @@ test("Pyramid failed ascent keeps later levels out of review and returns to the 
 test("Survival practice removes lives and reaches its own terminal result", async ({ page }) => {
   await login(page, fixture("betavip").users.ches!);
   await open(page, 4);
-  await page.getByRole("button", { name: "Verdadero", exact: true }).click();
-  await page.getByRole("button", { name: "8", exact: true }).click();
+  const questions = await selectedQuestions(page);
+  await page
+    .getByRole("button", {
+      name: questions[0].solutionPayload.correctAnswer ? "Falso" : "Verdadero",
+      exact: true,
+    })
+    .click();
+  const wrong = questions[1].publicPayload.options.find(
+    (option: string) => option !== questions[1].solutionPayload.correctAnswer,
+  );
+  await page.getByRole("button", { name: wrong, exact: true }).click();
   await expect(page.getByLabel("1 de 3 vidas restantes")).toBeVisible();
   await page.getByRole("textbox", { name: "¿Qué aparece en la imagen?" }).fill("incorrecta");
   await page.getByRole("button", { name: "Enviar respuesta", exact: true }).click();
@@ -260,7 +268,12 @@ test("starting an official attempt removes practice access, including a direct U
   await login(page, fixture("betavip").users.ches!);
   const { id, room } = entry(0);
   await page.goto(`/desafios/${id}?roomId=${room}`);
+  const started = page.waitForResponse(
+    (response) => new URL(response.url()).pathname === "/api/competitive/attempts/start",
+    { timeout: 20000 },
+  );
   await page.getByRole("button", { name: "Empezar desafío", exact: true }).click();
+  expect((await started).ok()).toBe(true);
   await expect
     .poll(() =>
       sqlCount(`select count(*) from public.attempts where scheduled_challenge_id='${id}'`),
@@ -279,7 +292,7 @@ test("Flash timeout advances the practice without recording any official answer"
   test.setTimeout(60_000);
   await login(page, fixture("betavip").users.ches!);
   const selected = await open(page, 6);
-  const questions = artifactFor(6).source.questions;
+  const questions = await selectedQuestions(page);
   await expect(
     page.getByRole("heading", { name: questions[0].publicPayload.question }),
   ).toBeVisible();
@@ -290,65 +303,119 @@ test("Flash timeout advances the practice without recording any official answer"
   await expect(page.getByRole("link", { name: "Probar primero" })).toBeVisible();
 });
 
-test("editorial preview is restricted to superadmins and published selections are frozen", async ({
-  page,
-}) => {
+test("editorial coverage and generated preview are restricted to superadmins", async ({ page }) => {
   await login(page, fixture("betavip").users.xesmona!);
   const publication = fixture("betavip").data.publications[3]!;
   await page.goto(`/admin/challenges/${publication.challengeId}`);
-  const panel = page.getByRole("region", { name: "Ensayos del desafío" });
-  await expect(panel.getByRole("heading", { name: "Pruebas sin competir" })).toBeVisible();
-  await expect(panel.getByRole("combobox", { name: "Ensayo compatible" })).toBeDisabled();
-  await expect(
-    panel.getByText("Esta asociación está publicada y no se puede sustituir."),
-  ).toBeVisible();
-  await page.goto("/admin/rehearsals/betavip-queens/1");
+  const panel = page.getByRole("region", { name: "Pruebas del desafío" });
+  await expect(panel.getByText("Cobertura disponible")).toBeVisible();
+  await expect(panel.getByRole("combobox", { name: "Ensayo compatible" })).toHaveCount(0);
+  await panel.getByRole("link", { name: "Generar vista previa" }).click();
   await expectGameReady(page, 3);
+  await expect(page.getByText("Receta generada")).toBeVisible();
+  const recipe = () => page.locator("script[data-rehearsal-recipe]").textContent();
+  await page.getByLabel("Semilla (opcional)").fill("browser-fixed-seed");
+  await page.getByRole("button", { name: "Generar combinación" }).click();
+  await expect.poll(async () => JSON.parse((await recipe())!).seed).toBe("browser-fixed-seed");
+  const reproducible = (await recipe())!;
+  await page.getByLabel("Semilla (opcional)").fill("");
+  await page.getByRole("button", { name: "Generar combinación" }).click();
+  await expect.poll(recipe).not.toBe(reproducible);
+  await page.getByLabel("Receta para reproducir").fill(reproducible);
+  await page.getByRole("button", { name: "Reproducir receta" }).click();
+  await expect.poll(recipe).toBe(reproducible);
+  const damaged = JSON.parse(reproducible);
+  damaged.questions[0].contentHash = "0".repeat(64);
+  await page.getByLabel("Receta para reproducir").fill(JSON.stringify(damaged));
+  await page.getByRole("button", { name: "Reproducir receta" }).click();
+  await expect(page.getByRole("alert").filter({ hasText: "Falta una versión" })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
     true,
   );
   await page.screenshot({ path: "output/rehearsal-mobile.png", fullPage: true });
+  await page.context().clearCookies();
+  await login(page, fixture("betavip").users.ches!);
+  await page.goto(`/admin/rehearsals/${publication.challengeVersionId}`);
+  await expect(page.getByRole("heading", { name: "Fuera de pista" })).toBeVisible();
 });
 
-test("editorial command associates an existing published version once and refreshes its frozen selection", async ({
+test("publication policy disables and reenables dynamic practice without a fixed association", async ({
   page,
 }) => {
-  test.setTimeout(60_000);
-  await login(page, fixture("betavip").users.ches!);
-  await page.goto("/admin/rehearsals/betavip-queens/1");
-  await expect(page.getByRole("heading", { name: "Fuera de pista" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Empezar prueba" })).toHaveCount(0);
-  await page.context().clearCookies();
   await login(page, fixture("betavip").users.xesmona!);
   const publication = fixture("betavip").data.publications[3]!;
-  await dockerSql(`begin;
-    insert into private.challenge_versions(id,challenge_definition_id,version_number,config_schema_version,status,mode,title,subtitle,description,max_score,global_time_limit_ms,mode_config,created_by_player_id)
-    select md5('rehearsal-browser-legacy')::uuid,challenge_definition_id,2,config_schema_version,'draft',mode,title,subtitle,description,max_score,global_time_limit_ms,mode_config,created_by_player_id
-      from private.challenge_versions where id='${publication.challengeVersionId}';
-    insert into private.challenge_items(id,challenge_version_id,question_version_id,position,points,config_schema_version,mode_config)
-    select md5(id::text||'rehearsal-browser-legacy')::uuid,md5('rehearsal-browser-legacy')::uuid,question_version_id,position,points,config_schema_version,mode_config
-      from private.challenge_items where challenge_version_id='${publication.challengeVersionId}';
-    update private.challenge_versions set status='published' where id=md5('rehearsal-browser-legacy')::uuid;
-    commit;`);
   await page.goto(`/admin/challenges/${publication.challengeId}`);
-  const editor = page
-    .getByRole("article")
-    .filter({ has: page.getByRole("heading", { name: "Ensayo de la versión 2", exact: true }) });
-  await editor
-    .getByRole("combobox", { name: "Ensayo compatible" })
-    .selectOption("betavip-queens@1");
-  await editor
+  const panel = page.getByRole("region", { name: "Pruebas del desafío" });
+  await panel.getByRole("combobox", { name: "Pruebas habilitadas" }).selectOption("false");
+  await panel.getByRole("textbox", { name: "Motivo" }).fill("Comprobación de política dinámica");
+  await panel.getByRole("button", { name: "Guardar disponibilidad" }).click();
+  await expect(panel.getByRole("combobox", { name: "Pruebas habilitadas" })).toHaveValue("false");
+  await page.context().clearCookies();
+  await login(page, fixture("betavip").users.ches!);
+  await page.goto(`/desafios/${publication.id}/prueba?roomId=beta-vip`);
+  await expect(page.getByRole("heading", { name: "Prueba no disponible" })).toBeVisible();
+  await page.context().clearCookies();
+  await login(page, fixture("betavip").users.xesmona!);
+  await page.goto(`/admin/challenges/${publication.challengeId}`);
+  await panel.getByRole("combobox", { name: "Pruebas habilitadas" }).selectOption("true");
+  await panel
     .getByRole("textbox", { name: "Motivo" })
-    .fill("Alta expresa de una versión publicada sin ensayo");
-  await editor.getByRole("button", { name: "Guardar asociación" }).click();
-  await expect(editor.getByRole("combobox", { name: "Ensayo compatible" })).toBeDisabled();
-  await expect(
-    editor.getByText("Esta asociación está publicada y no se puede sustituir."),
-  ).toBeVisible();
+    .fill("Reactivación tras comprobar la política");
+  await panel.getByRole("button", { name: "Guardar disponibilidad" }).click();
+  await expect(panel.getByRole("combobox", { name: "Pruebas habilitadas" })).toHaveValue("true");
+});
+
+test("question difficulty survives publication and changes only in a new version", async ({
+  page,
+}) => {
+  await login(page, fixture("betavip").users.xesmona!);
+  await page.goto("/admin/questions/new");
+  await page.getByLabel("Documento standalone (sin points)").fill(
+    JSON.stringify({
+      slug: `e2e-difficulty-${Date.now()}`,
+      type: "true-false",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 15000,
+      publicPayload: { question: "Una semana tiene siete días." },
+      solutionPayload: { correctAnswer: true, explanation: "Una semana comprende siete días." },
+    }),
+  );
+  await expect(page.getByLabel("Dificultad")).toHaveValue("medium");
+  await page.getByLabel("Dificultad").selectOption("hard");
+  const create = page
+    .locator("form")
+    .filter({ has: page.getByRole("button", { name: "Crear borrador", exact: true }) });
+  await create
+    .getByLabel("Motivo de auditoría")
+    .fill("Clasificación inicial para comprobar dificultad");
+  await create.getByRole("button", { name: "Crear borrador", exact: true }).click();
+  await expect(page).toHaveURL(/\/admin\/questions\/[a-f0-9-]{36}$/);
+  const publishedId = page.url().split("/").at(-1)!;
+  await expect(page.getByLabel("Dificultad")).toHaveValue("hard");
+  const publish = page
+    .locator("form")
+    .filter({ has: page.getByRole("button", { name: "Publicar versión", exact: true }) });
+  await publish.getByLabel("Motivo de auditoría").fill("Publicar dificultad explícita");
+  await publish.getByRole("button", { name: "Publicar versión", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Crear nueva versión" })).toBeVisible();
+  await expect(page.getByLabel("Dificultad")).toHaveValue("hard");
+  await page.getByLabel("Dificultad").selectOption("easy");
+  const next = page
+    .locator("form")
+    .filter({ has: page.getByRole("button", { name: "Crear nueva versión", exact: true }) });
+  await next.getByLabel("Motivo de auditoría").fill("Cambiar dificultad en una versión nueva");
+  await next.getByRole("button", { name: "Crear nueva versión", exact: true }).click();
+  await expect.poll(() => page.url().split("/").at(-1)).not.toBe(publishedId);
+  await expect(page.getByLabel("Dificultad")).toHaveValue("easy");
   expect(
     await sqlCount(
-      "select count(*) from private.challenge_rehearsals where challenge_version_id=md5('rehearsal-browser-legacy')::uuid",
+      `select count(*) from private.question_versions where id='${publishedId}' and difficulty='hard' and status='published'`,
+    ),
+  ).toBe(1);
+  expect(
+    await sqlCount(
+      `select count(*) from private.question_versions where id='${page.url().split("/").at(-1)!}' and difficulty='easy' and status='draft'`,
     ),
   ).toBe(1);
 });

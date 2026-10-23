@@ -1,0 +1,914 @@
+[
+  {
+    "id": "betavip-alfabeto-q1",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Fruto seco que se obtiene del almendro."
+    },
+    "solutionPayload": {
+      "correctAnswer": "almendra",
+      "acceptedAnswers": ["almendra"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q1",
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "betavip-alfabeto-q2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Embarcación que se mueve con remos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "barca",
+      "acceptedAnswers": ["barca"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q2",
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "betavip-alfabeto-q3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Utensilio para tomar sopa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "cuchara",
+      "acceptedAnswers": ["cuchara"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q3",
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "betavip-alfabeto-q4",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Pieza con seis caras numeradas usada en juegos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "dado",
+      "acceptedAnswers": ["dado"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q4",
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "betavip-alfabeto-q5",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Objeto que refleja tu imagen."
+    },
+    "solutionPayload": {
+      "correctAnswer": "espejo",
+      "acceptedAnswers": ["espejo"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q5",
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "betavip-alfabeto-q6",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Planta con pétalos de colores."
+    },
+    "solutionPayload": {
+      "correctAnswer": "flor",
+      "acceptedAnswers": ["flor"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q6",
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "betavip-alfabeto-q7",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Metal que atrae ciertos objetos metálicos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "imán",
+      "acceptedAnswers": ["imán"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q7",
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "betavip-alfabeto-q8",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Recipiente con asa para servir agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jarra",
+      "acceptedAnswers": ["jarra"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q8",
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "betavip-alfabeto-q9",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Objeto que abre una cerradura."
+    },
+    "solutionPayload": {
+      "correctAnswer": "llave",
+      "acceptedAnswers": ["llave"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q9",
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "betavip-alfabeto-q10",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Mueble sobre el que se come o escribe."
+    },
+    "solutionPayload": {
+      "correctAnswer": "mesa",
+      "acceptedAnswers": ["mesa"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q10",
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "betavip-alfabeto-q11",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Metal precioso de color amarillo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "oro",
+      "acceptedAnswers": ["oro"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q11",
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "betavip-alfabeto-q12",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Material usado para escribir y dibujar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "papel",
+      "acceptedAnswers": ["papel"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q12",
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "betavip-alfabeto-q13",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Instrumento que mide el tiempo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "reloj",
+      "acceptedAnswers": ["reloj"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q13",
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "betavip-alfabeto-q14",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Asiento con respaldo para una persona."
+    },
+    "solutionPayload": {
+      "correctAnswer": "silla",
+      "acceptedAnswers": ["silla"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q14",
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "betavip-alfabeto-q15",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Recipiente con asa para beber."
+    },
+    "solutionPayload": {
+      "correctAnswer": "taza",
+      "acceptedAnswers": ["taza"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q15",
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "betavip-alfabeto-q16",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Calzado que cubre el pie."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zapato",
+      "acceptedAnswers": ["zapato"],
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q16",
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-a-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-a-2",
+    "publicPayload": {
+      "question": "Fruto seco del avellano."
+    },
+    "solutionPayload": {
+      "correctAnswer": "avellana",
+      "acceptedAnswers": ["avellana"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-a-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-a-3",
+    "publicPayload": {
+      "question": "Especia que se obtiene de los estigmas de una flor."
+    },
+    "solutionPayload": {
+      "correctAnswer": "azafrán",
+      "acceptedAnswers": ["azafrán"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-b-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-b-2",
+    "publicPayload": {
+      "question": "Herraje que permite girar una puerta."
+    },
+    "solutionPayload": {
+      "correctAnswer": "bisagra",
+      "acceptedAnswers": ["bisagra"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-b-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-b-3",
+    "publicPayload": {
+      "question": "Recipiente de barro que conserva fresca el agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "botijo",
+      "acceptedAnswers": ["botijo"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-c-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-c-2",
+    "publicPayload": {
+      "question": "Cierre portátil que se abre con llave."
+    },
+    "solutionPayload": {
+      "correctAnswer": "candado",
+      "acceptedAnswers": ["candado"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-d-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-d-2",
+    "publicPayload": {
+      "question": "Protector del dedo que se usa al coser."
+    },
+    "solutionPayload": {
+      "correctAnswer": "dedal",
+      "acceptedAnswers": ["dedal"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-d-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-d-3",
+    "publicPayload": {
+      "question": "Acumulación de arena modelada por el viento."
+    },
+    "solutionPayload": {
+      "correctAnswer": "duna",
+      "acceptedAnswers": ["duna"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-e-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-e-2",
+    "publicPayload": {
+      "question": "Utensilio con cerdas que sirve para barrer."
+    },
+    "solutionPayload": {
+      "correctAnswer": "escoba",
+      "acceptedAnswers": ["escoba"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "bank-alfabeto-f-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-f-2",
+    "publicPayload": {
+      "question": "Caja con luz que alumbra calles o espacios exteriores."
+    },
+    "solutionPayload": {
+      "correctAnswer": "farol",
+      "acceptedAnswers": ["farol"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-f-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-f-3",
+    "publicPayload": {
+      "question": "Instrumento que impulsa aire al comprimirlo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "fuelle",
+      "acceptedAnswers": ["fuelle"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-i-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-i-2",
+    "publicPayload": {
+      "question": "Refugio construido con bloques de nieve."
+    },
+    "solutionPayload": {
+      "correctAnswer": "iglú",
+      "acceptedAnswers": ["iglú"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-j-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-j-2",
+    "publicPayload": {
+      "question": "Producto que se usa con agua para limpiar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jabón",
+      "acceptedAnswers": ["jabón"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-l-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-l-2",
+    "publicPayload": {
+      "question": "Pieza cocida de arcilla utilizada en muros."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ladrillo",
+      "acceptedAnswers": ["ladrillo"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-l-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-l-3",
+    "publicPayload": {
+      "question": "Lámpara portátil alimentada por pilas o batería."
+    },
+    "solutionPayload": {
+      "correctAnswer": "linterna",
+      "acceptedAnswers": ["linterna"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-m-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-m-2",
+    "publicPayload": {
+      "question": "Recipiente en el que se machacan ingredientes."
+    },
+    "solutionPayload": {
+      "correctAnswer": "mortero",
+      "acceptedAnswers": ["mortero"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-m-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-m-3",
+    "publicPayload": {
+      "question": "Tela que cubre y protege la mesa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "mantel",
+      "acceptedAnswers": ["mantel"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-o-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-o-2",
+    "publicPayload": {
+      "question": "Bola de hilo enrollado."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ovillo",
+      "acceptedAnswers": ["ovillo"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-o-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-o-3",
+    "publicPayload": {
+      "question": "Hierba aromática frecuente en las pizzas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "orégano",
+      "acceptedAnswers": ["orégano"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-p-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-p-2",
+    "publicPayload": {
+      "question": "Utensilio con púas para arreglar el cabello."
+    },
+    "solutionPayload": {
+      "correctAnswer": "peine",
+      "acceptedAnswers": ["peine"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-p-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-p-3",
+    "publicPayload": {
+      "question": "Cuerpo suspendido que oscila de un lado a otro."
+    },
+    "solutionPayload": {
+      "correctAnswer": "péndulo",
+      "acceptedAnswers": ["péndulo"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-r-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-r-2",
+    "publicPayload": {
+      "question": "Recipiente con rociador para echar agua a las plantas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "regadera",
+      "acceptedAnswers": ["regadera"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-r-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-r-3",
+    "publicPayload": {
+      "question": "Cilindro usado para extender masa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "rodillo",
+      "acceptedAnswers": ["rodillo"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-s-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-s-2",
+    "publicPayload": {
+      "question": "Utensilio con mango para freír alimentos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "sartén",
+      "acceptedAnswers": ["sartén"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-s-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-s-3",
+    "publicPayload": {
+      "question": "Objeto pequeño que produce un sonido al soplar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "silbato",
+      "acceptedAnswers": ["silbato"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-t-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-t-2",
+    "publicPayload": {
+      "question": "Utensilio de malla para separar partículas por tamaño."
+    },
+    "solutionPayload": {
+      "correctAnswer": "tamiz",
+      "acceptedAnswers": ["tamiz"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-t-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-t-3",
+    "publicPayload": {
+      "question": "Pieza roscada que sirve para fijar otras piezas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "tornillo",
+      "acceptedAnswers": ["tornillo"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-z-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-z-2",
+    "publicPayload": {
+      "question": "Calzado ligero que puede utilizarse para hacer deporte."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zapatilla",
+      "acceptedAnswers": ["zapatilla"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-z-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-z-3",
+    "publicPayload": {
+      "question": "Líquido extraído de frutas u hortalizas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zumo",
+      "acceptedAnswers": ["zumo"],
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    },
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-c-extra",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Conjunto de hilos retorcidos que se usa para atar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "cuerda",
+      "acceptedAnswers": ["cuerda"],
+      "explanation": "Cuerda es la respuesta descrita."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-c-extra",
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-j-extra",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Recipiente decorativo en el que se colocan flores."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jarrón",
+      "acceptedAnswers": ["jarrón"],
+      "explanation": "Jarrón es la respuesta descrita."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-j-extra",
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-i-extra",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Porción de tierra rodeada de agua por todas partes."
+    },
+    "solutionPayload": {
+      "correctAnswer": "isla",
+      "acceptedAnswers": ["isla"],
+      "explanation": "Isla es la respuesta descrita."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-i-extra",
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-e-extra",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Utensilio de boca ancha y tubo estrecho para trasvasar líquidos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "embudo",
+      "acceptedAnswers": ["embudo"],
+      "explanation": "Embudo es la respuesta descrita."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-e-extra",
+    "alphabetLetter": "E"
+  }
+]

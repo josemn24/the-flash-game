@@ -29,7 +29,15 @@ vi.mock("@/features/game/session/providers/localPyramid", async (importOriginal)
     ),
   };
 });
-const reference = { id: "test", version: 1, contentHash: "a".repeat(64) };
+const recipe = {
+  sessionId: "test",
+  seed: "test",
+  generatorVersion: 1 as const,
+  bankRevision: "a".repeat(64),
+  templateHash: "b".repeat(64),
+  challengeVersionId: "source",
+  questions: [],
+};
 const simple = definitionFor(sessionCases[0]!);
 const wordle = definitionFor(sessionCases.find((row) => row.document.type === "mini-wordle")!);
 const imageDefinition = definitionFor(
@@ -53,9 +61,7 @@ afterEach(() => {
 });
 
 it("keeps one authority on rerender and replaces it when the artifact version changes", async () => {
-  const app = render(
-    <RehearsalGameApp definition={simple} reference={reference} returnTo="/desafio" />,
-  );
+  const app = render(<RehearsalGameApp definition={simple} recipe={recipe} returnTo="/desafio" />);
   await act(async () => {});
   expect(view().returnTo).toBe("/desafio");
   expect(view().session.phase).toBe("briefing");
@@ -64,7 +70,7 @@ it("keeps one authority on rerender and replaces it when the artifact version ch
   app.rerender(
     <RehearsalGameApp
       definition={structuredClone(simple)}
-      reference={{ ...reference }}
+      recipe={{ ...recipe }}
       returnTo="/desafio"
     />,
   );
@@ -73,7 +79,7 @@ it("keeps one authority on rerender and replaces it when the artifact version ch
   app.rerender(
     <RehearsalGameApp
       definition={simple}
-      reference={{ ...reference, version: 2 }}
+      recipe={{ ...recipe, sessionId: "another-session" }}
       returnTo="/desafio"
     />,
   );
@@ -86,7 +92,7 @@ it("keeps one authority on rerender and replaces it when the artifact version ch
 it("starts once when StrictMode replays mounting effects", async () => {
   render(
     <StrictMode>
-      <RehearsalGameApp definition={simple} reference={reference} returnTo="/desafio" />
+      <RehearsalGameApp definition={simple} recipe={recipe} returnTo="/desafio" />
     </StrictMode>,
   );
   await act(async () => {});
@@ -105,7 +111,7 @@ it("does not create a session while a dictionary is pending, and retries failed 
   vi.mocked(loadMiniWordleDictionary)
     .mockReturnValueOnce(pending.promise)
     .mockResolvedValueOnce(new Set(["JOSUE"]));
-  render(<RehearsalGameApp definition={wordle} reference={reference} returnTo="/desafio" />);
+  render(<RehearsalGameApp definition={wordle} recipe={recipe} returnTo="/desafio" />);
   expect(screen.getByRole("status").textContent).toContain("Preparando");
   expect(createLocalPyramidSessionProvider).not.toHaveBeenCalled();
   await act(async () => {
@@ -122,14 +128,12 @@ it("does not create a session while a dictionary is pending, and retries failed 
 it.each(["change", "unmount"])("ignores late preparation after %s", async (action) => {
   const pending = deferred<Set<string>>();
   vi.mocked(loadMiniWordleDictionary).mockReturnValueOnce(pending.promise);
-  const app = render(
-    <RehearsalGameApp definition={wordle} reference={reference} returnTo="/desafio" />,
-  );
+  const app = render(<RehearsalGameApp definition={wordle} recipe={recipe} returnTo="/desafio" />);
   if (action === "change") {
     app.rerender(
       <RehearsalGameApp
         definition={simple}
-        reference={{ ...reference, version: 2 }}
+        recipe={{ ...recipe, sessionId: "another-session" }}
         returnTo="/desafio"
       />,
     );
@@ -155,9 +159,7 @@ it("waits for images and allows retry without starting a clock", async () => {
       }
     },
   );
-  render(
-    <RehearsalGameApp definition={imageDefinition} reference={reference} returnTo="/desafio" />,
-  );
+  render(<RehearsalGameApp definition={imageDefinition} recipe={recipe} returnTo="/desafio" />);
   expect(images.length).toBeGreaterThan(0);
   expect(createLocalPyramidSessionProvider).not.toHaveBeenCalled();
   await act(async () => {

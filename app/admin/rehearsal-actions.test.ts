@@ -1,78 +1,39 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { associateRehearsal } from "./rehearsal-actions";
+import { updateRehearsalPolicy, previewRehearsal } from "./rehearsal-actions";
 import { requireSuperadmin } from "@/server/admin";
-import {
-  getEditorialRehearsal,
-  saveRehearsalAssociation,
-} from "@/server/production-rehearsal-data-access";
-import { revalidatePath } from "next/cache";
+import { saveRehearsalPolicy } from "@/server/production-rehearsal-data-access";
 vi.mock("@/server/admin", () => ({ requireSuperadmin: vi.fn() }));
 vi.mock("@/server/production-rehearsal-data-access", () => ({
-  getEditorialRehearsal: vi.fn(),
-  saveRehearsalAssociation: vi.fn(),
+  saveRehearsalPolicy: vi.fn(),
+  getRehearsalPreview: vi.fn(),
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-const ref = { id: "deployed", version: 1, contentHash: "a".repeat(64) };
-function form(selection = "deployed@1") {
-  const value = new FormData();
-  for (const [key, text] of Object.entries({
-    challengeVersionId: "version",
-    expectedUpdatedAt: "stamp",
-    idempotencyKey: "command-unique",
-    reason: "Preparación",
-    rehearsal: selection,
+beforeEach(() => vi.clearAllMocks());
+it("authorizes policy changes and preserves concurrency and idempotency inputs", async () => {
+  const f = new FormData();
+  for (const [k, v] of Object.entries({
+    publicationId: "publication",
+    enabled: "false",
+    expectedUpdatedAt: "",
+    idempotencyKey: "command-key",
+    reason: "Retirada temporal",
   }))
-    value.set(key, text);
-  return value;
-}
-beforeEach(() => {
-  vi.resetAllMocks();
-  vi.mocked(getEditorialRehearsal).mockResolvedValue({
-    challengeVersionId: "version",
-    updatedAt: "stamp",
-    status: "draft",
-    ref: null,
-    choices: [{ ref, title: "Ensayo", issues: [] }],
+    f.set(k, v);
+  expect(await updateRehearsalPolicy({}, f)).toHaveProperty("message");
+  expect(requireSuperadmin).toHaveBeenCalled();
+  expect(saveRehearsalPolicy).toHaveBeenCalledWith({
+    publicationId: "publication",
+    enabled: false,
+    expectedUpdatedAt: null,
+    idempotencyKey: "command-key",
+    reason: "Retirada temporal",
   });
 });
-it("requires superadmin before resolving or mutating a selection", async () => {
-  vi.mocked(requireSuperadmin).mockRejectedValue(new Error("denied"));
-  await expect(associateRehearsal({}, form())).rejects.toThrow("denied");
-  expect(getEditorialRehearsal).not.toHaveBeenCalled();
-  expect(saveRehearsalAssociation).not.toHaveBeenCalled();
+it("rejects invalid form values without mutation", async () => {
+  expect(await updateRehearsalPolicy({}, new FormData())).toHaveProperty("error");
+  expect(saveRehearsalPolicy).not.toHaveBeenCalled();
 });
-it("rejects invented references and incompatible deployed choices", async () => {
-  expect((await associateRehearsal({}, form("invented@1"))).error).toContain("no existe");
-  vi.mocked(getEditorialRehearsal).mockResolvedValue({
-    challengeVersionId: "version",
-    updatedAt: "stamp",
-    status: "draft",
-    ref: null,
-    choices: [{ ref, title: "Ensayo", issues: ["Modo diferente"] }],
-  });
-  expect((await associateRehearsal({}, form())).error).toContain("no es compatible");
-  expect(saveRehearsalAssociation).not.toHaveBeenCalled();
-});
-it("passes only a resolved reference and concurrency stamp to the guarded command", async () => {
-  expect(await associateRehearsal({}, form())).toEqual({ message: "Ensayo asociado." });
-  expect(saveRehearsalAssociation).toHaveBeenCalledWith({
-    challengeVersionId: "version",
-    expectedUpdatedAt: "stamp",
-    idempotencyKey: "command-unique",
-    reason: "Preparación",
-    ref,
-  });
-  expect(revalidatePath).toHaveBeenCalledWith("/desafios/[challengeId]", "page");
-});
-it("permits an explicit removal without making rehearsal mandatory", async () => {
-  expect(await associateRehearsal({}, form(""))).toEqual({ message: "Asociación retirada." });
-  expect(saveRehearsalAssociation).toHaveBeenCalledWith(expect.objectContaining({ ref: null }));
-});
-it.each([
-  ["content_conflict", "El contenido cambió"],
-  ["rehearsal_binding_frozen", "es inmutable"],
-])("reports %s without claiming a successful save", async (code, message) => {
-  vi.mocked(saveRehearsalAssociation).mockRejectedValue(new Error(code));
-  expect((await associateRehearsal({}, form())).error).toContain(message);
-  expect(revalidatePath).not.toHaveBeenCalled();
+it("checks superadmin before previewing a recipe", async () => {
+  vi.mocked(requireSuperadmin).mockRejectedValueOnce(new Error("forbidden"));
+  await expect(previewRehearsal("version", {})).rejects.toThrow("forbidden");
 });

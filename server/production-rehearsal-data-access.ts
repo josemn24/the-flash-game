@@ -3,7 +3,7 @@ import { cache } from "react";
 import { randomUUID } from "node:crypto";
 import { logHttpEvent } from "@/server/observability";
 import { rehearsalServices } from "@/server/composition/rehearsals";
-import type { RehearsalAssociationInput } from "@/application/ports/rehearsals";
+import type { RehearsalPolicyInput } from "@/application/ports/rehearsals";
 
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const getPlayerRehearsal = cache(async (roomKey: string, publicationId: string) => {
@@ -27,7 +27,8 @@ export const getPlayerRehearsal = cache(async (roomKey: string, publicationId: s
 });
 export const getRehearsalAvailability = cache(async (roomKey: string, publicationId: string) => {
   try {
-    const rehearsal = await getPlayerRehearsal(roomKey, publicationId);
+    if (!roomKey || !uuid.test(publicationId)) return undefined;
+    const rehearsal = await (await rehearsalServices())?.getAvailability(roomKey, publicationId);
     return rehearsal
       ? {
           canRehearse: true as const,
@@ -35,6 +36,14 @@ export const getRehearsalAvailability = cache(async (roomKey: string, publicatio
         }
       : undefined;
   } catch {
+    logHttpEvent({
+      requestId: randomUUID(),
+      route: `/desafios/${publicationId}`,
+      operation: "read_rehearsal_availability",
+      status: 503,
+      result: "error",
+      errorCode: "rehearsal_load_failed",
+    });
     return undefined;
   }
 });
@@ -42,13 +51,17 @@ export const getEditorialRehearsal = cache(async (versionId: string) => {
   if (!uuid.test(versionId)) return null;
   return (await rehearsalServices())?.getEditorial(versionId) ?? null;
 });
-export async function saveRehearsalAssociation(input: RehearsalAssociationInput) {
-  if (!uuid.test(input.challengeVersionId)) throw new Error("invalid_command");
+export async function saveRehearsalPolicy(input: RehearsalPolicyInput) {
+  if (!uuid.test(input.publicationId)) throw new Error("invalid_command");
   const service = await rehearsalServices();
   if (!service) throw new Error("not_authorized");
-  await service.associate(input);
+  await service.setPolicy(input);
 }
 
-export async function getRehearsalPreview(id: string, version: number) {
-  return (await import("@/server/composition/rehearsals")).rehearsalPreview(id, version);
+export async function getRehearsalPreview(
+  versionId: string,
+  options: { seed?: string; recipe?: import("@/types/gameplay/rehearsal").RehearsalRecipe } = {},
+) {
+  if (!uuid.test(versionId)) return null;
+  return (await rehearsalServices())?.preview(versionId, options) ?? null;
 }

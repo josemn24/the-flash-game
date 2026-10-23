@@ -133,8 +133,10 @@ export function QuestionLibraryManagement({
               <h3>{entry.slug}</h3>
               <p>{entry.question}</p>
               <span className={styles.entryMeta}>
-                v{entry.versionNumber} · {entry.timeLimitMs / 1000}s · {entry.versionCount}{" "}
-                versiones · {entry.usageCount} usos
+                v{entry.versionNumber} ·{" "}
+                {{ easy: "Fácil", medium: "Media", hard: "Difícil" }[entry.difficulty ?? "medium"]}{" "}
+                · {entry.timeLimitMs / 1000}s · {entry.versionCount} versiones · {entry.usageCount}{" "}
+                usos
               </span>
             </Card>
           </Link>

@@ -235,8 +235,8 @@ function buildPyramidRules(): [ChallengeIntroRule, ChallengeIntroRule, Challenge
       description: "Solo un acierto completo abre la siguiente prueba.",
     },
     {
-      title: "Puedes volver a intentarlo",
-      description: "Revisa tu ascenso y repite la partida cuando quieras.",
+      title: "Prepárate antes de competir",
+      description: "Practica los formatos disponibles antes de realizar tu intento competitivo.",
     },
     {
       title: "Llega a la cima",

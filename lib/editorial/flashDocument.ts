@@ -77,7 +77,13 @@ function parseQuestionReference(value: unknown, index: number): FlashEditorialQu
 export function parseFlashEditorialQuestionDocument(
   value: unknown,
 ): FlashEditorialQuestionDocument {
-  if (!isRecord(value) || !hasExactKeys(value, questionDocumentKeys)) {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(
+      Object.fromEntries(Object.entries(value).filter(([key]) => key !== "difficulty")),
+      questionDocumentKeys,
+    )
+  ) {
     throw new FlashEditorialValidationError([
       "La pregunta debe contener un documento Flash válido sin points.",
     ]);

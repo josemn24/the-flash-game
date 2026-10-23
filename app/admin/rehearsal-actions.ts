@@ -2,49 +2,67 @@
 import { revalidatePath } from "next/cache";
 import { requireSuperadmin } from "@/server/admin";
 import {
-  getEditorialRehearsal,
-  saveRehearsalAssociation,
+  saveRehearsalPolicy,
+  getRehearsalPreview,
 } from "@/server/production-rehearsal-data-access";
-
+import type { RehearsalRecipe } from "@/types/gameplay/rehearsal";
 export type RehearsalActionState = { message?: string; error?: string };
-export async function associateRehearsal(
+export async function updateRehearsalPolicy(
   _state: RehearsalActionState,
   form: FormData,
 ): Promise<RehearsalActionState> {
   await requireSuperadmin();
   const text = (key: string) => String(form.get(key) ?? "").trim();
-  const challengeVersionId = text("challengeVersionId");
-  const idempotencyKey = text("idempotencyKey");
-  const reason = text("reason");
-  if (idempotencyKey.length < 8 || idempotencyKey.length > 160 || !reason || reason.length > 500)
-    return { error: "Introduce un motivo y vuelve a intentarlo." };
+  if (
+    text("idempotencyKey").length < 8 ||
+    text("idempotencyKey").length > 160 ||
+    !text("reason") ||
+    text("reason").length > 500 ||
+    !["true", "false"].includes(text("enabled"))
+  )
+    return { error: "Introduce un motivo válido y vuelve a intentarlo." };
   try {
-    const context = await getEditorialRehearsal(challengeVersionId);
-    if (!context) return { error: "No se encontró la versión del desafío." };
-    const selected = text("rehearsal");
-    const choice = context.choices.find(
-      (c) => `${c.ref.id}@${c.ref.version}` === selected && c.issues.length === 0,
-    );
-    if (selected && !choice)
-      return { error: "El ensayo seleccionado no existe o no es compatible." };
-    await saveRehearsalAssociation({
-      challengeVersionId,
-      expectedUpdatedAt: text("expectedUpdatedAt"),
-      idempotencyKey,
-      reason,
-      ref: choice?.ref ?? null,
+    await saveRehearsalPolicy({
+      publicationId: text("publicationId"),
+      enabled: text("enabled") === "true",
+      expectedUpdatedAt: text("expectedUpdatedAt") || null,
+      idempotencyKey: text("idempotencyKey"),
+      reason: text("reason"),
     });
     revalidatePath("/admin/challenges/[challengeDefinitionId]", "page");
     revalidatePath("/desafios/[challengeId]", "page");
-    return { message: selected ? "Ensayo asociado." : "Asociación retirada." };
+    return { message: "Disponibilidad de la prueba actualizada." };
   } catch (error) {
-    const code = error instanceof Error ? error.message : "";
     return {
-      error: code.includes("frozen")
-        ? "La asociación publicada es inmutable. Crea una nueva versión."
-        : code.includes("conflict")
-          ? "El contenido cambió. Recarga el editor antes de volver a guardar."
-          : "No se pudo guardar la asociación. Recarga e inténtalo de nuevo.",
+      error:
+        error instanceof Error && error.message.includes("conflict")
+          ? "La configuración cambió. Recarga antes de guardar."
+          : "No se pudo actualizar la prueba.",
+    };
+  }
+}
+export async function previewRehearsal(
+  versionId: string,
+  options: { seed?: string; recipe?: RehearsalRecipe },
+) {
+  await requireSuperadmin();
+  if (JSON.stringify(options).length > 32768) throw new Error("invalid_rehearsal_recipe");
+  try {
+    return { run: await getRehearsalPreview(versionId, options) };
+  } catch (error) {
+    const messages: Record<string, string> = {
+      rehearsal_coverage_missing: "No hay preguntas compatibles para todas las posiciones.",
+      invalid_rehearsal_seed:
+        "La semilla debe tener entre 1 y 128 letras, cifras, guiones o guiones bajos.",
+      rehearsal_recipe_incompatible:
+        "La receta no corresponde a esta estructura o versión del generador.",
+      rehearsal_question_missing_or_changed:
+        "Falta una versión de pregunta de la receta o su huella ha cambiado.",
+    };
+    return {
+      error:
+        messages[error instanceof Error ? error.message : ""] ??
+        "No se pudo reproducir la receta. Comprueba su contenido.",
     };
   }
 }

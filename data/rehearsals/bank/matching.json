@@ -1,0 +1,430 @@
+[
+  {
+    "id": "betavip-antiguedad-q1",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relaciona cada suma con su resultado.",
+      "leftItems": [
+        {
+          "id": "l0",
+          "label": "1 + 1"
+        },
+        {
+          "id": "l1",
+          "label": "2 + 1"
+        },
+        {
+          "id": "l2",
+          "label": "3 + 1"
+        },
+        {
+          "id": "l3",
+          "label": "4 + 1"
+        }
+      ],
+      "rightItems": [
+        {
+          "id": "r3",
+          "label": "5"
+        },
+        {
+          "id": "r2",
+          "label": "4"
+        },
+        {
+          "id": "r1",
+          "label": "3"
+        },
+        {
+          "id": "r0",
+          "label": "2"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "matches": {
+        "l0": "r0",
+        "l1": "r1",
+        "l2": "r2",
+        "l3": "r3"
+      },
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 18000,
+    "familyId": "matching-sumas"
+  },
+  {
+    "id": "betavip-supervivencia-q6",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relaciona cada suma con su resultado.",
+      "leftItems": [
+        {
+          "id": "l0",
+          "label": "1 + 6"
+        },
+        {
+          "id": "l1",
+          "label": "2 + 6"
+        },
+        {
+          "id": "l2",
+          "label": "3 + 6"
+        }
+      ],
+      "rightItems": [
+        {
+          "id": "r2",
+          "label": "9"
+        },
+        {
+          "id": "r1",
+          "label": "8"
+        },
+        {
+          "id": "r0",
+          "label": "7"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "matches": {
+        "l0": "r0",
+        "l1": "r1",
+        "l2": "r2"
+      },
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 18000,
+    "familyId": "matching-sumas"
+  },
+  {
+    "id": "betavip-supervivencia-q7",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relaciona cada suma con su resultado.",
+      "leftItems": [
+        {
+          "id": "l0",
+          "label": "1 + 7"
+        },
+        {
+          "id": "l1",
+          "label": "2 + 7"
+        },
+        {
+          "id": "l2",
+          "label": "3 + 7"
+        }
+      ],
+      "rightItems": [
+        {
+          "id": "r2",
+          "label": "10"
+        },
+        {
+          "id": "r1",
+          "label": "9"
+        },
+        {
+          "id": "r0",
+          "label": "8"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "matches": {
+        "l0": "r0",
+        "l1": "r1",
+        "l2": "r2"
+      },
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 18000,
+    "familyId": "matching-sumas"
+  },
+  {
+    "id": "betavip-supervivencia-q8",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relaciona cada suma con su resultado.",
+      "leftItems": [
+        {
+          "id": "l0",
+          "label": "1 + 8"
+        },
+        {
+          "id": "l1",
+          "label": "2 + 8"
+        },
+        {
+          "id": "l2",
+          "label": "3 + 8"
+        }
+      ],
+      "rightItems": [
+        {
+          "id": "r2",
+          "label": "11"
+        },
+        {
+          "id": "r1",
+          "label": "10"
+        },
+        {
+          "id": "r0",
+          "label": "9"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "matches": {
+        "l0": "r0",
+        "l1": "r1",
+        "l2": "r2"
+      },
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 18000,
+    "familyId": "matching-sumas"
+  },
+  {
+    "id": "betavip-supervivencia-q17",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relaciona cada suma con su resultado.",
+      "leftItems": [
+        {
+          "id": "l0",
+          "label": "1 + 17"
+        },
+        {
+          "id": "l1",
+          "label": "2 + 17"
+        },
+        {
+          "id": "l2",
+          "label": "3 + 17"
+        }
+      ],
+      "rightItems": [
+        {
+          "id": "r2",
+          "label": "20"
+        },
+        {
+          "id": "r1",
+          "label": "19"
+        },
+        {
+          "id": "r0",
+          "label": "18"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "matches": {
+        "l0": "r0",
+        "l1": "r1",
+        "l2": "r2"
+      },
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 18000,
+    "familyId": "matching-sumas"
+  },
+  {
+    "id": "flash-referencia-q3",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relaciona cada suma con su resultado.",
+      "leftItems": [
+        {
+          "id": "l0",
+          "label": "1 + 3"
+        },
+        {
+          "id": "l1",
+          "label": "2 + 3"
+        },
+        {
+          "id": "l2",
+          "label": "3 + 3"
+        },
+        {
+          "id": "l3",
+          "label": "4 + 3"
+        }
+      ],
+      "rightItems": [
+        {
+          "id": "r3",
+          "label": "7"
+        },
+        {
+          "id": "r2",
+          "label": "6"
+        },
+        {
+          "id": "r1",
+          "label": "5"
+        },
+        {
+          "id": "r0",
+          "label": "4"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "matches": {
+        "l0": "r0",
+        "l1": "r1",
+        "l2": "r2",
+        "l3": "r3"
+      },
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 22000,
+    "familyId": "matching-sumas"
+  },
+  {
+    "id": "bank-emparejar-materiales",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relaciona cada material con su origen.",
+      "leftItems": [
+        {
+          "id": "l0",
+          "label": "Lana"
+        },
+        {
+          "id": "l1",
+          "label": "Corcho"
+        },
+        {
+          "id": "l2",
+          "label": "Seda"
+        },
+        {
+          "id": "l3",
+          "label": "Vidrio"
+        }
+      ],
+      "rightItems": [
+        {
+          "id": "r2",
+          "label": "Gusano de seda"
+        },
+        {
+          "id": "r0",
+          "label": "Oveja"
+        },
+        {
+          "id": "r3",
+          "label": "Arena silícea"
+        },
+        {
+          "id": "r1",
+          "label": "Alcornoque"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "matches": {
+        "l0": "r0",
+        "l1": "r1",
+        "l2": "r2",
+        "l3": "r3"
+      },
+      "explanation": "La lana es pelo de oveja, el corcho es corteza del alcornoque, la seda procede de los capullos y el vidrio se fabrica principalmente con arena silícea."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-emparejar-materiales"
+  },
+  {
+    "id": "bank-emparejar-instrumentos",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relaciona cada instrumento de medida con la magnitud que mide.",
+      "leftItems": [
+        {
+          "id": "l0",
+          "label": "Barómetro"
+        },
+        {
+          "id": "l1",
+          "label": "Amperímetro"
+        },
+        {
+          "id": "l2",
+          "label": "Anemómetro"
+        },
+        {
+          "id": "l3",
+          "label": "Balanza"
+        }
+      ],
+      "rightItems": [
+        {
+          "id": "r2",
+          "label": "Velocidad del viento"
+        },
+        {
+          "id": "r0",
+          "label": "Presión atmosférica"
+        },
+        {
+          "id": "r3",
+          "label": "Masa"
+        },
+        {
+          "id": "r1",
+          "label": "Intensidad de corriente"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "matches": {
+        "l0": "r0",
+        "l1": "r1",
+        "l2": "r2",
+        "l3": "r3"
+      },
+      "explanation": "Cada instrumento está especializado en una magnitud física diferente."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-emparejar-instrumentos"
+  }
+]

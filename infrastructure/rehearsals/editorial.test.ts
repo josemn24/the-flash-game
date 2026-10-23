@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { listRehearsals } from "./catalog";
+import { rehearsalBank } from "./bank";
 import { SBR_QUESTIONS } from "@/scripts/fixtures/scenarios/sbr.mjs";
 import { BETA_VIP_ALPHABET } from "@/scripts/fixtures/scenarios/betavip-alphabet.mjs";
 import { betaVipSurvivalQuestions } from "@/scripts/fixtures/scenarios/betavip-survival.mjs";
@@ -7,6 +7,8 @@ import { betaVipPyramidQuestions } from "@/scripts/fixtures/scenarios/betavip-py
 import { betaVipAntiquityQuestions } from "@/scripts/fixtures/scenarios/betavip-antiquity.mjs";
 import { betaVipTimeTrialQuestions } from "@/scripts/fixtures/scenarios/betavip-time-trial.mjs";
 import { betaVipConnectPairsQuestions } from "@/scripts/fixtures/scenarios/betavip-connect-pairs.mjs";
+import tabarnia from "@/scripts/fixtures/scenarios/tabarnia-content.json";
+import tabarniaAlphabet from "@/scripts/fixtures/scenarios/tabarnia-alphabet.json";
 
 // Official fixtures are read only by this editorial regression, never by the bank or builder.
 it("does not repeat official statements or meaningful exact text answers in its initial content", () => {
@@ -15,6 +17,10 @@ it("does not repeat official statements or meaningful exact text answers in its 
     solutionPayload: Record<string, unknown>;
   }[] = [
     ...SBR_QUESTIONS,
+    ...[...tabarnia.questions, ...tabarniaAlphabet.questions].map((q) => ({
+      publicPayload: q.publicPayload,
+      solutionPayload: q.privatePayload.solution.payload,
+    })),
     ...betaVipSurvivalQuestions("audit-only"),
     ...betaVipPyramidQuestions,
     ...betaVipAntiquityQuestions,
@@ -41,7 +47,7 @@ it("does not repeat official statements or meaningful exact text answers in its 
       .filter((a) => typeof a === "string" && a.length >= 4)
       .map(normalize),
   );
-  for (const q of listRehearsals().flatMap((a) => a.source.questions)) {
+  for (const q of rehearsalBank()) {
     expect(prompts.has(normalize(q.publicPayload.question))).toBe(false);
     const answer = q.solutionPayload?.correctAnswer;
     if (typeof answer === "string" && answer.length >= 4)

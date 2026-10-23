@@ -1,0 +1,500 @@
+[
+  {
+    "id": "betavip-antiguedad-q5",
+    "version": 1,
+    "type": "word-search",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Encuentra las cinco palabras de la naturaleza.",
+      "grid": {
+        "rows": 10,
+        "columns": 10
+      },
+      "letters": [
+        "N",
+        "A",
+        "T",
+        "U",
+        "R",
+        "A",
+        "L",
+        "E",
+        "Z",
+        "A",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "B",
+        "O",
+        "S",
+        "Q",
+        "U",
+        "E",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "N",
+        "U",
+        "B",
+        "E",
+        "S",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "P",
+        "L",
+        "A",
+        "N",
+        "E",
+        "T",
+        "A",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "E",
+        "S",
+        "T",
+        "R",
+        "E",
+        "L",
+        "L",
+        "A",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X"
+      ],
+      "targets": [
+        {
+          "id": "w0",
+          "word": "NATURALEZA"
+        },
+        {
+          "id": "w1",
+          "word": "BOSQUE"
+        },
+        {
+          "id": "w2",
+          "word": "NUBES"
+        },
+        {
+          "id": "w3",
+          "word": "PLANETA"
+        },
+        {
+          "id": "w4",
+          "word": "ESTRELLA"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "positionsByTargetId": {
+        "w0": {
+          "startCell": 0,
+          "endCell": 9
+        },
+        "w1": {
+          "startCell": 20,
+          "endCell": 25
+        },
+        "w2": {
+          "startCell": 40,
+          "endCell": 44
+        },
+        "w3": {
+          "startCell": 60,
+          "endCell": 66
+        },
+        "w4": {
+          "startCell": 80,
+          "endCell": 87
+        }
+      },
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "betavip-antiguedad-q5"
+  },
+  {
+    "id": "bank-sopa-1",
+    "version": 1,
+    "type": "word-search",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-sopa-1",
+    "publicPayload": {
+      "question": "Encuentra el material y los términos deportivos.",
+      "grid": {
+        "rows": 10,
+        "columns": 10
+      },
+      "letters": [
+        "B",
+        "A",
+        "L",
+        "O",
+        "N",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "R",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "A",
+        "R",
+        "E",
+        "D",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "Q",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "U",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "E",
+        "P",
+        "E",
+        "S",
+        "A",
+        "S",
+        "X",
+        "X",
+        "X",
+        "X",
+        "T",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "A",
+        "G",
+        "O",
+        "L",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X"
+      ],
+      "targets": [
+        {
+          "id": "w0",
+          "word": "BALON"
+        },
+        {
+          "id": "w1",
+          "word": "RAQUETA"
+        },
+        {
+          "id": "w2",
+          "word": "RED"
+        },
+        {
+          "id": "w3",
+          "word": "PESAS"
+        },
+        {
+          "id": "w4",
+          "word": "GOL"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "positionsByTargetId": {
+        "w0": {
+          "startCell": 0,
+          "endCell": 4
+        },
+        "w1": {
+          "startCell": 19,
+          "endCell": 79
+        },
+        "w2": {
+          "startCell": 30,
+          "endCell": 32
+        },
+        "w3": {
+          "startCell": 60,
+          "endCell": 64
+        },
+        "w4": {
+          "startCell": 80,
+          "endCell": 82
+        }
+      },
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-sopa-2",
+    "version": 1,
+    "type": "word-search",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-sopa-2",
+    "publicPayload": {
+      "question": "Encuentra cinco instrumentos musicales.",
+      "grid": {
+        "rows": 10,
+        "columns": 10
+      },
+      "letters": [
+        "P",
+        "I",
+        "A",
+        "N",
+        "O",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "V",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "I",
+        "A",
+        "R",
+        "P",
+        "A",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "O",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "L",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "I",
+        "T",
+        "A",
+        "M",
+        "B",
+        "O",
+        "R",
+        "X",
+        "X",
+        "X",
+        "N",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "F",
+        "L",
+        "A",
+        "U",
+        "T",
+        "A",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X"
+      ],
+      "targets": [
+        {
+          "id": "w0",
+          "word": "PIANO"
+        },
+        {
+          "id": "w1",
+          "word": "VIOLIN"
+        },
+        {
+          "id": "w2",
+          "word": "ARPA"
+        },
+        {
+          "id": "w3",
+          "word": "TAMBOR"
+        },
+        {
+          "id": "w4",
+          "word": "FLAUTA"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "positionsByTargetId": {
+        "w0": {
+          "startCell": 0,
+          "endCell": 4
+        },
+        "w1": {
+          "startCell": 19,
+          "endCell": 69
+        },
+        "w2": {
+          "startCell": 30,
+          "endCell": 33
+        },
+        "w3": {
+          "startCell": 60,
+          "endCell": 65
+        },
+        "w4": {
+          "startCell": 80,
+          "endCell": 85
+        }
+      },
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  }
+]

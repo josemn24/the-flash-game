@@ -1,0 +1,89 @@
+[
+  {
+    "id": "flash-referencia-q6",
+    "version": 1,
+    "type": "heat-map",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "Marca el centro del círculo naranja.",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Un círculo naranja sobre una cuadrícula",
+        "width": 600,
+        "height": 400
+      },
+      "targetLabel": "Centro del círculo"
+    },
+    "solutionPayload": {
+      "target": {
+        "x": 0.7,
+        "y": 0.3
+      },
+      "fullCreditRadius": 0.04,
+      "toleranceRadius": 0.12,
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 18000,
+    "familyId": "flash-referencia-q6"
+  },
+  {
+    "id": "bank-mapa-borde-superior",
+    "version": 1,
+    "type": "heat-map",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-mapa-borde-superior",
+    "publicPayload": {
+      "question": "Señala el punto medio del borde superior de la imagen.",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Lienzo rectangular con una cuadrícula y un círculo naranja",
+        "width": 600,
+        "height": 400
+      },
+      "targetLabel": "Señala el punto medio del borde superior de la imagen."
+    },
+    "solutionPayload": {
+      "target": {
+        "x": 0.5,
+        "y": 0
+      },
+      "fullCreditRadius": 0.04,
+      "toleranceRadius": 0.12,
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-mapa-esquina-inferior",
+    "version": 1,
+    "type": "heat-map",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-mapa-esquina-inferior",
+    "publicPayload": {
+      "question": "Señala la esquina inferior izquierda de la imagen.",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Lienzo rectangular con una cuadrícula y un círculo naranja",
+        "width": 600,
+        "height": 400
+      },
+      "targetLabel": "Señala la esquina inferior izquierda de la imagen."
+    },
+    "solutionPayload": {
+      "target": {
+        "x": 0,
+        "y": 1
+      },
+      "fullCreditRadius": 0.04,
+      "toleranceRadius": 0.12,
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  }
+]

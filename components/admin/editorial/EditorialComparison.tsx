@@ -35,6 +35,7 @@ export function ComparisonPanel({
       changed(from.slug, to.slug) && "slug",
       changed(from.type, to.type) && "formato",
       changed(from.timeLimitMs, to.timeLimitMs) && "tiempo",
+      changed(from.difficulty ?? "medium", to.difficulty ?? "medium") && "dificultad",
       changed(from.points, to.points) && "puntos",
       changed(from.modeConfig, to.modeConfig) && "configuración",
       changed(from.publicPayload, to.publicPayload) && "contenido público",

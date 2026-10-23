@@ -1,0 +1,142 @@
+[
+  {
+    "id": "flash-referencia-q9",
+    "version": 1,
+    "type": "anagram",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena las letras para formar la palabra.",
+      "tiles": [
+        {
+          "id": "t0",
+          "value": "T"
+        },
+        {
+          "id": "t1",
+          "value": "E"
+        },
+        {
+          "id": "t2",
+          "value": "N"
+        },
+        {
+          "id": "t3",
+          "value": "A"
+        },
+        {
+          "id": "t4",
+          "value": "L"
+        },
+        {
+          "id": "t5",
+          "value": "P"
+        },
+        {
+          "id": "t6",
+          "value": "A"
+        }
+      ],
+      "hint": "Cuerpo celeste que gira alrededor de una estrella."
+    },
+    "solutionPayload": {
+      "correctAnswer": "PLANETA",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "flash-referencia-q9"
+  },
+  {
+    "id": "bank-anagrama-camino",
+    "version": 1,
+    "type": "anagram",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-anagrama-camino",
+    "publicPayload": {
+      "question": "Reconstruye la palabra a partir de su definición: Vía que se recorre para llegar a un lugar.",
+      "tiles": [
+        {
+          "id": "t0",
+          "value": "M"
+        },
+        {
+          "id": "t1",
+          "value": "I"
+        },
+        {
+          "id": "t2",
+          "value": "N"
+        },
+        {
+          "id": "t3",
+          "value": "O"
+        },
+        {
+          "id": "t4",
+          "value": "C"
+        },
+        {
+          "id": "t5",
+          "value": "A"
+        }
+      ],
+      "hint": "Vía que se recorre para llegar a un lugar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "CAMINO",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-anagrama-ventana",
+    "version": 1,
+    "type": "anagram",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-anagrama-ventana",
+    "publicPayload": {
+      "question": "Reconstruye la palabra a partir de su definición: Abertura que deja entrar luz en una habitación.",
+      "tiles": [
+        {
+          "id": "t0",
+          "value": "N"
+        },
+        {
+          "id": "t1",
+          "value": "T"
+        },
+        {
+          "id": "t2",
+          "value": "A"
+        },
+        {
+          "id": "t3",
+          "value": "N"
+        },
+        {
+          "id": "t4",
+          "value": "A"
+        },
+        {
+          "id": "t5",
+          "value": "V"
+        },
+        {
+          "id": "t6",
+          "value": "E"
+        }
+      ],
+      "hint": "Abertura que deja entrar luz en una habitación."
+    },
+    "solutionPayload": {
+      "correctAnswer": "VENTANA",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  }
+]

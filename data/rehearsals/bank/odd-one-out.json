@@ -1,0 +1,154 @@
+[
+  {
+    "id": "betavip-logica-q3",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Selecciona el único número impar.",
+      "items": [
+        {
+          "id": "i0",
+          "label": "2"
+        },
+        {
+          "id": "i1",
+          "label": "4"
+        },
+        {
+          "id": "i2",
+          "label": "6"
+        },
+        {
+          "id": "i3",
+          "label": "8"
+        },
+        {
+          "id": "i4",
+          "label": "9"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i4",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "odd-one-out-paridad"
+  },
+  {
+    "id": "flash-referencia-q2",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Selecciona el único número impar.",
+      "items": [
+        {
+          "id": "i0",
+          "label": "2"
+        },
+        {
+          "id": "i1",
+          "label": "4"
+        },
+        {
+          "id": "i2",
+          "label": "6"
+        },
+        {
+          "id": "i3",
+          "label": "9"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i3",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 14000,
+    "familyId": "odd-one-out-paridad"
+  },
+  {
+    "id": "bank-intruso-geometria",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-intruso-geometria",
+    "publicPayload": {
+      "question": "¿Cuál de estas figuras tiene volumen?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "Círculo"
+        },
+        {
+          "id": "i1",
+          "label": "Triángulo"
+        },
+        {
+          "id": "i2",
+          "label": "Cuadrado"
+        },
+        {
+          "id": "i3",
+          "label": "Rombo"
+        },
+        {
+          "id": "i4",
+          "label": "Esfera"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i4",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-intruso-tiempo",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuál de estas unidades no mide tiempo?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "Segundo"
+        },
+        {
+          "id": "i1",
+          "label": "Minuto"
+        },
+        {
+          "id": "i2",
+          "label": "Hora"
+        },
+        {
+          "id": "i3",
+          "label": "Litro"
+        },
+        {
+          "id": "i4",
+          "label": "Día"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i3",
+      "explanation": "El litro mide volumen. Las otras unidades miden tiempo."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-intruso-tiempo"
+  }
+]

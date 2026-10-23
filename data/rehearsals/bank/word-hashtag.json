@@ -1,0 +1,164 @@
+[
+  {
+    "id": "betavip-antiguedad-q7",
+    "version": 1,
+    "type": "word-hashtag",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Intercambia letras para formar las cuatro palabras.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "initialLetters": [
+        null,
+        "R",
+        null,
+        "C",
+        null,
+        "S",
+        "A",
+        "S",
+        "A",
+        "C",
+        null,
+        "M",
+        null,
+        "L",
+        null,
+        "S",
+        "A",
+        "T",
+        "O",
+        "R",
+        null,
+        "S",
+        null,
+        "R",
+        null
+      ],
+      "maxMoves": 7
+    },
+    "solutionPayload": {
+      "words": {
+        "top": "CASAS",
+        "bottom": "RATOS",
+        "left": "RAMAS",
+        "right": "CALOR"
+      },
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 45000,
+    "familyId": "betavip-antiguedad-q7"
+  },
+  {
+    "id": "bank-hashtag-1",
+    "version": 1,
+    "type": "word-hashtag",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-hashtag-1",
+    "publicPayload": {
+      "question": "Forma las palabras cruzadas del tablero 1.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "initialLetters": [
+        null,
+        "U",
+        null,
+        "B",
+        null,
+        "L",
+        "A",
+        "N",
+        "A",
+        "P",
+        null,
+        "D",
+        null,
+        "B",
+        null,
+        "S",
+        "I",
+        "N",
+        "O",
+        "S",
+        null,
+        "O",
+        null,
+        "R",
+        null
+      ],
+      "maxMoves": 7
+    },
+    "solutionPayload": {
+      "words": {
+        "top": "LUNAS",
+        "bottom": "PINOS",
+        "left": "AUDIO",
+        "right": "BABOR"
+      },
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-hashtag-2",
+    "version": 1,
+    "type": "word-hashtag",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-hashtag-2",
+    "publicPayload": {
+      "question": "Forma las palabras cruzadas del tablero 2.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "initialLetters": [
+        null,
+        "S",
+        null,
+        "S",
+        null,
+        "P",
+        "A",
+        "L",
+        "A",
+        "T",
+        null,
+        "S",
+        null,
+        "L",
+        null,
+        "P",
+        "A",
+        "T",
+        "O",
+        "P",
+        null,
+        "S",
+        null,
+        "N",
+        null
+      ],
+      "maxMoves": 7
+    },
+    "solutionPayload": {
+      "words": {
+        "top": "PALAS",
+        "bottom": "PATOS",
+        "left": "TAPAS",
+        "right": "SALON"
+      },
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  }
+]

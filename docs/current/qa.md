@@ -3,7 +3,78 @@
 
 # QA actual
 
-## Ensayos antes del intento competitivo — 2026-10-20
+## Generación dinámica de pruebas — 2026-10-21
+
+Las [pruebas antes de competir](rehearsals.md) se generan a partir de la estructura autorizada de
+Flash, Pirámide, Supervivencia, Alfabeto y Contrarreloj. Narrativa permanece fuera de esta generación.
+
+- Banco: **143 preguntas**, con las **78 originales** conservadas. Las 506 comprobaciones del banco
+  acreditan contratos, recursos, resolución con los proveedores reales y cobertura de al menos tres
+  familias independientes por posición de BetaVIP y Tabarnia, incluidas sus 16 letras. El informe
+  automático detalla modos, formatos, letras, dificultades, exclusiones y avisos.
+- Suite unitaria completa: **3.243 pruebas en 268 archivos**. Comprueba selección determinista,
+  dificultad exacta y próxima, familias, agotamiento, contratos, letras, reproducción y estabilidad
+  de sesiones y recursos. También cubre la dificultad heredada al crear una versión y en referencias
+  de biblioteca archivadas. Los cambios posteriores de las fuentes de setup se contrastan mediante
+  la regresión focal del banco y del generador.
+- Navegador: **18 casos distintos** de pruebas dinámicas correctos, incluyendo los cinco modos,
+  ambas variantes de Contrarreloj, recarga con sesión nueva, resultados, revisión, retorno, recursos,
+  política, preview, semilla, reproducción exacta y dificultad mediante nueva versión. La tanda
+  ampliada pasó 16/18; los dos casos restantes pasaron 2/2 en una repetición aislada tras corregir
+  un selector que confundía el anunciador de Next.js y repetir un timeout de duración anómala.
+  Los snapshots completos de intentos, respuestas y ledger permanecen idénticos tras la práctica.
+- Conformidad de autoridades locales y servidor: **168 casos** correctos en los cinco modos,
+  incluidos **161 de Pirámide**, Queens, Conectar parejas y agotamiento del reloj global. El runner
+  eleva el presupuesto de peticiones únicamente para estas suites; Pirámide se incorporó a esa
+  configuración después de identificar rechazos `rate_limited` en la primera ejecución.
+- SQL: **69 suites** completas desde los **97 archivos declarativos** y las **14 migraciones**.
+  La suite focal final de pruebas aporta 30 comprobaciones por ambas vías: política, autorización,
+  publicación futura, pérdida de membresía, sala inactiva, cierre, cancelación e intento existente.
+  Pasan además los 158 casos de formatos, 904 observaciones de validación y las carreras concurrentes.
+- Actualización incremental: conserva las filas de las **31 tablas existentes**, incluidos intentos
+  activos y completados, respuestas, ledger, auditoría y comandos de una asociación histórica real.
+  Retira la tabla de asociaciones; la única ampliación de preguntas es `difficulty = medium`.
+- Reconciliación: **238 funciones**, cero diferencias de definición y comportamiento entre esquema
+  e historial, 41 contratos y sus carreras adicionales. El inventario de seguridad es correcto y los
+  tipos públicos generados de Supabase permanecen idénticos.
+- La compilación final de producción pasa, incluida la generación de rutas. TypeScript,
+  arquitecturas, ESLint sin avisos y Stylelint pasan. Los archivos modificados cumplen
+  Prettier. La comprobación global de formato detecta 16 archivos preexistentes ajenos a esta entrega.
+
+Las verificaciones de regresión anteriores utilizan bases y stacks desechables. La migración también
+se ha aplicado a la base local habitual según el registro siguiente; no se ha aplicado a un entorno
+remoto. El despliegue requiere actualizar aplicación y esquema de forma
+coordinada. La clasificación de dificultad y la independencia semántica de nuevas preguntas siguen
+requiriendo revisión editorial; las familias evitan contar variantes equivalentes como alternativas.
+
+## Aplicación local y comprobación de BetaVIP — 2026-10-21
+
+- Supabase local recuperado desde su respaldo, sin reset ni nueva carga de fixtures. Respaldo completo
+  previo en `output/backups/dynamic-rehearsals-2026-10-21/before-local.dump`, con permisos privados.
+  Aplicada únicamente `20261020210000_dynamic_rehearsals` mediante `supabase migration up --local`.
+- Las 31 tablas conservadas mantienen sus huellas de datos, ignorando únicamente la columna nueva
+  `difficulty` en la comparación de versiones de preguntas. Las 121 versiones existentes tienen
+  `medium`. Se retiran siete asociaciones fijas y la nueva tabla de políticas empieza vacía.
+- El calendario rápido había vencido. Con autorización del usuario se reprograman solo la temporada
+  y sus seis publicaciones locales, en ventanas diarias del 21 al 27 de octubre. La operación deja
+  siete registros de auditoría y restaura los guards dentro de la misma transacción.
+- Cobertura real de las seis versiones: 62 posiciones, al menos tres familias independientes por
+  posición, incluidas las 16 letras. La generación presenta variedad en diez semillas por desafío
+  y reproduce exactamente cada receta y semilla comprobadas.
+- Navegador con Ches: los seis enlaces «Probar primero» cargan y sus recargas generan sesiones nuevas.
+  Queens completa sus seis tableros con 100/100; Alfabeto responde las 16 letras, pasando y recuperando
+  la primera; Supervivencia consume sus vidas por timeout y llega a «Sin vidas». En los tres casos
+  funcionan resultados, revisión y retorno al desafío, sin peticiones de intentos competitivos.
+- Tras los recorridos, las 32 tablas de `public` y `private` permanecen idénticas al estado previo a
+  jugar: cero intentos, respuestas y entradas de puntos. Health confirma Auth, base de datos y esquema;
+  el inventario de seguridad local pasa en modo de solo lectura. No se ha ejecutado competición.
+
+Informe y registros locales en `output/verification/dynamic-rehearsals/local-2026-10-21/`;
+capturas en `output/playwright/betavip-dynamic/`. No acreditan un despliegue remoto.
+
+## Ensayos fijos antes del intento competitivo — 2026-10-20 (histórico)
+
+Esta sección registra la entrega anterior, sustituida por la generación dinámica descrita arriba.
 
 La implementación de [pruebas antes de competir](rehearsals.md) está verificada localmente.
 Los siete artefactos iniciales cubren las seis publicaciones de BetaVIP y el Flash de referencia.

@@ -72,6 +72,58 @@ function entry(status: "draft" | "published", id: string) {
 }
 
 describe("EditorialManagement", () => {
+  it("shows the immutable difficulty of an archived library reference", () => {
+    const referenced = "00000000-0000-4000-8000-000000000099";
+    const draft = entry("draft", "1");
+    const markup = renderToStaticMarkup(
+      <EditorialManagement
+        context={{
+          source: "supabase",
+          entries: [
+            {
+              ...draft,
+              document: {
+                ...document,
+                questions: [
+                  { source: "library", questionVersionId: referenced, points: 50, modeConfig: {} },
+                  document.questions[1]!,
+                ],
+              },
+            },
+          ],
+        }}
+        questionLibrary={{
+          source: "supabase",
+          total: 1,
+          page: 1,
+          pageSize: 50,
+          entries: [
+            {
+              questionVersionId: referenced,
+              questionDefinitionId: "definition",
+              versionNumber: 1,
+              status: "archived",
+              slug: "referenced",
+              type: "multiple-choice",
+              question: "Pregunta archivada",
+              category: null,
+              tags: {},
+              timeLimitMs: 15000,
+              difficulty: "hard",
+              createdAt: "2026-10-20",
+              updatedAt: "2026-10-20",
+              publishedAt: "2026-10-20",
+              versionCount: 1,
+              usageCount: 1,
+            },
+          ],
+        }}
+      />,
+    );
+    const select = markup.match(/<select[^>]*id="[^"]*difficulty-0"[^>]*>[\s\S]*?<\/select>/)?.[0];
+    expect(select).toContain('disabled=""');
+    expect(select).toContain('<option value="hard" selected="">Difícil</option>');
+  });
   it("renders protected preview and publishing controls only for a draft", () => {
     const context: SuperadminEditorialContext = {
       entries: [entry("draft", "1"), entry("published", "2")],

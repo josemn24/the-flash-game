@@ -1,4 +1,3 @@
-import { rehearsalAssociationSql } from "./support/rehearsal-catalog.mjs";
 import { createHash } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -461,71 +460,6 @@ export function buildBetaVipDomainSql({
     )
     .join(",\n");
 
-  const rehearsalSources = [
-    {
-      rehearsalId: "betavip-logica",
-      publication: pyramid,
-      mode: "pyramid",
-      questions: pyramidItems,
-    },
-    {
-      rehearsalId: "betavip-antiguedad",
-      publication: antiquity,
-      mode: "pyramid",
-      questions: antiquityItems,
-    },
-    {
-      rehearsalId: "betavip-queens",
-      publication: timeTrial,
-      mode: "time-trial",
-      questions: timeTrialItems,
-      globalTimeLimitMs: BETA_VIP_TIME_TRIAL.globalTimeLimitMs,
-    },
-    {
-      rehearsalId: "betavip-parejas",
-      publication: connectPairs,
-      mode: "time-trial",
-      questions: connectPairsItems,
-      globalTimeLimitMs: BETA_VIP_CONNECT_PAIRS.globalTimeLimitMs,
-    },
-    {
-      rehearsalId: "betavip-supervivencia",
-      publication: survival,
-      mode: "survival",
-      questions: survivalItems,
-      modeConfig: BETA_VIP_SURVIVAL.modeConfig,
-    },
-    {
-      rehearsalId: "betavip-alfabeto",
-      publication: alphabet,
-      mode: "alphabet",
-      globalTimeLimitMs: BETA_VIP_ALPHABET.globalTimeLimitMs,
-      questions: alphabetItems.map((item) => ({
-        type: "short-text",
-        payloadSchemaVersion: 1,
-        timeLimitMs: BETA_VIP_ALPHABET.questionTimeLimitMs,
-        points: item.points,
-        modeConfig: { letter: item.letter },
-        publicPayload: {},
-      })),
-    },
-  ];
-  const rehearsalSql = rehearsalSources
-    .map((entry) =>
-      rehearsalAssociationSql({
-        rehearsalId: entry.rehearsalId,
-        versionId: entry.publication.challengeVersionId,
-        actorPlayerId: authorId,
-        source: {
-          mode: entry.mode,
-          globalTimeLimitMs: entry.globalTimeLimitMs ?? null,
-          modeConfig: entry.modeConfig ?? {},
-          questions: entry.questions,
-        },
-      }),
-    )
-    .join("\n");
-
   return `
 begin;
 set constraints all deferred;
@@ -643,7 +577,6 @@ values
    '${publication.status}', ${publication.number === 1 ? seasonStart : scheduleInterval(profile, publication.number - 1, normalizedStartAt)}, ${scheduleInterval(profile, publication.number, normalizedStartAt)})`,
     )
     .join(",\n  ")};
-${rehearsalSql}
 set constraints all immediate;
 commit;
 `;

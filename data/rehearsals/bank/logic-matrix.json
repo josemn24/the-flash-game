@@ -1,0 +1,213 @@
+[
+  {
+    "id": "betavip-logica-q2",
+    "version": 1,
+    "type": "logic-matrix",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Cada fila contiene 1, 2 y 3. ¿Qué número falta?",
+      "pieces": [
+        {
+          "id": "p0",
+          "symbol": "1",
+          "label": "1"
+        },
+        {
+          "id": "p1",
+          "symbol": "2",
+          "label": "2"
+        },
+        {
+          "id": "p2",
+          "symbol": "3",
+          "label": "3"
+        },
+        {
+          "id": "p3",
+          "symbol": "4",
+          "label": "4"
+        },
+        {
+          "id": "p4",
+          "symbol": "5",
+          "label": "5"
+        },
+        {
+          "id": "p5",
+          "symbol": "6",
+          "label": "6"
+        },
+        {
+          "id": "p6",
+          "symbol": "7",
+          "label": "7"
+        },
+        {
+          "id": "p7",
+          "symbol": "8",
+          "label": "8"
+        },
+        {
+          "id": "p8",
+          "symbol": "9",
+          "label": "9"
+        },
+        {
+          "id": "p9",
+          "symbol": "10",
+          "label": "10"
+        },
+        {
+          "id": "p10",
+          "symbol": "11",
+          "label": "11"
+        }
+      ],
+      "cells": ["p0", "p1", "p2", "p1", "p2", "p0", "p2", "p0", null],
+      "optionIds": ["p3", "p1", "p4", "p5"],
+      "showPieceLabels": false
+    },
+    "solutionPayload": {
+      "correctOptionId": "p1",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 35000,
+    "familyId": "betavip-logica-q2"
+  },
+  {
+    "id": "bank-matrix-1",
+    "version": 1,
+    "type": "logic-matrix",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-matrix-1",
+    "publicPayload": {
+      "question": "En cada fila sumamos dos al avanzar. Completa la última casilla.",
+      "pieces": [
+        {
+          "id": "p0",
+          "symbol": "2",
+          "label": "2"
+        },
+        {
+          "id": "p1",
+          "symbol": "4",
+          "label": "4"
+        },
+        {
+          "id": "p2",
+          "symbol": "6",
+          "label": "6"
+        },
+        {
+          "id": "p3",
+          "symbol": "8",
+          "label": "8"
+        },
+        {
+          "id": "p4",
+          "symbol": "10",
+          "label": "10"
+        },
+        {
+          "id": "p5",
+          "symbol": "12",
+          "label": "12"
+        },
+        {
+          "id": "p6",
+          "symbol": "15",
+          "label": "15"
+        },
+        {
+          "id": "p7",
+          "symbol": "21",
+          "label": "21"
+        }
+      ],
+      "cells": ["p0", "p1", "p2", "p1", "p2", "p3", "p2", "p3", null],
+      "optionIds": ["p4", "p0", "p1", "p2"],
+      "showPieceLabels": true
+    },
+    "solutionPayload": {
+      "correctOptionId": "p4",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-matrix-2",
+    "version": 1,
+    "type": "logic-matrix",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-matrix-2",
+    "publicPayload": {
+      "question": "En cada fila multiplicamos por tres. Completa la casilla vacía.",
+      "pieces": [
+        {
+          "id": "p0",
+          "symbol": "1",
+          "label": "1"
+        },
+        {
+          "id": "p1",
+          "symbol": "3",
+          "label": "3"
+        },
+        {
+          "id": "p2",
+          "symbol": "9",
+          "label": "9"
+        },
+        {
+          "id": "p3",
+          "symbol": "2",
+          "label": "2"
+        },
+        {
+          "id": "p4",
+          "symbol": "6",
+          "label": "6"
+        },
+        {
+          "id": "p5",
+          "symbol": "18",
+          "label": "18"
+        },
+        {
+          "id": "p6",
+          "symbol": "27",
+          "label": "27"
+        },
+        {
+          "id": "p7",
+          "symbol": "12",
+          "label": "12"
+        },
+        {
+          "id": "p8",
+          "symbol": "15",
+          "label": "15"
+        },
+        {
+          "id": "p9",
+          "symbol": "21",
+          "label": "21"
+        }
+      ],
+      "cells": ["p0", "p1", "p2", "p3", "p4", "p5", "p1", "p2", null],
+      "optionIds": ["p6", "p0", "p1", "p2"],
+      "showPieceLabels": true
+    },
+    "solutionPayload": {
+      "correctOptionId": "p6",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  }
+]

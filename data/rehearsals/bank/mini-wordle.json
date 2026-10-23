@@ -1,0 +1,65 @@
+[
+  {
+    "id": "betavip-antiguedad-q3",
+    "version": 1,
+    "type": "mini-wordle",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Descubre una palabra relacionada con la naturaleza.",
+      "wordLength": 5,
+      "maxAttempts": 6
+    },
+    "solutionPayload": {
+      "correctAnswer": "ARBOL",
+      "additionalGuesses": [],
+      "dictionaryId": "es-general-5.v1",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 55000,
+    "familyId": "betavip-antiguedad-q3"
+  },
+  {
+    "id": "bank-wordle-playa",
+    "version": 1,
+    "type": "mini-wordle",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-wordle-playa",
+    "publicPayload": {
+      "question": "Descubre un lugar con arena junto al mar.",
+      "wordLength": 5,
+      "maxAttempts": 6
+    },
+    "solutionPayload": {
+      "correctAnswer": "PLAYA",
+      "additionalGuesses": [],
+      "dictionaryId": "es-general-5.v1",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-wordle-nieve",
+    "version": 1,
+    "type": "mini-wordle",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-wordle-nieve",
+    "publicPayload": {
+      "question": "Descubre una forma de precipitación propia del frío.",
+      "wordLength": 5,
+      "maxAttempts": 6
+    },
+    "solutionPayload": {
+      "correctAnswer": "NIEVE",
+      "additionalGuesses": [],
+      "dictionaryId": "es-general-5.v1",
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  }
+]

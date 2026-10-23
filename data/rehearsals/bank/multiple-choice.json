@@ -1,0 +1,207 @@
+[
+  {
+    "id": "betavip-supervivencia-q2",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuánto suman 2 y 7?",
+      "options": ["8", "9", "10", "11"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "9",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 14000,
+    "familyId": "multiple-choice-sumas"
+  },
+  {
+    "id": "betavip-supervivencia-q9",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuánto suman 9 y 7?",
+      "options": ["15", "16", "17", "18"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "16",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 14000,
+    "familyId": "multiple-choice-sumas"
+  },
+  {
+    "id": "betavip-supervivencia-q12",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuánto suman 12 y 7?",
+      "options": ["18", "19", "20", "21"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "19",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 14000,
+    "familyId": "multiple-choice-sumas"
+  },
+  {
+    "id": "betavip-supervivencia-q19",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuánto suman 19 y 7?",
+      "options": ["25", "26", "27", "28"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "26",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 14000,
+    "familyId": "multiple-choice-sumas"
+  },
+  {
+    "id": "flash-referencia-q1",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuántos lados tiene la figura de la imagen?",
+      "options": ["Dos", "Tres", "Cuatro", "Cinco"],
+      "media": {
+        "type": "image",
+        "src": "/rehearsals/v1/triangle.svg",
+        "alt": "Figura triangular azul",
+        "fit": "contain"
+      },
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "Tres",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 18000,
+    "familyId": "flash-referencia-q1"
+  },
+  {
+    "id": "flash-referencia-q10",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuánto suman 10 y 7?",
+      "options": ["16", "17", "18", "19"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "17",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 16000,
+    "familyId": "multiple-choice-sumas"
+  },
+  {
+    "id": "flash-referencia-q12",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuánto suman 12 y 7?",
+      "options": ["18", "19", "20", "21"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "19",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 16000,
+    "familyId": "multiple-choice-sumas"
+  },
+  {
+    "id": "flash-referencia-q14",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuánto suman 14 y 7?",
+      "options": ["20", "21", "22", "23"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "21",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "multiple-choice-sumas"
+  },
+  {
+    "id": "flash-referencia-q16",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuánto suman 16 y 7?",
+      "options": ["22", "23", "24", "25"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "23",
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 14000,
+    "familyId": "multiple-choice-sumas"
+  },
+  {
+    "id": "bank-eleccion-raiz",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué parte de una planta absorbe normalmente el agua del suelo?",
+      "options": ["Raíz", "Hoja", "Flor", "Fruto"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "Raíz",
+      "explanation": "Las raíces absorben agua y sales minerales del suelo."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-raiz"
+  }
+]

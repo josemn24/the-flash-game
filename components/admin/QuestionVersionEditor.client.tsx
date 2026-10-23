@@ -4,7 +4,7 @@ import { randomUuid } from "@/lib/randomUuid";
 
 import { useActionState, useId, useRef, useState } from "react";
 
-import { Button, Card, Chip, FormField, Textarea } from "@/components/ui";
+import { Button, Card, Chip, FormField, Textarea, Select } from "@/components/ui";
 
 import {
   archiveQuestion,
@@ -73,9 +73,7 @@ export function QuestionVersionEditor({
   const latest = detail?.versions[0];
   const editable = latest?.status === "draft" && latest.document;
   const [text, setText] = useState(
-    editable
-      ? formatFlashEditorialQuestionDocument(editable)
-      : formatFlashEditorialQuestionDocument(emptyQuestion),
+    formatFlashEditorialQuestionDocument(latest?.document ?? emptyQuestion),
   );
   const [createState, createAction, createPending] = useActionState(
     createQuestionDraft,
@@ -142,6 +140,37 @@ export function QuestionVersionEditor({
                 rows={28}
                 spellCheck={false}
               />
+            )}
+          </FormField>
+          <FormField id={fieldId + "-difficulty"} label="Dificultad" density="compact">
+            {(field) => (
+              <Select
+                {...field}
+                value={(() => {
+                  try {
+                    return JSON.parse(text).difficulty ?? "medium";
+                  } catch {
+                    return "medium";
+                  }
+                })()}
+                onChange={(event) => {
+                  try {
+                    setText(
+                      JSON.stringify(
+                        { ...JSON.parse(text), difficulty: event.target.value },
+                        null,
+                        2,
+                      ),
+                    );
+                  } catch {
+                    /* The JSON editor shows its validation on save. */
+                  }
+                }}
+              >
+                <option value="easy">Fácil</option>
+                <option value="medium">Media</option>
+                <option value="hard">Difícil</option>
+              </Select>
             )}
           </FormField>
           <QuestionAssetUploader document={text} onDocumentChange={setText} />
@@ -248,6 +277,14 @@ export function QuestionVersionEditor({
               </strong>
               <span>{version.questionVersionId}</span>
               <span>{version.usageCount} usos</span>
+              <span>
+                Dificultad:{" "}
+                {
+                  { easy: "Fácil", medium: "Media", hard: "Difícil" }[
+                    version.difficulty ?? "medium"
+                  ]
+                }
+              </span>
             </div>
           ))}
         </Card>

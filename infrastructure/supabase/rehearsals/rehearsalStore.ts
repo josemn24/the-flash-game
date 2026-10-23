@@ -4,9 +4,24 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 import type {
   RehearsalStore,
   EditorialRehearsalSnapshot,
-  RehearsalAssociationInput,
+  RehearsalPolicyInput,
 } from "@/application/ports/rehearsals";
-import type { RehearsalRef, RehearsalSource } from "@/types/gameplay/rehearsal";
+import type { RehearsalTemplate } from "@/types/gameplay/rehearsal";
+import { publicMechanics } from "@/lib/rehearsals/generator";
+type RawTemplate = Omit<RehearsalTemplate, "questions"> & {
+  questions: (Omit<RehearsalTemplate["questions"][number], "mechanics"> & {
+    publicPayload: Record<string, unknown>;
+  })[];
+};
+function template(raw: RawTemplate): RehearsalTemplate {
+  return {
+    ...raw,
+    questions: raw.questions.map(({ publicPayload, ...slot }) => ({
+      ...slot,
+      mechanics: publicMechanics(slot.type, publicPayload),
+    })),
+  };
+}
 
 const poolKey = Symbol.for("the-flash-game.rehearsal-pool");
 const globals = globalThis as typeof globalThis & { [poolKey]?: Pool };
@@ -38,18 +53,21 @@ export function rehearsalStoreFor(authUserId: string): RehearsalStore {
     }
   }
   return {
-    readPlayer: (roomKey, publicationId) =>
-      call<{ ref: RehearsalRef; source: RehearsalSource } | null>(
-        "select private.read_player_rehearsal($1::text, $2::uuid) as result",
+    async readPlayer(roomKey, publicationId) {
+      const context = await call<{ template: RawTemplate; enabled: boolean } | null>(
+        "select private.read_player_rehearsal_template($1::text, $2::uuid) as result",
         [roomKey, publicationId],
-      ),
-    readEditorial: (versionId) =>
-      call<EditorialRehearsalSnapshot | null>(
-        "select private.read_editorial_rehearsal($1::uuid) as result",
-        [versionId],
-      ),
-    async associate(input: RehearsalAssociationInput & { sourceHash: string }) {
-      await call("select private.set_challenge_rehearsal($1::jsonb) as result", [
+      );
+      return context ? { ...context, template: template(context.template) } : null;
+    },
+    async readEditorial(versionId) {
+      const context = await call<
+        (Omit<EditorialRehearsalSnapshot, "template"> & { template: RawTemplate }) | null
+      >("select private.read_editorial_rehearsal_template($1::uuid) as result", [versionId]);
+      return context ? { ...context, template: template(context.template) } : null;
+    },
+    async setPolicy(input: RehearsalPolicyInput) {
+      await call("select private.set_rehearsal_publication_policy($1::jsonb) as result", [
         JSON.stringify(input),
       ]);
     },

@@ -82,6 +82,10 @@ begin
   if document is null or jsonb_typeof(document) is distinct from 'object' or document ? 'points' then
     raise exception 'invalid_question_document' using errcode = '22023';
   end if;
+  if document ? 'difficulty' and (jsonb_typeof(document->'difficulty') is distinct from 'string' or document->>'difficulty' not in ('easy','medium','hard')) then
+    raise exception 'invalid_content' using errcode = '22023';
+  end if;
+  document := document - 'difficulty';
   if document->>'type' = 'short-text' then
     perform private.validate_short_text_question_document(document);
     return;

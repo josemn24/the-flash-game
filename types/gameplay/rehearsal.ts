@@ -7,12 +7,8 @@ import type {
 import type { LocalTimeTrialDefinition } from "./local-time-trial";
 import type { ServerFlashQuestion } from "./challenge";
 type CompetitiveQuestionType = ServerFlashQuestion["type"];
+import type { QuestionDifficulty } from "@/types/domain/content";
 
-export type RehearsalRef = {
-  readonly id: string;
-  readonly version: number;
-  readonly contentHash: string;
-};
 export type RehearsalDefinition =
   | LocalFlashDefinition
   | LocalPyramidDefinition
@@ -20,27 +16,72 @@ export type RehearsalDefinition =
   | LocalAlphabetDefinition
   | LocalTimeTrialDefinition;
 export type RehearsalMode = RehearsalDefinition["challenge"]["mode"];
-
-/** Server-side source projection. It must never be serialized as a page model. */
-export type RehearsalSource = {
+export type RehearsalQuestionRef = {
+  readonly id: string;
+  readonly version: number;
+  readonly contentHash: string;
+};
+export type RehearsalBankQuestion = {
+  readonly id: string;
+  readonly version: number;
+  readonly type: CompetitiveQuestionType;
+  readonly payloadSchemaVersion: number;
+  readonly modes: readonly RehearsalMode[];
+  readonly difficulty: QuestionDifficulty;
+  readonly referenceTimeLimitMs: number;
+  readonly familyId?: string;
+  readonly alphabetLetter?: string;
+  readonly publicPayload: Readonly<Record<string, unknown>>;
+  readonly solutionPayload: Readonly<Record<string, unknown>>;
+};
+/** Server-only structural source. Official text never belongs in a generated definition. */
+export type RehearsalTemplate = {
+  readonly challengeVersionId: string;
+  readonly title: string;
   readonly mode: RehearsalMode;
   readonly globalTimeLimitMs: number | null;
   readonly modeConfig: Readonly<Record<string, unknown>>;
   readonly questions: readonly {
     readonly type: CompetitiveQuestionType;
     readonly payloadSchemaVersion: number;
+    readonly difficulty: QuestionDifficulty;
     readonly timeLimitMs: number;
     readonly points: number;
     readonly modeConfig: Readonly<Record<string, unknown>>;
-    readonly publicPayload: Readonly<Record<string, unknown>>;
-    readonly solutionPayload?: Readonly<Record<string, unknown>>;
+    readonly mechanics: Readonly<Record<string, unknown>>;
   }[];
 };
-export type RehearsalArtifact = {
-  readonly ref: RehearsalRef;
-  readonly title: string;
-  readonly source: RehearsalSource;
-  readonly definition: RehearsalDefinition;
+export type RehearsalCoverage = {
+  readonly ready: boolean;
+  readonly slots: readonly {
+    readonly position: number;
+    readonly type: CompetitiveQuestionType;
+    readonly difficulty: QuestionDifficulty;
+    readonly candidateCount: number;
+    readonly independentCandidateCount: number;
+    readonly alphabetLetter?: string;
+    readonly difficulties: Readonly<Record<QuestionDifficulty, number>>;
+    readonly excluded: Readonly<Record<string, number>>;
+    readonly warnings: readonly string[];
+  }[];
 };
-/** Independent of the official introduction's canStart capability. */
+export type RehearsalRecipe = {
+  readonly sessionId: string;
+  readonly seed: string;
+  readonly generatorVersion: 1;
+  readonly bankRevision: string;
+  readonly templateHash: string;
+  readonly challengeVersionId: string;
+  readonly questions: readonly RehearsalQuestionRef[];
+};
+export type GeneratedRehearsal = {
+  readonly definition: RehearsalDefinition;
+  readonly recipe: RehearsalRecipe;
+};
+export type RehearsalPolicy = {
+  readonly label?: string;
+  readonly publicationId: string;
+  readonly enabled: boolean;
+  readonly updatedAt: string | null;
+};
 export type RehearsalAvailability = { readonly canRehearse: true; readonly href: string };

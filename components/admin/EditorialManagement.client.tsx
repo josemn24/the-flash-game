@@ -280,6 +280,23 @@ export function EditorialManagement({
             <EditorialModeSettings
               fieldId={fieldId}
               document={editableDocument}
+              libraryDifficulties={Object.fromEntries(
+                (questionLibrary?.entries ?? []).map((q) => [
+                  q.questionVersionId,
+                  q.difficulty ?? "medium",
+                ]),
+              )}
+              onQuestionDifficultyChange={(index, difficulty) => {
+                if (editableDocument)
+                  setDocumentText(
+                    formatFlashEditorialDocument({
+                      ...editableDocument,
+                      questions: editableDocument.questions.map((q, i) =>
+                        i === index && !("source" in q) ? { ...q, difficulty } : q,
+                      ),
+                    }),
+                  );
+              }}
               onGlobalDurationChange={(seconds) => {
                 if (editableDocument)
                   setDocumentText(

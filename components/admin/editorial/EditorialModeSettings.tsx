@@ -9,7 +9,14 @@ export function EditorialModeSettings({
   onGlobalDurationChange,
   onQuestionPointsChange,
   onQuestionMove,
+  onQuestionDifficultyChange,
+  libraryDifficulties,
 }: {
+  readonly onQuestionDifficultyChange?: (
+    index: number,
+    difficulty: "easy" | "medium" | "hard",
+  ) => void;
+  readonly libraryDifficulties?: Readonly<Record<string, "easy" | "medium" | "hard">>;
   readonly fieldId: string;
   readonly document: FlashEditorialDocument | null;
   readonly onModeChange: (mode: FlashEditorialDocument["challenge"]["mode"]) => void;
@@ -42,6 +49,33 @@ export function EditorialModeSettings({
           </Select>
         )}
       </FormField>
+      {parsedDocument.questions.map((question, index) => (
+        <FormField
+          key={index}
+          id={`${fieldId}-difficulty-${index}`}
+          label={`Dificultad de la pregunta ${index + 1}`}
+          density="compact"
+        >
+          {(field) => (
+            <Select
+              {...field}
+              disabled={"source" in question}
+              value={
+                "source" in question
+                  ? (libraryDifficulties?.[question.questionVersionId] ?? "medium")
+                  : (question.difficulty ?? "medium")
+              }
+              onChange={(e) =>
+                onQuestionDifficultyChange?.(index, e.target.value as "easy" | "medium" | "hard")
+              }
+            >
+              <option value="easy">Fácil</option>
+              <option value="medium">Media</option>
+              <option value="hard">Difícil</option>
+            </Select>
+          )}
+        </FormField>
+      ))}
       {parsedDocument.challenge.mode === "survival" ? (
         <FormField
           id={fieldId + "-document-0"}

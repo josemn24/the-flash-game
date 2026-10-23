@@ -1,0 +1,121 @@
+[
+  {
+    "id": "betavip-supervivencia-q1",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "El número 9 es par."
+    },
+    "solutionPayload": {
+      "correctAnswer": false,
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 12000,
+    "familyId": "true-false-paridad"
+  },
+  {
+    "id": "betavip-supervivencia-q4",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "El número 12 es par."
+    },
+    "solutionPayload": {
+      "correctAnswer": true,
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 12000,
+    "familyId": "true-false-paridad"
+  },
+  {
+    "id": "betavip-supervivencia-q15",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "El número 23 es par."
+    },
+    "solutionPayload": {
+      "correctAnswer": false,
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 12000,
+    "familyId": "true-false-paridad"
+  },
+  {
+    "id": "flash-referencia-q11",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "El número 19 es par."
+    },
+    "solutionPayload": {
+      "correctAnswer": false,
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 12000,
+    "familyId": "true-false-paridad"
+  },
+  {
+    "id": "flash-referencia-q15",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "El número 23 es par."
+    },
+    "solutionPayload": {
+      "correctAnswer": false,
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 12000,
+    "familyId": "true-false-paridad"
+  },
+  {
+    "id": "bank-vf-sonido",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "El sonido puede propagarse en el vacío absoluto."
+    },
+    "solutionPayload": {
+      "correctAnswer": false,
+      "explanation": "El sonido necesita un medio material, como aire, agua o un sólido, para propagarse."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-vf-sonido"
+  },
+  {
+    "id": "bank-vf-luna",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "La Luna produce por sí misma la luz que vemos desde la Tierra."
+    },
+    "solutionPayload": {
+      "correctAnswer": false,
+      "explanation": "La Luna refleja luz del Sol."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-vf-luna"
+  }
+]

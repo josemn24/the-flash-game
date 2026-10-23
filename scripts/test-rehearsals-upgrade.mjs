@@ -57,8 +57,8 @@ try {
     commit;`);
   const tables =
     await json(`select jsonb_agg(format('%I.%I',n.nspname,c.relname) order by n.nspname,c.relname)
-    from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname in ('public','private') and c.relkind='r';`);
-  const snapshot = `select jsonb_build_object(${tables.map((table) => `'${table}',(select coalesce(jsonb_agg(to_jsonb(t) order by to_jsonb(t)::text),'[]'::jsonb) from ${table} t)`).join(",")});`;
+    from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname in ('public','private') and c.relkind='r' and c.relname <> 'challenge_rehearsals';`);
+  const snapshot = `select jsonb_build_object(${tables.map((table) => `'${table}',(select coalesce(jsonb_agg(to_jsonb(t) - 'difficulty' order by (to_jsonb(t) - 'difficulty')::text),'[]'::jsonb) from ${table} t)`).join(",")});`;
   const before = await json(snapshot);
   assert.equal(before["public.attempts"].length, 2);
   assert.ok(before["private.attempt_answers"].length > 0);
@@ -69,14 +69,38 @@ try {
     before,
     "Upgrade preserves every existing row, including active attempts, answers and ledger",
   );
-  assert.equal(
-    (await sql("select count(*) from private.challenge_rehearsals;")).trim(),
-    "0",
-    "No automatic associations",
+  await sql(`begin;
+    select test_support.as_actor('superadmin');
+    select private.set_challenge_rehearsal(jsonb_build_object('challengeVersionId',test_support.id('cv-flash'),
+      'expectedUpdatedAt',(select updated_at from private.challenge_versions where id=test_support.id('cv-flash')),
+      'sourceHash',private.read_editorial_rehearsal(test_support.id('cv-flash'))->>'sourceHash',
+      'idempotencyKey','legacy-upgrade-binding','reason','Legacy fixture preserved in audit',
+      'ref',jsonb_build_object('id','legacy-fixture','version',1,'contentHash',repeat('a',64))));
+    commit;`);
+  const withLegacyAssociation = await json(snapshot);
+  assert.equal((await sql("select count(*) from private.challenge_rehearsals;")).trim(), "1");
+  await sql(
+    `begin;\n${(await Promise.all(files.slice(boundary + 1).map((name) => readFile(`supabase/migrations/${name}`, "utf8")))).join("\n")}\ncommit;`,
   );
+  assert.deepEqual(
+    await json(snapshot),
+    withLegacyAssociation,
+    "Dynamic upgrade preserves all competitive rows and audit history",
+  );
+  assert.equal(
+    (
+      await sql("select count(*) from private.question_versions where difficulty <> 'medium';")
+    ).trim(),
+    "0",
+  );
+  assert.equal(
+    (await sql("select to_regclass('private.challenge_rehearsals') is null;")).trim(),
+    "t",
+  );
+
   await checkInventory(sql);
   console.log(
-    `Rehearsal upgrade verified: ${tables.length} existing tables preserved, active and completed attempts unchanged, no automatic associations.`,
+    `Rehearsal upgrade verified: ${tables.length} existing tables preserved, active and completed attempts unchanged, dynamic templates and medium difficulty backfill.`,
   );
 } finally {
   if (created) await docker(["dropdb", "-U", "postgres", "--force", database]);

@@ -1,56 +1,21 @@
 > Estado: vigente. Fotografía del repositorio en la fecha de la última actualización.
 
-Última actualización documental: 2026-10-20.
+Última actualización documental: 2026-10-21.
 
 # Estado actual del proyecto
 
 ## Resumen
 
-Los [ensayos antes del intento competitivo](rehearsals.md) usan un catálogo propio en el repositorio,
-una asociación privada opcional por versión competitiva y sesiones locales en memoria. Cubren
-Flash, Pirámide, Supervivencia, Alfabeto y Contrarreloj. Las demos y capacidades aún no
-migradas mantienen sus fixtures y store mock normalizado. Las slices S01–S15, S17, S17a, S18b parcial, S20,
-D08a/D08b,
-S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, S15 y E01–E06/E10, junto con la base transversal del
-portal privado tienen integración real con Supabase local: Auth, perfil, lecturas autorizadas de
-salas, Flash y Narrative competitivos persistidos con evaluación server-side, recuperación/abandono, sus dos
-rankings, historial y revisión después de volver, y E01 Mini-Wordle con eventos intermedios
-persistidos, E02 Logic-code con eventos privados y evaluación al acertar, E03 Progressive-clues
-con revelaciones privadas y penalización basada en eventos, E04 Matching con asociaciones locales y
-una comprobación final binaria, y E05 Queens con colocaciones persistidas y penalización
-server-side, y E06 Word-search con selecciones privadas, recuperación e idempotencia, además del acceso seguro server-side para
-superadministración, la creación auditada de salas privadas y la preparación/activación auditada
-de temporadas, la publicación editorial auditada y el versionado/corrección de Flash, Supervivencia
-y Pirámide desde el portal. Narrative se admite en las lecturas editoriales y el calendario; su edición
-avanzada queda fuera de esta fase. F01/F02/F06 añaden
-`true-false`, `odd-one-out` y `ordering` al Flash competitivo con evaluación server-side y payloads v1.
-F07/F08/F12 añaden `classification`, `logic-matrix` y `anagram` con validación de labels/categorías, consumo de fichas,
-asignaciones parciales y soluciones privadas en payloads v1.
-F03 añade `estimation` al Flash competitivo con payload v2, tolerancia privada, crédito parcial
-por proximidad y soporte opcional para imágenes privadas de `question-assets`.
-F04 añade `heat-map` al Flash competitivo con payload v2, superficie privada resuelta por URL firmada,
-objetivo y radios privados, y crédito parcial espacial server-side.
-F16 añade `zip` como respuesta final server-side: la cuadrícula y checkpoints son públicos, la solución
-única permanece privada, el recorrido parcial se conserva como draft de timeout y la revisión terminal
-reutiliza el contenido privado autorizado.
-F18 añade `escape` como respuesta final server-side: el tablero y los bloques son públicos, la ruta de
-referencia permanece privada, los movimientos se mantienen localmente y el servidor reproduce el
-recorrido completo o el draft de timeout. La integración está verificada localmente con E2E 3/3; la
-capacidad queda acotada al stack local hasta validar un entorno remoto.
-F19 añade `word-hashtag` como interacción server-side por swap: el tablero inicial es público, las
-cuatro palabras permanecen privadas, los swaps aceptados viven en `attempts.progress_payload` y el
-servidor decide validez, terminalidad, timeout, evaluación y scoring. La review solo revela solución y
-métricas después del cierre; no se añade tabla de eventos.
-S12 añade
-programación/reprogramación de publicaciones Flash y calendario efectivo con tick protegido; la
-verificación local usa el CLI y el repositorio conserva la integración de Vercel Cron, con
-apertura/cierre/finalización por reloj PostgreSQL. S17a añade la biblioteca editorial de preguntas
-reutilizables. D08a/D08b/S13 añade los buckets `avatars` y `question-assets`, el registro privado
-`media_assets`, confirmación server-side de avatares y resolución pública de rutas estables. D08b
-integra E10 con `question-assets`: el editor sube y confirma assets privados, las versiones nuevas
-persisten `assetId` y `prepare_interaction` emite una URL firmada solo tras autorizar la partida.
-La misma infraestructura ya está integrada en `multiple-choice`: su biblioteca usa `media.assetId`
-en payload v2 y el runtime entrega únicamente `media.src` al jugador autorizado.
+Las [pruebas antes del intento competitivo](rehearsals.md) se generan desde un banco de preguntas
+independientes, según la estructura oficial. Cubren Flash, Pirámide, Supervivencia, Alfabeto y
+Contrarreloj, sin asociaciones fijas. Incorporan dificultad explícita, recetas reproducibles y
+política por publicación; sus sesiones y resultados permanecen en memoria.
+
+La migración `20261020210000_dynamic_rehearsals` está aplicada en la base local habitual.
+Los seis desafíos de BetaVIP ofrecen pruebas sin asociaciones fijas, con al menos tres familias
+por posición. La [comprobación local del 21 de octubre](qa.md#aplicación-local-y-comprobación-de-betavip--2026-10-21)
+incluye recargas, resultados, revisión y conservación de los datos competitivos. Su calendario
+local se reprogramó con autorización para mantener disponibles las prácticas.
 
 La CLI local tiene un proyecto de staging vinculado, pero la migración S17 no se ha aplicado ni
 validado allí. El estado verificado corresponde al stack local y no permite afirmar el estado de
@@ -121,7 +86,8 @@ publicación, móvil, teclado, recuperación y confirmación perdida. El stack a
 Competición y ensayo local comparten controlador, vista y controles de pregunta. La entrada local
 recibe una definición canónica privada y selecciona la autoridad en memoria; la competitiva mantiene
 el proveedor remoto. Las presentaciones y el controlador local anteriores están retirados. El ensayo
-sigue limitado a las rutas demo autorizadas, sin migración de partidas guardadas antiguas. La práctica
+sólo se ofrecía en las rutas demo autorizadas durante esa fase. La ampliación actual incorpora
+[pruebas dinámicas antes de competir](rehearsals.md), sin migración de progreso de prácticas antiguas. La práctica
 didáctica de formatos continúa separada. El contrato y el alcance están en
 [autoridades locales](local-pyramid-session.md) y [proveedores](game-session-providers.md).
 

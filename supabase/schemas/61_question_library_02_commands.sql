@@ -66,11 +66,11 @@ begin
 
   insert into private.question_versions(
     id, question_definition_id, version_number, payload_schema_version, status,
-    type, time_limit_ms, public_payload, created_by_player_id
+    type, time_limit_ms, public_payload, created_by_player_id, difficulty
   ) values (
     version_id, definition_id, next_version, (document_value->>'payloadSchemaVersion')::integer, 'draft',
     document_value->>'type', (document_value->>'timeLimitMs')::integer,
-    document_value->'publicPayload', actor
+    document_value->'publicPayload', actor, coalesce(document_value->>'difficulty','medium')
   );
   insert into private.question_version_solutions(question_version_id, solution_payload)
   values (version_id, document_value->'solutionPayload');
@@ -138,7 +138,7 @@ begin
   update private.question_versions set type = document_value->>'type',
     payload_schema_version = (document_value->>'payloadSchemaVersion')::integer,
     time_limit_ms = (document_value->>'timeLimitMs')::integer,
-    public_payload = document_value->'publicPayload'
+    public_payload = document_value->'publicPayload', difficulty = coalesce(document_value->>'difficulty','medium')
   where id = version_id;
   update private.question_version_solutions set solution_payload = document_value->'solutionPayload'
   where question_version_id = version_id;

@@ -540,7 +540,7 @@ for (const file of productionFiles) {
       area === "data" &&
       !relative.startsWith(`infrastructure${path.sep}mock${path.sep}`) &&
       !(
-        relative === "infrastructure/rehearsals/catalog.ts" &&
+        relative === "infrastructure/rehearsals/bank.ts" &&
         imported.specifier.startsWith("@/data/rehearsals/")
       )
     ) {
@@ -552,7 +552,7 @@ for (const file of productionFiles) {
       imported.specifier.startsWith("@/data/") &&
       !imported.specifier.startsWith("@/data/mock/") &&
       !(
-        relative === "infrastructure/rehearsals/catalog.ts" &&
+        relative === "infrastructure/rehearsals/bank.ts" &&
         imported.specifier.startsWith("@/data/rehearsals/")
       )
     ) {

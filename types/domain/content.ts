@@ -13,6 +13,7 @@ export type { QuestionTagSet } from "@/types/domain/tags";
 
 export type GameMode = "flash" | "alphabet" | "survival" | "narrative" | "pyramid" | "time-trial";
 export type ContentStatus = "draft" | "published" | "archived";
+export type QuestionDifficulty = "easy" | "medium" | "hard";
 export type PublicationStatus = "scheduled" | "open" | "closed" | "cancelled";
 
 export type ChallengeDefinition = EntityTimestamps & {
@@ -66,6 +67,7 @@ export type QuestionVersion<
   readonly payloadSchemaVersion: number;
   readonly status: ContentStatus;
   readonly type: Type;
+  readonly difficulty: QuestionDifficulty;
   readonly publicPayload: PublicPayload;
   readonly solutionPayload: SolutionPayload;
   readonly createdByPlayerId: PlayerId;

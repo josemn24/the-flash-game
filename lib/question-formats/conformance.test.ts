@@ -82,7 +82,10 @@ describe("competitive format contracts across layers", () => {
     expect(result.ok).toBe(test.valid);
     if (test.inline) {
       if (test.valid)
-        expect(parseFlashEditorialQuestionDocument(test.document)).toEqual(test.document);
+        expect(parseFlashEditorialQuestionDocument(test.document)).toEqual({
+          ...test.document,
+          difficulty: "medium",
+        });
       else expect(() => parseFlashEditorialQuestionDocument(test.document)).toThrow();
     }
     if (test.id.endsWith("-invalid-public") || test.id.endsWith("-public-null")) {

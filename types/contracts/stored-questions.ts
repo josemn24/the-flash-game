@@ -1,3 +1,4 @@
+import type { QuestionDifficulty } from "@/types/domain/content";
 import type {
   EscapeBlock,
   EscapeMove,
@@ -369,6 +370,7 @@ export type FlashEditorialSolutionPayload =
 
 export type FlashEditorialMultipleChoiceQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "multiple-choice";
   readonly payloadSchemaVersion: 1 | 2;
   readonly timeLimitMs: number;
@@ -379,6 +381,7 @@ export type FlashEditorialMultipleChoiceQuestion = {
 
 export type FlashEditorialEstimationQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "estimation";
   readonly payloadSchemaVersion: 2;
   readonly timeLimitMs: number;
@@ -404,6 +407,7 @@ export type FlashEditorialHeatMapSolutionPayload = {
 
 export type FlashEditorialHeatMapQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "heat-map";
   readonly payloadSchemaVersion: 2;
   readonly timeLimitMs: number;
@@ -414,6 +418,7 @@ export type FlashEditorialHeatMapQuestion = {
 
 export type FlashEditorialMiniWordleQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "mini-wordle";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -424,6 +429,7 @@ export type FlashEditorialMiniWordleQuestion = {
 
 export type FlashEditorialLogicCodeQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "logic-code";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -434,6 +440,7 @@ export type FlashEditorialLogicCodeQuestion = {
 
 export type FlashEditorialLogicMatrixQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "logic-matrix";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -444,6 +451,7 @@ export type FlashEditorialLogicMatrixQuestion = {
 
 export type FlashEditorialProgressiveCluesQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "progressive-clues";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -454,6 +462,7 @@ export type FlashEditorialProgressiveCluesQuestion = {
 
 export type FlashEditorialMatchingQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "matching";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -464,6 +473,7 @@ export type FlashEditorialMatchingQuestion = {
 
 export type FlashEditorialTrueFalseQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "true-false";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -474,6 +484,7 @@ export type FlashEditorialTrueFalseQuestion = {
 
 export type FlashEditorialOddOneOutQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "odd-one-out";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -484,6 +495,7 @@ export type FlashEditorialOddOneOutQuestion = {
 
 export type FlashEditorialOrderingQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "ordering";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -494,6 +506,7 @@ export type FlashEditorialOrderingQuestion = {
 
 export type FlashEditorialAnagramQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "anagram";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -504,6 +517,7 @@ export type FlashEditorialAnagramQuestion = {
 
 export type FlashEditorialClassificationQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "classification";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -514,6 +528,7 @@ export type FlashEditorialClassificationQuestion = {
 
 export type FlashEditorialProgressiveImageQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "progressive-image";
   readonly payloadSchemaVersion: 1 | 2;
   readonly timeLimitMs: number;
@@ -524,6 +539,7 @@ export type FlashEditorialProgressiveImageQuestion = {
 
 export type FlashEditorialWordSearchQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "word-search";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -548,6 +564,7 @@ export type FlashEditorialWordHashtagSolutionPayload = {
 
 export type FlashEditorialWordHashtagQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "word-hashtag";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -558,6 +575,7 @@ export type FlashEditorialWordHashtagQuestion = {
 
 export type FlashEditorialZipQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "zip";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -568,6 +586,7 @@ export type FlashEditorialZipQuestion = {
 
 export type FlashEditorialEscapeQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "escape";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -578,6 +597,7 @@ export type FlashEditorialEscapeQuestion = {
 
 export type FlashEditorialQueensQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "queens";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -595,6 +615,7 @@ export type FlashEditorialQueensQuestion = {
 
 export type FlashEditorialConnectPairsQuestion = {
   readonly slug: string;
+  readonly difficulty?: QuestionDifficulty;
   readonly type: "connect-pairs";
   readonly payloadSchemaVersion: 1;
   readonly timeLimitMs: number;
@@ -632,6 +653,7 @@ export type FlashEditorialQuestion =
   | FlashEditorialEscapeQuestion
   | {
       readonly slug: string;
+      readonly difficulty?: QuestionDifficulty;
       readonly type: "short-text";
       readonly payloadSchemaVersion: 1;
       readonly timeLimitMs: number;

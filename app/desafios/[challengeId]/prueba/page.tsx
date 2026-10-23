@@ -41,11 +41,23 @@ export default async function RehearsalPage({
         </Card>
       </Canvas>
     );
-  if (rehearsal)
+  if (rehearsal?.status === "unavailable")
+    return (
+      <Canvas maxWidth="content">
+        <Card>
+          <h1>Prueba no disponible</h1>
+          <p>La partida oficial sigue disponible cuando corresponda.</p>
+          <ButtonLink href={returnTo} prefetch={false}>
+            Volver al desafío
+          </ButtonLink>
+        </Card>
+      </Canvas>
+    );
+  if (rehearsal?.status === "ready")
     return (
       <RehearsalGameApp
         definition={rehearsal.definition}
-        reference={rehearsal.ref}
+        recipe={rehearsal.recipe}
         returnTo={returnTo}
       />
     );

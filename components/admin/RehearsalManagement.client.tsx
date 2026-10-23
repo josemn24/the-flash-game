@@ -1,123 +1,167 @@
 "use client";
-import { useActionState, useId } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
-import { associateRehearsal } from "@/app/admin/rehearsal-actions";
-import { Button, Card, FormField, Input, Select } from "@/components/ui";
-import type { RehearsalRef } from "@/types/gameplay/rehearsal";
+import { updateRehearsalPolicy, previewRehearsal } from "@/app/admin/rehearsal-actions";
+import { Button, Card, FormField, Input, Select, Textarea } from "@/components/ui";
+import type {
+  RehearsalCoverage,
+  RehearsalPolicy,
+  GeneratedRehearsal,
+  RehearsalRecipe,
+} from "@/types/gameplay/rehearsal";
+import { RehearsalGameApp } from "@/components/game/shells/RehearsalGameApp.client";
+import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
+import styles from "./RehearsalManagement.module.css";
 import { randomUuid } from "@/lib/randomUuid";
-
 export type RehearsalEditorModel = {
   challengeVersionId: string;
-  status: "draft" | "published" | "archived";
-  updatedAt: string;
-  ref: RehearsalRef | null;
-  choices: readonly { ref: RehearsalRef; title: string; issues: readonly string[] }[];
+  status: string;
+  coverage: RehearsalCoverage;
+  publications: readonly RehearsalPolicy[];
+  versionNumber: number;
 };
-export function RehearsalManagement({
-  versions,
-}: {
-  versions: readonly (RehearsalEditorModel & { versionNumber: number })[];
-}) {
+const difficulty = { easy: "Fácil", medium: "Media", hard: "Difícil" };
+export function RehearsalManagement({ versions }: { versions: readonly RehearsalEditorModel[] }) {
   return (
-    <section aria-label="Ensayos del desafío">
+    <section aria-label="Pruebas del desafío">
       <h2>Pruebas sin competir</h2>
-      <p>
-        El ensayo es opcional. Su contenido se mantiene en el repositorio y su asociación queda
-        fijada al publicar.
-      </p>
-      {versions.map((version) => (
-        <RehearsalVersion
-          key={`${version.challengeVersionId}:${version.updatedAt}:${version.ref?.contentHash ?? "none"}`}
-          model={version}
-        />
+      <p>Se generan automáticamente a partir del banco. La dificultad es orientativa.</p>
+      {versions.map((v) => (
+        <Card as="article" key={v.challengeVersionId}>
+          <h3>Prueba de la versión {v.versionNumber}</h3>
+          <p>{v.coverage.ready ? "Cobertura disponible" : "Faltan preguntas compatibles"}</p>
+          <ul>
+            {v.coverage.slots.map((s) => (
+              <li key={s.position}>
+                Posición {s.position}: {QUESTION_FORMAT_LABELS[s.type]} · {difficulty[s.difficulty]}{" "}
+                {s.alphabetLetter && ` · Letra ${s.alphabetLetter}`}· {s.candidateCount} candidatos,{" "}
+                {s.independentCandidateCount} familias (Fácil: {s.difficulties.easy}, Media:{" "}
+                {s.difficulties.medium}, Difícil: {s.difficulties.hard})
+                {s.warnings.map((w) => (
+                  <p key={w}>{w}</p>
+                ))}
+              </li>
+            ))}
+          </ul>
+          <Link href={`/admin/rehearsals/${v.challengeVersionId}`} prefetch={false}>
+            Generar vista previa
+          </Link>
+          {v.publications.map((p) => (
+            <Policy key={`${p.publicationId}:${p.updatedAt}`} policy={p} />
+          ))}
+        </Card>
       ))}
     </section>
   );
 }
-function RehearsalVersion({ model }: { model: RehearsalEditorModel & { versionNumber: number } }) {
-  const id = useId();
-  const [state, action, pending] = useActionState(associateRehearsal, {});
-  const frozen = model.status !== "draft" && model.ref !== null;
+function Policy({ policy }: { policy: RehearsalPolicy }) {
+  const [state, action, pending] = useActionState(updateRehearsalPolicy, {});
+  const [commandKey] = useState(randomUuid);
   return (
-    <Card as="article">
-      <h3>Ensayo de la versión {model.versionNumber}</h3>
-      {model.ref ? (
-        <p>
-          Asociado: {model.ref.id} · v{model.ref.version}
-        </p>
-      ) : null}
-      <form
-        action={action}
-        onSubmit={(event) => {
-          const field = event.currentTarget.elements.namedItem(
-            "idempotencyKey",
-          ) as HTMLInputElement;
-          field.value = randomUuid();
-        }}
-      >
-        <input type="hidden" name="idempotencyKey" defaultValue="" />
-        <input type="hidden" name="challengeVersionId" value={model.challengeVersionId} readOnly />
-        <input type="hidden" name="expectedUpdatedAt" value={model.updatedAt} readOnly />
-        <FormField id={`${id}-choice`} label="Ensayo compatible">
+    <form action={action}>
+      <p>{policy.label ?? "Publicación"}</p>
+      <input type="hidden" name="publicationId" value={policy.publicationId} />
+      <input type="hidden" name="expectedUpdatedAt" value={policy.updatedAt ?? ""} />
+      <input type="hidden" name="idempotencyKey" value={commandKey} />
+      <FormField id={`${policy.publicationId}-enabled`} label="Pruebas habilitadas">
+        {(field) => (
+          <Select
+            {...field}
+            name="enabled"
+            defaultValue={String(policy.enabled)}
+            disabled={pending}
+          >
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+          </Select>
+        )}
+      </FormField>
+      <FormField id={`${policy.publicationId}-reason`} label="Motivo">
+        {(field) => <Input {...field} name="reason" required maxLength={500} disabled={pending} />}
+      </FormField>
+      <Button type="submit" loading={pending}>
+        Guardar disponibilidad
+      </Button>
+      {state.error && <p role="alert">{state.error}</p>}
+      {state.message && <p role="status">{state.message}</p>}
+    </form>
+  );
+}
+export function RehearsalPreviewClient({
+  versionId,
+  initial,
+}: {
+  versionId: string;
+  initial: GeneratedRehearsal | null;
+}) {
+  const [run, setRun] = useState(initial),
+    [seed, setSeed] = useState(""),
+    [recipe, setRecipe] = useState(""),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+  async function generate(replay = false) {
+    setBusy(true);
+    setError("");
+    try {
+      const next = await previewRehearsal(
+        versionId,
+        replay ? { recipe: JSON.parse(recipe) as RehearsalRecipe } : seed ? { seed } : {},
+      );
+      if ("error" in next) setError(next.error ?? "No se pudo generar la prueba.");
+      else setRun(next.run);
+    } catch {
+      setError(
+        "No se pudo generar o reproducir la prueba. Comprueba la semilla, la receta y la cobertura.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <>
+      <Card>
+        <h1>Vista previa de prueba</h1>
+        <FormField id="preview-seed" label="Semilla (opcional)">
           {(field) => (
-            <Select
+            <Input
               {...field}
-              name="rehearsal"
-              disabled={frozen || pending}
-              defaultValue={model.ref ? `${model.ref.id}@${model.ref.version}` : ""}
-            >
-              <option value="">Sin ensayo</option>
-              {model.choices.map((choice) => (
-                <option
-                  key={`${choice.ref.id}@${choice.ref.version}`}
-                  value={`${choice.ref.id}@${choice.ref.version}`}
-                  disabled={choice.issues.length > 0}
-                >
-                  {choice.title} · v{choice.ref.version}
-                  {choice.issues.length ? " · No compatible" : ""}
-                </option>
-              ))}
-            </Select>
+              value={seed}
+              maxLength={128}
+              onChange={(e) => setSeed(e.target.value)}
+            />
           )}
         </FormField>
-        {!frozen ? (
-          <>
-            <FormField id={`${id}-reason`} label="Motivo">
-              {(field) => (
-                <Input {...field} name="reason" required maxLength={500} disabled={pending} />
-              )}
-            </FormField>
-            <Button type="submit" loading={pending}>
-              Guardar asociación
-            </Button>
-          </>
-        ) : (
-          <p>Esta asociación está publicada y no se puede sustituir.</p>
+        <Button disabled={busy} onClick={() => void generate()}>
+          Generar combinación
+        </Button>
+        <FormField id="preview-recipe" label="Receta para reproducir">
+          {(field) => (
+            <Textarea
+              {...field}
+              value={recipe}
+              onChange={(e) => setRecipe(e.target.value)}
+              rows={4}
+            />
+          )}
+        </FormField>
+        <Button disabled={busy || !recipe} onClick={() => void generate(true)}>
+          Reproducir receta
+        </Button>
+        {error && <p role="alert">{error}</p>}
+        {run && (
+          <details>
+            <summary>Receta generada</summary>
+            <pre className={styles.recipe}>{JSON.stringify(run.recipe, null, 2)}</pre>
+          </details>
         )}
-        {state.error ? <p role="alert">{state.error}</p> : null}
-        {state.message ? <p role="status">{state.message}</p> : null}
-      </form>
-      <details>
-        <summary>Compatibilidad y vista previa</summary>
-        <ul>
-          {model.choices.map((choice) => (
-            <li key={`${choice.ref.id}@${choice.ref.version}`}>
-              <Link
-                href={`/admin/rehearsals/${choice.ref.id}/${choice.ref.version}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {choice.title} · v{choice.ref.version}
-              </Link>
-              {choice.issues.length ? (
-                <p>{choice.issues.join(". ")}</p>
-              ) : (
-                <p>Estructura compatible.</p>
-              )}
-            </li>
-          ))}
-        </ul>
-      </details>
-    </Card>
+      </Card>
+      {run && (
+        <RehearsalGameApp
+          definition={run.definition}
+          recipe={run.recipe}
+          returnTo="/admin/challenges"
+        />
+      )}
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { GameSessionProvider } from "@/application/ports/game-session";
-import type { RehearsalDefinition, RehearsalRef } from "@/types/gameplay/rehearsal";
+import type { RehearsalDefinition, RehearsalRecipe } from "@/types/gameplay/rehearsal";
 import { createLocalFlashSessionProvider } from "@/features/game/session/providers/localFlash";
 import { createLocalSurvivalSessionProvider } from "@/features/game/session/providers/localSurvival";
 import { createLocalPyramidSessionProvider } from "@/features/game/session/providers/localPyramid";
@@ -34,16 +34,20 @@ type RunProps = {
 
 export function RehearsalGameApp(props: {
   definition: RehearsalDefinition;
-  reference: RehearsalRef;
+  recipe: RehearsalRecipe;
   returnTo: string;
 }) {
   return (
-    <RehearsalPresentation.Provider value={{ returnTo: props.returnTo }}>
-      <PreparedRun
-        key={`${props.returnTo}:${props.reference.id}:${props.reference.version}:${props.reference.contentHash}`}
-        {...props}
+    <>
+      <script
+        type="application/json"
+        data-rehearsal-recipe
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(props.recipe).replace(/</g, "\\u003c") }}
       />
-    </RehearsalPresentation.Provider>
+      <RehearsalPresentation.Provider value={{ returnTo: props.returnTo }}>
+        <PreparedRun key={`${props.returnTo}:${props.recipe.sessionId}`} {...props} />
+      </RehearsalPresentation.Provider>
+    </>
   );
 }
 

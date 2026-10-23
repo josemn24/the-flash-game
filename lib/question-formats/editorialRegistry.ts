@@ -54,5 +54,11 @@ export function parseEditorialQuestion(value: unknown, index: number): FlashEdit
     !Object.hasOwn(EDITORIAL_FORMAT_PARSERS, value.type)
   )
     throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
-  return EDITORIAL_FORMAT_PARSERS[value.type as FlashEditorialQuestion["type"]](value, index);
+  const { difficulty = "medium", ...content } = value;
+  if (!["easy", "medium", "hard"].includes(String(difficulty)))
+    throw new FlashEditorialValidationError([`questions[${index}].difficulty no es válida.`]);
+  return {
+    ...EDITORIAL_FORMAT_PARSERS[value.type as FlashEditorialQuestion["type"]](content, index),
+    difficulty: difficulty as "easy" | "medium" | "hard",
+  };
 }

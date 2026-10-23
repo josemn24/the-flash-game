@@ -1,0 +1,246 @@
+[
+  {
+    "id": "betavip-logica-q5",
+    "version": 1,
+    "type": "escape",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Desplaza la barrera y libera el bloque objetivo.",
+      "grid": {
+        "rows": 6,
+        "columns": 6,
+        "exit": {
+          "side": "right",
+          "row": 2
+        }
+      },
+      "initialBlocks": [
+        {
+          "id": "target",
+          "kind": "target",
+          "orientation": "horizontal",
+          "row": 2,
+          "column": 0,
+          "length": 2
+        },
+        {
+          "id": "gate",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 0,
+          "column": 2,
+          "length": 3
+        },
+        {
+          "id": "h1",
+          "kind": "obstacle",
+          "orientation": "horizontal",
+          "row": 0,
+          "column": 3,
+          "length": 3
+        },
+        {
+          "id": "h2",
+          "kind": "obstacle",
+          "orientation": "horizontal",
+          "row": 1,
+          "column": 3,
+          "length": 3
+        },
+        {
+          "id": "h3",
+          "kind": "obstacle",
+          "orientation": "horizontal",
+          "row": 4,
+          "column": 0,
+          "length": 2
+        },
+        {
+          "id": "v1",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 3,
+          "column": 3,
+          "length": 2
+        },
+        {
+          "id": "v2",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 3,
+          "column": 5,
+          "length": 2
+        }
+      ]
+    },
+    "solutionPayload": {
+      "referenceSolution": [
+        {
+          "blockId": "gate",
+          "from": 0,
+          "to": 3
+        },
+        {
+          "blockId": "target",
+          "from": 0,
+          "to": 4
+        }
+      ],
+      "optimalMoves": 2,
+      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 45000,
+    "familyId": "betavip-logica-q5"
+  },
+  {
+    "id": "bank-escape-doble-barrera",
+    "version": 1,
+    "type": "escape",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-escape-doble-barrera",
+    "publicPayload": {
+      "question": "Despeja ambas barreras para sacar el vehículo objetivo.",
+      "grid": {
+        "rows": 6,
+        "columns": 6,
+        "exit": {
+          "side": "right",
+          "row": 2
+        }
+      },
+      "initialBlocks": [
+        {
+          "id": "target",
+          "kind": "target",
+          "orientation": "horizontal",
+          "row": 2,
+          "column": 0,
+          "length": 2
+        },
+        {
+          "id": "gate",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 0,
+          "column": 2,
+          "length": 3
+        },
+        {
+          "id": "bar",
+          "kind": "obstacle",
+          "orientation": "horizontal",
+          "row": 3,
+          "column": 1,
+          "length": 2
+        },
+        {
+          "id": "pillar",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 0,
+          "column": 5,
+          "length": 3
+        }
+      ]
+    },
+    "solutionPayload": {
+      "referenceSolution": [
+        {
+          "blockId": "bar",
+          "from": 1,
+          "to": 3
+        },
+        {
+          "blockId": "gate",
+          "from": 0,
+          "to": 3
+        },
+        {
+          "blockId": "pillar",
+          "from": 0,
+          "to": 3
+        },
+        {
+          "blockId": "target",
+          "from": 0,
+          "to": 4
+        }
+      ],
+      "optimalMoves": 4,
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  },
+  {
+    "id": "bank-escape-cadena",
+    "version": 1,
+    "type": "escape",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-escape-cadena",
+    "publicPayload": {
+      "question": "Libera el paso siguiendo la cadena de bloqueos.",
+      "grid": {
+        "rows": 6,
+        "columns": 6,
+        "exit": {
+          "side": "right",
+          "row": 2
+        }
+      },
+      "initialBlocks": [
+        {
+          "id": "target",
+          "kind": "target",
+          "orientation": "horizontal",
+          "row": 2,
+          "column": 0,
+          "length": 2
+        },
+        {
+          "id": "gate",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 1,
+          "column": 3,
+          "length": 3
+        },
+        {
+          "id": "bar",
+          "kind": "obstacle",
+          "orientation": "horizontal",
+          "row": 4,
+          "column": 1,
+          "length": 3
+        }
+      ]
+    },
+    "solutionPayload": {
+      "referenceSolution": [
+        {
+          "blockId": "bar",
+          "from": 1,
+          "to": 0
+        },
+        {
+          "blockId": "gate",
+          "from": 1,
+          "to": 3
+        },
+        {
+          "blockId": "target",
+          "from": 0,
+          "to": 4
+        }
+      ],
+      "optimalMoves": 3,
+      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+    }
+  }
+]

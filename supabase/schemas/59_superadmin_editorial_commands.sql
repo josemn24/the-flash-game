@@ -88,10 +88,10 @@ begin
         values (question_definition_id, question->>'slug', actor);
         insert into private.question_versions(
           id, question_definition_id, version_number, payload_schema_version, status, type,
-          time_limit_ms, public_payload, created_by_player_id
+          time_limit_ms, public_payload, created_by_player_id, difficulty
         ) values (
           question_version_id, question_definition_id, 1, (question->>'payloadSchemaVersion')::integer, 'draft', question->>'type',
-          (question->>'timeLimitMs')::integer, question->'publicPayload', actor
+          (question->>'timeLimitMs')::integer, question->'publicPayload', actor, coalesce(question->>'difficulty','medium')
         );
         insert into private.question_version_solutions(question_version_id, solution_payload)
         values (question_version_id, question->'solutionPayload');
@@ -289,10 +289,10 @@ begin
           values (question_definition_id, question->>'slug', actor);
           insert into private.question_versions(
             id, question_definition_id, version_number, payload_schema_version, status, type,
-            time_limit_ms, public_payload, created_by_player_id
+            time_limit_ms, public_payload, created_by_player_id, difficulty
           ) values (
             question_version_id, question_definition_id, 1, (question->>'payloadSchemaVersion')::integer, 'draft', question->>'type',
-            (question->>'timeLimitMs')::integer, question->'publicPayload', actor
+            (question->>'timeLimitMs')::integer, question->'publicPayload', actor, coalesce(question->>'difficulty','medium')
           );
           insert into private.question_version_solutions(question_version_id, solution_payload)
           values (question_version_id, question->'solutionPayload');
@@ -345,7 +345,8 @@ begin
         set payload_schema_version = (question->>'payloadSchemaVersion')::integer,
             type = question->>'type',
             time_limit_ms = (question->>'timeLimitMs')::integer,
-            public_payload = question->'publicPayload'
+            public_payload = question->'publicPayload',
+            difficulty = coalesce(question->>'difficulty','medium')
         where id = question_row.id;
         update private.question_version_solutions solution
         set solution_payload = question->'solutionPayload'
@@ -597,6 +598,7 @@ begin
                   'type', question.type,
                   'payloadSchemaVersion', question.payload_schema_version,
                   'timeLimitMs', question.time_limit_ms,
+        'difficulty', question.difficulty,
                   'points', item.points,
                   'publicPayload', question.public_payload,
                   'solutionPayload', solution.solution_payload
