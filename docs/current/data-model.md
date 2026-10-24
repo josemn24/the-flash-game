@@ -2,22 +2,21 @@
 
 ## Estado y alcance
 
-- Estado: modelo de persistencia aprobado; S14/S15/F18/F19 reutilizan tablas existentes. S15 está verificada sobre Supabase local.
-- Fecha: 2026-09-23.
-- Infraestructura prevista: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
+- Estado: modelo de persistencia vigente. Las verificaciones por entorno se consultan en [estado actual](status.md).
+- Fecha del modelo original: 2026-09-23; contraste documental: 2026-10-24.
+- Infraestructura: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
 - Este documento concreta tablas y garantías de almacenamiento; no sustituye al
   [`domain-model.md`](domain/domain-model.md), que sigue siendo la referencia para el
   comportamiento del dominio.
 
 El modelo parte de los casos de uso: identidad, acceso a salas, publicaciones versionadas,
-intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. El prototipo
-actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S15, D08a/D08b, E01–E06,
-F08, F16, F18, F19 y E10 ya tienen persistencia real verificada en Supabase local. S15 implementa
-Pirámide sobre las tablas existentes y su suite focal local pasa.
+intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. Los seis modos
+competitivos utilizan persistencia real; las demos, práctica y fixtures usan sus composiciones
+locales explícitas.
 
 El [esquema declarativo](../../supabase/schemas/README.md) implementa las restricciones, RLS y los
-comandos transaccionales competitivos en una base aislada de pruebas. La conexión productiva sigue
-pendiente. `service_role` no tiene DML directo; usa funciones privadas autorizadas y lecturas internas.
+comandos transaccionales competitivos utilizados por la aplicación. La evidencia local y
+las comprobaciones pendientes de staging se detallan en [estado actual](status.md). `service_role` no tiene DML directo; usa funciones privadas autorizadas y lecturas internas.
 El inventario de ACL y las pruebas de objetos futuros acompañan esas declaraciones.
 
 ## 1. Principios
@@ -274,7 +273,7 @@ Snapshot de título, modo, configuración y reglas de una definición.
 - `title text not null`, `subtitle text not null`, `description text not null`.
 - `max_score integer not null default 100`.
 - `mode_config jsonb not null`.
-- `global_time_limit_ms integer null`: positivo y obligatorio solo para Alfabeto publicado.
+- `global_time_limit_ms integer null`: positivo y obligatorio para Alfabeto y Contrarreloj publicados; en Contrarreloj es múltiplo de 1000.
 - `created_by_player_id uuid not null references players(id)`.
 - `published_at timestamptz null`.
 - `created_at`, `updated_at`.
@@ -400,7 +399,7 @@ Raíz persistida de una ejecución competitiva o de prueba.
 - `status text not null`: `in_progress`, `completed`, `abandoned` o `invalidated`.
 - `outcome text null`: reservado para feedback interno de un modo, no para un estado global
   `passed`/`failed`.
-- `started_at timestamptz not null`, `deadline_at timestamptz null` (solo Alfabeto tiene deadline global).
+- `started_at timestamptz not null`, `deadline_at timestamptz null` (Alfabeto y Contrarreloj tienen deadline global).
 - `completed_at timestamptz null`.
 - `score integer null`.
 - `client_state_schema_version integer not null`.
@@ -462,9 +461,8 @@ evaluar la recepción ya guardada y cerrar el intento con la sesión propietaria
 
 `attempt_timing_units` persiste inicio/deadline inmutables por item antes de devolver contenido;
 el scope es pregunta para Flash/Supervivencia/Narrativo, nivel para Pirámide e intento para
-Alfabeto. En Alfabeto todas las unidades comparten el deadline global configurado en
-`challenge_versions.global_time_limit_ms`; las demás modalidades no admiten ese límite global
-en una versión publicada.
+Alfabeto y Contrarreloj. Ambos usan `challenge_versions.global_time_limit_ms` como límite
+global publicado; Pirámide separa preparación y activación del nivel.
 
 `interaction_intervals` conserva cada visita, con una sola abierta por intento. Pasar una letra
 cierra su intervalo; volver crea otro sin cambiar el deadline. La duración suma solo las visitas
@@ -472,11 +470,10 @@ a esa letra, excluyendo transiciones y evaluación. Una interacción preparada q
 se pierda el HTTP que llevaba su payload: la recuperación no puede reabrir ni volver a entregar ese
 intervalo.
 
-La implementación futura de recuperación deberá añadir un motivo de cierre auditable, por ejemplo
-`recovery_interrupted`, distinto de `pass` voluntario. Se usará para cerrar la letra visible de
-Alfabeto sin crear `attempt_answers`; los demás modos registrarán su resultado normal
-`unanswered` cuando corresponda. Es un cambio futuro de constraint/migración, no un estado nuevo de
-`attempt_answers` ni una modificación ya aplicada al esquema ejecutable.
+La recuperación ya utiliza el motivo auditable `recovery_interrupted`, distinto de `pass`
+voluntario, para cerrar el intervalo visible. La consecuencia se aplica según el modo, sin
+reiniciar el reloj ni volver a entregar contenido consumido; ver el
+[contrato de recuperación](competitive-command-recovery.md). No es un nuevo estado de respuesta.
 
 `answer_receipts` guarda payload e instante de recepción PostgreSQL antes de evaluar, presentación,
 instante efectivo limitado por deadline, duración acumulada y timeout. El tiempo cliente es
@@ -780,21 +777,16 @@ implementa para Flash `recover_attempt` y `read_attempt_recovery`: un intervalo 
 como `recovery_interrupted`, genera una recepción interna nula y se evalúa como `unanswered` antes de
 autorizar otra preparación. S14 reutiliza ese cierre para Supervivencia y deriva vidas/resultados de
 respuestas evaluadas. S15 reutiliza scope `level` para Pirámide y deriva cima/fallo, score y resultado
-desde las evaluaciones persistidas; está validada en Supabase local. Narrativa sigue pendiente de
-su vertical slice. Siguen abiertas
-la matriz owner/admin y la política de retención/anonimización.
+desde las evaluaciones persistidas. Narrativa y Contrarreloj también usan la autoridad persistida
+con sus reglas de recuperación. La matriz owner/admin está aprobada; su implementación restante
+y la política de retención/anonimización se mantienen en el backlog.
 
-## 14. Evolución desde el repositorio actual
+## 14. Evolución de la persistencia
 
-1. Mantener `data/mock/store.ts` como adaptador que satisface los contratos actuales.
-2. Usar los contratos de comandos de `application/ports/`, ya orientados a operaciones atómicas.
-3. Implementar `infrastructure/supabase/` con consultas y transacciones que cumplan este modelo.
-4. Sustituir progresivamente `demoIdentity`, la evaluación cliente y los snapshots oficiales en
-   memoria por casos de uso server-only.
-5. Mantener los view models y componentes desacoplados de las filas; solo cambiar la composición de
-   `server/`.
-6. Añadir vistas materializadas, eventos o procesos asíncronos únicamente cuando una necesidad de
-   volumen, auditoría o integración lo justifique.
+El adaptador Supabase, la autorización, la evaluación y los relojes competitivos ya están
+integrados. El mock queda para demos, práctica y fixtures; no es fallback de la competición.
 
-La persistencia propuesta es más rica que el store mock porque necesita seguridad, concurrencia e
-histórico, pero no introduce tablas para cada pantalla, modo o endpoint.
+Las ampliaciones deben preservar contratos y hechos aceptados, mantener los view models separados
+de las filas y justificar nuevas tablas, materializaciones o procesos por una necesidad concreta.
+Los pendientes están en el [backlog](../implementation-plan.md); la operación usa el historial y la
+[guía de entornos](supabase-clean-installation.md).

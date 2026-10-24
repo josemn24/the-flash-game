@@ -1,12 +1,12 @@
-# Autoridades locales de Flash, Pirámide y Supervivencia
+# Autoridades locales de sesión
 
 Estado: fase 6 de Pirámide completada el 2026-10-19, con controlador y vista compartidos en todas
-sus entradas jugables y [criterios de cierre acreditados](qa.md#cierre-de-la-fase-6--2026-10-19).
+sus entradas jugables y [criterios de cierre acreditados](../archive/reports/qa-through-2026-10-21.md#cierre-de-la-fase-6--2026-10-19).
 También existen ensayos locales de Flash, Supervivencia, Alfabeto y Contrarreloj.
 
 Las autoridades locales implementan el mismo puerto que consume el motor competitivo. La
-composición de producción conserva el proveedor remoto; las composiciones bajo `/demo/` crean
-proveedores locales en memoria. Pirámide, Flash y Supervivencia comparten sus vistas competitivas y controles
+composición competitiva conserva el proveedor remoto; las demos y las
+[pruebas antes de competir](rehearsals.md) crean proveedores locales en memoria. Pirámide, Flash y Supervivencia comparten sus vistas competitivas y controles
 de pregunta entre ambas autoridades. El [contrato funcional](pyramid-session-contract.md) y el
 [puerto de sesión](game-session-providers.md) siguen siendo las referencias de comportamiento.
 
@@ -70,7 +70,7 @@ las palabras al validar y puntuar los intentos.
 
 El control de arquitectura impide importar transporte, React, Next, servidor, catálogos mock o
 infraestructura desde las autoridades locales y los resolutores puros. Solo las composiciones
-dedicadas de `/demo/` pueden seleccionar proveedores locales.
+locales explícitas de demos y ensayos autorizados pueden seleccionar proveedores locales.
 
 ## Composición consolidada de Pirámide
 
@@ -131,7 +131,7 @@ recuperar un resultado terminal y solo comprende niveles autorizados y resueltos
 Flash reutiliza la cola, firma idempotente, compilación de preguntas y transiciones de formato.
 Su autoridad mantiene una secuencia lineal: preparar inicia el plazo de la pregunta, y una
 respuesta incorrecta o una pregunta sin respuesta no interrumpe el recorrido. Completar se
-acepta cuando se han resuelto las 16 preguntas; la revisión terminal conserva sus payloads
+acepta cuando se ha resuelto la secuencia publicada; la revisión terminal conserva sus payloads
 privados dentro de la instancia local. No hay activación por separado, oportunidades de Queens
 que afecten niveles futuros ni dependencia de la ventana de publicación. Una repetición crea
 otra instancia y una recarga completa inicia otro ensayo.
@@ -149,8 +149,9 @@ las vidas o al alcanzar todas las preguntas. La revisión local contiene las pre
 la puntuación usa los mismos resolutores competitivos.
 
 El ensayo canónico de 20 retos y tres vidas está disponible en
-`/demo/flash-pop/desafios/tabarnia-challenge-03`. La definición se limita al identificador de demo,
-contiene soluciones y se entrega al proveedor local; no se selecciona desde las rutas competitivas.
+`/demo/flash-pop/desafios/tabarnia-challenge-03`. Las definiciones locales
+contienen soluciones y se entregan al proveedor local, nunca a una sesión competitiva remota.
+El generador también puede componer ensayos autorizados con otras estructuras oficiales.
 
 ## Verificación reproducible
 
@@ -192,40 +193,5 @@ npx tsc --noEmit --incremental false
 El comando SQL requiere un contenedor PostgreSQL de pruebas mediante `SUPABASE_DB_CONTAINER`;
 crea y elimina una base independiente. El runner E2E crea y elimina su propio stack Supabase.
 
-El resultado fechado a continuación corresponde a la primera entrega de Pirámide. La ejecución
-posterior de la suite completa y las validaciones añadidas al ampliar Flash se registran en la
-sección de la entrega Flash.
-
-## Resultado de la primera entrega de Pirámide — 2026-10-18
-
-| Comprobación                               | Resultado                                                                                                                                                                       |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cobertura de formatos                      | 21 formatos; 25 combinaciones de formato y versión, contrastadas automáticamente con el registro de capacidades.                                                                |
-| Conformidad HTTP, Auth y Supabase temporal | 161 escenarios únicos acreditados: 160 correctos en la matriz y siete casos Word Search correctos en la repetición focal, seis de ellos ya incluidos.                           |
-| Motor compartido con ambas autoridades     | 25 recorridos de siete niveles, incluidos en la matriz real; comparación de fases, preguntas, respuestas, puntuación y bloqueo.                                                 |
-| Regresión de los seis modos                | 24 E2E correctos: Flash 5, Alfabeto 7, Supervivencia 1, Narrativa 2, Pirámide 5 y Contrarreloj 4; sin omitidos ni inestables. Integraciones de Auth, PostgREST y RLS correctas. |
-| Referencia SQL                             | 67 suites correctas, 158 casos compartidos de formatos, 904 observaciones de validación y pruebas de concurrencia correctas.                                                    |
-| Vitest completo de esa entrega             | 2652 pruebas correctas; el resultado actualizado aparece en la sección siguiente.                                                                                               |
-| Controles estáticos                        | TypeScript, ESLint de los archivos modificados, formato, arquitectura y enlaces correctos.                                                                                      |
-
-La repetición focal conserva las reglas actuales de Word Search: una selección degenerada se
-rechaza; una selección válida que no coincide con un objetivo se registra como error, pero no
-descuenta puntos. La prueba de victoria tras ese error se corrigió para comprobar ese
-comportamiento, y los siete escenarios del formato se ejecutaron de nuevo sin fallos. No se
-modificó el proveedor ni el evaluador para ajustar ese resultado.
-
-La matriz también comprueba recepción pendiente tras un fallo de evaluación real en la base
-temporal, recuperación y repetición sin duplicar puntuación, confirmaciones perdidas, errores y
-penalizaciones intermedias, tres fallos de Queens, acierto después de uno y dos fallos, agotamiento
-de Wordle y de movimientos Hashtag, recuperación específica por formato, revisión autorizada y
-cima de siete niveles. Las comparaciones mantienen íntegros los puntos y los tiempos aceptados.
-
-### Entrega Flash local y competitiva (2026-10-18)
-
-| Comprobación                            | Resultado                                                                                                       |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Suite Vitest                            | 255 archivos y 2672 tests correctos.                                                                            |
-| Ensayos locales de Pirámide y Flash     | 6 E2E correctos; Flash completa 16 preguntas, revisa y repite sin llamadas a Auth, Storage o juego competitivo. |
-| Regresión competitiva SBR               | 2 E2E correctos contra el stack Supabase aislado.                                                               |
-| Conformidad de Flash local con Supabase | 1 E2E correcto; 16 preguntas, respuestas, payloads, puntuación, tiempos y revisión.                             |
-| TypeScript, ESLint, arquitectura y docs | Correctos para la entrega.                                                                                      |
+Las verificaciones fechadas de las primeras entregas se conservan en el
+[informe histórico](../archive/reports/local-session-deliveries-2026-10-18.md).

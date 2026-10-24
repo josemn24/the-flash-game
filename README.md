@@ -18,10 +18,10 @@ se utilizan en local o staging y no definen un entorno remoto adicional.
 - Mapa de calor con coordenadas normalizadas, marcador corregible, control por puntero o teclado, confirmación explícita y puntuación por precisión y velocidad.
 - Etiquetado de imágenes en dos variantes: asociar varias etiquetas con crédito parcial o identificar una única zona mediante elección o texto libre.
 - Preguntas con imágenes o ilustraciones integradas en elección múltiple, encontrar el intruso y estimación.
-- Temporizador individual y avance automático al agotarse el tiempo.
+- Tiempo por pregunta o reloj global según el modo, con cierre temporal automático.
 - Puntuación que premia las respuestas rápidas y aplica penalizaciones según el formato.
 - Resultados con precisión, aciertos, fallos, preguntas sin contestar y tiempo total.
-- Revisión completa de respuestas y opción de repetición.
+- Revisión de respuestas; repetición en práctica y ensayos, sin replay competitivo.
 - Biblioteca con reglas, recomendaciones, accesibilidad y puntuación de cada formato.
 - Uno o varios ejemplos jugables y cronometrados desde cada ficha de formato.
 - Diseño responsive, accesible y completamente en español.
@@ -34,22 +34,10 @@ se utilizan en local o staging y no definen un entorno remoto adicional.
 - Motion para transiciones y microinteracciones.
 - Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
-La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
-recorridos competitivos persistidos en Supabase. Las rutas competitivas no tienen fallback al mock. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
-F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10 conectan Auth, provisioning de jugador,
-lecturas de salas, el intento Flash de 2 a 20 preguntas, su evaluación server-side, recuperación y
-los rankings de temporada/publicación actual, el historial común de Flash/Supervivencia/Narrative/Pirámide y la revisión completa después de volver. El
-portal privado `/admin` ya permite a superadmins consultar su contexto, crear salas activas con un
-owner explícito y un grupo inicial opcional, y preparar/editar/activar temporadas. Estas operaciones
-son transaccionales, idempotentes y auditadas.
-La beta cerrada se operará mediante un portal privado de superadmin: la UI pública no crea salas,
-gestiona invitaciones ni prepara temporadas. El superadmin añadirá directamente a los usuarios
-autenticados a las salas; la publicación mínima de contenido, la programación y la ejecución del
-calendario podrán formar parte de ese portal. La gestión posterior de miembros es parcial: el owner
-puede conceder/quitar admin y eliminar lógicamente miembros; transferencia, bloqueo/desbloqueo e
-invitaciones completas siguen pendientes. Narrative reutiliza el ciclo genérico de intentos y mantiene
-las escenas públicas en `challenge_versions.mode_config`; parte del ciclo de Storage y la edición
-narrativa avanzada siguen pendientes.
+La aplicación combina competición persistida en Supabase con práctica, demos y ensayos locales.
+Las rutas competitivas no tienen fallback al mock. El [estado actual](docs/current/status.md)
+centraliza las capacidades de los seis modos, los formatos, el portal y los límites por entorno;
+el [backlog](docs/implementation-plan.md) distingue el trabajo todavía pendiente.
 
 El historial de cambios por versión está disponible en [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -83,28 +71,28 @@ Para probar desde un móvil u otro equipo de la red local, consulta la
 
 ## Comandos disponibles
 
-| Comando                              | Descripción                                                                                                                 |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                        | Inicia el servidor de desarrollo.                                                                                           |
-| `npm run lint`                       | Comprueba la calidad estática del código.                                                                                   |
-| `npm run typecheck`                  | Valida todos los contratos TypeScript sin emitir código.                                                                    |
-| `npm run type-architecture`          | Comprueba las dependencias entre las capas de tipos.                                                                        |
-| `npm run mock-data:check`            | Valida fixtures, adaptadores y límites del almacén mock local.                                                              |
-| `npm test`                           | Ejecuta los tests unitarios con Vitest.                                                                                     |
-| `npm run build`                      | Genera la compilación optimizada de producción.                                                                             |
-| `npm run start`                      | Sirve localmente una compilación de producción.                                                                             |
-| `npm run supabase:start`             | Inicia el stack local de Supabase.                                                                                          |
-| `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                                              |
-| `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                                    |
-| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares.                    |
-| `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «La vuelta al mundo» salvo que se indique un inicio futuro. |
-| `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.                       |
-| `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                                           |
-| `npm run supabase:schema:test`       | Verifica esquema, RLS, comandos y concurrencia.                                                                             |
-| `npm run schema:revision:check`      | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                                   |
-| `npm run dictionary:generate`        | Regenera el vocabulario español de Mini-Wordle.                                                                             |
-| `npm run dictionary:check`           | Comprueba que el vocabulario versionado esté actualizado.                                                                   |
-| `npm run format:check`               | Comprueba el formato con Prettier.                                                                                          |
+| Comando                              | Descripción                                                                                                                  |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                        | Inicia el servidor de desarrollo.                                                                                            |
+| `npm run lint`                       | Comprueba la calidad estática del código.                                                                                    |
+| `npm run typecheck`                  | Valida todos los contratos TypeScript sin emitir código.                                                                     |
+| `npm run type-architecture`          | Comprueba las dependencias entre las capas de tipos.                                                                         |
+| `npm run mock-data:check`            | Valida fixtures, adaptadores y límites del almacén mock local.                                                               |
+| `npm test`                           | Ejecuta los tests unitarios con Vitest.                                                                                      |
+| `npm run build`                      | Genera la compilación optimizada de producción.                                                                              |
+| `npm run start`                      | Sirve localmente una compilación de producción.                                                                              |
+| `npm run supabase:start`             | Inicia el stack local de Supabase.                                                                                           |
+| `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                                               |
+| `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                                     |
+| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares.                     |
+| `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Circuito de parejas» salvo que se indique un inicio futuro. |
+| `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.                        |
+| `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                                            |
+| `npm run supabase:schema:test`       | Verifica esquema, RLS, comandos y concurrencia.                                                                              |
+| `npm run schema:revision:check`      | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                                    |
+| `npm run dictionary:generate`        | Regenera el vocabulario español de Mini-Wordle.                                                                              |
+| `npm run dictionary:check`           | Comprueba que el vocabulario versionado esté actualizado.                                                                    |
+| `npm run format:check`               | Comprueba el formato con Prettier.                                                                                           |
 
 La [guía de preparación](docs/current/supabase-clean-installation.md#qué-necesito-preparar) reúne
 los requisitos, comandos, efectos destructivos y archivos de cada recorrido. El
@@ -272,7 +260,7 @@ contenido desde `questionsById`. Los formatos que todavía no aparecen en public
 Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto
 contrarreloj, siguen disponibles en el modelo nativo y en la biblioteca interactiva.
 
-Mini-Wordle carga bajo demanda un vocabulario español de cuatro letras generado offline desde Hunspell. El recurso está versionado en el repositorio, no requiere backend y el cronómetro no comienza hasta que está disponible. Consulta [la documentación del diccionario](docs/content/guidelines/mini-wordle-dictionary.md) para regeneración, métricas y licencia.
+Mini-Wordle carga bajo demanda vocabularios españoles de cuatro y cinco letras generados offline desde Hunspell. El recurso está versionado en el repositorio, no requiere backend y el cronómetro no comienza hasta que está disponible. Consulta [la documentación del diccionario](docs/content/guidelines/mini-wordle-dictionary.md) para regeneración, configuración y licencia.
 
 La imagen progresiva espera a que el activo visual esté listo antes de iniciar el cronómetro. El desenfoque desaparece automáticamente, se puede responder en cualquier momento y un único fallo termina la ronda.
 

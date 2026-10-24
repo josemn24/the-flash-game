@@ -1,8 +1,8 @@
-# Contratos funcionales recomendados por modo
+# Contratos funcionales por modo
 
 ## Estado del documento
 
-Última actualización: 2026-10-19 (composición compartida de La Pirámide).
+Último contraste documental: 2026-10-24. Las reglas por modo se conservan; no se cambian evaluadores.
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -101,7 +101,7 @@ modo deba registrar una como no contestada.
 
 ### Ranking por desafío
 
-Los cinco modos actuales usan provisionalmente el mismo comparador para el ranking de cada desafío:
+Flash, Alfabeto, Supervivencia, Narrativa y Pirámide usan el mismo comparador para el ranking de cada desafío:
 
 1. Más Flash Points.
 2. Menor duración efectiva del intento: la suma de `AttemptAnswer.timeUsedMs`, incluyendo respuestas
@@ -115,11 +115,11 @@ Points acumulados.
 
 Contrarreloj tiene un comparador específico: pruebas resueltas y tiempo global hasta el último
 acierto. La [decisión del modo](../../decisions/decisions.md#21-contrarreloj-reglas-acordadas)
-no cambia el comparador de los cinco modos actuales ni el ranking de temporada.
+no cambia el comparador de esos cinco modos ni el ranking de temporada.
 
 ## 1. Flash (`flash`)
 
-### Contrato recomendado
+### Contrato vigente
 
 - **Inicio:** al confirmar el inicio del desafío —en el shell competitivo, después de la cuenta
   atrás— se crea o recupera el único intento. Ver la introducción no lo consume.
@@ -144,13 +144,14 @@ no cambia el comparador de los cinco modos actuales ni el ranking de temporada.
 
 ### Observación de implementación
 
-`useGameSession` ya modela la secuencia, los timers por pregunta, el timeout y un snapshot. El shell
-`Flash Pop` conecta la reanudación de sala; `FlashGameApp` independiente conserva el flujo de
-preview. La persistencia autoritativa del checkpoint debe quedar para la fase de servidor.
+Flash competitivo y su ensayo comparten motor mediante `GameSessionProvider`. La autoridad
+remota conserva los hechos en Supabase; la local permanece en memoria. La biblioteca didáctica
+mantiene sus controles de práctica. La [referencia de proveedores](../game-session-providers.md)
+detalla esta composición.
 
 ## 2. Alfabeto (`alphabet`)
 
-### Contrato recomendado
+### Contrato vigente
 
 - **Inicio:** la partida empieza después de la cuenta atrás y consume el único intento competitivo.
   Cada letra se visita en el mismo intento; `Pasar` no crea una oportunidad nueva.
@@ -196,7 +197,7 @@ versión reconcilia el intento antes de crear un nuevo comando de cierre.
 
 ## 3. Supervivencia (`survival`)
 
-### Contrato recomendado
+### Contrato vigente
 
 - **Inicio:** la cuenta atrás termina y empieza la primera pregunta. En ese momento se crea o
   recupera el intento competitivo.
@@ -204,14 +205,15 @@ versión reconcilia el intento antes de crear un nuevo comando de cierre.
   la cantidad de preguntas. El editor ofrece 3 por defecto, limitadas al número de preguntas.
 - **Duración:** un `timeLimit` por pregunta. Las vidas pertenecen al modo y no son un saldo de
   temporada ni una segunda recompensa.
-- **Agotamiento del tiempo:** genera `unanswered` y aplica la pérdida de vida definida por el modo.
-  Si quedan vidas, se continúa; si llega a cero, termina la partida. El timeout no es abandono.
+- **Agotamiento del tiempo:** aplica la evaluación temporal del formato. Un resultado
+  `unanswered` consume una vida; un resultado `partial` conserva las vidas. Si quedan vidas,
+  se continúa; si llega a cero, termina la partida. El timeout no es abandono.
 - **Finalización:** termina al agotar todas las vidas o al resolver la última pregunta. `eliminated`
   y `survived` son feedback interno; ambos producen un intento global `completed` si el flujo llegó
   a su final reglamentario.
-- **Pérdida de vida:** `incorrect` y `unanswered` descuentan una vida. Matching y Queens también
-  descuentan por errores parciales guardados en sus eventos; Matching cierra inmediatamente ante un
-  error cuando queda una sola vida.
+- **Pérdida de vida:** `incorrect` y `unanswered` descuentan una vida. Matching competitivo se
+  evalúa mediante una comprobación final. Queens consume como máximo una vida por resultado con
+  validaciones incorrectas, incluso si termina resuelto. Los resultados parciales no consumen vida.
 - **Estado global:** `inProgress` mientras se puede responder; `completed` al ser eliminado por la
   mecánica o al llegar al final.
 - **Recuperación y abandono:** una pregunta temporizada activa sin recepción se registra
@@ -238,7 +240,7 @@ sin puntos, con `terminal_reason = inactivity_timeout`.
 
 ## 4. Narrativa (`narrative`)
 
-### Contrato recomendado
+### Contrato vigente
 
 - **Inicio:** iniciar la experiencia crea el intento y comienza la secuencia narrativa. Las escenas
   introductorias forman parte del flujo, pero no son preguntas.
@@ -377,7 +379,7 @@ su propia verificación.
 
 - La UI puede mejorar la señalización previa a la expiración, pero no necesita heartbeat ni lease para
   aplicar la política server-side de 15 minutos después del cierre o deadline.
-- Implementar persistencia y validación autoritativa de checkpoints, deadlines, respuestas y puntos,
-  incluida la resolución transaccional de recuperación aquí definida.
+- Mantener la conformidad de la persistencia y validación autoritativa ya implementadas al ampliar
+  modos o formatos; no desarrollar de nuevo la recuperación existente.
 - Resolver la política de consulta para intentos `invalidated`.
 - Convertir cada recomendación en pruebas de contrato por modo antes de cambiar la UI o el backend.

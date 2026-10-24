@@ -80,21 +80,9 @@ respuestas tardías. Los deadlines competitivos permanecen intactos.
 - `npm run typecheck`, `npm run lint`, `npm run type-architecture`, `npm run docs:check`,
   `npm run schema:revision:check`, `npm run supabase:types:check` y formato del diff.
 
-Verificación local completada el 2026-10-06:
-
-- 1.489 pruebas unitarias en 206 archivos.
-- 32 pruebas de navegador en 13 suites: cinco modos, seis formatos, Narrativa interactiva y
-  recuperación/abandono. Todas pasan, sin casos omitidos ni resultados inestables.
-- 51 suites pgTAP, 158 casos compartidos de conformidad y concurrencia con conexiones PostgreSQL
-  independientes. La suite nueva de confirmaciones perdidas verifica 25 condiciones.
-- Tipos, lint, arquitectura de tipos/estilos, Stylelint, enlaces documentales, revisión de esquema,
-  tipos generados y formato correctos. Las 16 funciones de la migración coinciden con sus
-  definiciones finales del esquema declarativo, incluidas las variantes actuales de Queens.
-
-Las fixtures de pruebas respetan los relojes inmutables. La expiración se provoca cerrando una
-publicación y simulando falta de actividad; se confirma desde otra conexión después del error HTTP.
-El abandono explícito pierde la respuesta real tras el commit y recupera el mismo resultado
-con la cookie ya eliminada, sin acreditación ni controlador activo.
+Los resultados de la primera entrega se conservan en el
+[informe del 2026-10-06](../archive/reports/competitive-command-recovery-2026-10-06.md).
+No acreditan staging ni el total actual de pruebas.
 
 Los eventos de recuperación se incorporan a `competitive_performance` cuando
 `FLASH_PERFORMANCE_DIAGNOSTICS=1`: recepción pendiente, evaluación repetida/recuperada, solicitud
@@ -107,7 +95,8 @@ ni un registro alternativo de respuestas/puntos.
 ## Despliegue
 
 1. Tras el reset acordado, reconstruir la base con el [baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql)
-   y las migraciones incrementales antes del cliente; verificar la revisión `20261014200324_authoritative_completion_score`. El baseline incluye
+   y las migraciones incrementales antes del cliente; verificar la revisión canónica de
+   [estado actual](status.md), según la [guía de entornos](supabase-clean-installation.md). El baseline incluye
    recuperación, cierre por permisos, transferencia y reconciliación. El reset elimina los datos
    anteriores; no se migran intentos ni sesiones entre revisiones.
    La [reconciliación](competitive-command-reconciliation.md) documenta errores de transferencia,
@@ -119,6 +108,6 @@ ni un registro alternativo de respuestas/puntos.
 4. Vigilar operaciones inciertas, replays y recepciones pendientes. Un fallo de publicación se
    trata conforme a [la política de incidencias](../decisions/service-incidents.md).
 
-No se han ejecutado migraciones ni pruebas contra staging. Quedan pendientes en staging la
-transferencia multi-dispositivo, la compensación por incidentes, los cambios de puntuación y el autosave de formularios. Las
-decisiones aprobadas para esos trabajos siguen vigentes.
+La verificación multi-dispositivo en staging sigue pendiente. La compensación por incidencias
+y el autosave de formularios necesitan definir o implementar su alcance en el
+[backlog](../implementation-plan.md); no son capacidades acreditadas por esta entrega.

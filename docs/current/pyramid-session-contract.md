@@ -2,7 +2,7 @@
 
 Estado: contrato vigente de Pirámide. La referencia de la fase 0 se documentó el 2026-10-18 sobre
 el recorrido competitivo existente; aquella entrega añadió documentación y pruebas. La unificación
-se completó con el [cierre de la fase 6 el 2026-10-19](qa.md#cierre-de-la-fase-6--2026-10-19).
+se completó con el [cierre de la fase 6 el 2026-10-19](../archive/reports/qa-through-2026-10-21.md#cierre-de-la-fase-6--2026-10-19).
 
 Las [decisiones aprobadas](../decisions/decisions.md), la
 [política de recuperación](../decisions/adr/0003-attempt-lifecycle-and-concurrency.md) y el
@@ -174,31 +174,13 @@ npm run supabase:schema:test -- --test=pyramid_queens_attempts.test.sql
 E2E_INTEGRATION_SCENARIOS=s15 npm run test:e2e:isolated -- e2e/pyramid-queens.spec.ts e2e/s15-pyramid.spec.ts
 ```
 
-Validación final del 2026-10-18:
-
-| Comprobación                                                         | Resultado                                                                                                          |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Vitest focal: progreso, motor, cola, evaluador, casos de uso y vista | 133 pruebas de seis archivos correctas.                                                                            |
-| Suite SQL completa desde los 96 archivos declarativos                | 67 suites correctas; S15 tiene 35 comprobaciones y Queens de Pirámide, 37.                                         |
-| Conformidad y validación SQL                                         | 158 casos compartidos, 904 observaciones y pruebas de concurrencia correctos.                                      |
-| Integración S15                                                      | Auth, PostgREST, RLS y escenario funcional correctos.                                                              |
-| E2E S15                                                              | Un recorrido correcto.                                                                                             |
-| E2E Queens de Pirámide                                               | Cuatro recorridos correctos: agotamiento con confirmación perdida y acierto en cada una de las tres oportunidades. |
-| Comprobaciones estáticas                                             | TypeScript, ESLint focal, arquitectura de tipos y enlaces de documentación correctos.                              |
-
-La primera ejecución E2E de Queens detectó una aserción heredada contra el texto «Tres fallos
-terminan la partida», que ya no está en la interfaz. La prueba verifica ahora el mensaje existente
-de validación automática y conserva las comprobaciones del contador, sus tres oportunidades y el
-cierre real. Los cuatro casos pasan tras repetirlos con un fixture limpio, sin cambiar la UI.
-
-SQL se ejecutó en una base desechable dentro de un contenedor independiente del stack E2E; el
-runner recrea su contenedor entre escenarios y no debe usarse simultáneamente para esa suite.
-Se eliminaron los entornos temporales al terminar. No se reinició la base habitual del proyecto
-ni se ejecutaron operaciones remotas. Solo se modifican documentación y pruebas.
+Los resultados de la referencia inicial y la narración de su ejecución se conservan en el
+[informe del 2026-10-18](../archive/reports/qa-through-2026-10-21.md#contrato-de-pirámide-referencia-inicial--2026-10-18).
+Son evidencia fechada, no una ejecución actual de las comprobaciones anteriores.
 
 ## 9. Frontera compartida tras la fase 6
 
-Estado: completada el 2026-10-19; [criterios de cierre y evidencia](qa.md#cierre-de-la-fase-6--2026-10-19).
+Estado: completada el 2026-10-19; [criterios de cierre y evidencia](../archive/reports/qa-through-2026-10-21.md#cierre-de-la-fase-6--2026-10-19).
 
 Todas las entradas jugables de Pirámide usan `usePyramidGameSession` y `PyramidGameView`.
 La composición competitiva conecta el proveedor remoto; la local recibe `LocalPyramidDefinition`

@@ -1,301 +1,59 @@
 # Esquema declarativo y frontera de comandos
 
-Estado: el esquema declarativo vigente se compone de 96 archivos. La revisión más reciente declarada
-es `20261016193510_connect_pairs_variable_square_boards`; el historial activo empieza con el baseline
-`20261011180045_initial_schema` y continúa con migraciones incrementales. Las migraciones anteriores
-al baseline permanecen en Git, fuera del historial activo. La validación local corresponde a
-PostgreSQL 17 de Supabase local; el inventario, las suites pgTAP, la conformidad y la concurrencia
-pasan desde schemas y desde el historial de migraciones. No se ejecutaron comandos ni validaciones
-remotas.
-La [extracción de operaciones de intentos](../../docs/current/sql-attempt-command-handlers-refactor.md)
-mantiene el dispatcher y las fachadas; el coordinador delega en siete operaciones privadas.
-La revisión `20261015192008_attempt_command_handlers_refactor` está aplicada en la base local desde el 2026-10-15, sin reset: se conservan
-todas las filas de las 31 tablas y el endpoint de health devuelve HTTP 200. No se ha aplicado en remoto.
-Las dos migraciones de [biblioteca de preguntas](../../docs/current/sql-question-library-refactor.md)
-están aplicadas en local desde el 2026-10-16, tras un reset con restauración de los datos existentes:
-se conservan las 31 tablas de dominio, Auth, Storage y las dos partidas; health devuelve HTTP 200.
-La verificación y las copias se documentan en esa guía. No se han aplicado en remoto.
-S14 integra Supervivencia sobre tablas existentes; S15 integra Pirámide sin tablas nuevas. S17a, S18b
-parcial y D08a/D08b/S13 también están aplicadas localmente. D08a añade buckets, políticas de lectura, `media_assets` y comandos server-only de avatar;
-D08b añade ciclo de vida de assets privados y resolución competitiva autorizada para E10 y `multiple-choice`.
-Queens en Pirámide permite tres validaciones completas incorrectas por prueba: el contador se deriva
-de `queens_validation_events` y el tercer fallo genera una única recepción terminal, sin tablas ni
-contadores duplicados. El refactor de validadores añade 33 helpers privados y sustituye dos fachadas, sin cambios de datos.
-La organización, las comprobaciones y la reversión se describen en
-[validación SQL por formato](../../docs/current/sql-question-validation-refactor.md).
-La [reconciliación de comandos](../../docs/current/competitive-command-reconciliation.md) sustituye
-once cuerpos, conserva OIDs y permisos, y distingue cierres normales de pérdida de permisos.
-Su aplicación se verificó en bases desechables y forma parte del baseline aplicado localmente.
-**31 tablas**, dos vistas
-internas, funciones públicas de lectura/ranking, contextos protegidos del portal privado y comandos
-privados de servidor. S01–S15, S17a, S18b parcial, S05-Alphabet, F* y E* conectan
-Auth, la interfaz y adaptadores PostgreSQL reales para perfil, salas, Flash, Supervivencia y Pirámide
-competitivos; S15 está validada sobre el stack local,
-además del editor Flash mínimo de S11. S17a añade biblioteca editorial y reutilización exacta de
-`question_version` sin nuevas tablas.
-S06 consulta los rankings de temporada y publicación abierta y reutiliza esa posición en las tarjetas.
-S07 consulta el historial cerrado de Flash, Supervivencia y Pirámide, y la revisión común autorizada desde versiones y resultados
-persistidos, sin materializar tablas adicionales. El portal consulta el contexto global de
-superadmin y salas activas mediante `get_superadmin_portal_context()` y crea salas mediante un
-comando transaccional específico de S08, sin DML directo ni proyecto remoto vinculado.
-Las capacidades restantes siguen usando mocks o están pendientes. S14 amplía edición, publicación,
-calendario, lecturas autorizadas, recuperación y cierre server-side a `survival`, sin nuevas tablas.
-S15 añade validación editorial de siete niveles, calendario, proyecciones seguras y comandos de
-recuperación/finalización para `pyramid`; pgTAP, integración Auth y E2E local pasan. Las cuatro
-slices competitivas de `true-false`, `ordering`, `classification` y `logic-matrix` amplían el gate
-compartido de Flash, Supervivencia y Pirámide mediante los validadores editoriales existentes.
-S17 añade clonación, comparación editorial y archivado optimista de versiones de Flash, Supervivencia
-y Pirámide; los borradores clonados mantienen referencias a preguntas publicadas y las publicaciones
-existentes siguen resolviendo versiones archivadas.
-S18b permite al owner conceder/quitar
-admin y eliminar lógicamente miembros mediante `public.manage_room_member(jsonb)`; eliminar un
-miembro cierra atómicamente sus intentos competitivos activos y revoca sus sesiones; transferencia,
-bloqueo/desbloqueo e invitaciones completas siguen pendientes. S10 añade preparación/edición de
-borradores y activación explícita de temporadas; S11 añade el editor Flash de 2 a 20 preguntas y
-publicación inmutable; S12 añade calendario local y tick temporal sin participación ficticia. E01
-añade Mini-Wordle competitivo con eventos intermedios, diccionario privado versionado y palabras
-adicionales específicas por pregunta sin modificar el diccionario global. E02 añade Logic-code
-mixto con intentos privados, duplicados rechazados sin penalización, progreso seguro y evaluación
-autoritativa al acertar. E03 añade Progressive-clues con primera pista gratuita, eventos de
-revelación privados, penalización por puntos reales del item y evaluación reconstruida desde eventos.
-E04 añade Matching con resolución local, una recepción final del mapa completo, validación server-side
-sin solución pública y evaluación binaria. E05 añade Queens con borradores locales, checkpoints,
-validación server-side del tablero completo, eventos privados de validación, penalización del 5%,
-recuperación del tablero y resolución terminal server-side. E06 añade Word-search
-con soluciones privadas, selecciones server-side, errores persistidos, recuperación e idempotencia. S05 añade Alphabet
-con referencias publicadas `short-text`, reloj global, pases y lecturas terminales autorizadas.
-El baseline está aplicado en local; no hay seed global y esta validación no ejecutó operaciones remotas.
+Estado: vigente. Contratos del esquema; la evidencia fechada se conserva en el archivo.
 
-La revisión histórica `20261007180832_attempt_lifecycle_contracts`, hoy incluida en el baseline,
-limita el resultado persistido a
-`survived`, `eliminated`, `summit`, `failed` o `null`. Dos CHECK y `guard_attempt` exigen
-combinaciones válidas según el modo de la versión; invalidar conserva los hechos originales.
-Cierres y lecturas terminales proyectan `challengeMode` y `outcome` explícitos. La recuperación
-mantiene `terminalOutcome` derivado como señal independiente. No hay backfills ni traducciones
-históricas; cualquier despliegue remoto requiere seguir el procedimiento de reset aprobado. Véase
-[el contrato completo](../../docs/current/attempt-lifecycle.md).
+## Fuentes y operación
 
-La revisión `20261004141603_alphabet_atomic_completion` cierra Alphabet competitivo en una
-transacción al vencer el reloj de PostgreSQL. Conserva las respuestas recibidas, registra las
-letras pendientes como `unanswered` y acredita los puntos una sola vez. La recuperación agotada
-utiliza el mismo cierre y devuelve todas las respuestas, sin preparar letras adicionales.
-El cliente muestra «Finalizando partida…» y hace hasta tres reintentos automáticos del mismo
-comando: 1, 2 y 4 segundos para red/5xx, o el `Retry-After` del servidor para 429 y deadline adelantado.
-Después ofrece «Reintentar partida» para iniciar otro ciclo limitado.
+Este directorio declara el estado esperado de PostgreSQL. El historial aplicado está en
+[`../migrations`](../migrations/), partiendo del baseline y sus migraciones incrementales.
+La revisión canónica está centralizada en [estado actual](../../docs/current/status.md) y se
+contrasta mediante `npm run schema:revision:check`. No acredita la revisión instalada en una base concreta.
 
-Para desplegar, aplicar primero la migración incremental y después la aplicación. Las firmas,
-permisos y petición pública de `complete` se conservan; `answers` es un campo adicional de su
-respuesta. Los clientes anteriores mantienen los comandos de responder y pasar y el cierre
-anticipado cuando todas las letras están resueltas. La aplicación nueva necesita esta revisión
-para cerrar letras pendientes. Esta implementación no aplica cambios remotos.
+El [workflow de Supabase](../README.md) describe cómo cambiar y comprobar SQL. La
+[guía de entornos](../../docs/current/supabase-clean-installation.md) describe instalación,
+actualización y recuperación. Aplicar la base antes de publicar una aplicación que dependa de ella.
+Las verificaciones locales no acreditan staging.
 
-## Decisiones y supuestos
+## Organización
 
-Se han aplicado el [dominio](../../docs/current/domain/domain-model.md), los
-[contratos por modo](../../docs/current/domain/mode-contracts.md), los
-[casos de uso](../../docs/current/use-cases.md), el [modelo de datos](../../docs/current/data-model.md)
-y la [arquitectura](../../docs/current/architecture.md). Las decisiones aprobadas prevalecen sobre
-el comportamiento provisional del mock.
+El inventario exacto se obtiene de los archivos SQL y de
+[`security-inventory.json`](../security-inventory.json). Las familias se ordenan para declarar
+primero estructuras y después validadores, lecturas, comandos y ACL:
 
-- `players.id` es una identidad propia, distinta del UUID de Auth. La identidad del actor se resuelve
-  desde claims verificados por servidor y la asignación de superadmin desde la base de datos.
-  Ningún comando de jugador acepta `playerId`, evaluación ni fechas autoritativas.
-- `private` permanece fuera de los schemas de Data API. Los comandos de juego necesitan una conexión
-  PostgreSQL de servidor; calendario y expiración independiente usan RPC exclusivas de `service_role`.
-  `service_role` tiene lecturas internas y EXECUTE explícito, **sin DML
-  directo en ninguna tabla del dominio**. No se utiliza la credencial propietaria `postgres` en el
-  adaptador. Los comandos se ejecutan como `SECURITY DEFINER`, propietario `postgres`, con
-  `search_path = ''` y nombres cualificados.
-- `anon` carece de acceso competitivo; Auth anónimo también se rechaza. `authenticated` solo
-  dispone de lecturas con RLS y actualización del nombre propio. Ser owner/admin/superadmin humano
-  no concede nuevos privilegios SQL al navegador.
-- Un intento oficial por jugador/publicación, incluso después del abandono o invalidación.
-  Los intentos de prueba siguen excluidos de rankings y puntos; no se abre un comando de creación
-  de pruebas sin cerrar su autorización administrativa.
-- Las versiones publicadas, respuestas, recepciones, asientos y auditoría conservan el histórico.
-  Corregir no reescribe la puntuación original: inserta un ajuste al saldo efectivo. Invalidar
-  revierte ese saldo en la misma transacción, incluso si es cero; sin acreditación no crea asientos.
-- La clave idempotente tiene ámbito por actor, incluyendo la operación y su contenido. Mismo
-  contenido devuelve el resultado anterior; contenido diferente genera conflicto. Los tokens se
-  almacenan solo como SHA-256 de secretos aleatorios de al menos 32 caracteres generados por servidor.
-  El hash no sustituye la necesidad de alta entropía. Un reintento debe reutilizar el mismo secreto.
-- Los relojes se persisten antes de entregar contenido. `question_versions.time_limit_ms` es el
-  límite por pregunta o nivel; `challenge_versions.global_time_limit_ms` solo existe en Alfabeto
-  publicado. No se infiere un límite total sumando preguntas. En Pirámide cada item es un nivel.
-- No hay heartbeat ni lease del navegador. La expiración server-side usa 15 minutos desde
-  `last_activity_at` (o `started_at`) y solo se aplica cuando la publicación está cerrada o el
-  deadline global ha vencido; marca el intento `abandoned` sin puntos. `expires_at` es nulo o coincide
-  con el deadline global. Tras ese deadline solo se permite resolver timeout, evaluar, finalizar o
-  abandonar; no se entrega nuevo contenido jugable. La transferencia entre dispositivos requiere
-  confirmación explícita.
-- Política S04 implementada para el vertical Flash: una unidad e intervalo confirmados antes de
-  devolver contenido se consideran consumidos. Al recuperar, una recepción existente se evalúa; sin
-  recepción del jugador se cierra atómicamente el intervalo y se crea una recepción interna de
-  payload nulo para evaluar `unanswered`, sin reentregar el payload. Alfabeto necesitará un motivo de
-  cierre auditable distinto de `pass` voluntario; los demás modos incorporarán esta política en sus
-  propias slices.
+- `00`–`45`: namespaces, identidad, salas, contenido, competición, estado autoritativo, índices y helpers.
+- `50`–`54z`: autorización, documentos y validación por formato/desafío, incluidas reglas de tableros y Contrarreloj.
+- `55`–`68`: lecturas autorizadas, portal editorial, temporadas, calendario, biblioteca y assets.
+- `70`–`85`: RLS, permisos de Storage, rankings e historial.
+- `88`–`90`: soporte, operaciones privadas de intentos y fachadas de comandos.
+- `91`–`99` y `s20`: recuperación/contextos, eventos y comandos específicos, activación de Pirámide,
+  ensayos e inspección administrativa.
 
-### Decisiones provisionales y operaciones cerradas
+No mantener aquí una copia de cada función ni cifras de tablas, archivos o tests.
+Los [handlers de intentos](../../docs/current/sql-attempt-command-handlers-refactor.md),
+la [validación por formato](../../docs/current/sql-question-validation-refactor.md) y la
+[biblioteca editorial](../../docs/current/sql-question-library-refactor.md) describen sus fronteras.
 
-La política de permisos de sala e invitaciones ya está fijada: `owner` gestiona la sala y transfiere propiedad; `admin` gestiona
-cualquier membresía salvo `owner`, pero solo `owner` concede `admin`; `member` y `spectator` no
-administran. `owner` invita a `admin`/`member`/`spectator` y `admin` a `member`/`spectator`; las
-invitaciones duran 7 días por defecto, como máximo 30, tienen un uso por defecto y hasta 20 usos
-explícitos, y `owner`/`admin` pueden revocarlas sin afectar membresías existentes. La aceptación de
-una invitación **existente** ya está implementada; una membresía activa no consume otro uso y una
-prohibida no puede reactivarse. Las operaciones directas de `superadmin` sobre salas se auditan.
-Para la beta cerrada, el superadmin podrá crear o reactivar directamente membresías de usuarios
-autenticados desde un portal privado, sin crear ni consumir una invitación. La emisión, aceptación y
-revocación de invitaciones completas siguen siendo una capacidad futura de S09, no un flujo de la UI
-pública. S11 implementa el editor Flash mínimo y su publicación global desde el portal privado;
-reemplazo/archivado y el resto de formatos se implementarán en sus slices correspondientes; S12 ya
-opera localmente el calendario de Flash publicado.
+## Autoridad y protocolo de servidor
 
-Se conserva la visibilidad de perfiles históricos mínimos en rankings, la exclusión de resultados
-invalidados de la lectura directa y la necesidad de membresía vigente para consultar resultados
-propios. Retención, borrado de payloads/medios, inspección administrativa y cambios editoriales
-requieren decisiones posteriores. El evaluador confiable decide el resultado de cada pregunta y el
-score normalizado; SQL deriva vidas, eliminación/supervivencia y terminalidad de evaluaciones
-persistidas. S15 deriva para Pirámide `summit`/`failed`, niveles alcanzados, puntuación y cierre desde
-las evaluaciones guardadas; pgTAP verifica esas invariantes.
-
-## Archivos SQL
-
-El orden lexicográfico expresa dependencias. Son declaraciones de estado deseado para una base
-vacía; no son scripts repetibles sobre una base poblada.
-
-| Archivo                                                                                | Propósito                                                                                                                                                       |
-| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [00_namespaces.sql](00_namespaces.sql)                                                 | Schemas, extensión y revocaciones predeterminadas globales y por schema para objetos futuros de `postgres`.                                                     |
-| [10_identity_rooms.sql](10_identity_rooms.sql)                                         | Identidad, salas, membresías, invitaciones, temporadas y superadmin.                                                                                            |
-| [20_content.sql](20_content.sql)                                                       | Catálogo congelado, soluciones, items y límites temporales publicados.                                                                                          |
-| [30_competition.sql](30_competition.sql)                                               | Publicaciones, intentos, sesiones, respuestas, libro de puntos y auditoría. Deadline global y expiración anulables.                                             |
-| [35_authoritative_state.sql](35_authoritative_state.sql)                               | Unidades temporales, intervalos de visita, recepciones inmutables e idempotencia. FK obligatoria desde respuesta final a recepción.                             |
-| [36_mini_wordle.sql](36_mini_wordle.sql)                                               | Eventos privados, diccionario versionado, normalización/feedback y progreso seguro de Mini-Wordle.                                                              |
-| [57_alphabet_reads.sql](57_alphabet_reads.sql)                                         | Lecturas públicas autorizadas del desafío Alphabet y su revisión terminal; nunca expone soluciones durante el juego.                                            |
-| [57_survival_reads.sql](57_survival_reads.sql)                                         | Proyección jugable de Survival sin soluciones y resultado/revisión terminal propia.                                                                             |
-| [45_pyramid_helpers.sql](45_pyramid_helpers.sql)                                       | Validador interno de briefing y configuración de nivel de Pirámide.                                                                                             |
-| [57_pyramid_reads.sql](57_pyramid_reads.sql)                                           | Proyección de briefings/niveles permitidos y lectura propia de resultado/revisión terminal.                                                                     |
-| [40_indexes.sql](40_indexes.sql)                                                       | Índices de autorización, calendario, unicidad y consultas competitivas.                                                                                         |
-| [50_access_helpers.sql](50_access_helpers.sql)                                         | Resolución del jugador y ayudas RLS sin recursión.                                                                                                              |
-| [52_question_documents.sql](52_question_documents.sql)                                 | Construcción compartida del documento privado, también usada por validación competitiva; sin concesiones de ejecución directa.                                  |
-| `53_question_validation_<formato>.sql`                                                 | 21 archivos planos con validación editorial y, en 12 formatos, elegibilidad publicada.                                                                          |
-| [54_question_validation.sql](54_question_validation.sql)                               | Fachadas: envelope general, versiones, publicación, coordinación y tratamiento de excepciones.                                                                  |
-| [54z_challenge_validation.sql](54z_challenge_validation.sql)                           | Validación del desafío completo: modos, referencias, puntos, cantidades y niveles.                                                                              |
-| [55_room_reads.sql](55_room_reads.sql)                                                 | Lecturas autorizadas de tarjetas, detalles e introducciones de salas; limita los datos de desafíos expuestos.                                                   |
-| [56_flash_reads.sql](56_flash_reads.sql)                                               | Lectura autorizada del desafío Flash y del resultado propio al terminar; no expone soluciones durante el juego.                                                 |
-| [57_superadmin_reads.sql](57_superadmin_reads.sql)                                     | Contexto mínimo server-side del portal de superadmin, sin acceso global RLS ni DML.                                                                             |
-| [58_superadmin_challenge_reads.sql](58_superadmin_challenge_reads.sql)                 | Catálogo y detalle de desafíos para el portal de superadmin.                                                                                                    |
-| [58_superadmin_room_commands.sql](58_superadmin_room_commands.sql)                     | Lookup exacto de jugadores y creación auditada/idempotente de sala, owner y grupo inicial desde el portal.                                                      |
-| [58_superadmin_user_commands.sql](58_superadmin_user_commands.sql)                     | Provisioning auditado/idempotente de perfiles vinculados a Auth y membresías de sala para superadmins; no almacena credenciales.                                |
-| [59_superadmin_editorial_commands.sql](59_superadmin_editorial_commands.sql)           | Lectura protegida y comandos auditados/idempotentes para crear, editar y publicar Flash/Supervivencia/Pirámide; delega la validación documental compartida.     |
-| [64_superadmin_editorial_versioning.sql](64_superadmin_editorial_versioning.sql)       | Clonación de correcciones, archivado optimista y comparación editorial segura de versiones de Flash/Supervivencia/Pirámide.                                     |
-| [59_superadmin_season_commands.sql](59_superadmin_season_commands.sql)                 | Creación, actualización y activación auditadas de temporadas desde el portal de superadmin.                                                                     |
-| [62_media_assets.sql](62_media_assets.sql)                                             | Registro privado de objetos de Storage, estados, metadatos, ownership e índices.                                                                                |
-| [59_superadmin_calendar_01_commands.sql](59_superadmin_calendar_01_commands.sql)       | Validación de contenido y comandos de programación/reprogramación/cancelación con wrappers y ACL.                                                               |
-| [59_superadmin_calendar_02_reads.sql](59_superadmin_calendar_02_reads.sql)             | Lecturas protegidas del calendario de superadmin y del calendario de sala, con ACL.                                                                             |
-| [59_superadmin_calendar_03_maintenance.sql](59_superadmin_calendar_03_maintenance.sql) | Tick, expiración de intentos y RPC de mantenimiento con límites; el EXECUTE privado de `service_role` se aplica tras la revocación global de `70_rls.sql`.      |
-| [s20_superadmin_attempt_reads.sql](s20_superadmin_attempt_reads.sql)                   | Lecturas protegidas por sala/publicación para inspección de intentos competitivos; cursor estable, score original/efectivo y detalle sin soluciones.            |
-| [60_integrity.sql](60_integrity.sql)                                                   | Integridad estructural, admisión de intentos según la ventana efectiva, ownership, congelación e histórico. Las marcas de respuesta se derivan de su recepción. |
-| [61_question_library_01_reads.sql](61_question_library_01_reads.sql)                   | Lecturas autorizadas de biblioteca e historial, paginación previa al agregado, fachadas y ACL.                                                                  |
-| [61_question_library_02_commands.sql](61_question_library_02_commands.sql)             | Creación, edición, publicación y archivo, con fachadas y permisos junto a cada función.                                                                         |
-| [70_rls.sql](70_rls.sql)                                                               | Revocaciones existentes, lecturas limitadas y actualización propia; servicio sin DML.                                                                           |
-| [71_storage_acl.sql](71_storage_acl.sql)                                               | Lectura pública de `avatars` y ausencia de lectura de `question-assets` para roles de navegador.                                                                |
-| [80_rankings.sql](80_rankings.sql)                                                     | Vista privada invoker y funciones públicas autorizadas por membresía.                                                                                           |
-| [85_flash_history_reads.sql](85_flash_history_reads.sql)                               | Historial común y revisión persistida de Flash/Supervivencia/Pirámide, con payloads anulables y autorización por sala, publicación y jugador.                   |
-| [88_command_support.sql](88_command_support.sql)                                       | Resolución del actor, hash de secretos y bloqueo idempotente compartido.                                                                                        |
-| `89_attempt_*.sql`                                                                     | Helpers privados de inicio, sesión, interacciones, evaluación, cierre y administración; sin EXECUTE directo para roles API.                                     |
-| [89_invitation_commands.sql](89_invitation_commands.sql)                               | Aceptación de invitaciones con el orden de bloqueos y replay existentes.                                                                                        |
-| [89z_command_handlers.sql](89z_command_handlers.sql)                                   | Coordinación común de autorización, sesión, replay, versión y epílogo del intento; delega las operaciones privadas.                                             |
-| [90_commands.sql](90_commands.sql)                                                     | Validación de comandos, idempotencia, despacho, auditoría y wrappers server-only.                                                                               |
-| [91_attempt_recovery.sql](91_attempt_recovery.sql)                                     | Contexto privado del evaluador y operaciones de recuperación/lectura de intentos.                                                                               |
-| [91_room_membership_commands.sql](91_room_membership_commands.sql)                     | Gestión autenticada de roles y estado de membresías por el propietario, con idempotencia y auditoría.                                                           |
-| [92_mini_wordle_commands.sql](92_mini_wordle_commands.sql)                             | Comando transaccional de guess, idempotencia, secuencia, recepción terminal y evaluación posterior.                                                             |
-| [93_logic_code.sql](93_logic_code.sql)                                                 | Eventos privados, progreso seguro y comando transaccional de intentos Logic-code.                                                                               |
-| [89_progressive_clues.sql](89_progressive_clues.sql)                                   | Eventos privados, metadatos/prefijo seguro y cálculo de penalización de Progressive-clues.                                                                      |
-| [94_progressive_clues.sql](94_progressive_clues.sql)                                   | Comando transaccional de revelación, idempotencia y locks de Progressive-clues.                                                                                 |
-| [95_matching.sql](95_matching.sql)                                                     | Proyección pública segura y validación server-side del mapa completo de Matching.                                                                               |
-| [96_media_asset_commands.sql](96_media_asset_commands.sql)                             | Handshake idempotente de preparación, lectura, confirmación y aborto de avatar.                                                                                 |
-| [97_media_asset_acl.sql](97_media_asset_acl.sql)                                       | ACL explícita de `media_assets` y comandos server-only.                                                                                                         |
-| [63_question_asset_helpers.sql](63_question_asset_helpers.sql)                         | Validación interna de assets de preguntas listos para publicación/uso.                                                                                          |
-| [68_competitive_question_formats.sql](68_competitive_question_formats.sql)             | Allowlist y validadores de formatos competitivos compartidos entre Flash, Supervivencia y Pirámide.                                                             |
-| [98_question_asset_commands.sql](98_question_asset_commands.sql)                       | Subida, confirmación, aborto y resolución autorizada de assets privados de preguntas.                                                                           |
-| [99_queens_01_schema.sql](99_queens_01_schema.sql)                                     | Tablas de eventos privados, índice de celdas y RLS para Queens legado y dinámico.                                                                               |
-| [99_queens_02_rules.sql](99_queens_02_rules.sql)                                       | Definiciones canónicas de validación, conflictos, tablero, progreso y respuesta.                                                                                |
-| [99_queens_03_commands.sql](99_queens_03_commands.sql)                                 | Comandos transaccionales de colocación, borrador y envío, con ACL server-only.                                                                                  |
-| [99_word_search.sql](99_word_search.sql)                                               | Eventos privados de Word-search, progreso seguro y comando transaccional de selección server-side.                                                              |
-| [99_escape.sql](99_escape.sql)                                                         | Validación inmutable de configuración y solución privada de Escape para publicación editorial.                                                                  |
-| [99_zip.sql](99_zip.sql)                                                               | Validación inmutable del contenido de Zip usado al publicar preguntas.                                                                                          |
-| [99_word_hashtag.sql](99_word_hashtag.sql)                                             | Contrato privado de Word-hashtag, progreso en `attempts.progress_payload` y comando transaccional de swap server-side.                                          |
-
-Las PK y restricciones UNIQUE cubren búsquedas de intento/item, recepción y clave idempotente.
-El índice parcial de intervalo abierto garantiza una sola interacción activa por intento; el de
-intento/item/inicio permite sumar visitas sin escanear todos los intentos. Los índices de FKs de
-unidades y recepciones evitan escaneos al comprobar referencias. Se conservan GiST de calendario y
-los índices de membresía/ranking. No se indexa JSONB sin una consulta que lo justifique.
-
-## Protocolo de servidor
-
-[Los puertos de aplicación](../../application/ports/attempt-commands.ts) distinguen inputs del
-navegador y comandos internos. [Los contratos](../../types/contracts/attempts.ts) no se activan en
-la UI. El adaptador de comandos deberá:
-
-1. Verificar sesión Auth, comenzar una transacción y establecer claims con `SET LOCAL` usando
-   parámetros, nunca copiando claims sin verificar. Usar `service_role` y garantizar commit/rollback
-   antes de devolver la conexión al pool. La credencial SQL no verifica JWT por sí sola.
-2. Generar el token aleatorio en el primer inicio y conservarlo de forma segura para reintentos.
-   La misma cookie permite recuperar el intento. Otro token devuelve `controlRequired`, se bloquea
-   y no revoca la sesión anterior. Si devuelve `controlRequired`, el destino debe confirmar el takeover explícitamente.
-3. Llamar `prepare_interaction` y **confirmar la transacción antes de devolver `publicPayload`**.
-   En la evolución de recuperación, si existe un intervalo abierto no resuelto, el adaptador debe
-   resolverlo primero con el comando transaccional de recuperación; no debe reentregar ese payload
-   ni su deadline usando otra clave.
-4. Llamar `receive_answer` y confirmar esa transacción antes de evaluar. PostgreSQL captura el
-   instante al entrar, verifica sesión, versión y orden bajo bloqueo, cierra el intervalo y guarda
-   el payload. `clientTimeUsedMs` es solo telemetría. Un envío tardío queda marcado `timedOut` y su
-   duración se limita al deadline; no puede disfrazarse con fechas enviadas por el cliente.
-5. Recuperar `read_evaluation_context(receipt_id, session_token)`: incluye recepción y contenido
-   congelado **con solución privada**. Validar el formato, componer el input del evaluador y usar
-   [evaluateReceipt](../../server/evaluation/evaluate-receipt.ts), que convierte milisegundos a los
-   segundos de la API existente. Ese resultado nunca se serializa al cliente como contexto privado.
-   `record_evaluation` persiste la evaluación asociada a la recepción; el procesamiento tardío no
-   incrementa la duración competitiva. No se prepara otra interacción mientras haya una recepción
-   pendiente de evaluación.
-6. Completar/acreditar o abandonar con sesión y versión. El cierre, la revocación, el asiento si
-   corresponde, la auditoría y el resultado idempotente son una sola transacción. Una segunda sesión
-   no puede escribir ni sustituir al controlador vigente durante el MVP.
-
-Cada visita de Alfabeto tiene su intervalo; pasar no crea una respuesta final. Volver acumula solo
-los intervalos de esa letra. La recuperación cerrará la letra visible con el futuro motivo
-`recovery_interrupted`, distinto del pase voluntario, antes de avanzar. El deadline global sigue avanzando durante transiciones y esperas;
-las demás modalidades empiezan su reloj al preparar la siguiente pregunta/nivel. La evaluación y
-transiciones fuera de intervalos no se suman a la duración del ranking. Al vencer Alfabeto, el
-adaptador debe resolver las letras pendientes mediante preparar/recibir timeout/evaluar, sin nuevo
-payload jugable, y completar. Las letras nunca visitadas tienen duración de interacción cero.
-No hay un proceso automático de timeout o recuperación de evaluaciones en este cambio.
-
-| Operación privada                                                                            | Autorización y garantía                                                                                                                                   |
-| -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `start_attempt`                                                                              | Miembro competitivo durante apertura para un inicio nuevo; recuperación sin nuevo intento.                                                                |
-| `take_over_attempt`                                                                          | Transfiere explícitamente el control con token candidato, versión, membresía y deadline validados; revoca la sesión anterior e incrementa `lock_version`. |
-| `prepare_interaction`                                                                        | Propietario y sesión vigente; persiste reloj antes de devolver contenido.                                                                                 |
-| `recover_attempt` / `read_attempt_recovery`                                                  | S04/S14/S15: evalúa como `unanswered` una interacción abierta, deriva progreso del modo y no reentrega payload.                                           |
-| `receive_answer`, `pass_interaction`                                                         | Sesión, item actual, versión y recepción autoritativa; pasar solo en Alfabeto antes del deadline.                                                         |
-| `read_evaluation_context`, `record_evaluation`                                               | Servidor confiable en contexto del propietario; recepción vinculada a versión congelada.                                                                  |
-| `complete_attempt`, `abandon_attempt`                                                        | Propietario y sesión vigente; cierre, sesiones, puntos y auditoría atómicos.                                                                              |
-| `accept_invitation`                                                                          | Actor verificado; sala activa, token, caducidad, usos y estado de membresía bajo bloqueo.                                                                 |
-| `invalidate_attempt`, `adjust_result`                                                        | Superadmin activo, motivo y versión; saldo y auditoría atómicos.                                                                                          |
-| `create_superadmin_flash_draft`, `update_superadmin_flash_draft`, `publish_superadmin_flash` | Solo superadmin; grafo versionado, solución privada, locks, concurrencia optimista, publicación atómica y auditoría segura.                               |
-
-El dispatcher genérico y sus helpers no tienen EXECUTE para los roles API. Las RPC
-`public.run_calendar_tick(jsonb)` y `public.expire_stale_attempts(jsonb)` solo son ejecutables
-por `service_role`; sus envoltorios invoker delegan en las funciones privadas existentes.
-PostgREST aplica `statement_timeout = 0` al tick y `5s` a la expiración independiente; el envoltorio
-del tick fija también `lock_timeout = 0` para evitar el límite heredado de `authenticator`, sin cambiar
-la llamada privada de expiración del tick o de los comandos de juego.
-Los errores de versión/idempotencia usan SQLSTATE `40001`; autorización `42501`, input
-`22023` y estado incompatible `55000`. El adaptador mapeará también errores estructurales de
-constraints/triggers y reintentará transacciones completas cuando proceda, conservando la clave.
+- Auth identifica al actor; `players.id` es la identidad propia del dominio. El servidor verifica
+  Auth y establece claims locales dentro de cada transacción. La credencial SQL no verifica JWT.
+- El navegador no envía actor, puntos, evaluación ni fechas autoritativas. Los comandos privados
+  usan sesión controladora, versión y clave idempotente; confirmar el reloj antes de entregar contenido.
+- Confirmar la recepción antes de evaluar. La evaluación usa contenido congelado y solución privada;
+  persistirla una vez, reconciliando recepciones antes de preparar otra interacción o cerrar.
+- Un resultado incierto se resuelve con replay exacto o recuperación autorizada. Cambiar de dispositivo
+  requiere transferencia explícita; revoca al controlador anterior y conserva intento y plazos.
+- El [ciclo de vida](../../docs/current/attempt-lifecycle.md) y la
+  [recuperación](../../docs/current/competitive-command-recovery.md) especifican cierre, permisos,
+  interrupción, inactividad e idempotencia. Las consecuencias y relojes de los seis modos están en
+  [sus contratos](../../docs/current/domain/mode-contracts.md).
+- `private` queda fuera de Data API. Los comandos privilegiados tienen propietario `postgres`,
+  `SECURITY DEFINER`, `search_path = ''` y nombres cualificados. `service_role` no dispone de DML
+  genérico sobre el dominio ni sustituye la autorización del actor.
+- Las RPC de mantenimiento solo permiten `service_role`. El tick aplica `statement_timeout = 0`
+  y `lock_timeout = 0`; la expiración independiente tiene límite de 5 s. No exponerlas al navegador.
+- Publicaciones, versiones, recepciones y hechos de puntuación se preservan. Ajustar o invalidar
+  exige motivo, autorización y auditoría; los ensayos en memoria no acreditan puntos oficiales.
 
 ## Matriz de permisos SQL directos
 
@@ -361,101 +119,39 @@ y sus soluciones de la versión original. La expiración conserva los 15 minutos
 y reconoce el cierre efectivo o un deadline vencido, con revocación de sesión y auditoría.
 Las RPC históricas se exponen únicamente mediante estas proyecciones comunes.
 
-## Denegación futura e inventario
+## Inventario y comprobaciones
 
-La exposición de la API queda limitada a los schemas declarados en `config.toml`; la seguridad de
-objetos nuevos no depende de una clave no soportada por la CLI. Los privilegios predeterminados
-revocan grants globales y de `public`/`private` para objetos futuros creados por `postgres`, incluido
-EXECUTE heredado de PUBLIC. Las revocaciones explícitas siguen protegiendo los objetos actuales.
-[security-inventory.json](../security-inventory.json) registra cada tabla, vista
-y función del proyecto, incluso las de acceso denegado. No se regenera automáticamente al verificar.
+El [inventario de seguridad](../security-inventory.json) registra tablas, vistas y funciones del
+dominio, incluidas las de acceso denegado. No se regenera automáticamente al verificar.
+El [comprobador](../../scripts/supabase-security-inventory.mjs) contrasta el catálogo real con el
+inventario: propietarios, privilegios efectivos —incluidos PUBLIC y herencia—, columnas,
+delegación, RLS, ACL, `search_path` y atributos de funciones. Las vistas requieren
+`security_invoker` y una frontera documentada. Los objetos de extensiones se excluyen del
+inventario del dominio. Un objeto no registrado o un grant inesperado hacen fallar la comprobación,
+aunque el objeto no conceda acceso a los roles API.
 
-El [verificador](../../scripts/supabase-security-inventory.mjs) compara el catálogo real, privilegios
-efectivos (incluidos PUBLIC/herencia), columnas, delegación, propietarios, RLS y ACL/search_path de
-funciones. La vista requiere `security_invoker` y una frontera documentada. Los objetos de extensiones
-se excluyen del inventario del dominio. Crear una tabla/vista/función no registrada falla aunque no
-conceda acceso; grants inesperados también fallan.
+Los privilegios predeterminados de `postgres` se revocan globalmente y por schema; toda capacidad
+nueva necesita una concesión explícita. Los defaults solo afectan a objetos futuros del rol
+creador al que se aplican: no cambian objetos existentes ni los creados por otro propietario.
+Al introducir otro rol de despliegue, aplicar también sus defaults y revisar las revocaciones y
+concesiones de los objetos existentes en la misma transacción. Comprobar en el entorno destino
+la exposición de schemas y los privilegios efectivos del rol creador real.
 
-Para un despliegue futuro: revisar el diff declarativo y aplicar las revocaciones predeterminadas
-con el **rol creador real**, las revocaciones de objetos existentes y sus grants deliberados en una
-transacción. Repetir los default privileges para cualquier otro rol de despliegue; no afectan a los
-objetos preexistentes ni a lo creado por otro propietario. Verificar la configuración de exposición
-y el catálogo/ACL efectivo en ese entorno. Nada de ello se ha ejecutado remotamente aquí.
+```bash
+npm run schema:revision:check
+npm run supabase:schema:test
+npm run supabase:schema:test -- --migrations
+npm run supabase:schema:upgrade:test
+npm run supabase:schema:reconciliation:test
+npm run supabase:types:check
+```
 
-La [recuperación competitiva](../../docs/current/competitive-command-recovery.md) añade autorización
-antes del replay, evaluación persistida y resultado terminal propio independiente de la cookie.
-No añade tablas ni altera puntos históricos.
+Las pruebas SQL requieren Docker y un contenedor de PostgreSQL disponible. Crean una base aleatoria,
+la eliminan al terminar y no aceptan una base destino existente. Los fixtures de `tests/support`
+son técnicos y no constituyen un seed editorial. SQL/pgTAP no sustituye Auth, HTTP ni los E2E.
+[QA](../../docs/current/qa.md) conserva la matriz de comandos y sus límites.
 
-## Pruebas y riesgos pendientes
-
-Ejecutar `npm run supabase:schema:test` con Docker y el PostgreSQL local de Supabase en marcha.
-El ejecutor crea una base aleatoria separada, aplica los archivos SQL declarativos y el inventario,
-ejecuta pgTAP y abre conexiones independientes para carreras. Siempre elimina esa base al terminar. Puede elegirse el
-contenedor con `SUPABASE_DB_CONTAINER`; no se acepta una base destino existente. El bootstrap Auth
-mínimo y los fixtures viven en `tests/support`, solo para esa base desechable; no son seeds.
-
-| Suite                                        | Evidencia                                                                                                                                                                    |
-| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `initial_schema_rls.test.sql`                | Aislamiento de salas, columnas privadas, Auth anónimo, ownership, catálogo congelado, pruebas fantasma, cero puntos, empates e histórico.                                    |
-| `commands.test.sql`                          | Defaults futuros, ACL sin DML, idempotencia, manipulación temporal, bloqueo de segunda sesión, Alfabeto, timeout, evaluación lenta e invitación atómica.                     |
-| `command_boundaries.test.sql`                | Identidad/actor, acceso privado al evaluador, rollback de inicio/cierre/invalidación, reloj por nivel/pregunta, reanudación y continuidad tras cierre.                       |
-| `s07_flash_history.test.sql`                 | Historial común cerrado, publicaciones vacías/en curso/canceladas, ranking histórico, abandonos parciales y revisión autorizada mixta de Flash/Supervivencia/Pirámide.       |
-| `room_history_effective_alphabet.test.sql`   | Cierre efectivo sin tick, límites temporales, metadatos y respuestas de Alfabeto, expiración, aislamiento y permisos de revisión.                                            |
-| `admin_portal_reads.test.sql`                | Contexto global del superadmin, salas activas, ACL del RPC, claims falsos y ausencia de acceso privado directo.                                                              |
-| `s08_superadmin_room_commands.test.sql`      | Creación transaccional de sala, owner y grupo inicial; validaciones, slug, colisiones, ACL, rollback, idempotencia y auditoría agregada.                                     |
-| `s13_flash_variable_questions.test.sql`      | Flash de 2, 5 y 20 preguntas, puntos por item, suma de 100, publicación, crecimiento y reducción del grafo editorial.                                                        |
-| `s14_superadmin_challenge_reads.test.sql`    | Catálogo protegido que incluye contenido Survival sin filtrar documentos ni soluciones.                                                                                      |
-| `s14_survival_editorial.test.sql`            | Validación de vidas/formato, publicación y programación Survival, y actores no autorizados.                                                                                  |
-| `s14_survival_attempts.test.sql`             | Evaluación/puntos/vidas autoritativos, eliminación, recuperación, revisión propia y spectator sin acceso.                                                                    |
-| `s15_pyramid_editorial.test.sql`             | Validación de siete niveles/briefings y rechazo de formatos sin evaluador competitivo.                                                                                       |
-| `s15_pyramid_authoritative.test.sql`         | Avance, salto/cierre manipulado, recibos, timeout, recuperación, cima/fallo, revisión propia y acreditación única.                                                           |
-| `s17_editorial_versioning.test.sql`          | Clonación/versionado de Flash, Survival y Pyramid, referencias de preguntas, idempotencia, archivado, comparación sin soluciones privadas, calendario y lecturas históricas. |
-| `s20_superadmin_attempt_inspection.test.sql` | ACL de lecturas, aislamiento por sala/publicación, exclusión de tests, detalle sin soluciones, ajustes idempotentes, invalidación, rollback y ranking efectivo.              |
-| `s21_attempt_expiration.test.sql`            | Expiración tras cierre/deadline, umbral de 15 minutos, limpieza de sesiones/progreso/auditoría, ausencia de puntos, idempotencia y exclusión de intentos test.               |
-| `test-supabase-concurrency.mjs`              | Dos conexiones reales: inicio simultáneo con segunda sesión bloqueada, último uso de invitación, recepción duplicada y acreditación concurrente con invalidación.            |
-| Contratos y evaluador TS                     | Inputs sin identidad/tiempos/puntos autoritativos; conversión ms/segundos y política de timeout del evaluador existente.                                                     |
-
-Los tests de defaults, DML y respuesta sin presentación fallan con el diseño anterior. Los fallos
-provocados en auditoría demuestran que no quedan operaciones parciales. La validación cubre
-semántica PostgreSQL con roles reales del cluster y Auth mínimo, no un login GoTrue o HTTP real.
-
-Validación histórica del 2026-09-29 (expiración de intentos inactivos): `check-supabase-schema` cargó **54 archivos declarativos**
-y el inventario de seguridad; pasan las suites existentes, S20 (21 checks) y S21 (14 checks), además de las carreras
-las suites anteriores y las carreras con conexiones independientes. Las suites históricas incluyen
-**26 checks pgTAP de E01, 24 de E02, 28 de E03,
-26 de E04, 24 de E05, 12 de S05 y 19 de E10**, los casos de S07, S10, S11, S12 y S13, carreras entre conexiones independientes
-y las pruebas TypeScript registradas en esa ejecución. También pasaron comprobación de tipos, ESLint,
-arquitectura y los enlaces de documentación.
-La suite SQL no sustituye
-las pruebas Auth/HTTP/E2E, que se ejecutan en escenarios locales del portal, S02, S03, S04, S06,
-S07, S10, S11 y S12, además de E01–E06; S06 añade
-integración PostgREST y E2E de dos rankings, S07 añade historial y revisión tras refrescar y el
-portal añade acceso privado y recarga en navegador; S08 añade búsqueda exacta, creación, idempotencia,
-rollback y recarga del portal.
-
-La credencial `service_role` sigue siendo confiable: tiene lectura interna amplia, puede invocar el
-evaluador privilegiado y puede establecer claims en una conexión SQL. Evitar endpoints genéricos que
-acepten evaluación/claims del navegador. El adaptador debe verificar Auth, validar JSON de formato,
-limitar tamaño de peticiones y no filtrar soluciones. `postgres` y los roles de mantenimiento están
-fuera de esta frontera; pueden alterar ACL/triggers y no deben ser credenciales de ejecución normal.
-
-Quedan pendientes el vínculo y despliegue controlado en un proyecto remoto, pruebas Storage/GraphQL/
-Realtime si se habilitan, retención de payloads e idempotencia, reemplazo/archivado editorial,
-validación de contenido de otros formatos y planes EXPLAIN con volumen real. La selección de duraciones/
-configuración de cada modo se valida al publicar; SQL protege límites positivos y versiones congeladas,
-no todas las reglas de formato del producto.
-
-Referencias oficiales consultadas el 2026-09-14:
-[esquemas declarativos Supabase](https://supabase.com/docs/guides/local-development/declarative-database-schemas),
-[RLS](https://supabase.com/docs/guides/database/postgres/row-level-security),
-[funciones](https://supabase.com/docs/guides/database/functions) y
-[ALTER DEFAULT PRIVILEGES PostgreSQL 17](https://www.postgresql.org/docs/17/sql-alterdefaultprivileges.html).
-
-## Contrarreloj con Conectar parejas
-
-La migración `20261016144218_time_trial_connect_pairs` añadió Conectar parejas a Contrarreloj.
-`20261016193510_connect_pairs_variable_square_boards` amplía su contrato a tableros cuadrados de
-4×4 a 8×8 y de tres parejas al lado del tablero, sin cambiar el payload v1 ni los tableros 5×5
-existentes. PostgreSQL valida las dimensiones, los endpoints y las rutas completas antes de recibir
-una respuesta. No añade tablas, columnas ni RPC públicas. Aplicar la migración antes de desplegar la
-aplicación y publicar contenido con tamaños nuevos. No se despliega automáticamente en local o staging.
+La [referencia anterior](../../docs/archive/reports/schema-reference-before-2026-10-24.md)
+conserva un resumen del contexto y las verificaciones históricas. Los pendientes de
+staging, política de resultados, invitaciones y retención están en el
+[backlog](../../docs/implementation-plan.md); no se deducen de una migración antigua.

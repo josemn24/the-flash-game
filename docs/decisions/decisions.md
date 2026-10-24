@@ -5,8 +5,8 @@
 - Estado: aprobado.
 - Versión: 1.2.
 - Fecha: 2026-09-15.
-- Última actualización: 2026-10-11; reglas de Contrarreloj aprobadas para trabajo futuro, con
-  implementación y detalles específicos pendientes.
+- Último contraste de implementación: 2026-10-24. Se conservan las fechas originales de las decisiones;
+  las capacidades y verificaciones por entorno se consultan en [estado actual](../current/status.md).
 - Este documento define comportamiento e invariantes, no tablas SQL concretas.
 
 ## 1. Producto y participación
@@ -35,15 +35,16 @@
   “desafío superado” solo al completar correctamente los siete niveles. No existe un estado
   funcional global de desafío “superado” o “fallido”, ni ese feedback específico se convierte en
   una propiedad de dominio.
-- Solo abandonar explícitamente un intento iniciado produce `abandoned`; consume el intento y se
+- Abandonar explícitamente un intento iniciado produce `abandoned`; consume el intento y se
   proyecta como `notCompleted`. Cerrar la pestaña o perder conexión activa la recuperación
-  autoritativa por modo y no es, por sí solo, una transición terminal.
+  autoritativa por modo y no confirma por sí solo un abandono voluntario. También existen los
+  cierres server-side por pérdida de permisos e inactividad definidos en sus contratos.
 - La política predeterminada permite un único intento. Un modo puede sustituirla explícitamente y,
   si permite varios intentos, cuenta el mejor.
 - Un intento `in_progress` tiene una única sesión controladora. La decisión aprobada el 2026-10-06
   permite transferirla explícitamente a otra sesión de la misma cuenta mediante «Continuar aquí»,
-  revocando atómicamente la anterior. El runtime actual aún bloquea un token distinto: la
-  transferencia está pendiente de implementar según la sección 17 y el ADR-0006.
+  revocando atómicamente la anterior. La transferencia está implementada según la sección 17
+  y el ADR-0006; no se activa automáticamente por login o por recuperar una cookie.
 
 ## 2. Jugadores e identidad
 
@@ -347,7 +348,7 @@
 - Los miembros activos sin puntuación pueden mostrarse con cero Flash Points en la temporada.
 - Los antiguos miembros permanecen si consiguieron Flash Points, identificados como tales o
   anonimizados cuando corresponda.
-- **Decisión vigente provisional (2026-09-14):** los cinco modos actuales comparten el comparador del
+- **Decisión vigente provisional (2026-09-14):** Flash, Alfabeto, Supervivencia, Narrativa y Pirámide comparten el comparador del
   ranking por desafío: primero más Flash Points, después menor duración efectiva del intento y,
   finalmente, `startedAt` más antiguo. La duración efectiva es la suma autoritativa de
   `AttemptAnswer.timeUsedMs`; no incluye cuenta atrás, pausas ni esperas externas.
@@ -358,8 +359,8 @@
 - Un modo futuro podrá sustituir esta regla mediante una decisión específica del modo, sin modificar
   este comparador común ni los contratos de los demás modos.
 - Contrarreloj ya tiene aprobado su comparador propio en la
-  [sección 21](#21-contrarreloj-reglas-acordadas), pendiente de implementación. No modifica los
-  criterios competitivos de los cinco modos actuales.
+  [sección 21](#21-contrarreloj-reglas-acordadas), implementado en su alcance actual. No modifica los
+  criterios competitivos de esos cinco modos.
 - En la temporada manda la suma de Flash Points. Los empates comparten posición y cualquier orden adicional
   es únicamente visual.
 - Los miembros y espectadores pueden consultar los rankings de su sala.
@@ -461,7 +462,8 @@
 - Login, refresh y apertura de URL no transfieren control automáticamente. Un intento terminal
   permite consultar resultado, sin reabrir la partida.
 - [ADR-0006](adr/0006-explicit-attempt-control-transfer.md) sustituye el aplazamiento anterior,
-  documenta garantías y casos de aceptación. La implementación permanece pendiente.
+  documenta garantías y casos de aceptación. Cliente, API y PostgreSQL la implementan; queda
+  validación multi-dispositivo en staging.
 
 ## 18. Esperas y reintentos de peticiones
 
@@ -497,7 +499,7 @@
 - Los borradores de formularios administrativos o de perfil quedan fuera de esta decisión y
   requieren una política específica. No se ha aprobado su guardado automático.
 - La [implementación competitiva](../current/competitive-command-recovery.md) incorpora recuperación
-  durable y pruebas de pérdida de confirmación en los cinco modos. La validación en staging sigue
+  durable para los seis modos. Los resultados de la entrega original están fechados en su informe. La validación en staging sigue
   pendiente antes de publicar.
 - **Casos de aceptación:** aceptar una respuesta y recargar conserva una sola evaluación y los
   mismos puntos/plazos; escribir sin enviar y recargar no restaura el texto ni lo puntúa; perder
@@ -530,10 +532,10 @@
   la pérdida del permiso, rechazar respuesta, finalización y transferencia posteriores sin efecto.
   Una recepción anterior pendiente de evaluación se conserva para reconciliación interna, sin
   conceder permiso al jugador para continuar ni acreditar el intento cerrado.
-- **Implementación pendiente:** los comandos actuales exigen membresía activa y ya deniegan
-  acciones tras expulsar; la eliminación de membresía no cierra automáticamente el intento.
-  Implementar cierre idempotente, motivo auditado, coordinación de concurrencia y aviso de UI
-  en todos los caminos que retiren el permiso competitivo, sin depender del navegador del expulsado.
+- **Implementado:** la retirada del permiso coordina el cierre idempotente, el motivo auditado,
+  la revocación del control y la señalización de UI, sin depender del navegador del expulsado.
+  Las garantías y la evidencia están en [recuperación competitiva](../current/competitive-command-recovery.md)
+  y en la [matriz de resiliencia](../current/resilience-matrix.md).
 - **Casos de aceptación:** expulsar antes de iniciar impide crear intento; expulsar durante juego
   deja un único cierre no completado y cero acreditaciones, conservando hechos anteriores; intentar
   responder/finalizar/transferir tras expulsión no muta progreso; completar antes de expulsar conserva

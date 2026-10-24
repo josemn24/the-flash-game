@@ -1,17 +1,18 @@
 # Modo, estado y resultado de los intentos
 
-Estado: vigente. Contrato implementado en TypeScript y PostgreSQL. Revisión canónica: `20261015212231_question_library_pagination`.
+Estado: vigente. Contrato implementado en TypeScript y PostgreSQL. La revisión canónica
+se consulta en [estado actual](status.md).
 
 `status` describe el ciclo de vida. `outcome` conserva el desenlace oficial y no determina los
 puntos. El modo procede de la versión inmutable del desafío, sin una columna adicional en
 `public.attempts`.
 
-| Estado        | Flash, Alfabeto, Narrative   | Supervivencia                | Pirámide                     |
-| ------------- | ---------------------------- | ---------------------------- | ---------------------------- |
-| `in_progress` | `null`                       | `null`                       | `null`                       |
-| `abandoned`   | `null`                       | `null`                       | `null`                       |
-| `completed`   | `null`                       | `survived` / `eliminated`    | `summit` / `failed`          |
-| `invalidated` | Conserva el resultado previo | Conserva el resultado previo | Conserva el resultado previo |
+| Estado        | Flash, Alfabeto, Narrative, Contrarreloj | Supervivencia                | Pirámide                     |
+| ------------- | ---------------------------------------- | ---------------------------- | ---------------------------- |
+| `in_progress` | `null`                                   | `null`                       | `null`                       |
+| `abandoned`   | `null`                                   | `null`                       | `null`                       |
+| `completed`   | `null`                                   | `survived` / `eliminated`    | `summit` / `failed`          |
+| `invalidated` | Conserva el resultado previo             | Conserva el resultado previo | Conserva el resultado previo |
 
 Un intento activo puede completarse o abandonarse. Solo un intento completado o abandonado
 puede invalidarse; la invalidación conserva el resultado, puntuación, respuestas y tiempos

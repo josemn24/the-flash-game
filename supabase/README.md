@@ -23,8 +23,8 @@ La configuración de Supabase usa `pg-delta` con `declarative_schema_path = "./s
 de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/README.md).
 
 El historial activo comienza con `20261011180045_initial_schema.sql`, un baseline generado desde los
-82 archivos declarativos, y continúa con las migraciones incrementales. La revisión más reciente es
-`20261016193510_connect_pairs_variable_square_boards`; las migraciones anteriores al baseline permanecen en Git,
+82 archivos declarativos, y continúa con las migraciones incrementales. La revisión canónica está centralizada en
+[estado actual](../docs/current/status.md) y se comprueba con `schema:revision:check`. Las migraciones anteriores al baseline permanecen en Git,
 pero no forman parte del historial activo.
 
 La [extracción de operaciones de intentos](../docs/current/sql-attempt-command-handlers-refactor.md)
@@ -62,7 +62,7 @@ Supabase local iniciado; el runner no ejecuta el tick sobre la base de la aplica
 La [validación SQL por formato](../docs/current/sql-question-validation-refactor.md) documenta
 los helpers privados, las pruebas de compatibilidad y la reversión del último refactor.
 
-La [auditoría de las 14 funciones pendientes](../docs/current/supabase-function-drift-audit.md)
+La [auditoría de las 14 funciones pendientes](../docs/archive/reports/supabase-function-drift-audit-2026-10-09.md)
 clasifica las diferencias anteriores entre esquema e historial y documenta cómo reproducirlas.
 La [reconciliación de comandos competitivos](../docs/current/competitive-command-reconciliation.md)
 resuelve esas diferencias, documenta los cambios intencionados y prueba actualización y reversión.
@@ -196,8 +196,6 @@ supabase/
 
 Para preparar datasets, fixtures, el perfil mínimo o staging, consulta la
 [guía de preparación de entornos](../docs/current/supabase-clean-installation.md#qué-necesito-preparar).
-Para arrancar el stack y verificar el desarrollo local, consulta
-[`local-development.md`](local-development.md).
 Para los límites de seguridad y el modelo de persistencia, consulta
 [`architecture.md`](architecture.md). El estado funcional y las capacidades pendientes se mantienen
 en [`docs/current/status.md`](../docs/current/status.md).
@@ -225,11 +223,9 @@ usar `db schema declarative sync`, que compara `schemas/` con el historial de mi
 Se versionan `config.toml`, todos los archivos de `schemas/`, todas las migraciones, los seeds y
 esta documentación. `.temp/` y `.branches/` son estado local de la CLI y no se versionan.
 
-## Contrarreloj con Conectar parejas
+## Contratos por modo
 
-La migración `20261016144218_time_trial_connect_pairs` añadió Conectar parejas a Contrarreloj.
-`20261016193510_connect_pairs_variable_square_boards` amplía su contrato a tableros cuadrados de
-4×4 a 8×8 y de tres parejas al lado del tablero, sin cambiar el payload v1 ni los tableros 5×5
-existentes. PostgreSQL valida las dimensiones, los endpoints y las rutas completas antes de recibir
-una respuesta. No añade tablas, columnas ni RPC públicas. Aplicar la migración antes de desplegar la
-aplicación y publicar contenido con tamaños nuevos. No se despliega automáticamente en local o staging.
+Los detalles de formatos, payloads, tamaños de tablero y recuperación pertenecen a los
+[contratos por modo](../docs/current/domain/mode-contracts.md) y al
+[contrato de Contrarreloj](../docs/current/domain/contrarreloj.md). Este workflow mantiene
+el procedimiento de migración; no duplica sus requisitos editoriales.

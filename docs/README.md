@@ -6,24 +6,24 @@ capacidades aún pendientes no deben interpretarse como funcionalidades ya dispo
 
 ## Dónde buscar
 
-| Necesito saber...                               | Consulta                                                                                                   |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Qué ha cambiado en cada versión                 | [`CHANGELOG.md`](../CHANGELOG.md)                                                                          |
-| Qué está implementado ahora                     | [`current/status.md`](current/status.md)                                                                   |
-| Cómo está organizado el dominio                 | [`current/domain/README.md`](current/domain/README.md)                                                     |
-| Qué casos de uso debe soportar                  | [`current/use-cases.md`](current/use-cases.md)                                                             |
-| Qué arquitectura debe guiar la evolución        | [`current/architecture.md`](current/architecture.md)                                                       |
-| En qué orden implementar backend y persistencia | [`implementation-plan.md`](implementation-plan.md)                                                         |
-| Cómo organizar la persistencia futura           | [`current/data-model.md`](current/data-model.md)                                                           |
-| Cómo funcionan las fronteras servidor/cliente   | [`current/architecture/server-client-architecture.md`](current/architecture/server-client-architecture.md) |
-| Qué decisiones son normativas                   | [`decisions/README.md`](decisions/README.md)                                                               |
-| Cómo se crean formatos y desafíos               | [`content/README.md`](content/README.md)                                                                   |
-| Cómo funciona el modo Contrarreloj              | [`current/domain/contrarreloj.md`](current/domain/contrarreloj.md)                                         |
-| Qué estrategia e hipótesis siguen activas       | [`product/README.md`](product/README.md)                                                                   |
-| Cómo utilizar los colores y estados de la UI    | [`current/design-tokens.md`](current/design-tokens.md)                                                     |
-| Cómo consultar y ampliar el design system       | [`current/design-system.md`](current/design-system.md)                                                     |
-| Cómo probar desde un móvil u otro equipo        | [`current/local-device-testing.md`](current/local-device-testing.md)                                       |
-| Qué documentos describen etapas anteriores      | [`archive/README.md`](archive/README.md)                                                                   |
+| Necesito saber...                             | Consulta                                                                                                   |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Qué ha cambiado en cada versión               | [`CHANGELOG.md`](../CHANGELOG.md)                                                                          |
+| Qué está implementado ahora                   | [`current/status.md`](current/status.md)                                                                   |
+| Cómo está organizado el dominio               | [`current/domain/README.md`](current/domain/README.md)                                                     |
+| Qué casos de uso debe soportar                | [`current/use-cases.md`](current/use-cases.md)                                                             |
+| Qué arquitectura debe guiar la evolución      | [`current/architecture.md`](current/architecture.md)                                                       |
+| Qué trabajo técnico sigue pendiente           | [`implementation-plan.md`](implementation-plan.md)                                                         |
+| Cómo está organizada la persistencia          | [`current/data-model.md`](current/data-model.md)                                                           |
+| Cómo funcionan las fronteras servidor/cliente | [`current/architecture/server-client-architecture.md`](current/architecture/server-client-architecture.md) |
+| Qué decisiones son normativas                 | [`decisions/README.md`](decisions/README.md)                                                               |
+| Cómo se crean formatos y desafíos             | [`content/README.md`](content/README.md)                                                                   |
+| Cómo funciona el modo Contrarreloj            | [`current/domain/contrarreloj.md`](current/domain/contrarreloj.md)                                         |
+| Qué estrategia e hipótesis siguen activas     | [`product/README.md`](product/README.md)                                                                   |
+| Cómo utilizar los colores y estados de la UI  | [`current/design-tokens.md`](current/design-tokens.md)                                                     |
+| Cómo consultar y ampliar el design system     | [`current/design-system.md`](current/design-system.md)                                                     |
+| Cómo probar desde un móvil u otro equipo      | [`current/local-device-testing.md`](current/local-device-testing.md)                                       |
+| Qué documentos describen etapas anteriores    | [`archive/README.md`](archive/README.md)                                                                   |
 
 ## Secciones
 
@@ -52,22 +52,12 @@ capacidades aún pendientes no deben interpretarse como funcionalidades ya dispo
 Si una nueva decisión contradice una regla vigente, debe actualizarse primero la documentación de
 decisiones y después los documentos afectados.
 
-## Estado de la última revisión
+## Mantenimiento
 
-- Revisión funcional general: 2026-09-30; actualización de Supabase local: 2026-10-11.
-- Cierre de la fase 6 de unificación de Pirámide: 2026-10-19. Todas sus entradas jugables comparten
-  controlador y vista con proveedores remoto y local; código anterior retirado y criterios
-  acreditados en la [matriz de cierre](current/qa.md#cierre-de-la-fase-6--2026-10-19).
-- 31 formatos de pregunta, seis modos, desafíos editoriales y publicaciones mock; las slices persistidas
-  actuales incluyen S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19, los siete formatos competitivos S15
-  y E01–E06/E10 sobre Supabase local.
-- Contrarreloj está implementado para Queens y Conectar parejas de 4×4 a 8×8; una secuencia de Conectar parejas puede mezclar tamaños.
-  Las [reglas](current/domain/contrarreloj.md) y la [guía editorial](content/guidelines/contrarreloj.md)
-  describen el reloj global, la edición libre de caminos y la recuperación estricta.
-- La migración más reciente es `20261016193510_connect_pairs_variable_square_boards`, verificada sobre el baseline
-  `20261011180045_initial_schema`, generado desde 82 archivos declarativos de esquema, con 31 tablas,
-  dos vistas, funciones públicas/privadas y políticas RLS.
-- El baseline local pasó `supabase:schema:test`, la validación por migraciones, reconciliación,
-  `schema:revision:check`, `supabase:types:check`, `docs:check` y `verify:pilot`; el detalle y el
-  estado limpio posterior al reset están en [`current/qa.md`](current/qa.md).
-- La validación del baseline se limitó a Supabase local. No se ejecutaron operaciones remotas.
+El [estado actual](current/status.md) concentra capacidades y revisión canónica. Este índice no
+duplica inventarios de esquema, listas de slices ni cifras de pruebas. [QA](current/qa.md)
+define cómo comprobar y [el archivo](archive/README.md) conserva los resultados fechados.
+
+Al cambiar documentación, distinguir regla aprobada, capacidad implementada y evidencia por
+entorno. Mover los informes cerrados al archivo conservando enlaces relativos; no tratar un
+resultado local como validación de staging. Las propuestas activas permanecen en producto.

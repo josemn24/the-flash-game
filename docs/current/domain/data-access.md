@@ -367,9 +367,8 @@ contratos del editor:
 | `/admin/questions/new`                 | `getSuperadminNewQuestionPageModel` + editor vacío       |
 | `/admin/questions/[questionVersionId]` | `getSuperadminQuestionVersionPageModel` + detalle/editor |
 
-No existen rutas de detalle para salas, temporadas o contenido. Los RPCs, comandos, payloads de
-Server Actions y permisos permanecen en sus módulos originales; esta extracción solo cambia la
-composición y la mantenibilidad de la UI.
+El portal dispone de detalle de sala, desafíos y preguntas; temporadas y calendario se
+componen en el detalle de sala. Los RPCs, comandos y permisos conservan sus módulos propios.
 
 ### Criterios de pulido y validación
 
@@ -388,7 +387,7 @@ salas, temporadas, contenido y calendario.
   contextualizado en una sala.
 - Los miembros antiguos pueden figurar en resultados históricos si eran competitivos cuando
   iniciaron el intento, pero ya no pueden leer la sala.
-- El historial exige una membresía activa del lector, incluye publicaciones `flash`, `survival` y `pyramid` `closed` sin
+- El historial exige una membresía activa del lector, incluye publicaciones de los seis modos en estado `closed` sin
   intentos `in_progress` y conserva publicaciones sin participantes. Las filas competitivas excluyen
   `test`, `invalidated` y `cancelled`; los espectadores no aparecen como jugadores.
 - La revisión propia y ajena exige `owner`, `admin` o `member`; `spectator` puede consultar historial y
@@ -424,8 +423,9 @@ formatos ni la evaluación local en rutas mock/práctica. Los recorridos competi
 Alphabet, Supervivencia, Narrative y Pirámide usan proyecciones `Server*Challenge` y lecturas que
 no envían soluciones ni niveles futuros.
 
-`RoomSessionProvider` y el `localStorage` de Pirámide permanecen disponibles solo en recorridos
-mock/práctica. Los modelos
+Los proveedores locales de Flash, Supervivencia, Pirámide, Alfabeto y Contrarreloj mantienen
+la autoridad en memoria en demos y ensayos autorizados; Pirámide ya no conserva su almacenamiento
+anterior en `localStorage`. Los modelos
 Supabase de S06/S07 no fusionan `localResults` ni `RoomSessionProvider`: el servidor es la única
 fuente de los rankings, historial y revisión históricos.
 

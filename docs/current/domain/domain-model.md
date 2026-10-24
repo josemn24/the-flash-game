@@ -11,7 +11,7 @@ Es la referencia para hablar del dominio en las siguientes fases. Distingue las 
 de las cuestiones abiertas y no define tablas, schemas ORM, APIs, endpoints ni arquitectura de
 backend.
 
-Última actualización: 2026-09-16.
+Modelo original: 2026-09-16. Último contraste documental: 2026-10-24.
 
 ## 1. Visión general del modelo
 
@@ -142,8 +142,8 @@ del contenido público de la partida competitiva.
 
 El formato define la interacción de una pregunta; el catálogo actual contiene 31 formatos. El modo
 define el flujo de nivel superior y sus reglas de inicio, tiempo, finalización, puntuación,
-revisión y desempate. Los cinco modos actuales son `flash`, `alphabet`, `survival`, `narrative` y
-`pyramid`.
+revisión y desempate. Los seis modos actuales son `flash`, `alphabet`, `survival`, `narrative`,
+`pyramid` y `time-trial`.
 
 Los estados internos de un modo —por ejemplo `summit`/`failed` en La Pirámide o `survived`/
 `eliminated` en Supervivencia— no son estados globales del intento.
@@ -327,10 +327,11 @@ intento en `abandoned`, ni convierte la publicación en `expired`.
   debe nombrarlo o eliminar la sala antes de salir.
 - Una publicación cancelada conserva sus intentos para auditoría, pero no aparece como finalizada
   ordinaria ni suma al ranking.
-- Cada modo define sus reglas de tiempo, crédito parcial, penalizaciones y finalización. Los cinco
-  modos actuales comparten provisionalmente el comparador del ranking por desafío: más Flash Points,
+- Cada modo define sus reglas de tiempo, crédito parcial, penalizaciones y finalización. Flash,
+  Alfabeto, Supervivencia, Narrativa y Pirámide comparten el comparador del ranking por desafío: más Flash Points,
   menor duración efectiva (suma de `AttemptAnswer.timeUsedMs`) y `startedAt` más antiguo; los empates
   completos comparten posición (`1, 1, 3`). El ranking de temporada solo usa Flash Points.
+  Contrarreloj compara pruebas resueltas y tiempo hasta el último acierto.
   Las penalizaciones no pueden producir puntuación negativa.
 - `completedAt`, `lastCorrectAt` y otras marcas específicas se conservan para historial y métricas,
   pero no son criterios del ranking común.

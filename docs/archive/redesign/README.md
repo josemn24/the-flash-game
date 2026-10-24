@@ -9,7 +9,7 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 
 - Estado de la especificación: dirección visual, tipografía, baseline, primitivas y laboratorio vivo aprobados. El vertical slice está integrado y la biblioteca de 31 formatos usa Flash Pop como sistema visual único.
 - Estado de QA: este documento conserva la fotografía histórica de la Fase 4 en
-  [`qa-fase-4.md`](qa-fase-4.md). El estado actual está en [`../../current/qa.md`](../../current/qa.md).
+  [`qa-fase-4.md`](qa-fase-4.md). Las comprobaciones actuales están en [`../../current/qa.md`](../../current/qa.md).
 - Alcance de validación: lobby, pregunta, feedback, resultado y persistencia de intento único.
 - Plataforma inicial: web responsive, con prioridad móvil.
 - Resolución de referencia móvil: 390 × 844 px.
@@ -22,7 +22,7 @@ Esta carpeta define la evolución de The Flash hacia una experiencia más alegre
 3. [`03-design-system.md`](03-design-system.md): tokens, componentes y reglas de accesibilidad.
 4. [`04-screen-blueprints.md`](04-screen-blueprints.md): arquitectura y especificación del vertical slice.
 5. [`05-game-feel.md`](05-game-feel.md): movimiento, feedback, sonido y háptica.
-6. [`06-implementation-roadmap.md`](06-implementation-roadmap.md): fases, impacto técnico y criterios de aceptación.
+6. [`06-implementation-roadmap.md`](06-implementation-roadmap.md): resumen del rediseño, criterios técnicos y propuestas históricas de validación visual y social.
 7. [`07-visual-direction-decision.md`](07-visual-direction-decision.md): propuestas comparadas y dirección visual seleccionada.
 8. [`08-typography-decision.md`](08-typography-decision.md): familias aprobadas, responsabilidades y reglas de uso.
 9. [`baseline/README.md`](baseline/README.md): capturas reproducibles del producto anterior a Flash Pop.

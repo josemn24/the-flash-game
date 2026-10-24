@@ -28,7 +28,8 @@ de navegador, Tabarnia y BetaVIP ya reinician la base; no necesitan un reset pre
 también utiliza staging. Los archivos `production-*` y el perfil de calendario `production`
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
-La revisión esperada es `20261015212231_question_library_pagination`. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md). La [extracción del handler](sql-attempt-command-handlers-refactor.md) conserva estos contratos con siete operaciones privadas. La [biblioteca de preguntas](sql-question-library-refactor.md) tiene dos migraciones y un orden de despliegue específico: autorización, aplicación y paginación.
+La revisión esperada se consulta en [estado actual](status.md) y en `.env.example`;
+`npm run schema:revision:check` comprueba su coherencia con la última migración. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md). La [extracción del handler](sql-attempt-command-handlers-refactor.md) conserva estos contratos con siete operaciones privadas. La [biblioteca de preguntas](sql-question-library-refactor.md) tiene dos migraciones y un orden de despliegue específico: autorización, aplicación y paginación.
 
 Calendario y expiración independiente usan las RPC `run_calendar_tick` y `expire_stale_attempts`,
 exclusivas de `service_role`, con `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en
@@ -194,27 +195,31 @@ datos que se quieran conservar. El fixture sin `--clean` no ejecuta un reset aut
 Consultar los escenarios y sus pruebas concretas en `scripts/fixtures/scenarios/`,
 `scripts/integration/scenarios/` y la [operación del piloto](s22-operacion.md).
 
-## Registro de instalaciones locales
+Los registros de instalación anteriores se conservan en el
+[archivo histórico](../archive/reports/installations-2026-10-11.md); sus revisiones no configuran un entorno actual.
 
-### Instalación anterior con bootstrap — 2026-10-10 (histórica)
+## Verificación local
 
-Antes de consolidar el historial se reiniciaron PostgreSQL, Auth y Storage del stack `the-flash-game` y se aplicaron las 33 migraciones. El estado verificado contiene un superadmin y su jugador, un único evento de asignación, 2.433 palabras de cuatro letras y 8.774 de cinco letras, y dos buckets vacíos. No hay salas, temporadas, preguntas, desafíos, intentos ni puntos.
+Con Docker y el stack local disponibles, comprobar el esquema en una base desechable:
 
-Repetir el bootstrap conserva la cuenta, la contraseña y el evento de asignación. Se comprobó el acceso a `/admin` desde el navegador y health en un build de producción con alcance `pilot`: `401` sin secreto y `200` con `auth`, `database` y `schema` en `true`. Las credenciales tienen permisos `0600`. La evidencia sin contraseñas queda en `output/local/installation-verification.json`.
+```bash
+npm run supabase:schema:test
+```
 
-Los 12 E2E existentes de Flash, recuperación, Pirámide y contratos por formato pasan usando un stack local aislado y el arranque `next build`/`next start`. Se mantienen los specs, las aserciones y los tiempos de espera. Pasan las 2.007 pruebas unitarias y las 55 suites SQL, inventario y concurrencia tanto desde el esquema declarativo como desde las migraciones; la auditoría de reconciliación y las pruebas de reversión también pasan. Tipos, tipos públicos generados, arquitectura, lint, build, formato y enlaces documentales pasan. La validación remota quedó pendiente.
+La prueba carga el esquema declarativo y comprueba inventario de seguridad, ACL/RLS, integridad,
+comandos, idempotencia, rollback y concurrencia. No reinicia la base habitual del proyecto.
 
-### Baseline inicial limpio — 2026-10-11
+Para la verificación completa del piloto, usar un entorno local con datos prescindibles:
 
-`npm run verify:pilot` terminó correctamente contra Supabase local: pasó la reconciliación, las 55 suites SQL por `schemas/` y por migraciones, las 158 comprobaciones SQL compartidas, las 904 observaciones de validación, los contratos concurrentes, las pruebas unitarias, typecheck, arquitectura, lint, documentación, build, integración, E2E, diccionario y backup/restore. También pasó `npm run supabase:types:check`.
+```bash
+npm run verify:pilot
+```
 
-Al terminar el piloto se simuló y ejecutó `npm run supabase:environment:reset -- --target local`. El ledger local contiene únicamente `20261010214230_initial_schema`. Auth tiene cero usuarios; las tablas de `public` y `private` suman cero filas; Storage tiene cero objetos. La CLI local recreó solo los buckets configurados y vacíos `avatars` y `question-assets`. No se ejecutaron bootstrap ni carga de diccionarios después del reset. No se ejecutaron comandos ni validaciones contra staging.
-
-### Baseline regenerado — 2026-10-11
-
-El historial activo se consolidó en `20261011180045_initial_schema`, generado desde los 82 schemas declarativos. Las tres migraciones activas anteriores se conservaron en Git; no contenían DML ni backfills necesarios tras el reset. Pasan las 55 suites SQL desde schemas y desde el baseline, la reconciliación, los tipos, la documentación y los gates estáticos. `verify:pilot` se detuvo en una aserción del test del seed BetaVIP; por ello, sus etapas de integración y E2E no se ejecutaron.
-
-El reset final local dejó únicamente la revisión `20261011180045` en el ledger, cero usuarios de Auth, cero filas en las tablas de `public` y `private`, cero objetos de Storage y dos buckets locales vacíos: `avatars` y `question-assets`. No se ejecutaron bootstrap, carga de diccionarios ni operaciones contra staging.
+El piloto reinicia la base local entre escenarios, prepara fixtures, carga diccionarios y ejecuta
+integración, E2E y backup/restore, además de las comprobaciones estáticas y unitarias. No usarlo
+sobre partidas que se quieran conservar. La [operación del piloto](s22-operacion.md) documenta
+los escenarios y sus límites; [QA](qa.md) mantiene la matriz de comandos y las comprobaciones
+apropiadas para cada cambio. Estos resultados locales no acreditan staging.
 
 ## Staging — ejecución posterior
 
@@ -311,7 +316,8 @@ y reactivarla tras las comprobaciones.
 
 Configurar el despliegue de staging con conexiones y claves de su proyecto, `FLASH_RUNTIME_SCOPE=pilot`,
 `APP_ORIGIN`, secretos de health y calendario y
-`EXPECTED_SCHEMA_REVISION=20261015212231_question_library_pagination`. El runtime mantiene
+`EXPECTED_SCHEMA_REVISION` con el valor de `.env.example`, contrastado con el
+[estado actual](status.md). El runtime mantiene
 su Transaction pooler. Las URLs de retorno de Auth deben corresponder al despliegue; el reset no
 modifica esa configuración.
 
@@ -329,7 +335,7 @@ Las puertas locales/CI incluyen esquema declarativo, migraciones, reconciliació
 
 Si una fase de reset falla, mantener cerrado el entorno y revisar `reset-manifest.json`. Repetir solo dentro de la ventana de reinicio: vuelve a verificar el destino y elimina lo que quede. El bootstrap puede repetirse tras un fallo parcial si conserva sus credenciales; no cambia la contraseña ni duplica la asignación.
 
-Antes de abrir puede repetirse la instalación desde cero. Después de abrir, detener escrituras y aplicar la [reversión de comandos documentada](competitive-command-reconciliation.md#reversión) mediante una migración posterior, con el build compatible y sus marcadores. No reiniciar una base que ya haya recibido partidas nuevas como rollback automático. Las pruebas de actualización generan y verifican el SQL de reversión en `output/audits/competitive-command-reconciliation-rollback.sql`.
+Antes de abrir puede repetirse la instalación desde cero. Después de abrir, detener escrituras y aplicar la [reversión de comandos documentada](competitive-command-reconciliation.md#reversión-de-la-migración-incremental-original) mediante una migración posterior, con el build compatible y sus marcadores. No reiniciar una base que ya haya recibido partidas nuevas como rollback automático. Las pruebas de actualización generan y verifican el SQL de reversión en `output/audits/competitive-command-reconciliation-rollback.sql`.
 
 Tras abrir staging, revisar errores, sesiones, auditoría y puntos durante las primeras partidas y
 el primer tick. Una incidencia requiere revisión antes de seguir probando; no se cambia el commit

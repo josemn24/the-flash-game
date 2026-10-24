@@ -63,7 +63,7 @@ sesión anterior, incrementa `lock_version` y crea la nueva sesión dentro de la
 - La UI confirma con «Continuar aquí» y puede cancelar. La sesión anterior recibe
   `session_transferred` en su siguiente acción y cancela timers/retries.
 - La auditoría registra `takeover_confirmed`; los conflictos y estados inciertos se registran como
-  eventos técnicos sin tokens. Staging debe verificar concurrencia, respuesta HTTP perdida y los cinco modos.
+  eventos técnicos sin tokens. Staging debe verificar concurrencia, respuesta HTTP perdida y los seis modos.
 
 ## Criterios de aceptación
 
@@ -86,5 +86,5 @@ sesión anterior, incrementa `lock_version` y crea la nueva sesión dentro de la
 ## Referencias
 
 - [Decisiones generales](../decisions.md): sección 17.
-- [Cuestiones operativas pendientes](../open-questions.md): implementación de la transferencia.
+- [Cuestiones operativas pendientes](../open-questions.md): ampliaciones operativas pendientes.
 - [Matriz de resiliencia](../../current/resilience-matrix.md): R04, R12 y R21.

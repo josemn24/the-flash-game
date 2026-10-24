@@ -1,20 +1,16 @@
 # Proveedores de sesión
 
-Estado: contrato y proveedor remoto implementados el 2026-10-18; consolidación de Pirámide
-completada el 2026-10-19, con [criterios de cierre acreditados](qa.md#cierre-de-la-fase-6--2026-10-19).
-Las ampliaciones locales de Pirámide y Flash, incluida la vista compartida Flash, se documentan en
-[autoridades locales](local-pyramid-session.md).
+Estado: vigente. Puerto, proveedor remoto y composición compartida de sesiones.
 
-El motor competitivo existente recibe ahora una autoridad de sesión mediante un puerto. La
-composición de producción selecciona el proveedor remoto, que usa los mismos endpoints,
-cookies, comandos idempotentes y tiempos de espera del transporte anterior. Los seis modos
-conservan sus políticas, evaluadores y transiciones; Flash y Pirámide también admiten un
-proveedor local en sus composiciones de ensayo.
+El motor recibe una autoridad mediante `GameSessionProvider`. Los seis modos competitivos
+seleccionan el proveedor remoto. Flash, Supervivencia, Pirámide, Alfabeto y Contrarreloj también
+admiten una autoridad local en memoria para demos y pruebas autorizadas antes de competir.
+Narrativa conserva su práctica propia y no participa en la generación de ensayos.
 
-El [contrato funcional de Pirámide](pyramid-session-contract.md) sigue siendo la referencia.
-La fase 1 preparó la sustitución de autoridad. Las fases posteriores añadieron proveedores y
-ensayos locales para Pirámide, y extendieron a Flash el adaptador y la presentación compartidos.
-La práctica didáctica permanece separada y no certifica por sí sola la equivalencia competitiva.
+La práctica didáctica de formatos permanece separada y no certifica la equivalencia competitiva.
+Las [autoridades locales](local-pyramid-session.md), [ensayos](rehearsals.md) y
+[contrato de Pirámide](pyramid-session-contract.md) desarrollan sus reglas.
+Los informes de implementación están en el [archivo](../archive/reports/README.md).
 
 ## Archivos y responsabilidades
 
@@ -83,36 +79,7 @@ E2E_INTEGRATION_SCENARIOS=s03,s05,s14,narrative,s15,time-trial npm run test:e2e:
 El runner recrea únicamente su stack Supabase temporal y lo elimina al terminar. Los tests de
 referencia SQL de fase 0 siguen vigentes; esta fase no modifica SQL, rutas ni evaluadores.
 
-### Resultado previo a la entrega Flash — 2026-10-18
-
-| Comprobación                                                       | Resultado                                                                                                       |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| Vitest focal: sesión, proveedores, formatos, fachadas y Pirámide   | 164 pruebas correctas en 12 archivos, incluidas 34 nuevas pruebas del puerto y su integración con el motor.     |
-| E2E Flash                                                          | 5 correctos.                                                                                                    |
-| E2E Alfabeto                                                       | 7 correctos.                                                                                                    |
-| E2E Supervivencia                                                  | 1 correcto.                                                                                                     |
-| E2E Narrativa                                                      | 2 correctos.                                                                                                    |
-| E2E Pirámide                                                       | 5 correctos: recorrido S15 y cuatro casos Queens.                                                               |
-| E2E Contrarreloj                                                   | 4 correctos.                                                                                                    |
-| Total de navegador                                                 | 24 correctos, sin casos omitidos ni casos marcados como inestables por Playwright.                              |
-| Integración de los seis modos                                      | Auth, PostgREST, RLS y escenarios funcionales correctos.                                                        |
-| TypeScript, ESLint focal, formato, arquitectura de tipos y enlaces | Correctos.                                                                                                      |
-| Vitest completo de ese corte                                       | 2480 pruebas correctas; el resultado posterior está registrado en la [entrega Flash](local-pyramid-session.md). |
-
-Ese corte precede a la corrección de las regresiones generales y a las pruebas de autoridades
-locales. Esa entrega de Flash y Pirámide registró 2672 pruebas correctas en
-[`local-pyramid-session.md`](local-pyramid-session.md). La evidencia posterior de la consolidación
-de Pirámide se registra por separado en [QA](qa.md#consolidación-de-pirámide-fase-6--2026-10-19).
-
-Se actualizó una referencia obsoleta de la
-[integración de Narrativa](../../scripts/integration/scenarios/narrative.mjs): ahora espera
-`multiple-choice,short-text`, los dos formatos que ya define su
-[fixture](../../scripts/fixtures/scenarios/narrative.mjs). No se modificó el fixture ni el juego.
-Flash se repitió con un fixture limpio después de una primera ejecución interrumpida por Fast
-Refresh durante la edición; sus cinco casos pasan con el código inmóvil.
-
-El motor conserva su nombre y ubicación bajo `competitive/` para evitar una migración de
-importaciones adicional. La nueva frontera es el puerto inyectado, no un motor paralelo.
+Los resultados fechados se conservan en el [informe de entrega](../archive/reports/session-providers-2026-10-18.md).
 
 ## Extensión de Supervivencia
 
@@ -123,7 +90,7 @@ remoto, y las rutas `/demo/` seleccionan el local solo para fixtures aprobados.
 
 ## Consolidación de Pirámide: fase 6
 
-Estado: completada el 2026-10-19. La [matriz de cierre](qa.md#cierre-de-la-fase-6--2026-10-19)
+Estado: completada el 2026-10-19. La [matriz de cierre](../archive/reports/qa-through-2026-10-21.md#cierre-de-la-fase-6--2026-10-19)
 enlaza criterios, implementación y verificaciones.
 
 Todas las composiciones de partidas de Pirámide seleccionan proveedor y comparten

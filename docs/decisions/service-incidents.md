@@ -3,7 +3,7 @@
 # Incidencias del servicio durante una partida
 
 - Fecha de aprobación: 2026-10-06.
-- Alcance: los cinco modos competitivos y sus dependencias de Auth, APIs, PostgreSQL y recursos imprescindibles de Storage.
+- Alcance: los seis modos competitivos y sus dependencias de Auth, APIs, PostgreSQL y recursos imprescindibles de Storage.
 - Origen: acuerdo explícito del responsable del producto en la conversación de diseño de resiliencia.
 
 ## Contexto

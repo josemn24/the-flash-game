@@ -40,10 +40,11 @@ como `undefined`. No introduce validación adicional ni cambia la normalización
 Código lógico conserva el contador inicial cero. Pistas progresivas conserva su valor inicial
 opcional y el valor alternativo propio de cada superficie.
 
-El input se construye en las ocho composiciones locales: Flash y Supervivencia clásicas y Flash
-Pop, las dos Pirámides, Narrative y los ejemplos jugables. Los hooks de sesión mantienen evaluación,
-puntuación, persistencia y progreso. `QuestionStage`, sus presets y las superficies propias de
-Pirámide y Narrative reciben el input separado de numeración, vidas, deadline, timeout y `onReady`.
+Los ejemplos de biblioteca y las composiciones de práctica construyen el input local. Los
+ensayos con proveedores en memoria reutilizan el motor y las vistas competitivas; Pirámide no
+conserva dos controladores anteriores. `QuestionStage` y las superficies de cada modo reciben
+el input separado de numeración, vidas, deadline, timeout y `onReady`.
+Véanse [autoridades locales](local-pyramid-session.md) y [ensayos](rehearsals.md).
 
 `withPracticeTimedResponseStart` permite interceptar únicamente los cuatro formatos con preparación.
 No añade operaciones a los demás y conserva su envelope por referencia. Se mantienen las políticas
@@ -66,7 +67,7 @@ fábricas y contratos de entrada de ambos contextos, permitiendo vistas y utilid
 
 Las pruebas cubren los 31 contratos, operaciones obligatorias, restauraciones válidas e inválidas,
 callbacks, controles habilitados y bloqueados, foco, reinicio, errores locales e inicios diferidos.
-Las ocho composiciones se verifican con sesiones simuladas o con el controlador local del ejemplo.
+Las composiciones se verifican con sesiones simuladas o con el controlador local del ejemplo.
 El recorrido `e2e/practice-input-contracts.spec.ts` abre el primer ejemplo de los 31 formatos a 390
 y 1280 píxeles, verifica controles, temporizador, cierre y ausencia de peticiones competitivas;
 incluye movimiento reducido y capturas para revisión visual. Se conservan la recuperación del
