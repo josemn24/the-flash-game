@@ -61,10 +61,6 @@ function areNeighbors(left: number, right: number, columns: number) {
   );
 }
 
-function hasProgress(paths: Record<string, number[]>) {
-  return Object.values(paths).some((path) => path.length > 1);
-}
-
 export function ConnectPairsQuestion({
   question,
   initialAnswer,
@@ -435,21 +431,6 @@ export function ConnectPairsQuestion({
           onClick={clearActivePath}
         >
           Borrar ruta
-        </button>
-        <button
-          type="button"
-          disabled={locked || !hasProgress(paths)}
-          onClick={() => {
-            if (metrics.coveredCells > 0 && metrics.connectedPairs === 0) {
-              setAnnouncement(
-                "Aún no hay parejas conectadas. Toca el extremo final de cada ruta para cerrarla.",
-              );
-              return;
-            }
-            onSubmit(answer);
-          }}
-        >
-          Enviar
         </button>
       </div>
 
