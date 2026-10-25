@@ -51,11 +51,11 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
       timeout: 20_000,
     });
     await page.getByRole("button", { name: "Marte" }).click();
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").nth(1).locator("summary").click();
     await expect(

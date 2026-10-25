@@ -63,9 +63,9 @@ test("Alfabeto conserva pases y vueltas tras recargar y completa el resultado", 
   await answer(page, "armadillo");
   await expect(page.getByRole("heading", { name: "País más extenso de Sudamérica" })).toBeVisible();
   await answer(page, "Brasil");
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
   await page.reload();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
   await page.getByRole("button", { name: "Ver respuestas" }).click();
   await expect(page.locator("details")).toHaveCount(3);
   await verifyConfirmations();
@@ -268,7 +268,7 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
   );
   await editor.press("Enter");
   expect((await (await answerResponse).json()).status).toBe("correct");
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
 });
 
 test("Alfabeto acepta una alternativa más corta con huecos pendientes", async ({ page }) => {
@@ -309,12 +309,12 @@ test("Alfabeto cierra una vez cada letra pendiente tras el deadline global", asy
   await open(page, (await fixture()).users.bob);
   await expect(page.getByRole("heading", { name: "Animal con placas óseas" })).toBeVisible();
   await expect(page.getByRole("list", { name: "Estado de las letras" })).toBeVisible();
-  await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 35000 });
+  await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 35000 });
   await expect(page.getByRole("dialog")).toHaveCount(0);
   expect(bodies).toHaveLength(0);
   expect(completions).toHaveLength(1);
   await page.reload();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
 });
 
 test("Alfabeto reintenta preparación y verifica un cierre cuya respuesta se perdió", async ({
@@ -363,7 +363,7 @@ test("Alfabeto reintenta preparación y verifica un cierre cuya respuesta se per
   await answer(page, "Brasil");
   await expect(page.getByRole("heading", { name: "Capital de Australia" })).toBeVisible();
   await answer(page, "Canberra");
-  await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20000 });
+  await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20000 });
   expect(completionBodies[1]).toEqual(completionBodies[0]);
 });
 
@@ -392,14 +392,14 @@ test("18 letras conservan la respuesta válida y cierran las pendientes con una 
   ).toBe(3);
   await page.screenshot({ path: "output/playwright/alphabet-board-18.png" });
   await answer(page, "respuesta");
-  await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 25000 });
+  await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 25000 });
   expect(requests.filter((url) => url.endsWith("/answer"))).toHaveLength(1);
   expect(requests.filter((url) => url.endsWith("/complete"))).toHaveLength(1);
   await expect(page.getByLabel("5 de 100 puntos")).toBeVisible();
   await page.getByRole("button", { name: "Ver respuestas" }).click();
   await expect(page.locator("details")).toHaveCount(18);
   await page.reload();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
   await expect(page.getByLabel("5 de 100 puntos")).toBeVisible();
   await page.getByRole("button", { name: "Ver respuestas" }).click();
   await expect(page.locator("details")).toHaveCount(18);
@@ -438,7 +438,7 @@ test("recargar tras el deadline cierra 18 letras sin respuestas automáticas", a
     });
   });
   await page.goto(gameUrl);
-  await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 15000 });
+  await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 15000 });
   expect(recoveries).toHaveLength(2);
   expect(recoveries[1]).toEqual(recoveries[0]);
   expect(requests).toHaveLength(0);

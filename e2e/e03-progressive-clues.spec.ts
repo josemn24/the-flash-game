@@ -81,10 +81,10 @@ test.describe("E03 — Progressive-clues competitivo", () => {
 
     await page.getByLabel("Escribe tu respuesta").fill("muro de Berlin");
     await page.getByRole("button", { name: "Enviar respuesta" }).click();
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").filter({ hasText: "Pistas" }).locator("summary").click();
     await expect(page.getByText("Pistas utilizadas")).toBeVisible();

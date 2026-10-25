@@ -108,7 +108,6 @@ function Results({
       model={{
         gameTitle: "Alfabeto",
         statusLabel: "Completado",
-        eyebrow: "Desafío completado",
         title:
           session.correctAnswers === challenge.entries.length
             ? "Alfabeto dominado"

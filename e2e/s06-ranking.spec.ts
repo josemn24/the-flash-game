@@ -54,7 +54,7 @@ async function completeFlash(
   await page.getByRole("button", { name: perfect ? "Lisboa" : "Oporto" }).click();
   await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
   await page.getByRole("button", { name: "Marte" }).click();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
   await expect(page.getByText(/\/100 puntos/)).toBeVisible();
 }
 

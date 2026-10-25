@@ -16,6 +16,7 @@ export type ReviewAnswerEntry = {
   marker: string;
   title?: string;
   subtitle?: string;
+  showFullTitleOnExpand?: boolean;
   status?: ReviewAnswerVisualStatus;
   statusLabel?: string;
   lockedMessage?: string;
@@ -93,6 +94,9 @@ export function ReviewAnswerList({
         const title =
           entry.title ?? (entry.question ? QUESTION_FORMAT_LABELS[entry.question.type] : "Nivel");
         const subtitle = entry.subtitle ?? entry.question?.category ?? "";
+        const titleClassName = entry.showFullTitleOnExpand
+          ? `${styles.reviewAnswerTitle} ${styles.reviewAnswerTitleExpandable}`
+          : styles.reviewAnswerTitle;
 
         return (
           <details
@@ -102,7 +106,7 @@ export function ReviewAnswerList({
           >
             <summary>
               <span className={styles.reviewAnswerNumber}>{entry.marker}</span>
-              <span className={styles.reviewAnswerTitle}>
+              <span className={titleClassName}>
                 <strong>{title}</strong>
                 <small>{subtitle}</small>
               </span>
@@ -119,15 +123,23 @@ export function ReviewAnswerList({
                   {entry.lockedMessage ?? "Este desafío terminó antes de esta respuesta."}
                 </span>
               </div>
-            ) : result && entry.question ? (
+            ) : entry.question && (result || entry.showFullTitleOnExpand) ? (
               <div className={styles.reviewAnswerBody}>
-                <QuestionReviewContent question={entry.question} result={result} />
-                {entry.showMeta !== false ? (
+                {entry.showFullTitleOnExpand ? (
+                  <div className={styles.reviewAnswerExpandedQuestion}>
+                    <span>Pregunta</span>
+                    <p>{title}</p>
+                  </div>
+                ) : null}
+                {result ? <QuestionReviewContent question={entry.question} result={result} /> : null}
+                {result && entry.showMeta !== false ? (
                   <div className={styles.reviewAnswerMeta} aria-label="Resumen de la respuesta">
                     {resultSummary(result, entry.question)}
                   </div>
                 ) : null}
-                <p className={styles.reviewAnswerExplanation}>{entry.question.explanation}</p>
+                {result ? (
+                  <p className={styles.reviewAnswerExplanation}>{entry.question.explanation}</p>
+                ) : null}
               </div>
             ) : null}
           </details>

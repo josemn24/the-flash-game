@@ -38,7 +38,6 @@ function getSurvivalResultModel(
   return {
     gameTitle: "Supervivencia",
     statusLabel: survived ? "Completado" : "Partida terminada",
-    eyebrow: challenge.title,
     title: survived ? "Has sobrevivido" : eliminated ? "Sin vidas" : "Buen intento",
     subtitle: survived
       ? `Has completado los ${challenge.slots.length} retos.`

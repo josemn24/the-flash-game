@@ -98,7 +98,7 @@ test.describe("E05 — Queens competitivo", () => {
     await miniBoard.getByRole("gridcell", { name: /Fila 4, columna 2/ }).click();
     await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("4/4");
     await expect.poll(() => validationBodies).toHaveLength(5);
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     const firstQueensReview = page.locator("details").filter({ hasText: /^02Queens/ });
     await firstQueensReview.locator("summary").click();

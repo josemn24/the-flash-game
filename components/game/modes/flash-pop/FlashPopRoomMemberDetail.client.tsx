@@ -58,6 +58,7 @@ function AnswerHistory({
     marker: item.metadata?.alphabetLetter ?? String(index + 1).padStart(2, "0"),
     title: item.title,
     subtitle: item.subtitle,
+    showFullTitleOnExpand: progress?.mode === "survival",
     status: item.status,
     statusLabel:
       progress?.mode === "time-trial"
@@ -121,30 +122,6 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
   const attempt = result?.attempt;
   const hasAttempt = Boolean(attempt);
   const isComplete = Boolean(result?.completed && attempt);
-  const mode =
-    resolvedModel.challengeSummary?.mode ?? resolvedModel.reviewProgress?.mode ?? "flash";
-  const modeLabel =
-    mode === "alphabet"
-      ? "Alfabeto"
-      : mode === "survival"
-        ? "Supervivencia"
-        : mode === "pyramid"
-          ? "Pirámide"
-          : mode === "narrative"
-            ? "Narrativa"
-            : mode === "time-trial"
-              ? "Contrarreloj"
-              : "Flash";
-  const outcomeLabel =
-    resolvedModel.reviewProgress?.mode === "survival"
-      ? resolvedModel.reviewProgress.outcome === "survived"
-        ? "Superado"
-        : "Eliminado"
-      : resolvedModel.reviewProgress?.mode === "pyramid"
-        ? resolvedModel.reviewProgress.outcome === "summit"
-          ? "Cumbre"
-          : "Fallido"
-        : null;
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -164,28 +141,13 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
           <div>
             <p className={styles.eyebrow}>{model.roomTitle}</p>
             <h1 id="member-detail-title">{resolvedModel.member.name}</h1>
-            <p className={styles.profileMeta}>
-              <span role="img" aria-label={`${resolvedModel.member.totalFlashPoints} Flash Points`}>
-                {resolvedModel.member.totalFlashPoints} ⚡
-              </span>{" "}
-              · #{resolvedModel.roomRank} en la sala
-            </p>
           </div>
         </section>
 
         <Card as="section" className={styles.summary} aria-labelledby="attempt-summary-title">
-          <div className={styles.summaryHeader}>
-            <div>
-              <p className={styles.eyebrow}>
-                {model.source === "supabase" || resolvedModel.challengeSummary?.mode === "alphabet"
-                  ? `Resultado ${modeLabel}`
-                  : "Reto de hoy"}
-              </p>
-              <h2 id="attempt-summary-title">
-                {resolvedModel.challengeSummary?.title ?? "Sin reto disponible"}
-              </h2>
-            </div>
-          </div>
+          <h2 id="attempt-summary-title">
+            {resolvedModel.challengeSummary?.title ?? "Sin reto disponible"}
+          </h2>
 
           <div className={styles.stats}>
             <div>
@@ -215,24 +177,6 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
               <span>jugado</span>
             </div>
           </div>
-
-          {resolvedModel.reviewProgress?.mode === "survival" ? (
-            <div className={styles.detailBadges}>
-              <Chip variant="data">
-                {resolvedModel.reviewProgress.livesRemaining} de{" "}
-                {resolvedModel.reviewProgress.initialLives} vidas
-              </Chip>
-              <Chip variant="data">{outcomeLabel}</Chip>
-            </div>
-          ) : resolvedModel.reviewProgress?.mode === "pyramid" ? (
-            <div className={styles.detailBadges}>
-              <Chip variant="data">
-                {resolvedModel.reviewProgress.levelsCleared} de{" "}
-                {resolvedModel.reviewProgress.totalLevelCount} niveles
-              </Chip>
-              <Chip variant="data">{outcomeLabel}</Chip>
-            </div>
-          ) : null}
 
           {!hasAttempt ? (
             <div className={styles.emptyState}>

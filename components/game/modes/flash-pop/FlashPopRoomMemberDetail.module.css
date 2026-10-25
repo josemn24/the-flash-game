@@ -28,12 +28,6 @@
   .profile h1 {
     font-size: clamp(40px, 8vw, 64px);
   }
-  .profileMeta {
-    margin: 6px 0 0;
-    color: var(--ds-color-fg-secondary);
-    font-family: var(--type-mono);
-    font-size: 12px;
-  }
   .eyebrow {
     margin: 0;
     color: var(--ds-color-fg-selected);
@@ -49,7 +43,6 @@
     gap: var(--space-4);
     padding: var(--space-5);
   }
-  .summaryHeader,
   .sectionHeading {
     display: flex;
     align-items: flex-start;
@@ -57,7 +50,8 @@
     gap: var(--space-4);
   }
   .summary h2 {
-    font-size: clamp(28px, 5vw, 40px);
+    margin-top: 0;
+    font-size: clamp(24px, 3vw, 30px);
   }
 
   .stats {
@@ -142,19 +136,12 @@
     .profile h1 {
       font-size: 42px;
     }
-    .profileMeta {
-      margin-top: 4px;
-      font-size: 11px;
-    }
     .summary {
       gap: var(--space-3);
       padding: var(--space-4);
     }
-    .summaryHeader {
-      gap: var(--space-3);
-    }
     .summary h2 {
-      font-size: 32px;
+      font-size: 24px;
     }
     .stats {
       grid-template-columns: repeat(3, minmax(0, 1fr));

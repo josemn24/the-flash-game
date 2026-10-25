@@ -215,7 +215,6 @@ export function NarrativeResult({
       model={{
         gameTitle: "Narrativa",
         statusLabel: "Completado",
-        eyebrow: "Desafío completado",
         title: "El recorrido queda registrado.",
         score,
         maxScore,

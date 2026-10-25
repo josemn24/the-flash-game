@@ -39,7 +39,7 @@ test("Flash evalúa short-text y recupera una respuesta aceptada cuya respuesta 
   expect(requests[0]).toEqual(requests[1]);
   await page.getByLabel("Escribe tu respuesta").fill("Lisboa");
   await page.getByRole("button", { name: "Enviar respuesta" }).click();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
   await page.reload();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
 });

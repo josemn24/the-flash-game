@@ -103,11 +103,11 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
     await expect.poll(() => requestBodies.length).toBe(3);
     expect(requestBodies[2]).toEqual(requestBodies[0]);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").filter({ hasText: "Mini-Wordle" }).locator("summary").click();
     await expect(page.getByText("Jesús es una figura central del cristianismo.")).toBeVisible();

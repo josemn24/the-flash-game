@@ -49,7 +49,7 @@ test("Narrative persiste Queens, revela pistas y recupera el cursor interactivo"
   await expect(page.getByText("2 de 3 pistas")).toBeVisible();
   await page.getByLabel("Escribe tu respuesta").fill("muro de berlin");
   await page.getByRole("button", { name: "Enviar respuesta" }).click();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
 });
 
 test("Narrative reintenta preparación y una respuesta aceptada sin duplicarla", async ({
@@ -108,7 +108,7 @@ test("Narrative reintenta preparación y una respuesta aceptada sin duplicarla",
   await page.getByLabel("Escribe tu respuesta").fill("muro de berlin");
   await page.getByRole("button", { name: "Enviar respuesta" }).click();
   await page.getByRole("button", { name: "Reintentar", exact: true }).click();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
   expect(answers[1]).toEqual(answers[0]);
   await page.reload();
   await page.getByRole("button", { name: "Ver respuestas" }).click();

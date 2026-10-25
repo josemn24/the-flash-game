@@ -286,7 +286,6 @@ export function PyramidGameView({
           model={{
             gameTitle: "La Pirámide",
             statusLabel: "Completado",
-            eyebrow: "Desafío completado",
             title: outcome === "summit" ? "Cima conquistada" : "Ascenso terminado",
             subtitle: challenge.subtitle,
             score: session.score,

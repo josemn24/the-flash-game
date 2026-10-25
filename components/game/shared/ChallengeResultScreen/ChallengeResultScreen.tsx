@@ -45,7 +45,6 @@ export function ChallengeResultScreen({
     ? {
         ...model,
         statusLabel: "No completado",
-        eyebrow: "Partida cerrada",
         title: "Partida cerrada por inactividad",
         subtitle:
           "El desafío terminó mientras la partida estaba inactiva. No se han concedido puntos.",
@@ -78,9 +77,6 @@ export function ChallengeResultScreen({
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
           <Card as="section" className={styles.resultCard} aria-labelledby="challenge-result-title">
-            <p className={styles.eyebrow}>
-              {practice ? "Prueba finalizada" : displayModel.eyebrow}
-            </p>
             <h1 id="challenge-result-title">{displayModel.title}</h1>
             {displayModel.subtitle ? (
               <p className={styles.subtitle}>{displayModel.subtitle}</p>

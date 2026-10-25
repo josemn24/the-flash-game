@@ -204,7 +204,6 @@ export function FlashPopTimeTrialGameView({
             model={{
               gameTitle: "Contrarreloj",
               statusLabel: "Completado",
-              eyebrow: "Desafío completado",
               title:
                 solved === challenge.slots.length
                   ? "Todas las pruebas resueltas"

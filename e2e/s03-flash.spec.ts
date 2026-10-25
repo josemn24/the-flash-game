@@ -59,12 +59,12 @@ test.describe("S03 — Flash competitivo persistido", () => {
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Marte" }).dblclick();
 
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
     expect(await page.content()).not.toContain("S03_PRIVATE");
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").first().locator("summary").click();
     await expect(page.getByText("Lisboa es la capital de Portugal")).toBeVisible();
@@ -101,7 +101,7 @@ test.describe("S03 — Flash competitivo persistido", () => {
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Venus" }).click();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await expect(page.getByText(/0\/100 puntos/)).toBeVisible();
   });
 
@@ -144,7 +144,7 @@ test.describe("S03 — Flash competitivo persistido", () => {
       });
 
       await secondPage.getByRole("button", { name: "Marte" }).click();
-      await expect(secondPage.getByText("Desafío completado")).toBeVisible();
+      await expect(secondPage.locator("#challenge-result-title")).toBeVisible();
     } finally {
       await secondContext.close();
     }
@@ -161,7 +161,7 @@ test.describe("S03 — Flash competitivo persistido", () => {
     });
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Venus" }).click();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await expect(page.getByText(/0\/100 puntos/)).toBeVisible();
   });
 

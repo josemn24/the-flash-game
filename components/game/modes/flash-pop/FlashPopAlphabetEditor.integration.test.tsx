@@ -57,7 +57,7 @@ it("starts repeated practice visits empty, retains native mode and resets on a n
   fireEvent.change(input, { target: { value: "armadillo" } });
   fireEvent.submit(input.closest("form")!);
   await act(() => vi.advanceTimersByTimeAsync(600));
-  expect(screen.getByText("Desafío completado")).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Alfabeto dominado" })).toBeTruthy();
   unmount();
   render(<FlashPopAlphabetGame challenge={challenge} />);
   fireEvent.click(screen.getByRole("button", { name: "Empezar desafío" }));

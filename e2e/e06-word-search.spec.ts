@@ -86,7 +86,7 @@ test.describe("E06 — Word-search competitivo", () => {
 
     await cell(board, 2, 5).click();
     await cell(board, 2, 1).click();
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").filter({ hasText: "Sopa" }).locator("summary").click();
     await expect(

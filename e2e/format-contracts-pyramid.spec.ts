@@ -23,7 +23,7 @@ test("Pirámide activa y evalúa los siete niveles short-text", async ({ page })
     await page.getByLabel("Escribe tu respuesta").fill("Lisboa");
     await page.getByRole("button", { name: "Enviar respuesta" }).click();
   }
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
   await page.reload();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
 });

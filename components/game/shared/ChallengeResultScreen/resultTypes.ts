@@ -11,7 +11,6 @@ export type ResultMetric = {
 export type ChallengeResultModel = {
   gameTitle: string;
   statusLabel: string;
-  eyebrow: string;
   title: string;
   subtitle?: string;
   score: number;

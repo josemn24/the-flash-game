@@ -52,7 +52,6 @@ export function CompetitiveResultScreen({
     return {
       gameTitle: challenge.title,
       statusLabel: "Completado",
-      eyebrow: "Desafío completado",
       title,
       subtitle: challenge.subtitle,
       score: result.flashPoints,

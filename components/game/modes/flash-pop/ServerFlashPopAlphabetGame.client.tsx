@@ -135,7 +135,6 @@ export function AlphabetGameView({
           model={{
             gameTitle: "Alfabeto",
             statusLabel: "Completado",
-            eyebrow: "Desafío completado",
             title: correct === challenge.entries.length ? "Alfabeto dominado" : "Buen recorrido",
             score: session.score,
             maxScore: challenge.maxScore,
@@ -178,11 +177,11 @@ export function AlphabetGameView({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0, y: -12 }}
       >
-      <AlphabetReviewPresentation
-        entries={entries}
-        onBack={session.showResults}
-        onReplay={onReplay}
-      />
+        <AlphabetReviewPresentation
+          entries={entries}
+          onBack={session.showResults}
+          onReplay={onReplay}
+        />
       </motion.div>
     );
   } else {

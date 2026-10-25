@@ -12,6 +12,7 @@ import {
   getAnswerResultAccuracyUnit,
 } from "@/features/game/resultSummary";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
+import { getSurvivalReviewCardContent } from "@/lib/gameplay/survivalReviewCardContent";
 import type { AnswerResult, FlashChallenge } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";
 import styles from "./FlashPopFlashGame.module.css";
@@ -50,7 +51,6 @@ export function buildResultModel(results: AnswerResult[], score: number): Challe
   return {
     gameTitle: "Flash",
     statusLabel: "Completado",
-    eyebrow: "Desafío completado",
     title: message,
     score,
     maxScore: CHALLENGE_MAX_SCORE,
@@ -90,6 +90,9 @@ export function ReviewStage({
     question,
     result: resultByQuestionId.get(question.id),
     marker: String(index + 1).padStart(2, "0"),
+    ...(presentation === "survival"
+      ? { ...getSurvivalReviewCardContent(question), showFullTitleOnExpand: true }
+      : {}),
   }));
   const total = totalQuestionCount ?? challenge.questions.length;
   const reached = Math.min(results.length, total);

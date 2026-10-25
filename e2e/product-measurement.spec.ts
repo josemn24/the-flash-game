@@ -97,7 +97,7 @@ test("records visible usage, saves optional enjoyment with retry, and restricts 
   await page.getByRole("button", { name: "Empezar desafío" }).click();
   await page.getByRole("button", { name: "Lisboa" }).click();
   await page.getByRole("button", { name: "Marte" }).click();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
   const rating = page.getByRole("region", { name: "Valoración del desafío" });
   await expect(rating.getByRole("radio")).toHaveCount(5);
   await expect(rating.getByRole("radio", { checked: true })).toHaveCount(0);
