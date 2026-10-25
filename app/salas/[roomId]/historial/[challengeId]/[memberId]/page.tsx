@@ -1,3 +1,4 @@
+import { MeasurementProvider } from "@/components/product/Measurement.client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopRoomMemberDetail } from "@/components/game/production";
@@ -23,5 +24,9 @@ export default async function HistoricalMemberPage({ params }: Props) {
   const { roomId, challengeId, memberId } = await params;
   const model = await getRoomMemberDetailPageModel(roomId, memberId, challengeId);
   if (!model) notFound();
-  return <FlashPopRoomMemberDetail model={model} />;
+  return (
+    <MeasurementProvider roomId={roomId} publicationId={challengeId}>
+      <FlashPopRoomMemberDetail model={model} />
+    </MeasurementProvider>
+  );
 }

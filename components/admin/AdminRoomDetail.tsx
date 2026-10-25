@@ -70,6 +70,11 @@ export function AdminRoomDetail({
         ))}
       </nav>
 
+      <div className="my-3">
+        <Link className="underline" href={`/admin/rooms/${model.room.roomId}/measurement`}>
+          Medición de temporada
+        </Link>
+      </div>
       {notice ? (
         <AdminNotice title={notice} description="El contexto de la sala se ha actualizado." />
       ) : null}

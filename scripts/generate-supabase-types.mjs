@@ -14,9 +14,13 @@ function npmCommand() {
 
 async function generate() {
   try {
+    // Disposable verification databases can be targeted without migrating the usual local stack.
+    const target = process.env.SUPABASE_TYPES_DB_URL
+      ? ["--db-url", process.env.SUPABASE_TYPES_DB_URL]
+      : ["--local"];
     const { stdout } = await execFileAsync(
       npmCommand(),
-      ["exec", "--", "supabase", "gen", "types", "typescript", "--local", "--schema", "public"],
+      ["exec", "--", "supabase", "gen", "types", "typescript", ...target, "--schema", "public"],
       {
         cwd: projectRoot,
         env: { ...process.env, SUPABASE_TELEMETRY: "false" },

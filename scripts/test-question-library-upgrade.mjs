@@ -33,6 +33,12 @@ const sql = (source) =>
 const json = async (source) => JSON.parse((await sql(source)).trim());
 async function suite(name, { fixtures = false, corrected = true, persist = false } = {}) {
   let source = await readFile(`supabase/tests/question_library_${name}.test.sql`, "utf8");
+  if (name === "characterization") {
+    // This runner pins the October 15 contract. Difficulty was added by the
+    // later dynamic-rehearsals migration; the current-schema suite still asserts it.
+    assert.ok(source.includes("'difficulty', 'medium', "));
+    source = source.replace("'difficulty', 'medium', ", "");
+  }
   for (const label of ["command", "question-library"]) {
     source = source.replace(`-- @${label}-fixtures`, () => (fixtures ? loadedFixtures[label] : ""));
   }
@@ -159,8 +165,6 @@ try {
     await suite("authorization");
     await suite("pagination", { corrected: index === pagination });
   }
-  await checkInventory(sql);
-  await testCompletionHealthContract(sql);
   const replay = await json(`begin; select test_support.as_actor('superadmin');
     select jsonb_object_agg(label, case label
       when 'create' then public.create_superadmin_question_draft(input) = result
@@ -208,6 +212,13 @@ try {
     ],
     "Active and completed attempts retain their scoring and accreditation contracts",
   );
+  // Historical assertions above target that migration's schema. Compare today's
+  // inventory and health only after loading all subsequent migrations.
+  await sql(
+    `begin;\n${(await Promise.all(files.slice(pagination + 1).map((name) => readFile(`supabase/migrations/${name}`, "utf8")))).join("\n")}\ncommit;`,
+  );
+  await checkInventory(sql);
+  await testCompletionHealthContract(sql);
   console.log(
     `Question library upgrade passed: ${assertions} fixed predecessor assertions, both defects reproduced, two corrections, unchanged rows/OIDs/ACLs/indices, health, exact replays and continued play/editing.`,
   );

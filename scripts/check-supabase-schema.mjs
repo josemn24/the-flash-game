@@ -5,6 +5,7 @@ import { checkInventory } from "./supabase-security-inventory.mjs";
 import { testConcurrentCommands } from "./test-supabase-concurrency.mjs";
 import { testFormatContracts } from "./test-format-contracts.mjs";
 import { testQuestionValidation } from "./test-question-validation.mjs";
+import { testSeasonMeasurementContract } from "./test-season-measurement-contract.mjs";
 import { testCompletionHealthContract } from "./test-completion-health-contract.mjs";
 
 const container = process.env.SUPABASE_DB_CONTAINER ?? "supabase_db_the-flash-game";
@@ -48,6 +49,7 @@ try {
   await sql(`begin;\n${statements.join("\n")}\ncommit;`);
   await checkInventory(sql);
   await testCompletionHealthContract(sql);
+  await testSeasonMeasurementContract(sql);
   console.log(`Loaded ${files.length} files from ${sourceDirectory}; security inventory verified.`);
   for (const file of (await readdir("supabase/tests"))
     .filter((name) => name.endsWith(".test.sql") && (!requestedTest || name === requestedTest))

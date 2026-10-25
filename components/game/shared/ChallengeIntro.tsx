@@ -1,4 +1,5 @@
 "use client";
+import { useProductSignal } from "@/components/product/Measurement.client";
 
 import type { ReactNode } from "react";
 import { motion } from "motion/react";
@@ -66,6 +67,7 @@ export function ChallengeIntro({
   startHref,
   transfer,
 }: FullChallengeIntroProps | SafeChallengeIntroProps) {
+  useProductSignal("challenge_intro_viewed");
   const practice = useRehearsalPresentation();
   const rehearsal = useChallengeRehearsalLink();
   const model = challenge

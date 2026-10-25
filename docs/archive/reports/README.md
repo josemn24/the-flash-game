@@ -15,3 +15,6 @@ Estado: histórico. Conservar como evidencia; para trabajar usar [documentación
 - [Refactor y aplicación local de operaciones de intentos](sql-attempt-handlers-2026-10-15.md)
 - [Estado del proyecto hasta el 2026-10-21](status-through-2026-10-21.md)
 - [Auditoría histórica de funciones SQL](supabase-function-drift-audit-2026-10-09.md)
+
+- [Verificación local del sistema experimental retirado](tabarnia-measurement-verification.md).
+- [Verificación en staging del sistema experimental retirado](staging-measurement-verification.md).

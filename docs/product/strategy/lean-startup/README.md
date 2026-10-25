@@ -76,6 +76,8 @@ También puede usarse `Archivada` cuando ya no sea relevante. «Apoyada» no sig
 
 Abra `STATE.md` y ejecute únicamente la acción indicada allí. Complete los datos mínimos que permitan convertir la hipótesis crítica en un experimento con comportamiento observable y umbrales previos.
 
+El único ciclo activo es [CYCLE-001](cycles/CYCLE-001.md): 14 invitaciones, nueve desafíos diarios y protocolo de estudio `tabarnia-daily-v2`. Su [contrato de medición](cycles/CYCLE-001.md#7-contrato-de-medición) define criterios específicos de Tabarnia para el análisis posterior. La sala utiliza la medición automática común: actividad, disfrute opcional 1–5 y cuatro CSV. Invitaciones, comunicaciones, incidencias, costes y feedback externo se registran en el expediente privado del estudio, fuera del portal. Los criterios no se ejecutan en el producto ni condicionan otras salas. El análisis reproducible y el entorno objetivo siguen pendientes; no se ha superado `READY_TO_RUN`.
+
 Para una persona que quiera comprender el sistema, consulte `METHOD.md`. Para empezar un chat nuevo con un agente, copie `STARTER_PROMPT.md`; el agente deberá seguir `AGENTS.md`.
 
 ## Qué no incluye esta versión

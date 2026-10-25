@@ -11,6 +11,8 @@ por sí mismas el estado de staging. Los resultados de entregas cerradas están 
 [archivo de informes](../archive/reports/README.md).
 
 - [`status.md`](status.md): fotografía breve del producto y de sus limitaciones.
+- [`product-measurement.md`](product-measurement.md): fuentes, definiciones y límites de la medición
+  automática por temporada; distingue las métricas comunes del análisis de cada estudio.
 - [`domain/README.md`](domain/README.md): modelo de dominio, tipos, fixtures y consultas.
 - [`use-cases.md`](use-cases.md): casos de uso funcionales, prioridades, permisos y límites.
 - [`architecture.md`](architecture.md): fronteras, dependencias y evolución del recorrido persistido.

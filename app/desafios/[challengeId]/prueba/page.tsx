@@ -58,6 +58,7 @@ export default async function RehearsalPage({
       <RehearsalGameApp
         definition={rehearsal.definition}
         recipe={rehearsal.recipe}
+        measurement={{ roomId, publicationId: challengeId }}
         returnTo={returnTo}
       />
     );

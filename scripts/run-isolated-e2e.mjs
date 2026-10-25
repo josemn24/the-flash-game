@@ -69,6 +69,7 @@ const specs = requested.length
       "s15",
       "s11",
       "s17",
+      "product-measurement",
     ].flatMap((scenario) => E2E_BY_SCENARIO[scenario]);
 const savedFixtures = new Map();
 const absentFixtures = new Set();

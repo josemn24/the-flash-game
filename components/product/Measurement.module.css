@@ -1,0 +1,97 @@
+@layer app-components {
+  .rating {
+    margin-block: var(--space-4);
+  }
+
+  .fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .legend {
+    padding: 0;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.5;
+  }
+
+  .help {
+    color: var(--ds-color-fg-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+    margin: var(--space-2) 0 var(--space-3);
+  }
+
+  .stars {
+    display: grid;
+    width: 100%;
+    max-width: 280px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0;
+  }
+
+  .option {
+    position: relative;
+    min-width: 0;
+    height: var(--control-height-icon);
+    cursor: pointer;
+  }
+
+  .input {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: inherit;
+  }
+
+  .starFace {
+    display: grid;
+    height: 100%;
+    place-items: center;
+    border-radius: var(--radius-control);
+    transition: background var(--motion-press-out) ease;
+  }
+
+  .starIcon {
+    width: var(--space-8);
+    max-width: 100%;
+    height: var(--space-8);
+    fill: none;
+    stroke: var(--ds-color-fg-secondary);
+    stroke-width: 1.8;
+  }
+
+  .option[data-filled="true"] .starIcon {
+    fill: var(--ds-color-bg-brand);
+    stroke: var(--ds-color-fg-on-brand);
+  }
+
+  .input:focus-visible + .starFace {
+    outline: 3px solid var(--ds-color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .input[aria-disabled="true"] {
+    cursor: progress;
+  }
+
+  .input:disabled {
+    cursor: default;
+  }
+
+  .input:disabled + .starFace {
+    opacity: var(--ds-opacity-disabled);
+  }
+
+  @media (hover: hover) {
+    .option:hover .input:not(:disabled):not([aria-disabled="true"]) + .starFace {
+      background: var(--ds-color-bg-surface-soft);
+    }
+  }
+}

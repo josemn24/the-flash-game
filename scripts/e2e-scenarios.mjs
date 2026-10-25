@@ -1,4 +1,5 @@
 export const E2E_BY_SCENARIO = Object.freeze({
+  "product-measurement": ["e2e/product-measurement.spec.ts"],
   rehearsals: ["e2e/rehearsals.spec.ts"],
   "pyramid-session-conformance": ["e2e/pyramid-session-conformance.spec.ts"],
   "format-contracts": ["e2e/format-contracts.spec.ts"],
@@ -56,6 +57,7 @@ export const E2E_SCENARIO_BY_SPEC = new Map(
 );
 
 export const PILOT_E2E_BY_SCENARIO = Object.freeze({
+  "product-measurement": E2E_BY_SCENARIO["product-measurement"],
   portal: E2E_BY_SCENARIO.portal,
   s02: E2E_BY_SCENARIO.s02,
   s03: E2E_BY_SCENARIO.s03,

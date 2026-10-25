@@ -1,6 +1,6 @@
 # Preparación de entornos Supabase
 
-> Estado: vigente. Entornos admitidos: local y staging. La instalación registrada es local; la ejecución y validación de staging quedan pendientes de una ventana posterior.
+> Estado: vigente. Entornos admitidos: local y staging. La migración incremental de limpieza conserva la medición automática por temporada; su aplicación en staging y la comprobación de cron siguen pendientes.
 
 Esta es la guía principal para elegir y preparar un entorno. El historial activo parte de un baseline
 generado desde `supabase/schemas/` y continúa con migraciones incrementales. Un reinicio
@@ -136,6 +136,10 @@ empiece sin la partida creada por la integración. Repetir el setup al terminar:
 los desafíos y crea partidas.
 
 ## Alpha local de Tabarnia
+
+Este seed es un escenario técnico de cuatro desafíos y doce jugadores en la sala. No configura
+las 14 invitaciones ni las nueve publicaciones del [estudio Lean de Tabarnia](../product/strategy/lean-startup/cycles/CYCLE-001.md).
+Sirve para verificar recorridos y la medición común; no acredita preparación ni resultados del estudio.
 
 Con el stack local activo:
 

@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261020210000_dynamic_rehearsals";
+const canonicalSchemaRevision = "20261025140000_measurement_event_reliability";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -130,6 +130,19 @@ async function checkDatabase() {
           and to_regprocedure('private.set_rehearsal_publication_policy(jsonb)') is not null
           and to_regclass('private.rehearsal_publication_policies') is not null
           and exists (select 1 from information_schema.columns where table_schema='private' and table_name='question_versions' and column_name='difficulty')
+          and to_regprocedure('public.record_room_measurement_event(jsonb)') is not null
+          and to_regclass('private.room_measurements') is not null
+          and to_regclass('private.room_measurement_participants') is not null
+          and to_regclass('private.room_measurement_publications') is not null
+          and to_regclass('private.room_measurement_events') is not null
+          and exists(select 1 from pg_index
+            where indexrelid=to_regclass('private.room_measurement_events_rehearsal_run_idx')
+              and indisunique and indpred is not null)
+          and to_regclass('private.room_measurement_ratings') is not null
+          and to_regprocedure('public.get_superadmin_season_measurement(uuid,uuid)') is not null
+          and to_regprocedure('public.get_my_season_rating(uuid)') is not null
+          and to_regprocedure('public.save_my_season_rating(jsonb)') is not null
+          and exists(select 1 from pg_trigger where tgrelid='public.seasons'::regclass and tgname='season_measurement_automatic' and tgenabled<>'D')
           as schema_revision_marker
     `);
     const row = result.rows[0];

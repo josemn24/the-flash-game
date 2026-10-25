@@ -568,6 +568,28 @@ Se usa para transferencias de propiedad, invitaciones revocadas, publicaciones c
 invalidaciones, correcciones y operaciones de superadministración. No es una fuente de verdad para
 rankings ni para la UI; explica cómo cambiaron los hechos.
 
+### Medición privada de temporada
+
+El esquema vigente añade cinco relaciones privadas:
+
+- `room_measurements`: una medición automática por pareja sala/temporada, con fechas de captura y cierre.
+- `room_measurement_participants`: alcance de personas con fecha de incorporación e inicio de historia.
+- `room_measurement_publications`: alcance de publicaciones con sus mismas fechas de contexto.
+- `room_measurement_events`: seis señales comunes, identificador idempotente, persona y publicación,
+  visita/ejecución, fecha del navegador, recepción del servidor y versión de aplicación.
+- `room_measurement_ratings`: revisiones de disfrute 1–5, con identificador idempotente y recepción;
+  el informe selecciona el último valor por persona/publicación.
+
+Las incorporaciones se conservan; una baja posterior no elimina el alcance observado. Las tablas
+tienen RLS y acceso directo revocado. La identidad y el contexto se resuelven en RPC; el informe
+exige superadmin. Intentos, respuestas y puntos mantienen su autoridad competitiva: no se duplican
+como eventos de «partida completada». Los agregados y CSV se calculan al consultar, sin una tabla
+de resultados de estudios ni snapshots históricos automáticos.
+
+Las definiciones exactas están en [medición de temporada](product-measurement.md), y las relaciones
+y funciones en [alcance privado](../../supabase/schemas/s25_room_measurement.sql) y
+[medición automática](../../supabase/schemas/s26_season_measurement.sql).
+
 ## 8. Proyecciones que no se persisten inicialmente
 
 No se crean tablas funcionales separadas para:

@@ -17,7 +17,8 @@ describe("challenge intro model", () => {
     });
 
     expect(model.metrics.find((metric) => metric.label === "Tiempo global")?.value).toBe("3 min");
-    expect(model.rules[0].description).toContain("3 min es único para todas las pruebas");
+    expect(model.rules[0].title).toBe("Un solo reloj compartido");
+    expect(model.rules[0].description).toContain("consumen tiempo");
     expect(model.rules[1].description).toContain(
       "La tercera validación completa incorrecta de un tablero termina el desafío",
     );
@@ -112,5 +113,5 @@ it("explains free path edits and strict recovery for Conectar parejas", () => {
   });
   expect(model.rules[1].description).toContain("no penaliza");
   expect(model.rules[1].description).not.toContain("tercera");
-  expect(model.rules[2].description).toContain("sin respuesta recibida termina");
+  expect(model.rules[2].description).toContain("sin respuesta termina");
 });

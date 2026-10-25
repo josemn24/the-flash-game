@@ -18,6 +18,7 @@ import {
   Pencil,
   RotateCcw,
   Settings,
+  Star,
   TriangleAlert,
   Trophy,
   UserRoundPlus,
@@ -60,6 +61,10 @@ export function ArrowDownIcon(props: IconProps) {
 
 export function CheckIcon(props: IconProps) {
   return <Check {...baseProps} {...props} />;
+}
+
+export function StarIcon(props: IconProps) {
+  return <Star {...baseProps} {...props} />;
 }
 
 export function CrossIcon(props: IconProps) {

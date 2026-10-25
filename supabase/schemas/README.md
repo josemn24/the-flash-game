@@ -27,6 +27,7 @@ primero estructuras y después validadores, lecturas, comandos y ACL:
 - `88`–`90`: soporte, operaciones privadas de intentos y fachadas de comandos.
 - `91`–`99` y `s20`: recuperación/contextos, eventos y comandos específicos, activación de Pirámide,
   ensayos e inspección administrativa.
+- `s24`–`s26`: informes experimentales históricos, observación por sala y medición automática por temporada.
 
 No mantener aquí una copia de cada función ni cifras de tablas, archivos o tests.
 Los [handlers de intentos](../../docs/current/sql-attempt-command-handlers-refactor.md),
@@ -155,3 +156,17 @@ La [referencia anterior](../../docs/archive/reports/schema-reference-before-2026
 conserva un resumen del contexto y las verificaciones históricas. Los pendientes de
 staging, política de resultados, invitaciones y retención están en el
 [backlog](../../docs/implementation-plan.md); no se deducen de una migración antigua.
+
+## Medición automática de temporada
+
+Las tablas privadas `room_measurement*` conservan alcance, eventos y disfrute por temporada.
+La captura es común a todas las salas y la creación de temporadas prepara su medición sin
+intervención administrativa. El superadmin consulta el informe y cuatro CSV. La autorización
+compartida `private.require_measurement_admin()` permanece en el esquema de medición.
+Los objetivos y umbrales Lean se aplican en análisis posterior y no condicionan la competición.
+La migración `20261025120000_remove_product_experiments.sql` elimina los datos y objetos
+experimentales de preproducción; las migraciones anteriores se conservan como historial.
+
+El generador de tipos admite `SUPABASE_TYPES_DB_URL` para generar y contrastar el contrato contra
+una base desechable actualizada, sin aplicar migraciones a la base local habitual. Si se omite,
+`npm run supabase:types` y `npm run supabase:types:check` utilizan el stack local configurado.

@@ -72,6 +72,45 @@ export async function testConcurrentCommands(sql) {
     assert.equal(outcomes.filter((r) => r.status === "rejected").length, 1, message);
   };
 
+  // Reuse the independent-connection barrier with a JSON result adapter for the boolean RPC.
+  await sql(`create function test_support.record_observation(input jsonb) returns jsonb
+    language sql as $$ select jsonb_build_object('recorded',public.record_room_measurement_event(input)) $$;
+    grant execute on function test_support.record_observation(jsonb) to authenticated;`);
+  for (const type of ["rehearsal_started", "rehearsal_completed"]) {
+    const observation = {
+      eventId: id(`concurrent-${type}-one`),
+      visitId: id("concurrent-rehearsal-run"),
+      roomId: "commands-flash",
+      publicationId: id("sc-flash"),
+      type,
+      occurredAt: new Date().toISOString(),
+      appVersion: "concurrent-measurement",
+    };
+    const outcomes = await race(
+      "member",
+      "member",
+      "record_observation",
+      observation,
+      { ...observation, eventId: id(`concurrent-${type}-two`) },
+      { role: "authenticated", schema: "test_support" },
+    );
+    assert.equal(
+      outcomes.filter((r) => r.status === "fulfilled" && r.value.recorded).length,
+      2,
+      "Concurrent observations of one execution both succeed",
+    );
+    assert.equal(
+      (
+        await sql(`select count(*) from private.room_measurement_events
+      where player_id=${quote(id("member"))} and publication_id=${quote(id("sc-flash"))}
+        and visit_id=${quote(observation.visitId)} and type=${quote(type)};`)
+      ).trim(),
+      "1",
+      "Concurrent retries insert only one observation per execution and signal",
+    );
+  }
+  console.log("Concurrent rehearsal measurement deduplication passed.");
+
   const seasonRaceRoom = id("season-race-room");
   const seasonRaceOne = id("season-race-one");
   const seasonRaceTwo = id("season-race-two");

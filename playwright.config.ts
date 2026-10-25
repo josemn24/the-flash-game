@@ -50,6 +50,7 @@ const localEnv = {
     "",
   SUPABASE_SERVICE_ROLE_KEY:
     process.env.SUPABASE_SERVICE_ROLE_KEY || localStatus.SERVICE_ROLE_KEY || "",
+  CRON_SECRET: process.env.CRON_SECRET || "local-measurement-maintenance-secret",
   CALENDAR_TICK_SECRET: process.env.CALENDAR_TICK_SECRET || "local-s12-calendar-secret",
   FLASH_RUNTIME_SCOPE: process.env.FLASH_RUNTIME_SCOPE || "pilot",
   APP_ORIGIN: process.env.APP_ORIGIN || e2eBaseURL,
@@ -60,7 +61,7 @@ const localEnv = {
   // Keep production's smaller admin burst while allowing the local browser run to complete.
   FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261020210000_dynamic_rehearsals",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261025140000_measurement_event_reliability",
 };
 
 export default defineConfig({

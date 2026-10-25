@@ -72,4 +72,47 @@ export async function testCompletionHealthContract(sql) {
     "t|t|f",
     "Health rejects an incompatible closure implementation",
   );
+  for (const signature of [
+    "public.record_room_measurement_event(jsonb)",
+    "public.get_superadmin_season_measurement(uuid,uuid)",
+    "public.get_my_season_rating(uuid)",
+    "public.save_my_season_rating(jsonb)",
+  ]) {
+    const result = await sql(
+      `begin; alter function ${signature} rename to missing_measurement_probe; ${query}; rollback;`,
+    );
+    assert.equal(result.trim(), "t|t|f", `Health rejects a missing ${signature}`);
+  }
+  assert.equal(
+    (
+      await sql(`begin;
+    alter index private.room_measurement_events_rehearsal_run_idx rename to missing_rehearsal_run_probe;
+    ${query}; rollback;`)
+    ).trim(),
+    "t|t|f",
+    "Health rejects the schema before the measurement reliability migration",
+  );
+  for (const definition of [
+    "create index room_measurement_events_rehearsal_run_idx on private.room_measurement_events(measurement_id,player_id,publication_id,type,visit_id) where type in ('rehearsal_started','rehearsal_completed')",
+    "create unique index room_measurement_events_rehearsal_run_idx on private.room_measurement_events(measurement_id,player_id,publication_id,type,visit_id)",
+  ]) {
+    assert.equal(
+      (
+        await sql(`begin;
+      drop index private.room_measurement_events_rehearsal_run_idx;
+      ${definition}; ${query}; rollback;`)
+      ).trim(),
+      "t|t|f",
+      "Health requires a unique partial rehearsal index",
+    );
+  }
+  assert.equal(
+    (
+      await sql(
+        `begin; alter table public.seasons disable trigger season_measurement_automatic; ${query}; rollback;`,
+      )
+    ).trim(),
+    "t|t|f",
+    "Health rejects disabled automatic measurement",
+  );
 }

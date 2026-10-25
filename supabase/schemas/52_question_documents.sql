@@ -9,7 +9,7 @@ language sql stable set search_path = '' as $$
     'type', version.type,
     'payloadSchemaVersion', version.payload_schema_version,
     'timeLimitMs', version.time_limit_ms,
-    'difficulty', version.difficulty,
+        'difficulty', version.difficulty,
     'publicPayload', version.public_payload,
     'solutionPayload', solution.solution_payload
   )

@@ -1,3 +1,4 @@
+import { MeasurementProvider, ProductSignal } from "@/components/product/Measurement.client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopRoomHistoryDetail } from "@/components/game/production";
@@ -29,13 +30,16 @@ export default async function RoomHistoryDetailPage({ params }: Props) {
   }
 
   return (
-    <FlashPopRoomHistoryDetail
-      roomId={model.roomId}
-      roomTitle={model.roomTitle}
-      entry={model.entry}
-      ranking={model.ranking}
-      currentUserId={model.currentUserId}
-      canReviewMembers={model.canReviewMembers}
-    />
+    <MeasurementProvider roomId={roomId} publicationId={challengeId}>
+      <ProductSignal type="ranking_viewed" />
+      <FlashPopRoomHistoryDetail
+        roomId={model.roomId}
+        roomTitle={model.roomTitle}
+        entry={model.entry}
+        ranking={model.ranking}
+        currentUserId={model.currentUserId}
+        canReviewMembers={model.canReviewMembers}
+      />
+    </MeasurementProvider>
   );
 }

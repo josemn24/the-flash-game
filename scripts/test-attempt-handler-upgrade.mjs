@@ -139,8 +139,6 @@ try {
     7,
     "Only seven private operations are added",
   );
-  await checkInventory(sql);
-  await testCompletionHealthContract(sql);
 
   // Completed results and the old transfer can be replayed without new audit, sessions or credits.
   const replay = await json(`begin;
@@ -210,6 +208,13 @@ try {
     ],
     "All pre-existing attempts continue with the same terminal and scoring contracts",
   );
+  // Historical assertions above target that migration's schema. Compare today's
+  // inventory and health only after loading all subsequent migrations.
+  await sql(
+    `begin;\n${(await Promise.all(files.slice(target + 1).map((name) => readFile(`supabase/migrations/${name}`, "utf8")))).join("\n")}\ncommit;`,
+  );
+  await checkInventory(sql);
+  await testCompletionHealthContract(sql);
   console.log(
     "Attempt handler upgrade passed: predecessor characterization, unchanged rows/OIDs/ACLs, health, replay and continued play.",
   );

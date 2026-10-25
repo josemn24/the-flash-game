@@ -1,4 +1,5 @@
 "use client";
+import { MeasurementProvider, useProductSignal } from "@/components/product/Measurement.client";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { GameSessionProvider } from "@/application/ports/game-session";
 import type { RehearsalDefinition, RehearsalRecipe } from "@/types/gameplay/rehearsal";
@@ -35,9 +36,10 @@ type RunProps = {
 export function RehearsalGameApp(props: {
   definition: RehearsalDefinition;
   recipe: RehearsalRecipe;
+  measurement?: { roomId: string; publicationId: string };
   returnTo: string;
 }) {
-  return (
+  const content = (
     <>
       <script
         type="application/json"
@@ -48,6 +50,20 @@ export function RehearsalGameApp(props: {
         <PreparedRun key={`${props.returnTo}:${props.recipe.sessionId}`} {...props} />
       </RehearsalPresentation.Provider>
     </>
+  );
+  return props.measurement ? (
+    <MeasurementProvider
+      {...props.measurement}
+      rehearsal
+      runId={props.recipe.sessionId.replace(
+        /^rehearsal-(.{8})(.{4})(.{4})(.{4})(.{12})$/,
+        "$1-$2-$3-$4-$5",
+      )}
+    >
+      {content}
+    </MeasurementProvider>
+  ) : (
+    content
   );
 }
 
@@ -175,6 +191,7 @@ function AutoStartRun({
   returnTo: string;
   children: ReactNode;
 }) {
+  useProductSignal("rehearsal_started", session.phase !== "intro");
   const started = useRef(false);
   const { begin } = session;
   useEffect(() => {

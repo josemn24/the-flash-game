@@ -217,6 +217,9 @@ isOneToOne: false
               "challenge_max_score": number,"challenge_mode": string,"challenge_subtitle": string,"challenge_title": string,"closes_at": string,"competitive_playable": boolean,"current_flash_points": number,"current_position": number,"member_count": number,"member_previews": Json,"membership_role": string,"opens_at": string,"publication_id": string,"publication_status": string,"question_count": number,"room_description": string,"room_id": string,"room_slug": string,"room_title": string,"season_ends_at": string,"season_id": string,"season_starts_at": string,"season_status": string,"season_title": string
             }[]
                            },
+"get_my_season_rating":
+{ Args: { "target_publication_id": string }; Returns: Json
+                           },
 "get_my_survival_challenge":
 { Args: { "target_publication_id": string,"target_room_slug": string }; Returns: {
               "challenge_description": string,"challenge_id": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_mode": string,"challenge_slug": string,"challenge_subtitle": string,"challenge_title": string,"challenge_version_id": string,"initial_lives": number,"item_points": number,"item_position": number,"own_attempt_completed_at": string,"own_attempt_deadline_at": string,"own_attempt_id": string,"own_attempt_lock_version": number,"own_attempt_score": number,"own_attempt_started_at": string,"own_attempt_status": string,"payload_schema_version": number,"publication_closes_at": string,"publication_id": string,"publication_opens_at": string,"publication_status": string,"question_count": number,"question_type": string,"question_version_id": string,"room_id": string,"room_slug": string,"room_title": string,"time_limit_ms": number
@@ -309,6 +312,9 @@ isOneToOne: false
 "get_superadmin_room_detail":
 { Args: { "target_room_id": string }; Returns: Json
                            },
+"get_superadmin_season_measurement":
+{ Args: { "target_room_id": string,"target_season_id"?: string }; Returns: Json
+                           },
 "lookup_superadmin_players":
 { Args: { "target_emails": (string)[] }; Returns: {
               "display_name": string,"email": string,"player_id": string
@@ -328,7 +334,13 @@ isOneToOne: false
 "publish_superadmin_question":
 { Args: { "input": Json }; Returns: Json
                            },
+"record_room_measurement_event":
+{ Args: { "input": Json }; Returns: boolean
+                           },
 "run_calendar_tick":
+{ Args: { "input": Json }; Returns: Json
+                           },
+"save_my_season_rating":
 { Args: { "input": Json }; Returns: Json
                            },
 "update_superadmin_flash_draft":

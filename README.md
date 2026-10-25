@@ -22,6 +22,10 @@ se utilizan en local o staging y no definen un entorno remoto adicional.
 - Puntuación que premia las respuestas rápidas y aplica penalizaciones según el formato.
 - Resultados con precisión, aciertos, fallos, preguntas sin contestar y tiempo total.
 - Revisión de respuestas; repetición en práctica y ensayos, sin replay competitivo.
+- Medición automática por temporada: actividad, participación, disfrute opcional y cuatro CSV
+  privados para superadmin. Las definiciones y los límites están en la
+  [guía de medición](docs/current/product-measurement.md); los objetivos de cada estudio se analizan
+  fuera de la aplicación.
 - Biblioteca con reglas, recomendaciones, accesibilidad y puntuación de cada formato.
 - Uno o varios ejemplos jugables y cronometrados desde cada ficha de formato.
 - Diseño responsive, accesible y completamente en español.
@@ -84,7 +88,7 @@ Para probar desde un móvil u otro equipo de la red local, consulta la
 | `npm run supabase:start`             | Inicia el stack local de Supabase.                                                                                           |
 | `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                                               |
 | `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                                     |
-| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares.                     |
+| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara el escenario técnico de Tabarnia con cuatro desafíos y sus siete avatares.                 |
 | `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Circuito de parejas» salvo que se indique un inicio futuro. |
 | `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.                        |
 | `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                                            |
@@ -98,6 +102,10 @@ La [guía de preparación](docs/current/supabase-clean-installation.md#qué-nece
 los requisitos, comandos, efectos destructivos y archivos de cada recorrido. El
 [escenario conjunto Tabarnia y BetaVIP](docs/current/supabase-clean-installation.md#escenario-local-con-tabarnia-y-betavip)
 incluye sus cuentas, publicaciones y la secuencia específica de integración y E2E.
+
+El seed de Tabarnia es un escenario técnico de cuatro desafíos. No prepara la cohorte de 14
+invitaciones ni las nueve publicaciones del [estudio Lean](docs/product/strategy/lean-startup/cycles/CYCLE-001.md).
+La preparación de ese estudio y su análisis siguen pendientes, según el contrato y el estado Lean.
 
 Para recorrer las temporadas locales sin esperar un día entre publicaciones, ambos seeds admiten un
 perfil rápido opcional:

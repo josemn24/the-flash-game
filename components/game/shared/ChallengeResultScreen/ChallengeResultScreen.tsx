@@ -1,4 +1,5 @@
 "use client";
+import { EnjoymentRating, useProductSignal } from "@/components/product/Measurement.client";
 
 import type { CSSProperties } from "react";
 import { motion } from "motion/react";
@@ -37,6 +38,7 @@ export function ChallengeResultScreen({
   returnLabel = "Volver",
   prefetchReturnLink = true,
 }: ChallengeResultScreenProps) {
+  useProductSignal("rehearsal_completed");
   const practice = useRehearsalPresentation();
   const replay = practice ? undefined : onReplay;
   const displayModel = expired
@@ -135,6 +137,7 @@ export function ChallengeResultScreen({
               ) : null}
             </div>
           </Card>
+          {!expired && !practice ? <EnjoymentRating /> : null}
         </motion.div>
 
         <motion.div

@@ -204,6 +204,21 @@
     },
     "private.rehearsal_publication_policies": {
       "kind": "r"
+    },
+    "private.room_measurement_events": {
+      "kind": "r"
+    },
+    "private.room_measurement_participants": {
+      "kind": "r"
+    },
+    "private.room_measurement_publications": {
+      "kind": "r"
+    },
+    "private.room_measurements": {
+      "kind": "r"
+    },
+    "private.room_measurement_ratings": {
+      "kind": "r"
     }
   },
   "functions": {
@@ -1463,6 +1478,60 @@
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"],
+      "volatility": "v"
+    },
+    "private.require_measurement_admin": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.sync_room_measurement": {
+      "arguments": "target_measurement_id uuid",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "public.record_room_measurement_event": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
+    },
+    "private.ensure_season_measurement": {
+      "arguments": "target_season_id uuid",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.track_season_measurement": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.track_room_measurement_scope": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "public.get_superadmin_season_measurement": {
+      "arguments": "target_room_id uuid, target_season_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
+    },
+    "public.get_my_season_rating": {
+      "arguments": "target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
+      "volatility": "s"
+    },
+    "public.save_my_season_rating": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
       "volatility": "v"
     }
   }

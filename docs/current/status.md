@@ -2,7 +2,7 @@
 
 # Estado actual del proyecto
 
-Último contraste documental: 2026-10-24.
+Último contraste documental: 2026-10-25.
 
 ## Alcance y verificación
 
@@ -10,7 +10,7 @@ The Flash combina competición persistida sobre Supabase, ejemplos didácticos d
 demos explícitas y pruebas locales antes del intento competitivo. Las rutas de producto no
 recurren al mock cuando falla Supabase.
 
-Revisión canónica del repositorio: `20261020210000_dynamic_rehearsals`.
+Revisión canónica del repositorio: `20261025140000_measurement_event_reliability`.
 
 El valor se contrasta con la última migración, `.env.example`, health y los runners mediante
 `npm run schema:revision:check`. Identifica el contrato esperado por la aplicación, no demuestra
@@ -18,8 +18,37 @@ que una base concreta lo tenga aplicado. La [guía de entornos](supabase-clean-i
 describe instalación y operación.
 
 Los [informes de QA](../archive/reports/qa-through-2026-10-21.md) acreditan ejecuciones locales.
-Esta revisión documental no despliega ni verifica staging. La validación remota, los logs de
-cron y la calibración editorial siguen siendo requisitos antes de abrir una temporada real.
+La [verificación archivada de staging](../archive/reports/staging-measurement-verification.md) del
+2026-10-24 acredita únicamente la implementación anterior, ya retirada del modelo vigente.
+Los logs de cron y la calibración editorial siguen pendientes antes de abrir una temporada real.
+
+## Medición de producto
+
+Cada temporada tiene una única medición automática. La creación de temporadas y las nuevas
+incorporaciones de miembros o desafíos actualizan su alcance sin configurar experimentos.
+El superadmin dispone de selector de temporada, resumen de actividad, detalle por persona y
+publicación, disfrute opcional y CSV de personas, participación, desafíos y resumen.
+
+Tabarnia usa estas capacidades comunes como cualquier otra sala. Los criterios de éxito de
+su estudio Lean se aplican posteriormente sobre los datos recogidos y el expediente privado de
+invitaciones, incidencias y feedback. La aplicación muestra actividad descriptiva sin clasificar
+hipótesis ni condicionar la activación de temporadas a estudios.
+
+La [guía de medición](product-measurement.md) describe captura, valoración única 1–5 y los cuatro
+CSV. La migración de limpieza retira el sistema experimental y sus datos de preproducción;
+conserva los datos automáticos y competitivos. La aplicación de esta entrega en staging sigue
+pendiente y no queda acreditada por las verificaciones archivadas.
+
+La base local se reinició desde cero el 2026-10-25 con la revisión
+`20261025140000_measurement_event_reliability`. Queda vacía de usuarios, jugadores, salas,
+temporadas, preguntas, partidas y medición, con los dos buckets canónicos vacíos. Se verificaron
+el historial completo de migraciones, permisos, el índice único parcial de ensayos, el sondeo SQL
+de health y las respuestas 200 de Auth y REST. No se ha cargado el bootstrap ni escenarios.
+Los registros operativos quedan en `output/local/reset-manifest.json` y
+`output/local/schema-reset-verification.json`; el detalle está en la
+[guía de medición](product-measurement.md#instalación-y-verificación).
+La revisión corrige el rechazo por desfase del reloj y los duplicados de ensayos con un índice
+único parcial y recuentos directos. La reinstalación de staging queda pendiente.
 
 ## Modos y formatos
 

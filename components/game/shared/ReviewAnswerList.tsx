@@ -1,3 +1,4 @@
+import { ProductSignal } from "@/components/product/Measurement.client";
 import { CheckIcon, ClockIcon, CrossIcon, LockIcon } from "@/components/ui";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import { logicCodeReviewResult } from "@/lib/question-formats/logic-code/review";
@@ -85,6 +86,7 @@ export function ReviewAnswerList({
 }) {
   return (
     <div className={styles.reviewAnswerList}>
+      {entries.length > 0 ? <ProductSignal type="review_viewed" /> : null}
       {entries.map((entry) => {
         const status = statusFor(entry);
         const result = entry.result;

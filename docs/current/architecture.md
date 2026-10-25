@@ -91,6 +91,20 @@ al superadmin, y los tres comandos Flash de borrador/publicación aplican valida
 idempotencia, concurrencia optimista y auditoría. El contenido publicado queda inmutable; calendario,
 intentos y puntos siguen siendo responsabilidades de slices posteriores.
 
+### Medición automática por temporada
+
+La medición común sigue las mismas fronteras: `components/product/Measurement.client.tsx` y
+`features/product/transport.ts` envían seis señales a `/api/product/events`; los casos de uso y
+los adaptadores llaman a RPC autorizadas. Las partidas oficiales proceden de intentos persistidos,
+y el disfrute usa un registro independiente con revisiones. La captura de navegación tiene cuota
+propia, un único reintento en memoria y posible descarte; no forma parte de una transacción del juego.
+
+La consulta superadmin combina las fuentes privadas; `lib/seasonMeasurement.ts` calcula el informe
+y los CSV actuales. Los criterios de éxito de un estudio y su cohorte externa se evalúan después,
+sin configurar la captura ni bloquear temporadas. La [guía de medición](product-measurement.md)
+centraliza fórmulas, ventanas, permisos y límites de reproducibilidad; las migraciones experimentales
+anteriores forman parte del historial y su retirada está en la revisión `20261025120000`.
+
 ## 2. Responsabilidades por capa
 
 ### 2.1 UI y presentación

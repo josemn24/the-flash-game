@@ -32,14 +32,14 @@ describe("challenge route room context", () => {
       searchParams: Promise.resolve({ roomId: "tabarnia-room" }),
     });
 
-    expect(element.props.roomContext).toMatchObject({
+    expect(element.props.children.props.roomContext).toMatchObject({
       roomId: "tabarnia-room",
       roomTitle: "Tabarnia",
       returnTo: "/salas/tabarnia-room",
       memberId: "player",
       attemptStatus: "completed",
     });
-    expect(element.props.roomContext.result).toMatchObject({
+    expect(element.props.children.props.roomContext.result).toMatchObject({
       flashPoints: expect.any(Number),
       completed: true,
     });
