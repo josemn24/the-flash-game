@@ -5,6 +5,10 @@ import path from "node:path";
 import sharp from "sharp";
 import TABARNIA_MOCK_CONTENT from "./fixtures/scenarios/tabarnia-content.json" with { type: "json" };
 import TABARNIA_ALPHABET_CONTENT from "./fixtures/scenarios/tabarnia-alphabet.json" with { type: "json" };
+import { TABARNIA_FICTION_ALPHABET } from "./fixtures/scenarios/tabarnia-multiverse.mjs";
+import { TABARNIA_PYRAMID_LOGIC_CONTENT } from "./fixtures/scenarios/tabarnia-pyramid-logic.mjs";
+import { TABARNIA_QUEENS_TIME_TRIAL } from "./fixtures/scenarios/tabarnia-time-trial-queens.mjs";
+import { TABARNIA_CONNECT_PAIRS_TIME_TRIAL } from "./fixtures/scenarios/tabarnia-time-trial-connect-pairs.mjs";
 import { SBR_QUESTIONS } from "./fixtures/scenarios/sbr.mjs";
 import { loadMiniWordleDictionary } from "./load-mini-wordle-dictionary.mjs";
 import {
@@ -284,6 +288,10 @@ function challengeId(slug) {
     "animals-alphabet-definition": "challenge-definition:animals-alphabet",
     "spain-survival-definition": "challenge-definition:spain-survival",
     "pyramid-abrahamic-definition": "challenge-definition:bible-pyramid",
+    "pyramid-logic-definition": "challenge-definition:tabarnia-pyramid-logic",
+    [TABARNIA_QUEENS_TIME_TRIAL.challenge.slug]: "challenge-definition:tabarnia-queens-time-trial",
+    [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]:
+      "challenge-definition:tabarnia-connect-pairs-time-trial",
     "steel-ball-run": "challenge-definition:steel-ball-run",
   };
   return stableId(labels[slug]);
@@ -294,6 +302,10 @@ function challengeVersionId(slug) {
     "animals-alphabet-definition": "challenge-version:animals-alphabet-v1",
     "spain-survival-definition": "challenge-version:spain-survival-v1",
     "pyramid-abrahamic-definition": "challenge-version:bible-pyramid-v1",
+    "pyramid-logic-definition": "challenge-version:tabarnia-pyramid-logic-v1",
+    [TABARNIA_QUEENS_TIME_TRIAL.challenge.slug]: "challenge-version:tabarnia-queens-time-trial-v1",
+    [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]:
+      "challenge-version:tabarnia-connect-pairs-time-trial-v1",
     "steel-ball-run": "challenge-version:steel-ball-run-v1",
   };
   return stableId(labels[slug]);
@@ -354,6 +366,11 @@ function persistedQuestion(mockQuestion, points, spainAssets, expectedSlug) {
     case "classification":
     case "word-search":
     case "word-hashtag":
+    case "odd-one-out":
+    case "logic-matrix":
+    case "connect-pairs":
+    case "logic-code":
+    case "queens":
       Object.assign(publicPayload, source);
       if (mockQuestion.type === "word-search") {
         solutionPayload = {
@@ -404,6 +421,10 @@ function persistedQuestion(mockQuestion, points, spainAssets, expectedSlug) {
 
 function tabarniaChallenges() {
   const alphabet = TABARNIA_ALPHABET_CONTENT.challenge;
+  const fictionAlphabet = TABARNIA_FICTION_ALPHABET;
+  const logicPyramid = TABARNIA_PYRAMID_LOGIC_CONTENT.challenge;
+  const queensTimeTrial = TABARNIA_QUEENS_TIME_TRIAL.challenge;
+  const connectPairsTimeTrial = TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge;
   const spanish = TABARNIA_MOCK_CONTENT.challenges.find(
     (challenge) => challenge.slug === "spain-survival-definition",
   );
@@ -411,23 +432,6 @@ function tabarniaChallenges() {
     (challenge) => challenge.slug === "pyramid-abrahamic-definition",
   );
   return [
-    {
-      ...alphabet,
-      definitionSlug: "tabarnia-reino-animales",
-      id: challengeId(alphabet.slug),
-      versionId: challengeVersionId(alphabet.slug),
-      globalTimeLimitMs: alphabet.modeConfig.timeLimitMs,
-      modeConfig: {},
-      items: alphabet.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
-    },
-    {
-      ...bible,
-      definitionSlug: "tabarnia-piramide-biblia",
-      id: challengeId(bible.slug),
-      versionId: challengeVersionId(bible.slug),
-      modeConfig: {},
-      items: bible.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
-    },
     {
       slug: "steel-ball-run",
       definitionSlug: "tabarnia-flash-01",
@@ -441,12 +445,67 @@ function tabarniaChallenges() {
       items: SBR_QUESTIONS.map((item) => ({ ...item, questionSlug: item.slug, modeConfig: {} })),
     },
     {
+      ...alphabet,
+      definitionSlug: "tabarnia-reino-animales",
+      id: challengeId(alphabet.slug),
+      versionId: challengeVersionId(alphabet.slug),
+      globalTimeLimitMs: alphabet.modeConfig.timeLimitMs,
+      modeConfig: {},
+      items: alphabet.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
+    },
+    {
+      ...queensTimeTrial,
+      definitionSlug: "tabarnia-contrarreloj-queens",
+      id: challengeId(queensTimeTrial.slug),
+      versionId: challengeVersionId(queensTimeTrial.slug),
+      modeConfig: {},
+      items: queensTimeTrial.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
+    },
+    {
       ...spanish,
       definitionSlug: "tabarnia-supervivencia-espana",
       id: challengeId(spanish.slug),
       versionId: challengeVersionId(spanish.slug),
       modeConfig: { lives: 3 },
       items: spanish.items.map((item) => ({ ...item, modeConfig: {} })),
+    },
+    {
+      ...logicPyramid,
+      definitionSlug: "tabarnia-piramide-cumbre-logica",
+      id: challengeId(logicPyramid.slug),
+      versionId: challengeVersionId(logicPyramid.slug),
+      modeConfig: {},
+      items: logicPyramid.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
+    },
+    {
+      ...fictionAlphabet,
+      id: challengeId(fictionAlphabet.slug),
+      versionId: challengeVersionId(fictionAlphabet.slug),
+      mode: "alphabet",
+      modeConfig: {},
+      items: fictionAlphabet.entries.map((entry, index) => ({
+        questionSlug: entry.slug,
+        points:
+          Math.floor(100 / fictionAlphabet.entries.length) +
+          (index < 100 % fictionAlphabet.entries.length ? 1 : 0),
+        modeConfig: { letter: entry.letter },
+      })),
+    },
+    {
+      ...connectPairsTimeTrial,
+      definitionSlug: "tabarnia-contrarreloj-conectar-parejas",
+      id: challengeId(connectPairsTimeTrial.slug),
+      versionId: challengeVersionId(connectPairsTimeTrial.slug),
+      modeConfig: {},
+      items: connectPairsTimeTrial.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
+    },
+    {
+      ...bible,
+      definitionSlug: "tabarnia-piramide-biblia",
+      id: challengeId(bible.slug),
+      versionId: challengeVersionId(bible.slug),
+      modeConfig: {},
+      items: bible.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
     },
   ];
 }
@@ -462,11 +521,15 @@ export function buildTabarniaDomainSql({
   const profile = resolveScheduleProfile(schedule);
   const normalizedStartAt = normalizeStartAt(startsAt);
   const seasonStart = scheduleStartExpression(normalizedStartAt);
-  const seasonEnd = `${seasonStart} + interval '${profile.tabarniaSeasonEnd}'`;
   const xesmona = accounts.xesmona.playerId;
   const roomId = stableId("room:tabarnia");
   const seasonId = stableId("season:tabarnia-alpha");
   const challenges = tabarniaChallenges();
+  const seasonDurationMinutes =
+    profile.name === "fast" ? challenges.length * profile.windowMinutes : 17 * 24 * 60;
+  const seasonEndInterval =
+    profile.name === "fast" ? `${seasonDurationMinutes} minutes` : profile.tabarniaSeasonEnd;
+  const seasonEnd = `${seasonStart} + interval '${seasonEndInterval}'`;
   const items = [];
   const alphabetItems = challenges.find(
     (challenge) => challenge.slug === "animals-alphabet-definition",
@@ -477,8 +540,17 @@ export function buildTabarniaDomainSql({
   const bibleItems = challenges.find(
     (challenge) => challenge.slug === "pyramid-abrahamic-definition",
   ).items;
+  const fictionAlphabetItems = challenges.find(
+    (challenge) => challenge.slug === TABARNIA_FICTION_ALPHABET.slug,
+  ).items;
+  const logicPyramidItems = challenges.find(
+    (challenge) => challenge.slug === TABARNIA_PYRAMID_LOGIC_CONTENT.challenge.slug,
+  ).items;
   const mockQuestions = new Map(
-    TABARNIA_MOCK_CONTENT.questions.map((question) => [question.slug, question]),
+    [
+      ...TABARNIA_MOCK_CONTENT.questions,
+      ...TABARNIA_PYRAMID_LOGIC_CONTENT.questions,
+    ].map((question) => [question.slug, question]),
   );
   const questions = [
     ...alphabetItems.map((item) =>
@@ -505,6 +577,42 @@ export function buildTabarniaDomainSql({
         item.questionSlug,
       ),
     ),
+    ...fictionAlphabetItems.map((item, index) => {
+      const entry = TABARNIA_FICTION_ALPHABET.entries[index];
+      return {
+        slug: entry.slug,
+        type: "short-text",
+        payloadSchemaVersion: 1,
+        timeLimitMs: TABARNIA_FICTION_ALPHABET.questionTimeLimitMs,
+        points: item.points,
+        publicPayload: {
+          category: "Entretenimiento",
+          tags: {
+            domains: [entry.domain],
+            topics: [entry.topic],
+            cognitiveSkills: ["memory"],
+            formatSkills: ["recall"],
+            lifeSkills: [],
+          },
+          question: entry.prompt,
+        },
+        solutionPayload: {
+          correctAnswer: entry.correctAnswer,
+          acceptedAnswers: entry.acceptedAnswers,
+          explanation: entry.explanation,
+        },
+      };
+    }),
+    ...logicPyramidItems.map((item) =>
+      persistedQuestion(
+        mockQuestions.get(item.questionSlug),
+        item.points,
+        spainAssets,
+        item.questionSlug,
+      ),
+    ),
+    ...TABARNIA_QUEENS_TIME_TRIAL.questions,
+    ...TABARNIA_CONNECT_PAIRS_TIME_TRIAL.questions,
     ...SBR_QUESTIONS.map((item) => ({
       ...item,
       publicPayload: JSON.parse(
@@ -717,7 +825,7 @@ export function tabarniaManifest(
   const scheduleData = scheduleManifest(
     profile,
     challenges.length,
-    profile.name === "fast" ? 20 : 17 * 24 * 60,
+    profile.name === "fast" ? challenges.length * profile.windowMinutes : 17 * 24 * 60,
     normalizedStartAt,
   );
   return {

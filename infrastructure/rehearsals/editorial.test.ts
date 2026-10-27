@@ -9,6 +9,7 @@ import { betaVipTimeTrialQuestions } from "@/scripts/fixtures/scenarios/betavip-
 import { betaVipConnectPairsQuestions } from "@/scripts/fixtures/scenarios/betavip-connect-pairs.mjs";
 import tabarnia from "@/scripts/fixtures/scenarios/tabarnia-content.json";
 import tabarniaAlphabet from "@/scripts/fixtures/scenarios/tabarnia-alphabet.json";
+import { TABARNIA_FICTION_ALPHABET } from "@/scripts/fixtures/scenarios/tabarnia-multiverse.mjs";
 
 // Official fixtures are read only by this editorial regression, never by the bank or builder.
 it("does not repeat official statements or meaningful exact text answers in its initial content", () => {
@@ -20,6 +21,10 @@ it("does not repeat official statements or meaningful exact text answers in its 
     ...[...tabarnia.questions, ...tabarniaAlphabet.questions].map((q) => ({
       publicPayload: q.publicPayload,
       solutionPayload: q.privatePayload.solution.payload,
+    })),
+    ...TABARNIA_FICTION_ALPHABET.entries.map((entry) => ({
+      publicPayload: { question: entry.prompt },
+      solutionPayload: { correctAnswer: entry.correctAnswer },
     })),
     ...betaVipSurvivalQuestions("audit-only"),
     ...betaVipPyramidQuestions,

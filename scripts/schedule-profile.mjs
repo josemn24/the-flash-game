@@ -12,7 +12,7 @@ export const SCHEDULE_PROFILES = Object.freeze({
     windowMinutes: 5,
     windowStep: 5,
     windowUnit: "minutes",
-    tabarniaSeasonEnd: "20 minutes",
+    tabarniaSeasonEnd: "30 minutes",
     betaVipSeasonEnd: "30 minutes",
   }),
 });

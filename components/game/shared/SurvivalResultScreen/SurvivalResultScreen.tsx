@@ -80,7 +80,7 @@ export function SurvivalResultScreen({
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className={`${styles.eyebrow} text-[var(--ds-color-fg-brand)]`}>
-            Supervivencia: España
+            España
           </p>
           <h1 className="mt-3 text-3xl font-black tracking-[-0.045em] text-white sm:text-4xl">
             {message}

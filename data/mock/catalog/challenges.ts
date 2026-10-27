@@ -281,7 +281,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
   {
     slug: "spain-survival-definition",
     mode: "survival",
-    title: "Supervivencia: España",
+    title: "España",
     subtitle: "20 retos, 3 vidas",
     description:
       "Aguanta una ruta de cultura general sobre España: mapas, patrimonio, lengua, ciencia, arte y lógica con tres vidas.",

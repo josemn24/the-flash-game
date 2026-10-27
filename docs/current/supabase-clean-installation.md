@@ -137,7 +137,7 @@ los desafíos y crea partidas.
 
 ## Alpha local de Tabarnia
 
-Este seed es un escenario técnico de cuatro desafíos y doce jugadores en la sala. No configura
+Este seed es un escenario técnico de ocho desafíos y doce jugadores en la sala. No configura
 las 14 invitaciones ni las nueve publicaciones del [estudio Lean de Tabarnia](../product/strategy/lean-startup/cycles/CYCLE-001.md).
 Sirve para verificar recorridos y la medición común; no acredita preparación ni resultados del estudio.
 
@@ -149,10 +149,13 @@ npm run dev
 ```
 
 El setup reinicia la base local y crea 13 cuentas: Xesmona como superadmin fuera de la sala, Ches
-como propietario y jugador, y otros once miembros jugadores. Programa «Reino de animales» en
-Alphabet (16 letras, 150 segundos, 100 puntos), «Biblia y religiones abrahámicas» en Pirámide
-(7 niveles, 100 puntos), Steel Ball Run (16 retos, 100 puntos) y Supervivencia: España
-(20 preguntas, 3 vidas, 100 puntos), en ese orden y en ventanas consecutivas de 24 horas.
+como propietario y jugador, y otros once miembros jugadores. Programa Steel Ball Run (16 retos,
+100 puntos), Reino de animales en Alphabet (16 letras, 150 segundos, 100 puntos), Contrarreloj
+Queens (seis tableros de 4×4 a 7×7, 100 puntos y 150 segundos globales), España (20 preguntas,
+3 vidas, 100 puntos), La Pirámide: Cumbre lógica (7 niveles, 100 puntos), Multiverso friki en
+Alphabet (16 letras, 150 segundos, 100 puntos), Contrarreloj Conectar parejas (seis tableros de
+4×4 a 7×7, 100 puntos y 150 segundos globales) y «Biblia y religiones abrahámicas» en Pirámide
+(7 niveles, 100 puntos), en ese orden y en ventanas consecutivas de 24 horas.
 
 Carga los diccionarios de Mini-Wordle y los recursos privados de imagen; el mapa SVG de Canarias
 se rasteriza a PNG durante la preparación. No crea intentos ni resultados históricos. Las cuentas,

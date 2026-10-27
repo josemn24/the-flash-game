@@ -88,7 +88,7 @@ Para probar desde un móvil u otro equipo de la red local, consulta la
 | `npm run supabase:start`             | Inicia el stack local de Supabase.                                                                                           |
 | `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                                               |
 | `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                                     |
-| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara el escenario técnico de Tabarnia con cuatro desafíos y sus siete avatares.                 |
+| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara el escenario técnico de Tabarnia con ocho desafíos y sus siete avatares.                 |
 | `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Circuito de parejas» salvo que se indique un inicio futuro. |
 | `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.                        |
 | `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                                            |
@@ -103,7 +103,7 @@ los requisitos, comandos, efectos destructivos y archivos de cada recorrido. El
 [escenario conjunto Tabarnia y BetaVIP](docs/current/supabase-clean-installation.md#escenario-local-con-tabarnia-y-betavip)
 incluye sus cuentas, publicaciones y la secuencia específica de integración y E2E.
 
-El seed de Tabarnia es un escenario técnico de cuatro desafíos. No prepara la cohorte de 14
+El seed de Tabarnia es un escenario técnico de ocho desafíos. No prepara la cohorte de 14
 invitaciones ni las nueve publicaciones del [estudio Lean](docs/product/strategy/lean-startup/cycles/CYCLE-001.md).
 La preparación de ese estudio y su análisis siguen pendientes, según el contrato y el estado Lean.
 
@@ -116,7 +116,7 @@ npm run supabase:betavip:setup -- --schedule fast
 ```
 
 El perfil predeterminado `production` conserva las ventanas de 24 horas. `fast` usa ventanas reales
-de cinco minutos: Tabarnia recorre sus cuatro desafíos en 20 minutos y BetaVIP sus seis en 30 minutos. Se acorta
+de cinco minutos: Tabarnia recorre sus ocho desafíos en 40 minutos y BetaVIP sus seis en 30 minutos. Se acorta
 únicamente la ventana de publicación; los límites internos de preguntas,
 vidas, puntuación y deadlines no cambian. El manifiesto generado incluye `scheduleProfile` y la
 duración de la ventana para identificar el perfil utilizado.
@@ -127,6 +127,10 @@ duración de la ventana para identificar el perfil utilizado.
 | Tabarnia, desafío 2 | 24–48 h      | 5–10 min  |
 | Tabarnia, desafío 3 | 48–72 h      | 10–15 min |
 | Tabarnia, desafío 4 | 72–96 h      | 15–20 min |
+| Tabarnia, desafío 5 | 96–120 h     | 20–25 min |
+| Tabarnia, desafío 6 | 120–144 h    | 25–30 min |
+| Tabarnia, desafío 7 | 144–168 h    | 30–35 min |
+| Tabarnia, desafío 8 | 168–192 h    | 35–40 min |
 | BetaVIP, desafío 1  | 0–24 h       | 0–5 min   |
 | BetaVIP, desafío 2  | 24–48 h      | 5–10 min  |
 | BetaVIP, desafío 3  | 48–72 h      | 10–15 min |

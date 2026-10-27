@@ -1,46 +1,91 @@
 import { dockerSql, rpc, sqlCount } from "../../support/supabase-local.mjs";
+import { TABARNIA_FICTION_ALPHABET } from "../../fixtures/scenarios/tabarnia-multiverse.mjs";
 
 export const scenario = {
   id: "tabarnia",
 
   async run({ fixture, clients, config, assert }) {
-    const [animals, bible, sbr, spain] = fixture.data.publications;
+    const [
+      sbr,
+      animals,
+      queensTimeTrial,
+      spain,
+      logicPyramid,
+      multiverse,
+      connectPairsTimeTrial,
+      bible,
+    ] = fixture.data.publications;
     assert(
       JSON.stringify(
         fixture.data.publications.map(({ title, mode, status }) => [title, mode, status]),
       ) ===
         JSON.stringify([
-          ["Reino de animales", "alphabet", "open"],
+          ["Steel Ball Run", "flash", "open"],
+          ["Reino de animales", "alphabet", "scheduled"],
+          ["Contrarreloj Queens", "time-trial", "scheduled"],
+          ["España", "survival", "scheduled"],
+          ["La Pirámide: Cumbre lógica", "pyramid", "scheduled"],
+          ["Multiverso friki", "alphabet", "scheduled"],
+          ["Contrarreloj Conectar parejas", "time-trial", "scheduled"],
           ["Biblia y religiones abrahámicas", "pyramid", "scheduled"],
-          ["Steel Ball Run", "flash", "scheduled"],
-          ["Supervivencia: España", "survival", "scheduled"],
         ]),
-      "El manifiesto de Tabarnia conserva el orden de las cuatro publicaciones",
+      "El manifiesto de Tabarnia conserva el orden de las ocho publicaciones",
     );
-    const playableAlphabet = await rpc(clients.ches, "get_my_alphabet_challenge", {
+    const playableFlash = await rpc(clients.ches, "get_my_flash_challenge", {
+      target_room_slug: fixture.data.room.slug,
+      target_publication_id: sbr.id,
+    });
+    assert(playableFlash.length === 16, "Ches recibe los dieciséis retos de Steel Ball Run");
+    assert(
+      playableFlash.reduce((total, row) => total + Number(row.item_points), 0) === 100,
+      "Steel Ball Run conserva los 100 puntos",
+    );
+    assert(
+      !JSON.stringify(playableFlash).match(/correctAnswer|solutionPayload/i),
+      "La lectura jugable de Steel Ball Run no expone soluciones",
+    );
+    const scheduledAlphabet = await rpc(clients.ches, "get_my_alphabet_challenge", {
       target_room_slug: fixture.data.room.slug,
       target_publication_id: animals.id,
     });
-    assert(playableAlphabet.length === 16, "Ches recibe las dieciséis letras de Reino de animales");
     assert(
-      playableAlphabet.reduce((total, row) => total + Number(row.item_points), 0) === 100,
-      "Reino de animales conserva los 100 puntos",
-    );
-    assert(
-      playableAlphabet.map((row) => row.alphabet_letter).join(",") ===
-        "A,B,C,D,E,F,I,J,L,M,O,P,R,S,T,Z",
-      "Reino de animales conserva las letras y el orden editorial",
-    );
-    assert(
-      !JSON.stringify(playableAlphabet).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
-      "La lectura jugable de Alphabet no expone soluciones",
+      scheduledAlphabet.length === 0,
+      "Reino de animales permanece programado después de Steel Ball Run",
     );
 
     const scheduledPyramid = await rpc(clients.ches, "get_my_pyramid_challenge", {
       target_room_slug: fixture.data.room.slug,
       target_publication_id: bible.id,
     });
-    assert(scheduledPyramid.length === 0, "La Pirámide permanece programada tras Alphabet");
+    assert(scheduledPyramid.length === 0, "La Pirámide bíblica permanece programada");
+    const scheduledLogicPyramid = await rpc(clients.ches, "get_my_pyramid_challenge", {
+      target_room_slug: fixture.data.room.slug,
+      target_publication_id: logicPyramid.id,
+    });
+    assert(
+      scheduledLogicPyramid.length === 0,
+      "Cumbre lógica permanece programada y aún no expone preguntas jugables",
+    );
+    const scheduledQueensTimeTrial = await rpc(clients.ches, "get_my_time_trial_challenge", {
+      target_room_slug: fixture.data.room.slug,
+      target_publication_id: queensTimeTrial.id,
+    });
+    assert(
+      scheduledQueensTimeTrial.length === 0,
+      "Contrarreloj Queens permanece programado y aún no expone tableros jugables",
+    );
+    const scheduledConnectPairsTimeTrial = await rpc(
+      clients.ches,
+      "get_my_time_trial_challenge",
+      {
+        target_room_slug: fixture.data.room.slug,
+        target_publication_id: connectPairsTimeTrial.id,
+      },
+    );
+    assert(
+      scheduledConnectPairsTimeTrial.length === 0,
+      "Contrarreloj Conectar parejas permanece programado y aún no expone tableros jugables",
+    );
 
     const scheduledSpain = await rpc(clients.ches, "get_my_survival_challenge", {
       target_room_slug: fixture.data.room.slug,
@@ -48,15 +93,15 @@ export const scenario = {
     });
     assert(
       scheduledSpain.length === 0,
-      "Supervivencia, programada al final, todavía no expone preguntas jugables",
+      "España permanece programada en la cuarta publicación y no expone preguntas jugables",
     );
-    const scheduledSbr = await rpc(clients.ches, "get_my_flash_challenge", {
+    const scheduledMultiverse = await rpc(clients.ches, "get_my_alphabet_challenge", {
       target_room_slug: fixture.data.room.slug,
-      target_publication_id: sbr.id,
+      target_publication_id: multiverse.id,
     });
     assert(
-      scheduledSbr.length === 0,
-      "Steel Ball Run programado todavía no expone preguntas jugables",
+      scheduledMultiverse.length === 0,
+      "El Alphabet de ficción programado todavía no expone preguntas jugables",
     );
 
     const publicationOrder = await dockerSql(
@@ -64,10 +109,20 @@ export const scenario = {
       config.dbContainer,
     );
     assert(
-      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled,4:scheduled",
-      "Reino de animales está abierto; Pirámide, Steel Ball Run y Supervivencia quedan programados en orden",
+      publicationOrder.stdout.trim() ===
+        "1:open,2:scheduled,3:scheduled,4:scheduled,5:scheduled,6:scheduled,7:scheduled,8:scheduled",
+      "Steel Ball Run está abierto; los siete desafíos siguientes quedan programados en orden",
     );
-    for (const publication of [animals, spain, bible, sbr]) {
+    for (const publication of [
+      sbr,
+      animals,
+      queensTimeTrial,
+      spain,
+      logicPyramid,
+      multiverse,
+      connectPairsTimeTrial,
+      bible,
+    ]) {
       const points = await dockerSql(
         `select coalesce(sum(points), 0) from private.challenge_items where challenge_version_id = '${publication.challengeVersionId}';`,
         config.dbContainer,
@@ -76,10 +131,31 @@ export const scenario = {
     }
     assert(
       (await sqlCount(
+        `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id join private.question_versions q on q.id = i.question_version_id where v.id = '${queensTimeTrial.challengeVersionId}' and v.mode = 'time-trial' and v.global_time_limit_ms = 150000 and q.type = 'queens';`,
+        config.dbContainer,
+      )) === 6,
+      "Contrarreloj Queens publica seis tableros con reloj global de 150 segundos",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id join private.question_versions q on q.id = i.question_version_id where v.id = '${connectPairsTimeTrial.challengeVersionId}' and v.mode = 'time-trial' and v.global_time_limit_ms = 150000 and q.type = 'connect-pairs';`,
+        config.dbContainer,
+      )) === 6,
+      "Contrarreloj Conectar parejas publica seis tableros con reloj global de 150 segundos",
+    );
+    assert(
+      (await sqlCount(
         `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id where v.id = '${bible.challengeVersionId}' and v.mode = 'pyramid' and i.mode_config ? 'levelId';`,
         config.dbContainer,
       )) === 7,
       "La Pirámide publica siete niveles con briefing persistido",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id where v.id = '${logicPyramid.challengeVersionId}' and v.mode = 'pyramid' and i.mode_config ? 'levelId';`,
+        config.dbContainer,
+      )) === 7,
+      "Cumbre lógica publica siete niveles con briefing persistido",
     );
     assert(
       (await sqlCount(
@@ -101,6 +177,21 @@ export const scenario = {
         config.dbContainer,
       )) === 1,
       "Reino de animales persiste el límite global de 150 segundos",
+    );
+    assert(
+      (await sqlCount(
+        `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id join private.question_versions q on q.id = i.question_version_id where v.id = '${multiverse.challengeVersionId}' and v.status = 'published' and v.mode = 'alphabet' and v.global_time_limit_ms = 150000 and q.type = 'short-text' and q.time_limit_ms = 120000 and i.mode_config ? 'letter';`,
+        config.dbContainer,
+      )) === 16,
+      "El Alphabet de ficción publica dieciséis letras con límites de 150 y 120 segundos",
+    );
+    const fictionPoints = await dockerSql(
+      `select string_agg(i.points::text, ',' order by i.position) from private.challenge_items i where i.challenge_version_id = '${multiverse.challengeVersionId}';`,
+      config.dbContainer,
+    );
+    assert(
+      fictionPoints.stdout.trim() === [7, 7, 7, 7, ...Array(12).fill(6)].join(","),
+      "El Alphabet de ficción asigna siete puntos a las primeras cuatro letras y seis al resto",
     );
     assert(
       (await sqlCount(
@@ -304,6 +395,45 @@ rollback;
       target_publication_id: spain.id,
     });
     assert(superadminView.length === 0, "xesmona queda fuera de la competición");
+
+    await dockerSql(
+      `
+begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where season_id = '${fixture.data.seasonId}' and id <> '${multiverse.id}' and status <> 'cancelled';
+update public.scheduled_challenges
+set opens_at = clock_timestamp() - interval '1 minute',
+    closes_at = clock_timestamp() + interval '5 minutes'
+where id = '${multiverse.id}';
+set local role service_role;
+select private.run_calendar_tick_command('{"runId":"integration-tabarnia-multiverse-open"}'::jsonb);
+commit;
+`,
+      config.dbContainer,
+    );
+    const playableMultiverse = await rpc(clients.ches, "get_my_alphabet_challenge", {
+      target_room_slug: fixture.data.room.slug,
+      target_publication_id: multiverse.id,
+    });
+    assert(playableMultiverse.length === 16, "Ches recibe las dieciséis letras del nuevo Alphabet");
+    assert(
+      playableMultiverse.reduce((total, row) => total + Number(row.item_points), 0) === 100,
+      "El nuevo Alphabet conserva los 100 puntos",
+    );
+    assert(
+      playableMultiverse.map((row) => row.alphabet_letter).join(",") ===
+        "A,B,C,D,E,F,I,J,L,M,O,P,R,S,T,Z",
+      "El nuevo Alphabet conserva sus letras y el orden editorial",
+    );
+    const serializedMultiverse = JSON.stringify(playableMultiverse);
+    assert(
+      !/correctAnswer|acceptedAnswers|solutionPayload/i.test(serializedMultiverse) &&
+        TABARNIA_FICTION_ALPHABET.entries.every(
+          (entry) => !serializedMultiverse.includes(entry.correctAnswer),
+        ),
+      "La lectura jugable del nuevo Alphabet no expone claves ni respuestas",
+    );
   },
 };
 

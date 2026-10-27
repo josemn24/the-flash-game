@@ -1,7 +1,5 @@
-import {
-  timeTrialConnectPairsQuestions,
-  timeTrialQueensQuestions,
-} from "@/data/mock/timeTrialFixtures.mjs";
+import { TABARNIA_CONNECT_PAIRS_TIME_TRIAL } from "../../scripts/fixtures/scenarios/tabarnia-time-trial-connect-pairs.mjs";
+import { TABARNIA_QUEENS_TIME_TRIAL } from "../../scripts/fixtures/scenarios/tabarnia-time-trial-queens.mjs";
 import { readStoredQuestion } from "@/lib/question-formats/storedRegistry";
 import type { QuestionVersionId } from "@/types/domain/identifiers";
 import type { DurationMs, JsonValue } from "@/types/domain/values";
@@ -21,6 +19,7 @@ function localTimeTrialDefinition(
   title: string,
   subtitle: string,
   questions: readonly TimeTrialFixtureQuestion[],
+  globalTimeLimitMs = 120_000,
 ): LocalTimeTrialDefinition {
   const levels = questions.map((question, index) => {
     const challengeItemId = `${id}-item-${index + 1}`;
@@ -52,7 +51,7 @@ function localTimeTrialDefinition(
     subtitle,
     description: "Ensayo local con el mismo flujo de una partida competitiva.",
     mode: "time-trial",
-    timeLimitMs: 120_000,
+    timeLimitMs: globalTimeLimitMs,
     maxScore: 100,
     slots: questions.map((question, index) => ({
       id: levels[index]!.challengeItemId,
@@ -67,19 +66,35 @@ function localTimeTrialDefinition(
 }
 
 export function createMockFlashPopTimeTrialQueensDemoDefinition() {
+  const questions = TABARNIA_QUEENS_TIME_TRIAL.questions.map((question, index) => ({
+    type: question.type,
+    points: TABARNIA_QUEENS_TIME_TRIAL.challenge.items[index]!.points,
+    timeLimitMs: question.timeLimitMs,
+    publicPayload: question.publicPayload,
+    solution: question.solutionPayload,
+  }));
   return localTimeTrialDefinition(
     "tabarnia-time-trial-queens-01",
-    "Contrarreloj Queens",
-    "Resuelve dos tableros con un único reloj global.",
-    timeTrialQueensQuestions as TimeTrialFixtureQuestion[],
+    TABARNIA_QUEENS_TIME_TRIAL.challenge.title,
+    TABARNIA_QUEENS_TIME_TRIAL.challenge.subtitle,
+    questions as TimeTrialFixtureQuestion[],
+    TABARNIA_QUEENS_TIME_TRIAL.challenge.globalTimeLimitMs,
   );
 }
 
 export function createMockFlashPopTimeTrialConnectPairsDemoDefinition() {
+  const questions = TABARNIA_CONNECT_PAIRS_TIME_TRIAL.questions.map((question, index) => ({
+    type: question.type,
+    points: TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.items[index]!.points,
+    timeLimitMs: question.timeLimitMs,
+    publicPayload: question.publicPayload,
+    solution: question.solutionPayload,
+  }));
   return localTimeTrialDefinition(
     "tabarnia-time-trial-connect-pairs-01",
-    "Contrarreloj Conectar parejas",
-    "Cubre dos tableros de distinto tamaño con un único reloj global.",
-    timeTrialConnectPairsQuestions as TimeTrialFixtureQuestion[],
+    TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.title,
+    TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.subtitle,
+    questions as TimeTrialFixtureQuestion[],
+    TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.globalTimeLimitMs,
   );
 }
