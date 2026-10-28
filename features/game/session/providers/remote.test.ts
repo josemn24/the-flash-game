@@ -78,6 +78,46 @@ const commands: readonly [GameSessionCommand, string, object][] = [
 ];
 
 describe("remote session wire compatibility", () => {
+  it.each([400, 409, 422, 503])(
+    "normalizes unknown or missing HTTP %i codes explicitly",
+    async (status) => {
+      for (const code of ["future_error", "competitive_command_failed"]) {
+        const client = createCompetitiveAttemptClient();
+        client.prepare = vi.fn(async () => {
+          throw new CompetitiveCommandError(code, status);
+        });
+        const result = await createRemoteGameSessionProvider({ client }).execute({
+          operation: "prepare",
+          input: mutation,
+        });
+        expect(result).toMatchObject(
+          status < 500
+            ? { code: "unknown_rejection", kind: "rejected", retryable: false }
+            : { code: "command_failed", kind: "uncertain", retryable: true },
+        );
+      }
+    },
+  );
+
+  it.each([400, 422, 503])(
+    "handles an unreadable HTTP %i error body conservatively",
+    async (status) => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => new Response("unreadable", { status })),
+      );
+      const result = await createRemoteGameSessionProvider().execute({
+        operation: "prepare",
+        input: mutation,
+      });
+      expect(result).toMatchObject(
+        status < 500
+          ? { code: "unknown_rejection", kind: "rejected", retryable: false }
+          : { code: "command_failed", kind: "uncertain", retryable: true },
+      );
+    },
+  );
+
   it.each(commands)(
     "maps $0.operation to the existing endpoint and body",
     async (command, path, extra) => {
@@ -126,7 +166,7 @@ describe("remote session wire compatibility", () => {
     ["queens_answer_incomplete", 400, undefined, "rejected", false],
     ["request_timeout", 0, undefined, "uncertain", true],
     ["invalid_json_response", 200, undefined, "uncertain", true],
-    ["server_unavailable", 503, undefined, "uncertain", true],
+    ["database_unavailable", 503, undefined, "uncertain", true],
   ] as const)(
     "normalizes %s without exposing HTTP status",
     async (code, status, retryAfter, kind, retryable) => {

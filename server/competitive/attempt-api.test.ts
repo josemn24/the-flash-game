@@ -240,9 +240,7 @@ describe("competitive HTTP contract", () => {
   });
 
   it("returns the authoritative retry delay when Alphabet's deadline has not been reached", () => {
-    const error = new AttemptCommandError("alphabet_deadline_not_reached", {
-      detail: '{"retryAfterSeconds":3}',
-    });
+    const error = new AttemptCommandError("alphabet_deadline_not_reached", undefined, 3);
     const response = errorResponse(error, "deadline-test", "competitive.attempt.complete");
     expect(response.status).toBe(409);
     expect(response.headers.get("Retry-After")).toBe("3");

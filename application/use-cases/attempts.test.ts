@@ -1,3 +1,4 @@
+import { AttemptCommandError } from "@/application/errors/attempts";
 import { assertAttemptLifecycle } from "@/lib/attemptLifecycle";
 import { describe, expect, it, vi } from "vitest";
 import type { AttemptCommands, EvaluationContext } from "@/application/ports/attempt-commands";
@@ -745,7 +746,7 @@ describe("durable receipt reconciliation", () => {
     expect(commands.recordEvaluation).not.toHaveBeenCalled();
   });
 
-  it.each(["stale_version", "already_evaluated", "idempotency_conflict"])(
+  it.each(["stale_version", "already_evaluated", "idempotency_conflict"] as const)(
     "reconciles %s when another request committed the evaluation",
     async (code) => {
       const { commands, useCases } = createUseCases();
@@ -755,7 +756,7 @@ describe("durable receipt reconciliation", () => {
       vi.mocked(commands.readRecordedEvaluation)
         .mockResolvedValueOnce(null)
         .mockResolvedValueOnce(saved);
-      vi.mocked(commands.recordEvaluation).mockRejectedValue({ code });
+      vi.mocked(commands.recordEvaluation).mockRejectedValue(new AttemptCommandError(code));
       expect((await useCases.submitAnswer(answerInput)).evaluated).toEqual(saved);
       expect(commands.receiveAnswer).toHaveBeenCalledOnce();
       expect(commands.recordEvaluation).toHaveBeenCalledOnce();
@@ -766,7 +767,9 @@ describe("durable receipt reconciliation", () => {
     const { commands, useCases } = createUseCases();
     vi.mocked(commands.receiveAnswer).mockResolvedValue({ receiptId, lockVersion: 4 } as never);
     vi.mocked(commands.readEvaluationContext).mockResolvedValue(evaluationContext());
-    vi.mocked(commands.recordEvaluation).mockRejectedValue({ code: "stale_version" });
+    vi.mocked(commands.recordEvaluation).mockRejectedValue(
+      new AttemptCommandError("stale_version"),
+    );
     await expect(useCases.submitAnswer(answerInput)).rejects.toMatchObject({
       code: "stale_version",
     });

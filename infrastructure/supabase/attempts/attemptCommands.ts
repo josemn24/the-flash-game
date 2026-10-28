@@ -42,7 +42,9 @@ import type {
 } from "@/types/contracts/attempts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
-import { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
+import { AttemptCommandError } from "@/application/errors/attempts";
+import { isAttemptErrorCode } from "@/lib/competitiveErrors";
+import type { AttemptErrorCode } from "@/types/contracts/competitive-errors";
 import { countAlphabetAnswerCharacters } from "@/lib/gameplay/alphabetAnswerSlots";
 
 export { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
@@ -85,70 +87,11 @@ async function beginAsServiceRole(client: PoolClient, identity: VerifiedAuthIden
   ]);
 }
 
-function commandCode(error: unknown) {
+function commandCode(error: unknown): AttemptErrorCode {
+  if (error instanceof AttemptCommandError) return error.code;
   const infrastructureCode =
     error && typeof error === "object" && "code" in error ? String(error.code) : "";
   const message = error instanceof Error ? error.message : "";
-  const known = [
-    "not_authorized",
-    "attempt_permission_revoked",
-    "competitive_access_denied",
-    "session_revoked",
-    "session_transferred",
-    "stale_version",
-    "idempotency_conflict",
-    "invalid_command",
-    "attempt_terminal",
-    "interaction_not_presented",
-    "pass_unavailable",
-    "time_trial_terminal",
-    "time_trial_not_terminal",
-    "queens_requires_validation_command",
-    "evaluation_pending",
-    "publication_cancelled",
-    "attempt_not_terminal",
-    "reason_required",
-    "invalid_score",
-    "not_competitive",
-    "incomplete_challenge",
-    "unfinished_interaction",
-    "no_evaluated_answers",
-    "no_pending_item",
-    "deadline_reached",
-    "alphabet_deadline_not_reached",
-    "receipt_not_found",
-    "already_evaluated",
-    "takeover_not_prepared",
-    "attempt_inactivity_expired",
-    "recovery_required",
-    "invalid_mini_wordle_guess",
-    "duplicate_mini_wordle_guess",
-    "mini_wordle_requires_guess_command",
-    "invalid_logic_code",
-    "duplicate_logic_code",
-    "logic_code_requires_attempt_command",
-    "invalid_matching_answer",
-    "invalid_connect_pairs_answer",
-    "invalid_word_search_selection",
-    "word_search_target_already_found",
-    "word_search_requires_selection_command",
-    "invalid_word_hashtag_swap",
-    "word_hashtag_moves_exhausted",
-    "word_hashtag_requires_swap_command",
-    "invalid_queens_placement",
-    "invalid_queens_answer",
-    "queens_answer_incomplete",
-    "queens_answer_overflow",
-    "queens_requires_placement_command",
-    "queens_requires_board_validation",
-    "prefilled_queen_locked",
-    "all_clues_revealed",
-    "progressive_clues_requires_reveal_command",
-    "unsupported_question",
-    "invalid_question_payload",
-    "invalid_attempt_context",
-    "invalid_attempt_lifecycle",
-  ];
   if (
     infrastructureCode === "23514" &&
     error &&
@@ -162,8 +105,7 @@ function commandCode(error: unknown) {
   ) {
     return "invalid_attempt_lifecycle";
   }
-  const domainCode = known.find((candidate) => message.includes(candidate));
-  if (domainCode) return domainCode;
+  if (isAttemptErrorCode(message)) return message;
   if (
     infrastructureCode.startsWith("08") ||
     ["28P01", "28000", "42501"].includes(infrastructureCode) ||
@@ -173,6 +115,27 @@ function commandCode(error: unknown) {
     return "database_unavailable";
   }
   return "command_failed";
+}
+
+function commandError(error: unknown): AttemptCommandError {
+  if (error instanceof AttemptCommandError) return error;
+  const code = commandCode(error);
+  let retryAfterSeconds: number | undefined;
+  if (
+    code === "alphabet_deadline_not_reached" &&
+    error &&
+    typeof error === "object" &&
+    "detail" in error
+  ) {
+    try {
+      const detail = JSON.parse(String(error.detail)) as { retryAfterSeconds?: unknown };
+      const seconds = Number(detail.retryAfterSeconds);
+      if (Number.isSafeInteger(seconds) && seconds > 0) retryAfterSeconds = seconds;
+    } catch {
+      // Invalid database diagnostics must not hide the original error.
+    }
+  }
+  return new AttemptCommandError(code, error, retryAfterSeconds);
 }
 
 async function transaction<T>(
@@ -209,11 +172,11 @@ async function transaction<T>(
       );
     } catch (finalizationError) {
       if (error instanceof AttemptCommandError && error.code === "attempt_inactivity_expired") {
-        throw new AttemptCommandError(commandCode(finalizationError), finalizationError);
+        throw commandError(finalizationError);
       }
       // The original database error is the useful one for the API mapper.
     }
-    throw new AttemptCommandError(commandCode(error), error);
+    throw commandError(error);
   } finally {
     client.release();
   }

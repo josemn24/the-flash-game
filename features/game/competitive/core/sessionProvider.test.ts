@@ -61,7 +61,12 @@ it("runs the current engine with an injected authority and clock, retaining an e
         });
       case "answer":
         return attempts++ === 0
-          ? { kind: "uncertain", code: "unconfirmed", retryable: true, retryAfterSeconds: 4 }
+          ? {
+              kind: "uncertain",
+              code: "provider_unavailable",
+              retryable: true,
+              retryAfterSeconds: 4,
+            }
           : {
               kind: "accepted",
               effect: "evaluated",

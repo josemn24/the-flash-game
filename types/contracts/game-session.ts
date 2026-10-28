@@ -1,3 +1,4 @@
+import type { GameSessionErrorCode } from "@/types/contracts/competitive-errors";
 import type { AnswerValue } from "@/types/contracts/questions";
 
 /** A provider-owned revision. Consumers only retain and replay it. */
@@ -40,7 +41,7 @@ export type GameSessionCommand = {
 /** No HTTP status, cookies, database rows or transport exceptions cross the port. */
 export type GameSessionFailure = {
   readonly kind: "rejected" | "uncertain";
-  readonly code: string;
+  readonly code: GameSessionErrorCode;
   readonly retryable: boolean;
   readonly retryAfterSeconds?: number;
   readonly authorizationLost?: boolean;

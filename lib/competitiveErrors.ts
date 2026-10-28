@@ -1,0 +1,114 @@
+import type {
+  AttemptErrorCode,
+  CompetitiveErrorReason,
+  GameSessionErrorCode,
+} from "@/types/contracts/competitive-errors";
+
+/** No transport status, UI copy or mode-specific recovery belongs in this catalogue. */
+export const ATTEMPT_ERROR_REASONS = {
+  database_unavailable: "service",
+  command_failed: "service",
+  not_authorized: "authorization",
+  attempt_permission_revoked: "authorization",
+  competitive_access_denied: "authorization",
+  session_revoked: "authorization",
+  session_transferred: "lifecycle",
+  stale_version: "conflict",
+  idempotency_conflict: "conflict",
+  invalid_command: "conflict",
+  attempt_terminal: "lifecycle",
+  interaction_not_presented: "conflict",
+  pass_unavailable: "time",
+  time_trial_terminal: "conflict",
+  time_trial_not_terminal: "time",
+  queens_requires_validation_command: "conflict",
+  evaluation_pending: "conflict",
+  publication_cancelled: "lifecycle",
+  attempt_not_terminal: "lifecycle",
+  reason_required: "conflict",
+  invalid_score: "conflict",
+  not_competitive: "conflict",
+  incomplete_challenge: "conflict",
+  unfinished_interaction: "conflict",
+  no_evaluated_answers: "conflict",
+  no_pending_item: "conflict",
+  deadline_reached: "time",
+  alphabet_deadline_not_reached: "time",
+  receipt_not_found: "conflict",
+  already_evaluated: "conflict",
+  takeover_not_prepared: "lifecycle",
+  attempt_inactivity_expired: "lifecycle",
+  recovery_required: "conflict",
+  invalid_mini_wordle_guess: "input",
+  duplicate_mini_wordle_guess: "input",
+  mini_wordle_requires_guess_command: "conflict",
+  invalid_logic_code: "input",
+  duplicate_logic_code: "input",
+  logic_code_requires_attempt_command: "conflict",
+  invalid_matching_answer: "input",
+  invalid_connect_pairs_answer: "input",
+  invalid_word_search_selection: "input",
+  word_search_target_already_found: "input",
+  word_search_requires_selection_command: "conflict",
+  invalid_word_hashtag_swap: "input",
+  word_hashtag_moves_exhausted: "conflict",
+  word_hashtag_requires_swap_command: "conflict",
+  invalid_queens_placement: "input",
+  invalid_queens_answer: "input",
+  queens_answer_incomplete: "input",
+  queens_answer_overflow: "input",
+  queens_requires_placement_command: "conflict",
+  queens_requires_board_validation: "conflict",
+  prefilled_queen_locked: "input",
+  all_clues_revealed: "input",
+  progressive_clues_requires_reveal_command: "conflict",
+  unsupported_question: "conflict",
+  invalid_question_payload: "conflict",
+  invalid_attempt_context: "conflict",
+  invalid_attempt_lifecycle: "conflict",
+  survival_not_terminal: "lifecycle",
+  pyramid_not_terminal: "lifecycle",
+  request_predates_presentation: "input",
+  pyramid_level_failed: "lifecycle",
+  duplicate_queens_placement: "input",
+  invalid_progress: "service",
+  invalid_question_solution: "service",
+  invalid_question_config: "service",
+  auth_unavailable: "service",
+} as const satisfies Record<AttemptErrorCode, CompetitiveErrorReason>;
+
+export const GAME_SESSION_ERROR_REASONS = {
+  ...ATTEMPT_ERROR_REASONS,
+  invalid_fromCell: "input",
+  invalid_toCell: "input",
+  invalid_startCell: "input",
+  invalid_endCell: "input",
+  invalid_answer: "input",
+  publication_not_open: "lifecycle",
+  flash_not_terminal: "lifecycle",
+  not_authenticated: "authorization",
+  auth_required: "authorization",
+  unauthorized: "authorization",
+  attempt_session_missing: "lifecycle",
+  attempt_control_required: "lifecycle",
+  rate_limited: "throttle",
+  unknown_rejection: "unknown",
+  provider_unavailable: "service",
+  request_timeout: "service",
+  request_cancelled: "service",
+  invalid_json_response: "service",
+  competitive_command_failed: "service",
+} as const satisfies Record<GameSessionErrorCode, CompetitiveErrorReason>;
+
+export function isAttemptErrorCode(value: unknown): value is AttemptErrorCode {
+  return (
+    typeof value === "string" && Object.prototype.hasOwnProperty.call(ATTEMPT_ERROR_REASONS, value)
+  );
+}
+
+export function isGameSessionErrorCode(value: unknown): value is GameSessionErrorCode {
+  return (
+    typeof value === "string" &&
+    Object.prototype.hasOwnProperty.call(GAME_SESSION_ERROR_REASONS, value)
+  );
+}

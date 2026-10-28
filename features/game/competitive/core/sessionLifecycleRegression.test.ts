@@ -15,7 +15,11 @@ const accepted = (state: AuthoritativeSessionUpdate): GameSessionResult => ({
   effect: "acknowledged",
   state,
 });
-const uncertain: GameSessionResult = { kind: "uncertain", code: "offline", retryable: true };
+const uncertain: GameSessionResult = {
+  kind: "uncertain",
+  code: "provider_unavailable",
+  retryable: true,
+};
 function deferred<T>() {
   let resolve!: (value: T) => void;
   const promise = new Promise<T>((done) => {
@@ -191,7 +195,7 @@ describe("global closure command ordering", () => {
     expect(s.engine.getSnapshot().phase).toBe("results");
   });
 
-  it.each(["deadline_reached", "time_trial_terminal"])(
+  it.each(["deadline_reached", "time_trial_terminal"] as const)(
     "Contrarreloj closes after %s rather than replaying preparation",
     async (code) => {
       const s = setup("time-trial");
@@ -201,7 +205,7 @@ describe("global closure command ordering", () => {
     },
   );
 
-  it.each(["deadline_reached", "time_trial_terminal"])(
+  it.each(["deadline_reached", "time_trial_terminal"] as const)(
     "Contrarreloj also closes when retrying preparation returns %s",
     async (code) => {
       const s = setup("time-trial");
@@ -315,7 +319,7 @@ describe("transfer recovery boundaries", () => {
     },
   );
 
-  it.each(["stale_version", "idempotency_conflict"])(
+  it.each(["stale_version", "idempotency_conflict"] as const)(
     "a %s transfer conflict is definitive and does not recover or retry",
     async (code) => {
       const s = setup();

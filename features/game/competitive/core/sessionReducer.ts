@@ -59,6 +59,7 @@ export type LifecycleError = {
   readonly code?: string;
   readonly retryAt?: number;
   readonly retryable?: boolean;
+  readonly recoveryAction?: "refresh";
 };
 export type SessionState = {
   phase: SessionPhase;

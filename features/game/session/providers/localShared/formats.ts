@@ -1,3 +1,4 @@
+import type { GameSessionErrorCode } from "@/types/contracts/competitive-errors";
 import { calculateQueensDraftMetrics } from "@/lib/queens";
 import {
   getMiniWordleFeedback,
@@ -19,8 +20,12 @@ import type { AnswerValue } from "@/types/contracts";
 import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
 import type { CompiledLevel } from "./definition";
 
-export class LocalRejection extends Error {}
-export const reject = (code: string): never => {
+export class LocalRejection extends Error {
+  constructor(readonly code: GameSessionErrorCode) {
+    super(code);
+  }
+}
+export const reject = (code: GameSessionErrorCode): never => {
   throw new LocalRejection(code);
 };
 export type FormatState = {

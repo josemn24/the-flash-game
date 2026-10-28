@@ -1,3 +1,4 @@
+import { isGameSessionErrorCode } from "@/lib/competitiveErrors";
 import type { GameSessionProvider } from "@/application/ports/game-session";
 import type { GameSessionCommand, GameSessionFailure } from "@/types/contracts/game-session";
 import type {
@@ -178,7 +179,14 @@ function failure(error: unknown): GameSessionFailure {
       error.status === 0 || error.status >= 500 || error.code === "invalid_json_response"
         ? "uncertain"
         : "rejected",
-    code: error.code,
+    code:
+      isGameSessionErrorCode(error.code) && error.code !== "competitive_command_failed"
+        ? error.code
+        : error.status >= 400 && error.status < 500 && error.status !== 429
+          ? "unknown_rejection"
+          : error.status === 429
+            ? "rate_limited"
+            : "command_failed",
     retryable,
     retryAfterSeconds:
       error.retryAfterSeconds ??

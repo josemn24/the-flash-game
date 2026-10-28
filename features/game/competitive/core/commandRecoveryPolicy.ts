@@ -1,8 +1,8 @@
 import type { GameSessionFailure } from "@/types/contracts/game-session";
 import type { GameMode } from "@/types/domain/content";
-import { formatFailure } from "../formats/failure";
+import { GAME_SESSION_ERROR_REASONS } from "@/lib/competitiveErrors";
 import type { CommandOrigin } from "./runtime";
-import type { FeedbackChannel, Operation, SessionState } from "./sessionReducer";
+import type { Operation, SessionState } from "./sessionReducer";
 
 const lifecycleOperations = new Set<Operation>([
   "start",
@@ -16,15 +16,6 @@ const lifecycleOperations = new Set<Operation>([
   "queensDraft",
   "takeover",
 ]);
-const authorizationCodes = new Set([
-  "not_authorized",
-  "session_revoked",
-  "competitive_access_denied",
-  "auth_required",
-  "unauthorized",
-  "attempt_permission_revoked",
-]);
-
 /** The engine owns counters and timers; this policy only describes the next wait. */
 export function commandRetryPlan({
   operation,
@@ -57,18 +48,16 @@ export function commandRetryPlan({
   };
 }
 
-type FailureAction =
+export type FailureAction =
   | { type: "takeover-conflict" }
   | { type: "session-transferred" }
   | { type: "authorization-lost"; recoverTerminal: boolean }
   | { type: "expired" }
-  | { type: "reload-projection"; message: string }
+  | { type: "reload-projection"; automatic: boolean }
   | {
       type: "command-failed";
       definitive: boolean;
       lifecycle: boolean;
-      message: string;
-      feedback: ReturnType<typeof formatFailure>["feedback"];
       retry: ReturnType<typeof commandRetryPlan>;
     };
 
@@ -77,7 +66,6 @@ export function classifyCommandFailure({
   operation,
   mode,
   failure,
-  channel,
   hasAttempt,
   terminalRecoveryAttempted,
   automaticRetries,
@@ -86,7 +74,6 @@ export function classifyCommandFailure({
   operation: Operation;
   mode: GameMode;
   failure?: GameSessionFailure;
-  channel?: FeedbackChannel;
   hasAttempt: boolean;
   terminalRecoveryAttempted: boolean;
   automaticRetries: number;
@@ -99,7 +86,7 @@ export function classifyCommandFailure({
     return { action: { type: "takeover-conflict" }, takeoverUncertain: false };
   if (code === "session_transferred") return result({ type: "session-transferred" });
   if (
-    authorizationCodes.has(code ?? "") ||
+    (failure && GAME_SESSION_ERROR_REASONS[failure.code] === "authorization") ||
     (failure?.authorizationLost && code !== "attempt_session_missing")
   )
     return result({
@@ -113,37 +100,33 @@ export function classifyCommandFailure({
   )
     return result({
       type: "reload-projection",
-      message:
-        operation === "start" && code === "attempt_session_missing"
-          ? "Recarga la página para preparar la sesión antes de empezar."
-          : "Comprobando el resultado guardado. Puedes volver a cargarlo.",
+      automatic: true,
     });
-  const formatted = formatFailure(operation, code, channel);
+  if (
+    code === "unknown_rejection" ||
+    (failure?.kind === "rejected" &&
+      operation === "complete" &&
+      (code === "survival_not_terminal" || code === "pyramid_not_terminal"))
+  )
+    return result({ type: "reload-projection", automatic: false });
+  const definitive =
+    failure?.kind === "rejected" &&
+    (GAME_SESSION_ERROR_REASONS[failure.code] === "input" || code === "takeover_not_prepared");
   const retry = commandRetryPlan({
     operation,
     failure,
-    definitive: formatted.definitive,
+    definitive,
     automaticRetries,
     now,
   });
-  const message =
-    retry.retryable && automaticRetries >= retry.limit
-      ? "No hemos podido confirmar la operación"
-      : code === "alphabet_deadline_not_reached" || code === "time_trial_not_terminal"
-        ? "Esperando a que termine el tiempo de la partida."
-        : retry.seconds !== undefined
-          ? `Demasiadas solicitudes. Espera ${retry.seconds} ${retry.seconds === 1 ? "segundo" : "segundos"} antes de volver a intentarlo.`
-          : formatted.message;
   return result({
     type: "command-failed",
-    definitive: formatted.definitive,
+    definitive,
     lifecycle:
-      !formatted.definitive ||
+      !definitive ||
       lifecycleOperations.has(operation) ||
       code === "stale_version" ||
       mode === "alphabet",
-    message,
-    feedback: formatted.feedback ? { ...formatted.feedback, message } : undefined,
     retry,
   });
 }

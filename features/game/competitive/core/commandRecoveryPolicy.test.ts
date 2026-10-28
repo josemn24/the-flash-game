@@ -16,10 +16,23 @@ const base = {
   automaticRetries: 0,
   now: 1000,
 };
-const uncertain: GameSessionFailure = { kind: "uncertain", code: "offline", retryable: true };
+const uncertain: GameSessionFailure = {
+  kind: "uncertain",
+  code: "provider_unavailable",
+  retryable: true,
+};
 
 describe("recovery precedence", () => {
-  it.each(["stale_version", "idempotency_conflict"])(
+  it("does not treat a known lifecycle code as proof that an uncertain write was rejected", () => {
+    expect(
+      classifyCommandFailure({
+        ...base,
+        operation: "complete",
+        failure: { kind: "uncertain", code: "pyramid_not_terminal", retryable: true },
+      }).action,
+    ).toMatchObject({ type: "command-failed", definitive: false, retry: { retryable: true } });
+  });
+  it.each(["stale_version", "idempotency_conflict"] as const)(
     "transfer conflict %s wins over authorization metadata",
     (code) => {
       expect(
@@ -108,7 +121,6 @@ describe("recovery precedence", () => {
     const { action } = classifyCommandFailure({
       ...base,
       operation: "miniWordleGuess",
-      channel: "answerVerification",
       failure: {
         kind: "rejected",
         code: "invalid_mini_wordle_guess",

@@ -54,6 +54,34 @@ soluciones y no puede enviar comandos.
 
 ## Presupuesto del cliente
 
+### Contrato de errores y presentación
+
+Los códigos de intentos, sesión y transporte están tipados en
+`types/contracts/competitive-errors.ts`. El catálogo puro `lib/competitiveErrors.ts` describe
+su motivo, sin estados HTTP ni mensajes de interfaz. El adaptador PostgreSQL reconoce exactamente
+los identificadores actuales de las excepciones y los convierte en errores de aplicación;
+conserva SQLSTATE, causa y diagnósticos temporales. No requiere una migración SQL.
+
+HTTP asigna los estados y el proveedor remoto distingue rechazo confirmado de resultado incierto.
+La política del motor decide conservación del comando, bloqueo y reintentos. El formateador solo
+produce mensajes y feedback: cambiar o retirar un texto no puede cambiar la recuperación.
+
+- `survival_not_terminal` y `pyramid_not_terminal` al completar son conflictos 409 confirmados.
+  Se retira el comando rechazado, se cancelan las esperas y se bloquean escrituras hasta una
+  recarga manual de la proyección autorizada. No se inventa un resultado ni se acredita puntuación.
+- `request_predates_presentation` conserva su código y devuelve 409. Permite otra entrada en la
+  pregunta activa, sin repetir automáticamente el comando ni alterar versión o deadline.
+- Un código 4xx desconocido se normaliza como `unknown_rejection` y exige recarga manual.
+  Los 5xx desconocidos y las respuestas perdidas o ilegibles conservan el tratamiento incierto.
+  Los 401 y los límites de frecuencia mantienen su tratamiento específico.
+- La acción de recargar es independiente del permiso para repetir una escritura: la interfaz
+  puede ofrecer «Recargar partida» aunque el comando rechazado no sea reintentable.
+
+Las autoridades locales utilizan el mismo vocabulario. Versiones obsoletas, transferencia,
+autorización, esperas temporales y presupuestos conservan sus políticas específicas.
+
+### Límites y esperas
+
 | Operación                                              | Timeout completo | Retries adicionales | Esperas     |
 | ------------------------------------------------------ | ---------------- | ------------------- | ----------- |
 | Preparación de cookie, inicio, recuperación y acciones | 5 s              | 1                   | 1 s         |

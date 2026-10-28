@@ -1,3 +1,4 @@
+import { AttemptCommandError } from "@/application/errors/attempts";
 import {
   observePerformance,
   type PerformanceObserver,
@@ -403,8 +404,10 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
         }),
       );
     } catch (error) {
-      const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
-      if (["stale_version", "already_evaluated", "idempotency_conflict"].includes(String(code))) {
+      if (
+        error instanceof AttemptCommandError &&
+        ["stale_version", "already_evaluated", "idempotency_conflict"].includes(error.code)
+      ) {
         const concurrent = await this.commands.readRecordedEvaluation(
           input.receiptId,
           input.sessionToken,

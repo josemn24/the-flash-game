@@ -362,7 +362,7 @@ export function createLocalAlphabetSessionProvider(
           return structuredClone(await run(captured, execution?.signal, receivedAt));
         } catch (error) {
           if (error instanceof LocalRejection)
-            return { kind: "rejected" as const, code: error.message, retryable: false };
+            return { kind: "rejected" as const, code: error.code, retryable: false };
           return { kind: "uncertain" as const, code: "provider_unavailable", retryable: true };
         }
       });

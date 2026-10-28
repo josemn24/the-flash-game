@@ -1,3 +1,4 @@
+import type { GameSessionErrorCode } from "@/types/contracts/competitive-errors";
 import type { GameSessionProvider, SessionClock } from "@/application/ports/game-session";
 import type { GameSessionCommand } from "@/types/contracts/game-session";
 import type { AnswerValue } from "@/types/contracts";
@@ -6,10 +7,7 @@ import type {
   GameSessionAcceptance,
   GameSessionResult,
 } from "@/types/gameplay/authoritative-session";
-import type {
-  LocalFlashDefinition,
-  LocalSurvivalDefinition,
-} from "@/types/gameplay/local-pyramid";
+import type { LocalFlashDefinition, LocalSurvivalDefinition } from "@/types/gameplay/local-pyramid";
 import type { AnswerResult } from "@/types/gameplay/result";
 import type { DurationMs } from "@/types/domain/values";
 import { deriveSurvivalProgress } from "@/lib/gameplay/survivalProgress";
@@ -125,15 +123,11 @@ export function createLocalSequentialSessionProvider(
     });
   const isModeTerminal = () =>
     definition.challenge.mode === "survival"
-      ? deriveSurvivalProgress(
-          definition.challenge.lives,
-          levels.length,
-          answers,
-        ).outcome !== "in_progress"
+      ? deriveSurvivalProgress(definition.challenge.lives, levels.length, answers).outcome !==
+        "in_progress"
       : answers.length === levels.length;
   const finish = (abandoned = false) => {
-    if (!abandoned && !isModeTerminal())
-      return reject(`${definition.challenge.mode}_not_terminal`);
+    if (!abandoned && !isModeTerminal()) return reject(`${definition.challenge.mode}_not_terminal`);
     status = abandoned ? "abandoned" : "completed";
     active = null;
     revision++;
@@ -384,7 +378,7 @@ export function createLocalSequentialSessionProvider(
           return structuredClone(await run(captured, execution?.signal, receivedAt));
         } catch (error) {
           if (error instanceof LocalRejection)
-            return { kind: "rejected" as const, code: error.message, retryable: false };
+            return { kind: "rejected" as const, code: error.code, retryable: false };
           return { kind: "uncertain" as const, code: "provider_unavailable", retryable: true };
         }
       });
@@ -395,7 +389,7 @@ export function createLocalSequentialSessionProvider(
 function validateAnswer(level: CompiledLevel, answer: AnswerValue | null, timedOut: boolean) {
   const question = level.question;
   if (answer !== null) {
-    const protocols: Partial<Record<typeof question.type, string>> = {
+    const protocols: Partial<Record<typeof question.type, GameSessionErrorCode>> = {
       "mini-wordle": "mini_wordle_requires_guess_command",
       "logic-code": "logic_code_requires_attempt_command",
       queens: "queens_requires_placement_command",

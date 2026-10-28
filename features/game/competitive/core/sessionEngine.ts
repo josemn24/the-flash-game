@@ -1,3 +1,4 @@
+import { formatFailure } from "../formats/failure";
 import {
   GameSessionCommandError,
   type GameSessionProvider,
@@ -146,7 +147,7 @@ export class CompetitiveSessionEngine {
     invoke: () => Promise<GameSessionResult>,
     step: CommandStep,
   ): Promise<boolean> => {
-    if (!this.active) return false;
+    if (!this.active || this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
     const generation = this.generation;
     this.pendingStep = step;
     this.commit({ type: "command_started", command, feedback: step.channel });
@@ -217,6 +218,7 @@ export class CompetitiveSessionEngine {
     data: CommandData<K>,
     step: CommandStep,
   ): Promise<boolean> => {
+    if (this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
     let accepted = false;
     if (!this.snapshot.pendingCommand) {
       this.automaticRetries = 0;
@@ -305,7 +307,6 @@ export class CompetitiveSessionEngine {
       operation: command.operation,
       mode: this.options.challenge.mode,
       failure: error instanceof GameSessionCommandError ? error.failure : undefined,
-      channel: step.channel,
       hasAttempt: this.snapshot.attempt !== null,
       terminalRecoveryAttempted: this.terminalRecoveryAttempted,
       automaticRetries: this.automaticRetries,
@@ -381,18 +382,28 @@ export class CompetitiveSessionEngine {
       return;
     }
     if (action.type === "reload-projection") {
-      this.refresh();
+      this.timers.clear();
+      this.pendingStep = undefined;
+      this.retryAt = 0;
+      this.automaticRetries = 0;
+      this.commit({ type: "completion_retry", scheduled: false });
       this.commit({
         type: "command_failed",
+        definitive: true,
+        locked: true,
         lifecycleError: {
           operation: "projection",
           code,
-          message: action.message,
+          recoveryAction: "refresh",
+          retryable: false,
+          message: formatFailure(command.operation, code, action).message,
         },
       });
+      if (action.automatic) this.refresh();
       return;
     }
-    const { retry, message, feedback, lifecycle, definitive } = action;
+    const { retry, lifecycle, definitive } = action;
+    const { message, feedback } = formatFailure(command.operation, code, action, step.channel);
     this.retryAt = retry.retryAt;
     this.commit({
       type: "command_failed",
@@ -442,14 +453,13 @@ export class CompetitiveSessionEngine {
   retry = async (automatic = false) => {
     // React handlers can pass an event; only our internal true means an automatic replay.
     automatic = automatic === true;
-    if (
-      !this.active ||
-      this.snapshot.busy ||
-      this.retrying ||
-      this.snapshot.lifecycleError?.retryable === false ||
-      this.clock.now() < this.retryAt
-    )
+    if (!this.active || this.snapshot.busy || this.retrying || this.clock.now() < this.retryAt)
       return;
+    if (this.snapshot.lifecycleError?.recoveryAction === "refresh") {
+      if (!automatic) this.refresh();
+      return;
+    }
+    if (this.snapshot.lifecycleError?.retryable === false) return;
     if (!automatic) {
       this.automaticRetries = 0;
       this.timers.cancel("completion-retry");

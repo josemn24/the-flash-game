@@ -1,3 +1,5 @@
+import { AttemptCommandError } from "@/application/errors/attempts";
+import type { AttemptErrorCode } from "@/types/contracts/competitive-errors";
 import { InvalidAttemptLifecycleError } from "@/lib/attemptLifecycle";
 import {
   competitivePerformanceObserver,
@@ -19,10 +21,7 @@ import {
   consumeAlphabetActionRateLimit,
   CompetitiveRateLimitError,
 } from "@/server/competitive/rate-limit";
-import {
-  AttemptCommandError,
-  SupabaseAttemptCommands,
-} from "@/infrastructure/supabase/attempts/attemptCommands";
+import { SupabaseAttemptCommands } from "@/infrastructure/supabase/attempts/attemptCommands";
 import { supabasePrivateQuestionAssetResolver } from "@/infrastructure/supabase/assets/privateQuestionAssetResolver";
 import { supabaseCompetitiveEvaluator } from "@/server/evaluation/competitive-evaluator";
 
@@ -321,6 +320,78 @@ export function commandsFor(identity: AuthenticatedActor, requestId?: string) {
   ) satisfies AttemptUseCases;
 }
 
+const attemptErrorStatuses = {
+  database_unavailable: 503,
+  command_failed: 503,
+  not_authorized: 404,
+  attempt_permission_revoked: 409,
+  competitive_access_denied: 404,
+  session_revoked: 409,
+  session_transferred: 409,
+  stale_version: 409,
+  idempotency_conflict: 409,
+  invalid_command: 409,
+  attempt_terminal: 409,
+  interaction_not_presented: 409,
+  pass_unavailable: 409,
+  time_trial_terminal: 409,
+  time_trial_not_terminal: 409,
+  queens_requires_validation_command: 409,
+  evaluation_pending: 409,
+  publication_cancelled: 409,
+  attempt_not_terminal: 409,
+  reason_required: 409,
+  invalid_score: 409,
+  not_competitive: 409,
+  incomplete_challenge: 409,
+  unfinished_interaction: 409,
+  no_evaluated_answers: 409,
+  no_pending_item: 409,
+  deadline_reached: 409,
+  alphabet_deadline_not_reached: 409,
+  receipt_not_found: 409,
+  already_evaluated: 409,
+  takeover_not_prepared: 409,
+  attempt_inactivity_expired: 409,
+  recovery_required: 409,
+  invalid_mini_wordle_guess: 400,
+  duplicate_mini_wordle_guess: 409,
+  mini_wordle_requires_guess_command: 400,
+  invalid_logic_code: 400,
+  duplicate_logic_code: 409,
+  logic_code_requires_attempt_command: 400,
+  invalid_matching_answer: 409,
+  invalid_connect_pairs_answer: 422,
+  invalid_word_search_selection: 409,
+  word_search_target_already_found: 409,
+  word_search_requires_selection_command: 409,
+  invalid_word_hashtag_swap: 400,
+  word_hashtag_moves_exhausted: 409,
+  word_hashtag_requires_swap_command: 400,
+  invalid_queens_placement: 409,
+  invalid_queens_answer: 400,
+  queens_answer_incomplete: 400,
+  queens_answer_overflow: 400,
+  queens_requires_placement_command: 409,
+  queens_requires_board_validation: 400,
+  prefilled_queen_locked: 409,
+  all_clues_revealed: 409,
+  progressive_clues_requires_reveal_command: 409,
+  unsupported_question: 400,
+  invalid_question_payload: 400,
+  invalid_attempt_context: 409,
+  invalid_attempt_lifecycle: 500,
+  survival_not_terminal: 409,
+  pyramid_not_terminal: 409,
+  request_predates_presentation: 409,
+  pyramid_level_failed: 409,
+  duplicate_queens_placement: 409,
+  invalid_progress: 503,
+  invalid_question_solution: 503,
+  invalid_question_config: 503,
+  auth_unavailable: 503,
+} as const satisfies Record<AttemptErrorCode, number>;
+
 export function mapAttemptError(error: unknown): AttemptApiError {
   if (error instanceof AuthServiceUnavailableError)
     return new AttemptApiError("auth_unavailable", 503);
@@ -332,29 +403,11 @@ export function mapAttemptError(error: unknown): AttemptApiError {
     return new AttemptApiError("invalid_attempt_lifecycle", 500);
   }
   if (error instanceof AttemptCommandError) {
-    if (error.code === "invalid_connect_pairs_answer") return new AttemptApiError(error.code, 422);
-    const status =
-      error.code === "invalid_mini_wordle_guess" ||
-      error.code === "mini_wordle_requires_guess_command" ||
-      error.code === "invalid_logic_code" ||
-      error.code === "logic_code_requires_attempt_command" ||
-      error.code === "invalid_queens_answer" ||
-      error.code === "queens_answer_incomplete" ||
-      error.code === "queens_answer_overflow" ||
-      error.code === "queens_requires_board_validation" ||
-      error.code === "invalid_word_hashtag_swap" ||
-      error.code === "word_hashtag_requires_swap_command" ||
-      error.code === "invalid_question_payload" ||
-      error.code === "unsupported_question"
-        ? 400
-        : error.code === "not_authorized" || error.code === "competitive_access_denied"
-          ? 404
-          : error.code === "auth_unavailable" ||
-              error.code === "database_unavailable" ||
-              error.code === "command_failed"
-            ? 503
-            : 409;
-    return new AttemptApiError(error.code, status, error.retryAfterSeconds);
+    return new AttemptApiError(
+      error.code,
+      attemptErrorStatuses[error.code],
+      error.retryAfterSeconds,
+    );
   }
   if (error instanceof CompetitiveRateLimitError) {
     return new AttemptApiError(error.code, error.status, error.retryAfterSeconds);

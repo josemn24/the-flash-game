@@ -1,3 +1,4 @@
+import type { GameSessionErrorCode } from "@/types/contracts/competitive-errors";
 import type { GameSessionProvider, SessionClock } from "@/application/ports/game-session";
 import type { GameSessionCommand } from "@/types/contracts/game-session";
 import type { AnswerValue } from "@/types/contracts";
@@ -390,7 +391,7 @@ export function createLocalPyramidSessionProvider(
           return structuredClone(await run(captured, execution?.signal, receivedAt));
         } catch (error) {
           if (error instanceof LocalRejection)
-            return { kind: "rejected" as const, code: error.message, retryable: false };
+            return { kind: "rejected" as const, code: error.code, retryable: false };
           // Accepted receipts stay available for an exact replay or recovery.
           return { kind: "uncertain" as const, code: "provider_unavailable", retryable: true };
         }
@@ -402,7 +403,7 @@ export function createLocalPyramidSessionProvider(
 function validateAnswer(level: CompiledLevel, answer: AnswerValue | null, timedOut: boolean) {
   const q = level.question;
   if (answer !== null) {
-    const protocols: Partial<Record<typeof q.type, string>> = {
+    const protocols: Partial<Record<typeof q.type, GameSessionErrorCode>> = {
       "mini-wordle": "mini_wordle_requires_guess_command",
       "logic-code": "logic_code_requires_attempt_command",
       queens: "queens_requires_placement_command",
