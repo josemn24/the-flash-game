@@ -147,6 +147,7 @@ Pantalla → fachada del modo → useCompetitiveSession
                                   ├── core/sessionReducer: snapshot único y commit(event)
                                   ├── core/commandExecutor: cola y comando pendiente original
                                   ├── core/attemptLifecycle: inicio, recuperación, preparación, activación, cierre
+                                  ├── core/commandRecoveryPolicy: clasificación y presupuesto de reintentos
                                   ├── core/advance: feedback y siguiente paso
                                   ├── modes: secuencia, presentación y cursor recuperado
                                   └── formats: comando, progreso y resultado normalizado
@@ -158,6 +159,18 @@ El motor actualiza el snapshot utilizado por las operaciones asíncronas y notif
 mediante un único `commit(event)` y `useSyncExternalStore`. No hay una copia de `revision`
 en cada modo o formato. El reducer deduplica resultados por interacción y guarda intento,
 interacción, deadlines recibidos, resultados, comando pendiente y error de lifecycle.
+
+`run`, `retry` y `takeOver` comparten `afterCommand`. Este coordinador conserva el origen de la
+operación y consulta el snapshot actual entre efectos: `step.after` puede ejecutar otros comandos.
+Las políticas puras de finalización por modo deciden si continuar, cerrar o reconciliar antes de
+cerrar; `finalizeGlobalClock` conserva la intención de cierre y espera al comando pendiente.
+Alfabeto y Contrarreloj mantienen sus diferencias de timeout y recuperación. Los otros cuatro
+modos tienen una política neutra de cierre global; su progresión permanece en las políticas existentes.
+
+La clasificación común de fallos y el cálculo de esperas viven en `commandRecoveryPolicy`.
+El motor conserva los efectos, contadores y temporizadores; el proveedor sigue normalizando el
+transporte y `formatFailure` conserva el feedback de formatos. La confirmación de abandono
+permanece dentro del motor. Estas extracciones no añaden otro almacén ni cambian contratos HTTP.
 
 La cola resuelve la versión al enviar un comando nuevo. Desde ese momento conserva operación,
 intento/interacción, payload, versión y clave idempotente; un reintento reutiliza el comando

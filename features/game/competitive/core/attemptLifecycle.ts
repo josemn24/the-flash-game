@@ -7,6 +7,7 @@ import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-
 
 export function createAttemptLifecycle(runtime: SessionRuntime) {
   let finalizationRequested = false;
+  const finalization = runtime.policy.finalization;
   const finish = (
     response: AuthoritativeSessionUpdate,
     terminalReview?: readonly ServerFlashTerminalReview[],
@@ -30,7 +31,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     });
   };
   const complete = async () => {
-    if (["alphabet", "time-trial"].includes(runtime.challenge.mode)) {
+    if (finalization.globalClock) {
       finalizationRequested = true;
       runtime.commit({ type: "phase", phase: "finalizing" });
     }
@@ -40,7 +41,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
       { accept: (response, _command, review) => finish(response, review) },
     );
   };
-  const finalizeAlphabet = async () => {
+  const finalizeGlobalClock = async () => {
     finalizationRequested = true;
     const state = runtime.state();
     // Keep the outstanding answer/pass until it is accepted or reconciled.
@@ -61,16 +62,11 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
         accept: (response) => {
           runtime.commit(preparedEvent(runtime, response));
           timedOut =
-            response.timedOut === true &&
-            (["alphabet", "time-trial"].includes(runtime.challenge.mode) ||
-              response.deadlineAt != null);
+            response.timedOut === true && (finalization.globalClock || response.deadlineAt != null);
         },
         after: async () => {
-          if (
-            ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
-            (timedOut || finalizationRequested)
-          )
-            await finalizeAlphabet();
+          if (finalization.onProgress(finalizationRequested, timedOut) === "finalize")
+            await finalizeGlobalClock();
           else if (timedOut) await timeoutAnswer();
         },
       },
@@ -95,11 +91,8 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
         },
         after: async () => {
           if (!snapshot || snapshot.phase === "results") return;
-          if (
-            ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
-            finalizationRequested
-          ) {
-            await finalizeAlphabet();
+          if (finalization.onProgress(finalizationRequested) === "finalize") {
+            await finalizeGlobalClock();
             return;
           }
           if (snapshot.resolved) {
@@ -165,14 +158,10 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
             {
               accept: (response) => {
                 const deadline =
-                  runtime.challenge.mode === "time-trial"
+                  finalization.recoveryDeadline === "session"
                     ? runtime.state().deadlineAt
                     : timestamp(response.deadlineAt);
-                if (
-                  ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
-                  deadline !== null &&
-                  deadline <= runtime.now()
-                ) {
+                if (finalization.globalClock && deadline !== null && deadline <= runtime.now()) {
                   finalizationRequested = true;
                   runtime.commit({ type: "phase", phase: "finalizing" });
                 }
@@ -283,7 +272,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     begin,
     prepare,
     complete,
-    finalizeAlphabet,
+    finalizeGlobalClock,
     finalizationRequested: () => finalizationRequested,
     recover,
     recoverTransferred,

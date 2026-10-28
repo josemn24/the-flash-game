@@ -1,10 +1,7 @@
 import { expect, test, type APIRequestContext, type BrowserContext } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { createLocalTimeTrialSessionProvider } from "@/features/game/session/providers/localTimeTrial";
-import {
-  createMockFlashPopTimeTrialConnectPairsDemoDefinition,
-  createMockFlashPopTimeTrialQueensDemoDefinition,
-} from "@/infrastructure/mock/localTimeTrialDefinition";
+import { createTimeTrialTestDefinition } from "@/test-utils/game-session-conformance/timeTrialDefinition";
 import { createRemoteGameSessionProvider } from "@/features/game/session/providers/remote";
 import {
   manualClock,
@@ -31,25 +28,12 @@ function fixture(scenario: string): ScenarioFixture {
 }
 
 function localDefinition(data: ScenarioData, format: Format): LocalTimeTrialDefinition {
-  const base =
-    format === "queens"
-      ? createMockFlashPopTimeTrialQueensDemoDefinition()
-      : createMockFlashPopTimeTrialConnectPairsDemoDefinition();
-  return {
-    challenge: {
-      ...base.challenge,
-      id: data.publicationId,
-      timeLimitMs: data.globalTimeLimitMs ?? base.challenge.timeLimitMs,
-      slots: base.challenge.slots.map((slot, index) => ({
-        ...slot,
-        id: data.challengeItemIds[index]!,
-      })),
-    },
-    levels: base.levels.map((level, index) => ({
-      ...level,
-      challengeItemId: data.challengeItemIds[index]!,
-    })),
-  };
+  return createTimeTrialTestDefinition({
+    format,
+    challengeId: data.publicationId,
+    itemIds: data.challengeItemIds,
+    globalTimeLimitMs: data.globalTimeLimitMs ?? undefined,
+  });
 }
 
 function remoteProvider(api: APIRequestContext) {
@@ -97,6 +81,7 @@ function normalized(value: unknown): unknown {
             "revision",
             "serverNow",
             "elapsedTimeMs",
+            "lastCorrectElapsedMs",
             "explanation",
             "src",
             "questionVersionId",
@@ -120,6 +105,17 @@ function compare(local: GameSessionResult, remote: GameSessionResult) {
     return;
   }
   expect(local.effect).toBe(remote.effect);
+  if (remote.state.timeTrial) {
+    const actual = local.state.timeTrial?.lastCorrectElapsedMs;
+    const expected = remote.state.timeTrial.lastCorrectElapsedMs;
+    if (expected === null) expect(actual).toBeNull();
+    else {
+      // SQL floors global/per-board durations independently; JS Date truncates timestamps.
+      // Those quantizations can differ by 1 ms even with the same authoritative input.
+      expect(typeof actual).toBe("number");
+      expect(Math.abs(actual! - expected)).toBeLessThanOrEqual(1);
+    }
+  }
   const comparable = [
     "challengeItemId",
     "publicPayload",

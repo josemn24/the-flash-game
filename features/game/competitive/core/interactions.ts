@@ -11,7 +11,8 @@ export function createInteractions(
 ) {
   let reserved = false;
   let validating = false;
-  const alphabetTimeout = createAlphabetTimeoutGuard();
+  const globalTimeout = createAlphabetTimeoutGuard();
+  const finalization = runtime.policy.finalization;
   let timeoutItemId: string | null = null;
   let draftRevision = 0;
   let latestQueens: { itemId: string; queens: readonly number[]; revision: number } | null = null;
@@ -72,11 +73,8 @@ export function createInteractions(
           }
         },
         after: async () => {
-          if (
-            ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
-            lifecycle.finalizationRequested()
-          )
-            await lifecycle.finalizeAlphabet();
+          if (finalization.onProgress(lifecycle.finalizationRequested()) === "finalize")
+            await lifecycle.finalizeGlobalClock();
           else if (
             runtime.state().phase === "transition" ||
             runtime.state().phase === "answer-reveal"
@@ -161,28 +159,20 @@ export function createInteractions(
   };
   const onTimeUp = async (expectedItemId?: string) => {
     const state = runtime.state();
-    if (runtime.challenge.mode === "time-trial") {
-      if (!alphabetTimeout.claim()) return;
-      await lifecycle.finalizeAlphabet();
+    const decision = finalization.onTimeout(state);
+    if (decision === "ignore") return;
+    if (decision === "finalize") {
+      if (!globalTimeout.claim()) return;
+      await lifecycle.finalizeGlobalClock();
       return;
     }
     if (!state.question || (state.phase !== "playing" && state.phase !== "checking")) return;
-    if (
-      runtime.challenge.mode !== "alphabet" &&
-      expectedItemId &&
-      state.question.id !== expectedItemId
-    )
-      return;
+    if (expectedItemId && state.question.id !== expectedItemId) return;
     if (
       runtime.challenge.mode === "narrative" &&
       (runtime.state().phase !== "playing" || runtime.state().questionDeadlineAt === null)
     )
       return;
-    if (runtime.challenge.mode === "alphabet") {
-      if (!alphabetTimeout.claim()) return;
-      await lifecycle.finalizeAlphabet();
-      return;
-    }
     if (reserved || runtime.state().pendingCommand) {
       timeoutItemId = runtime.state().question?.id ?? null;
       return;
@@ -256,7 +246,8 @@ export function createInteractions(
             accept: () =>
               runtime.commit({ type: "phase", phase: "preparing", clearQuestion: true }),
             after: async () => {
-              if (lifecycle.finalizationRequested()) await lifecycle.finalizeAlphabet();
+              if (finalization.onProgress(lifecycle.finalizationRequested()) === "finalize")
+                await lifecycle.finalizeGlobalClock();
               else await lifecycle.prepare();
             },
           },

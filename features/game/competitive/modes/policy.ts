@@ -18,6 +18,7 @@ import { pyramidPolicy } from "./pyramid";
 import { narrativePolicy } from "./narrative";
 import { timeTrialPolicy } from "./timeTrial";
 import { alphabetPolicy } from "./alphabet";
+import type { FinalizationPolicy } from "./finalization";
 
 export type { CompetitiveChallenge } from "@/types/gameplay/challenge";
 export type ModeStep =
@@ -25,6 +26,7 @@ export type ModeStep =
   | { type: "complete" }
   | { type: "phase"; phase: SessionPhase; stepIndex: number; questionIndex?: number };
 export type ModePolicy = {
+  finalization: FinalizationPolicy;
   initialPhase: SessionPhase;
   sequence: readonly ServerNarrativeStep[];
   position: (itemId: string) => number;

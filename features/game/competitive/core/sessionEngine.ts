@@ -22,21 +22,14 @@ import {
 import { PhaseTimers } from "./phaseTimers";
 import { createAttemptLifecycle } from "./attemptLifecycle";
 import { createInteractions } from "./interactions";
-import type { CommandStep, SessionRuntime } from "./runtime";
-import { formatFailure } from "../formats/failure";
+import type { CommandOrigin, CommandStep, SessionRuntime } from "./runtime";
+import {
+  afterCommandRecovery,
+  classifyCommandFailure,
+  retryReaction,
+} from "./commandRecoveryPolicy";
+import type { FinalizationCheckpoint, FinalizationDecision } from "../modes/finalization";
 
-const lifecycleOperations = new Set<Operation>([
-  "start",
-  "prepareSession",
-  "recover",
-  "prepare",
-  "activate",
-  "complete",
-  "abandon",
-  "alphabetPass",
-  "queensDraft",
-  "takeover",
-]);
 export type SessionOptions = {
   challenge: CompetitiveChallenge;
   initialSession: GameSessionBootstrap;
@@ -236,51 +229,65 @@ export class CompetitiveSessionEngine {
     } catch (error) {
       if (!(error instanceof PendingCommandBlocked)) throw error;
     }
-    await this.recoverTerminalIfRequested();
-    if (!accepted && this.finalizeExpiredAlphabetPass()) {
-      await this.lifecycle.finalizeAlphabet();
-      return false;
-    }
-    if (accepted && this.active) await step.after?.();
-    if (
-      this.options.challenge.mode === "time-trial" &&
-      operation !== "complete" &&
-      operation !== "recover" &&
-      this.lifecycle.finalizationRequested()
-    )
-      await this.lifecycle.finalizeAlphabet();
-    if (
-      !accepted &&
-      this.options.challenge.mode === "time-trial" &&
-      ["deadline_reached", "time_trial_terminal"].includes(this.snapshot.lifecycleError?.code ?? "")
-    ) {
-      this.commit({ type: "command_failed", definitive: true, phase: "finalizing", locked: true });
-      await this.lifecycle.finalizeAlphabet();
-    }
-    if (!accepted && this.snapshot.lifecycleError?.code === "stale_version" && !this.reconciling)
-      await this.reconcile();
-    if (
-      !accepted &&
-      this.options.challenge.mode === "alphabet" &&
-      this.lifecycle.finalizationRequested() &&
-      (operation === "answer" || operation === "alphabetPass" || operation === "prepare") &&
-      !this.reconciling &&
-      this.snapshot.pendingCommand
-    ) {
-      // Recovery preserves any receipt already accepted by the server. A rejected
-      // player action must not hold the timeout behind the interactive limiter.
-      this.retryAt = 0;
-      await this.reconcile();
-    }
+    await this.afterCommand("run", operation, accepted, step);
     return accepted;
   };
+  private async afterCommand(
+    origin: CommandOrigin,
+    operation: Operation,
+    accepted: boolean,
+    step: CommandStep,
+  ) {
+    if (origin !== "takeover") await this.recoverTerminalIfRequested();
+    const decide = (checkpoint: FinalizationCheckpoint) =>
+      this.policy.finalization.afterCommand(checkpoint, {
+        origin,
+        operation,
+        accepted,
+        state: this.snapshot,
+        requested: this.lifecycle.finalizationRequested(),
+        reconciling: this.reconciling,
+        expiredPass: this.alphabetPassExpired,
+      });
+    const before = decide("before-after");
+    if (before.type === "finalize") {
+      this.alphabetPassExpired = false;
+      await this.applyFinalization(before);
+      return;
+    }
+    if (accepted && this.active) await step.after?.();
+    // Each awaited effect may run nested commands. Always decide from the live snapshot.
+    await this.applyFinalization(decide("after-after"));
+    await this.applyFinalization(decide("after-finalize"));
+    if (
+      afterCommandRecovery({
+        origin,
+        accepted,
+        code: this.snapshot.lifecycleError?.code,
+        reconciling: this.reconciling,
+      }) === "reconcile"
+    )
+      await this.reconcile();
+    await this.applyFinalization(decide("after-reconcile"));
+  }
+  private async applyFinalization(decision: FinalizationDecision) {
+    if (decision.type === "finalize") {
+      if (decision.clearPending)
+        this.commit({
+          type: "command_failed",
+          definitive: true,
+          phase: "finalizing",
+          locked: true,
+        });
+      await this.lifecycle.finalizeGlobalClock();
+    } else if (decision.type === "reconcile") {
+      if (decision.resetRetryDelay) this.retryAt = 0;
+      await this.reconcile();
+    }
+  }
   private async failed(command: PendingCommand, step: CommandStep, error: unknown) {
     const code = error instanceof GameSessionCommandError ? error.failure.code : undefined;
-    if (
-      command.operation === "alphabetPass" &&
-      this.options.challenge.mode === "alphabet" &&
-      code === "pass_unavailable"
-    ) {
+    if (this.policy.finalization.onFailure(command.operation, code) === "expired-pass") {
       this.alphabetPassExpired = true;
       this.pendingStep = undefined;
       this.retryAt = 0;
@@ -294,31 +301,35 @@ export class CompetitiveSessionEngine {
       });
       return;
     }
-    if (command.operation === "takeover") {
-      if (code === "stale_version" || code === "idempotency_conflict") {
-        console.info(JSON.stringify({ event: "takeover_conflict", code }));
-        this.timers.clear();
-        this.pendingStep = undefined;
-        this.commit({
-          type: "command_failed",
-          definitive: true,
-          lifecycleError: {
-            operation: "takeover",
-            code,
-            retryable: false,
-            message: "La partida ha cambiado en otro dispositivo. Vuelve a comprobar su estado.",
-          },
-          notice: "La partida ha cambiado en otro dispositivo. Vuelve a comprobar su estado.",
-        });
-        return;
-      } else if (
-        !(error instanceof GameSessionCommandError) ||
-        error.failure.kind === "uncertain"
-      ) {
-        console.info(JSON.stringify({ event: "takeover_uncertain" }));
-      }
+    const { action, takeoverUncertain } = classifyCommandFailure({
+      operation: command.operation,
+      mode: this.options.challenge.mode,
+      failure: error instanceof GameSessionCommandError ? error.failure : undefined,
+      channel: step.channel,
+      hasAttempt: this.snapshot.attempt !== null,
+      terminalRecoveryAttempted: this.terminalRecoveryAttempted,
+      automaticRetries: this.automaticRetries,
+      now: this.clock.now(),
+    });
+    if (action.type === "takeover-conflict") {
+      console.info(JSON.stringify({ event: "takeover_conflict", code }));
+      this.timers.clear();
+      this.pendingStep = undefined;
+      this.commit({
+        type: "command_failed",
+        definitive: true,
+        lifecycleError: {
+          operation: "takeover",
+          code,
+          retryable: false,
+          message: "La partida ha cambiado en otro dispositivo. Vuelve a comprobar su estado.",
+        },
+        notice: "La partida ha cambiado en otro dispositivo. Vuelve a comprobar su estado.",
+      });
+      return;
     }
-    if (code === "session_transferred") {
+    if (takeoverUncertain) console.info(JSON.stringify({ event: "takeover_uncertain" }));
+    if (action.type === "session-transferred") {
       this.timers.clear();
       this.pendingStep = undefined;
       this.terminalRecoveryRequested = false;
@@ -334,26 +345,10 @@ export class CompetitiveSessionEngine {
       console.info(JSON.stringify({ event: "session_transferred", operation: command.operation }));
       return;
     }
-    if (
-      [
-        "not_authorized",
-        "session_revoked",
-        "competitive_access_denied",
-        "auth_required",
-        "unauthorized",
-        "attempt_permission_revoked",
-      ].includes(code ?? "") ||
-      (error instanceof GameSessionCommandError &&
-        error.failure.authorizationLost &&
-        code !== "attempt_session_missing")
-    ) {
+    if (action.type === "authorization-lost") {
       this.timers.clear();
       this.pendingStep = undefined;
-      if (
-        !this.terminalRecoveryAttempted &&
-        command.operation !== "recover" &&
-        this.snapshot.attempt
-      ) {
+      if (action.recoverTerminal) {
         this.terminalRecoveryAttempted = true;
         this.commit({
           type: "command_failed",
@@ -379,66 +374,37 @@ export class CompetitiveSessionEngine {
       });
       return;
     }
-    if (code === "attempt_inactivity_expired") {
+    if (action.type === "expired") {
       this.timers.clear();
       this.pendingStep = undefined;
       this.commit({ type: "expired" });
       return;
     }
-    if (
-      (command.operation === "complete" ||
-        command.operation === "recover" ||
-        command.operation === "start") &&
-      (code === "attempt_session_missing" || code === "attempt_terminal")
-    ) {
+    if (action.type === "reload-projection") {
       this.refresh();
       this.commit({
         type: "command_failed",
         lifecycleError: {
           operation: "projection",
           code,
-          message:
-            command.operation === "start" && code === "attempt_session_missing"
-              ? "Recarga la página para preparar la sesión antes de empezar."
-              : "Comprobando el resultado guardado. Puedes volver a cargarlo.",
+          message: action.message,
         },
       });
       return;
     }
-    const seconds =
-      error instanceof GameSessionCommandError && error.failure.retryAfterSeconds !== undefined
-        ? Math.max(1, error.failure.retryAfterSeconds)
-        : undefined;
-    this.retryAt = seconds === undefined ? 0 : this.clock.now() + seconds * 1000;
-    const failure = formatFailure(command.operation, code, step.channel);
-    const retryable =
-      !failure.definitive &&
-      (!(error instanceof GameSessionCommandError) || error.failure.retryable);
-    const limit = command.operation === "complete" ? 3 : 1;
-    const message =
-      retryable && this.automaticRetries >= limit
-        ? "No hemos podido confirmar la operación"
-        : code === "alphabet_deadline_not_reached" || code === "time_trial_not_terminal"
-          ? "Esperando a que termine el tiempo de la partida."
-          : seconds !== undefined
-            ? `Demasiadas solicitudes. Espera ${seconds} ${seconds === 1 ? "segundo" : "segundos"} antes de volver a intentarlo.`
-            : failure.message;
-    const lifecycle =
-      !failure.definitive ||
-      lifecycleOperations.has(command.operation) ||
-      code === "stale_version" ||
-      this.options.challenge.mode === "alphabet";
+    const { retry, message, feedback, lifecycle, definitive } = action;
+    this.retryAt = retry.retryAt;
     this.commit({
       type: "command_failed",
-      definitive: failure.definitive,
+      definitive,
       lifecycleError: lifecycle
         ? { operation: command.operation, code, message, retryAt: this.retryAt || undefined }
         : undefined,
-      feedback: failure.feedback ? { ...failure.feedback, message } : undefined,
+      feedback,
       notice: lifecycle ? message : undefined,
     });
-    if (failure.definitive) this.pendingStep = undefined;
-    if (retryable) {
+    if (definitive) this.pendingStep = undefined;
+    if (retry.retryable) {
       // Fixed fields only: never log the command, answer, identifiers or tokens.
       console.info(
         JSON.stringify({
@@ -448,11 +414,10 @@ export class CompetitiveSessionEngine {
         }),
       );
     }
-    if (retryable && this.automaticRetries < limit) {
-      const delay = seconds === undefined ? 1000 * 2 ** this.automaticRetries : seconds * 1000;
+    if (retry.delayMs !== undefined) {
       this.automaticRetries++;
       this.commit({ type: "completion_retry", scheduled: true });
-      this.timers.schedule("completion-retry", delay, () => void this.retry(true));
+      this.timers.schedule("completion-retry", retry.delayMs, () => void this.retry(true));
     }
   }
 
@@ -474,12 +439,6 @@ export class CompetitiveSessionEngine {
     return false;
   }
 
-  private finalizeExpiredAlphabetPass() {
-    if (!this.alphabetPassExpired) return false;
-    this.alphabetPassExpired = false;
-    return true;
-  }
-
   retry = async (automatic = false) => {
     // React handlers can pass an event; only our internal true means an automatic replay.
     automatic = automatic === true;
@@ -496,15 +455,16 @@ export class CompetitiveSessionEngine {
       this.timers.cancel("completion-retry");
       this.commit({ type: "completion_retry", scheduled: false });
     }
-    if (this.snapshot.lifecycleError?.operation === "projection") {
-      if (this.snapshot.lifecycleError.code === "review_pending" && this.snapshot.attempt) {
-        await this.lifecycle.reloadResult();
-        return;
-      }
+    const reaction = retryReaction(this.snapshot);
+    if (reaction === "reload-result") {
+      await this.lifecycle.reloadResult();
+      return;
+    }
+    if (reaction === "refresh") {
       this.refresh();
       return;
     }
-    if (this.snapshot.lifecycleError?.code === "stale_version") {
+    if (reaction === "reconcile") {
       await this.reconcile();
       return;
     }
@@ -527,28 +487,7 @@ export class CompetitiveSessionEngine {
     } finally {
       this.retrying = false;
     }
-    await this.recoverTerminalIfRequested();
-    if (!accepted && this.finalizeExpiredAlphabetPass()) {
-      await this.lifecycle.finalizeAlphabet();
-      return;
-    }
-    if (accepted && this.active) await step.after?.();
-    if (
-      this.options.challenge.mode === "time-trial" &&
-      command.operation !== "complete" &&
-      command.operation !== "recover" &&
-      this.lifecycle.finalizationRequested()
-    )
-      await this.lifecycle.finalizeAlphabet();
-    if (
-      !accepted &&
-      this.options.challenge.mode === "time-trial" &&
-      ["deadline_reached", "time_trial_terminal"].includes(this.snapshot.lifecycleError?.code ?? "")
-    ) {
-      this.commit({ type: "command_failed", definitive: true, phase: "finalizing", locked: true });
-      await this.lifecycle.finalizeAlphabet();
-    }
-    if (!accepted && this.snapshot.lifecycleError?.code === "stale_version") await this.reconcile();
+    await this.afterCommand("retry", command.operation, accepted, step);
   };
   reconcile = async () => {
     if (
@@ -611,17 +550,7 @@ export class CompetitiveSessionEngine {
     } catch (error) {
       if (!(error instanceof PendingCommandBlocked)) throw error;
     }
-    if (accepted && this.active) await step.after?.();
-    if (this.options.challenge.mode === "time-trial" && this.lifecycle.finalizationRequested())
-      await this.lifecycle.finalizeAlphabet();
-    if (
-      !accepted &&
-      this.options.challenge.mode === "time-trial" &&
-      ["deadline_reached", "time_trial_terminal"].includes(this.snapshot.lifecycleError?.code ?? "")
-    ) {
-      this.commit({ type: "command_failed", definitive: true, phase: "finalizing", locked: true });
-      await this.lifecycle.finalizeAlphabet();
-    }
+    await this.afterCommand("takeover", "takeover", accepted, step);
     return accepted;
   };
   cancelTakeOver = () => {

@@ -1,5 +1,6 @@
 import type { ServerNarrativeChallenge, ServerNarrativeStep } from "@/types/gameplay/challenge";
 import type { ModePolicy, ModeStep } from "./policy";
+import { questionFinalization } from "./finalization";
 export function narrativePolicy(challenge: ServerNarrativeChallenge): ModePolicy {
   const sequence: ServerNarrativeStep[] = [
     { type: "scene", scene: challenge.prologue },
@@ -14,6 +15,7 @@ export function narrativePolicy(challenge: ServerNarrativeChallenge): ModePolicy
         ? { type: "phase", phase: "scene", stepIndex: index }
         : { type: "prepare" };
   return {
+    finalization: questionFinalization,
     initialPhase: "scene",
     sequence,
     position,

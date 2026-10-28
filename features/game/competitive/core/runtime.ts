@@ -9,6 +9,7 @@ import type {
   SessionState,
 } from "./sessionReducer";
 import type { CompetitiveChallenge, ModePolicy } from "../modes/policy";
+export type CommandOrigin = "run" | "retry" | "takeover";
 export type CommandStep = {
   accept: (
     response: AuthoritativeSessionUpdate,

@@ -12,6 +12,8 @@ Estado: histórico. Conservar como evidencia; para trabajar usar [documentación
 - [Entrega del refactor de validación por formato](question-validation-2026-10-10.md)
 - [Resumen de la referencia SQL anterior](schema-reference-before-2026-10-24.md)
 - [Entrega inicial de proveedores de sesión](session-providers-2026-10-18.md)
+- [Refactorización del motor de sesión y verificación local](session-engine-refactor-2026-10-28.md)
+- [Corrección de fixtures y expectativas de las pruebas de sesión](session-fixture-fixes-2026-10-28.md)
 - [Refactor y aplicación local de operaciones de intentos](sql-attempt-handlers-2026-10-15.md)
 - [Estado del proyecto hasta el 2026-10-21](status-through-2026-10-21.md)
 - [Auditoría histórica de funciones SQL](supabase-function-drift-audit-2026-10-09.md)

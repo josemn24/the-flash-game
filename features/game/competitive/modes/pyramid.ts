@@ -1,10 +1,12 @@
 import type { ServerPyramidChallenge } from "@/types/gameplay/challenge";
 import { deriveCompetitivePyramidProgress } from "@/lib/gameplay/pyramidProgress";
 import type { ModePolicy } from "./policy";
+import { questionFinalization } from "./finalization";
 export function pyramidPolicy(challenge: ServerPyramidChallenge): ModePolicy {
   const terminal: ModePolicy["terminal"] = (results) =>
     deriveCompetitivePyramidProgress(challenge.levels.length, results).outcome !== "in_progress";
   return {
+    finalization: questionFinalization,
     initialPhase: "briefing",
     sequence: [],
     terminal,

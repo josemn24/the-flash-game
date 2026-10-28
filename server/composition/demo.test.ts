@@ -46,9 +46,11 @@ describe("demo local Time Trial composition", () => {
   ] as const)("loads the approved %s fixture", (id, format, title) => {
     const definition = createDemoReadServices().localTimeTrial.getDefinition(id);
     expect(definition?.challenge).toMatchObject({ id, mode: "time-trial", title });
-    expect(definition?.challenge.slots).toHaveLength(2);
+    expect(definition?.challenge.slots).toHaveLength(6);
+    expect(definition?.levels).toHaveLength(6);
     expect(definition?.challenge.slots.every((slot) => slot.questionType === format)).toBe(true);
-    expect(definition?.challenge.timeLimitMs).toBe(120_000);
+    expect(definition?.challenge.timeLimitMs).toBe(150_000);
+    expect(definition?.challenge.slots.reduce((sum, slot) => sum + slot.points, 0)).toBe(100);
   });
 
   it("does not compose other identifiers as local Time Trial rehearsals", () => {
@@ -60,7 +62,8 @@ describe("demo local Time Trial composition", () => {
 
 describe("demo local Alphabet composition", () => {
   it("loads the complete Kingdom of Animals fixture independent of its publication window", () => {
-    const definition = createDemoReadServices().localAlphabet.getDefinition("tabarnia-challenge-02");
+    const definition =
+      createDemoReadServices().localAlphabet.getDefinition("tabarnia-challenge-02");
     expect(definition?.challenge).toMatchObject({
       id: "tabarnia-challenge-02",
       mode: "alphabet",

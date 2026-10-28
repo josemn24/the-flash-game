@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  createMockFlashPopTimeTrialConnectPairsDemoDefinition,
-  createMockFlashPopTimeTrialQueensDemoDefinition,
-} from "@/infrastructure/mock/localTimeTrialDefinition";
+import { createTimeTrialTestDefinition } from "@/test-utils/game-session-conformance/timeTrialDefinition";
 import {
   confirmed,
   manualClock,
@@ -11,7 +8,7 @@ import {
 import { createLocalTimeTrialSessionProvider } from "./localTimeTrial";
 import { compileTimeTrialDefinition } from "./localShared/definition";
 
-function setup(definition = createMockFlashPopTimeTrialQueensDemoDefinition()) {
+function setup(definition = createTimeTrialTestDefinition()) {
   const clock = manualClock();
   const provider = createLocalTimeTrialSessionProvider({
     definition,
@@ -28,8 +25,8 @@ function setup(definition = createMockFlashPopTimeTrialQueensDemoDefinition()) {
 
 describe("local Time Trial authority", () => {
   it.each([
-    createMockFlashPopTimeTrialQueensDemoDefinition(),
-    createMockFlashPopTimeTrialConnectPairsDemoDefinition(),
+    createTimeTrialTestDefinition({ format: "queens" }),
+    createTimeTrialTestDefinition({ format: "connect-pairs" }),
   ])("validates a homogeneous local format and its private solutions", (definition) => {
     const compiled = compileTimeTrialDefinition(definition);
     expect(compiled.levels).toHaveLength(2);
@@ -118,7 +115,7 @@ describe("local Time Trial authority", () => {
   });
 
   it("evaluates Connect Pairs answers through the canonical scorer", async () => {
-    const definition = createMockFlashPopTimeTrialConnectPairsDemoDefinition();
+    const definition = createTimeTrialTestDefinition({ format: "connect-pairs" });
     const { clock, driver } = setup(definition);
     const compiled = compileTimeTrialDefinition(definition);
     await driver.begin();

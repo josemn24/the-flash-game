@@ -7,6 +7,17 @@ seleccionan el proveedor remoto. Flash, Supervivencia, Pirámide, Alfabeto y Con
 admiten una autoridad local en memoria para demos y pruebas autorizadas antes de competir.
 Narrativa conserva su práctica propia y no participa en la generación de ensayos.
 
+Las tres entradas de ejecución (`run`, `retry` y `takeOver`) comparten el coordinador
+`afterCommand`, que vuelve a consultar el snapshot entre efectos. `ModePolicy.finalization`
+selecciona la política pura de cierre global de Alfabeto o Contrarreloj; el resto de modos
+usa una política neutra. `commandRecoveryPolicy` clasifica fallos y calcula esperas, mientras
+el motor conserva cola, contadores, temporizadores y cancelación. `finalizeGlobalClock`
+espera a que se acepte o reconcilie el comando pendiente. La confirmación visual de abandono
+sigue dentro del motor y las interfaces de los hooks y proveedores permanecen iguales.
+
+La [verificación de la refactorización](../archive/reports/session-engine-refactor-2026-10-28.md)
+registra las pruebas nuevas, los recorridos persistidos y las incidencias previas de fixtures.
+
 La práctica didáctica de formatos permanece separada y no certifica la equivalencia competitiva.
 Las [autoridades locales](local-pyramid-session.md), [ensayos](rehearsals.md) y
 [contrato de Pirámide](pyramid-session-contract.md) desarrollan sus reglas.

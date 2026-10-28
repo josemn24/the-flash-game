@@ -65,6 +65,21 @@ incierto y se ofrece reintento manual del comando original. Una versión obsolet
 permisos denegados y sesión revocada detienen escrituras/retries. Desmontar cancela esperas y descarta
 respuestas tardías. Los deadlines competitivos permanecen intactos.
 
+El cálculo del presupuesto y la clasificación de fallos son funciones puras de
+`features/game/competitive/core/commandRecoveryPolicy.ts`; no envían comandos ni mantienen
+estado. El motor conserva los contadores y las esperas. Los conflictos de transferencia
+se clasifican antes que la pérdida general de autorización; una sesión transferida detiene
+las escrituras sin intentar recuperar el control. La recuperación terminal por permisos
+conserva su límite de un intento antes de retirar el contenido protegido.
+
+`afterCommand` coordina ejecución inicial, repetición y transferencia con su origen explícito.
+No iguala los tres caminos: la reconciliación de una acción incierta de Alfabeto durante el
+cierre sigue perteneciendo al envío inicial; un conflicto de transferencia sigue siendo
+definitivo. Las decisiones de cierre global se consultan de nuevo después de cada efecto
+asíncrono y no se calculan por adelantado desde un snapshot anterior. Las pruebas deterministas
+del motor caracterizan estas diferencias, el cierre concurrente y el replay exacto de una
+transferencia cuya confirmación se pierde.
+
 ## Evidencia reproducible
 
 - `npm run test -- --no-file-parallelism`: contratos, resolución de recepciones, timeouts completos,

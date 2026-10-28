@@ -1,7 +1,9 @@
 import type { ServerFlashChallenge } from "@/types/gameplay/challenge";
 import type { ModePolicy } from "./policy";
+import { questionFinalization } from "./finalization";
 export function flashPolicy(challenge: ServerFlashChallenge): ModePolicy {
   return {
+    finalization: questionFinalization,
     initialPhase: "countdown",
     sequence: [],
     position: (id) => challenge.slots.findIndex((slot) => slot.id === id),
