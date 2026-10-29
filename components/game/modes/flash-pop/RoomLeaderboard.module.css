@@ -124,6 +124,25 @@
     text-align: center;
   }
 
+  .cardMedal {
+    position: relative;
+    display: block;
+    height: 52px;
+    overflow: hidden;
+    font-size: 0;
+    line-height: 0;
+  }
+
+  .medalImage {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    width: 74px;
+    max-width: none;
+    height: auto;
+    transform: translateX(-50%);
+  }
+
   .playerCard[data-rank="1"] .cardRank {
     color: var(--ds-color-fg-reward);
   }

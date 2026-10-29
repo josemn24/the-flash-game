@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Avatar, BoltIcon, Card, ChevronIcon, TrophyIcon } from "@/components/ui";
 import { PendingLink } from "@/components/navigation";
 import type { RoomDailyLeaderboardEntry, RoomLeaderboardEntry } from "@/types/view-models/room";
@@ -69,16 +70,16 @@ export function RoomLeaderboard({
                     <PendingLink
                       href={`${memberHrefBase}/${entry.memberId}`}
                       className={styles.playerCard}
-                      aria-label={`Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
+                      aria-label={`Puesto ${entry.rank}. Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
                       data-rank={entry.rank}
                     >
-                      {renderCardContent(entry, isCurrentUser, true)}
+                      {renderCardContent(entry, isCurrentUser, true, daily)}
                     </PendingLink>
                   ) : onEntrySelect ? (
                     <button
                       type="button"
                       className={`${styles.playerCard} ${selectedMemberId === entry.memberId ? styles.selected : ""}`}
-                      aria-label={`Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
+                      aria-label={`Puesto ${entry.rank}. Ver detalle de ${entry.name}, ${entry.flashPoints} Flash Points`}
                       aria-pressed={selectedMemberId === entry.memberId}
                       data-rank={entry.rank}
                       onClick={() => {
@@ -87,15 +88,16 @@ export function RoomLeaderboard({
                         if (!isSelected) onEntrySelect(entry);
                       }}
                     >
-                      {renderCardContent(entry, isCurrentUser, true)}
+                      {renderCardContent(entry, isCurrentUser, true, daily)}
                     </button>
                   ) : (
                     <div
                       className={`${styles.playerCard} ${styles.staticCard}`}
-                      aria-label={`${entry.name}, ${entry.flashPoints} Flash Points`}
+                      role="group"
+                      aria-label={`Puesto ${entry.rank}. ${entry.name}, ${entry.flashPoints} Flash Points`}
                       data-rank={entry.rank}
                     >
-                      {renderCardContent(entry, isCurrentUser, false)}
+                      {renderCardContent(entry, isCurrentUser, false, daily)}
                     </div>
                   )}
                 </li>
@@ -182,10 +184,19 @@ function renderCardContent(
   entry: RoomLeaderboardEntry | RoomDailyLeaderboardEntry,
   isCurrentUser: boolean,
   showArrow: boolean,
+  daily: boolean,
 ) {
+  const medalSrc = daily ? getDailyMedalSource(entry.rank) : null;
+
   return (
     <>
-      <span className={styles.cardRank}>#{entry.rank}</span>
+      <span className={`${styles.cardRank} ${medalSrc ? styles.cardMedal : ""}`} aria-hidden="true">
+        {medalSrc ? (
+          <Image src={medalSrc} alt="" width={384} height={448} className={styles.medalImage} />
+        ) : (
+          `#${entry.rank}`
+        )}
+      </span>
       <Avatar
         name={entry.name}
         src={entry.avatarSrc}
@@ -203,6 +214,19 @@ function renderCardContent(
       {showArrow ? <ChevronIcon className={styles.cardArrow} aria-hidden="true" /> : null}
     </>
   );
+}
+
+function getDailyMedalSource(rank: number) {
+  switch (rank) {
+    case 1:
+      return "/visuals/medals/first-place.png";
+    case 2:
+      return "/visuals/medals/second-place.png";
+    case 3:
+      return "/visuals/medals/third-place.png";
+    default:
+      return null;
+  }
 }
 
 function formatPendingCount(count: number) {
