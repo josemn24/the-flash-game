@@ -171,6 +171,27 @@ export const TABARNIA_USERS = [
     displayName: "Diego",
     role: "member",
   },
+  {
+    label: "mimi",
+    email: "mimi@tabarnia.local",
+    password: "Tabarnia-local-Mimi-123!",
+    displayName: "Mimi",
+    role: "member",
+  },
+  {
+    label: "lucas",
+    email: "lucas@tabarnia.local",
+    password: "Tabarnia-local-Lucas-123!",
+    displayName: "Lucas",
+    role: "member",
+  },
+  {
+    label: "neak",
+    email: "neak@tabarnia.local",
+    password: "Tabarnia-local-Neak-123!",
+    displayName: "Neak",
+    role: "member",
+  },
 ];
 
 const playerLabels = TABARNIA_USERS.filter((user) => user.role !== "superadmin").map(

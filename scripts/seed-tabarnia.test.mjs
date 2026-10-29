@@ -72,7 +72,7 @@ function spainAssets() {
 
 describe("Tabarnia seed", () => {
   it("defines the fixed cohort and the requested roles", () => {
-    expect(TABARNIA_USERS).toHaveLength(13);
+    expect(TABARNIA_USERS).toHaveLength(16);
     expect(TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => user.avatarFile)).toEqual(
       [
         "dark.jpeg",
@@ -91,6 +91,9 @@ describe("Tabarnia seed", () => {
       "javi",
       "alejandro",
       "diego",
+      "mimi",
+      "lucas",
+      "neak",
     ]);
     expect(TABARNIA_USERS.find((user) => user.label === "xesmona")).toMatchObject({
       role: "superadmin",
@@ -99,7 +102,7 @@ describe("Tabarnia seed", () => {
       displayName: "Ches",
       role: "owner",
     });
-    expect(TABARNIA_USERS.filter((user) => user.role === "member")).toHaveLength(11);
+    expect(TABARNIA_USERS.filter((user) => user.role === "member")).toHaveLength(14);
   });
 
   it("defines sixteen affirmative fiction letters with accepted answers", () => {

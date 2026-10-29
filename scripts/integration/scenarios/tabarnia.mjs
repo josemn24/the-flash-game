@@ -224,17 +224,17 @@ export const scenario = {
     );
     assert(
       (await sqlCount(
-        "select count(*) from public.players where display_name in ('xesmona', 'Ches', 'Carlos', 'Javi', 'Alejandro', 'Diego') and avatar_path is null;",
+        "select count(*) from public.players where display_name in ('xesmona', 'Ches', 'Carlos', 'Javi', 'Alejandro', 'Diego', 'Mimi', 'Lucas', 'Neak') and avatar_path is null;",
         config.dbContainer,
-      )) === 6,
-      "Los seis perfiles sin avatar conservan avatar_path nulo",
+      )) === 9,
+      "Los nueve perfiles sin avatar conservan avatar_path nulo",
     );
     assert(
       (await sqlCount(
         "select count(*) from public.room_memberships rm join public.rooms r on r.id = rm.room_id where r.slug = 'tabarnia' and rm.status = 'active';",
         config.dbContainer,
-      )) === 12,
-      "Tabarnia tiene 12 jugadores activos",
+      )) === 15,
+      "Tabarnia tiene 15 jugadores activos",
     );
     assert(
       (await sqlCount("select count(*) from public.attempts;", config.dbContainer)) === 0,
