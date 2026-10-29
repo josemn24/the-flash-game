@@ -1,10 +1,13 @@
+import { createSessionResultDecoder, sessionValidationContext } from "../sessionResult";
+import type { GameSessionFailure } from "@/types/contracts/game-session";
+type LocalSessionResult =
+  import("@/types/gameplay/authoritative-session").SessionResultDraft | GameSessionFailure;
 import type { GameSessionErrorCode } from "@/types/contracts/competitive-errors";
 import type { GameSessionProvider, SessionClock } from "@/application/ports/game-session";
 import type { GameSessionCommand } from "@/types/contracts/game-session";
 import type { AnswerValue } from "@/types/contracts";
 import type {
-  GameSessionAcceptance,
-  GameSessionResult,
+  SessionResultDraft,
   AuthoritativeSessionUpdate,
 } from "@/types/gameplay/authoritative-session";
 import type { LocalPyramidDefinition } from "@/types/gameplay/local-pyramid";
@@ -45,7 +48,7 @@ type Receipt = {
 };
 type Cached = {
   signature: string;
-  result?: GameSessionAcceptance;
+  result?: SessionResultDraft;
   receipt?: Receipt;
   update?: AuthoritativeSessionUpdate;
 };
@@ -79,12 +82,12 @@ export function createLocalPyramidSessionProvider(
   const cache = new Map<string, Cached>();
   const enqueue = createLocalCommandQueue();
   const accept = (
-    effect: GameSessionAcceptance["effect"],
+    effect: SessionResultDraft["effect"],
     state: AuthoritativeSessionUpdate,
-  ): GameSessionAcceptance =>
+  ): SessionResultDraft =>
     effect === "completed"
-      ? { kind: "accepted", effect, state, review: review() }
-      : { kind: "accepted", effect, state };
+      ? { kind: "accepted", effect, state: { sessionId, ...state }, review: review() }
+      : { kind: "accepted", effect, state: { sessionId, ...state } };
   const progress = () => deriveCompetitivePyramidProgress(7, answers);
   const review = () =>
     status === "abandoned"
@@ -220,8 +223,8 @@ export function createLocalPyramidSessionProvider(
     command: GameSessionCommand,
     signal?: AbortSignal,
     receivedAt = clock.now(),
-  ): Promise<GameSessionResult> => {
-    const cancelled = (): GameSessionResult => ({
+  ): Promise<LocalSessionResult> => {
+    const cancelled = (): LocalSessionResult => ({
       kind: "uncertain",
       code: "request_cancelled",
       retryable: true,
@@ -249,7 +252,7 @@ export function createLocalPyramidSessionProvider(
     if ("challengeId" in input && input.challengeId !== definition.challenge.id)
       return reject("invalid_command");
     if (operation === "prepareSession") return accept("acknowledged", { ready: true });
-    let result: GameSessionAcceptance;
+    let result: SessionResultDraft;
     if (operation === "start") {
       if (status === "completed" || status === "abandoned") return reject("attempt_terminal");
       const resumed = status === "in_progress";
@@ -382,13 +385,17 @@ export function createLocalPyramidSessionProvider(
     if (key) cache.set(key, { signature, result });
     return result;
   };
+  const decodeResult = createSessionResultDecoder(sessionValidationContext(definition.challenge));
   return {
     execute(command, execution) {
       const captured = structuredClone(command);
       const receivedAt = clock.now();
       return enqueue(async () => {
         try {
-          return structuredClone(await run(captured, execution?.signal, receivedAt));
+          return decodeResult(
+            command,
+            structuredClone(await run(captured, execution?.signal, receivedAt)),
+          );
         } catch (error) {
           if (error instanceof LocalRejection)
             return { kind: "rejected" as const, code: error.code, retryable: false };

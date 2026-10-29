@@ -19,7 +19,7 @@ test("Narrative persiste Queens, revela pistas y recupera el cursor interactivo"
   await board.getByRole("gridcell", { name: /Fila 2, columna 1/ }).click();
   await draft;
   await page.reload();
-  await expect(page.getByText("2/4 coronas")).toBeVisible();
+  await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("2/4");
   await board.getByRole("gridcell", { name: /Fila 3, columna 4/ }).click();
   await board.getByRole("gridcell", { name: /Fila 4, columna 2/ }).click();
   await expect(page.getByRole("heading", { name: "El segundo sello" })).toBeVisible();

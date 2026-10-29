@@ -1,3 +1,5 @@
+import { sessionValidationContext } from "@/features/game/session/sessionResult";
+import { sessionWireFixture, wireValidationContext } from "@/test-utils/sessionWire";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { callAttemptCommand } from "@/infrastructure/supabase/attempts/attemptCommands";
 import { errorResponse } from "./attempt-api";
@@ -56,11 +58,15 @@ afterEach(() => {
 async function databaseFailure(code: string, sqlstate = "55000", detail?: string) {
   const cause = Object.assign(new Error(code), { code: sqlstate, detail });
   pg.query.mockImplementation(async (sql: string) => {
-    if (sql.includes("private.test_command")) throw cause;
+    if (sql.includes("private.start_attempt")) throw cause;
     return { rows: [] };
   });
   try {
-    await callAttemptCommand({ authUserId: "actor" }, "test_command", {});
+    await callAttemptCommand({ authUserId: "actor" }, "start_attempt", {
+      scheduledChallengeId: "challenge" as never,
+      sessionToken: "token",
+      idempotencyKey: "key",
+    });
     throw new Error("Expected database rejection");
   } catch (error) {
     return errorResponse(error, "contract-test", "test.error-contract");
@@ -91,10 +97,20 @@ function setup(code: string, mode: "flash" | "survival" | "pyramid" = "flash") {
     if ((path.endsWith("/complete") || path.endsWith("/answer")) && reject)
       return databaseFailure(code);
     if (path.endsWith("/session")) return Response.json({ ready: true });
-    if (path.endsWith("/start")) return Response.json({ attemptId: "attempt", lockVersion: 1 });
+    if (path.endsWith("/start"))
+      return Response.json(sessionWireFixture("start", { lockVersion: 1 }));
     if (path.endsWith("/answer"))
-      return Response.json({ lockVersion: 4, status: "correct", points: 10, timeUsedMs: 100 });
+      return Response.json({
+        attemptId: "attempt",
+        challengeItemId: "item-1",
+        lockVersion: 4,
+        status: "correct",
+        points: 10,
+        timeUsedMs: 100,
+      });
     return Response.json({
+      attemptId: "attempt",
+      timedOut: false,
       lockVersion: path.endsWith("/activate") ? 3 : 2,
       challengeItemId: "item-1",
       publicPayload: { question: "Elige", options: ["A", "B"] },
@@ -107,7 +123,7 @@ function setup(code: string, mode: "flash" | "survival" | "pyramid" = "flash") {
   const engine = new CompetitiveSessionEngine({
     challenge,
     initialSession: { status: "new", results: [], score: 0 },
-    provider: createRemoteGameSessionProvider(),
+    provider: createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) }),
     refresh,
   });
   engines.push(engine);
@@ -179,7 +195,9 @@ describe("database to engine error contract", () => {
       "fetch",
       vi.fn(async () => response),
     );
-    const failure = await createRemoteGameSessionProvider().execute({
+    const failure = await createRemoteGameSessionProvider({
+      context: wireValidationContext,
+    }).execute({
       operation: "complete",
       input: { sessionId: "attempt", revision: 2, idempotencyKey: "complete-key" },
     });

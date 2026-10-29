@@ -12,6 +12,7 @@ export type HttpLogFields = {
   readonly durationMs?: number;
   readonly result?: "ok" | "error";
   readonly errorCode?: string;
+  readonly responsePath?: string;
   readonly attemptId?: string;
   readonly receiptId?: string;
   readonly assetId?: string;

@@ -1,6 +1,15 @@
-import type { GameSessionFailure, SessionRevision } from "@/types/contracts/game-session";
+import type { GameMode } from "@/types/domain/content";
+import type {
+  GameSessionFailure,
+  SessionRevision,
+  GameSessionOperation,
+} from "@/types/contracts/game-session";
 import type { AnswerResultDetails } from "@/types/contracts/result-details";
-import type { TimeTrialProgress } from "@/types/domain/time-trial";
+import type {
+  TimeTrialProgress,
+  RunningTimeTrialProgress,
+  TimeTrialResult,
+} from "@/types/domain/time-trial";
 import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
 import type { AnswerResult, AnswerStatus } from "@/types/gameplay/result";
 import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
@@ -10,6 +19,7 @@ export type AuthoritativeSessionUpdate = {
   readonly sessionId?: string;
   readonly revision?: SessionRevision;
   readonly ready?: boolean;
+  readonly passed?: true;
   readonly resumed?: boolean;
   readonly phase?: string;
   readonly status?: AnswerStatus | "abandoned";
@@ -66,21 +76,173 @@ export type AuthoritativeSessionUpdate = {
   readonly totalWords?: number;
   readonly correct?: boolean;
 };
-export type GameSessionAcceptance = {
+/** Partial assembly only. Providers must decode it before crossing the session port. */
+export type SessionResultDraft = {
   readonly kind: "accepted";
+  readonly effect: "acknowledged" | "progress" | "evaluated" | "completed";
   readonly state: AuthoritativeSessionUpdate;
-} & (
-  | {
-      /** Evaluated means the interaction ended, not that the session ended. */
-      readonly effect: "acknowledged" | "progress" | "evaluated";
-      readonly review?: never;
+  readonly review?: readonly ServerFlashTerminalReview[];
+};
+type RequiredFields<K extends keyof AuthoritativeSessionUpdate> = {
+  readonly [P in K]-?: Exclude<AuthoritativeSessionUpdate[P], undefined>;
+};
+export type SessionIdentity = RequiredFields<"sessionId" | "revision">;
+export type PreparedSessionUpdate = AuthoritativeSessionUpdate &
+  SessionIdentity &
+  RequiredFields<"challengeItemId" | "presentedAt" | "deadlineAt" | "timedOut"> & {
+    readonly publicPayload: unknown;
+  };
+export type EvaluatedSessionUpdate = AuthoritativeSessionUpdate &
+  SessionIdentity &
+  RequiredFields<"challengeItemId" | "points" | "timeUsedMs"> & { readonly status: AnswerStatus };
+export type CompletedSessionUpdate = AuthoritativeSessionUpdate &
+  SessionIdentity &
+  RequiredFields<"score"> & { readonly phase: "results" };
+type ProgressState<K extends keyof AuthoritativeSessionUpdate> = AuthoritativeSessionUpdate &
+  SessionIdentity &
+  RequiredFields<"challengeItemId" | K>;
+type Acceptance<O extends GameSessionOperation, E extends SessionResultDraft["effect"], S> = {
+  readonly kind: "accepted";
+  readonly operation: O;
+  readonly effect: E;
+  readonly state: S;
+} & (E extends "completed"
+  ? { readonly review?: readonly ServerFlashTerminalReview[] }
+  : { readonly review?: never });
+type InteractionResult<O extends GameSessionOperation, K extends keyof AuthoritativeSessionUpdate> =
+  | Acceptance<O, "progress", ProgressState<K | "terminal"> & { readonly terminal: false }>
+  | Acceptance<
+      O,
+      "evaluated",
+      EvaluatedSessionUpdate & RequiredFields<K | "terminal"> & { readonly terminal: true }
+    >;
+export type SessionAcceptanceByOperation = {
+  prepareSession: Acceptance<
+    "prepareSession",
+    "acknowledged",
+    AuthoritativeSessionUpdate & { readonly ready: true }
+  >;
+  start: Acceptance<
+    "start",
+    "acknowledged",
+    AuthoritativeSessionUpdate & SessionIdentity & RequiredFields<"resumed" | "deadlineAt">
+  >;
+  takeover: Acceptance<
+    "takeover",
+    "acknowledged",
+    AuthoritativeSessionUpdate & SessionIdentity & RequiredFields<"deadlineAt">
+  >;
+  prepare: Acceptance<"prepare", "acknowledged", PreparedSessionUpdate>;
+  activate: Acceptance<
+    "activate",
+    "acknowledged",
+    AuthoritativeSessionUpdate &
+      SessionIdentity &
+      RequiredFields<"challengeItemId" | "timedOut"> & {
+        readonly presentedAt: string;
+        readonly deadlineAt: string;
+      }
+  >;
+  answer: Acceptance<"answer", "evaluated", EvaluatedSessionUpdate>;
+  alphabetPass: Acceptance<
+    "alphabetPass",
+    "acknowledged",
+    AuthoritativeSessionUpdate & SessionIdentity & { readonly passed: true }
+  >;
+  complete: Acceptance<"complete", "completed", CompletedSessionUpdate>;
+  abandon: Acceptance<"abandon", "completed", CompletedSessionUpdate>;
+  recover:
+    | Acceptance<"recover", "completed", CompletedSessionUpdate & RequiredFields<"answers">>
+    | Acceptance<
+        "recover",
+        "acknowledged",
+        AuthoritativeSessionUpdate &
+          SessionIdentity &
+          RequiredFields<"answers"> & {
+            readonly phase: "countdown" | "prepare" | "briefing" | "playing";
+          }
+      >;
+  miniWordleGuess: InteractionResult<"miniWordleGuess", "guess" | "feedback" | "attemptsUsed">;
+  logicCodeAttempt: InteractionResult<"logicCodeAttempt", "code" | "incorrectAttempts" | "correct">;
+  wordHashtagSwap: InteractionResult<
+    "wordHashtagSwap",
+    "letters" | "correctCells" | "movesUsed" | "movesRemaining"
+  >;
+  wordSearchSelection: InteractionResult<
+    "wordSearchSelection",
+    | "foundSelections"
+    | "foundWordIds"
+    | "foundCount"
+    | "totalWords"
+    | "incorrectAttempts"
+    | "correct"
+  >;
+  queensValidation: InteractionResult<
+    "queensValidation",
+    "queens" | "incorrectValidations" | "solved"
+  >;
+  queensDraft: Acceptance<
+    "queensDraft",
+    "progress",
+    ProgressState<"queens" | "incorrectValidations" | "solved">
+  >;
+  progressiveClueReveal: Acceptance<
+    "progressiveClueReveal",
+    "progress",
+    ProgressState<"clue" | "revealedClues" | "totalClues" | "availablePoints" | "cluePenalty">
+  >;
+};
+/** Mode-specific requirements supplement the operation discriminator without changing HTTP JSON. */
+type TimeTrialClockFor<K extends GameSessionOperation> = K extends "prepare" | "queensValidation"
+  ? { readonly timeTrial: RunningTimeTrialProgress }
+  : K extends "complete"
+    ? { readonly timeTrial: TimeTrialResult }
+    : unknown;
+type TimeTrialRecoveryState<S> = S extends { readonly phase: "results" }
+  ? S &
+      (
+        | { readonly status: "abandoned"; readonly timeTrial?: TimeTrialProgress }
+        | { readonly status?: AnswerStatus; readonly timeTrial: TimeTrialResult }
+      )
+  : S &
+      (
+        | { readonly phase: "playing"; readonly timeTrial: RunningTimeTrialProgress }
+        | {
+            readonly phase: "countdown" | "prepare" | "briefing";
+            readonly timeTrial: TimeTrialProgress;
+          }
+      );
+type WithTimeTrial<T, K extends GameSessionOperation> = T extends { readonly state: infer S }
+  ? Omit<T, "state"> & {
+      readonly state: K extends "recover" ? TimeTrialRecoveryState<S> : S & TimeTrialClockFor<K>;
     }
-  | {
-      readonly effect: "completed";
-      readonly review?: readonly ServerFlashTerminalReview[];
-    }
-);
-export type GameSessionResult = GameSessionAcceptance | GameSessionFailure;
+  : never;
+export type TimeTrialSessionAcceptance<K extends GameSessionOperation> = {
+  [P in K]: WithTimeTrial<SessionAcceptanceByOperation[P], P>;
+}[K];
+export type GameSessionAcceptance<
+  K extends GameSessionOperation = GameSessionOperation,
+  M extends GameMode = GameMode,
+> = M extends "time-trial" ? TimeTrialSessionAcceptance<K> : SessionAcceptanceByOperation[K];
+export type GameSessionResult<
+  K extends GameSessionOperation = GameSessionOperation,
+  M extends GameMode = GameMode,
+> = GameSessionAcceptance<K, M> | GameSessionFailure;
+export type SessionUpdateByOperation<K extends GameSessionOperation> =
+  SessionAcceptanceByOperation[K]["state"];
+/** Public challenge metadata needed to validate the response, never sent as command input. */
+export type GameSessionValidationContext<M extends GameMode = GameMode> = {
+  readonly mode: M;
+  readonly timeLimitMs?: number;
+  readonly items: readonly {
+    readonly id: string;
+    readonly questionType: import("@/types/contracts/questions").QuestionType;
+    readonly payloadSchemaVersion?: number;
+    readonly timeLimitMs: number;
+    readonly points: number;
+    readonly wordHashtagMaxMoves?: number;
+  }[];
+};
 export type GameSessionBootstrap = {
   readonly status: "new" | "inProgress" | "completed";
   readonly results: readonly AnswerResult[];

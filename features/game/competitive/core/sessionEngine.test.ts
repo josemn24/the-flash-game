@@ -1,3 +1,5 @@
+import { sessionValidationContext } from "../../session/sessionResult";
+import { clientWithWireFixtures } from "@/test-utils/sessionWire";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GameRoomContext } from "@/types/view-models/room";
 import type {
@@ -86,7 +88,10 @@ function setup(
   const engine = new CompetitiveSessionEngine({
     challenge,
     initialSession: remoteSessionBootstrap(roomContext),
-    provider: createRemoteGameSessionProvider({ client: calls }),
+    provider: createRemoteGameSessionProvider({
+      client: clientWithWireFixtures(calls, "attempt", sessionValidationContext(challenge)),
+      context: sessionValidationContext(challenge),
+    }),
     refresh,
   });
   engines.push(engine);
@@ -205,7 +210,12 @@ describe("Contrarreloj global lifecycle", () => {
   });
   it("finalizes timeout between boards without preparing another board", async () => {
     const { engine, calls } = setup(challenge);
-    calls.prepare.mockResolvedValue({ ...prepared("a", 2, queensPayload), timeTrial: progress() });
+    calls.prepare.mockResolvedValue({
+      ...prepared("a", 2, queensPayload),
+      presentedAt: progress().clockStartedAt,
+      deadlineAt: progress().deadlineAt,
+      timeTrial: progress(),
+    });
     await play(engine);
     calls.queensDraft.mockResolvedValue({
       lockVersion: 3,
@@ -258,6 +268,8 @@ describe("Contrarreloj global lifecycle", () => {
     });
     calls.prepare.mockResolvedValue({
       ...prepared("a", 3, queensPayload),
+      presentedAt: authoritative.clockStartedAt,
+      deadlineAt: authoritative.deadlineAt,
       timeTrial: authoritative,
     });
     await engine.lifecycle.recover();
@@ -669,6 +681,7 @@ describe("mode policies", () => {
       const expired = {
         ...prepared("a", mode === "pyramid" ? 3 : 2),
         timedOut: true,
+        presentedAt: new Date(Date.now() - 60001).toISOString(),
         deadlineAt: new Date(Date.now() - 1).toISOString(),
       };
       calls.prepare.mockResolvedValue(
@@ -713,7 +726,7 @@ describe("mode policies", () => {
       guess: "CASA",
       guesses: ["CASA"],
       attemptsUsed: 1,
-      feedback: [],
+      feedback: [..."CASA"].map((letter) => ({ letter, status: "correct" })),
     });
     await engine.lifecycle.begin();
     await engine.continueScene();
@@ -1053,7 +1066,7 @@ describe("format coordination", () => {
       terminal: false,
       guess: "CASA",
       attemptsUsed: 1,
-      feedback: [],
+      feedback: [..."CASA"].map((letter) => ({ letter, status: "correct" })),
     });
     await play(engine);
     await engine.interactions.submitMiniWordleGuess("CASA");
@@ -1113,7 +1126,7 @@ describe("format coordination", () => {
       terminal: true,
       guess: "CASA",
       attemptsUsed: 1,
-      feedback: [],
+      feedback: [..."CASA"].map((letter) => ({ letter, status: "correct" })),
     });
     await play(engine);
     await engine.lifecycle.activate();

@@ -31,12 +31,12 @@ export type GameSessionCommandInputs = {
 };
 export type GameSessionOperation = keyof GameSessionCommandInputs;
 /** Preserve this entire value, including revision and key, when replaying. */
-export type GameSessionCommand = {
+export type GameSessionCommand<K extends GameSessionOperation = GameSessionOperation> = {
   [K in GameSessionOperation]: {
     readonly operation: K;
     readonly input: GameSessionCommandInputs[K];
   };
-}[GameSessionOperation];
+}[K];
 
 /** No HTTP status, cookies, database rows or transport exceptions cross the port. */
 export type GameSessionFailure = {

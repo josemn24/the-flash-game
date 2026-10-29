@@ -12,19 +12,22 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     response: AuthoritativeSessionUpdate,
     terminalReview?: readonly ServerFlashTerminalReview[],
   ) => {
-    const review = reviewFor(runtime.challenge, terminalReview ?? []);
+    if (typeof response.score !== "number" || !Number.isFinite(response.score))
+      throw new Error("invalid_completion_response");
+    let review: ReturnType<typeof reviewFor> = null;
+    let reviewPending = response.reviewPending === true;
+    try {
+      review = reviewFor(runtime.challenge, terminalReview ?? []);
+    } catch {
+      reviewPending = true;
+    }
     const permissionRevoked = response.terminalReason === "permission_revoked";
     runtime.cancelAll();
     runtime.commit({
       type: "completed",
-      score: permissionRevoked
-        ? 0
-        : Number(
-            response.score ??
-              runtime.state().results.reduce((sum, result) => sum + result.points, 0),
-          ),
-      reviewChallenge: response.reviewPending ? null : review,
-      reviewPending: response.reviewPending === true,
+      score: permissionRevoked ? 0 : response.score,
+      reviewChallenge: reviewPending ? null : review,
+      reviewPending,
       terminalReason:
         typeof response.terminalReason === "string" ? response.terminalReason : undefined,
       ...(Array.isArray(response.answers) ? { results: [...(response.answers ?? [])] } : {}),

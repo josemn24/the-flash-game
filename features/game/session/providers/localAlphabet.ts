@@ -1,11 +1,14 @@
+import { createSessionResultDecoder, sessionValidationContext } from "../sessionResult";
+import type { GameSessionFailure } from "@/types/contracts/game-session";
+type LocalSessionResult =
+  import("@/types/gameplay/authoritative-session").SessionResultDraft | GameSessionFailure;
 import type { GameSessionProvider, SessionClock } from "@/application/ports/game-session";
 import type { GameSessionCommand } from "@/types/contracts/game-session";
 import type { AnswerValue } from "@/types/contracts";
 import type { DurationMs, UtcIsoDateTime } from "@/types/domain/values";
 import type {
   AuthoritativeSessionUpdate,
-  GameSessionAcceptance,
-  GameSessionResult,
+  SessionResultDraft,
 } from "@/types/gameplay/authoritative-session";
 import type { AnswerResult } from "@/types/gameplay/result";
 import type {
@@ -35,7 +38,7 @@ type LetterState = {
   elapsedMs: number;
 };
 type ActiveLetter = { readonly index: number; readonly presentedAt: number };
-type CachedCommand = { readonly signature: string; readonly result: GameSessionResult };
+type CachedCommand = { readonly signature: string; readonly result: LocalSessionResult };
 
 const iso = (time: number | null): UtcIsoDateTime | null =>
   time === null ? null : (new Date(time).toISOString() as UtcIsoDateTime);
@@ -95,13 +98,13 @@ export function createLocalAlphabetSessionProvider(
       solutionPayload: structuredClone(levels[index]!.solutionPayload),
     }));
   const accepted = (
-    effect: GameSessionAcceptance["effect"],
+    effect: SessionResultDraft["effect"],
     state: AuthoritativeSessionUpdate,
-  ): GameSessionAcceptance =>
+  ): SessionResultDraft =>
     effect === "completed"
       ? { kind: "accepted", effect, state, review: review() }
       : { kind: "accepted", effect, state };
-  const terminal = (now: number): GameSessionAcceptance =>
+  const terminal = (now: number): SessionResultDraft =>
     accepted("completed", {
       sessionId,
       revision,
@@ -200,7 +203,7 @@ export function createLocalAlphabetSessionProvider(
     }
     return deadlineAt !== null && now >= deadlineAt;
   };
-  const finish = (now: number, abandon = false): GameSessionAcceptance => {
+  const finish = (now: number, abandon = false): SessionResultDraft => {
     if (abandon) {
       closeActive(now);
       terminalAt ??= now;
@@ -224,7 +227,7 @@ export function createLocalAlphabetSessionProvider(
     command: GameSessionCommand,
     signal?: AbortSignal,
     receivedAt = clock.now(),
-  ): Promise<GameSessionResult> => {
+  ): Promise<LocalSessionResult> => {
     if (signal?.aborted) return { kind: "uncertain", code: "request_cancelled", retryable: true };
     const { operation, input } = command;
     const key = "idempotencyKey" in input ? input.idempotencyKey : undefined;
@@ -264,13 +267,14 @@ export function createLocalAlphabetSessionProvider(
     if (input.revision !== revision) return reject("stale_version");
     if (status !== "in_progress") return reject("attempt_terminal");
 
-    let result: GameSessionResult;
+    let result: LocalSessionResult;
     if (operation === "abandon") {
       result = finish(receivedAt, true);
     } else if (operation === "recover") {
       if (active) {
         result = accepted("acknowledged", {
           ...prepared(active.index, receivedAt),
+          answers: resultRows(),
           phase: "playing",
         });
       } else {
@@ -316,6 +320,7 @@ export function createLocalAlphabetSessionProvider(
           sessionId,
           revision,
           challengeItemId: challenge.entries[index]!.id,
+          passed: true,
           status: "unanswered",
           timeUsedMs: letters[index]!.elapsedMs,
           progress: progress(receivedAt),
@@ -353,13 +358,17 @@ export function createLocalAlphabetSessionProvider(
     return result;
   };
 
+  const decodeResult = createSessionResultDecoder(sessionValidationContext(challenge));
   return {
     execute(command, execution) {
       const captured = structuredClone(command);
       const receivedAt = clock.now();
       return enqueue(async () => {
         try {
-          return structuredClone(await run(captured, execution?.signal, receivedAt));
+          return decodeResult(
+            command,
+            structuredClone(await run(captured, execution?.signal, receivedAt)),
+          );
         } catch (error) {
           if (error instanceof LocalRejection)
             return { kind: "rejected" as const, code: error.code, retryable: false };

@@ -1,3 +1,7 @@
+import { createSessionResultDecoder, sessionValidationContext } from "../sessionResult";
+import type { GameSessionFailure } from "@/types/contracts/game-session";
+type LocalSessionResult =
+  import("@/types/gameplay/authoritative-session").SessionResultDraft | GameSessionFailure;
 import type { GameSessionProvider, SessionClock } from "@/application/ports/game-session";
 import type { GameSessionCommand } from "@/types/contracts/game-session";
 import type { AnswerValue } from "@/types/contracts";
@@ -5,8 +9,7 @@ import type { DurationMs, UtcIsoDateTime } from "@/types/domain/values";
 import type { TimeTrialEndReason, TimeTrialProgress } from "@/types/domain/time-trial";
 import type {
   AuthoritativeSessionUpdate,
-  GameSessionAcceptance,
-  GameSessionResult,
+  SessionResultDraft,
 } from "@/types/gameplay/authoritative-session";
 import type { AnswerResult } from "@/types/gameplay/result";
 import type { LocalTimeTrialDefinition } from "@/types/gameplay/local-time-trial";
@@ -36,14 +39,15 @@ type PendingAnswer = {
   readonly timeUsedMs: number;
   readonly timedOut: boolean;
 };
-type CachedCommand = { readonly signature: string; readonly result: GameSessionResult };
+type CachedCommand = { readonly signature: string; readonly result: LocalSessionResult };
 
-const iso = (time: number | null) => (time === null ? null : new Date(time).toISOString());
+const iso = (time: number | null): UtcIsoDateTime | null =>
+  time === null ? null : (new Date(time).toISOString() as UtcIsoDateTime);
 
 /** Local Time Trial authority; one deadline governs every board in the run. */
 export function createLocalTimeTrialSessionProvider(
   options: LocalTimeTrialOptions,
-): GameSessionProvider {
+): GameSessionProvider<"time-trial"> {
   const { definition, levels } = compileTimeTrialDefinition(options.definition);
   const { challenge } = definition;
   const clock = options.clock ?? systemSessionClock;
@@ -114,13 +118,13 @@ export function createLocalTimeTrialSessionProvider(
       };
     });
   const accept = (
-    effect: GameSessionAcceptance["effect"],
+    effect: SessionResultDraft["effect"],
     state: AuthoritativeSessionUpdate,
-  ): GameSessionAcceptance =>
+  ): SessionResultDraft =>
     effect === "completed"
       ? { kind: "accepted", effect, state, review: terminalReview() }
       : { kind: "accepted", effect, state };
-  const terminal = (now: number): GameSessionAcceptance =>
+  const terminal = (now: number): SessionResultDraft =>
     accept("completed", {
       sessionId,
       revision,
@@ -205,7 +209,7 @@ export function createLocalTimeTrialSessionProvider(
       timeTrial: progress(now),
     };
   };
-  const finish = (now: number, abandoned = false): GameSessionAcceptance => {
+  const finish = (now: number, abandoned = false): SessionResultDraft => {
     if (!abandoned && endReason(now) === null) return reject("time_trial_not_terminal");
     if (abandoned && !endReason(now)) forcedEndReason = "recovery_interrupted";
     status = abandoned ? "abandoned" : "completed";
@@ -219,8 +223,8 @@ export function createLocalTimeTrialSessionProvider(
     command: GameSessionCommand,
     signal?: AbortSignal,
     receivedAt = clock.now(),
-  ): Promise<GameSessionResult> => {
-    const cancelled = (): GameSessionResult => ({
+  ): Promise<LocalSessionResult> => {
+    const cancelled = (): LocalSessionResult => ({
       kind: "uncertain",
       code: "request_cancelled",
       retryable: true,
@@ -274,7 +278,7 @@ export function createLocalTimeTrialSessionProvider(
       return result;
     }
 
-    let result: GameSessionResult;
+    let result: LocalSessionResult;
     if (operation === "recover") {
       if (active) {
         result = accept("acknowledged", {
@@ -359,13 +363,24 @@ export function createLocalTimeTrialSessionProvider(
     return result;
   };
 
+  const decodeResult = createSessionResultDecoder(sessionValidationContext(challenge));
   return {
     execute(command, execution) {
       const captured = structuredClone(command);
       const receivedAt = clock.now();
       return enqueue(async () => {
         try {
-          return structuredClone(await run(captured, execution?.signal, receivedAt));
+          const result = structuredClone(await run(captured, execution?.signal, receivedAt));
+          // Cached facts retain their timestamps; replay refreshes only the display reference.
+          if (result.kind === "accepted" && result.state.timeTrial)
+            return decodeResult(command, {
+              ...result,
+              state: {
+                ...result.state,
+                timeTrial: { ...result.state.timeTrial, serverNow: iso(clock.now())! },
+              },
+            });
+          return decodeResult(command, result);
         } catch (error) {
           if (error instanceof LocalRejection)
             return { kind: "rejected" as const, code: error.code, retryable: false };

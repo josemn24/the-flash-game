@@ -1,3 +1,4 @@
+import { sessionValidationContext } from "@/features/game/session/sessionResult";
 import { test, expect, type BrowserContext, type APIRequestContext } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
@@ -63,8 +64,11 @@ function sql(source: string): string {
   ).trim();
 }
 /** The real transport and remote provider run unchanged, using the browser's authenticated cookie jar. */
-function remoteProvider(api: APIRequestContext): GameSessionProvider {
-  const remote = createRemoteGameSessionProvider();
+function remoteProvider(
+  api: APIRequestContext,
+  challenge: import("@/types/gameplay/challenge").CompetitiveChallenge,
+): GameSessionProvider {
+  const remote = createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) });
   return {
     async execute(command, options) {
       const original = globalThis.fetch;
@@ -139,7 +143,11 @@ class Pair {
       ids.publicationId,
       ids.itemIds,
     );
-    this.remote = new SessionDriver(remoteProvider(api), ids.publicationId, ids.itemIds);
+    this.remote = new SessionDriver(
+      remoteProvider(api, definition.challenge),
+      ids.publicationId,
+      ids.itemIds,
+    );
   }
   get definition() {
     return definitionFor(this.example, {

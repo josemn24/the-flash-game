@@ -13,7 +13,7 @@ selecciona la política pura de cierre global de Alfabeto o Contrarreloj; el res
 usa una política neutra. `commandRecoveryPolicy` clasifica fallos y calcula esperas, mientras
 el motor conserva cola, contadores, temporizadores y cancelación. `finalizeGlobalClock`
 espera a que se acepte o reconcilie el comando pendiente. La confirmación visual de abandono
-sigue dentro del motor y las interfaces de los hooks y proveedores permanecen iguales.
+sigue dentro del motor y las fachadas de los hooks mantienen sus interfaces externas.
 
 La [verificación de la refactorización](../archive/reports/session-engine-refactor-2026-10-28.md)
 registra las pruebas nuevas, los recorridos persistidos y las incidencias previas de fixtures.
@@ -66,11 +66,59 @@ no transporta cookies, tokens, estados HTTP ni detalles internos de la base. La 
 usa `AbortSignal`; desmontar el motor cancela el transporte y las esperas e ignora resultados
 tardíos incluso si un proveedor no atiende la señal.
 
-`state` contiene solo cambios públicos seleccionados explícitamente. `review` es un campo
-separado del resultado y solo se entrega al completar o recuperar una sesión terminal. Los
-payloads públicos y progresos de cada formato continúan pasando por los adaptadores actuales:
-su representación de entrada sigue siendo `unknown` hasta esa validación. No se duplica el
-catálogo de preguntas ni se implementa un segundo motor en esta fase.
+`SessionAcceptanceByOperation` relaciona operación, efecto y campos obligatorios. `execute<K>`
+y `CommandStep<K>` conservan esa relación: una evaluación exige estado, puntos y duración;
+un cierre exige identidad, revisión y puntuación autoritativa. `AuthoritativeSessionUpdate`
+permanece como estructura parcial para ensamblar proyecciones internas, no como resultado
+aceptado del puerto. El discriminante `operation` es interno; no cambia el JSON HTTP.
+
+El proveedor remoto recibe `GameSessionValidationContext` desde la composición: modo y metadatos
+públicos de los ítems, sin soluciones. Valida identidad, revisión, variantes de preparación,
+resultados evaluados y progresos antes de aceptar. Reutiliza los validadores públicos del catálogo
+con el formato, versión, tiempo y puntos del ítem. Las listas inválidas se rechazan enteras;
+no se filtran elementos ni se convierten puntuaciones o duraciones ausentes en cero.
+Los proveedores locales cruzan el mismo constructor validado antes de devolver su resultado.
+Las lecturas guardadas tienen un DTO propio: PostgreSQL elimina nulos recursivamente, incluso
+respuestas parciales reconstruidas desde eventos. Su `answer` puede faltar y se normaliza a `null`
+solo al construir el estado terminal del proveedor, conservando el JSON HTTP. Los comandos y las
+proyecciones activas siguen exigiendo `answer`, aunque su valor sea `null`.
+
+El constructor conserva configuración pública validada y hechos inmutables del reloj. Durante la
+preparación registra `maxMoves` para Hashtag. La confirmación de un movimiento debe traer tablero y `correctCells`
+completos, con contadores compatibles con esa configuración. Los adaptadores visuales aplican
+el estado validado, sin combinar datos incompletos con el tablero anterior. Cero movimientos es
+válido en progreso inicial; un intercambio confirmado exige movimientos consumidos positivos.
+Los replays conservan su contador, sin exigir incrementos nuevos.
+
+`GameSessionProvider<M>` y `TimeTrialSessionAcceptance` expresan los requisitos adicionales por
+modo. El inicio y la transferencia conservan su respuesta vigente sin exigir `timeTrial`;
+la preparación exige el reloj completo. La evaluación genérica tampoco publica `timeTrial` y
+conserva el reloj ya instalado por una preparación o recuperación válida. Contrarreloj distingue reloj aún no iniciado, reloj
+activo y resultado reglamentario.
+Preparar o recuperar una prueba en juego requiere un reloj global activo; el abandono previo al
+inicio admite la variante sin reloj. El replay actualiza la referencia visual `serverNow` y
+conserva los timestamps de la operación original.
+Ninguna confirmación no terminal puede borrar un reloj activo de la misma sesión. La ausencia
+legítima de un reloj opcional no produce cambios. Un replay antiguo de inicio o transferencia
+se acepta omitiendo únicamente su proyección de reloj no iniciado; el resultado cacheado y el
+resto del acuse permanecen intactos. El abandono terminal mantiene su variante sin reloj.
+
+La aceptación de `prepareSession` contiene únicamente `{ ready: true }`. No identifica intentos,
+no aplica relojes y no cambia los hechos del constructor, aunque incluya campos adicionales.
+Un contrato inválido produce incertidumbre antes de actualizar los hechos o el motor.
+
+`state` contiene solo cambios públicos seleccionados explícitamente. `review` permanece separado
+y solo aparece al completar o recuperar una sesión terminal. Si falla su decodificación o
+adaptación, se conserva el resultado confirmado y se ofrece recuperación de la revisión mediante
+`reviewPending`. Un fallo de revisión no reenvía la escritura de cierre.
+
+El adaptador PostgreSQL vincula cada función SQL con su entrada, resultado y decodificador en
+`AttemptSqlCommandMap` y `attemptSqlDecoders`. No admite funciones arbitrarias ni resultados elegidos
+por el llamador. También valida lecturas de evaluación persistida, contexto privado, recuperación,
+resultados guardados y la respuesta vacía de preparación de sesión. Para preparación y movimientos Hashtag, el adaptador lee el contexto del ítem de la versión
+asociada al intento autorizado, dentro de la misma transacción y antes del commit. El contexto
+es obligatorio para sus decodificadores, no cruza HTTP y no usa valores ficticios. La validación de payloads
+almacenados con assets precede a su resolución autorizada; la validación pública no usa soluciones.
 
 ## Verificación
 

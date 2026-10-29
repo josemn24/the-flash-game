@@ -1,3 +1,4 @@
+import type { SubmitAnswerInput, AttemptRecoverySnapshot } from "@/types/contracts/attempts";
 import {
   competitivePerformanceObserver,
   countCompetitiveDatabaseCall,
@@ -7,7 +8,6 @@ import "server-only";
 import { Pool, type PoolClient } from "pg";
 import {
   decodeAttemptRecoverySnapshot,
-  decodeFinishAttemptResult,
   decodeSavedAttemptResult,
   decodeSavedAbandonedAttemptResult,
 } from "./attemptLifecycleContracts";
@@ -20,31 +20,27 @@ import type {
   StartAttemptCommand,
   TakeOverAttemptCommand,
 } from "@/application/ports/attempt-commands";
-import type {
-  ActivateInteractionResult,
-  PrepareInteractionResult,
-  ReceiveAnswerResult,
-  StartAttemptResult,
-  TakeOverAttemptResult,
-  SubmitAnswerInput,
-  SubmitAnswerResult,
-  RecoverAttemptResult,
-  AttemptRecoverySnapshot,
-  SubmitMiniWordleGuessResult,
-  SubmitWordSearchSelectionResult,
-  SubmitWordHashtagSwapResult,
-  SubmitLogicCodeAttemptResult,
-  SubmitQueensPlacementResult,
-  SaveQueensDraftResult,
-  ValidateQueensBoardResult,
-  RevealProgressiveClueResult,
-  PassInteractionResult,
-} from "@/types/contracts/attempts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 import { AttemptCommandError } from "@/application/errors/attempts";
 import { isAttemptErrorCode } from "@/lib/competitiveErrors";
 import type { AttemptErrorCode } from "@/types/contracts/competitive-errors";
+import {
+  attemptSqlDecoders,
+  decodeRecordedEvaluation,
+  decodeEvaluationContext,
+  type AttemptSqlCommandMap,
+  type SqlDecoderContext,
+  decodeAttemptItemValidationContext,
+} from "./attemptCommandContracts";
+import {
+  CompetitiveResponseContractError,
+  fields,
+  identity as responseIdentity,
+  integer,
+  record,
+  requireResponse,
+} from "@/lib/competitiveResponseContract";
 import { countAlphabetAnswerCharacters } from "@/lib/gameplay/alphabetAnswerSlots";
 
 export { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
@@ -119,6 +115,8 @@ function commandCode(error: unknown): AttemptErrorCode {
 
 function commandError(error: unknown): AttemptCommandError {
   if (error instanceof AttemptCommandError) return error;
+  if (error instanceof CompetitiveResponseContractError)
+    return new AttemptCommandError("invalid_backend_response", error);
   const code = commandCode(error);
   let retryAfterSeconds: number | undefined;
   if (
@@ -182,12 +180,15 @@ async function transaction<T>(
   }
 }
 
-export async function callAttemptCommand<T>(
+export async function callAttemptCommand<K extends keyof AttemptSqlCommandMap>(
   identity: VerifiedAuthIdentity,
-  functionName: string,
-  input: object,
-  decode?: (value: unknown, client: PoolClient) => T | Promise<T>,
-): Promise<T> {
+  functionName: K,
+  input: AttemptSqlCommandMap[K]["input"],
+  enrich?: (
+    value: AttemptSqlCommandMap[K]["result"],
+    client: PoolClient,
+  ) => AttemptSqlCommandMap[K]["result"] | Promise<AttemptSqlCommandMap[K]["result"]>,
+): Promise<AttemptSqlCommandMap[K]["result"]> {
   return transaction(identity, async (client) => {
     if ("attemptId" in input && typeof input.attemptId === "string" && input.attemptId.length > 0) {
       await expireStaleAttempt(client, input.attemptId);
@@ -197,8 +198,41 @@ export async function callAttemptCommand<T>(
       [JSON.stringify(input)],
     );
     const response = await refreshTimeTrialReference(client, result.rows[0]?.result);
-    return decode ? decode(response, client) : (response as T);
+    const context = await readSqlDecoderContext(client, functionName, response, input);
+    const decoded = attemptSqlDecoders[functionName](response, input, ...context);
+    return enrich ? enrich(decoded, client) : decoded;
   });
+}
+
+/** The SQL command has authorized and locked the attempt before this scoped read. */
+async function readSqlDecoderContext<K extends keyof AttemptSqlCommandMap>(
+  client: PoolClient,
+  name: K,
+  response: unknown,
+  input: object,
+): Promise<SqlDecoderContext<K>> {
+  if (name !== "prepare_interaction" && name !== "submit_word_hashtag_swap")
+    return [] as SqlDecoderContext<K>;
+  const row = record(response);
+  responseIdentity(row, input);
+  fields(row, { challengeItemId: (v) => typeof v === "string" && v.length > 0 });
+  const result = await client.query<{ context: unknown }>(
+    `
+    select jsonb_build_object(
+      'challengeItemId', i.id, 'questionType', q.type,
+      'payloadSchemaVersion', q.payload_schema_version, 'timeLimitMs', q.time_limit_ms,
+      'points', i.points, 'mode', cv.mode, 'globalTimeLimitMs', cv.global_time_limit_ms,
+      'publicPayload', q.public_payload
+    ) as context
+    from public.attempts a
+    join private.challenge_versions cv on cv.id = a.challenge_version_id
+    join private.challenge_items i on i.challenge_version_id = cv.id and i.id = $2::uuid
+    join private.question_versions q on q.id = i.question_version_id
+    where a.id = $1::uuid`,
+    [row.attemptId, row.challengeItemId],
+  );
+  const context = decodeAttemptItemValidationContext(result.rows[0]?.context);
+  return [context] as SqlDecoderContext<K>;
 }
 
 /** Idempotent facts retain their original timestamps; the display clock gets a fresh database reference even on replay. */
@@ -222,7 +256,9 @@ async function expireStaleAttempt(client: PoolClient, attemptId: string) {
     "select private.expire_stale_attempts($1::jsonb) as result",
     [JSON.stringify({ runId: `recovery-${attemptId}`, attemptId })],
   );
-  if (result.rows[0]?.result?.abandonedAttempts && result.rows[0].result.abandonedAttempts > 0) {
+  const expired = record(result.rows[0]?.result);
+  fields(expired, { abandonedAttempts: integer }, "expireStaleAttempt");
+  if (Number(expired.abandonedAttempts) > 0) {
     throw new AttemptCommandError("attempt_inactivity_expired");
   }
 }
@@ -274,11 +310,17 @@ export class SupabaseAttemptCommands implements Pick<
   constructor(private readonly identity: VerifiedAuthIdentity) {}
 
   async prepareSession(input: Parameters<AttemptCommands["prepareSession"]>[0]) {
-    await transaction(this.identity, (client) =>
-      client.query("select private.prepare_attempt_session($1::uuid)", [
-        input.scheduledChallengeId,
-      ]),
-    );
+    await transaction(this.identity, async (client) => {
+      const result = await client.query<{ result: unknown }>(
+        "select private.prepare_attempt_session($1::uuid) as result",
+        [input.scheduledChallengeId],
+      );
+      requireResponse(
+        result.rows.length === 1 &&
+          (result.rows[0].result === "" || result.rows[0].result === null),
+        "prepareSession.result",
+      );
+    });
   }
 
   readCompletedAttempt(attemptId: string) {
@@ -286,17 +328,19 @@ export class SupabaseAttemptCommands implements Pick<
       const response = await client.query<{
         result: unknown;
       }>("select private.read_completed_attempt($1::uuid) as result", [attemptId]);
-      return decodeSavedAttemptResult(response.rows[0]?.result);
+      const saved = decodeSavedAttemptResult(response.rows[0]?.result);
+      if (saved) responseIdentity(record(saved.result), { attemptId });
+      return saved;
     });
   }
 
   readRecordedEvaluation(receiptId: AnswerReceiptId, sessionToken: string) {
     return transaction(this.identity, async (client) => {
-      const response = await client.query<{ result: SubmitAnswerResult | null }>(
+      const response = await client.query<{ result: unknown }>(
         "select private.read_recorded_evaluation($1::uuid, $2::text) as result",
         [receiptId, sessionToken],
       );
-      return response.rows[0]?.result ?? null;
+      return decodeRecordedEvaluation(response.rows[0]?.result, receiptId);
     });
   }
 
@@ -305,24 +349,26 @@ export class SupabaseAttemptCommands implements Pick<
       const response = await client.query<{
         result: unknown;
       }>("select private.read_abandoned_attempt($1::uuid) as result", [attemptId]);
-      return decodeSavedAbandonedAttemptResult(response.rows[0]?.result);
+      const saved = decodeSavedAbandonedAttemptResult(response.rows[0]?.result);
+      if (saved) responseIdentity(record(saved.result), { attemptId });
+      return saved;
     });
   }
   start(input: StartAttemptCommand) {
-    return callAttemptCommand<StartAttemptResult>(this.identity, "start_attempt", input);
+    return callAttemptCommand(this.identity, "start_attempt", input);
   }
 
   takeOver(input: TakeOverAttemptCommand) {
-    return callAttemptCommand<TakeOverAttemptResult>(this.identity, "take_over_attempt", input);
+    return callAttemptCommand(this.identity, "take_over_attempt", input);
   }
 
   async prepare(input: Parameters<AttemptCommands["prepare"]>[0]) {
-    return callAttemptCommand<PrepareInteractionResult>(
+    return callAttemptCommand(
       this.identity,
       "prepare_interaction",
       input,
       async (value, client) => {
-        const prepared = value as PrepareInteractionResult;
+        const prepared = value;
         const progress = prepared.progress;
         if (
           !prepared.publicPayload ||
@@ -341,109 +387,76 @@ export class SupabaseAttemptCommands implements Pick<
           [input.attemptId, prepared.challengeItemId, input.sessionToken],
         );
         const principal = source.rows[0]?.principal_answer;
-        if (typeof principal !== "string")
-          throw new AttemptCommandError("invalid_question_payload");
+        requireResponse(typeof principal === "string", "response.answerLength.source");
         return { ...prepared, answerLength: countAlphabetAnswerCharacters(principal) || null };
       },
     );
   }
 
   activate(input: Parameters<AttemptCommands["activate"]>[0]) {
-    return callAttemptCommand<ActivateInteractionResult>(
-      this.identity,
-      "activate_interaction",
-      input,
-    );
+    return callAttemptCommand(this.identity, "activate_interaction", input);
   }
 
   receiveAnswer(input: SubmitAnswerInput) {
-    return callAttemptCommand<ReceiveAnswerResult>(this.identity, "receive_answer", input);
+    return callAttemptCommand(this.identity, "receive_answer", input);
   }
 
   pass(input: Parameters<AttemptCommands["pass"]>[0]) {
-    return callAttemptCommand<PassInteractionResult>(this.identity, "pass_interaction", input);
+    return callAttemptCommand(this.identity, "pass_interaction", input);
   }
 
   submitMiniWordleGuess(input: Parameters<AttemptCommands["submitMiniWordleGuess"]>[0]) {
-    return callAttemptCommand<SubmitMiniWordleGuessResult>(
-      this.identity,
-      "submit_mini_wordle_guess",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_mini_wordle_guess", input);
   }
 
   submitWordSearchSelection(input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0]) {
-    return callAttemptCommand<SubmitWordSearchSelectionResult>(
-      this.identity,
-      "submit_word_search_selection",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_word_search_selection", input);
   }
 
   submitWordHashtagSwap(input: Parameters<AttemptCommands["submitWordHashtagSwap"]>[0]) {
-    return callAttemptCommand<SubmitWordHashtagSwapResult>(
-      this.identity,
-      "submit_word_hashtag_swap",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_word_hashtag_swap", input);
   }
 
   submitLogicCodeAttempt(input: Parameters<AttemptCommands["submitLogicCodeAttempt"]>[0]) {
-    return callAttemptCommand<SubmitLogicCodeAttemptResult>(
-      this.identity,
-      "submit_logic_code_attempt",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_logic_code_attempt", input);
   }
 
   submitQueensPlacement(input: Parameters<AttemptCommands["submitQueensPlacement"]>[0]) {
-    return callAttemptCommand<SubmitQueensPlacementResult>(
-      this.identity,
-      "submit_queens_placement",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_queens_placement", input);
   }
 
   saveQueensDraft(input: Parameters<AttemptCommands["saveQueensDraft"]>[0]) {
-    return callAttemptCommand<SaveQueensDraftResult>(this.identity, "save_queens_draft", input);
+    return callAttemptCommand(this.identity, "save_queens_draft", input);
   }
 
   validateQueensBoard(input: Parameters<AttemptCommands["validateQueensBoard"]>[0]) {
-    return callAttemptCommand<ValidateQueensBoardResult>(
-      this.identity,
-      "submit_queens_answer",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_queens_answer", input);
   }
 
   revealProgressiveClue(input: Parameters<AttemptCommands["revealProgressiveClue"]>[0]) {
-    return callAttemptCommand<RevealProgressiveClueResult>(
-      this.identity,
-      "reveal_progressive_clue",
-      input,
-    );
+    return callAttemptCommand(this.identity, "reveal_progressive_clue", input);
   }
 
   readEvaluationContext(receiptId: AnswerReceiptId, sessionToken: string) {
     return transaction<EvaluationContext>(this.identity, async (client) => {
-      const result = await client.query<{ read_evaluation_context: EvaluationContext }>(
+      const result = await client.query<{ read_evaluation_context: unknown }>(
         "select private.read_evaluation_context($1::uuid, $2::text)",
         [receiptId, sessionToken],
       );
-      return result.rows[0]?.read_evaluation_context as EvaluationContext;
+      return decodeEvaluationContext(result.rows[0]?.read_evaluation_context, receiptId);
     });
   }
 
   recordEvaluation(input: RecordEvaluationCommand) {
-    return callAttemptCommand<SubmitAnswerResult>(this.identity, "record_evaluation", input);
+    return callAttemptCommand(this.identity, "record_evaluation", input);
   }
 
   async abandon(input: Parameters<AttemptCommands["abandon"]>[0]) {
-    return callAttemptCommand(this.identity, "abandon_attempt", input, decodeFinishAttemptResult);
+    return callAttemptCommand(this.identity, "abandon_attempt", input);
   }
 
   recover(input: RecoverAttemptCommand) {
-    return callAttemptCommand<RecoverAttemptResult>(this.identity, "recover_attempt", input);
+    return callAttemptCommand(this.identity, "recover_attempt", input);
   }
 
   readAttemptContext(attemptId: string, sessionToken: string) {
@@ -466,13 +479,15 @@ export class SupabaseAttemptCommands implements Pick<
         "select private.read_attempt_recovery($1::uuid, $2::text)",
         [attemptId, sessionToken],
       );
-      return decodeAttemptRecoverySnapshot(result.rows[0]?.read_attempt_recovery);
+      const snapshot = decodeAttemptRecoverySnapshot(result.rows[0]?.read_attempt_recovery);
+      responseIdentity(record(snapshot), { attemptId });
+      return snapshot;
     });
   }
 
   completeFromPersistedAnswers(
     input: Parameters<AttemptCommands["completeFromPersistedAnswers"]>[0],
   ) {
-    return callAttemptCommand(this.identity, "complete_attempt", input, decodeFinishAttemptResult);
+    return callAttemptCommand(this.identity, "complete_attempt", input);
   }
 }

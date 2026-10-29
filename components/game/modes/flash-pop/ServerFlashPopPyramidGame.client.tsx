@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { sessionValidationContext } from "@/features/game/session/sessionResult";
 import { createRemoteGameSessionProvider } from "@/features/game/session/providers/remote";
 import { remoteSessionBootstrap } from "@/features/game/session/providers/remoteBootstrap";
 import { usePyramidGameSession } from "@/features/game/usePyramidGameSession";
@@ -20,7 +21,10 @@ export function ServerFlashPopPyramidGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const router = useRouter();
-  const provider = useMemo(() => createRemoteGameSessionProvider(), []);
+  const provider = useMemo(
+    () => createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) }),
+    [challenge],
+  );
   const initialSession = useMemo(
     () => remoteSessionBootstrap(roomContext, terminalReview),
     [roomContext, terminalReview],

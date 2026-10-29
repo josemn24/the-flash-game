@@ -36,7 +36,7 @@ export type TransferContext = {
 export type SessionQuestion = ServerFlashQuestion | ServerAlphabetQuestion;
 export type SessionReview = FlashChallenge | PyramidChallenge | AlphabetChallenge;
 export type Operation = GameSessionOperation;
-export type PendingCommand = GameSessionCommand;
+export type PendingCommand<K extends Operation = Operation> = GameSessionCommand<K>;
 export type FeedbackChannel =
   "submission" | "answerVerification" | "reveal" | "queens" | "wordSearch";
 export type Feedback = {

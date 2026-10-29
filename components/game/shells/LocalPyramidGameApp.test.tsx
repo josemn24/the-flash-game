@@ -1,3 +1,4 @@
+import { testSessionProvider } from "@/test-utils/sessionProvider";
 // @vitest-environment jsdom
 import { StrictMode } from "react";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
@@ -160,12 +161,9 @@ describe("canonical local Pyramid composition", () => {
     const pending = deferred<Awaited<ReturnType<GameSessionProvider["execute"]>>>();
     factory.mockImplementationOnce((options) => {
       const authority = original(options);
-      return {
-        execute: (command, execution) =>
-          command.operation === "complete"
-            ? pending.promise
-            : authority.execute(command, execution),
-      };
+      return testSessionProvider((command, execution) =>
+        command.operation === "complete" ? pending.promise : authority.execute(command, execution),
+      );
     });
     const onComplete = vi.fn();
     render(<LocalPyramidGameApp definition={definition} onComplete={onComplete} />);
@@ -176,8 +174,16 @@ describe("canonical local Pyramid composition", () => {
     await act(async () => {
       pending.resolve({
         kind: "accepted",
+        operation: "complete",
         effect: "completed",
-        state: { status: "abandoned", score: 0, phase: "results", answers: session().results },
+        state: {
+          sessionId: "local",
+          revision: 1,
+          status: "abandoned",
+          score: 0,
+          phase: "results",
+          answers: session().results,
+        },
       });
     });
     expect(onComplete).not.toHaveBeenCalled();

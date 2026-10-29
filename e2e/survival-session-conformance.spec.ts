@@ -1,3 +1,4 @@
+import { sessionValidationContext } from "@/features/game/session/sessionResult";
 import { expect, test, type APIRequestContext, type BrowserContext } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { readStoredQuestion } from "@/lib/question-formats/storedRegistry";
@@ -89,13 +90,13 @@ function localDefinitionFor(data: Fixture["data"]): LocalSurvivalDefinition {
   return { challenge, levels };
 }
 
-function remoteProvider(api: APIRequestContext) {
-  const remote = createRemoteGameSessionProvider();
+function remoteProvider(
+  api: APIRequestContext,
+  challenge: import("@/types/gameplay/challenge").CompetitiveChallenge,
+): import("@/application/ports/game-session").GameSessionProvider {
+  const remote = createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) });
   return {
-    async execute(
-      command: Parameters<typeof remote.execute>[0],
-      options?: Parameters<typeof remote.execute>[1],
-    ) {
+    async execute(command, options) {
       const original = globalThis.fetch;
       globalThis.fetch = async (url, init) => {
         const response = await api.fetch(new URL(String(url), origin).href, {
@@ -219,7 +220,7 @@ test("local Survival conforms to the real SBR backend through life loss, elimina
     data.survivalChallengeItemIds,
   );
   const remote = new SessionDriver(
-    remoteProvider(request),
+    remoteProvider(request, definition.challenge),
     data.survivalPublicationId,
     data.survivalChallengeItemIds,
   );

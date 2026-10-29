@@ -80,6 +80,60 @@ produce mensajes y feedback: cambiar o retirar un texto no puede cambiar la recu
 Las autoridades locales utilizan el mismo vocabulario. Versiones obsoletas, transferencia,
 autorización, esperas temporales y presupuestos conservan sus políticas específicas.
 
+### Respuestas incompletas o incompatibles
+
+Cada comando SQL tiene un decodificador obligatorio, ejecutado dentro de su transacción y antes
+del `COMMIT`. Una respuesta incompatible provoca rollback de esa transacción. No deshace una
+recepción de respuesta ya confirmada en una transacción anterior: la evaluación sigue usando el
+mismo recibo y los hechos persistidos. La expiración conserva su regla especial de commit.
+
+Un incumplimiento nuevo de contrato se comunica como `502 / invalid_backend_response`. El log
+conserva operación, requestId y ruta del campo, sin volcar payloads, soluciones ni tokens. Los
+contratos de ciclo de vida mantienen el error `invalid_attempt_lifecycle` existente.
+
+El proveedor valida también el HTTP después de cualquier commit. Una respuesta perdida, truncada
+o incompatible es un resultado incierto: conserva exactamente operación, payload, revisión y
+clave idempotente; bloquea escrituras incompatibles y usa el presupuesto y esperas vigentes.
+No se sustituye la operación por una escritura nueva ni se amplía ningún deadline. El replay
+puede devolver la revisión original; no se exige un incremento artificial. Contrarreloj conserva
+la actualización autorizada de `serverNow` para la visualización.
+
+Preparación admite las variantes vigentes: Pirámide antes de activación, Narrativa sin reloj
+competitivo y Alfabeto ya agotado. Las respuestas evaluadas exigen puntos y duración; el cierre
+exige puntuación autoritativa, sin sumar resultados locales como fallback. Una revisión fallida
+conserva esa puntuación y se recupera por lectura, con `reviewPending`.
+
+La preparación valida con tiempo, puntos, modo y versión del ítem asociado al intento, leídos
+tras la autorización SQL y antes del commit en la misma transacción. No utiliza constantes ni
+metadatos aportados por el cliente. La lectura queda dentro del adaptador y no amplía el JSON HTTP.
+
+Hashtag exige tablero completo, celdas y contadores coherentes con su configuración pública.
+El proveedor conserva el `maxMoves` validado al preparar el ítem; no conserva ni consulta soluciones.
+Una confirmación inválida no sustituye el tablero anterior ni consume el comando pendiente.
+El progreso inicial admite `movesUsed: 0`; la confirmación de `wordHashtagSwap` exige un entero
+positivo. Un replay válido conserva los contadores originales, sin exigir otro incremento.
+
+El inicio y la transferencia conservan su JSON vigente: identidad, revisión y deadline, sin
+exigir una proyección `timeTrial` que esos endpoints no publican. Contrarreloj exige el progreso
+completo de reloj en preparación, validación Queens, recuperación y cierre reglamentario.
+La evaluación genérica conserva su JSON sin reloj: el motor mantiene el reloj ya validado, sin
+reiniciarlo ni reconstruir progreso ausente. Antes de preparar la primera
+prueba admite inicio y deadline nulos juntos; para jugar exige reloj
+activo con la duración global configurada. El cierre reglamentario exige motivo terminal; el
+abandono conserva su variante propia y admite las proyecciones guardadas que no publican reloj. Tanto el replay local como el remoto
+refrescan solo `serverNow`, sin reiniciar inicio ni deadline, incluso si se pierde la primera
+confirmación de preparación. Una respuesta posterior que cambie el inicio o deadline global ya
+validado de la misma sesión se trata como incierta y no sustituye ese reloj.
+La misma protección impide volver a un reloj no iniciado en cualquier confirmación no terminal,
+incluidos borradores Queens y evaluación genérica. Un reloj opcional ausente conserva el reloj
+instalado. Los replays legítimos de inicio o transferencia anteriores a la primera preparación
+se aceptan sin su proyección obsoleta de `timeTrial`, manteniendo intacto el resultado cacheado.
+El abandono terminal conserva su variante propia.
+
+`prepareSession` se proyecta exclusivamente como `{ ready: true }`: los campos adicionales no
+pueden modificar la identidad, el reloj ni los hechos conservados por el proveedor. Todas estas
+comprobaciones ocurren antes de actualizar esos hechos o confirmar cambios en el motor.
+
 ### Límites y esperas
 
 | Operación                                              | Timeout completo | Retries adicionales | Esperas     |

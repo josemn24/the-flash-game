@@ -6,6 +6,7 @@ import type {
 
 /** No transport status, UI copy or mode-specific recovery belongs in this catalogue. */
 export const ATTEMPT_ERROR_REASONS = {
+  invalid_backend_response: "service",
   database_unavailable: "service",
   command_failed: "service",
   not_authorized: "authorization",

@@ -1,3 +1,4 @@
+import { sessionWireFixture, wireValidationContext } from "@/test-utils/sessionWire";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { GameSessionCommand } from "@/types/contracts/game-session";
 import { CompetitiveCommandError } from "../../competitive/transport";
@@ -86,7 +87,10 @@ describe("remote session wire compatibility", () => {
         client.prepare = vi.fn(async () => {
           throw new CompetitiveCommandError(code, status);
         });
-        const result = await createRemoteGameSessionProvider({ client }).execute({
+        const result = await createRemoteGameSessionProvider({
+          client,
+          context: wireValidationContext,
+        }).execute({
           operation: "prepare",
           input: mutation,
         });
@@ -106,7 +110,9 @@ describe("remote session wire compatibility", () => {
         "fetch",
         vi.fn(async () => new Response("unreadable", { status })),
       );
-      const result = await createRemoteGameSessionProvider().execute({
+      const result = await createRemoteGameSessionProvider({
+        context: wireValidationContext,
+      }).execute({
         operation: "prepare",
         input: mutation,
       });
@@ -121,9 +127,32 @@ describe("remote session wire compatibility", () => {
   it.each(commands)(
     "maps $0.operation to the existing endpoint and body",
     async (command, path, extra) => {
-      const fetch = vi.fn(async () => Response.json({ attemptId: "session", lockVersion: 8 }));
+      const fetch = vi.fn(async () =>
+        Response.json(
+          sessionWireFixture(
+            command.operation,
+            { lockVersion: 8 },
+            { challengeItemId: "item" },
+            "session",
+          ),
+        ),
+      );
       vi.stubGlobal("fetch", fetch);
-      const result = await createRemoteGameSessionProvider().execute(command);
+      const result = await createRemoteGameSessionProvider({
+        context:
+          command.operation === "wordHashtagSwap"
+            ? {
+                mode: "flash",
+                items: [
+                  {
+                    ...wireValidationContext.items[0]!,
+                    questionType: "word-hashtag",
+                    wordHashtagMaxMoves: 10,
+                  },
+                ],
+              }
+            : wireValidationContext,
+      }).execute(command);
       expect(result.kind).toBe("accepted");
       const [url, request] = fetch.mock.calls[0] as unknown as [string, RequestInit];
       expect(url).toBe(`/api/competitive/attempts/${path}`);
@@ -143,9 +172,18 @@ describe("remote session wire compatibility", () => {
     const fetch = vi
       .fn()
       .mockRejectedValueOnce(new TypeError("connection lost"))
-      .mockResolvedValueOnce(Response.json({ lockVersion: 8, status: "correct", points: 10 }));
+      .mockResolvedValueOnce(
+        Response.json({
+          attemptId: "session",
+          challengeItemId: "item",
+          lockVersion: 8,
+          status: "correct",
+          points: 10,
+          timeUsedMs: 1000,
+        }),
+      );
     vi.stubGlobal("fetch", fetch);
-    const provider = createRemoteGameSessionProvider();
+    const provider = createRemoteGameSessionProvider({ context: wireValidationContext });
     const command: GameSessionCommand = {
       operation: "answer",
       input: { ...interaction, answer: "A" },
@@ -174,7 +212,10 @@ describe("remote session wire compatibility", () => {
       client.prepare = vi.fn(async () => {
         throw new CompetitiveCommandError(code, status, retryAfter);
       });
-      const result = await createRemoteGameSessionProvider({ client }).execute({
+      const result = await createRemoteGameSessionProvider({
+        client,
+        context: wireValidationContext,
+      }).execute({
         operation: "prepare",
         input: mutation,
       });
@@ -190,7 +231,7 @@ describe("remote session wire compatibility", () => {
       vi.fn(() => new Promise(() => {})),
     );
     const controller = new AbortController();
-    const pending = createRemoteGameSessionProvider().execute(
+    const pending = createRemoteGameSessionProvider({ context: wireValidationContext }).execute(
       { operation: "prepare", input: mutation },
       { signal: controller.signal },
     );
@@ -220,12 +261,39 @@ describe("remote session projections", () => {
         solutionPayload: { answer: "secret" },
         sessionToken: "secret",
       };
-      client[operation] = vi.fn(async () => response);
+      client[operation] = vi.fn(async () =>
+        sessionWireFixture(
+          operation,
+          {
+            ...response,
+            status: operation === "complete" ? "completed" : response.status,
+            points: 10,
+            timeUsedMs: 1000,
+          },
+          { challengeItemId: "item" },
+          "session",
+        ),
+      );
       const command = {
         operation,
         input: { ...interaction, queens: [], answer: null },
       } as GameSessionCommand;
-      const result = await createRemoteGameSessionProvider({ client }).execute(command);
+      const result = await createRemoteGameSessionProvider({
+        client,
+        context:
+          command.operation === "wordHashtagSwap"
+            ? {
+                mode: "flash",
+                items: [
+                  {
+                    ...wireValidationContext.items[0]!,
+                    questionType: "word-hashtag",
+                    wordHashtagMaxMoves: 10,
+                  },
+                ],
+              }
+            : wireValidationContext,
+      }).execute(command);
       expect(result).toMatchObject({ kind: "accepted", effect });
       if (result.kind !== "accepted") throw new Error(result.code);
       expect(result.state).not.toHaveProperty("review");
@@ -239,6 +307,7 @@ describe("remote session projections", () => {
   it("normalizes recovered receipts and exposes review only after terminal recovery", async () => {
     const client = createCompetitiveAttemptClient();
     client.recover = vi.fn(async () => ({
+      attemptId: "session",
       lockVersion: 8,
       phase: "results",
       score: 12,
@@ -247,7 +316,10 @@ describe("remote session projections", () => {
       ],
       review: [],
     }));
-    const result = await createRemoteGameSessionProvider({ client }).execute({
+    const result = await createRemoteGameSessionProvider({
+      client,
+      context: wireValidationContext,
+    }).execute({
       operation: "recover",
       input: context,
     });
@@ -279,7 +351,7 @@ describe("remote session projections", () => {
       });
     });
     expect(
-      await createRemoteGameSessionProvider({ client }).execute({
+      await createRemoteGameSessionProvider({ client, context: wireValidationContext }).execute({
         operation: "start",
         input: { challengeId: "challenge", idempotencyKey: "key" },
       }),
@@ -292,4 +364,232 @@ describe("remote session projections", () => {
       controlRequired: { sessionId: "session", revision: 7, deadlineAt: null },
     });
   });
+});
+
+describe("operation response decoder regressions", () => {
+  it.each(commands)("does not accept a revision-only $0.operation response", async (command) => {
+    const client = createCompetitiveAttemptClient();
+    client[command.operation] = vi.fn(async () => ({ attemptId: "session", lockVersion: 8 }));
+    const result = await createRemoteGameSessionProvider({
+      client,
+      context: wireValidationContext,
+    }).execute(command);
+    expect(result).toMatchObject({
+      kind: "uncertain",
+      code: "invalid_backend_response",
+      retryable: true,
+    });
+  });
+  it.each([
+    { status: "correct", timeUsedMs: 1000 },
+    { status: "correct", points: 10 },
+    { status: "correct", points: "10", timeUsedMs: 1000 },
+    { status: "correct", points: 10, timeUsedMs: -1 },
+    {
+      status: "correct",
+      points: 10,
+      timeUsedMs: 1000,
+      details: { type: "logic-code", submittedCodes: [42], incorrectAttempts: 0 },
+    },
+    { status: "correct", points: 10, timeUsedMs: 1000, details: { type: "future-format" } },
+    { status: "correct", points: 10, timeUsedMs: 1000, challengeItemId: "another" },
+  ])("keeps malformed evaluated fields uncertain: %j", async (value) => {
+    const client = createCompetitiveAttemptClient();
+    client.answer = vi.fn(async () => ({
+      attemptId: "session",
+      lockVersion: 8,
+      challengeItemId: "item",
+      ...value,
+    }));
+    expect(
+      await createRemoteGameSessionProvider({ client, context: wireValidationContext }).execute({
+        operation: "answer",
+        input: { ...interaction, answer: "A" },
+      }),
+    ).toMatchObject({ kind: "uncertain", code: "invalid_backend_response" });
+  });
+  it("rejects malformed nested arrays instead of filtering away invalid progress", async () => {
+    const client = createCompetitiveAttemptClient();
+    client.wordHashtagSwap = vi.fn(async () => ({
+      attemptId: "session",
+      lockVersion: 8,
+      challengeItemId: "item",
+      letters: ["A", 42],
+      terminal: false,
+      movesUsed: 1,
+      movesRemaining: 9,
+    }));
+    expect(
+      await createRemoteGameSessionProvider({ client, context: wireValidationContext }).execute({
+        operation: "wordHashtagSwap",
+        input: { ...interaction, fromCell: 1, toCell: 2 },
+      }),
+    ).toMatchObject({ kind: "uncertain" });
+  });
+  it("retains a completed score when only the review is malformed", async () => {
+    const client = createCompetitiveAttemptClient();
+    client.complete = vi.fn(async () => ({
+      attemptId: "session",
+      lockVersion: 8,
+      status: "completed",
+      score: 10,
+      review: [{ broken: true }],
+    }));
+    expect(
+      await createRemoteGameSessionProvider({ client, context: wireValidationContext }).execute({
+        operation: "complete",
+        input: mutation,
+      }),
+    ).toMatchObject({
+      kind: "accepted",
+      operation: "complete",
+      effect: "completed",
+      state: { score: 10, reviewPending: true },
+      review: [],
+    });
+  });
+});
+
+it("preserves existing snake_case review rows without changing the completed result", async () => {
+  const client = createCompetitiveAttemptClient();
+  client.complete = vi.fn(async () => ({
+    attemptId: "session",
+    lockVersion: 8,
+    status: "completed",
+    score: 10,
+    review: [
+      {
+        challenge_item_id: "item",
+        public_payload: { question: "Elige", options: ["A", "B"] },
+        solution_payload: { correctAnswer: "A" },
+      },
+    ],
+  }));
+  expect(
+    await createRemoteGameSessionProvider({ client, context: wireValidationContext }).execute({
+      operation: "complete",
+      input: mutation,
+    }),
+  ).toMatchObject({
+    kind: "accepted",
+    effect: "completed",
+    state: { score: 10 },
+    review: [
+      {
+        challengeItemId: "item",
+        publicPayload: { question: "Elige" },
+        solutionPayload: { correctAnswer: "A" },
+      },
+    ],
+  });
+});
+
+it("accepts the existing receipt-shaped resolved metadata in terminal recovery", async () => {
+  const client = createCompetitiveAttemptClient();
+  client.recover = vi.fn(async () => ({
+    attemptId: "session",
+    lockVersion: 8,
+    phase: "results",
+    score: 10,
+    answers: [],
+    resolved: {
+      attemptId: "session",
+      lockVersion: 7,
+      receiptId: "receipt",
+      status: "correct",
+      points: 10,
+    },
+  }));
+  const result = await createRemoteGameSessionProvider({
+    client,
+    context: wireValidationContext,
+  }).execute({ operation: "recover", input: context });
+  expect(result).toMatchObject({ kind: "accepted", effect: "completed", state: { score: 10 } });
+  if (result.kind === "accepted") expect(result.state.resolved).toBeUndefined();
+});
+
+it("normalizes an omitted null in a persisted unanswered row without inventing evaluated values", async () => {
+  const client = createCompetitiveAttemptClient();
+  client.complete = vi.fn(async () => ({
+    attemptId: "session",
+    lockVersion: 8,
+    status: "completed",
+    score: 0,
+    answers: [{ challengeItemId: "item", status: "unanswered", points: 0, timeUsedMs: 1000 }],
+  }));
+  expect(
+    await createRemoteGameSessionProvider({ client, context: wireValidationContext }).execute({
+      operation: "complete",
+      input: mutation,
+    }),
+  ).toMatchObject({
+    kind: "accepted",
+    state: { score: 0, answers: [{ answer: null, status: "unanswered", points: 0, timeUsed: 1 }] },
+  });
+});
+
+it("accepts a saved partial answer omitted by null stripping, and keeps active projections strict", async () => {
+  const client = createCompetitiveAttemptClient();
+  const rows = [{ challengeItemId: "item", status: "incorrect", points: 0, timeUsedMs: 1000 }];
+  client.complete = vi.fn(async () => ({
+    attemptId: "session",
+    lockVersion: 8,
+    status: "completed",
+    score: 0,
+    answers: rows,
+  }));
+  client.recover = vi.fn(async () => ({
+    attemptId: "session",
+    lockVersion: 8,
+    phase: "prepare",
+    answers: rows,
+  }));
+  const provider = createRemoteGameSessionProvider({ client, context: wireValidationContext });
+  expect(await provider.execute({ operation: "complete", input: mutation })).toMatchObject({
+    kind: "accepted",
+    state: { answers: [{ answer: null, status: "incorrect" }] },
+  });
+  expect(await provider.execute({ operation: "recover", input: context })).toMatchObject({
+    kind: "uncertain",
+    code: "invalid_backend_response",
+  });
+});
+
+describe("optional clock wire fields", () => {
+  it.each([null, false, 0, "", {}])(
+    "rejects a malformed optional Time Trial clock %# instead of dropping it",
+    async (timeTrial) => {
+      const client = createCompetitiveAttemptClient();
+      client.start = vi.fn(async () => ({
+        attemptId: "session",
+        lockVersion: 1,
+        resumed: false,
+        deadlineAt: null,
+        timeTrial,
+      }));
+      const provider = createRemoteGameSessionProvider({
+        client,
+        context: {
+          mode: "time-trial",
+          timeLimitMs: 120000,
+          items: ["item", "next"].map((id) => ({
+            id,
+            questionType: "queens",
+            timeLimitMs: 1000,
+            points: 50,
+          })),
+        },
+      });
+      expect(
+        await provider.execute({
+          operation: "start",
+          input: { challengeId: "challenge", idempotencyKey: "same" },
+        }),
+      ).toMatchObject({
+        kind: "uncertain",
+        code: "invalid_backend_response",
+        retryable: true,
+      });
+    },
+  );
 });

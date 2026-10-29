@@ -1,6 +1,10 @@
+import {
+  testSessionProvider,
+  type TestSessionExecute,
+  type TestSessionResult as GameSessionResult,
+} from "@/test-utils/sessionProvider";
 import { afterEach, expect, it, vi } from "vitest";
-import type { GameSessionProvider, SessionClock } from "@/application/ports/game-session";
-import type { GameSessionResult } from "@/types/gameplay/authoritative-session";
+import type { SessionClock } from "@/application/ports/game-session";
 import type { ServerFlashChallenge } from "@/types/gameplay/challenge";
 import { CompetitiveSessionEngine } from "./sessionEngine";
 
@@ -25,7 +29,7 @@ const challenge: ServerFlashChallenge = {
   ],
 };
 const accepted = (
-  state: Extract<GameSessionResult, { kind: "accepted" }>["state"],
+  state: import("@/types/gameplay/authoritative-session").AuthoritativeSessionUpdate,
 ): GameSessionResult => ({ kind: "accepted", effect: "acknowledged", state });
 const engines: CompetitiveSessionEngine[] = [];
 afterEach(() => engines.splice(0).forEach((engine) => engine.dispose()));
@@ -45,7 +49,7 @@ it("runs the current engine with an injected authority and clock, retaining an e
     },
   };
   let attempts = 0;
-  const execute = vi.fn<GameSessionProvider["execute"]>(async (command) => {
+  const execute = vi.fn<TestSessionExecute>(async (command) => {
     switch (command.operation) {
       case "prepareSession":
         return accepted({ ready: true });
@@ -79,7 +83,7 @@ it("runs the current engine with an injected authority and clock, retaining an e
   const engine = new CompetitiveSessionEngine({
     challenge,
     initialSession: { status: "new", results: [], score: 0 },
-    provider: { execute },
+    provider: testSessionProvider(execute),
     clock,
   });
   engines.push(engine);
@@ -112,14 +116,12 @@ it("runs the current engine with an injected authority and clock, retaining an e
 it("aborts the provider signal and ignores a late result after disposal", async () => {
   let finish!: (result: GameSessionResult) => void;
   let signal: AbortSignal | undefined;
-  const provider: GameSessionProvider = {
-    execute: (_command, options) => {
-      signal = options?.signal;
-      return new Promise((resolve) => {
-        finish = resolve;
-      });
-    },
-  };
+  const provider = testSessionProvider((_command, options) => {
+    signal = options?.signal;
+    return new Promise((resolve) => {
+      finish = resolve;
+    });
+  });
   const engine = new CompetitiveSessionEngine({
     challenge,
     initialSession: { status: "new", results: [], score: 0 },

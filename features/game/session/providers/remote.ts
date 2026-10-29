@@ -1,10 +1,26 @@
+import type { GameMode } from "@/types/domain/content";
+import { resultDetails } from "@/lib/competitiveResponseContract";
+import { checkedTimeTrial } from "@/lib/competitiveResponseContract";
+import { createSessionResultDecoder, sessionEffect } from "../sessionResult";
+import {
+  answerRows,
+  CompetitiveResponseContractError,
+  optionalFields,
+  date as validDate,
+  boolean as validBoolean,
+  text as validText,
+  integer as validInteger,
+  points as validPoints,
+  list as validList,
+  nullable as validNullable,
+  isRecord,
+  oneOf,
+} from "@/lib/competitiveResponseContract";
+import type { GameSessionValidationContext } from "@/types/gameplay/authoritative-session";
 import { isGameSessionErrorCode } from "@/lib/competitiveErrors";
 import type { GameSessionProvider } from "@/application/ports/game-session";
-import type { GameSessionCommand, GameSessionFailure } from "@/types/contracts/game-session";
-import type {
-  AuthoritativeSessionUpdate,
-  GameSessionAcceptance,
-} from "@/types/gameplay/authoritative-session";
+import type { GameSessionFailure } from "@/types/contracts/game-session";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import type { AnswerResult } from "@/types/gameplay/result";
 import { readTimeTrialProgress } from "@/lib/timeTrial";
 import {
@@ -37,7 +53,9 @@ function answerStatus(value: unknown) {
     return value;
   return undefined;
 }
-function answers(value: unknown): AnswerResult[] | undefined {
+function answers(value: unknown, allowOmittedNullAnswers: boolean): AnswerResult[] | undefined {
+  if (value === undefined) return undefined;
+  answerRows(value, allowOmittedNullAnswers);
   if (!Array.isArray(value)) return undefined;
   return value.map((item: unknown) => {
     const row = parseCompetitiveObject(item);
@@ -46,24 +64,106 @@ function answers(value: unknown): AnswerResult[] | undefined {
       throw new CompetitiveCommandError("invalid_json_response", 200);
     return {
       questionId: row.challengeItemId,
-      answer: row.answer as AnswerResult["answer"],
+      answer: row.answer === undefined ? null : (row.answer as AnswerResult["answer"]),
       status,
       isCorrect: status === "correct" || status === "partial",
-      points: Number(row.points ?? 0),
-      timeUsed: Number(row.timeUsedMs ?? 0) / 1000,
+      points: row.points as number,
+      timeUsed: (row.timeUsedMs as number) / 1000,
       ...(row.resultDetails ? { details: row.resultDetails as AnswerResult["details"] } : {}),
     };
   });
 }
 
+/** Validate consumed fields before projection can discard a mistyped value. */
+function validatePublicFields(value: CompetitiveJsonObject) {
+  optionalFields(value, {
+    attemptId: validText,
+    lockVersion: (v) => validInteger(v) && Number(v) > 0,
+    deadlineAt: validNullable(validDate),
+    presentedAt: validNullable(validDate),
+    terminalReason: validNullable(validText),
+    guess: validText,
+    code: validText,
+    clue: validText,
+    solved: validBoolean,
+    correct: validBoolean,
+    maxIncorrectValidations: validNullable((v) => validInteger(v) && Number(v) > 0),
+    status: oneOf(
+      "completed",
+      "abandoned",
+      "in_progress",
+      "correct",
+      "partial",
+      "incorrect",
+      "unanswered",
+    ),
+    passed: oneOf(true),
+    ready: oneOf(true),
+    resumed: validBoolean,
+    timedOut: validBoolean,
+    terminal: validBoolean,
+    reviewPending: validBoolean,
+    score: validNullable(validPoints),
+    points: validPoints,
+    timeUsedMs: validInteger,
+    answerLength: validNullable((v) => validInteger(v) && Number(v) > 0),
+    letters: validList(validNullable(validText)),
+    feedback: validList(
+      (v) => isRecord(v) && validText(v.letter) && oneOf("correct", "present", "absent")(v.status),
+    ),
+    queens: validList(validInteger),
+    correctCells: validList(validInteger),
+    guesses: validList(validText),
+    foundWordIds: validList(validText),
+    foundSelections: validList(
+      (v) =>
+        isRecord(v) &&
+        validText(v.targetId) &&
+        validInteger(v.startCell) &&
+        validInteger(v.endCell),
+    ),
+    details: resultDetails,
+    resolved: (v) =>
+      isRecord(v) &&
+      (validText(v.challengeItemId) ||
+        (validText(v.attemptId) &&
+          validInteger(v.lockVersion) &&
+          Number(v.lockVersion) > 0 &&
+          validText(v.receiptId) &&
+          oneOf("correct", "partial", "incorrect", "unanswered")(v.status) &&
+          validPoints(v.points))),
+    narrativeCursor: (v) => isRecord(v) && validNullable(validText)(v.currentChallengeItemId),
+  });
+  for (const key of [
+    "attemptsUsed",
+    "incorrectAttempts",
+    "movesUsed",
+    "movesRemaining",
+    "totalClues",
+    "cluePenalty",
+    "revealedClues",
+    "availablePoints",
+    "incorrectValidations",
+    "placedQueens",
+    "completedRows",
+    "completedColumns",
+    "completedRegions",
+    "conflictingQueens",
+    "foundCount",
+    "totalWords",
+  ])
+    optionalFields(value, { [key]: validInteger });
+}
+
 /** Select known public fields rather than spreading a transport object into gameplay. */
-function publicUpdate(value: CompetitiveJsonObject): AuthoritativeSessionUpdate {
+function publicUpdate(value: CompetitiveJsonObject, terminal: boolean): AuthoritativeSessionUpdate {
   const resolved = value.resolved ? parseCompetitiveObject(value.resolved) : undefined;
   const cursor = value.narrativeCursor ? parseCompetitiveObject(value.narrativeCursor) : undefined;
   return {
     sessionId: string(value.attemptId),
     revision: number(value.lockVersion),
     ready: boolean(value.ready),
+    passed: value.passed === true ? true : undefined,
     resumed: boolean(value.resumed),
     phase: string(value.phase),
     status: value.status === "abandoned" ? "abandoned" : answerStatus(value.status),
@@ -74,8 +174,10 @@ function publicUpdate(value: CompetitiveJsonObject): AuthoritativeSessionUpdate 
     publicPayload: value.publicPayload,
     progress: value.progress,
     answerLength: nullableNumber(value.answerLength),
-    timeTrial: value.timeTrial ? readTimeTrialProgress(value.timeTrial) : undefined,
-    answers: answers(value.answers),
+    timeTrial: value.timeTrial
+      ? checkedTimeTrial(readTimeTrialProgress, value.timeTrial)
+      : undefined,
+    answers: answers(value.answers, terminal),
     resolved:
       resolved && typeof resolved.challengeItemId === "string"
         ? { challengeItemId: resolved.challengeItemId }
@@ -83,7 +185,7 @@ function publicUpdate(value: CompetitiveJsonObject): AuthoritativeSessionUpdate 
     narrativeCursor: cursor
       ? { currentChallengeItemId: nullableString(cursor.currentChallengeItemId) }
       : undefined,
-    score: number(value.score),
+    score: value.status === "abandoned" && value.score === null ? 0 : number(value.score),
     terminalReason: nullableString(value.terminalReason),
     reviewPending: boolean(value.reviewPending),
     terminal: boolean(value.terminal),
@@ -137,29 +239,10 @@ function publicUpdate(value: CompetitiveJsonObject): AuthoritativeSessionUpdate 
   };
 }
 
-function effect(
-  command: GameSessionCommand,
-  value: CompetitiveJsonObject,
-): GameSessionAcceptance["effect"] {
-  if (command.operation === "complete" || value.phase === "results" || value.status === "abandoned")
-    return "completed";
-  if (command.operation === "answer" || value.terminal === true) return "evaluated";
-  if (
-    [
-      "miniWordleGuess",
-      "logicCodeAttempt",
-      "wordHashtagSwap",
-      "progressiveClueReveal",
-      "queensDraft",
-      "queensValidation",
-      "wordSearchSelection",
-    ].includes(command.operation)
-  )
-    return "progress";
-  return "acknowledged";
-}
-
 function failure(error: unknown): GameSessionFailure {
+  if (error instanceof CompetitiveResponseContractError) {
+    return { kind: "uncertain", code: "invalid_backend_response", retryable: true };
+  }
   if (!(error instanceof CompetitiveCommandError))
     return { kind: "uncertain", code: "provider_unavailable", retryable: true };
   const retryable =
@@ -211,9 +294,11 @@ function failure(error: unknown): GameSessionFailure {
 }
 
 /** Keeps existing endpoints, request bodies, cookies, timeout and idempotency semantics. */
-export function createRemoteGameSessionProvider(
-  options: { client?: CompetitiveAttemptClient } = {},
-): GameSessionProvider {
+export function createRemoteGameSessionProvider<M extends GameMode>(options: {
+  client?: CompetitiveAttemptClient;
+  context: GameSessionValidationContext<M>;
+}): GameSessionProvider<M> {
+  const decodeResult = createSessionResultDecoder(options.context);
   return {
     async execute(command, execution) {
       try {
@@ -234,27 +319,36 @@ export function createRemoteGameSessionProvider(
           input: typeof wire,
         ) => Promise<CompetitiveJsonObject>;
         const value = parseCompetitiveObject(await invoke(wire));
-        if (
-          command.operation !== "prepareSession" &&
-          command.operation !== "abandon" &&
-          (!Number.isSafeInteger(value.lockVersion) || Number(value.lockVersion) < 1)
-        )
-          throw new CompetitiveCommandError("invalid_json_response", 200);
-        if (
-          (command.operation === "start" || command.operation === "takeover") &&
-          typeof value.attemptId !== "string"
-        )
-          throw new CompetitiveCommandError("invalid_json_response", 200);
-        const outcome = effect(command, value);
-        const state = publicUpdate(value);
-        return outcome === "completed"
-          ? {
-              kind: "accepted",
-              effect: outcome,
-              state,
-              review: terminalReviewFromResponse(value.review),
-            }
-          : { kind: "accepted", effect: outcome, state };
+        if (command.operation === "complete" || command.operation === "abandon")
+          optionalFields(value, { status: oneOf("completed", "abandoned") });
+        const outcome = sessionEffect(command.operation, value);
+        validatePublicFields(value);
+        // An optional wire field may be absent; a malformed value must not disappear in projection.
+        if (options.context.mode === "time-trial" && value.timeTrial !== undefined)
+          checkedTimeTrial(readTimeTrialProgress, value.timeTrial);
+        const state = publicUpdate(value, outcome === "completed");
+        let terminalState = outcome === "completed" ? { ...state, phase: "results" } : state;
+        // Review is an independent read model. A broken review cannot invalidate completion.
+        let review: ReturnType<typeof terminalReviewFromResponse> | undefined;
+        if (outcome === "completed") {
+          try {
+            review = terminalReviewFromResponse(value.review);
+            if (
+              value.review !== undefined &&
+              (!Array.isArray(value.review) || review.length !== value.review.length)
+            )
+              throw new Error("invalid_review");
+          } catch {
+            terminalState = { ...terminalState, reviewPending: true };
+            review = [];
+          }
+        }
+        return decodeResult(command, {
+          kind: "accepted",
+          effect: outcome,
+          state: terminalState,
+          ...(outcome === "completed" ? { review } : {}),
+        });
       } catch (error) {
         return failure(error);
       }

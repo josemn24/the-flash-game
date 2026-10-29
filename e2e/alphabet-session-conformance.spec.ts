@@ -1,5 +1,7 @@
+import { sessionValidationContext } from "@/features/game/session/sessionResult";
 import { expect, test, type APIRequestContext, type BrowserContext } from "@playwright/test";
 import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import {
   alphabetConformanceQuestions,
   alphabetTimeoutConformanceQuestions,
@@ -7,7 +9,11 @@ import {
 import { createLocalAlphabetSessionProvider } from "@/features/game/session/providers/localAlphabet";
 import { createRemoteGameSessionProvider } from "@/features/game/session/providers/remote";
 import { readStoredQuestion } from "@/lib/question-formats/storedRegistry";
-import { confirmed, manualClock, SessionDriver } from "@/test-utils/game-session-conformance/driver";
+import {
+  confirmed,
+  manualClock,
+  SessionDriver,
+} from "@/test-utils/game-session-conformance/driver";
 import type { GameSessionOperation } from "@/types/contracts/game-session";
 import type { QuestionVersionId } from "@/types/domain/identifiers";
 import type { DurationMs, JsonValue } from "@/types/domain/values";
@@ -43,9 +49,9 @@ function fixture(): ScenarioFixture {
 }
 
 function localDefinition(data: FixtureData, timeout = false): LocalAlphabetDefinition {
-  const questions = (timeout
-    ? alphabetTimeoutConformanceQuestions
-    : alphabetConformanceQuestions) as FixtureQuestion[];
+  const questions = (
+    timeout ? alphabetTimeoutConformanceQuestions : alphabetConformanceQuestions
+  ) as FixtureQuestion[];
   const publicationId = timeout ? data.timeoutPublicationId : data.publicationId;
   const itemIds = timeout ? data.timeoutChallengeItemIds : data.challengeItemIds;
   const timeLimitMs = timeout ? data.timeoutGlobalTimeLimitMs : data.globalTimeLimitMs;
@@ -102,13 +108,13 @@ function localDefinition(data: FixtureData, timeout = false): LocalAlphabetDefin
   return { challenge, levels };
 }
 
-function remoteProvider(api: APIRequestContext) {
-  const remote = createRemoteGameSessionProvider();
+function remoteProvider(
+  api: APIRequestContext,
+  challenge: import("@/types/gameplay/challenge").CompetitiveChallenge,
+): import("@/application/ports/game-session").GameSessionProvider {
+  const remote = createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) });
   return {
-    async execute(
-      command: Parameters<typeof remote.execute>[0],
-      options?: Parameters<typeof remote.execute>[1],
-    ) {
+    async execute(command, options) {
       const original = globalThis.fetch;
       globalThis.fetch = async (url, init) => {
         const response = await api.fetch(new URL(String(url), origin).href, {
@@ -133,6 +139,42 @@ function remoteProvider(api: APIRequestContext) {
   };
 }
 
+/** A pass response has no duration; use its committed interval rather than network latency. */
+function persistedElapsedMs(attemptId: string, itemId: string): number {
+  const container = process.env.SUPABASE_DB_CONTAINER;
+  if (!container?.startsWith("supabase_db_flash-competitive-e2e-"))
+    throw new Error("Conformance timing requires the disposable E2E database");
+  const value = execFileSync(
+    "docker",
+    [
+      "exec",
+      "-i",
+      container,
+      "psql",
+      "-U",
+      "postgres",
+      "-d",
+      "postgres",
+      "-At",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-v",
+      `attempt_id=${attemptId}`,
+      "-v",
+      `item_id=${itemId}`,
+    ],
+    {
+      input:
+        "select coalesce(sum(floor(extract(epoch from (ended_at - started_at)) * 1000)), 0)::bigint from private.interaction_intervals where attempt_id = :'attempt_id'::uuid and challenge_item_id = :'item_id'::uuid and ended_at is not null;",
+      encoding: "utf8",
+    },
+  ).trim();
+  const elapsed = Number(value);
+  if (!Number.isSafeInteger(elapsed) || elapsed < 0)
+    throw new Error("Invalid persisted interval duration");
+  return elapsed;
+}
+
 function normalized(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(normalized);
   if (!value || typeof value !== "object") return value;
@@ -146,13 +188,14 @@ function normalized(value: unknown): unknown {
             "revision",
             "serverNow",
             "elapsedTimeMs",
+            "lastCorrectAt",
             "explanation",
             "questionVersionId",
             "src",
           ].includes(key),
       )
       .map(([key, child]) => {
-        if (["presentedAt", "deadlineAt", "lastCorrectAt"].includes(key) && typeof child === "string")
+        if (["presentedAt", "deadlineAt"].includes(key) && typeof child === "string")
           return [key, Math.round(Date.parse(child) / 10) * 10];
         if (key === "timeUsedMs" && typeof child === "number")
           return [key, Math.round(child / 10) * 10];
@@ -170,6 +213,19 @@ function compare(local: GameSessionResult, remote: GameSessionResult) {
     return;
   }
   expect(local.effect).toBe(remote.effect);
+  if (remote.state.progress) {
+    const remoteProgress = remote.state.progress as { lastCorrectAt: string | null };
+    const localProgress = local.state.progress as { lastCorrectAt: string | null };
+    if (remoteProgress.lastCorrectAt === null) expect(localProgress.lastCorrectAt).toBeNull();
+    else {
+      // PostgreSQL retains fractional milliseconds; the manual clock uses integer durations.
+      expect(
+        Math.abs(
+          Date.parse(localProgress.lastCorrectAt!) - Date.parse(remoteProgress.lastCorrectAt),
+        ),
+      ).toBeLessThanOrEqual(1);
+    }
+  }
   const stateFields = [
     "challengeItemId",
     "publicPayload",
@@ -190,9 +246,7 @@ function compare(local: GameSessionResult, remote: GameSessionResult) {
   ] as const;
   const project = (state: typeof local.state) =>
     Object.fromEntries(
-      stateFields
-        .filter((key) => remote.state[key] !== undefined)
-        .map((key) => [key, state[key]]),
+      stateFields.filter((key) => remote.state[key] !== undefined).map((key) => [key, state[key]]),
     );
   expect(normalized(project(local.state))).toEqual(normalized(project(remote.state)));
 
@@ -235,7 +289,7 @@ test("local Alphabet matches competitive pass, revisit, scoring and review", asy
     definition.challenge.entries.map((entry) => entry.id),
   );
   const remote = new SessionDriver(
-    remoteProvider(request),
+    remoteProvider(request, definition.challenge),
     definition.challenge.id,
     definition.challenge.entries.map((entry) => entry.id),
   );
@@ -243,9 +297,7 @@ test("local Alphabet matches competitive pass, revisit, scoring and review", asy
   const cumulativeTime = new Map<number, number>();
 
   const pair = async (operation: GameSessionOperation, input: object = {}, index = 0) => {
-    const remoteCallStartedAt = Date.now();
     const remoteResult = confirmed(await remote.execute(remote.command(operation, input, index)));
-    const remoteCallFinishedAt = Date.now();
     if (operation === "start") {
       clock.set(Date.parse(remoteResult.state.deadlineAt!) - definition.challenge.timeLimitMs);
     } else if (operation === "prepare") {
@@ -253,18 +305,10 @@ test("local Alphabet matches competitive pass, revisit, scoring and review", asy
       presentedAt.set(index, time);
       clock.set(time);
     } else if (operation === "alphabetPass") {
-      const reportedTime = remoteResult.state.timeUsedMs;
-      const elapsed =
-        typeof reportedTime === "number"
-          ? Math.max(0, reportedTime - (cumulativeTime.get(index) ?? 0))
-          : Math.max(
-              0,
-              Math.floor(
-                (remoteCallStartedAt + remoteCallFinishedAt) / 2 - presentedAt.get(index)!,
-              ),
-            );
+      const total = persistedElapsedMs(remote.sessionId!, definition.challenge.entries[index]!.id);
+      const elapsed = total - (cumulativeTime.get(index) ?? 0);
       clock.set(presentedAt.get(index)! + elapsed);
-      cumulativeTime.set(index, (cumulativeTime.get(index) ?? 0) + elapsed);
+      cumulativeTime.set(index, total);
     } else if (operation === "answer") {
       const total = remoteResult.state.timeUsedMs!;
       const previous = cumulativeTime.get(index) ?? 0;
@@ -308,7 +352,7 @@ test("local Alphabet matches competitive global timeout and pending-letter revie
     definition.challenge.entries.map((entry) => entry.id),
   );
   const remote = new SessionDriver(
-    remoteProvider(request),
+    remoteProvider(request, definition.challenge),
     definition.challenge.id,
     definition.challenge.entries.map((entry) => entry.id),
   );

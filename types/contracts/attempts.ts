@@ -123,6 +123,7 @@ export type SubmitWordHashtagSwapInput = AttemptCommandInput & {
 };
 export type SubmitWordHashtagSwapResult = AttemptCommandResult & {
   readonly challengeItemId: ChallengeItemId;
+  readonly correctCells: readonly number[];
   readonly letters: readonly (string | null)[];
   readonly movesUsed: number;
   readonly movesRemaining: number;
@@ -282,6 +283,11 @@ export type AttemptRecoveryAnswer = {
   readonly timeUsedMs: DurationMs;
   readonly resultDetails?: AnswerResultDetails | null;
 };
+/** Saved projections apply jsonb_strip_nulls, including reconstructed partial answers. */
+export type PersistedAttemptRecoveryAnswer = Omit<AttemptRecoveryAnswer, "answer"> & {
+  readonly answer?: JsonValue;
+};
+
 /** Evaluated terminal hint; it does not imply the attempt has committed completion. */
 export type RecoveryTerminalOutcome = SurvivalAttemptOutcome | PyramidAttemptOutcome | null;
 /** Deliberately excludes question public/solution payloads. */
@@ -321,21 +327,23 @@ export type TimeTrialCompletedAttemptResult = FinishAttemptResult & {
   readonly terminalReason: TimeTrialEndReason;
   readonly timeTrial: TimeTrialResult;
 };
+/** Retain mode/outcome discrimination when replacing the saved answer representation. */
+type WithoutAnswers<T> = T extends unknown ? Omit<T, "answers"> : never;
 /** Persisted completion without controller cookies, assets or solutions. */
 export type SavedAttemptResult = {
   readonly scheduledChallengeId: ScheduledChallengeId;
-  readonly result: FinishAttemptResult & {
+  readonly result: WithoutAnswers<FinishAttemptResult> & {
     readonly status: "completed";
     readonly score: number;
-    readonly answers: readonly AttemptRecoveryAnswer[];
+    readonly answers: readonly PersistedAttemptRecoveryAnswer[];
     readonly initialLives?: number;
   };
 };
 export type SavedAbandonedAttemptResult = {
   readonly scheduledChallengeId: ScheduledChallengeId;
-  readonly result: FinishAttemptResult & {
+  readonly result: WithoutAnswers<FinishAttemptResult> & {
     readonly status: "abandoned";
-    readonly answers?: readonly AttemptRecoveryAnswer[];
+    readonly answers?: readonly PersistedAttemptRecoveryAnswer[];
   };
 };
 export type AcceptInvitationInput = {

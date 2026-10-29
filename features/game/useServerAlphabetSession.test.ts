@@ -101,10 +101,46 @@ function renderSessionHook() {
 }
 
 function jsonResponse(value: Record<string, unknown>, status = 200, headers: HeadersInit = {}) {
-  return new Response(JSON.stringify(value), {
-    status,
-    headers: { "content-type": "application/json", ...headers },
-  });
+  if (value.progress)
+    value = {
+      ...value,
+      progress: {
+        kind: "alphabet",
+        round: 1,
+        currentIndex: 0,
+        playedCount: 1,
+        correctAnswers: 0,
+        incorrectAnswers: 0,
+        elapsedTimeMs: 0,
+        deadlineAt: value.deadlineAt,
+        lastCorrectAt: null,
+        ...(value.progress as Record<string, unknown>),
+        letters: challenge.entries.map((entry) => ({
+          letter: entry.letter,
+          challengeItemId: entry.id,
+          status: "unvisited",
+          answer: null,
+        })),
+      },
+    };
+  return new Response(
+    JSON.stringify(
+      status >= 400
+        ? value
+        : {
+            attemptId: "attempt-1",
+            resumed: false,
+            presentedAt: new Date().toISOString(),
+            deadlineAt: null,
+            timedOut: false,
+            ...value,
+          },
+    ),
+    {
+      status,
+      headers: { "content-type": "application/json", ...headers },
+    },
+  );
 }
 
 afterEach(() => {

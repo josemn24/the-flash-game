@@ -10,6 +10,7 @@ export type CompetitiveErrorReason =
   | "unknown";
 
 export type AttemptErrorCode =
+  | "invalid_backend_response"
   | "database_unavailable"
   | "command_failed"
   | "not_authorized"

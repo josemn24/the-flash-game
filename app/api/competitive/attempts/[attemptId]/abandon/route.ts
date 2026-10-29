@@ -13,6 +13,7 @@ import {
   AttemptApiError,
   mapAttemptError,
 } from "@/server/competitive/attempt-api";
+import type { SavedAbandonedAttemptResult } from "@/types/contracts/attempts";
 import type { AttemptId } from "@/types/domain/identifiers";
 import { readAbandonedAttemptResult } from "@/server/competitive/flashResult";
 import type { FinishAttemptUseCaseResult } from "@/application/ports/attempt-use-cases";
@@ -34,7 +35,7 @@ export async function POST(
     const attemptId = requirePathUuid(rawAttemptId);
     const identity = await verifiedIdentity();
     const lockVersion = requireLockVersion(body);
-    let abandoned: FinishAttemptUseCaseResult;
+    let abandoned: FinishAttemptUseCaseResult | SavedAbandonedAttemptResult;
     try {
       const sessionToken = await readAttemptToken(attemptId);
       abandoned = await commandsFor(identity, requestId).abandon({

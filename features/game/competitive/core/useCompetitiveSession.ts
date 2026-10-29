@@ -1,4 +1,6 @@
 "use client";
+
+import { sessionValidationContext } from "../../session/sessionResult";
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { CompetitiveSessionEngine, type SessionOptions } from "./sessionEngine";
@@ -90,7 +92,10 @@ export function useCompetitiveSessionWithProvider(options: SessionOptions) {
 export function useCompetitiveSession(options: CompetitiveSessionOptions) {
   const router = useRouter();
   const { challenge, roomContext, terminalReview } = options;
-  const provider = useMemo(() => createRemoteGameSessionProvider(), []);
+  const provider = useMemo(
+    () => createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) }),
+    [challenge],
+  );
   const initialSession = useMemo(
     () => remoteSessionBootstrap(roomContext, terminalReview),
     [roomContext, terminalReview],

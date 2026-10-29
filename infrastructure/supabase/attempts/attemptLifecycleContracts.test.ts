@@ -81,3 +81,30 @@ describe("attempt lifecycle PostgreSQL contracts", () => {
     );
   });
 });
+
+it.each(["unanswered", "incorrect"] as const)(
+  "preserves omitted nulls only in the saved %s projection",
+  (status) => {
+    const value = {
+      scheduledChallengeId: "challenge",
+      result: {
+        attemptId: "attempt",
+        lockVersion: 3,
+        challengeMode: "flash",
+        status: "completed",
+        outcome: null,
+        score: 0,
+        answers: [{ challengeItemId: "item", status, points: 0, timeUsedMs: 1000 }],
+      },
+    };
+    expect(decodeSavedAttemptResult(value)?.result.answers[0]).not.toHaveProperty("answer");
+    expect(() => decodeFinishAttemptResult(value.result)).toThrow();
+  },
+);
+
+it.each(["deadlineReached", "hasOpenInteraction"] as const)(
+  "rejects a mistyped recovery flag %s",
+  (field) => {
+    expect(() => decodeAttemptRecoverySnapshot({ ...recovery, [field]: "false" })).toThrow();
+  },
+);

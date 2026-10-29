@@ -142,10 +142,10 @@ export class CompetitiveSessionEngine {
     this.timers.clear();
     this.listeners.clear();
   };
-  private send = async (
-    command: PendingCommand,
-    invoke: () => Promise<GameSessionResult>,
-    step: CommandStep,
+  private send = async <K extends Operation>(
+    command: PendingCommand<K>,
+    invoke: () => Promise<GameSessionResult<K>>,
+    step: CommandStep<K>,
   ): Promise<boolean> => {
     if (!this.active || this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
     const generation = this.generation;
@@ -156,6 +156,12 @@ export class CompetitiveSessionEngine {
     try {
       const result = await invoke();
       if (result.kind !== "accepted") throw new GameSessionCommandError(result);
+      if (result.operation !== command.operation)
+        throw new GameSessionCommandError({
+          kind: "uncertain",
+          code: "invalid_backend_response",
+          retryable: true,
+        });
       const response = result.state;
       if (!this.active || generation !== this.generation) return false;
       const attemptId =
@@ -216,7 +222,7 @@ export class CompetitiveSessionEngine {
   private run = async <K extends Operation>(
     operation: K,
     data: CommandData<K>,
-    step: CommandStep,
+    step: CommandStep<K>,
   ): Promise<boolean> => {
     if (this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
     let accepted = false;

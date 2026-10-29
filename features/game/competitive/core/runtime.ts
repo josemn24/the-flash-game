@@ -1,5 +1,5 @@
 import type { CommandData } from "./commandExecutor";
-import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
+import type { SessionUpdateByOperation } from "@/types/gameplay/authoritative-session";
 import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type {
   FeedbackChannel,
@@ -10,12 +10,12 @@ import type {
 } from "./sessionReducer";
 import type { CompetitiveChallenge, ModePolicy } from "../modes/policy";
 export type CommandOrigin = "run" | "retry" | "takeover";
-export type CommandStep = {
-  accept: (
-    response: AuthoritativeSessionUpdate,
-    command: PendingCommand,
+export type CommandStep<K extends Operation = Operation> = {
+  accept(
+    response: SessionUpdateByOperation<K>,
+    command: PendingCommand<K>,
     review?: readonly ServerFlashTerminalReview[],
-  ) => void;
+  ): void;
   after?: () => Promise<void>;
   channel?: FeedbackChannel;
 };
@@ -27,7 +27,7 @@ export type SessionRuntime = {
   run: <K extends Operation>(
     operation: K,
     data: CommandData<K>,
-    step: CommandStep,
+    step: CommandStep<K>,
   ) => Promise<boolean>;
   schedule: (name: string, delay: number, callback: () => void) => void;
   cancel: (name: string) => void;

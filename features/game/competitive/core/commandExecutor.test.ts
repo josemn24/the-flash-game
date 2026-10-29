@@ -1,3 +1,4 @@
+import { clientWithWireFixtures, wireValidationContext } from "@/test-utils/sessionWire";
 import { expect, it, vi } from "vitest";
 import { createCompetitiveAttemptClient } from "../attemptClient";
 import type { CompetitiveJsonObject } from "../transport";
@@ -18,7 +19,10 @@ it("captures queued payloads before callers mutate them and resolves the version
   );
   client.queensValidation = vi.fn(async () => ({ lockVersion: 3 }));
   const executor = new CommandExecutor(
-    createRemoteGameSessionProvider({ client }),
+    createRemoteGameSessionProvider({
+      client: clientWithWireFixtures(client),
+      context: wireValidationContext,
+    }),
     () => attempt,
     () => pending,
   );

@@ -22,7 +22,10 @@ export class CommandExecutor {
   execute<K extends Operation>(
     operation: K,
     data: CommandData<K>,
-    send: (command: PendingCommand, invoke: () => Promise<GameSessionResult>) => Promise<void>,
+    send: (
+      command: PendingCommand<K>,
+      invoke: () => Promise<GameSessionResult<K>>,
+    ) => Promise<void>,
   ) {
     if (operation !== "queensDraft" && this.scheduled.has(operation))
       return Promise.reject(new PendingCommandBlocked());
@@ -47,14 +50,17 @@ export class CommandExecutor {
           ? { idempotencyKey: createSessionCommandId(operation) }
           : {}),
       } as GameSessionCommandInputs[K];
-      const command = { operation, input } as PendingCommand;
+      const command = { operation, input } as PendingCommand<K>;
       await send(command, () => this.invoke(command));
     }).finally(() => this.scheduled.delete(operation));
   }
   executeInput<K extends Operation>(
     operation: K,
     input: GameSessionCommandInputs[K],
-    send: (command: PendingCommand, invoke: () => Promise<GameSessionResult>) => Promise<void>,
+    send: (
+      command: PendingCommand<K>,
+      invoke: () => Promise<GameSessionResult<K>>,
+    ) => Promise<void>,
   ) {
     if (operation !== "queensDraft" && this.scheduled.has(operation))
       return Promise.reject(new PendingCommandBlocked());
@@ -62,17 +68,20 @@ export class CommandExecutor {
     this.scheduled.add(operation);
     return this.enqueue(async () => {
       if (this.pending()) throw new PendingCommandBlocked();
-      const command = { operation, input: originalInput } as PendingCommand;
+      const command = { operation, input: originalInput } as PendingCommand<K>;
       await send(command, () => this.invoke(command));
     }).finally(() => this.scheduled.delete(operation));
   }
-  retry(
-    command: PendingCommand,
-    send: (command: PendingCommand, invoke: () => Promise<GameSessionResult>) => Promise<void>,
+  retry<K extends Operation>(
+    command: PendingCommand<K>,
+    send: (
+      command: PendingCommand<K>,
+      invoke: () => Promise<GameSessionResult<K>>,
+    ) => Promise<void>,
   ) {
     return this.enqueue(() => send(command, () => this.invoke(command)));
   }
-  private invoke(command: PendingCommand): Promise<GameSessionResult> {
+  private invoke<K extends Operation>(command: PendingCommand<K>): Promise<GameSessionResult<K>> {
     return this.provider.execute(command, { signal: this.signal });
   }
   private enqueue(work: () => Promise<void>) {

@@ -1,12 +1,14 @@
+import {
+  testSessionProvider,
+  type TestSessionExecute,
+  type TestSessionResult as GameSessionResult,
+} from "@/test-utils/sessionProvider";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { GameSessionProvider, SessionClock } from "@/application/ports/game-session";
+import type { SessionClock } from "@/application/ports/game-session";
 import type { GameSessionCommand, GameSessionOperation } from "@/types/contracts/game-session";
 import type { UtcIsoDateTime } from "@/types/domain/values";
 import type { TimeTrialProgress } from "@/types/domain/time-trial";
-import type {
-  AuthoritativeSessionUpdate,
-  GameSessionResult,
-} from "@/types/gameplay/authoritative-session";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import type { CompetitiveChallenge } from "@/types/gameplay/challenge";
 import { CompetitiveSessionEngine } from "./sessionEngine";
 
@@ -105,7 +107,7 @@ function setup(mode: "flash" | "alphabet" | "time-trial" = "flash") {
   };
   const commands: GameSessionCommand[] = [];
   const handlers: Partial<Record<GameSessionOperation, () => Promise<GameSessionResult>>> = {};
-  const execute = vi.fn<GameSessionProvider["execute"]>(async (command) => {
+  const execute = vi.fn<TestSessionExecute>(async (command) => {
     commands.push(structuredClone(command));
     const handler = handlers[command.operation];
     if (handler) return handler();
@@ -143,7 +145,7 @@ function setup(mode: "flash" | "alphabet" | "time-trial" = "flash") {
   const engine = new CompetitiveSessionEngine({
     challenge,
     initialSession: { status: "new", score: 0, results: [] },
-    provider: { execute },
+    provider: testSessionProvider(execute),
     clock,
   });
   engines.push(engine);

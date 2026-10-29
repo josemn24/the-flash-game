@@ -82,7 +82,34 @@ function render<T>(hook: () => T) {
   return result;
 }
 const json = (value: object, status = 200) =>
-  new Response(JSON.stringify(value), { status, headers: { "content-type": "application/json" } });
+  new Response(
+    JSON.stringify(
+      status >= 400
+        ? value
+        : {
+            attemptId: "attempt",
+            challengeItemId: "item",
+            resumed: false,
+            deadlineAt: null,
+            presentedAt: null,
+            timedOut: false,
+            ...("publicPayload" in value &&
+            (value.publicPayload as Record<string, unknown>).wordLength
+              ? {
+                  progress: {
+                    kind: "mini-wordle",
+                    guesses: [],
+                    feedback: [],
+                    attemptsUsed: 0,
+                    maxAttempts: 6,
+                  },
+                }
+              : {}),
+            ...value,
+          },
+    ),
+    { status, headers: { "content-type": "application/json" } },
+  );
 afterEach(() => {
   vi.clearAllTimers();
   vi.useRealTimers();
@@ -115,7 +142,7 @@ describe("competitive facade regressions", () => {
             lockVersion: 3,
             guess: "CASA",
             attemptsUsed: 1,
-            feedback: [],
+            feedback: [..."CASA"].map((letter) => ({ letter, status: "absent" })),
             terminal: false,
           });
         bodies.push(body);

@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CompetitiveAttemptClient } from "@/features/game/competitive/attemptClient";
+import { sessionValidationContext } from "@/features/game/session/sessionResult";
 import { createRemoteGameSessionProvider } from "@/features/game/session/providers/remote";
 import { createLocalFlashSessionProvider } from "@/features/game/session/providers/localFlash";
 import { createMockFlashPopFlashDemoDefinition } from "@/infrastructure/mock/localPyramidDefinition";
@@ -31,8 +32,14 @@ function remoteProvider(): GameSessionProvider {
   const now = () => new Date(Date.now()).toISOString();
   const client = {
     prepareSession: async () => ({ ready: true }),
-    start: async () => ({ attemptId: "remote-flash-test", lockVersion: 1, resumed: false }),
+    start: async () => ({
+      attemptId: "remote-flash-test",
+      lockVersion: 1,
+      resumed: false,
+      deadlineAt: null,
+    }),
     prepare: async (input: { lockVersion: number }) => ({
+      attemptId: "remote-flash-test",
       lockVersion: input.lockVersion + 1,
       challengeItemId: slot.id,
       publicPayload: payload.publicPayload,
@@ -41,6 +48,7 @@ function remoteProvider(): GameSessionProvider {
       timedOut: false,
     }),
     answer: async (input: { lockVersion: number; answer: unknown }) => ({
+      attemptId: "remote-flash-test",
       lockVersion: input.lockVersion + 1,
       challengeItemId: slot.id,
       answer: input.answer,
@@ -50,6 +58,7 @@ function remoteProvider(): GameSessionProvider {
       timedOut: false,
     }),
     complete: async (input: { lockVersion: number }) => ({
+      attemptId: "remote-flash-test",
       lockVersion: input.lockVersion + 1,
       phase: "results",
       score: 0,
@@ -71,7 +80,10 @@ function remoteProvider(): GameSessionProvider {
       ],
     }),
   } as unknown as CompetitiveAttemptClient;
-  return createRemoteGameSessionProvider({ client });
+  return createRemoteGameSessionProvider({
+    client,
+    context: sessionValidationContext(definition.challenge),
+  });
 }
 
 function SharedFlashExperience({ provider }: { provider: GameSessionProvider }) {

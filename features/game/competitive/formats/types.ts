@@ -55,6 +55,13 @@ export function evaluated(
     status !== "unanswered"
   )
     throw new Error("invalid_answer_response");
+  if (
+    typeof response.points !== "number" ||
+    !Number.isFinite(response.points) ||
+    typeof response.timeUsedMs !== "number" ||
+    !Number.isFinite(response.timeUsedMs)
+  )
+    throw new Error("invalid_answer_response");
   return {
     kind: "evaluated",
     question,
@@ -63,8 +70,8 @@ export function evaluated(
       answer,
       status,
       isCorrect: status === "correct" || status === "partial",
-      points: Number(response.points ?? 0),
-      timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+      points: response.points,
+      timeUsed: response.timeUsedMs / 1000,
       ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
     },
   };

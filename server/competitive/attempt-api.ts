@@ -1,3 +1,4 @@
+import { CompetitiveResponseContractError } from "@/lib/competitiveResponseContract";
 import { AttemptCommandError } from "@/application/errors/attempts";
 import type { AttemptErrorCode } from "@/types/contracts/competitive-errors";
 import { InvalidAttemptLifecycleError } from "@/lib/attemptLifecycle";
@@ -321,6 +322,7 @@ export function commandsFor(identity: AuthenticatedActor, requestId?: string) {
 }
 
 const attemptErrorStatuses = {
+  invalid_backend_response: 502,
   database_unavailable: 503,
   command_failed: 503,
   not_authorized: 404,
@@ -453,6 +455,10 @@ export function errorResponse(
     status: mapped.status,
     result: "error",
     errorCode: mapped.code,
+    ...(error instanceof AttemptCommandError &&
+    error.cause instanceof CompetitiveResponseContractError
+      ? { responsePath: error.cause.path }
+      : {}),
     durationMs: Date.now() - startedAt,
   });
   return Response.json(

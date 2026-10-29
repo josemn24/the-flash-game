@@ -1,8 +1,11 @@
+import {
+  testSessionProvider,
+  type TestSessionExecute,
+  type TestSessionResult as GameSessionResult,
+} from "@/test-utils/sessionProvider";
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import type { GameSessionProvider } from "@/application/ports/game-session";
-import type { GameSessionResult } from "@/types/gameplay/authoritative-session";
 import { definitionFor, sessionCases } from "@/test-utils/game-session-conformance/corpus";
 import { useCompetitiveSessionWithProvider } from "./useCompetitiveSession";
 
@@ -19,13 +22,13 @@ const ready: GameSessionResult = {
 it("retains the engine and its in-flight command when only the options object is recreated", async () => {
   let resolve!: (result: GameSessionResult) => void;
   let signal: AbortSignal | undefined;
-  const execute = vi.fn<GameSessionProvider["execute"]>((_command, options) => {
+  const execute = vi.fn<TestSessionExecute>((_command, options) => {
     signal = options?.signal;
     return new Promise((done) => {
       resolve = done;
     });
   });
-  const provider: GameSessionProvider = { execute };
+  const provider = testSessionProvider(execute);
   const hook = renderHook(() =>
     useCompetitiveSessionWithProvider({ challenge, provider, initialSession }),
   );
@@ -50,14 +53,14 @@ it.each(["provider", "challenge", "unmount"])(
   async (change) => {
     let resolve!: (result: GameSessionResult) => void;
     let signal: AbortSignal | undefined;
-    const execute = vi.fn<GameSessionProvider["execute"]>((_command, options) => {
+    const execute = vi.fn<TestSessionExecute>((_command, options) => {
       signal = options?.signal;
       return new Promise((done) => {
         resolve = done;
       });
     });
-    const provider: GameSessionProvider = { execute };
-    const nextProvider: GameSessionProvider = { execute: vi.fn(async () => ready) };
+    const provider = testSessionProvider(execute);
+    const nextProvider = testSessionProvider(vi.fn(async () => ready));
     const hook = renderHook(
       (props) => useCompetitiveSessionWithProvider({ ...props, initialSession }),
       {

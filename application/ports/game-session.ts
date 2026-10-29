@@ -1,12 +1,17 @@
-import type { GameSessionCommand, GameSessionFailure } from "@/types/contracts/game-session";
+import type { GameMode } from "@/types/domain/content";
+import type {
+  GameSessionCommand,
+  GameSessionFailure,
+  GameSessionOperation,
+} from "@/types/contracts/game-session";
 import type { GameSessionResult } from "@/types/gameplay/authoritative-session";
 
 /** One authority per engine. The provider owns validation, scoring and persistence. */
-export interface GameSessionProvider {
-  execute(
-    command: GameSessionCommand,
+export interface GameSessionProvider<M extends GameMode = GameMode> {
+  execute<K extends GameSessionOperation>(
+    command: GameSessionCommand<K>,
     options?: { signal?: AbortSignal },
-  ): Promise<GameSessionResult>;
+  ): Promise<GameSessionResult<K, M>>;
 }
 
 /** Internal bridge for the existing engine's error handling. Never wraps an HTTP error. */

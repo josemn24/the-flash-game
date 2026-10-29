@@ -1,3 +1,4 @@
+import { sessionValidationContext } from "@/features/game/session/sessionResult";
 import { expect, test, type APIRequestContext, type BrowserContext } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { createLocalTimeTrialSessionProvider } from "@/features/game/session/providers/localTimeTrial";
@@ -36,13 +37,13 @@ function localDefinition(data: ScenarioData, format: Format): LocalTimeTrialDefi
   });
 }
 
-function remoteProvider(api: APIRequestContext) {
-  const remote = createRemoteGameSessionProvider();
+function remoteProvider(
+  api: APIRequestContext,
+  challenge: import("@/types/gameplay/challenge").CompetitiveChallenge,
+): import("@/application/ports/game-session").GameSessionProvider {
+  const remote = createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) });
   return {
-    async execute(
-      command: Parameters<typeof remote.execute>[0],
-      options?: Parameters<typeof remote.execute>[1],
-    ) {
+    async execute(command, options) {
       const original = globalThis.fetch;
       globalThis.fetch = async (url, init) => {
         const response = await api.fetch(new URL(String(url), origin).href, {
@@ -224,7 +225,7 @@ export function registerTimeTrialConformance(options: {
         data.challengeItemIds,
       );
       const remote = new SessionDriver(
-        remoteProvider(request),
+        remoteProvider(request, definition.challenge),
         data.publicationId,
         data.challengeItemIds,
       );
