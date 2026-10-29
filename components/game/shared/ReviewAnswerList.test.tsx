@@ -9,6 +9,34 @@ import {
 import type { AnswerResult } from "@/types/gameplay";
 
 describe("ReviewAnswerList", () => {
+  it.each(["tabarnia-flash-01", "tabarnia-challenge-03"])(
+    "builds question cards for the legacy demo %s without losing unanswered entries",
+    (challengeId) => {
+      const challenge = getChallengeById(challengeId);
+      if (challenge?.mode !== "flash" && challenge?.mode !== "survival")
+        throw new Error("Expected Flash or Survival challenge");
+      const question = challenge.questions[0];
+      const result: AnswerResult = {
+        questionId: question.id,
+        answer: null,
+        status: "unanswered",
+        isCorrect: false,
+        points: 0,
+        timeUsed: 4,
+      };
+      const entries = buildReviewAnswerEntries(challenge, [result]);
+      expect(entries).toHaveLength(challenge.questions.length);
+      expect(entries[0]).toMatchObject({
+        title: question.question,
+        subtitle: `${question.type === "multiple-choice" ? "Elección" : "V/F"} · ${question.category}`,
+        showFullTitleOnExpand: true,
+        result,
+      });
+      expect(entries[1].result).toBeUndefined();
+      expect(entries[1].showFullTitleOnExpand).toBe(true);
+    },
+  );
+
   it("normalizes every challenge question and marks unreachable pyramid levels as locked", () => {
     const challenge = getChallengeById("tabarnia-challenge-05");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");

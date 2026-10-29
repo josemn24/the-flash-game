@@ -112,6 +112,27 @@ test("plays, reviews, and repeats the 16-question local Flash rehearsal without 
   await page.getByRole("button", { name: "Ver respuestas" }).click();
   await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible();
   await expect(page.getByText("16 respuestas")).toBeVisible();
+  const firstQuestion =
+    "¿Qué cultura celebra en 2026 el Año del Caballo de Fuego, que se repite cada 60 años?";
+  const firstCard = page.locator("details").first();
+  const firstSummary = firstCard.locator("summary");
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(firstSummary.locator("strong")).toHaveText(firstQuestion);
+    await expect(firstSummary.locator("small")).toHaveText("Elección · Cultura");
+    await expect(firstSummary.locator("strong")).toHaveCSS("-webkit-line-clamp", "2");
+    await firstSummary.click();
+    const fullQuestion = firstCard
+      .getByText("Pregunta", { exact: true })
+      .locator("..")
+      .locator("p");
+    await expect(fullQuestion).toBeVisible();
+    await expect(fullQuestion).toHaveText(firstQuestion);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+    await firstSummary.click();
+  }
   await page.getByRole("button", { name: "Volver al resultado" }).click();
   await page.getByRole("button", { name: "Repetir ensayo" }).click();
   await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();

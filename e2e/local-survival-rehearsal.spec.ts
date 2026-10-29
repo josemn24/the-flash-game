@@ -63,6 +63,27 @@ test("plays, reviews, and repeats the 20-question local Survival rehearsal witho
   await page.getByRole("button", { name: "Ver respuestas" }).click();
   await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible();
   await expect(page.getByText("3 de 20 retos alcanzados")).toBeVisible();
+  await expect(page.locator("details")).toHaveCount(3);
+  const firstQuestion = "El Teide es el pico más alto de España.";
+  const firstCard = page.locator("details").first();
+  const firstSummary = firstCard.locator("summary");
+  for (const width of [1280, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(firstSummary.locator("strong")).toHaveText(firstQuestion);
+    await expect(firstSummary.locator("small")).toHaveText("V/F · Geografía y naturaleza");
+    await expect(firstSummary.locator("strong")).toHaveCSS("-webkit-line-clamp", "2");
+    await firstSummary.click();
+    const fullQuestion = firstCard
+      .getByText("Pregunta", { exact: true })
+      .locator("..")
+      .locator("p");
+    await expect(fullQuestion).toBeVisible();
+    await expect(fullQuestion).toHaveText(firstQuestion);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
+    ).toBe(true);
+    await firstSummary.click();
+  }
   await page.getByRole("button", { name: "Volver al resultado" }).click();
   await page.getByRole("button", { name: "Repetir ensayo" }).click();
   await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();

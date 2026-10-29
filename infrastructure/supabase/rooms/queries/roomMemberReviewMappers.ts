@@ -1,6 +1,6 @@
 import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
-import { getSurvivalReviewCardContent } from "@/lib/gameplay/survivalReviewCardContent";
+import { getQuestionReviewCardContent } from "@/lib/gameplay/questionReviewCardContent";
 import { initials } from "@/lib/roomPresentation";
 import type { RoomMemberDetailModel, RoomMemberReviewItem } from "@/types/view-models";
 import type { RoomMemberReviewReadRow } from "./roomReadContracts";
@@ -27,9 +27,9 @@ export function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMe
       const question = locked ? null : toHistoricalFlashQuestion(row);
       const result = locked ? null : toHistoricalAnswerReview(row);
       const status = locked ? "locked" : (result?.status ?? "unanswered");
-      const survivalCardContent =
-        row.challenge_mode === "survival" && question
-          ? getSurvivalReviewCardContent(question)
+      const cardContent =
+        (row.challenge_mode === "flash" || row.challenge_mode === "survival") && question
+          ? getQuestionReviewCardContent(question)
           : undefined;
       const metadata =
         row.challenge_mode === "pyramid"
@@ -57,8 +57,8 @@ export function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMe
               ? (row.level_label ?? `Nivel ${row.item_position}`)
               : row.challenge_mode === "alphabet" && question
                 ? question.question
-                : survivalCardContent
-                  ? survivalCardContent.title
+                : cardContent
+                  ? cardContent.title
                   : question
                     ? QUESTION_FORMAT_LABELS[question.type]
                     : row.question_type,
@@ -69,8 +69,8 @@ export function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMe
               ? `Letra ${row.alphabet_letter}`
               : row.challenge_mode === "time-trial"
                 ? timeTrialSubtitle(question)
-                : survivalCardContent
-                  ? survivalCardContent.subtitle
+                : cardContent
+                  ? cardContent.subtitle
                   : (question?.category ?? ""),
         question,
         result,

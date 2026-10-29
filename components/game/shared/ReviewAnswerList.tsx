@@ -1,6 +1,7 @@
 import { ProductSignal } from "@/components/product/Measurement.client";
 import { CheckIcon, ClockIcon, CrossIcon, LockIcon } from "@/components/ui";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
+import { getQuestionReviewCardContent } from "@/lib/gameplay/questionReviewCardContent";
 import { logicCodeReviewResult } from "@/lib/question-formats/logic-code/review";
 import type { AnswerResult, AnswerStatus } from "@/types/gameplay";
 import type { PracticeChallenge, PracticeQuestion } from "@/types/gameplay/practice";
@@ -131,7 +132,9 @@ export function ReviewAnswerList({
                     <p>{title}</p>
                   </div>
                 ) : null}
-                {result ? <QuestionReviewContent question={entry.question} result={result} /> : null}
+                {result ? (
+                  <QuestionReviewContent question={entry.question} result={result} />
+                ) : null}
                 {result && entry.showMeta !== false ? (
                   <div className={styles.reviewAnswerMeta} aria-label="Resumen de la respuesta">
                     {resultSummary(result, entry.question)}
@@ -183,6 +186,9 @@ export function buildReviewAnswerEntries(
       question,
       result,
       marker: String(index + 1).padStart(2, "0"),
+      ...(challenge.mode === "flash" || challenge.mode === "survival"
+        ? { ...getQuestionReviewCardContent(question), showFullTitleOnExpand: true }
+        : {}),
       status: pyramidLocked ? "locked" : undefined,
       lockedMessage: pyramidLocked
         ? "No alcanzado: el ascenso terminó en un nivel anterior."

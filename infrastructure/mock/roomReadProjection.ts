@@ -53,7 +53,7 @@ import {
   initials,
 } from "@/lib/roomPresentation";
 import { deriveCompetitivePyramidProgress } from "@/lib/gameplay/pyramidProgress";
-import { getSurvivalReviewCardContent } from "@/lib/gameplay/survivalReviewCardContent";
+import { getQuestionReviewCardContent } from "@/lib/gameplay/questionReviewCardContent";
 import { deriveSurvivalProgress } from "@/lib/gameplay/survivalProgress";
 import { sumEffectiveDurationMs } from "@/lib/challengeRanking";
 
@@ -186,20 +186,22 @@ function historicalReviewProjection(
     const level = challenge.mode === "pyramid" ? challenge.levels[index] : undefined;
     const alphabetLetter =
       challenge.mode === "alphabet" ? challenge.entries[index]?.letter : undefined;
-    const survivalCardContent =
-      challenge.mode === "survival" ? getSurvivalReviewCardContent(question) : undefined;
+    const cardContent =
+      challenge.mode === "flash" || challenge.mode === "survival"
+        ? getQuestionReviewCardContent(question)
+        : undefined;
     return [
       {
         id: item.id,
         title: alphabetLetter
           ? question.question
-          : survivalCardContent
-            ? survivalCardContent.title
+          : cardContent
+            ? cardContent.title
             : (level?.label ?? QUESTION_FORMAT_LABELS[question.type]),
         subtitle: alphabetLetter
           ? `Letra ${alphabetLetter}`
-          : survivalCardContent
-            ? survivalCardContent.subtitle
+          : cardContent
+            ? cardContent.subtitle
             : (level?.briefing.title ?? question.category),
         question,
         result,

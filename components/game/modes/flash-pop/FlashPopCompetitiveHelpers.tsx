@@ -12,7 +12,7 @@ import {
   getAnswerResultAccuracyUnit,
 } from "@/features/game/resultSummary";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
-import { getSurvivalReviewCardContent } from "@/lib/gameplay/survivalReviewCardContent";
+import { getQuestionReviewCardContent } from "@/lib/gameplay/questionReviewCardContent";
 import type { AnswerResult, FlashChallenge } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";
 import styles from "./FlashPopFlashGame.module.css";
@@ -90,8 +90,8 @@ export function ReviewStage({
     question,
     result: resultByQuestionId.get(question.id),
     marker: String(index + 1).padStart(2, "0"),
-    ...(presentation === "survival"
-      ? { ...getSurvivalReviewCardContent(question), showFullTitleOnExpand: true }
+    ...(presentation === "flash" || presentation === "survival"
+      ? { ...getQuestionReviewCardContent(question), showFullTitleOnExpand: true }
       : {}),
   }));
   const total = totalQuestionCount ?? challenge.questions.length;

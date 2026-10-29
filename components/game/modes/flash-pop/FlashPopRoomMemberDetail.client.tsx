@@ -58,7 +58,7 @@ function AnswerHistory({
     marker: item.metadata?.alphabetLetter ?? String(index + 1).padStart(2, "0"),
     title: item.title,
     subtitle: item.subtitle,
-    showFullTitleOnExpand: progress?.mode === "survival",
+    showFullTitleOnExpand: progress?.mode === "flash" || progress?.mode === "survival",
     status: item.status,
     statusLabel:
       progress?.mode === "time-trial"

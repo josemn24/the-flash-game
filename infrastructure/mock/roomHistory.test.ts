@@ -6,6 +6,7 @@ import {
   scheduledChallengeRouteAliases,
 } from "@/data/mock/constants";
 import { utc } from "@/data/mock/identity";
+import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
 import { createMockRoomReadCapabilities, mockQueryContext } from "@/test-utils/mockRoom";
 
 const publicationId = scheduledChallengeRouteAliases["tabarnia-challenge-02"];
@@ -24,6 +25,49 @@ function storeWithPublication(status: "open" | "scheduled" | "cancelled") {
 }
 
 describe("mock history and review effective closure", () => {
+  describe.each(["current", "historical"] as const)("%s review cards", (view) => {
+    it.each([
+      { challengeId: "tabarnia-flash-01", mode: "flash" },
+      { challengeId: "tabarnia-challenge-03", mode: "survival" },
+    ] as const)("projects question titles for $mode members", async ({ challengeId, mode }) => {
+      const targetId = scheduledChallengeRouteAliases[challengeId];
+      const store = {
+        ...mockDomainStore,
+        scheduledChallenges: mockDomainStore.scheduledChallenges.map((schedule) =>
+          view === "current"
+            ? {
+                ...schedule,
+                status: schedule.id === targetId ? ("open" as const) : ("closed" as const),
+                ...(schedule.id === targetId
+                  ? {
+                      opensAt: utc("2026-09-12T00:00:00Z"),
+                      closesAt: utc("2026-09-13T00:00:00Z"),
+                    }
+                  : {}),
+              }
+            : schedule,
+        ),
+      };
+      const model = await createMockRoomReadCapabilities(store).getMemberDetail(
+        "tabarnia-room",
+        "ches",
+        mockQueryContext(now, playerRouteAliases.ches),
+        view === "historical" ? challengeId : undefined,
+      );
+      expect(model?.reviewProgress?.mode).toBe(mode);
+      expect(model?.reviewItems.length).toBeGreaterThan(0);
+      for (const item of model!.reviewItems) {
+        const question = item.question!;
+        expect(item.title).toBe(question.question);
+        expect(item.subtitle).toBe(
+          `${QUESTION_FORMAT_LABELS[question.type]} · ${question.category}`,
+        );
+      }
+      if (model?.reviewProgress?.mode === "survival")
+        expect(model.reviewItems).toHaveLength(model.reviewProgress.reachedQuestionCount);
+    });
+  });
+
   it.each(["open", "scheduled"] as const)(
     "uses QueryContext.now for a persisted %s publication",
     async (status) => {

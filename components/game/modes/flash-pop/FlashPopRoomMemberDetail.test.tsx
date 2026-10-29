@@ -47,7 +47,7 @@ function flashItems(): RoomMemberReviewItem[] {
     {
       id: choice.id,
       title: choice.question,
-      subtitle: choice.category,
+      subtitle: `Elección · ${choice.category}`,
       question: choice,
       status: "incorrect",
       result: {
@@ -62,7 +62,7 @@ function flashItems(): RoomMemberReviewItem[] {
     {
       id: matching.id,
       title: matching.question,
-      subtitle: matching.category,
+      subtitle: `Emparejar · ${matching.category}`,
       question: matching,
       status: "correct",
       result: {
@@ -146,6 +146,37 @@ function renderModel(model: RoomMemberDetailModel) {
 afterEach(() => document.body.replaceChildren());
 
 describe("FlashPopRoomMemberDetail", () => {
+  it.each(["flash", "survival"] as const)(
+    "shows complete questions and the original %s member counter",
+    (mode) => {
+      const model = memberModel({
+        progress:
+          mode === "flash"
+            ? { mode, answeredCount: 2, totalQuestionCount: 2 }
+            : {
+                mode,
+                reachedQuestionCount: 2,
+                totalQuestionCount: 20,
+                initialLives: 3,
+                livesRemaining: 2,
+                outcome: "in_progress",
+              },
+      });
+      model.challengeSummary = { ...model.challengeSummary!, mode };
+      const view = renderModel(model);
+      const history = view.getByRole("region", { name: "Respuestas" });
+      const row = history.querySelector("details")!;
+      expect(row.querySelector("summary strong")?.textContent).toBe("Capital de Portugal");
+      expect(row.querySelector("summary small")?.textContent).toBe("Elección · Cultura");
+      const fullQuestion = within(row).getByText("Pregunta").parentElement!;
+      expect(fullQuestion.querySelector("p")?.textContent).toBe("Capital de Portugal");
+      expect(within(row).getByText(questionBase.explanation)).toBeTruthy();
+      expect(
+        within(history).getByText(mode === "flash" ? "2 respuestas" : "2 preguntas alcanzadas"),
+      ).toBeTruthy();
+    },
+  );
+
   it("renders the challenge score, rank, date and expandable answer history", () => {
     const view = renderModel(memberModel());
     expect(view.getByRole("heading", { name: "Dark" })).toBeTruthy();
