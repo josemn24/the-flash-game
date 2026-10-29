@@ -39,9 +39,9 @@ describe("RoomLeaderboard medals", () => {
       memberHrefBase: "/salas/demo/ranking",
     });
 
-    expect(markup).toContain("first-place.png");
-    expect(markup).toContain("second-place.png");
-    expect(markup).toContain("third-place.png");
+    expect(markup).toContain("first-place.svg");
+    expect(markup).toContain("second-place.svg");
+    expect(markup).toContain("third-place.svg");
     expect(markup).toContain("#4");
     expect(markup).not.toContain("#1");
     expect(markup).not.toContain("#2");

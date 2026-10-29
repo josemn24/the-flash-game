@@ -190,9 +190,9 @@ function renderCardContent(
 
   return (
     <>
-      <span className={`${styles.cardRank} ${medalSrc ? styles.cardMedal : ""}`} aria-hidden="true">
+      <span className={styles.cardRank} aria-hidden="true">
         {medalSrc ? (
-          <Image src={medalSrc} alt="" width={384} height={448} className={styles.medalImage} />
+          <Image src={medalSrc} alt="" width={58} height={73} className={styles.medalImage} />
         ) : (
           `#${entry.rank}`
         )}
@@ -219,11 +219,11 @@ function renderCardContent(
 function getDailyMedalSource(rank: number) {
   switch (rank) {
     case 1:
-      return "/visuals/medals/first-place.png";
+      return "/visuals/medals/first-place.svg";
     case 2:
-      return "/visuals/medals/second-place.png";
+      return "/visuals/medals/second-place.svg";
     case 3:
-      return "/visuals/medals/third-place.png";
+      return "/visuals/medals/third-place.svg";
     default:
       return null;
   }
