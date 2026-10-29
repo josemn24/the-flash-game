@@ -122,9 +122,12 @@ do $$begin
 end $$;
 
 -- Expiry is enforced even if the calendar has not yet changed the season status.
+set constraints all immediate;
 alter table public.seasons disable trigger seasons_guard;
+alter table public.seasons disable trigger season_calendar_containment;
 update public.seasons set starts_at=now()-interval '4 days',ends_at=now()-interval '2 days'
 where id=test_support.id('season-flash');
+alter table public.seasons enable trigger season_calendar_containment;
 alter table public.seasons enable trigger seasons_guard;
 set local role authenticated;
 select test_support.as_actor('member');
@@ -134,8 +137,11 @@ do $$begin
    'A past client timestamp cannot admit a new observation after server expiry';
 end $$;
 reset role;
+set constraints all immediate;
 alter table public.seasons disable trigger seasons_guard;
+alter table public.seasons disable trigger season_calendar_containment;
 update public.seasons set status='finished' where id=test_support.id('season-flash');
+alter table public.seasons enable trigger season_calendar_containment;
 alter table public.seasons enable trigger seasons_guard;
 set local role authenticated;
 do $$begin

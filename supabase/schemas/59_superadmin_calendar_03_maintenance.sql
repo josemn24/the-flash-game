@@ -124,7 +124,7 @@ begin
     from public.seasons season
     left join public.scheduled_challenges schedule on schedule.season_id = season.id
     where (season.status = 'active' and season.ends_at <= now_value)
-       or (schedule.status in ('scheduled', 'open') and schedule.closes_at <= now_value)
+       or (season.status <> 'draft' and schedule.status in ('scheduled', 'open') and schedule.closes_at <= now_value)
     order by season.room_id
   loop
     perform 1 from public.rooms room where room.id = room_id_value for update;
@@ -137,6 +137,7 @@ begin
        or exists (
          select 1 from public.scheduled_challenges schedule
          where schedule.season_id = season.id
+           and season.status <> 'draft'
            and schedule.status in ('scheduled', 'open')
            and schedule.closes_at <= now_value
        )
@@ -150,6 +151,7 @@ begin
     from public.scheduled_challenges schedule
     join public.seasons season on season.id = schedule.season_id
     where schedule.status in ('scheduled', 'open')
+      and season.status <> 'draft'
       and schedule.closes_at <= now_value
     order by schedule.id
   loop

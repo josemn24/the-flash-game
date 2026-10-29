@@ -18,7 +18,7 @@ create table public.scheduled_challenges (
   exclude using gist (
     season_id extensions.gist_uuid_ops with =,
     tstzrange(opens_at, closes_at, '[)') with &&
-  ) where (status <> 'cancelled')
+  ) where (status <> 'cancelled') deferrable initially immediate
 );
 
 create table public.attempts (

@@ -109,7 +109,7 @@ function CreateScheduleForm({
     return (
       <div className={styles.dialogBody}>
         <p className={styles.helper}>
-          Necesitas una temporada activa y contenido Flash publicado para programar.
+          Necesitas una temporada disponible y contenido publicado para programar.
         </p>
         <div className={styles.formActions}>
           <Button type="button" variant="secondary" size="sm" onClick={onCancel}>
@@ -135,7 +135,7 @@ function CreateScheduleForm({
 
         <FormField
           id={formId + "-seasonId"}
-          label="Temporada activa"
+          label="Temporada"
           density="compact"
           error={fieldError("seasonId")}
           announceError
@@ -334,6 +334,13 @@ function UpdateScheduleForm({
               defaultValue={entry.challengeVersionId}
               data-dialog-autofocus
             >
+              {!publishedContent.some(
+                (candidate) => candidate.challengeVersionId === entry.challengeVersionId,
+              ) ? (
+                <option value={entry.challengeVersionId}>
+                  {entry.challengeTitle} · v{entry.versionNumber} (actual)
+                </option>
+              ) : null}
               {publishedContent.map((candidate) => (
                 <option key={candidate.challengeVersionId} value={candidate.challengeVersionId}>
                   {candidate.title} · v{candidate.versionNumber}
@@ -358,51 +365,16 @@ function UpdateScheduleForm({
         </FormField>
       </fieldset>
 
-      <fieldset className={styles.group}>
-        <legend>Ventana temporal</legend>
-
-        <p className={styles.timezone}>
-          Las fechas se guardarán en la zona horaria de la sala: {room.timeZone}
-        </p>
-
-        <div className={styles.dateGrid}>
-          <FormField
-            id={formId + "-opensAtLocal"}
-            label="Apertura"
-            density="compact"
-            required
-            error={fieldError("opensAtLocal")}
-            announceError
-          >
-            {(field) => (
-              <Input
-                {...field}
-                name="opensAtLocal"
-                type="datetime-local"
-                defaultValue={utcToLocalDateTime(entry.opensAt, room.timeZone)}
-              />
-            )}
-          </FormField>
-
-          <FormField
-            id={formId + "-closesAtLocal"}
-            label="Cierre"
-            density="compact"
-            required
-            error={fieldError("closesAtLocal")}
-            announceError
-          >
-            {(field) => (
-              <Input
-                {...field}
-                name="closesAtLocal"
-                type="datetime-local"
-                defaultValue={utcToLocalDateTime(entry.closesAt, room.timeZone)}
-              />
-            )}
-          </FormField>
-        </div>
-      </fieldset>
+      <input
+        type="hidden"
+        name="opensAtLocal"
+        value={utcToLocalDateTime(entry.opensAt, room.timeZone)}
+      />
+      <input
+        type="hidden"
+        name="closesAtLocal"
+        value={utcToLocalDateTime(entry.closesAt, room.timeZone)}
+      />
 
       <fieldset className={styles.group}>
         <legend>Auditoría</legend>
@@ -433,7 +405,7 @@ function UpdateScheduleForm({
         </p>
       ) : null}
 
-      <FormActions pending={pending} submitLabel="Guardar reprogramación" onCancel={onCancel} />
+      <FormActions pending={pending} submitLabel="Guardar publicación" onCancel={onCancel} />
     </form>
   );
 }
@@ -485,7 +457,7 @@ export function CalendarScheduleDialog(props: CalendarScheduleDialogProps) {
           className={props.compact ? styles.weekEntryAction : undefined}
           onClick={() => setOpen(true)}
         >
-          Reprogramar
+          Editar publicación
         </Button>
       )}
 
@@ -512,11 +484,11 @@ export function CalendarScheduleDialog(props: CalendarScheduleDialogProps) {
                 <p className={styles.eyebrow}>
                   {isCreate ? "Nueva programación" : "Edición de calendario"}
                 </p>
-                <h2 id={titleId}>{isCreate ? "Programar desafío" : "Reprogramar desafío"}</h2>
+                <h2 id={titleId}>{isCreate ? "Programar desafío" : "Editar publicación"}</h2>
                 <p id={descriptionId} className={styles.dialogDescription}>
                   {isCreate
                     ? "Configura el contenido y la ventana temporal de la publicación."
-                    : "Ajusta la publicación mientras todavía no ha comenzado."}
+                    : "Cambia el contenido o el número de una publicación futura."}
                 </p>
               </div>
               <button

@@ -100,18 +100,53 @@ del casete. Las cuentas y los IDs quedan en `output/fixtures/tabarnia.json` y
 `output/fixtures/betavip.json`; este último incluye las credenciales locales de Manuel y Genís.
 Las credenciales de ejemplo son exclusivamente locales.
 
+### Duración de los desafíos
+
+Ambos setups locales aceptan `--schedule <production|fast|Nm|Nh>`. Las duraciones personalizadas
+usan un entero positivo seguido de `m` (minutos) o `h` (horas), en minúsculas:
+
+```bash
+npm run supabase:tabarnia:setup -- --schedule 10m
+npm run supabase:betavip:setup -- --schedule 30m
+npm run supabase:betavip:setup -- --schedule 1h
+```
+
+| Calendario                    | Ventana por desafío | Temporada Tabarnia (8 desafíos) | Temporada BetaVIP (6 desafíos) |
+| ----------------------------- | ------------------- | ------------------------------- | ------------------------------ |
+| `production` (predeterminado) | 24 horas            | 17 días                         | 6 días                         |
+| `fast`                        | 5 minutos           | 40 minutos                      | 30 minutos                     |
+| `10m`                         | 10 minutos          | 80 minutos                      | 60 minutos                     |
+| `30m`                         | 30 minutos          | 4 horas                         | 3 horas                        |
+| `1h`                          | 1 hora              | 8 horas                         | 6 horas                        |
+
+Con `fast` o una duración personalizada, las ventanas son consecutivas y la temporada termina al
+cerrar el último desafío. BetaVIP transmite el mismo calendario a Tabarnia al preparar ambas salas.
+Los límites individuales de preguntas y partidas, las vidas y los puntos conservan su configuración.
+Para una hora y media usa `90m`; no se admiten decimales, unidades compuestas, valores cero o
+negativos ni calendarios cuyo fin quede fuera del rango de fechas válido.
+
+El manifiesto guarda la duración en `scheduleWindowMinutes` y el total en `seasonDurationMinutes`.
+Los perfiles personalizados se normalizan a minutos: `1h` y `60m` se guardan como
+`scheduleProfile: "60m"`. Los nombres `fast` y `production` se conservan.
+
+La opción configura el escenario nuevo creado por el setup. Para modificar una temporada existente,
+utiliza la [reprogramación segura del portal](calendar-rescheduling.md). El bootstrap específico de
+staging conserva su calendario actual y no incorpora esta opción.
+
 Por defecto, ambas temporadas empiezan al ejecutar el setup y «Circuito de parejas» queda abierto en BetaVIP.
 Para programar un inicio futuro, pasar una fecha y hora ISO 8601 con zona horaria; el primer desafío
 quedará programado hasta esa hora. La opción también está disponible en `supabase:tabarnia:setup`:
 
 ```bash
-npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
+npm run supabase:betavip:setup -- --schedule 30m --starts-at "2030-10-20T19:00:00+02:00"
 ```
 
-La fecha y hora configuradas se guardan en UTC en el manifiesto. El desafío queda visible como
+Elige siempre una fecha futura. La fecha y hora configuradas se guardan en UTC en el manifiesto,
+conservando los segundos si se indicaron. Al omitir `--starts-at`, el inicio se alinea al minuto.
+El desafío queda visible como
 próximo y se podrá jugar al llegar el inicio; cada persona inicia su propia partida manualmente.
 
-Desde el inicio de temporada, «Circuito de parejas» está abierto durante las primeras 24 horas:
+Con el perfil predeterminado `production`, «Circuito de parejas» está abierto durante las primeras 24 horas:
 seis tableros de Conectar parejas de 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7, de tres a siete parejas,
 un único reloj de 150 segundos y pesos de 12, 14, 16, 18, 19 y 21 puntos. Borrar y rehacer caminos
 no penaliza. Después se programan

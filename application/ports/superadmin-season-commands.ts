@@ -10,6 +10,7 @@ export type CreateSeasonInput = {
 };
 
 export type UpdateSeasonInput = {
+  readonly expectedUpdatedAt?: string;
   readonly idempotencyKey: string;
   readonly seasonId: string;
   readonly title: string;

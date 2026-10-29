@@ -131,6 +131,9 @@ isOneToOne: false
 "add_superadmin_room_member":
 { Args: { "input": Json }; Returns: Json
                            },
+"apply_superadmin_calendar_change":
+{ Args: { "input": Json }; Returns: Json
+                           },
 "archive_superadmin_challenge_version":
 { Args: { "input": Json }; Returns: Json
                            },
@@ -321,6 +324,9 @@ isOneToOne: false
             }[]
                            },
 "manage_room_member":
+{ Args: { "input": Json }; Returns: Json
+                           },
+"preview_superadmin_calendar_change":
 { Args: { "input": Json }; Returns: Json
                            },
 "provision_player":

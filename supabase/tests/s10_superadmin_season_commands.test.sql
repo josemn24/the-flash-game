@@ -136,7 +136,7 @@ set local role authenticated;
 select throws_ok($$select public.update_superadmin_season(jsonb_build_object(
   'idempotencyKey', 's10-update-active', 'seasonId', pg_temp.test_id('existing-active'),
   'title', 'Not allowed', 'startsAt', now() + interval '1 day', 'endsAt', now() + interval '2 days', 'reason', 'test'
-))$$, '55000', 'season_not_draft', 'An active season cannot be edited');
+))$$, '55000', 'season_not_draft', 'A published season title remains frozen');
 reset role;
 select set_config('s10.edited_id', (select id::text from public.seasons where title = 'S10 edited'), true);
 set local role authenticated;

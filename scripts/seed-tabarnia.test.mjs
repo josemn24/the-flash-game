@@ -1,6 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildTabarniaDomainSql, setupTabarniaDataset, TABARNIA_USERS } from "./seed-tabarnia.mjs";
-import { TABARNIA_FICTION_ALPHABET } from "./fixtures/scenarios/tabarnia-multiverse.mjs";
+import { parseFlashEditorialQuestionDocument } from "../lib/editorial/flashDocument.ts";
+import { supabaseCompetitiveEvaluator } from "../server/evaluation/competitive-evaluator.ts";
+import {
+  buildTabarniaDomainSql,
+  setupTabarniaDataset,
+  tabarniaManifest,
+  TABARNIA_USERS,
+} from "./seed-tabarnia.mjs";
+import {
+  TABARNIA_FICTION_ALPHABET,
+  tabarniaMultiverseQuestions,
+} from "./fixtures/scenarios/tabarnia-multiverse.mjs";
 
 function accounts() {
   return Object.fromEntries(
@@ -71,6 +81,116 @@ function spainAssets() {
 }
 
 describe("Tabarnia seed", () => {
+  it.each([
+    ["10m", 10, 80],
+    ["30m", 30, 240],
+    ["1h", 60, 480],
+    ["90m", 90, 720],
+  ])(
+    "generates matching SQL and manifest for %s without changing game clocks",
+    (schedule, minutes, total) => {
+      const input = {
+        accounts: accounts(),
+        sbrAssetMetadata: {},
+        spainAssets: spainAssets(),
+        avatarMetadata: avatarMetadata(),
+      };
+      const startsAt = "2099-10-20T19:00:20.168+02:00";
+      const start = "'2099-10-20T17:00:20.168Z'::timestamptz";
+      const data = tabarniaManifest(input.accounts, input.avatarMetadata, schedule, startsAt);
+      const sql = buildTabarniaDomainSql({ ...input, schedule, startsAt });
+      expect(data).toMatchObject({
+        scheduleProfile: `${minutes}m`,
+        scheduleWindowMinutes: minutes,
+        seasonDurationMinutes: total,
+        seasonStartsAt: "2099-10-20T17:00:20.168Z",
+      });
+      expect(data.publications).toHaveLength(8);
+      expect(data.publications.every((publication) => publication.status === "scheduled")).toBe(
+        true,
+      );
+      for (const [index, publication] of data.publications.entries()) {
+        expect(publication.opensAfterMinutes).toBe(index * minutes);
+        expect(publication.durationMinutes).toBe(minutes);
+        expect(publication.opensAfterHours).toBe((index * minutes) / 60);
+        const opensAt = index === 0 ? start : `${start} + interval '${index * minutes} minutes'`;
+        const closesAt = `${start} + interval '${(index + 1) * minutes} minutes'`;
+        expect(sql).toContain(`'scheduled', ${opensAt}, ${closesAt}`);
+      }
+      expect(sql).toContain(`'active', ${start}, ${start} + interval '${total} minutes'`);
+      const versions = (value) =>
+        value
+          .split("insert into private.challenge_versions")[1]
+          .split("insert into private.challenge_items")[0];
+      expect(versions(sql)).toBe(versions(buildTabarniaDomainSql(input)));
+    },
+  );
+
+  it("propagates a custom duration through the complete mocked Tabarnia setup", async () => {
+    const dockerSql = vi.fn();
+    const writeFixture = vi.fn();
+    const startsAt = "2099-10-20T19:00:20.168+02:00";
+    const output = await setupTabarniaDataset({
+      schedule: "1h",
+      startsAt,
+      dependencies: {
+        localSupabaseConfig: vi.fn(async () => ({
+          url: "http://127.0.0.1:54321",
+          dbContainer: "test-only",
+        })),
+        resetLocalDatabase: vi.fn(),
+        removeFixture: vi.fn(),
+        loadMiniWordleDictionary: vi.fn(),
+        createFixedAuthAccounts: vi.fn(async () => accounts()),
+        getMapMetadata: vi.fn(async () => ({})),
+        getAvatarMetadata: vi.fn(async (user) => avatarMetadata()[user.label]),
+        prepareSpainAssets: vi.fn(async () => ({ assets: spainAssets(), cleanup: vi.fn() })),
+        uploadStorageObject: vi.fn(),
+        dockerSql,
+        writeFixture,
+      },
+    });
+    expect(output).toMatchObject({
+      scheduleProfile: "60m",
+      scheduleWindowMinutes: 60,
+      seasonDurationMinutes: 480,
+    });
+    expect(output.publications.every((publication) => publication.status === "scheduled")).toBe(
+      true,
+    );
+    expect(dockerSql).toHaveBeenCalledOnce();
+    expect(dockerSql.mock.calls[0][0]).toContain("interval '480 minutes'");
+    expect(writeFixture).toHaveBeenCalledWith(
+      "tabarnia",
+      expect.objectContaining({ data: output }),
+    );
+  });
+
+  it.each(["hourly", "0m", "-1h", "1.5h", "150000000000m", "20000000000m"])(
+    "rejects %s before any external Tabarnia operation",
+    async (schedule) => {
+      const dependencies = Object.fromEntries(
+        [
+          "localSupabaseConfig",
+          "resetLocalDatabase",
+          "removeFixture",
+          "loadMiniWordleDictionary",
+          "createFixedAuthAccounts",
+          "getMapMetadata",
+          "getAvatarMetadata",
+          "prepareSpainAssets",
+          "uploadStorageObject",
+          "removeStorageObject",
+          "dockerSql",
+          "writeFixture",
+        ].map((name) => [name, vi.fn()]),
+      );
+      await expect(setupTabarniaDataset({ schedule, dependencies })).rejects.toThrow();
+      for (const dependency of Object.values(dependencies))
+        expect(dependency).not.toHaveBeenCalled();
+    },
+  );
+
   it("defines the fixed cohort and the requested roles", () => {
     expect(TABARNIA_USERS).toHaveLength(16);
     expect(TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => user.avatarFile)).toEqual(
@@ -140,6 +260,96 @@ describe("Tabarnia seed", () => {
     expect(TABARNIA_FICTION_ALPHABET.questionTimeLimitMs).toBe(120_000);
   });
 
+  describe("Multiverse solutions", () => {
+    const cases = tabarniaMultiverseQuestions().map(({ points, ...document }, index) => ({
+      letter: TABARNIA_FICTION_ALPHABET.entries[index].letter,
+      points,
+      document,
+    }));
+
+    function evaluationContext(
+      { letter, points, document },
+      answer = document.solutionPayload.correctAnswer,
+    ) {
+      return {
+        receiptId: "00000000-0000-4000-8000-000000000001",
+        questionVersionId: "00000000-0000-4000-8000-000000000002",
+        receivedAt: "2026-10-29T00:00:00Z",
+        questionType: document.type,
+        payloadSchemaVersion: document.payloadSchemaVersion,
+        publicPayload: document.publicPayload,
+        solutionPayload: document.solutionPayload,
+        timeLimitMs: document.timeLimitMs,
+        itemPoints: points,
+        itemConfigSchemaVersion: 1,
+        itemConfig: { letter },
+        mode: "alphabet",
+        modeConfigSchemaVersion: 1,
+        modeConfig: {},
+        timeUsedMs: 0,
+        timedOut: false,
+        answer,
+      };
+    }
+
+    it("generates all sixteen questions in order with their original weights", () => {
+      expect(cases).toHaveLength(16);
+      expect(cases.map(({ document }) => document.slug)).toEqual(
+        TABARNIA_FICTION_ALPHABET.entries.map((entry) => entry.slug),
+      );
+      expect(cases.map(({ points }) => points)).toEqual([7, 7, 7, 7, ...Array(12).fill(6)]);
+      expect(cases.reduce((total, { points }) => total + points, 0)).toBe(100);
+    });
+
+    it.each(cases)("validates the editorial document for letter $letter", ({ document }) => {
+      expect(() => parseFlashEditorialQuestionDocument(document)).not.toThrow();
+    });
+
+    it.each(cases)("awards the full weight for the correct answer to letter $letter", (test) => {
+      expect(supabaseCompetitiveEvaluator.evaluate(evaluationContext(test))).toEqual({
+        status: "correct",
+        points: test.points,
+      });
+    });
+
+    it.each(cases)("rejects an incorrect answer to letter $letter", (test) => {
+      expect(
+        supabaseCompetitiveEvaluator.evaluate(evaluationContext(test, "Respuesta incorrecta")),
+      ).toEqual({ status: "incorrect", points: 0 });
+    });
+
+    it.each([
+      { letter: "A", answer: "Aladdín" },
+      { letter: "A", answer: "Aladín" },
+      { letter: "A", answer: "ALADDIN" },
+      { letter: "C", answer: "Cien anos de soledad" },
+      { letter: "P", answer: "Pokemon" },
+      { letter: "T", answer: "Tintin" },
+    ])("accepts the original variant $answer for letter $letter", ({ letter, answer }) => {
+      const test = cases.find((test) => test.letter === letter);
+      expect(supabaseCompetitiveEvaluator.evaluate(evaluationContext(test, answer))).toEqual({
+        status: "correct",
+        points: test.points,
+      });
+    });
+
+    it.each([
+      { letter: "A", acceptedAnswers: ["Aladdin", "Aladdín", "Aladín"] },
+      { letter: "C", acceptedAnswers: ["Cien años de soledad", "Cien anos de soledad"] },
+      { letter: "P", acceptedAnswers: ["Pokémon", "Pokemon"] },
+      { letter: "T", acceptedAnswers: ["Tintín", "Tintin"] },
+    ])(
+      "detects the original invalid solution for letter $letter",
+      ({ letter, acceptedAnswers }) => {
+        const test = structuredClone(cases.find((test) => test.letter === letter));
+        test.document.solutionPayload.acceptedAnswers = acceptedAnswers;
+        expect(() => supabaseCompetitiveEvaluator.evaluate(evaluationContext(test))).toThrow(
+          "invalid_question_solution",
+        );
+      },
+    );
+  });
+
   it("generates eight sequential publications in the requested order without history", () => {
     const sql = buildTabarniaDomainSql({
       accounts: accounts(),
@@ -155,17 +365,35 @@ describe("Tabarnia seed", () => {
     });
 
     expect(sql).toContain("'tabarnia'");
-    expect(sql).toContain("'open', now(), now() + interval '24 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '24 hours', now() + interval '48 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '48 hours', now() + interval '72 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '72 hours', now() + interval '96 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '96 hours', now() + interval '120 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '120 hours', now() + interval '144 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '144 hours', now() + interval '168 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '168 hours', now() + interval '192 hours'");
+    expect(sql).toContain(
+      "'open', date_trunc('minute', now()), date_trunc('minute', now()) + interval '24 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '24 hours', date_trunc('minute', now()) + interval '48 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '48 hours', date_trunc('minute', now()) + interval '72 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '72 hours', date_trunc('minute', now()) + interval '96 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '96 hours', date_trunc('minute', now()) + interval '120 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '120 hours', date_trunc('minute', now()) + interval '144 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '144 hours', date_trunc('minute', now()) + interval '168 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '168 hours', date_trunc('minute', now()) + interval '192 hours'",
+    );
     expect(sql).toContain("'superadmin'");
     expect(sql.match(/'owner'/g)).toHaveLength(1);
-    expect(sql.match(/'member'/g)).toHaveLength(11);
+    expect(sql.match(/'member'/g)).toHaveLength(
+      TABARNIA_USERS.filter((user) => user.role === "member").length,
+    );
     expect(sql).toContain("'España'");
     expect(sql).toContain("'Multiverso friki'");
     expect(sql).toContain("'La Pirámide: Cumbre lógica'");
@@ -220,29 +448,33 @@ describe("Tabarnia seed", () => {
       schedule: "fast",
     });
 
-    expect(sql).toContain("'open', now(), now() + interval '5 minutes'");
     expect(sql).toContain(
-      "'scheduled', now() + interval '5 minutes', now() + interval '10 minutes'",
+      "'open', date_trunc('minute', now()), date_trunc('minute', now()) + interval '5 minutes'",
     );
     expect(sql).toContain(
-      "'scheduled', now() + interval '10 minutes', now() + interval '15 minutes'",
+      "'scheduled', date_trunc('minute', now()) + interval '5 minutes', date_trunc('minute', now()) + interval '10 minutes'",
     );
     expect(sql).toContain(
-      "'scheduled', now() + interval '15 minutes', now() + interval '20 minutes'",
+      "'scheduled', date_trunc('minute', now()) + interval '10 minutes', date_trunc('minute', now()) + interval '15 minutes'",
     );
     expect(sql).toContain(
-      "'scheduled', now() + interval '20 minutes', now() + interval '25 minutes'",
+      "'scheduled', date_trunc('minute', now()) + interval '15 minutes', date_trunc('minute', now()) + interval '20 minutes'",
     );
     expect(sql).toContain(
-      "'scheduled', now() + interval '25 minutes', now() + interval '30 minutes'",
+      "'scheduled', date_trunc('minute', now()) + interval '20 minutes', date_trunc('minute', now()) + interval '25 minutes'",
     );
     expect(sql).toContain(
-      "'scheduled', now() + interval '30 minutes', now() + interval '35 minutes'",
+      "'scheduled', date_trunc('minute', now()) + interval '25 minutes', date_trunc('minute', now()) + interval '30 minutes'",
     );
     expect(sql).toContain(
-      "'scheduled', now() + interval '35 minutes', now() + interval '40 minutes'",
+      "'scheduled', date_trunc('minute', now()) + interval '30 minutes', date_trunc('minute', now()) + interval '35 minutes'",
     );
-    expect(sql).toContain("'active', now(), now() + interval '40 minutes'");
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '35 minutes', date_trunc('minute', now()) + interval '40 minutes'",
+    );
+    expect(sql).toContain(
+      "'active', date_trunc('minute', now()), date_trunc('minute', now()) + interval '40 minutes'",
+    );
   });
 
   it("includes the selected schedule in the Tabarnia manifest", async () => {

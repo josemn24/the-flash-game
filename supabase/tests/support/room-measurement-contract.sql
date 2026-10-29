@@ -140,9 +140,12 @@ reset role;
 
 -- The optional response remains visible but cannot be changed after seven days.
 -- Disposable fixture only: place the already-played season in the past to exercise the real clock.
+set constraints all immediate;
 alter table public.seasons disable trigger seasons_guard;
+alter table public.seasons disable trigger season_calendar_containment;
 update public.seasons set starts_at=now()-interval '12 days',ends_at=now()-interval '8 days',status='finished'
 where id=test_support.id('season-flash');
+alter table public.seasons enable trigger season_calendar_containment;
 alter table public.seasons enable trigger seasons_guard;
 set local role authenticated;
 select test_support.as_actor('member');

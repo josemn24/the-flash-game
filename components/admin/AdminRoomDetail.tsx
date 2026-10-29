@@ -97,7 +97,7 @@ export function AdminRoomDetail({
               <p>
                 {season
                   ? dateRange(season.startsAt, season.endsAt, model.room.timeZone)
-                  : "Crea y activa una temporada para programar desafíos."}
+                  : "Prepara una temporada y su calendario antes de publicarla."}
               </p>
               <ButtonLink
                 href={`/admin/rooms/${model.room.roomId}?tab=seasons`}

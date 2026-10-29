@@ -316,7 +316,7 @@ describe("staging bootstrap", () => {
         `('${publication.id}', '${data.seasonId}', '${publication.challengeVersionId}', ${publication.number}, '${publication.status}', ${opensAt}, ${closesAt})`,
       );
     }
-    expect(sql).toContain("now() + interval '120 hours'");
+    expect(sql).toContain("date_trunc('minute', now()) + interval '120 hours'");
     expect(sql).toContain("'time-trial'");
     expect(sql).toContain("150000");
     expect(sql).toContain('"title":"Identifica al personaje"');

@@ -8,7 +8,8 @@ import {
   SuperadminSeasonCommandError,
 } from "@/application/administration/errors";
 import type { SuperadminPortalContext } from "@/types/view-models";
-import { localDateTimeToUtc } from "@/lib/zonedDateTime";
+import { calendarErrorMessage } from "@/lib/calendarChange";
+import { resolveLocalDateTime } from "@/lib/zonedDateTime";
 import { requireSuperadmin } from "@/server/admin";
 import {
   activateSuperadminSeason,
@@ -50,6 +51,11 @@ function commandMessage(code: string) {
       return "La temporada ya está activa.";
     case "active_season_exists":
       return "La sala ya tiene otra temporada activa.";
+    case "schedule_conflict":
+    case "season_start_locked":
+    case "season_finished":
+    case "schedule_outside_season":
+      return calendarErrorMessage(code);
     case "invalid_season_dates":
       return "Revisa las fechas y la zona horaria de la sala.";
     case "idempotency_conflict":
@@ -102,16 +108,20 @@ function parseUtcWindow(
   endsAtLocal: string,
   timeZone: string,
   fieldErrors: Record<string, string>,
+  original?: { startsAt: string; endsAt: string },
 ) {
   if (fieldErrors.startsAtLocal || fieldErrors.endsAtLocal) return null;
   try {
-    const startsAt = localDateTimeToUtc(startsAtLocal, timeZone);
-    const endsAt = localDateTimeToUtc(endsAtLocal, timeZone);
-    if (startsAt >= endsAt) {
+    const startsAt = resolveLocalDateTime(startsAtLocal, timeZone, original?.startsAt);
+    const endsAt = resolveLocalDateTime(endsAtLocal, timeZone, original?.endsAt);
+    if (
+      Date.parse(startsAt) >= Date.parse(endsAt) &&
+      !(startsAt === original?.startsAt && endsAt === original?.endsAt)
+    ) {
       fieldErrors.endsAtLocal = "La fecha de fin debe ser posterior al inicio.";
       return null;
     }
-    return { startsAt: startsAt.toISOString(), endsAt: endsAt.toISOString() };
+    return { startsAt, endsAt };
   } catch {
     fieldErrors.startsAtLocal = "La fecha no existe en la zona horaria de la sala.";
     return null;
@@ -175,8 +185,15 @@ export async function updateSeasonDraft(
       parsed.fieldErrors.seasonId = "Selecciona una temporada válida.";
     const room = findSeasonRoom(access.context, seasonId);
     if (!room) parsed.fieldErrors.seasonId = "La temporada ya no está disponible.";
+    const original = room?.seasons.find((season) => season.seasonId === seasonId);
     const window = room
-      ? parseUtcWindow(parsed.startsAtLocal, parsed.endsAtLocal, room.timeZone, parsed.fieldErrors)
+      ? parseUtcWindow(
+          parsed.startsAtLocal,
+          parsed.endsAtLocal,
+          room.timeZone,
+          parsed.fieldErrors,
+          original,
+        )
       : null;
     if (!window || Object.keys(parsed.fieldErrors).length > 0)
       return validationState(parsed.fieldErrors);
@@ -186,9 +203,12 @@ export async function updateSeasonDraft(
       await updateSuperadminSeason({
         idempotencyKey: parsed.idempotencyKey,
         seasonId,
+        ...(textValue(formData, "expectedUpdatedAt")
+          ? { expectedUpdatedAt: textValue(formData, "expectedUpdatedAt") }
+          : {}),
         title: parsed.title,
-        startsAt: window.startsAt,
-        endsAt: window.endsAt,
+        startsAt: resolveLocalDateTime(parsed.startsAtLocal, room.timeZone, original?.startsAt),
+        endsAt: resolveLocalDateTime(parsed.endsAtLocal, room.timeZone, original?.endsAt),
         reason: parsed.reason,
       });
     } catch (error) {

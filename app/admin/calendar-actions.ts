@@ -7,7 +7,8 @@ import {
   SuperadminAccessDeniedError,
   SuperadminCalendarCommandError,
 } from "@/application/administration/errors";
-import { localDateTimeToUtc } from "@/lib/zonedDateTime";
+import { calendarErrorMessage } from "@/lib/calendarChange";
+import { resolveLocalDateTime } from "@/lib/zonedDateTime";
 import { requireSuperadmin } from "@/server/admin";
 import {
   cancelScheduledChallenge as cancelScheduledChallengeCommand,
@@ -57,6 +58,13 @@ function commandMessage(code: string) {
       return "Selecciona contenido publicado.";
     case "unsupported_content":
       return "Solo se puede programar Flash publicado compatible.";
+    case "season_finished":
+    case "season_start_locked":
+    case "schedule_finished":
+    case "opening_reached":
+    case "competitive_attempt_exists":
+    case "schedule_outside_season":
+      return calendarErrorMessage(code);
     case "invalid_schedule_dates":
       return "La ventana no es válida o queda fuera de la temporada.";
     case "schedule_not_found":
@@ -124,16 +132,26 @@ function parseCommon(formData: FormData) {
   };
 }
 
-function parseWindow(parsed: ReturnType<typeof parseCommon>, timeZone: string) {
+function parseWindow(
+  parsed: ReturnType<typeof parseCommon>,
+  timeZone: string,
+  original?: { opensAt: string; closesAt: string },
+) {
   if (parsed.fieldErrors.opensAtLocal || parsed.fieldErrors.closesAtLocal) return null;
   try {
-    const opensAt = localDateTimeToUtc(parsed.opensAtLocal, timeZone);
-    const closesAt = localDateTimeToUtc(parsed.closesAtLocal, timeZone);
-    if (opensAt >= closesAt) {
+    const opensAt = resolveLocalDateTime(parsed.opensAtLocal, timeZone, original?.opensAt);
+    const closesAt = resolveLocalDateTime(parsed.closesAtLocal, timeZone, original?.closesAt);
+    if (
+      Date.parse(opensAt) >= Date.parse(closesAt) &&
+      !(opensAt === original?.opensAt && closesAt === original?.closesAt)
+    ) {
       parsed.fieldErrors.closesAtLocal = "El cierre debe ser posterior a la apertura.";
       return null;
     }
-    return { opensAt: opensAt.toISOString(), closesAt: closesAt.toISOString() };
+    return {
+      opensAt,
+      closesAt,
+    };
   } catch {
     parsed.fieldErrors.opensAtLocal = "La fecha no existe en la zona horaria de la sala.";
     return null;
@@ -160,11 +178,11 @@ export async function createScheduledChallenge(
     const seasonId = textValue(formData, "seasonId");
     const parsed = parseCommon(formData);
     if (!uuidPattern.test(seasonId))
-      parsed.fieldErrors.seasonId = "Selecciona una temporada activa.";
+      parsed.fieldErrors.seasonId = "Selecciona una temporada disponible.";
     const room = findSeasonRoom(access.context, seasonId);
     const season = room?.seasons.find((candidate) => candidate.seasonId === seasonId);
-    if (!room || !season || season.status !== "active")
-      parsed.fieldErrors.seasonId = "Selecciona una temporada activa.";
+    if (!room || !season || !["draft", "active", "scheduled"].includes(season.status))
+      parsed.fieldErrors.seasonId = "Selecciona una temporada disponible.";
     const window = room ? parseWindow(parsed, room.timeZone) : null;
     if (!window || Object.keys(parsed.fieldErrors).length > 0)
       return validationState(parsed.fieldErrors);
@@ -219,7 +237,7 @@ export async function updateScheduledChallenge(
     const room = entry
       ? access.context.rooms.find((candidate) => candidate.roomId === entry.roomId)
       : null;
-    const window = room ? parseWindow(parsed, room.timeZone) : null;
+    const window = room ? parseWindow(parsed, room.timeZone, entry) : null;
     if (!window || Object.keys(parsed.fieldErrors).length > 0)
       return validationState(parsed.fieldErrors);
     if (!room) return validationState({ roomId: "La sala ya no está disponible." });
@@ -269,8 +287,10 @@ export async function cancelScheduledChallenge(
     if (
       !uuidPattern.test(scheduledChallengeId) ||
       !entry ||
-      entry.status !== "scheduled" ||
-      new Date(entry.opensAt).getTime() <= Date.now()
+      !(
+        entry.calendarPermissions?.canEditWindow ??
+        (entry.status === "scheduled" && new Date(entry.opensAt).getTime() > Date.now())
+      )
     ) {
       parsed.fieldErrors.scheduledChallengeId = "Selecciona una publicación futura programada.";
     }

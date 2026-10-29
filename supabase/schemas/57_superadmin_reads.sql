@@ -43,7 +43,10 @@ begin
                 'title', season.title,
                 'status', season.status,
                 'startsAt', season.starts_at,
-                'endsAt', season.ends_at
+                'endsAt', season.ends_at,
+                'updatedAt', season.updated_at,
+                'evaluatedAt', statement_timestamp(),
+                'calendarPermissions', private.season_calendar_permissions(season,statement_timestamp())
               ) order by season.starts_at desc, season.id
             )
             from public.seasons season
@@ -92,7 +95,10 @@ begin
             'title', season.title,
             'status', season.status,
             'startsAt', season.starts_at,
-            'endsAt', season.ends_at
+            'endsAt', season.ends_at,
+                'updatedAt', season.updated_at,
+                'evaluatedAt', statement_timestamp(),
+                'calendarPermissions', private.season_calendar_permissions(season,statement_timestamp())
           ) order by season.starts_at desc, season.id
         )
         from public.seasons season
@@ -215,7 +221,10 @@ begin
             select jsonb_build_object(
               'title', season.title,
               'startsAt', season.starts_at,
-              'endsAt', season.ends_at
+              'endsAt', season.ends_at,
+                'updatedAt', season.updated_at,
+                'evaluatedAt', statement_timestamp(),
+                'calendarPermissions', private.season_calendar_permissions(season,statement_timestamp())
             )
             from public.seasons season
             where season.room_id = room.id and season.status = 'active'

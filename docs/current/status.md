@@ -10,7 +10,9 @@ The Flash combina competición persistida sobre Supabase, ejemplos didácticos d
 demos explícitas y pruebas locales antes del intento competitivo. Las rutas de producto no
 recurren al mock cuando falla Supabase.
 
-Revisión canónica del repositorio: `20261025140000_measurement_event_reliability`.
+Revisión canónica del repositorio: `20261029184633_preserve_draft_calendar_windows`.
+
+El portal permite [reprogramar temporadas y desafíos](calendar-rescheduling.md) con vista previa, cambios conjuntos atómicos y protección de partidas ya iniciadas. Las temporadas publicadas futuras se muestran como programadas.
 
 El valor se contrasta con la última migración, `.env.example`, health y los runners mediante
 `npm run schema:revision:check`. Identifica el contrato esperado por la aplicación, no demuestra
@@ -40,7 +42,7 @@ conserva los datos automáticos y competitivos. La aplicación de esta entrega e
 pendiente y no queda acreditada por las verificaciones archivadas.
 
 La base local se reinició desde cero el 2026-10-25 con la revisión
-`20261025140000_measurement_event_reliability`. Queda vacía de usuarios, jugadores, salas,
+`20261029184633_preserve_draft_calendar_windows`. Queda vacía de usuarios, jugadores, salas,
 temporadas, preguntas, partidas y medición, con los dos buckets canónicos vacíos. Se verificaron
 el historial completo de migraciones, permisos, el índice único parcial de ensayos, el sondeo SQL
 de health y las respuestas 200 de Auth y REST. No se ha cargado el bootstrap ni escenarios.

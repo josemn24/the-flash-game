@@ -92,7 +92,7 @@ describe("CalendarScheduleDialog", () => {
       />,
     );
 
-    expect(markup).toContain("Reprogramar");
+    expect(markup).toContain("Editar fechas");
     expect(markup).not.toContain("<details");
     expect(markup).not.toContain('name="expectedUpdatedAt"');
   });
@@ -117,7 +117,7 @@ describe("CalendarScheduleDialog", () => {
     );
 
     expect(markup).toContain("Cancelado");
-    expect(markup).not.toContain("Reprogramar");
+    expect(markup).not.toContain("Editar fechas");
     expect(markup).not.toContain("Cancelar");
   });
 

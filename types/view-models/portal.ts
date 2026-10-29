@@ -25,14 +25,27 @@ export type SuperadminCalendarEntry = {
   readonly opensAt: string;
   readonly closesAt: string;
   readonly updatedAt: string;
+  readonly calendarPermissions?: {
+    readonly canEditWindow: boolean;
+    readonly canExtendClose: boolean;
+    readonly blockedReason: string | null;
+  };
 };
 
 export type SuperadminCalendarContext = {
+  readonly evaluatedAt?: string;
   readonly entries: readonly SuperadminCalendarEntry[];
   readonly source: "supabase";
 };
 
 export type SuperadminPortalSeason = {
+  readonly updatedAt?: string;
+  readonly evaluatedAt?: string;
+  readonly calendarPermissions?: {
+    readonly canEditStart: boolean;
+    readonly canEditEnd: boolean;
+    readonly blockedReason: string | null;
+  };
   readonly seasonId: string;
   readonly title: string;
   readonly status: SeasonStatus;

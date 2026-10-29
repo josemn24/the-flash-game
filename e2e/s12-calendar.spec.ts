@@ -57,7 +57,7 @@ test.describe("S12 — programar y ejecutar calendario", () => {
     await page.getByRole("button", { name: "Confirmar cancelación" }).click();
     await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?tab=calendar&calendar=cancelled$/);
     await expect(page.getByText("Cancelado", { exact: true })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Reprogramar", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Editar fechas", exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Cancelar", exact: true })).toHaveCount(0);
 
     const memberContext = await browser.newContext();
@@ -86,7 +86,7 @@ test.describe("S12 — programar y ejecutar calendario", () => {
     await page.getByRole("button", { name: "Programar desafío" }).click();
     await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?tab=calendar&calendar=created$/);
     await page.reload();
-    await expect(page.getByText("Programado")).toBeVisible();
+    await expect(page.getByText("Abierto", { exact: true })).toBeVisible();
 
     const tick = await page.request.post("/api/internal/calendar/tick", {
       headers: {
@@ -106,6 +106,54 @@ test.describe("S12 — programar y ejecutar calendario", () => {
     await expect(member.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
     await member.getByRole("button", { name: "Empezar desafío" }).click();
     await memberContext.close();
+  });
+
+  test("prepara y desplaza desafíos consecutivos en una temporada en borrador", async ({
+    page,
+  }) => {
+    const data = await fixture();
+    await signIn(page, data.users.superadmin);
+    await page.goto("/admin/rooms");
+    await page.getByRole("link", { name: "Ver detalle de Sala S12" }).click();
+    await page.getByRole("link", { name: "Temporadas", exact: true }).click();
+    const create = page.locator("form").filter({ hasText: "Preparar temporada" });
+    await create.getByLabel("Título").fill("Calendario S12 borrador");
+    await create.getByLabel(/Inicio/).fill("2030-09-20T12:00");
+    await create.getByLabel(/Fin/).fill("2030-09-21T12:00");
+    await create.getByLabel("Motivo de auditoría").fill("Preparar calendario sin publicar");
+    await create.getByRole("button", { name: "Guardar borrador" }).click();
+    await expect(page).toHaveURL(/season=created/);
+    await page.getByRole("link", { name: "Calendario", exact: true }).click();
+    for (const [opening, closing] of [
+      ["12:00", "12:05"],
+      ["12:05", "12:10"],
+    ]) {
+      await page.getByRole("button", { name: "Programar nuevo desafío" }).click();
+      const dialog = page.getByRole("dialog");
+      await dialog
+        .getByLabel("Temporada", { exact: true })
+        .selectOption({ label: "Sala S12 · Calendario S12 borrador" });
+      await dialog.getByLabel("Apertura").fill(`2030-09-20T${opening}`);
+      await dialog.getByLabel("Cierre").fill(`2030-09-20T${closing}`);
+      await dialog.getByLabel("Motivo de auditoría").fill("Preparar publicación consecutiva");
+      await dialog.getByRole("button", { name: "Programar desafío" }).click();
+      await expect(page).toHaveURL(/calendar=created/);
+    }
+    await page.getByRole("button", { name: "Editar fechas", exact: true }).first().click();
+    const editor = page.getByRole("dialog");
+    await editor.getByLabel("Aplicar a").selectOption("following");
+    await editor.getByLabel("Apertura").fill("2030-09-20T12:05");
+    await editor.getByLabel("Motivo del cambio").fill("Desplazar ambas ventanas cinco minutos");
+    await editor.getByRole("button", { name: "Revisar cambios" }).click();
+    await expect(editor.getByText("Desafío #2", { exact: true })).toBeVisible();
+    await expect(editor.getByLabel("Motivo del cambio")).toHaveValue(
+      "Desplazar ambas ventanas cinco minutos",
+    );
+    await editor.getByRole("button", { name: "Guardar calendario" }).click();
+    await expect(editor).not.toBeVisible();
+    await page.getByRole("button", { name: "Editar fechas", exact: true }).first().click();
+    await expect(editor.getByLabel("Apertura")).toHaveValue("2030-09-20T12:05");
+    await expect(editor.getByLabel("Cierre")).toHaveValue("2030-09-20T12:10");
   });
 
   test("un miembro no ve controles administrativos ni borradores", async ({ page }) => {

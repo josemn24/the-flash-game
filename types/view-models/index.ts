@@ -7,3 +7,4 @@ export type * from "@/types/view-models/user-actions";
 export type * from "@/types/view-models/editorial";
 export type * from "@/types/view-models/calendar";
 export type * from "@/types/view-models/attempt-inspection";
+export type * from "@/types/view-models/calendar-change";

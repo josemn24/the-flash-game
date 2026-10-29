@@ -14,6 +14,8 @@ declare
   sc public.scheduled_challenges%rowtype;
   session_row private.attempt_sessions%rowtype;
   target uuid;
+  season_id_value uuid;
+  room_id_value uuid;
   result jsonb;
   resumed boolean := false;
   control_required boolean := false;
@@ -21,6 +23,10 @@ begin
   target := (input->>'scheduledChallengeId')::uuid;
   perform pg_advisory_xact_lock(hashtextextended('flash-start:' || actor || ':' || target, 0));
   if is_admin then raise exception 'competitive_access_denied' using errcode = '42501'; end if;
+  select p.season_id,s.room_id into season_id_value,room_id_value from public.scheduled_challenges p join public.seasons s on s.id=p.season_id where p.id=target;
+  if not found then raise exception 'not_authorized' using errcode='42501'; end if;
+  perform 1 from public.rooms where id=room_id_value for share;
+  perform 1 from public.seasons where id=season_id_value for share;
   select * into sc from public.scheduled_challenges where id = target for share;
   if not found then raise exception 'not_authorized' using errcode = '42501'; end if;
   if not exists (select 1 from public.seasons s join public.rooms r on r.id = s.room_id

@@ -12,6 +12,7 @@ begin
     raise exception 'not_authorized' using errcode = '42501';
   end if;
   return jsonb_build_object(
+    'evaluatedAt', statement_timestamp(),
     'entries', coalesce((
       select jsonb_agg(jsonb_build_object(
         'scheduledChallengeId', schedule.id,
@@ -32,7 +33,8 @@ begin
         'status', schedule.status,
         'opensAt', schedule.opens_at,
         'closesAt', schedule.closes_at,
-        'updatedAt', schedule.updated_at
+        'updatedAt', schedule.updated_at,
+        'calendarPermissions', private.publication_calendar_permissions(schedule,statement_timestamp())
       ) order by schedule.opens_at desc, schedule.id)
       from public.scheduled_challenges schedule
       join public.seasons season on season.id = schedule.season_id
@@ -58,6 +60,7 @@ begin
     raise exception 'not_authorized' using errcode = '42501';
   end if;
   return jsonb_build_object(
+    'evaluatedAt', statement_timestamp(),
     'entries', coalesce((
       select jsonb_agg(jsonb_build_object(
         'scheduledChallengeId', schedule.id,
@@ -78,7 +81,8 @@ begin
         'status', schedule.status,
         'opensAt', schedule.opens_at,
         'closesAt', schedule.closes_at,
-        'updatedAt', schedule.updated_at
+        'updatedAt', schedule.updated_at,
+        'calendarPermissions', private.publication_calendar_permissions(schedule,statement_timestamp())
       ) order by schedule.opens_at desc, schedule.id)
       from public.scheduled_challenges schedule
       join public.seasons season on season.id = schedule.season_id

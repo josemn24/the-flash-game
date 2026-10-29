@@ -13,7 +13,7 @@ export const TABARNIA_FICTION_ALPHABET = {
       letter: "A",
       prompt: "Joven de Agrabah que encuentra una lámpara mágica y conoce al Genio.",
       correctAnswer: "Aladdin",
-      acceptedAnswers: ["Aladdin", "Aladdín", "Aladín"],
+      acceptedAnswers: ["Aladdin", "Aladín"],
       domain: "media_entertainment",
       topic: "cinema",
       explanation: "Aladdin encuentra una lámpara mágica cuyo Genio cambia el rumbo de su vida.",
@@ -34,7 +34,7 @@ export const TABARNIA_FICTION_ALPHABET = {
       letter: "C",
       prompt: "Novela de Gabriel García Márquez sobre la familia Buendía y Macondo.",
       correctAnswer: "Cien años de soledad",
-      acceptedAnswers: ["Cien años de soledad", "Cien anos de soledad"],
+      acceptedAnswers: ["Cien años de soledad"],
       domain: "literature",
       topic: "vocabulary",
       explanation:
@@ -131,7 +131,7 @@ export const TABARNIA_FICTION_ALPHABET = {
       letter: "P",
       prompt: "Saga de videojuegos de Nintendo sobre entrenadores que capturan criaturas.",
       correctAnswer: "Pokémon",
-      acceptedAnswers: ["Pokémon", "Pokemon"],
+      acceptedAnswers: ["Pokémon"],
       domain: "media_entertainment",
       topic: "video_games",
       explanation:
@@ -164,7 +164,7 @@ export const TABARNIA_FICTION_ALPHABET = {
       letter: "T",
       prompt: "Reportero creado por Hergé que viaja acompañado de Milú.",
       correctAnswer: "Tintín",
-      acceptedAnswers: ["Tintín", "Tintin"],
+      acceptedAnswers: ["Tintín"],
       domain: "literature",
       topic: "vocabulary",
       explanation: "Tintín es el joven reportero de los cómics de Hergé y viaja con su perro Milú.",
@@ -181,3 +181,30 @@ export const TABARNIA_FICTION_ALPHABET = {
     },
   ],
 };
+
+export function tabarniaMultiverseQuestions() {
+  const { entries, questionTimeLimitMs } = TABARNIA_FICTION_ALPHABET;
+  return entries.map((entry, index) => ({
+    slug: entry.slug,
+    type: "short-text",
+    payloadSchemaVersion: 1,
+    timeLimitMs: questionTimeLimitMs,
+    points: Math.floor(100 / entries.length) + (index < 100 % entries.length ? 1 : 0),
+    publicPayload: {
+      category: "Entretenimiento",
+      tags: {
+        domains: [entry.domain],
+        topics: [entry.topic],
+        cognitiveSkills: ["memory"],
+        formatSkills: ["recall"],
+        lifeSkills: [],
+      },
+      question: entry.prompt,
+    },
+    solutionPayload: {
+      correctAnswer: entry.correctAnswer,
+      acceptedAnswers: [...entry.acceptedAnswers],
+      explanation: entry.explanation,
+    },
+  }));
+}

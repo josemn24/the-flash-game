@@ -275,7 +275,7 @@ export function CalendarManagement({
   readonly publishedContent: readonly SuperadminEditorialContext["entries"][number][];
 }) {
   const activeSeasons = room.seasons
-    .filter((season) => season.status === "active")
+    .filter((season) => ["draft", "active", "scheduled"].includes(season.status))
     .map((season) => ({ room, season }));
   const nextNumber = (seasonId: string) =>
     Math.max(
@@ -297,7 +297,9 @@ export function CalendarManagement({
         calendar.entries
           .filter(
             (entry) =>
-              entry.status === "scheduled" && new Date(entry.opensAt).getTime() > renderedAt,
+              (entry.calendarPermissions?.canEditWindow ??
+                (entry.status === "scheduled" && new Date(entry.opensAt).getTime() > renderedAt)) ||
+              entry.calendarPermissions?.canExtendClose,
           )
           .map((entry) => entry.scheduledChallengeId),
       ),

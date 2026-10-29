@@ -239,3 +239,25 @@ end $$;
 alter function public.record_room_measurement_event(jsonb) owner to postgres;
 revoke all on function public.record_room_measurement_event(jsonb) from public,anon,authenticated,service_role;
 grant execute on function public.record_room_measurement_event(jsonb) to authenticated;
+
+-- Calendar starts may move only before competition. Capture records remain append-only.
+create function private.track_calendar_measurement_dates() returns trigger
+language plpgsql security definer set search_path='' as $$
+begin
+  if new.starts_at is distinct from old.starts_at then
+    update private.room_measurement_participants person
+      set history_from=greatest(new.starts_at,person.included_at,membership.joined_at)
+      from private.room_measurements measurement,public.room_memberships membership
+      where person.measurement_id=measurement.id and measurement.season_id=new.id
+        and membership.room_id=new.room_id and membership.player_id=person.player_id;
+    update private.room_measurement_publications publication
+      set history_from=greatest(new.starts_at,publication.included_at)
+      from private.room_measurements measurement
+      where publication.measurement_id=measurement.id and measurement.season_id=new.id;
+  end if;
+  return new;
+end $$;
+alter function private.track_calendar_measurement_dates() owner to postgres;
+revoke all on function private.track_calendar_measurement_dates() from public,anon,authenticated,service_role;
+create trigger season_measurement_calendar_dates after update of starts_at on public.seasons
+for each row execute function private.track_calendar_measurement_dates();

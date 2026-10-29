@@ -179,7 +179,7 @@ begin
   end if;
   select season.* into season_row from public.seasons season
   where season.id = season_id_value for update;
-  if season_row.status <> 'active' then
+  if season_row.status not in ('draft','active','scheduled') then
     raise exception 'season_not_active' using errcode = '55000';
   end if;
   if not exists (select 1 from public.rooms room where room.id = room_id_value and room.status = 'active') then
@@ -190,7 +190,7 @@ begin
   if opens_at_value >= closes_at_value
     or season_row.starts_at > opens_at_value
     or closes_at_value > season_row.ends_at
-    or closes_at_value <= now_value then
+    or (season_row.status <> 'draft' and closes_at_value <= now_value) then
     raise exception 'invalid_schedule_dates' using errcode = '22007';
   end if;
   perform private.assert_supported_calendar_content(challenge_version_id_value);
@@ -326,23 +326,17 @@ begin
   select season.* into season_row from public.seasons season where season.id = season_id_value for update;
   select schedule.* into schedule_row from public.scheduled_challenges schedule
   where schedule.id = schedule_id_value for update;
-  if schedule_row.status = 'open' then raise exception 'schedule_already_open' using errcode = '55000'; end if;
-  if schedule_row.status <> 'scheduled' then raise exception 'schedule_not_editable' using errcode = '55000'; end if;
-  if schedule_row.updated_at <> expected_updated_at_value then
-    raise exception 'schedule_conflict' using errcode = '40001';
+  if schedule_row.updated_at <> expected_updated_at_value then raise exception 'schedule_conflict' using errcode='40001'; end if;
+  now_value:=clock_timestamp();
+  perform private.assert_publication_calendar_window(schedule_row,opens_at_value,closes_at_value,now_value);
+  if (number_value,challenge_version_id_value) is distinct from (schedule_row.number,schedule_row.challenge_version_id)
+    and not (private.publication_calendar_permissions(schedule_row,now_value)->>'canEditWindow')::boolean then
+    raise exception 'opening_reached' using errcode='55000';
   end if;
-  now_value := clock_timestamp();
-  if now_value >= schedule_row.opens_at then raise exception 'schedule_already_open' using errcode = '55000'; end if;
-  if season_row.status <> 'active' then raise exception 'season_not_active' using errcode = '55000'; end if;
-  if not exists (select 1 from public.rooms room where room.id = room_id_value and room.status = 'active') then
-    raise exception 'room_not_found' using errcode = '22023';
-  end if;
-  if opens_at_value <= now_value or opens_at_value >= closes_at_value
-    or season_row.starts_at > opens_at_value or closes_at_value > season_row.ends_at
-    or closes_at_value <= now_value then
-    raise exception 'invalid_schedule_dates' using errcode = '22007';
-  end if;
-  perform private.assert_supported_calendar_content(challenge_version_id_value);
+  if season_row.status not in ('draft','active','scheduled') then raise exception 'season_finished' using errcode='55000'; end if;
+  if not exists(select 1 from public.rooms where id=room_id_value and status='active') then raise exception 'room_not_found' using errcode='22023'; end if;
+  if opens_at_value<season_row.starts_at or closes_at_value>season_row.ends_at then raise exception 'schedule_outside_season' using errcode='23514'; end if;
+  if challenge_version_id_value<>schedule_row.challenge_version_id then perform private.assert_supported_calendar_content(challenge_version_id_value); end if;
 
   before_payload := jsonb_build_object(
     'status', schedule_row.status, 'number', schedule_row.number,
@@ -353,7 +347,7 @@ begin
     update public.scheduled_challenges
     set challenge_version_id = challenge_version_id_value,
         number = number_value, opens_at = opens_at_value, closes_at = closes_at_value
-    where id = schedule_id_value;
+    where id = schedule_id_value and (challenge_version_id,number,opens_at,closes_at) is distinct from (challenge_version_id_value,number_value,opens_at_value,closes_at_value);
   exception
     when unique_violation then raise exception 'schedule_number_conflict' using errcode = '23505';
     when exclusion_violation then raise exception 'schedule_overlap' using errcode = '23P01';
@@ -366,6 +360,10 @@ begin
   ) into result
   from public.scheduled_challenges schedule join public.seasons season on season.id = schedule.season_id
   where schedule.id = schedule_id_value;
+  if before_payload=jsonb_build_object('status',schedule_row.status,'number',number_value,'challengeVersionId',challenge_version_id_value,'opensAt',opens_at_value,'closesAt',closes_at_value) then
+    insert into private.command_requests(actor_id,idempotency_key,operation,input,result) values(actor,key,'update_scheduled_challenge',safe_input,result);
+    return result;
+  end if;
   insert into private.audit_log(
     actor_player_id, action, entity_type, entity_id, reason, request_id, before_payload, after_payload
   ) values (
@@ -460,16 +458,12 @@ begin
   from public.scheduled_challenges schedule
   where schedule.id = schedule_id_value for update;
 
-  if schedule_row.status = 'open' then raise exception 'schedule_already_open' using errcode = '55000'; end if;
-  if schedule_row.status <> 'scheduled' then
-    raise exception 'schedule_not_cancellable' using errcode = '55000';
-  end if;
-  if schedule_row.updated_at <> expected_updated_at_value then
-    raise exception 'schedule_conflict' using errcode = '40001';
-  end if;
-  now_value := clock_timestamp();
-  if now_value >= schedule_row.opens_at then
-    raise exception 'schedule_already_open' using errcode = '55000';
+  if schedule_row.status in ('closed','cancelled') then raise exception 'schedule_not_cancellable' using errcode='55000'; end if;
+  if (select status<>'draft' from public.seasons where id=season_id_value) and schedule_row.opens_at<=clock_timestamp() then raise exception 'schedule_already_open' using errcode='55000'; end if;
+  if schedule_row.updated_at <> expected_updated_at_value then raise exception 'schedule_conflict' using errcode='40001'; end if;
+  now_value:=clock_timestamp();
+  if not coalesce((private.publication_calendar_permissions(schedule_row,now_value)->>'canEditWindow')::boolean,false) then
+    raise exception 'schedule_not_cancellable' using errcode='55000';
   end if;
 
   before_payload := jsonb_build_object(

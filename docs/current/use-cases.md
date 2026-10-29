@@ -168,10 +168,10 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Precondiciones:** temporada adecuada y `ChallengeVersion` publicada; número libre y fechas válidas.
 - **Entrada relevante:** versión, número, `opensAt`, `closesAt` y, si procede, zona horaria de edición.
 - **Flujo principal:** desde el calendario privado, comprobar que la versión Flash está publicada y es compatible; validar orden, fechas y ausencia de solapamiento; crear o reprogramar `ScheduledChallenge`; el calendar tick abre y cierra por la ventana efectiva.
-- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; solo se reprograma o cancela antes de abrir; la cancelación es lógica, auditada y conserva el número, contenido y ventana. Al cerrar la publicación o vencer su deadline, una reconciliación puede abandonar intentos competitivos inactivos durante al menos 15 minutos.
+- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; se preparan publicaciones en borrador y se reprograman o cancelan antes de abrir; una publicación abierta solo admite ampliar su cierre; la cancelación es lógica, auditada y conserva el número, contenido y ventana. Al cerrar la publicación o vencer su deadline, una reconciliación puede abandonar intentos competitivos inactivos durante al menos 15 minutos.
 - **Resultado:** publicación `scheduled`, `open`, `closed` o `cancelled`.
 - **Efectos secundarios:** disponibilidad en sala, historial posterior y rankings derivados; cada escritura administrativa y transición del tick queda auditada.
-- **Errores o impedimentos:** versión no publicada, número duplicado, ventana solapada, fecha inválida, motivo de auditoría ausente o intento de reprogramar/cancelar una publicación abierta, cerrada o ya cancelada.
+- **Errores o impedimentos:** versión no publicada, número duplicado, ventana solapada, fecha inválida, motivo de auditoría ausente o intento de cambiar una apertura alcanzada, acortar una ventana abierta o reabrir una publicación cerrada o cancelada.
 - **Permisos necesarios:** superadmin desde el portal privado durante la beta; responsable/editor
   autorizado cuando se habilite esa superficie. Miembros y espectadores solo consultan.
 

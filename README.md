@@ -88,7 +88,7 @@ Para probar desde un móvil u otro equipo de la red local, consulta la
 | `npm run supabase:start`             | Inicia el stack local de Supabase.                                                                                           |
 | `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                                               |
 | `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                                     |
-| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara el escenario técnico de Tabarnia con ocho desafíos y sus siete avatares.                 |
+| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara el escenario técnico de Tabarnia con ocho desafíos y sus siete avatares.                   |
 | `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Circuito de parejas» salvo que se indique un inicio futuro. |
 | `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.                        |
 | `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                                            |
@@ -113,6 +113,9 @@ perfil rápido opcional:
 ```bash
 npm run supabase:tabarnia:setup -- --schedule fast
 npm run supabase:betavip:setup -- --schedule fast
+npm run supabase:tabarnia:setup -- --schedule 10m
+npm run supabase:betavip:setup -- --schedule 30m
+npm run supabase:betavip:setup -- --schedule 1h
 ```
 
 El perfil predeterminado `production` conserva las ventanas de 24 horas. `fast` usa ventanas reales
@@ -120,6 +123,13 @@ de cinco minutos: Tabarnia recorre sus ocho desafíos en 40 minutos y BetaVIP su
 únicamente la ventana de publicación; los límites internos de preguntas,
 vidas, puntuación y deadlines no cambian. El manifiesto generado incluye `scheduleProfile` y la
 duración de la ventana para identificar el perfil utilizado.
+
+También se admite un entero positivo seguido de `m` o `h`: `10m`, `30m`, `1h`, `90m`, etc.
+Con duraciones personalizadas, cada desafío abre al cerrar el anterior y la temporada termina
+con el último: ocho horas en Tabarnia y seis en BetaVIP para `1h`. `1h` y `60m` se normalizan
+al mismo perfil `60m`. Consulta la [guía de duraciones](docs/current/supabase-clean-installation.md#duración-de-los-desafíos)
+para ver ejemplos y los totales de cada sala. Esta opción se aplica a los setups locales;
+el bootstrap de staging conserva su calendario actual.
 
 | Dataset             | `production` | `fast`    |
 | ------------------- | ------------ | --------- |
@@ -148,10 +158,11 @@ Los setups de Tabarnia y BetaVIP aceptan `--starts-at <fecha-hora-ISO-8601>` par
 futuro de la temporada. Incluye la zona horaria, por ejemplo para las 19:00 en Madrid:
 
 ```bash
-npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
+npm run supabase:betavip:setup -- --schedule 30m --starts-at "2030-10-20T19:00:00+02:00"
 ```
 
-El mismo parámetro funciona con Tabarnia y el bootstrap de staging. Si se omite, el inicio sigue
+Elige una fecha futura. `--starts-at` funciona también con Tabarnia y el bootstrap de staging;
+`--schedule` solo se aplica a los setups locales. Si se omite el inicio, sigue
 siendo inmediato. En staging, una ejecución posterior conserva la temporada existente y rechaza
 una fecha distinta; para reprogramarla hay que preparar una base vacía siguiendo el procedimiento
 de reinstalación.

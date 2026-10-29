@@ -82,10 +82,10 @@ begin
   if old.status in ('finished', 'cancelled') and new is distinct from old then
     raise exception 'Terminal seasons are immutable; corrections require a dedicated audited operation';
   end if;
-  if old.status <> 'draft' and (new.title, new.starts_at, new.ends_at) is distinct from
-    (old.title, old.starts_at, old.ends_at) then
-    raise exception 'Only draft seasons may change their configuration';
+  if old.status <> 'draft' and new.title is distinct from old.title then
+    raise exception 'Only draft seasons may change their title';
   end if;
+  perform private.assert_season_calendar_window(old,new.starts_at,new.ends_at,clock_timestamp());
   if old.status = 'active' and new.status not in ('active', 'finished', 'cancelled') then
     raise exception 'An active season cannot return to preparation';
   end if;
@@ -175,16 +175,16 @@ begin
     if (new.id, new.season_id) is distinct from (old.id, old.season_id) then
       raise exception 'Publication identity and season are immutable';
     end if;
-    if old.status <> 'scheduled' or statement_timestamp() >= old.opens_at then
-      if (to_jsonb(new) - 'status' - 'cancelled_at' - 'results_locked_at' - 'updated_at') <>
-        (to_jsonb(old) - 'status' - 'cancelled_at' - 'results_locked_at' - 'updated_at') then
-        raise exception 'Only future scheduled publications may be reprogrammed';
-      end if;
+    perform private.assert_publication_calendar_window(old,new.opens_at,new.closes_at,clock_timestamp());
+    if (new.number,new.challenge_version_id) is distinct from (old.number,old.challenge_version_id)
+      and not coalesce((private.publication_calendar_permissions(old,clock_timestamp())->>'canEditWindow')::boolean,false) then
+      raise exception 'opening_reached' using errcode='55000';
     end if;
     if old.status in ('closed', 'cancelled') and new.status not in (old.status, 'cancelled') then
       raise exception 'A terminal publication cannot reopen';
     end if;
-    if old.status = 'open' and new.status not in ('open', 'closed', 'cancelled') then
+    if old.status = 'open' and new.status not in ('open', 'closed', 'cancelled')
+      and not coalesce((private.publication_calendar_permissions(old,clock_timestamp())->>'canEditWindow')::boolean,false) then
       raise exception 'An open publication cannot return to scheduled';
     end if;
   end if;
