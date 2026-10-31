@@ -11,6 +11,7 @@ import type {
   ConnectPairsGrid,
   ZipCheckpoint,
   EscapeBlock,
+  MultipleChoicePromptVisual,
 } from "@/types/contracts";
 import type { PracticeQuestion } from "@/types/gameplay/practice";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
@@ -322,6 +323,7 @@ export type ServerMultipleChoiceQuestion = ServerFlashQuestionBase & {
   readonly type: "multiple-choice";
   readonly options: readonly string[];
   readonly media?: QuestionMedia;
+  readonly promptVisual?: MultipleChoicePromptVisual;
 };
 
 export type ServerTrueFalseQuestion = ServerFlashQuestionBase & {

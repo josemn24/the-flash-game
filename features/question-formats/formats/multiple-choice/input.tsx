@@ -1,5 +1,5 @@
 "use client";
-import { AnswerOption, QuestionMedia } from "@/components/questions/shared";
+import { AnswerOption, NumberSequencePrompt, QuestionMedia } from "@/components/questions/shared";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
 export function render(props: CompetitiveInputProps<"multiple-choice">) {
   const { locked, onSubmit, pendingAnswer } = props;
@@ -12,7 +12,12 @@ export function render(props: CompetitiveInputProps<"multiple-choice">) {
           <QuestionMedia media={question.media} prominent />
         </div>
       ) : null}
-      <div className="mt-7 grid gap-2.5 sm:grid-cols-2 sm:gap-3">
+      {question.type === "multiple-choice" && question.promptVisual?.type === "number-sequence" ? (
+        <NumberSequencePrompt prompt={question.promptVisual} />
+      ) : null}
+      <div
+        className={`${question.type === "multiple-choice" && question.promptVisual ? "mt-4" : "mt-7"} grid gap-2.5 sm:grid-cols-2 sm:gap-3`}
+      >
         {question.type === "multiple-choice"
           ? question.options.map((option, index) => (
               <AnswerOption

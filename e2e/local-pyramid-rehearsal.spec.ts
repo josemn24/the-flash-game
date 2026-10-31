@@ -41,6 +41,9 @@ test("plays, reviews, and repeats the seven-level local Pyramid without backend 
   await waitForBriefing(page, "Completa la secuencia");
 
   await openLevel(page, "Completa la secuencia");
+  const sequence = page.getByRole("region", { name: "Secuencia numérica" });
+  await expect(sequence).toBeVisible();
+  await expect(sequence.locator('[aria-label="Secuencia: 2, 6, 12, 20, ?"]')).toBeVisible();
   await page.getByRole("button", { name: "30", exact: true }).click();
   await waitForBriefing(page, "Construye el orden");
 

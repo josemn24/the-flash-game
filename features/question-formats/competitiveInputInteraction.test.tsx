@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { competitiveInputFor } from "@/test-utils/competitiveInput";
+import { competitiveInputFor, competitiveQuestion } from "@/test-utils/competitiveInput";
 import { CompetitiveQuestionInput } from "./competitiveInputRegistry";
 
 afterEach(cleanup);
@@ -32,9 +32,34 @@ describe("competitive generic input families", () => {
         input={competitiveInputFor("multiple-choice", { submit, pendingAnswer: first })}
       />,
     );
+    expect(screen.queryByRole("region", { name: "Secuencia numérica" })).toBeNull();
     expect(screen.getByRole("button", { name: first }).getAttribute("aria-pressed")).toBe("true");
     fireEvent.click(screen.getByRole("button", { name: second }));
     expect(submit).toHaveBeenCalledExactlyOnceWith(second);
+  });
+
+  it("renders a public number sequence before competitive multiple-choice options", () => {
+    const question = competitiveQuestion("multiple-choice");
+    if (question.type !== "multiple-choice") throw new Error("Expected multiple-choice question");
+    const input = competitiveInputFor("multiple-choice", {
+      question: {
+        ...question,
+        promptVisual: {
+          type: "number-sequence",
+          sequence: ["2", "6", "12", "20", "?"],
+        },
+      },
+    });
+
+    render(<CompetitiveQuestionInput input={input} />);
+
+    const sequence = screen.getByRole("region", { name: "Secuencia numérica" });
+    expect(sequence.querySelector('[aria-label="Secuencia: 2, 6, 12, 20, ?"]')).not.toBeNull();
+    const firstOption = screen.getByRole("button", { name: question.options[0] });
+    expect(firstOption).not.toBeNull();
+    expect(
+      Boolean(sequence.compareDocumentPosition(firstOption) & Node.DOCUMENT_POSITION_FOLLOWING),
+    ).toBe(true);
   });
 
   it("restores classification, publishes its full draft and submits it", () => {
