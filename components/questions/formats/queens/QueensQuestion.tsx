@@ -1,7 +1,7 @@
 "use client";
 
 import { type KeyboardEvent, type MutableRefObject, useMemo, useRef, useState } from "react";
-import { CrownIcon, CrossIcon, QueensCrownIcon, WarningIcon } from "@/components/ui";
+import { CrossIcon, QueensCrownIcon, WarningIcon } from "@/components/ui";
 import { LifeHearts } from "@/components/questions/shared/LifeHearts";
 import {
   calculateQueensMetrics,
@@ -14,9 +14,8 @@ import type {
   QueensGrid,
   QueensQuestion as QueensQuestionType,
 } from "@/types/gameplay/practice";
+import { useQueensInteraction } from "./useQueensInteraction";
 import styles from "./QueensQuestion.module.css";
-
-type QueensTool = "queen" | "mark";
 
 export type QueensBoardQuestion = {
   grid: QueensGrid;
@@ -189,8 +188,18 @@ export function QueensFooter({
             : `${conflictingQueens} coronas en conflicto`}
         </p>
       ) : null}
-      <p className={styles.instructions}>Se valida al colocar las {targetQueens} coronas.</p>
+      <p className={styles.instructions}>
+        Se valida al completar las {targetQueens} coronas y dejar de editar un instante.
+      </p>
     </div>
+  );
+}
+
+export function QueensInteractionHelp() {
+  return (
+    <p className={styles.interactionHelp}>
+      Cada toque cambia la casilla: vacía → X → corona → vacía.
+    </p>
   );
 }
 
@@ -209,98 +218,20 @@ export function QueensQuestion({
   onIncorrectAttempt: () => void;
   onSubmit: (answer: QueensAnswer) => void;
 }) {
-  const prefilledQueens = useMemo(() => question.prefilledQueens ?? [], [question.prefilledQueens]);
-  const [answer, setAnswer] = useState<QueensAnswer>(() => ({
-    queens: [
-      ...new Set([
-        ...prefilledQueens,
-        ...(Array.isArray(initialAnswer?.queens) ? initialAnswer.queens : []),
-      ]),
-    ].sort((left, right) => left - right),
-    marks: Array.isArray(initialAnswer?.marks)
-      ? initialAnswer.marks.filter((cell) => !prefilledQueens.includes(cell))
-      : [],
-  }));
-  const [tool, setTool] = useState<QueensTool>("queen");
   const [focusedCell, setFocusedCell] = useState(0);
-  const [announcement, setAnnouncement] = useState("Herramienta Corona seleccionada.");
   const cellRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const { answer, announcement, cycleCell, clearCell } = useQueensInteraction({
+    question,
+    questionId: question.id,
+    initialAnswer,
+    disabled: locked,
+    onProgress: (nextAnswer) => onProgress(nextAnswer),
+    onValidate: (nextAnswer) => {
+      if (calculateQueensMetrics(question, nextAnswer).solved) onSubmit(nextAnswer);
+      else onIncorrectAttempt();
+    },
+  });
   const metrics = useMemo(() => calculateQueensMetrics(question, answer), [answer, question]);
-
-  const publish = (nextAnswer: QueensAnswer, message: string, incorrect: boolean) => {
-    setAnswer(nextAnswer);
-    setAnnouncement(message);
-    onProgress(nextAnswer);
-    if (incorrect) onIncorrectAttempt();
-    if (!locked && calculateQueensMetrics(question, nextAnswer).solved) onSubmit(nextAnswer);
-  };
-
-  const applyTool = (cell: number) => {
-    if (locked) return;
-    if (prefilledQueens.includes(cell)) {
-      setAnnouncement("Esta corona es una pista fija y no se puede retirar.");
-      return;
-    }
-    const hasQueen = answer.queens.includes(cell);
-    const hasMark = answer.marks.includes(cell);
-    if (tool === "queen") {
-      const queens = hasQueen
-        ? answer.queens.filter((candidate) => candidate !== cell)
-        : [...answer.queens, cell].sort((left, right) => left - right);
-      const nextAnswer = {
-        queens,
-        marks: hasMark ? answer.marks.filter((candidate) => candidate !== cell) : answer.marks,
-      };
-      const conflictTypes = hasQueen
-        ? []
-        : [...(getQueensConflicts(question, queens).get(cell) ?? [])];
-      publish(
-        nextAnswer,
-        hasQueen
-          ? `Corona eliminada de la casilla ${cell + 1}.`
-          : conflictTypes.length
-            ? `Corona en conflicto: ${conflictTypes.map((type) => CONFLICT_LABELS[type]).join(", ")}.`
-            : `Corona colocada en la casilla ${cell + 1}.`,
-        conflictTypes.length > 0,
-      );
-      return;
-    }
-
-    const marks = hasMark
-      ? answer.marks.filter((candidate) => candidate !== cell)
-      : [...answer.marks, cell].sort((left, right) => left - right);
-    publish(
-      {
-        queens: hasQueen ? answer.queens.filter((candidate) => candidate !== cell) : answer.queens,
-        marks,
-      },
-      hasMark ? `Marca eliminada de la casilla ${cell + 1}.` : `Casilla ${cell + 1} marcada con X.`,
-      false,
-    );
-  };
-
-  const selectTool = (nextTool: QueensTool) => {
-    setTool(nextTool);
-    setAnnouncement(`Herramienta ${nextTool === "queen" ? "Corona" : "Marcar X"} seleccionada.`);
-    cellRefs.current[focusedCell]?.focus();
-  };
-
-  const clearCell = (cell: number) => {
-    if (locked) return;
-    if (prefilledQueens.includes(cell)) {
-      setAnnouncement("Esta corona es una pista fija y no se puede retirar.");
-      return;
-    }
-    if (!answer.queens.includes(cell) && !answer.marks.includes(cell)) return;
-    publish(
-      {
-        queens: answer.queens.filter((candidate) => candidate !== cell),
-        marks: answer.marks.filter((candidate) => candidate !== cell),
-      },
-      `Casilla ${cell + 1} vaciada.`,
-      false,
-    );
-  };
 
   const handleCellKeyDown = (event: KeyboardEvent<HTMLButtonElement>, cell: number) => {
     const row = Math.floor(cell / question.grid.columns);
@@ -317,13 +248,7 @@ export function QueensQuestion({
       cellRefs.current[nextCell]?.focus();
       return;
     }
-    if (event.key.toLocaleLowerCase("es") === "c") {
-      event.preventDefault();
-      selectTool("queen");
-    } else if (event.key.toLocaleLowerCase("es") === "x") {
-      event.preventDefault();
-      selectTool("mark");
-    } else if (event.key === "Delete" || event.key === "Backspace") {
+    if (event.key === "Delete" || event.key === "Backspace") {
       event.preventDefault();
       clearCell(cell);
     }
@@ -341,34 +266,13 @@ export function QueensQuestion({
         label={`Tablero Queens de ${question.grid.rows} por ${question.grid.columns}`}
         focusedCell={focusedCell}
         cellRefs={cellRefs}
-        onCellAction={applyTool}
+        onCellAction={cycleCell}
         onCellFocus={setFocusedCell}
         onCellKeyDown={handleCellKeyDown}
         disabled={locked}
       />
 
-      <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
-        <button
-          type="button"
-          className={tool === "queen" ? styles.toolActive : ""}
-          aria-label="Colocar corona"
-          aria-pressed={tool === "queen"}
-          onClick={() => selectTool("queen")}
-          disabled={locked}
-        >
-          <CrownIcon /> Colocar
-        </button>
-        <button
-          type="button"
-          className={tool === "mark" ? styles.toolActive : ""}
-          aria-label="Marcar casilla con X"
-          aria-pressed={tool === "mark"}
-          onClick={() => selectTool("mark")}
-          disabled={locked}
-        >
-          <CrossIcon /> Marcar
-        </button>
-      </div>
+      <QueensInteractionHelp />
 
       <QueensFooter
         targetQueens={question.grid.rows}

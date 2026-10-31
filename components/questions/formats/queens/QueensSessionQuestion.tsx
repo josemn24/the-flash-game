@@ -1,17 +1,15 @@
 "use client";
 
 import { type KeyboardEvent, useMemo, useRef, useState } from "react";
-import { CrownIcon, CrossIcon } from "@/components/ui";
 import { ServerOperationStatus } from "@/components/questions/shared";
-import { QueensBoard, QueensFooter, QueensStatus } from "./QueensQuestion";
+import { QueensBoard, QueensFooter, QueensInteractionHelp, QueensStatus } from "./QueensQuestion";
 import type {
   ServerQueensProgress,
   ServerQueensQuestion as ServerQuestion,
 } from "@/types/gameplay/challenge";
 import { getQueensConflicts } from "@/lib/queens";
+import { useQueensInteraction } from "./useQueensInteraction";
 import styles from "./QueensQuestion.module.css";
-
-type QueensTool = "queen" | "mark";
 
 export function QueensSessionQuestion({
   question,
@@ -34,68 +32,28 @@ export function QueensSessionQuestion({
   readonly onValidate: (queens: readonly number[]) => void;
   readonly onRetry?: () => void;
 }) {
-  const [draftQueens, setDraftQueens] = useState<number[]>(() => [...progress.queens]);
-  const [marks, setMarks] = useState<number[]>([]);
-  const [tool, setTool] = useState<QueensTool>("queen");
-  const [placementNotice, setPlacementNotice] = useState<string | null>(null);
   const [focusedCell, setFocusedCell] = useState(0);
   const cellRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const conflicts = useMemo(
-    () => getQueensConflicts(question, [...new Set([...question.prefilledQueens, ...draftQueens])]),
-    [draftQueens, question],
-  );
   const remainingAttempts =
     progress.maxIncorrectValidations === null
       ? null
       : Math.max(0, progress.maxIncorrectValidations - progress.incorrectValidations);
   const disabled = locked || validationState === "submitting" || remainingAttempts === 0;
   const targetQueens = question.grid.rows;
-  const targetQueensLabel = targetQueens === 5 ? "cinco" : String(targetQueens);
-  const totalQueenCount = useMemo(
-    () => new Set([...question.prefilledQueens, ...draftQueens]).size,
-    [draftQueens, question.prefilledQueens],
+  const { answer, announcement, cycleCell, clearCell } = useQueensInteraction({
+    question,
+    questionId: question.id,
+    initialAnswer: { queens: [...progress.queens] },
+    disabled,
+    onProgress: (nextAnswer, queensChanged) => {
+      if (queensChanged) onDraft(nextAnswer.queens);
+    },
+    onValidate: (nextAnswer) => onValidate(nextAnswer.queens),
+  });
+  const conflicts = useMemo(
+    () => getQueensConflicts(question, answer.queens),
+    [answer.queens, question],
   );
-
-  const publishQueens = (nextQueens: number[]) => {
-    const nextQueenCount = new Set([...question.prefilledQueens, ...nextQueens]).size;
-    setPlacementNotice(null);
-    setDraftQueens(nextQueens);
-    onDraft(nextQueens);
-    if (totalQueenCount < targetQueens && nextQueenCount === targetQueens) onValidate(nextQueens);
-  };
-
-  const applyAction = (cell: number) => {
-    if (disabled || question.prefilledQueens.includes(cell)) return;
-    const hasQueen = draftQueens.includes(cell);
-    if (tool === "mark") {
-      setPlacementNotice(null);
-      setMarks((current) =>
-        current.includes(cell)
-          ? current.filter((candidate) => candidate !== cell)
-          : [...current, cell].sort((a, b) => a - b),
-      );
-      return;
-    }
-    if (!hasQueen && totalQueenCount >= targetQueens) {
-      setPlacementNotice(
-        `Ya tienes ${targetQueensLabel} coronas. Retira una antes de colocar otra.`,
-      );
-      return;
-    }
-    setMarks((current) => current.filter((candidate) => candidate !== cell));
-    publishQueens(
-      hasQueen
-        ? draftQueens.filter((candidate) => candidate !== cell)
-        : [...draftQueens, cell].sort((a, b) => a - b),
-    );
-  };
-
-  const clearCell = (cell: number) => {
-    if (disabled || question.prefilledQueens.includes(cell)) return;
-    if (draftQueens.includes(cell))
-      publishQueens(draftQueens.filter((candidate) => candidate !== cell));
-    else setMarks((current) => current.filter((candidate) => candidate !== cell));
-  };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, cell: number) => {
     const row = Math.floor(cell / question.grid.columns);
@@ -114,12 +72,6 @@ export function QueensSessionQuestion({
       event.preventDefault();
       setFocusedCell(nextCell);
       cellRefs.current[nextCell]?.focus();
-    } else if (event.key.toLowerCase() === "c") {
-      event.preventDefault();
-      setTool("queen");
-    } else if (event.key.toLowerCase() === "x") {
-      event.preventDefault();
-      setTool("mark");
     } else if (event.key === "Delete" || event.key === "Backspace") {
       event.preventDefault();
       clearCell(cell);
@@ -129,50 +81,27 @@ export function QueensSessionQuestion({
   return (
     <section className={styles.root} aria-label={`Queens, puzzle de ${targetQueens} coronas`}>
       <QueensStatus
-        placedQueens={totalQueenCount}
+        placedQueens={answer.queens.length}
         targetQueens={targetQueens}
         remainingAttempts={remainingAttempts}
         totalAttempts={progress.maxIncorrectValidations}
       />
       <QueensBoard
         question={question}
-        answer={{ queens: [...draftQueens], marks }}
+        answer={answer}
         label={`Tablero Queens de ${question.grid.rows} por ${question.grid.columns}`}
         focusedCell={focusedCell}
         cellRefs={cellRefs}
-        onCellAction={applyAction}
+        onCellAction={cycleCell}
         onCellFocus={setFocusedCell}
         onCellKeyDown={handleKeyDown}
         disabled={disabled}
       />
-      <div className={styles.toolbar} role="group" aria-label="Herramienta de marcado">
-        <button
-          type="button"
-          className={tool === "queen" ? styles.toolActive : ""}
-          aria-label="Colocar corona"
-          aria-pressed={tool === "queen"}
-          onClick={() => setTool("queen")}
-          disabled={disabled}
-        >
-          <CrownIcon /> Colocar
-        </button>
-        <button
-          type="button"
-          className={tool === "mark" ? styles.toolActive : ""}
-          aria-label="Marcar casilla con X"
-          aria-pressed={tool === "mark"}
-          onClick={() => setTool("mark")}
-          disabled={disabled}
-        >
-          <CrossIcon /> Marcar
-        </button>
-      </div>
+      <QueensInteractionHelp />
       <QueensFooter targetQueens={targetQueens} conflictingQueens={conflicts.size} />
-      {placementNotice ? (
-        <p className={styles.placementNotice} role="status" aria-live="polite">
-          {placementNotice}
-        </p>
-      ) : null}
+      <p className="sr-only" role="status" aria-live="polite">
+        {announcement}
+      </p>
       <ServerOperationStatus
         state={validationState}
         visible={validationStatusVisible}

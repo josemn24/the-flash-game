@@ -1,38 +1,17 @@
 @layer app-formats {
-  .toolbar {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem;
+  .interactionHelp {
     width: min(100%, 27rem);
-    margin-inline: auto;
-    padding: 0.3rem;
-    border: 1px solid rgb(255 255 255 / 0.1);
-    border-radius: 0.95rem;
-    background: rgb(255 255 255 / 0.035);
-  }
-  .toolbar button {
-    display: flex;
-    min-height: 3rem;
-    align-items: center;
-    justify-content: center;
-    gap: 0.45rem;
-    border: 1px solid transparent;
-    border-radius: 0.7rem;
+    box-sizing: border-box;
+    margin: 0 auto;
+    padding: var(--space-3);
+    border-radius: var(--radius-control);
     color: var(--ds-color-fg-secondary);
-    background: transparent;
-    font-size: 0.78rem;
-    font-weight: 850;
+    background: var(--ds-color-bg-surface-raised);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    text-align: center;
+    text-wrap: balance;
   }
-  .toolbar button svg {
-    width: 1.15rem;
-    height: 1.15rem;
-  }
-  .toolbar .toolActive {
-    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 40%, transparent);
-    color: var(--ds-color-fg-on-brand);
-    background: var(--ds-color-bg-brand);
-  }
-  .toolbar button:focus-visible,
   .cell:focus-visible {
     z-index: 4;
     outline: 3px solid var(--ds-color-focus-ring);
@@ -213,14 +192,6 @@
     line-height: 1.4;
     text-align: center;
   }
-  .placementNotice {
-    margin: 0;
-    color: var(--ds-color-fg-error);
-    font-size: 0.82rem;
-    font-weight: 700;
-    line-height: 1.4;
-    text-align: center;
-  }
   .instructions {
     margin: 0;
     color: var(--ds-color-fg-secondary);
@@ -245,32 +216,12 @@
     .root {
       margin-top: 1rem;
     }
-    .toolbar button {
-      font-size: 0.7rem;
-    }
   }
 
   .root {
     display: grid;
     gap: var(--space-3);
     margin-top: var(--space-4);
-  }
-
-  .root .toolbar {
-    border: 0;
-    border-radius: var(--radius-control);
-    background: var(--ds-color-bg-surface-raised);
-  }
-
-  .root .toolbar button {
-    min-height: 44px;
-    color: var(--ds-color-fg-secondary);
-  }
-
-  .root .toolbar .toolActive {
-    border-color: var(--ds-color-border-selected);
-    color: var(--ds-color-fg-on-selected);
-    background: var(--ds-color-bg-selected);
   }
 
   .root .board {

@@ -1,3 +1,4 @@
+import { placeQueensCrown } from "./support/queens";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -27,7 +28,9 @@ async function startQueens(page: Page, player: "alice" | "bob" | "carol" | "dave
     page.getByLabel("3 de 3 intentos restantes en este tablero", { exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByText("Se valida al colocar las 5 coronas.", { exact: true }),
+    page.getByText("Se valida al completar las 5 coronas y dejar de editar un instante.", {
+      exact: true,
+    }),
   ).toBeVisible();
   await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("1/5");
 }
@@ -39,7 +42,7 @@ function cell(page: Page, index: number) {
 }
 
 async function wrongBoard(page: Page) {
-  for (const index of [0, 5, 14, 20]) await cell(page, index).click();
+  for (const index of [0, 5, 14, 20]) await placeQueensCrown(cell(page, index));
   await expect(
     page.getByLabel("2 de 3 intentos restantes en este tablero", { exact: true }),
   ).toBeVisible();
@@ -73,7 +76,7 @@ test("el tercer fallo termina el ascenso; perder la confirmación no descuenta o
     } else await route.fulfill({ response });
   });
   try {
-    for (const index of [0, 5, 14, 20]) await cell(page, index).click();
+    for (const index of [0, 5, 14, 20]) await placeQueensCrown(cell(page, index));
     await expect.poll(() => requests.length).toBe(1);
     await expect(cell(page, 20)).toBeDisabled();
     await expect(
@@ -87,12 +90,12 @@ test("el tercer fallo termina el ascenso; perder la confirmación no descuenta o
   ).toBeVisible();
   await expect(cell(page, 20)).toBeEnabled();
   await cell(page, 20).click();
-  await cell(page, 24).click();
+  await placeQueensCrown(cell(page, 24));
   await expect(
     page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
   ).toBeVisible();
   await cell(page, 24).click();
-  await cell(page, 21).click();
+  await placeQueensCrown(cell(page, 21));
   await expect(
     page.getByRole("button", { name: "Reintentar validación", exact: true }),
   ).toBeVisible();
@@ -149,7 +152,7 @@ for (const [player, failures] of [
       await wrongBoard(page);
       if (failures === 2) {
         await cell(page, 20).click();
-        await cell(page, 24).click();
+        await placeQueensCrown(cell(page, 24));
         await expect(
           page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
         ).toBeVisible();
@@ -159,7 +162,7 @@ for (const [player, failures] of [
     const response = page.waitForResponse(
       (response) => response.url().includes("/queens/validate") && response.ok(),
     );
-    for (const index of [9, 10, 18, 21]) await cell(page, index).click();
+    for (const index of [9, 10, 18, 21]) await placeQueensCrown(cell(page, index));
     const result = await (await response).json();
     expect(result).toMatchObject({
       correct: true,

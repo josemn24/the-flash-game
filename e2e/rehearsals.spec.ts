@@ -1,3 +1,4 @@
+import { placeQueensCrown } from "./support/queens";
 import { expect, test, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { dockerSql, sqlCount } from "../scripts/support/supabase-local.mjs";
@@ -111,11 +112,11 @@ test("practice uses the full Queens flow, review and return without writing offi
     const size = q.publicPayload.grid.rows;
     for (const cell of q.solutionPayload.solution) {
       if (q.publicPayload.prefilledQueens.includes(cell)) continue;
-      await page
-        .getByRole("gridcell", {
+      await placeQueensCrown(
+        page.getByRole("gridcell", {
           name: new RegExp(`Fila ${Math.floor(cell / size) + 1}, columna ${(cell % size) + 1},`),
-        })
-        .click();
+        }),
+      );
     }
   }
   await reviewAndReturn(page, 3);

@@ -1,3 +1,4 @@
+import { placeQueensCrown } from "./support/queens";
 import { expect, test } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import { QUESTION_FORMAT_CATALOG } from "../features/question-formats/catalog";
@@ -155,4 +156,26 @@ test("clasificación conserva el borrador estructurado hasta confirmar", async (
   await dialog.getByRole("button", { name: "Confirmar clasificación" }).click();
   await expect(dialog.getByRole("heading", { name: "Resultado del ejemplo" })).toBeVisible();
   await expect(dialog.getByText("Respuesta correcta", { exact: true }).first()).toBeVisible();
+});
+
+test("Queens practice supports keyboard cycling and cancellable validation", async ({ page }) => {
+  await page.goto("/formatos/queens");
+  await page.getByRole("button", { name: "Probar este formato" }).first().click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Empezar ejemplo" }).click();
+  const cell = (index: number) =>
+    dialog.getByRole("gridcell", {
+      name: new RegExp(`Fila ${Math.floor(index / 5) + 1}, columna ${(index % 5) + 1},`),
+    });
+  for (const index of [2, 9, 10, 18]) await placeQueensCrown(cell(index));
+  const target = cell(20);
+  await target.press("Space");
+  await expect(target).toHaveAccessibleName(/marcada con X/);
+  await target.press("Enter");
+  await target.press("Space");
+  await expect(target).toHaveAccessibleName(/: vacía/);
+  await page.waitForTimeout(900);
+  await expect(dialog.getByText(/1 intento incorrecto/)).toHaveCount(0);
+  await placeQueensCrown(cell(21));
+  await expect(dialog.getByRole("heading", { name: "Resultado del ejemplo" })).toBeVisible();
 });

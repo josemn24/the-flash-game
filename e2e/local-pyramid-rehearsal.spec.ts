@@ -1,3 +1,4 @@
+import { placeQueensCrown } from "./support/queens";
 import { expect, test } from "@playwright/test";
 
 const rehearsalPath = "/demo/flash-pop/desafios/tabarnia-challenge-05";
@@ -93,15 +94,17 @@ test("plays, reviews, and repeats the seven-level local Pyramid without backend 
   const firstQueen = queensBoard.getByRole("gridcell", { name: /Fila 2, columna 1/ });
   await firstQueen.focus();
   await page.keyboard.press("Space");
+  await expect(firstQueen).toHaveAccessibleName(/marcada con X/);
+  await page.keyboard.press("Enter");
   await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("2/5");
   for (const [row, column] of [
     [3, 4],
     [4, 2],
     [5, 5],
   ]) {
-    await queensBoard
-      .getByRole("gridcell", { name: new RegExp(`Fila ${row}, columna ${column}`) })
-      .click();
+    await placeQueensCrown(
+      queensBoard.getByRole("gridcell", { name: new RegExp(`Fila ${row}, columna ${column}`) }),
+    );
   }
 
   await expect(page.getByRole("heading", { name: "Cima conquistada" })).toBeVisible({

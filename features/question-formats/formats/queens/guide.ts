@@ -10,7 +10,7 @@ export const guide = {
     "Colocar N coronas en tableros cuadrados de 4 × 4 a 8 × 8 sin repetir fila, columna o región y sin que dos coronas se toquen.",
   description: [
     "El tablero se divide en N regiones. El jugador coloca exactamente una corona en cada fila, columna y región mientras descarta candidatos con marcas X opcionales.",
-    "Las colocaciones conflictivas se permiten y se señalan al instante. Completar N coronas, incluidas las pistas fijas, valida el tablero automáticamente; editar coronas o marcas no tiene coste. Durante la validación el tablero queda bloqueado.",
+    "Las colocaciones conflictivas se permiten y se señalan al instante. Cada toque recorre vacía → X → corona → vacía. Si ya hay N coronas, tocar una X la borra directamente. Completar N coronas, incluidas las pistas fijas, valida el tablero tras dejar de editar un instante; editar coronas o marcas no tiene coste. Durante la validación el tablero queda bloqueado.",
     "En Pirámide y Contrarreloj competitivos hay tres oportunidades: los dos primeros tableros incorrectos permiten continuar y el tercer fallo termina el ascenso. Acertar en la tercera oportunidad supera el nivel. El contador muestra los intentos restantes confirmados por el servidor.",
   ],
   recommendations: [
@@ -27,8 +27,9 @@ export const guide = {
     "Coloca exactamente una corona en cada fila y columna",
     "Coloca exactamente una corona en cada región",
     "Dos coronas no pueden tocarse, tampoco en diagonal",
-    "Usa marcas X para descartar celdas; no se colocan automáticamente",
-    "Completar N coronas valida el tablero automáticamente, incluidas las pistas fijas",
+    "Cada toque cambia la casilla: vacía → X → corona → vacía",
+    "Si ya hay N coronas, tocar una X la deja vacía",
+    "Completar N coronas valida el tablero al dejar de editar un instante, incluidas las pistas fijas",
     "En Pirámide y Contrarreloj competitivos, tres validaciones incorrectas terminan la partida",
   ],
   authoringTips: [
@@ -40,7 +41,7 @@ export const guide = {
   accessibility: [
     "Distingue regiones con colores sólidos, diferenciados también por luminosidad, y separaciones claras entre celdas",
     "Etiqueta cada celda con fila, columna, región, estado y conflictos",
-    "Ofrece herramientas explícitas, foco móvil y control completo por teclado",
+    "Ofrece foco móvil, Enter/Espacio para cambiar la casilla y Suprimir/Retroceso para borrarla",
     "Anuncia cada colocación y conflicto sin mover el foco",
   ],
   mediaSupport: ["Cuadrícula de regiones N × N (4 × 4 a 8 × 8)", "Coronas SVG y marcas X"],

@@ -232,6 +232,8 @@ commit;
     for (const [placement, position] of board.clicks.entries()) {
       const target = queensCell(page, position, board.size);
       await target.press("Space");
+      await expect(target).toHaveAccessibleName(/marcada con X/);
+      await target.press("Enter");
       if (placement < board.clicks.length - 1) {
         await expect(target).toHaveAccessibleName(/: corona/);
       }

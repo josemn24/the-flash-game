@@ -109,7 +109,11 @@ export function createInteractions(
             response,
           );
           if (outcome.kind === "progress")
-            runtime.commit({ type: "progress", question: outcome.question });
+            runtime.commit({
+              type: "progress",
+              question: outcome.question,
+              keepLocked: validationIntent !== null,
+            });
         },
         after: async () => {
           await flushQueens();
@@ -181,17 +185,30 @@ export function createInteractions(
   };
   const validateQueensBoard = async (queens: readonly number[]) => {
     if (reserved || validating) return;
-    const question = runtime.state().question;
-    if (question?.type !== "queens") return;
+    const state = runtime.state();
+    const question = state.question;
+    if (
+      question?.type !== "queens" ||
+      state.phase !== "playing" ||
+      state.attemptExpired ||
+      (state.locked && !validationIntent && state.pendingCommand?.operation !== "queensDraft")
+    )
+      return;
     validationIntent = { itemId: question.id, queens: [...queens] };
+    // Reserve the board before awaiting draft persistence, not only the validation request.
+    runtime.commit({ type: "queens_validation_requested" });
     validating = true;
     try {
       latestQueens = { itemId: question.id, queens: [...queens], revision: ++draftRevision };
       await flushQueens();
       if (runtime.state().pendingCommand) return;
       validationIntent = null;
-      if (runtime.state().question?.id === question.id)
-        await interact({ kind: "queens-validation", queens });
+      if (
+        runtime.state().question?.id === question.id &&
+        runtime.state().phase === "playing" &&
+        !runtime.state().attemptExpired
+      )
+        await interact({ kind: "queens-validation", queens }, true);
     } finally {
       validating = false;
     }
@@ -215,6 +232,7 @@ export function createInteractions(
       const state = runtime.state();
       if (
         state.question?.type !== "queens" ||
+        validationIntent !== null ||
         (state.pendingCommand && state.pendingCommand.operation !== "queensDraft") ||
         (state.locked && state.pendingCommand?.operation !== "queensDraft")
       )

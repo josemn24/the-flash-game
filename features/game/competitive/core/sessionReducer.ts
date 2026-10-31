@@ -119,6 +119,7 @@ export type SessionEvent =
   | { type: "control_required"; transfer: TransferContext }
   | { type: "control_cancelled" }
   | { type: "feedback_visible" }
+  | { type: "queens_validation_requested" }
   | {
       type: "prepared";
       attempt: Attempt;
@@ -136,6 +137,7 @@ export type SessionEvent =
       question: SessionQuestion;
       selection?: SessionState["lastWordSearchSelection"];
       message?: string;
+      keepLocked?: boolean;
     }
   | {
       type: "answer_accepted";
@@ -236,9 +238,10 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         lifecycleError: undefined,
         startNotice: undefined,
         levelNotice: undefined,
-        feedback: event.feedback
-          ? { channel: event.feedback, state: "submitting", visible: false }
-          : undefined,
+        feedback:
+          event.feedback && (event.command.operation !== "queensDraft" || state.locked)
+            ? { channel: event.feedback, state: "submitting", visible: false }
+            : undefined,
         phase:
           event.command.operation === "answer" && state.phase === "playing"
             ? "checking"
@@ -312,6 +315,12 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         ...state,
         feedback: state.feedback ? { ...state.feedback, visible: true } : undefined,
       };
+    case "queens_validation_requested":
+      return {
+        ...state,
+        locked: true,
+        feedback: { channel: "queens", state: "submitting", visible: false },
+      };
     case "prepared":
       return {
         ...state,
@@ -337,11 +346,13 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         commandStatus: "confirmed",
         question: event.question,
         lastWordSearchSelection: event.selection ?? state.lastWordSearchSelection,
-        locked: false,
+        locked: event.keepLocked ?? false,
         busy: false,
-        feedback: event.message
-          ? { channel: "queens", state: "idle", visible: true, message: event.message }
-          : undefined,
+        feedback: event.keepLocked
+          ? state.feedback
+          : event.message
+            ? { channel: "queens", state: "idle", visible: true, message: event.message }
+            : undefined,
       };
     case "answer_accepted": {
       if (state.results.some((answer) => answer.questionId === event.result.questionId))

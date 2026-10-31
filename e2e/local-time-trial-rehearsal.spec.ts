@@ -1,3 +1,4 @@
+import { placeQueensCrown } from "./support/queens";
 import { expect, test, type Page } from "@playwright/test";
 import { TABARNIA_CONNECT_PAIRS_TIME_TRIAL } from "../scripts/fixtures/scenarios/tabarnia-time-trial-connect-pairs.mjs";
 import { TABARNIA_QUEENS_TIME_TRIAL } from "../scripts/fixtures/scenarios/tabarnia-time-trial-queens.mjs";
@@ -25,7 +26,7 @@ async function solveQueens(page: Page, questionIndex: number) {
   const size = question.publicPayload.grid.rows;
   const prefilled = question.publicPayload.prefilledQueens;
   for (const index of question.solutionPayload.solution) {
-    if (!prefilled.includes(index)) await queensCell(page, index, size).click();
+    if (!prefilled.includes(index)) await placeQueensCrown(queensCell(page, index, size));
   }
 }
 
@@ -43,6 +44,46 @@ async function solveConnectPairs(page: Page, questionIndex: number) {
   for (const path of Object.values(paths))
     for (const cell of path) await connectPairsCell(page, questionIndex, cell).click();
 }
+
+test.describe("Queens touch interactions", () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+  test("erasing an X through the final crown preserves all lives on mobile", async ({ page }) => {
+    await page.goto(queensPath);
+    await page.getByRole("button", { name: "Empezar desafío" }).click();
+    await expect(page.getByText("Prueba 1 de 6", { exact: true })).toBeVisible();
+    const question = TABARNIA_QUEENS_TIME_TRIAL.questions[0]!;
+    const size = question.publicPayload.grid.rows;
+    const solution = question.solutionPayload.solution;
+    const editable = solution.filter(
+      (cell) => !question.publicPayload.prefilledQueens.includes(cell),
+    );
+    for (const index of editable.slice(0, -1))
+      await placeQueensCrown(queensCell(page, index, size));
+    const empty = Array.from({ length: size * size }, (_, index) => index).find(
+      (index) => !solution.includes(index),
+    )!;
+    const target = queensCell(page, empty, size);
+    await expect(
+      page.getByText("Cada toque cambia la casilla: vacía → X → corona → vacía."),
+    ).toBeVisible();
+    await expect(page.getByRole("group", { name: "Herramienta de marcado" })).toHaveCount(0);
+    await target.tap();
+    await target.tap();
+    await target.tap();
+    await expect(target).toHaveAccessibleName(/: vacía/);
+    await page.waitForTimeout(900);
+    await expect(page.getByText("Prueba 1 de 6", { exact: true })).toBeVisible();
+    await expect(
+      page.getByLabel("3 de 3 intentos restantes en este tablero", { exact: true }),
+    ).toBeVisible();
+    await page.screenshot({ path: "output/playwright/queens-mobile-cycle.png" });
+    const final = queensCell(page, editable.at(-1)!, size);
+    await final.tap();
+    await final.tap();
+    await expect(page.getByText("Prueba 2 de 6", { exact: true })).toBeVisible();
+  });
+});
 
 test("local Queens Time Trial shares the competitive view, can be reviewed and replayed without backend calls", async ({
   page,

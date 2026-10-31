@@ -980,7 +980,12 @@ describe("format coordination", () => {
     await play(engine);
     engine.interactions.updateQueensDraft([2, 4]);
     await vi.advanceTimersByTimeAsync(300);
+    expect(engine.getSnapshot().locked).toBe(false);
+    expect(engine.getSnapshot().feedback).toBeUndefined();
     const validation = engine.interactions.validateQueensBoard([2, 4, 11, 13]);
+    expect(engine.getSnapshot().locked).toBe(true);
+    // Even edits arriving during the preliminary draft save must be ignored.
+    engine.interactions.updateQueensDraft([2, 4, 11]);
     await drain();
     expect(calls.queensDraft).toHaveBeenCalledTimes(1);
     expect(calls.queensValidation).not.toHaveBeenCalled();
