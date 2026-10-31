@@ -258,9 +258,10 @@ describe("shared practice stage timer", () => {
     expect(onTimedResponseStart).toHaveBeenCalledOnce();
   });
 
-  it("starts progressive-image only when the image has loaded, including repeated load events", () => {
+  it("starts progressive-image on image load without focusing the answer field", () => {
     const onTimedResponseStart = vi.fn();
-    const input = practiceInputFor("progressive-image", { onTimedResponseStart });
+    const onSubmit = vi.fn();
+    const input = practiceInputFor("progressive-image", { onTimedResponseStart, onSubmit });
     render(
       <FlashQuestionStage input={input} questionNumber={1} totalQuestions={1} onTimeUp={vi.fn()} />,
     );
@@ -269,7 +270,15 @@ describe("shared practice stage timer", () => {
     fireEvent.load(image);
     fireEvent.load(image);
     expect(onTimedResponseStart).toHaveBeenCalledOnce();
-    expect(screen.getByRole<HTMLInputElement>("textbox").disabled).toBe(false);
+    const field = screen.getByRole<HTMLInputElement>("textbox");
+    expect(field.disabled).toBe(false);
+    expect(document.activeElement).not.toBe(field);
+
+    field.focus();
+    expect(document.activeElement).toBe(field);
+    fireEvent.change(field, { target: { value: "respuesta" } });
+    fireEvent.submit(field.closest("form")!);
+    expect(onSubmit).toHaveBeenCalledExactlyOnceWith("respuesta");
   });
 
   it("keeps timeout disabled while locked and resets the timer for the next question", async () => {
