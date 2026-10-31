@@ -58,6 +58,37 @@ describe("ReviewAnswerList", () => {
     expect(entries[1].lockedMessage).toContain("No alcanzado");
   });
 
+  it("labels a saved timeout board as partial while keeping the scored result unanswered", () => {
+    const question = questionsById["pyramid-connect-pairs-trap"];
+    if (question.type !== "connect-pairs") throw new Error("Expected Connect Pairs question");
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "04",
+            status: "unanswered",
+            result: {
+              questionId: question.id,
+              answer: null,
+              status: "unanswered",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 46.3,
+              reviewState: { type: "connect-pairs", paths: { circle: [0, 1, 2] } },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain("reviewAnswer_partial");
+    expect(markup).toContain(">Parcial<");
+    expect(markup).toContain("Respuesta parcial");
+    expect(markup).toContain("0 puntos");
+  });
+
   it("uses the common history card structure for statuses and long answers", () => {
     const challenge = getChallengeById("tabarnia-challenge-03");
     if (challenge?.mode !== "survival") throw new Error("Expected survival challenge");

@@ -297,6 +297,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "submitLogicCodeAttempt"
   | "submitQueensPlacement"
   | "saveQueensDraft"
+  | "saveConnectPairsDraft"
   | "validateQueensBoard"
   | "revealProgressiveClue"
   | "readEvaluationContext"
@@ -427,6 +428,10 @@ export class SupabaseAttemptCommands implements Pick<
 
   saveQueensDraft(input: Parameters<AttemptCommands["saveQueensDraft"]>[0]) {
     return callAttemptCommand(this.identity, "save_queens_draft", input);
+  }
+
+  saveConnectPairsDraft(input: Parameters<AttemptCommands["saveConnectPairsDraft"]>[0]) {
+    return callAttemptCommand(this.identity, "save_connect_pairs_draft", input);
   }
 
   validateQueensBoard(input: Parameters<AttemptCommands["validateQueensBoard"]>[0]) {

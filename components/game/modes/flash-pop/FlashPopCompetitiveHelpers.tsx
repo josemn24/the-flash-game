@@ -26,7 +26,7 @@ export function Transition({
   timedOut: boolean;
   isLast: boolean;
 }) {
-  const status = result?.status ?? (timedOut ? "unanswered" : "incorrect");
+  const status = result?.reviewState ? "partial" : result?.status ?? (timedOut ? "unanswered" : "incorrect");
   const { title, body } = getFlashPopFeedbackCopy({ status, timedOut, isLast });
 
   return (
@@ -45,8 +45,9 @@ export function Transition({
 
 export function buildResultModel(results: AnswerResult[], score: number): ChallengeResultModel {
   const correct = results.filter((result) => result.status === "correct").length;
+  const partial = results.filter((result) => result.status === "partial" || result.reviewState).length;
   const incorrect = results.filter((result) => result.status === "incorrect").length;
-  const unanswered = results.filter((result) => result.status === "unanswered").length;
+  const unanswered = results.filter((result) => result.status === "unanswered" && !result.reviewState).length;
   const accuracy = calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit));
   const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
   const message =
@@ -63,6 +64,9 @@ export function buildResultModel(results: AnswerResult[], score: number): Challe
     totalTime,
     metrics: [
       { icon: <CheckIcon />, label: "Correctas", value: correct, tone: "success" },
+      ...(partial > 0
+        ? [{ icon: <span>≈</span>, label: "Parciales", value: partial, tone: "social" as const }]
+        : []),
       { icon: <CrossIcon />, label: "Falladas", value: incorrect, tone: "danger" },
       { icon: <ClockIcon />, label: "Sin contestar", value: unanswered },
     ],

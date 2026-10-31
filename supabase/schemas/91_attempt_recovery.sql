@@ -240,7 +240,7 @@ begin
       else null end,
     'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
       'status', aa.status, 'answer', aa.answer, 'points', aa.points, 'timeUsedMs', aa.time_used_ms,
-      'resultDetails', aa.result_details) order by i.position)
+      'resultDetails', aa.result_details, 'reviewState', aa.review_state) order by i.position)
       from private.attempt_answers aa join private.challenge_items i on i.id = aa.challenge_item_id where aa.attempt_id = a.id), '[]'::jsonb)
   ) into result
   from public.attempts a join private.attempt_sessions s on s.attempt_id = a.id

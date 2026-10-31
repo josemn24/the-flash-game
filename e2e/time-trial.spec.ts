@@ -51,8 +51,33 @@ test("la intro y cuenta atrás no crean intento; el reloj continúa al cambiar d
   await page.waitForTimeout(1200);
   // One-second question clocks do not end a Contrarreloj board.
   await expect(cell(page, 10)).toBeEnabled();
-  for (const index of [10, 18, 21]) await placeQueensCrown(cell(page, index));
-  await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
+  let releaseCheckpoint!: () => void;
+  let checkpointCommitted!: () => void;
+  const held = new Promise<void>((resolve) => {
+    releaseCheckpoint = resolve;
+  });
+  const committed = new Promise<void>((resolve) => {
+    checkpointCommitted = resolve;
+  });
+  let holdFirst = true;
+  await page.route("**/queens/draft", async (route) => {
+    const response = await route.fetch();
+    if (holdFirst) {
+      holdFirst = false;
+      expect(response.ok()).toBe(true);
+      checkpointCommitted();
+      await held;
+    }
+    await route.fulfill({ response });
+  });
+  try {
+    await placeQueensCrown(cell(page, 10));
+    await committed;
+    for (const index of [18, 21]) await placeQueensCrown(cell(page, index));
+    await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible({ timeout: 3500 });
+  } finally {
+    releaseCheckpoint();
+  }
   expect(preparations).toHaveLength(2);
   expect(preparations[1].deadlineAt).toBe(preparations[0].deadlineAt);
   expect(JSON.stringify(preparations)).not.toMatch(/solutionPayload|"solution"/);

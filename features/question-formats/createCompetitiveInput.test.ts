@@ -33,6 +33,17 @@ describe("createCompetitiveInput", () => {
     },
   );
 
+  it("projects the locally accepted Queens snapshot for provisional timeout review", () => {
+    const input = createCompetitiveInput(
+      competitiveInputSource({
+        question: competitiveQuestion("queens"),
+        pendingAnswer: { queens: [1, 4, 9], marks: [] },
+      }),
+    );
+    if (!input || input.format !== "queens") throw new Error("missing Queens input");
+    expect(input.props.draftQueens).toEqual([1, 4, 9]);
+  });
+
   it.each([
     ["classification", { a: 2 }],
     ["matching", ["a"]],

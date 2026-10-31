@@ -73,6 +73,7 @@ export function evaluated(
       points: response.points,
       timeUsed: response.timeUsedMs / 1000,
       ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
+      ...(response.reviewState ? { reviewState: response.reviewState } : {}),
     },
   };
 }

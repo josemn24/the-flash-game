@@ -274,6 +274,12 @@ begin
       when q.type = 'logic-code' then private.logic_code_progress(a.id, item.id)
       when q.type = 'progressive-clues' then private.progressive_clues_progress(a.id, item.id)
       when q.type = 'queens' then private.queens_progress(a.id, item.id)
+      when q.type = 'connect-pairs' and jsonb_typeof(a.progress_payload) = 'object'
+        and a.progress_payload->>'kind' = 'connect-pairs'
+        and a.progress_payload->>'challengeItemId' = item.id::text
+        and private.connect_pairs_draft_valid(q.public_payload,
+          jsonb_build_object('paths', a.progress_payload->'paths'))
+        then jsonb_build_object('kind', 'connect-pairs', 'paths', a.progress_payload->'paths')
       when q.type = 'word-search' then private.word_search_progress(a.id, item.id)
       when q.type = 'word-hashtag' then private.word_hashtag_progress(a.id, item.id) - 'solved'
       when q.type = 'short-text' and cv.mode = 'alphabet' then (

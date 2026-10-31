@@ -80,6 +80,8 @@ export const timeTrialFinalization: FinalizationPolicy = {
     if (
       checkpoint === "after-after" &&
       (origin === "takeover" || (operation !== "complete" && operation !== "recover")) &&
+      operation !== "queensDraft" &&
+      operation !== "connectPairsDraft" &&
       requested
     )
       return { type: "finalize" };

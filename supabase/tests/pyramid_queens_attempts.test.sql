@@ -115,6 +115,7 @@ select test_support.start_pyramid_queens(6);
 select test_support.run('activate_interaction');
 select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,20]}');
 select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,24]}');
+select test_support.run('save_queens_draft', '{"queens":[2,9,10]}');
 select pg_sleep(1.05);
 select throws_ok($$select test_support.run('submit_queens_answer', '{"queens":[2,9,10,18,21]}')$$,
   '55000', 'deadline_reached', 'A validation after the server deadline is rejected');
@@ -124,6 +125,9 @@ select is(private.read_evaluation_context(
   (select state->>'sessionToken' from test_support.runtime))->'incorrectValidations',
   '2'::jsonb, 'A late validation does not consume a third opportunity');
 select test_support.run('record_evaluation', '{"status":"unanswered","points":0}');
+select is((select review_state from private.attempt_answers where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)
+  and challenge_item_id=test_support.id('pyramid-queens-timeout-item-2')),
+  '{"type":"queens","queens":[2,9,10]}'::jsonb,'A per-level Queens timeout preserves saved crowns, without marks');
 select is(test_support.run('complete_attempt', '{"outcome":"failed"}')->>'outcome', 'failed', 'Timeout retains Pyramid failure policy');
 select * from finish();
 rollback;

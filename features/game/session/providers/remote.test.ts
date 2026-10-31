@@ -67,6 +67,11 @@ const commands: readonly [GameSessionCommand, string, object][] = [
     { challengeItemId: "item", queens: [1, 2] },
   ],
   [
+    { operation: "connectPairsDraft", input: { ...interaction, paths: { a: [0, 1, 2] } } },
+    "session/connect-pairs/draft",
+    { challengeItemId: "item", paths: { a: [0, 1, 2] } },
+  ],
+  [
     { operation: "queensValidation", input: { ...interaction, queens: [1, 2] } },
     "session/queens/validate",
     { challengeItemId: "item", queens: [1, 2] },
@@ -245,6 +250,7 @@ describe("remote session projections", () => {
     ["queensValidation", false, "progress"],
     ["queensValidation", true, "evaluated"],
     ["queensDraft", false, "progress"],
+    ["connectPairsDraft", false, "progress"],
     ["answer", undefined, "evaluated"],
     ["complete", undefined, "completed"],
   ] as const)(
@@ -260,6 +266,9 @@ describe("remote session projections", () => {
         ],
         solutionPayload: { answer: "secret" },
         sessionToken: "secret",
+        ...(operation === "connectPairsDraft"
+          ? { reviewState: { type: "connect-pairs", paths: { a: [0, 1, 2] } } }
+          : {}),
       };
       client[operation] = vi.fn(async () =>
         sessionWireFixture(
@@ -276,7 +285,12 @@ describe("remote session projections", () => {
       );
       const command = {
         operation,
-        input: { ...interaction, queens: [], answer: null },
+        input: {
+          ...interaction,
+          ...(operation === "connectPairsDraft" ? { paths: { a: [0, 1, 2] } } : {}),
+          queens: [],
+          answer: null,
+        },
       } as GameSessionCommand;
       const result = await createRemoteGameSessionProvider({
         client,

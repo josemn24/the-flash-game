@@ -3,7 +3,8 @@ import { definition } from "./definition";
 import type { ServerConnectPairsQuestion } from "@/types/gameplay/challenge";
 
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
-import { isConnectPairsGrid } from "@/lib/connectPairs";
+import { isConnectPairsGrid, isRestorableConnectPairsDraft } from "@/lib/connectPairs";
+import type { ConnectPairsQuestion as PracticeConnectPairsQuestion } from "@/types/gameplay/practice";
 import { publicEnvelope, type PublicReadContext, ServerFlashQuestionError } from "../public-common";
 import { validationResult } from "../types";
 export function readPublic(
@@ -44,6 +45,36 @@ export function readPublic(
   const endpoints = validPairs
     ? (pairs as Array<Record<string, unknown>>).flatMap((pair) => pair.endpoints as number[])
     : [];
+  let progress: ServerConnectPairsQuestion["progress"];
+  if (context.progress !== undefined && context.progress !== null) {
+    const saved = context.progress;
+    if (
+      !saved ||
+      typeof saved !== "object" ||
+      Array.isArray(saved) ||
+      (saved as Record<string, unknown>).kind !== "connect-pairs" ||
+      !(saved as Record<string, unknown>).paths ||
+      typeof (saved as Record<string, unknown>).paths !== "object" ||
+      Array.isArray((saved as Record<string, unknown>).paths)
+    )
+      throw new ServerFlashQuestionError();
+    const paths = (saved as { paths: Record<string, unknown> }).paths;
+    if (
+      !Object.values(paths).every(
+        (path) => Array.isArray(path) && path.every((cell) => Number.isSafeInteger(cell)),
+      ) ||
+      !isRestorableConnectPairsDraft(
+        {
+          grid: validGrid,
+          pairs: pairs as PracticeConnectPairsQuestion["pairs"],
+          requireFullCoverage: true,
+        } as PracticeConnectPairsQuestion,
+        { paths: paths as Record<string, number[]> },
+      )
+    )
+      throw new ServerFlashQuestionError();
+    progress = { kind: "connect-pairs", paths: paths as Record<string, number[]> };
+  }
   if (
     !validGrid ||
     !validPairs ||
@@ -59,6 +90,7 @@ export function readPublic(
     grid: validGrid,
     pairs: pairs as ServerConnectPairsQuestion["pairs"],
     requireFullCoverage: true,
+    ...(progress ? { progress } : {}),
   } satisfies ServerConnectPairsQuestion;
 }
 export function validatePublic(context: PublicReadContext) {

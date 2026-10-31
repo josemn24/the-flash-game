@@ -82,6 +82,78 @@ describe("Connect Pairs review", () => {
     expect(markup).toContain("extremo no incluido en tu respuesta");
   });
 
+  it("shows the final saved draft after timeout without treating it as a scored answer", () => {
+    if (question.type !== "connect-pairs") throw new Error("Expected connect-pairs question");
+
+    const markup = renderToStaticMarkup(
+      <QuestionReviewContent
+        question={question}
+        result={result({
+          answer: null,
+          reviewState: { type: "connect-pairs", paths: { circle: [0, 1, 2] } },
+        })}
+      />,
+    );
+
+    expect(markup).toContain("connectPairsReviewSubmittedLine");
+    expect(markup).toContain("Respuesta parcial");
+    expect(markup).toContain("extremo no incluido en tu respuesta");
+  });
+
+  it.each([true, false])(
+    "uses saved draft metrics when zeroed evaluation details are present: %s",
+    (withDetails) => {
+      if (question.type !== "connect-pairs") throw new Error("Expected connect-pairs");
+      const markup = renderToStaticMarkup(
+        <QuestionReviewContent
+          question={question}
+          result={result({
+            reviewState: { type: "connect-pairs", paths: { circle: [0, 1, 2] } },
+            ...(withDetails
+              ? {
+                  details: {
+                    type: "connect-pairs" as const,
+                    connectedPairs: 0,
+                    totalPairs: 4,
+                    coveredCells: 0,
+                    totalCells: 25,
+                    coverage: 0,
+                    conflicts: 0,
+                  },
+                }
+              : {}),
+          })}
+        />,
+      );
+      expect(markup).toContain("12 %");
+      expect(markup).toContain("0/4");
+      expect(markup).toContain("Respuesta parcial");
+    },
+  );
+
+  it("counts a connected pair from the preserved board instead of null-answer details", () => {
+    if (question.type !== "connect-pairs") throw new Error("Expected connect-pairs");
+    const markup = renderToStaticMarkup(
+      <QuestionReviewContent
+        question={question}
+        result={result({
+          reviewState: { type: "connect-pairs", paths: { circle: question.solutionPaths.circle } },
+          details: {
+            type: "connect-pairs",
+            connectedPairs: 0,
+            totalPairs: 4,
+            coveredCells: 0,
+            totalCells: 25,
+            coverage: 0,
+            conflicts: 0,
+          },
+        })}
+      />,
+    );
+    expect(markup).toContain("1/4");
+    expect(markup).toContain("24 %");
+  });
+
   it("uses the light board variant for Zip review", () => {
     const zipQuestion = questionsById["p17-route-zip"];
     if (zipQuestion.type !== "zip") throw new Error("Expected zip question");

@@ -25,6 +25,7 @@ declare
   expected bigint;
   is_admin boolean;
   clear_progress boolean := false;
+  allow_stale_timeout boolean := false;
 begin
   is_admin := exists (select 1 from private.platform_role_assignments where player_id = actor);
   if op in ('invalidate','adjust') and not is_admin then
@@ -72,7 +73,34 @@ begin
         'replayed', true
       ); end if;
     expected := (input->>'lockVersion')::bigint;
-    if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
+    if expected is distinct from a.lock_version then
+      allow_stale_timeout := expected < a.lock_version and (
+        (op = 'receive' and input->'answer' = 'null'::jsonb and exists (
+          select 1 from private.interaction_intervals ix
+          join private.attempt_timing_units unit on unit.id = ix.timing_unit_id
+          where ix.attempt_id = a.id and ix.ended_at is null
+            and received >= unit.deadline_at
+        )) or
+        (op = 'receive' and input->'answer' <> 'null'::jsonb and exists (
+          select 1
+          from private.interaction_intervals ix
+          join private.attempt_timing_units unit on unit.id = ix.timing_unit_id
+          join private.challenge_items item on item.id = ix.challenge_item_id
+          join private.question_versions question on question.id = item.question_version_id
+          where ix.attempt_id = a.id and ix.ended_at is null
+            and ix.challenge_item_id = (input->>'challengeItemId')::uuid
+            and question.type = 'connect-pairs'
+            and received < unit.deadline_at
+            and (cv.mode <> 'time-trial' or received < a.deadline_at)
+        )) or
+        (op = 'complete' and cv.mode = 'time-trial' and a.deadline_at is not null
+          and received >= a.deadline_at
+          and private.time_trial_progress(a.id)->>'endReason' = 'time_limit')
+      );
+      if not allow_stale_timeout then
+        raise exception 'stale_version' using errcode = '40001';
+      end if;
+    end if;
     if op not in ('invalidate','adjust') and a.status <> 'in_progress' then
       raise exception 'attempt_terminal' using errcode = '55000';
     end if;

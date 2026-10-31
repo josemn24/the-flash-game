@@ -15,6 +15,7 @@ import {
   nullable as validNullable,
   isRecord,
   oneOf,
+  reviewStateValue,
 } from "@/lib/competitiveResponseContract";
 import type { GameSessionValidationContext } from "@/types/gameplay/authoritative-session";
 import { isGameSessionErrorCode } from "@/lib/competitiveErrors";
@@ -70,6 +71,7 @@ function answers(value: unknown, allowOmittedNullAnswers: boolean): AnswerResult
       points: row.points as number,
       timeUsed: (row.timeUsedMs as number) / 1000,
       ...(row.resultDetails ? { details: row.resultDetails as AnswerResult["details"] } : {}),
+      ...(row.reviewState ? { reviewState: row.reviewState as AnswerResult["reviewState"] } : {}),
     };
   });
 }
@@ -123,6 +125,7 @@ function validatePublicFields(value: CompetitiveJsonObject) {
         validInteger(v.endCell),
     ),
     details: resultDetails,
+    reviewState: reviewStateValue,
     resolved: (v) =>
       isRecord(v) &&
       (validText(v.challengeItemId) ||
@@ -192,6 +195,7 @@ function publicUpdate(value: CompetitiveJsonObject, terminal: boolean): Authorit
     points: number(value.points),
     timeUsedMs: number(value.timeUsedMs),
     details: value.details as AuthoritativeSessionUpdate["details"],
+    reviewState: value.reviewState as AuthoritativeSessionUpdate["reviewState"],
     guess: string(value.guess),
     guesses: strings(value.guesses),
     feedback: Array.isArray(value.feedback)

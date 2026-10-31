@@ -37,6 +37,18 @@ export const json: Check = (v) =>
   (typeof v === "number" && Number.isFinite(v)) ||
   (Array.isArray(v) && v.every(json)) ||
   (isRecord(v) && Object.values(v).every(json));
+export const reviewStateValue: Check = (value) => {
+  if (!isRecord(value)) return false;
+  if (value.type === "connect-pairs")
+    return (
+      isRecord(value.paths) &&
+      Object.entries(value.paths).every(
+        ([key, path]) =>
+          key.length > 0 && Array.isArray(path) && path.every((cell) => integer(cell)),
+      )
+    );
+  return value.type === "queens" && Array.isArray(value.queens) && value.queens.every(integer);
+};
 export function isRecord(v: unknown): v is ResponseRecord {
   return v !== null && typeof v === "object" && !Array.isArray(v);
 }
@@ -80,7 +92,11 @@ export function answerRows(value: unknown, allowOmittedNullAnswers = false) {
       json(row.answer) || (allowOmittedNullAnswers && row.answer === undefined),
       `response.answers.${i}.answer`,
     );
-    optionalFields(row, { resultDetails: nullable(resultDetails) }, `response.answers.${i}`);
+    optionalFields(
+      row,
+      { resultDetails: nullable(resultDetails), reviewState: nullable(reviewStateValue) },
+      `response.answers.${i}`,
+    );
   });
   requireResponse(
     new Set(value.map((row) => row.challengeItemId)).size === value.length,
@@ -146,6 +162,9 @@ export function formatFields(operation: string, row: ResponseRecord, evaluated: 
         Number(row.revealedClues) <= Number(row.totalClues),
         "response.revealedClues",
       );
+      break;
+    case "connectPairsDraft":
+      fields(row, { challengeItemId: text, reviewState: reviewStateValue });
       break;
     case "queensDraft":
       fields(row, { ...queens, ...validations });
@@ -224,13 +243,27 @@ export function preparedProgress(type: string, value: unknown) {
     "logic-code",
     "progressive-clues",
     "queens",
+    "connect-pairs",
     "word-search",
     "word-hashtag",
   ];
   if (!stateful.includes(type)) return;
+  if (type === "connect-pairs" && (value === undefined || value === null)) return;
   const r = record(value, "response.progress");
   requireResponse(r.kind === type, "response.progress.kind");
   switch (type) {
+    case "connect-pairs": {
+      fields(r, {
+        kind: oneOf("connect-pairs"),
+        paths: (v) =>
+          isRecord(v) &&
+          Object.entries(v).every(
+            ([key, path]) =>
+              key.length > 0 && Array.isArray(path) && path.every((cell) => integer(cell)),
+          ),
+      });
+      break;
+    }
     case "mini-wordle": {
       const feedback = (v: unknown) =>
         isRecord(v) && text(v.letter) && oneOf("correct", "present", "absent")(v.status);

@@ -27,6 +27,7 @@ import {
   positive,
   record,
   requireResponse,
+  reviewStateValue,
   text,
   wordHashtagState,
   timeTrialState,
@@ -50,6 +51,7 @@ type Methods = {
   submit_word_search_selection: AttemptCommands["submitWordSearchSelection"];
   submit_queens_placement: AttemptCommands["submitQueensPlacement"];
   save_queens_draft: AttemptCommands["saveQueensDraft"];
+  save_connect_pairs_draft: AttemptCommands["saveConnectPairsDraft"];
   submit_queens_answer: AttemptCommands["validateQueensBoard"];
   reveal_progressive_clue: AttemptCommands["revealProgressiveClue"];
   adjust_result: SuperadminAttemptCommands["adjust"];
@@ -248,6 +250,9 @@ export const attemptSqlDecoders: { [K in keyof Methods]: Decoder<K> } = {
   ),
   submit_queens_placement: decode("submit_queens_placement", format("queensPlacement")),
   save_queens_draft: decode("save_queens_draft", format("queensDraft")),
+  save_connect_pairs_draft: decode("save_connect_pairs_draft", (r) => {
+    fields(r, { challengeItemId: text, reviewState: reviewStateValue });
+  }),
   submit_queens_answer: decode("submit_queens_answer", format("queensValidation")),
   reveal_progressive_clue: decode("reveal_progressive_clue", (r) => {
     format("progressiveClueReveal")(r);
@@ -265,7 +270,7 @@ export function decodeRecordedEvaluation(value: unknown, receiptId: string) {
   const r = record(value);
   identity(r, { receiptId });
   fields(r, { receiptId: text, status: answerStatus, points });
-  optionalFields(r, { details: resultDetails });
+  optionalFields(r, { details: resultDetails, reviewState: reviewStateValue });
   return r as Awaited<ReturnType<AttemptCommands["recordEvaluation"]>>;
 }
 export function decodeEvaluationContext(value: unknown, receiptId: string): EvaluationContext {

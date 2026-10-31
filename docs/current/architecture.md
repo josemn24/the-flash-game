@@ -174,8 +174,11 @@ permanece dentro del motor. Estas extracciones no añaden otro almacén ni cambi
 
 La cola resuelve la versión al enviar un comando nuevo. Desde ese momento conserva operación,
 intento/interacción, payload, versión y clave idempotente; un reintento reutiliza el comando
-completo. Los borradores Queens pasan por esa misma cola antes de validar o expirar. Los
-adaptadores se seleccionan mediante el catálogo de capacidades por modo/formato y producen
+completo. Queens y Conectar parejas agrupan checkpoints sin bloquear la edición. Una validación,
+respuesta completa o cierre por tiempo puede adelantar el checkpoint: la cola continúa desde esa
+operación definitiva y retira las tareas pendientes de la generación anterior. Cada ejecución es
+propietaria de sus reintentos y temporizadores; una respuesta tardía no modifica el nuevo estado.
+Los adaptadores se seleccionan mediante el catálogo de capacidades por modo/formato y producen
 progreso intermedio o una respuesta evaluada, sin gestionar recuperación ni cierre.
 
 Una respuesta aceptada inicia una espera de feedback; después, la política determina escena,

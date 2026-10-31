@@ -812,6 +812,12 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.save_connect_pairs_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "v"
+    },
     "private.submit_queens_answer": {
       "arguments": "input jsonb",
       "securityDefiner": true,
@@ -1374,6 +1380,12 @@
       "executeRoles": [],
       "volatility": "v"
     },
+    "private.attempt_review_state": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "s"
+    },
     "private.time_trial_progress": {
       "arguments": "target_attempt uuid",
       "securityDefiner": false,
@@ -1446,6 +1458,12 @@
     },
     "private.connect_pairs_answer_valid": {
       "arguments": "public_payload jsonb, answer jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "i"
+    },
+    "private.connect_pairs_draft_valid": {
+      "arguments": "public_payload jsonb, draft jsonb",
       "securityDefiner": false,
       "executeRoles": [],
       "volatility": "i"

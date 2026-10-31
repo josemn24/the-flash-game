@@ -134,6 +134,18 @@ describe("Connect pairs draft restoration", () => {
     expect(isRestorableConnectPairsDraft(question, { paths: question.solutionPaths })).toBe(true);
   });
 
+  it.each([0, 9])(
+    "restores a single endpoint at cell %i alongside a completed route",
+    (endpoint) => {
+      if (question.type !== "connect-pairs") throw new Error("Expected connect-pairs");
+      expect(
+        isRestorableConnectPairsDraft(question, {
+          paths: { circle: [endpoint], triangle: question.solutionPaths.triangle },
+        }),
+      ).toBe(true);
+    },
+  );
+
   it("rejects incompatible, malformed and overlapping persisted paths", () => {
     expect(isRestorableConnectPairsDraft(question, { paths: { unknown: [0, 1] } })).toBe(false);
     expect(isRestorableConnectPairsDraft(question, { paths: { circle: [0, 2] } })).toBe(false);

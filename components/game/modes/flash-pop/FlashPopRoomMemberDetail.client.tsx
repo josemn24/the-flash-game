@@ -17,6 +17,7 @@ function toAnswerResult(answer: AnswerReview): AnswerResult {
     points: answer.points ?? 0,
     timeUsed: answer.timeUsed ?? 0,
     details: answer.details,
+    reviewState: answer.reviewState,
   };
 }
 

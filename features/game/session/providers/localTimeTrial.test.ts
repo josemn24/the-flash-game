@@ -114,6 +114,54 @@ describe("local Time Trial authority", () => {
     expect(completed.review).toHaveLength(1);
   });
 
+  it.each(["connect-pairs", "queens"] as const)(
+    "keeps the latest %s board for review when the global clock expires",
+    async (format) => {
+      const definition = createTimeTrialTestDefinition({ format });
+      const { clock, driver } = setup(definition);
+      const compiled = compileTimeTrialDefinition(definition);
+      await driver.begin();
+      const prepared = await driver.issue("prepare", {}, 0);
+      const question = compiled.levels[0]!.question;
+      if (format === "connect-pairs") {
+        if (question.type !== "connect-pairs") throw new Error("expected Connect Pairs fixture");
+        const pair = question.pairs[0]!;
+        await driver.issue("connectPairsDraft", {
+          paths: { [pair.id]: [pair.endpoints[0]] },
+        }, 0);
+      } else {
+        if (question.type !== "queens") throw new Error("expected Queens fixture");
+        const prefilled = question.prefilledQueens ?? [];
+        const added = question.solution.find((cell) => !prefilled.includes(cell));
+        if (added === undefined) throw new Error("expected an unfilled Queens cell");
+        await driver.issue("queensDraft", { queens: [...prefilled, added] }, 0);
+      }
+      clock.set(Date.parse(prepared.state.deadlineAt!));
+
+      const completed = await driver.issue("complete");
+
+      expect(completed.state.answers?.[0]).toMatchObject({
+        answer: null,
+        status: "unanswered",
+        points: 0,
+        reviewState:
+          format === "connect-pairs"
+            ? { type: "connect-pairs" }
+            : { type: "queens" },
+      });
+      if (format === "connect-pairs")
+        expect(completed.state.answers?.[0]?.reviewState).toMatchObject({
+          type: "connect-pairs",
+          paths: expect.any(Object),
+        });
+      else
+        expect(completed.state.answers?.[0]?.reviewState).toMatchObject({
+          type: "queens",
+          queens: expect.any(Array),
+        });
+    },
+  );
+
   it("evaluates Connect Pairs answers through the canonical scorer", async () => {
     const definition = createTimeTrialTestDefinition({ format: "connect-pairs" });
     const { clock, driver } = setup(definition);

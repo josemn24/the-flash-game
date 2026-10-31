@@ -341,13 +341,22 @@ begin
     raise exception 'session_revoked' using errcode = '42501';
   end if;
   expected := (input->>'lockVersion')::bigint;
-  if expected is distinct from a.lock_version then raise exception 'stale_version' using errcode = '40001'; end if;
   select * into segment from private.interaction_intervals where attempt_id = a.id and ended_at is null for update;
   if not found or segment.challenge_item_id <> (input->>'challengeItemId')::uuid then
     raise exception 'interaction_not_presented' using errcode = '55000';
   end if;
   instant := clock_timestamp();
   select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+  if expected is distinct from a.lock_version and not (
+    expected = a.lock_version - 1
+    and instant < unit.deadline_at
+    and (a.deadline_at is null or not exists (
+      select 1 from private.challenge_versions cv
+      where cv.id = a.challenge_version_id and cv.mode = 'time-trial'
+    ) or instant < a.deadline_at)
+  ) then
+    raise exception 'stale_version' using errcode = '40001';
+  end if;
   if instant >= unit.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
   instant := clock_timestamp();
   if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial') and instant >= a.deadline_at then

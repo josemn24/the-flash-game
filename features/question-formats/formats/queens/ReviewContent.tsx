@@ -1,14 +1,17 @@
 import { QueensBoard } from "@/components/questions";
 import styles from "@/components/game/shared/ReviewAnswers.module.css";
 import { isQueensAnswer } from "@/lib/scoring";
+import { calculateQueensDraftMetrics } from "@/lib/queens";
 import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
 import type { ReviewProps } from "../../rendererTypes";
 
 export function ReviewContent({ question, result }: ReviewProps<PracticeQuestionOfType<"queens">>) {
+  const savedQueens = result.reviewState?.type === "queens" ? [...result.reviewState.queens] : null;
   const answer = isQueensAnswer(result.answer, question.grid)
     ? result.answer
-    : { queens: [], marks: [] };
+    : { queens: savedQueens ?? [], marks: [] };
   const details = result.details?.type === "queens" ? result.details : undefined;
+  const draftMetrics = savedQueens ? calculateQueensDraftMetrics(question, answer.queens) : undefined;
   return (
     <div className="grid gap-3">
       {details?.failureReason === "attempts_exhausted" ? (
@@ -32,12 +35,13 @@ export function ReviewContent({ question, result }: ReviewProps<PracticeQuestion
         <div className={styles.answerBox}>
           <span>Coronas</span>
           <strong>
-            {details?.placedQueens ?? answer.queens.length}/{question.grid.rows}
+            {details?.placedQueens ?? draftMetrics?.placedQueens ?? answer.queens.length}/
+            {question.grid.rows}
           </strong>
         </div>
         <div className={styles.answerBox}>
           <span>En conflicto</span>
-          <strong>{details?.conflictingQueens ?? 0}</strong>
+          <strong>{details?.conflictingQueens ?? draftMetrics?.conflictingQueens ?? 0}</strong>
         </div>
         <div className={styles.answerBox}>
           <span>Errores</span>

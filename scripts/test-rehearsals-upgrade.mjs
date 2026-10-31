@@ -82,10 +82,15 @@ try {
   await sql(
     `begin;\n${(await Promise.all(files.slice(boundary + 1).map((name) => readFile(`supabase/migrations/${name}`, "utf8")))).join("\n")}\ncommit;`,
   );
+  const upgraded = await json(snapshot);
+  for (const answer of upgraded["private.attempt_answers"]) {
+    assert.equal(answer.review_state, null, "Historical answers receive an empty review snapshot");
+    delete answer.review_state;
+  }
   assert.deepEqual(
-    await json(snapshot),
+    upgraded,
     withLegacyAssociation,
-    "Dynamic upgrade preserves all competitive rows and audit history",
+    "Dynamic upgrade preserves all preexisting competitive values and audit history",
   );
   assert.equal(
     (

@@ -26,6 +26,7 @@ import {
   positive,
   record,
   requireResponse,
+  reviewStateValue,
   text,
   wordHashtagState,
   timeTrialState,
@@ -68,6 +69,7 @@ export function sessionEffect(
     case "wordSearchSelection":
       return state.terminal === true ? "evaluated" : "progress";
     case "queensDraft":
+    case "connectPairsDraft":
     case "progressiveClueReveal":
       return "progress";
     case "prepareSession":
@@ -112,6 +114,7 @@ export function decodeSessionAcceptance<
     timeUsedMs: integer,
     score: points,
     details: resultDetails,
+    reviewState: reviewStateValue,
     reviewPending: boolean,
   });
   if (context?.mode === "time-trial" && op !== "prepareSession") {
@@ -251,6 +254,9 @@ export function decodeSessionAcceptance<
         break;
       case "alphabetPass":
         fields(r, { passed: oneOf(true) });
+        break;
+      case "connectPairsDraft":
+        fields(r, { challengeItemId: text, reviewState: reviewStateValue });
         break;
       case "prepareSession":
         break;

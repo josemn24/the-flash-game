@@ -1122,6 +1122,15 @@
     background: color-mix(in srgb, var(--pair-color) 58%, var(--ds-color-bg-surface-soft));
   }
 
+  .connectPairsReviewSubmittedCell::after {
+    position: absolute;
+    inset: 0.18rem;
+    border: 2px dashed var(--submitted-pair-color);
+    border-radius: 50%;
+    content: "";
+    pointer-events: none;
+  }
+
   .connectPairsReviewLegend {
     display: grid;
     gap: 0.75rem;

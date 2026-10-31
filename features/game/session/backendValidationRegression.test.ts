@@ -293,16 +293,21 @@ describe("Time Trial requires an authoritative clock before playing", () => {
       }
       expect(engine.getSnapshot()).toMatchObject({
         pendingCommand: { operation },
-        locked: true,
+        locked: operation !== "queensDraft",
         deadlineAt: before.deadlineAt,
         timeTrial: before.timeTrial,
         question: before.question,
         attempt: before.attempt,
         results: [],
       });
-      expect(
-        engine.getSnapshot().lifecycleError?.code ?? engine.getSnapshot().feedback?.state,
-      ).toBeDefined();
+      if (operation === "queensDraft") {
+        expect(engine.getSnapshot().lifecycleError).toBeUndefined();
+        expect(engine.getSnapshot().completionRetryScheduled).toBe(true);
+      } else {
+        expect(
+          engine.getSnapshot().lifecycleError?.code ?? engine.getSnapshot().feedback?.state,
+        ).toBeDefined();
+      }
       await vi.advanceTimersByTimeAsync(1000);
       expect(seen).toHaveLength(2);
       expect(seen[1]).toEqual(seen[0]);

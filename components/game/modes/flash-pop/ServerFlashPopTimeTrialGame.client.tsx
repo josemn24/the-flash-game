@@ -66,8 +66,15 @@ export function FlashPopTimeTrialGameView({
         ]
       : ["Une los puntos iguales", "Cubre todo el tablero", "No cruces ni compartas casillas"];
   const solved = session.results.filter((result) => result.status === "correct").length;
+  const provisionalSolved = Math.max(solved, session.timeTrial?.solvedCount ?? 0);
+  const provisionalScore =
+    session.timeTrial?.points ??
+    session.results.reduce((total, result) => total + result.points, 0);
   const running =
-    session.deadlineAt !== null && session.phase !== "results" && session.phase !== "review";
+    session.deadlineAt !== null &&
+    session.phase !== "finalizing" &&
+    session.phase !== "results" &&
+    session.phase !== "review";
   const endReason = session.timeTrial?.endReason;
   const lastCorrect = session.timeTrial?.lastCorrectElapsedMs;
   const timeLabel = lastCorrect == null ? "Sin aciertos" : `${(lastCorrect / 1000).toFixed(2)} s`;
@@ -148,7 +155,17 @@ export function FlashPopTimeTrialGameView({
             onComplete={session.startQuestions}
           />
         ) : null}
-        {(session.phase === "playing" || session.phase === "checking") &&
+        {session.phase === "finalizing" ? (
+          <Card key="provisional-result" role="status" aria-live="polite">
+            <h1>Resultado provisional</h1>
+            <p>Guardando resultado en el servidor…</p>
+            <p>
+              {provisionalSolved}/{challenge.slots.length} pruebas resueltas · {provisionalScore}{" "}
+              puntos
+            </p>
+          </Card>
+        ) : null}
+        {["playing", "checking", "finalizing"].includes(session.phase) &&
         session.question &&
         session.questionInput ? (
           <ServerFlashQuestionStage
@@ -182,19 +199,13 @@ export function FlashPopTimeTrialGameView({
             isLast={false}
           />
         ) : null}
-        {["recovering", "preparing", "finalizing"].includes(session.phase) ? (
+        {["recovering", "preparing"].includes(session.phase) ? (
           <Card key={session.phase} role="status" aria-live="polite">
-            <h1>
-              {session.phase === "recovering"
-                ? "Recuperando partida"
-                : session.phase === "finalizing"
-                  ? "Finalizando partida…"
-                  : "Preparando prueba…"}
-            </h1>
+            <h1>{session.phase === "recovering" ? "Recuperando partida" : "Preparando prueba…"}</h1>
             <p>
-              {session.phase === "finalizing"
-                ? "Estamos confirmando y guardando tu resultado."
-                : "Comprobamos el estado de tu intento."}
+              {session.phase === "recovering"
+                ? "Comprobamos el estado de tu intento."
+                : "Estamos preparando la siguiente prueba."}
             </p>
           </Card>
         ) : null}

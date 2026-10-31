@@ -19,6 +19,7 @@ import { systemSessionClock } from "../clock";
 import { compileTimeTrialDefinition } from "./localShared/definition";
 import {
   formatProgress,
+  formatReviewState,
   initialFormatState,
   LocalRejection,
   reject,
@@ -167,6 +168,9 @@ export function createLocalTimeTrialSessionProvider(
       points: correct ? challenge.slots[pending.index]!.points : 0,
       timeUsed: pending.timeUsedMs / 1000,
       ...(evaluated.details && !pending.timedOut ? { details: evaluated.details } : {}),
+      ...(pending.timedOut && formatReviewState(level, state)
+        ? { reviewState: formatReviewState(level, state) }
+        : {}),
     };
     answers.push(result);
     if (result.status === "correct") lastCorrectAt = now;
@@ -323,7 +327,11 @@ export function createLocalTimeTrialSessionProvider(
         return reject("interaction_not_presented");
       if (deadlineAt !== null && now >= deadlineAt) return reject("deadline_reached");
       const level = levels[board.index]!;
-      if (operation === "queensDraft" || operation === "queensValidation") {
+      if (
+        operation === "queensDraft" ||
+        operation === "queensValidation" ||
+        operation === "connectPairsDraft"
+      ) {
         const transition = transitionFormat(level, formats[board.index]!, command, new Map());
         formats[board.index] = transition.state;
         revision++;

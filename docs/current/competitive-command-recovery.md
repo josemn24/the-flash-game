@@ -2,14 +2,18 @@
 
 > Estado: implementación local; validación en staging pendiente antes de publicar.
 
-Fecha: 2026-10-06.
+Última actualización: 2026-10-31.
 
 ## Garantías y límites
 
 Los seis modos comparten el mismo motor de comandos. Un envío incierto conserva en memoria
 su operación, payload, versión y clave. Se bloquean acciones incompatibles; los retries repiten
 ese comando y una recarga reconstruye respuestas, puntos, progreso y tiempos desde PostgreSQL.
-No se guardan respuestas sin enviar ni se crea una cola offline.
+Queens y Conectar parejas guardan checkpoints validados de sus tableros; el último aceptado
+puede conservarse como `reviewState` al cerrar una respuesta nula, también al reconciliar una
+evaluación pendiente. Esta captura se completa antes de limpiar el progreso mutable. No acredita
+puntos y permite revisar el tablero sin convertir el borrador en una respuesta evaluada.
+Los borradores aún no enviados permanecen solo en memoria y no existe una cola offline.
 
 El estado de transporte del motor distingue `idle`, `submitting`, `uncertain`, `reconciling`,
 `confirmed` y `definitive_failure`. `uncertain` no equivale a rechazo: mantiene el comando
@@ -136,16 +140,35 @@ comprobaciones ocurren antes de actualizar esos hechos o confirmar cambios en el
 
 ### Límites y esperas
 
-| Operación                                              | Timeout completo | Retries adicionales | Esperas     |
-| ------------------------------------------------------ | ---------------- | ------------------- | ----------- |
-| Preparación de cookie, inicio, recuperación y acciones | 5 s              | 1                   | 1 s         |
-| Finalización                                           | 10 s             | 3                   | 1 / 2 / 4 s |
+| Operación                                                          | Timeout completo | Retries adicionales                                         | Esperas                                 |
+| ------------------------------------------------------------------ | ---------------- | ----------------------------------------------------------- | --------------------------------------- |
+| Preparación de cookie, inicio, recuperación y acciones definitivas | 5 s              | 1                                                           | 1 s                                     |
+| Borradores Queens y Conectar parejas                               | 5 s              | Mientras el fallo sea recuperable y el comando siga vigente | 1 / 2 / 4 / 8 / 16 / 30 s; después 30 s |
+| Finalización de Contrarreloj                                       | 10 s             | Mientras el fallo sea recuperable y el comando siga vigente | 1 / 2 / 4 / 8 / 16 / 30 s; después 30 s |
+| Finalización de los demás modos                                    | 10 s             | 3                                                           | 1 / 2 / 4 s                             |
 
 El timeout incluye respuesta y JSON. `Retry-After` prevalece. El transporte envía una petición;
 el motor gestiona el ciclo. Abortar la espera no implica rollback. Al agotar, el estado continúa
 incierto y se ofrece reintento manual del comando original. Una versión obsoleta se reconcilia;
 permisos denegados y sesión revocada detienen escrituras/retries. Desmontar cancela esperas y descarta
 respuestas tardías. Los deadlines competitivos permanecen intactos.
+
+Los checkpoints mantienen el tablero editable. El primer envío agrupa unos 300 ms de ediciones y
+los siguientes se limitan aproximadamente a uno por segundo; un replay conserva exactamente el
+payload, la versión y la clave originales. La validación Queens, el envío completo de Conectar
+parejas y el cierre por tiempo pueden adelantar un checkpoint. La continuación de la cola depende
+de la operación definitiva, no de la respuesta HTTP del borrador antiguo.
+
+Cada ejecución y sus temporizadores tienen propietario y generación. Adelantar un borrador retira
+sus tareas aún no enviadas y sus reintentos; las respuestas y los bloques de limpieza tardíos no
+pueden modificar la nueva ejecución. Si un temporizador del comando vigente vence durante su
+propio reintento, la intención se conserva hasta que este termine. Las generaciones retiradas no
+pueden reactivar efectos de avance o finalización. PostgreSQL conserva la serialización y decide
+qué snapshot aceptado corresponde al cierre.
+
+Solicitar el cierre global cancela también el avance pendiente entre tableros, incluso cuando
+deba esperar a otro comando. Un avance tardío se ignora durante la finalización y después del
+resultado; un cierre lento no borra el tablero provisional ni prepara otra pregunta.
 
 El cálculo del presupuesto y la clasificación de fallos son funciones puras de
 `features/game/competitive/core/commandRecoveryPolicy.ts`; no envían comandos ni mantienen

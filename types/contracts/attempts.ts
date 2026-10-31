@@ -210,6 +210,14 @@ export type SaveQueensDraftResult = AttemptCommandResult & {
   readonly conflictingQueens: number;
   readonly solved: boolean;
 };
+export type SaveConnectPairsDraftInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly paths: Readonly<Record<string, readonly number[]>>;
+};
+export type SaveConnectPairsDraftResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly reviewState: import("@/types/gameplay/result").ReviewState;
+};
 export type ValidateQueensBoardInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
   readonly queens: readonly number[];
@@ -251,6 +259,7 @@ export type SubmitAnswerResult = AttemptCommandResult & {
   readonly status: AnswerStatus;
   readonly points: number;
   readonly details?: AnswerResultDetails;
+  readonly reviewState?: import("@/types/gameplay/result").ReviewState;
 };
 export type PassInteractionInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
@@ -282,6 +291,7 @@ export type AttemptRecoveryAnswer = {
   readonly points: number;
   readonly timeUsedMs: DurationMs;
   readonly resultDetails?: AnswerResultDetails | null;
+  readonly reviewState?: import("@/types/gameplay/result").ReviewState | null;
 };
 /** Saved projections apply jsonb_strip_nulls, including reconstructed partial answers. */
 export type PersistedAttemptRecoveryAnswer = Omit<AttemptRecoveryAnswer, "answer"> & {

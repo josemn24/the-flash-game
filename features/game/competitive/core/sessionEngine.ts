@@ -27,6 +27,7 @@ import type { CommandOrigin, CommandStep, SessionRuntime } from "./runtime";
 import {
   afterCommandRecovery,
   classifyCommandFailure,
+  commandRetryPlan,
   retryReaction,
 } from "./commandRecoveryPolicy";
 import type { FinalizationCheckpoint, FinalizationDecision } from "../modes/finalization";
@@ -38,6 +39,12 @@ export type SessionOptions = {
   clock?: SessionClock;
   refresh?: () => void;
 };
+type CommandExecution = {
+  readonly command: PendingCommand;
+  readonly generation: number;
+  readonly token: symbol;
+};
+
 /** Owns the snapshot, pending command and effect lifetime. React only subscribes. */
 export class CompetitiveSessionEngine {
   private snapshot: SessionState;
@@ -55,7 +62,10 @@ export class CompetitiveSessionEngine {
   private automaticRetries = 0;
   private alphabetPassExpired = false;
   private abortController = new AbortController();
-  private retrying = false;
+  private retryExecution?: CommandExecution;
+  private deferredRetry?: CommandExecution;
+  private statusOwner?: CommandExecution;
+  private retryTimerOwner?: CommandExecution;
   private terminalRecoveryAttempted = false;
   private terminalRecoveryRequested = false;
   private refresh: () => void;
@@ -99,6 +109,8 @@ export class CompetitiveSessionEngine {
       state: this.getSnapshot,
       commit: this.commit,
       run: this.run,
+      runDeadline: this.runDeadline,
+      runOvertakingDraft: this.runOvertakingDraft,
       refresh: this.refresh,
       now: () => this.clock.now(),
       schedule: (name, delay, callback) =>
@@ -106,7 +118,7 @@ export class CompetitiveSessionEngine {
           if (this.active) callback();
         }),
       cancel: (name) => this.timers.cancel(name),
-      cancelAll: () => this.timers.clear(),
+      cancelAll: () => this.clearTimers(),
     };
     this.lifecycle = createAttemptLifecycle(runtime);
     this.interactions = createInteractions(runtime, this.lifecycle);
@@ -139,20 +151,70 @@ export class CompetitiveSessionEngine {
     this.active = false;
     this.abortController.abort();
     this.generation++;
-    this.timers.clear();
+    this.clearTimers();
     this.listeners.clear();
   };
+  private execution(command: PendingCommand): CommandExecution {
+    return { command, generation: this.generation, token: Symbol(command.operation) };
+  }
+  private isCurrent(generation: number) {
+    return this.active && generation === this.generation;
+  }
+  private clearTimers() {
+    this.statusOwner = undefined;
+    this.retryTimerOwner = undefined;
+    this.deferredRetry = undefined;
+    this.timers.clear();
+  }
+  private cancelRetry() {
+    this.retryTimerOwner = undefined;
+    this.timers.cancel("completion-retry");
+  }
+  private scheduleRetry(command: PendingCommand, delay: number) {
+    const owner = this.execution(command);
+    this.retryTimerOwner = owner;
+    this.timers.schedule("completion-retry", delay, () => {
+      if (
+        this.retryTimerOwner?.token !== owner.token ||
+        !this.isCurrent(owner.generation) ||
+        this.snapshot.pendingCommand !== command
+      )
+        return;
+      this.retryTimerOwner = undefined;
+      void this.retry(true);
+    });
+  }
   private send = async <K extends Operation>(
     command: PendingCommand<K>,
     invoke: () => Promise<GameSessionResult<K>>,
     step: CommandStep<K>,
   ): Promise<boolean> => {
     if (!this.active || this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
-    const generation = this.generation;
+    const draftItemId =
+      command.operation === "queensDraft" || command.operation === "connectPairsDraft"
+        ? (command.input as { challengeItemId: string }).challengeItemId
+        : null;
+    if (
+      this.snapshot.phase !== "playing" &&
+      (command.operation === "queensDraft" || command.operation === "connectPairsDraft")
+    )
+      return false;
+    if (draftItemId !== null && this.snapshot.question?.id !== draftItemId) return false;
+    const execution = this.execution(command);
+    const { generation } = execution;
     this.pendingStep = step;
     this.commit({ type: "command_started", command, feedback: step.channel });
+    this.statusOwner = execution;
+    this.timers.cancel("status");
     if (step.channel)
-      this.timers.schedule("status", 250, () => this.commit({ type: "feedback_visible" }));
+      this.timers.schedule("status", 250, () => {
+        if (
+          this.statusOwner?.token === execution.token &&
+          this.isCurrent(generation) &&
+          this.snapshot.pendingCommand === command
+        )
+          this.commit({ type: "feedback_visible" });
+      });
     try {
       const result = await invoke();
       if (result.kind !== "accepted") throw new GameSessionCommandError(result);
@@ -188,7 +250,7 @@ export class CompetitiveSessionEngine {
       this.pendingStep = undefined;
       this.retryAt = 0;
       this.automaticRetries = 0;
-      this.timers.cancel("completion-retry");
+      this.cancelRetry();
       return true;
     } catch (error) {
       if (!this.active || generation !== this.generation) return false;
@@ -216,7 +278,10 @@ export class CompetitiveSessionEngine {
       await this.failed(command, step, error);
       return false;
     } finally {
-      if (this.active) this.timers.cancel("status");
+      if (this.statusOwner?.token === execution.token) {
+        this.statusOwner = undefined;
+        this.timers.cancel("status");
+      }
     }
   };
   private run = async <K extends Operation>(
@@ -224,11 +289,12 @@ export class CompetitiveSessionEngine {
     data: CommandData<K>,
     step: CommandStep<K>,
   ): Promise<boolean> => {
-    if (this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
+    if (!this.active || this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
+    const generation = this.generation;
     let accepted = false;
     if (!this.snapshot.pendingCommand) {
       this.automaticRetries = 0;
-      this.timers.cancel("completion-retry");
+      this.cancelRetry();
     }
     try {
       await this.executor.execute(operation, data, async (command, invoke) => {
@@ -237,16 +303,59 @@ export class CompetitiveSessionEngine {
     } catch (error) {
       if (!(error instanceof PendingCommandBlocked)) throw error;
     }
-    await this.afterCommand("run", operation, accepted, step);
+    await this.afterCommand("run", operation, accepted, step, generation);
     return accepted;
   };
+  private runOvertakingDraft = async <K extends Operation>(
+    operation: K,
+    data: CommandData<K>,
+    step: CommandStep<K>,
+  ): Promise<boolean> => {
+    if (!this.active || this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
+    const pending = this.snapshot.pendingCommand;
+    if (pending && pending.operation !== "queensDraft" && pending.operation !== "connectPairsDraft")
+      return false;
+    // Retire every browser-side effect owned by the old checkpoint, including
+    // its retry. A late finally must not clear a newer execution's state.
+    const generation = ++this.generation;
+    this.retryExecution = undefined;
+    this.deferredRetry = undefined;
+    this.statusOwner = undefined;
+    this.timers.cancel("status");
+    this.cancelRetry();
+    this.retryAt = 0;
+    this.automaticRetries = 0;
+    if (pending) {
+      this.pendingStep = undefined;
+      this.commit({
+        type: "command_failed",
+        definitive: true,
+        phase: this.snapshot.phase,
+        locked: true,
+      });
+    }
+    let accepted = false;
+    try {
+      await this.executor.executeImmediate(operation, data, async (command, invoke) => {
+        accepted = await this.send(command, invoke, step);
+      });
+    } catch (error) {
+      if (!(error instanceof PendingCommandBlocked)) throw error;
+    }
+    await this.afterCommand("run", operation, accepted, step, generation);
+    return accepted;
+  };
+  private runDeadline = this.runOvertakingDraft;
   private async afterCommand(
     origin: CommandOrigin,
     operation: Operation,
     accepted: boolean,
     step: CommandStep,
+    generation: number,
   ) {
+    if (!this.isCurrent(generation)) return;
     if (origin !== "takeover") await this.recoverTerminalIfRequested();
+    if (!this.isCurrent(generation)) return;
     const decide = (checkpoint: FinalizationCheckpoint) =>
       this.policy.finalization.afterCommand(checkpoint, {
         origin,
@@ -263,10 +372,13 @@ export class CompetitiveSessionEngine {
       await this.applyFinalization(before);
       return;
     }
-    if (accepted && this.active) await step.after?.();
+    if (accepted) await step.after?.();
+    if (!this.isCurrent(generation)) return;
     // Each awaited effect may run nested commands. Always decide from the live snapshot.
     await this.applyFinalization(decide("after-after"));
+    if (!this.isCurrent(generation)) return;
     await this.applyFinalization(decide("after-finalize"));
+    if (!this.isCurrent(generation)) return;
     if (
       afterCommandRecovery({
         origin,
@@ -276,7 +388,7 @@ export class CompetitiveSessionEngine {
       }) === "reconcile"
     )
       await this.reconcile();
-    await this.applyFinalization(decide("after-reconcile"));
+    if (this.isCurrent(generation)) await this.applyFinalization(decide("after-reconcile"));
   }
   private async applyFinalization(decision: FinalizationDecision) {
     if (decision.type === "finalize") {
@@ -300,13 +412,88 @@ export class CompetitiveSessionEngine {
       this.pendingStep = undefined;
       this.retryAt = 0;
       this.automaticRetries = 0;
-      this.timers.cancel("completion-retry");
+      this.cancelRetry();
       this.commit({
         type: "command_failed",
         definitive: true,
         phase: "finalizing",
         locked: true,
       });
+      return;
+    }
+    const isCheckpoint =
+      command.operation === "queensDraft" || command.operation === "connectPairsDraft";
+    const checkpointFailure = error instanceof GameSessionCommandError ? error.failure : undefined;
+    const retryFinalization =
+      command.operation === "complete" &&
+      this.options.challenge.mode === "time-trial" &&
+      this.snapshot.phase === "finalizing" &&
+      checkpointFailure?.retryable !== false &&
+      !checkpointFailure?.authorizationLost &&
+      !["session_transferred", "attempt_terminal", "attempt_session_missing"].includes(code ?? "");
+    if (
+      isCheckpoint &&
+      code !== "stale_version" &&
+      !checkpointFailure?.authorizationLost &&
+      ![
+        "session_transferred",
+        "attempt_inactivity_expired",
+        "attempt_terminal",
+        "attempt_session_missing",
+      ].includes(code ?? "") &&
+      checkpointFailure?.retryable !== false
+    ) {
+      const retry = commandRetryPlan({
+        operation: command.operation,
+        failure: checkpointFailure,
+        definitive: false,
+        automaticRetries: this.automaticRetries,
+        now: this.clock.now(),
+        retryUntilAccepted: true,
+      });
+      this.retryAt = retry.retryAt;
+      // A draft checkpoint is best-effort: keep the local board editable and
+      // retain the exact command for idempotent replay without surfacing a
+      // lifecycle error or submission feedback.
+      this.commit({ type: "command_failed", definitive: false, locked: this.snapshot.locked });
+      this.automaticRetries++;
+      this.commit({ type: "completion_retry", scheduled: true });
+      this.scheduleRetry(command, retry.delayMs ?? 30_000);
+      return;
+    }
+    if (
+      isCheckpoint &&
+      code !== "stale_version" &&
+      !checkpointFailure?.authorizationLost &&
+      checkpointFailure?.retryable === false &&
+      ![
+        "session_transferred",
+        "attempt_inactivity_expired",
+        "attempt_terminal",
+        "attempt_session_missing",
+      ].includes(code ?? "")
+    ) {
+      this.pendingStep = undefined;
+      this.retryAt = 0;
+      this.automaticRetries = 0;
+      this.cancelRetry();
+      this.commit({ type: "command_failed", definitive: true, locked: this.snapshot.locked });
+      return;
+    }
+    if (retryFinalization) {
+      const retry = commandRetryPlan({
+        operation: command.operation,
+        failure: checkpointFailure,
+        definitive: false,
+        automaticRetries: this.automaticRetries,
+        now: this.clock.now(),
+        retryUntilAccepted: true,
+      });
+      this.retryAt = retry.retryAt;
+      this.commit({ type: "command_failed", definitive: false, locked: true });
+      this.automaticRetries++;
+      this.commit({ type: "completion_retry", scheduled: true });
+      this.scheduleRetry(command, retry.delayMs ?? 30_000);
       return;
     }
     const { action, takeoverUncertain } = classifyCommandFailure({
@@ -320,7 +507,7 @@ export class CompetitiveSessionEngine {
     });
     if (action.type === "takeover-conflict") {
       console.info(JSON.stringify({ event: "takeover_conflict", code }));
-      this.timers.clear();
+      this.clearTimers();
       this.pendingStep = undefined;
       this.commit({
         type: "command_failed",
@@ -337,7 +524,7 @@ export class CompetitiveSessionEngine {
     }
     if (takeoverUncertain) console.info(JSON.stringify({ event: "takeover_uncertain" }));
     if (action.type === "session-transferred") {
-      this.timers.clear();
+      this.clearTimers();
       this.pendingStep = undefined;
       this.terminalRecoveryRequested = false;
       this.commit({
@@ -353,7 +540,7 @@ export class CompetitiveSessionEngine {
       return;
     }
     if (action.type === "authorization-lost") {
-      this.timers.clear();
+      this.clearTimers();
       this.pendingStep = undefined;
       if (action.recoverTerminal) {
         this.terminalRecoveryAttempted = true;
@@ -382,13 +569,13 @@ export class CompetitiveSessionEngine {
       return;
     }
     if (action.type === "expired") {
-      this.timers.clear();
+      this.clearTimers();
       this.pendingStep = undefined;
       this.commit({ type: "expired" });
       return;
     }
     if (action.type === "reload-projection") {
-      this.timers.clear();
+      this.clearTimers();
       this.pendingStep = undefined;
       this.retryAt = 0;
       this.automaticRetries = 0;
@@ -434,7 +621,7 @@ export class CompetitiveSessionEngine {
     if (retry.delayMs !== undefined) {
       this.automaticRetries++;
       this.commit({ type: "completion_retry", scheduled: true });
-      this.timers.schedule("completion-retry", retry.delayMs, () => void this.retry(true));
+      this.scheduleRetry(command, retry.delayMs);
     }
   }
 
@@ -442,7 +629,7 @@ export class CompetitiveSessionEngine {
     if (!this.terminalRecoveryRequested || !this.active) return false;
     this.terminalRecoveryRequested = false;
     if (await this.lifecycle.recoverTerminal()) return true;
-    this.timers.clear();
+    this.clearTimers();
     this.pendingStep = undefined;
     this.commit({
       type: "authorization_lost",
@@ -459,8 +646,17 @@ export class CompetitiveSessionEngine {
   retry = async (automatic = false) => {
     // React handlers can pass an event; only our internal true means an automatic replay.
     automatic = automatic === true;
-    if (!this.active || this.snapshot.busy || this.retrying || this.clock.now() < this.retryAt)
+    if (!this.active || this.clock.now() < this.retryAt) return;
+    const running = this.retryExecution;
+    if (
+      running &&
+      this.isCurrent(running.generation) &&
+      running.command === this.snapshot.pendingCommand
+    ) {
+      if (automatic) this.deferredRetry = running;
       return;
+    }
+    if (this.snapshot.busy) return;
     if (this.snapshot.lifecycleError?.recoveryAction === "refresh") {
       if (!automatic) this.refresh();
       return;
@@ -468,7 +664,7 @@ export class CompetitiveSessionEngine {
     if (this.snapshot.lifecycleError?.retryable === false) return;
     if (!automatic) {
       this.automaticRetries = 0;
-      this.timers.cancel("completion-retry");
+      this.cancelRetry();
       this.commit({ type: "completion_retry", scheduled: false });
     }
     const reaction = retryReaction(this.snapshot);
@@ -487,7 +683,8 @@ export class CompetitiveSessionEngine {
     const command = this.snapshot.pendingCommand;
     const step = this.pendingStep;
     if (!command || !step) return;
-    this.retrying = true;
+    const execution = this.execution(command);
+    this.retryExecution = execution;
     console.info(
       JSON.stringify({
         event: "competitive_command_replay",
@@ -500,10 +697,21 @@ export class CompetitiveSessionEngine {
       await this.executor.retry(command, async (original, invoke) => {
         accepted = await this.send(original, invoke, step);
       });
+    } catch (error) {
+      if (!(error instanceof PendingCommandBlocked)) throw error;
     } finally {
-      this.retrying = false;
+      if (this.retryExecution?.token === execution.token) this.retryExecution = undefined;
     }
-    await this.afterCommand("retry", command.operation, accepted, step);
+    await this.afterCommand("retry", command.operation, accepted, step, execution.generation);
+    if (this.deferredRetry?.token === execution.token) {
+      this.deferredRetry = undefined;
+      if (
+        this.isCurrent(execution.generation) &&
+        this.snapshot.pendingCommand === command &&
+        !this.retryTimerOwner
+      )
+        this.scheduleRetry(command, Math.max(0, this.retryAt - this.clock.now()));
+    }
   };
   reconcile = async () => {
     if (
@@ -542,6 +750,7 @@ export class CompetitiveSessionEngine {
     const transfer = this.snapshot.transfer;
     if (!this.active || !transfer || this.snapshot.busy || this.snapshot.pendingCommand)
       return false;
+    const generation = this.generation;
     let accepted = false;
     const step: CommandStep = {
       accept: () => {},
@@ -566,7 +775,7 @@ export class CompetitiveSessionEngine {
     } catch (error) {
       if (!(error instanceof PendingCommandBlocked)) throw error;
     }
-    await this.afterCommand("takeover", "takeover", accepted, step);
+    await this.afterCommand("takeover", "takeover", accepted, step, generation);
     return accepted;
   };
   cancelTakeOver = () => {
@@ -595,7 +804,7 @@ export class CompetitiveSessionEngine {
       {},
       {
         accept: () => {
-          this.timers.clear();
+          this.clearTimers();
           this.refresh();
         },
       },

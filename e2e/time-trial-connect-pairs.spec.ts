@@ -65,8 +65,33 @@ test("Conectar parejas: edición libre, reloj compartido, puntos y revisión", a
   await cell(page, 0, 1).click();
   await page.getByRole("button", { name: "Borrar ruta" }).click();
   await expect(page.getByText(/intentos restantes/)).toHaveCount(0);
-  await solve(page, 0);
-  await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
+  let releaseCheckpoint!: () => void;
+  let checkpointCommitted!: () => void;
+  const held = new Promise<void>((resolve) => {
+    releaseCheckpoint = resolve;
+  });
+  const committed = new Promise<void>((resolve) => {
+    checkpointCommitted = resolve;
+  });
+  let holdFirst = true;
+  await page.route("**/connect-pairs/draft", async (route) => {
+    const response = await route.fetch();
+    if (holdFirst) {
+      holdFirst = false;
+      expect(response.ok()).toBe(true);
+      checkpointCommitted();
+      await held;
+    }
+    await route.fulfill({ response });
+  });
+  try {
+    await cell(page, 0, 0).click();
+    await committed;
+    await solve(page, 0);
+    await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible({ timeout: 3500 });
+  } finally {
+    releaseCheckpoint();
+  }
   await expect(page.getByRole("grid", { name: /6×6/ })).toBeVisible();
   expect(deadlines).toHaveLength(2);
   expect(deadlines[0]).toBe(deadlines[1]);

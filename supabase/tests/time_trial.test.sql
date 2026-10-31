@@ -25,8 +25,12 @@ select throws_ok($$select test_support.run('receive_answer','{"answer":null}')$$
 select throws_ok($$select test_support.run('submit_queens_answer','{"queens":[2,9]}')$$,'22023','queens_answer_incomplete','An incomplete request does not consume opportunities');
 select test_support.run('save_queens_draft','{"queens":[2,9]}');
 select is((select last_result->'incorrectValidations' from test_support.runtime),'0'::jsonb,'Exploratory edits consume no opportunity');
-select test_support.run('submit_queens_answer','{"queens":[0,2,5,14,20]}');
+select test_support.run('submit_queens_answer',jsonb_build_object(
+  'queens','[0,2,5,14,20]'::jsonb,
+  'lockVersion',(select (state->>'lockVersion')::bigint-1 from test_support.runtime)));
 select is((select last_result->'incorrectValidations' from test_support.runtime),'1'::jsonb,'First failure leaves two opportunities');
+select is((select progress_payload->'queens' from public.attempts where id=(select (state->>'attemptId')::uuid from test_support.runtime)),
+  '[0,2,5,14,20]'::jsonb,'Validation atomically persists the current Queens snapshot over a stale checkpoint version');
 select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Validation replay does not consume an opportunity');
 select test_support.run('submit_queens_answer','{"queens":[0,2,5,14,24]}');
 select is((select last_result->'terminal' from test_support.runtime),'false'::jsonb,'Second failure permits a third validation');
@@ -67,11 +71,13 @@ select is((select last_result->'timeTrial'->'lastCorrectElapsedMs' from test_sup
 set local role service_role;
 
 select test_support.start_ct(3);
-select test_support.run('save_queens_draft','{"queens":[2,9,10,18,21]}');
+select test_support.run('save_queens_draft','{"queens":[2]}');
 select test_support.run('recover_attempt');
 select is(private.read_evaluation_context((select (state->>'receiptId')::uuid from test_support.runtime),(select state->>'sessionToken' from test_support.runtime))->'answer','null'::jsonb,'Recovery cannot turn a solved draft into an accepted validation');
 select test_support.run('record_evaluation','{"status":"unanswered","points":0}');
 select is(test_support.run('complete_attempt','{}')->'timeTrial'->>'endReason','recovery_interrupted','An active board without receipt ends recovery');
+select is((select review_state from private.attempt_answers where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)
+  and challenge_item_id=test_support.id('ct-item-1-1')),null::jsonb,'Prefilled Queens alone do not count as player progress');
 select is((select last_result->'timeTrial'->'lastCorrectElapsedMs' from test_support.runtime),'null'::jsonb,'Zero correct answers have no last-correct time');
 reset role;
 select is((select count(*) from private.attempt_answers where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),1::bigint,'Recovery never fabricates an unreached answer');
@@ -84,9 +90,27 @@ reset role;
 
 set local role service_role;
 select test_support.start_ct(4);
+select test_support.run('save_queens_draft','{"queens":[2,9,10]}');
 select pg_sleep(2.05);
 select throws_ok($$select test_support.run('submit_queens_answer','{"queens":[2,9,10,18,21]}')$$,'55000','deadline_reached','Late validations are rejected');
-select is(test_support.run('complete_attempt','{}')->'timeTrial'->>'endReason','time_limit','Timeout closes the active board');
+select is((test_support.run('complete_attempt',jsonb_build_object(
+  'lockVersion',(select (state->>'lockVersion')::bigint-1 from test_support.runtime)))->'timeTrial'->>'endReason'),
+  'time_limit','A stale browser version closes an authorized expired Queens board');
+select is((select status from private.attempt_answers where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)
+  and challenge_item_id=test_support.id('ct-item-2-1')),'unanswered','A Queens timeout remains unanswered for scoring');
+select is((select answer from private.attempt_answers where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)
+  and challenge_item_id=test_support.id('ct-item-2-1')),null::jsonb,'Queens draft is separate from the answer');
+select is((select review_state from private.attempt_answers where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)
+  and challenge_item_id=test_support.id('ct-item-2-1')),
+  '{"type":"queens","queens":[2,9,10]}'::jsonb,'Timeout captures only the saved crowns, without X marks');
+select throws_ok($$select test_support.run('save_queens_draft','{"queens":[2,9,10,18]}')$$,
+  '42501','session_revoked','A Queens checkpoint arriving after terminal closure is rejected');
+reset role;
+set local role authenticated;
+select is((select review_state from public.get_my_time_trial_result((select (state->>'attemptId')::uuid from test_support.runtime))
+  where item_position=1),'{"type":"queens","queens":[2,9,10]}'::jsonb,'History reads expose the saved Queens board');
+reset role;
+set local role service_role;
 select test_support.start_ct(5);
 select test_support.run('submit_queens_answer','{"queens":[2,9,10,18,21]}');
 select pg_sleep(2.05);

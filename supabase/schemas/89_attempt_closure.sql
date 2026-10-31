@@ -16,6 +16,7 @@ declare
   cv private.challenge_versions%rowtype := target_version;
   key text := input->>'idempotencyKey';
   receipt private.answer_receipts%rowtype;
+  snapshot jsonb;
   points integer;
   target_status text;
   completion_outcome text;
@@ -44,12 +45,15 @@ begin
           where r.id = (input->'pendingEvaluation'->>'receiptId')::uuid and r.attempt_id = a.id
             and not exists (select 1 from private.attempt_answers aa where aa.receipt_id = r.id);
         if not found then raise exception 'receipt_not_found' using errcode = '55000'; end if;
+        if receipt.answer is null or receipt.answer = 'null'::jsonb then
+          snapshot := private.attempt_review_state(a.id, receipt.challenge_item_id);
+        end if;
         insert into private.attempt_answers(attempt_id, challenge_item_id, challenge_version_id,
-          receipt_id, status, answer, result_details, points, presented_at, submitted_at,
+          receipt_id, status, answer, result_details, review_state, points, presented_at, submitted_at,
           time_used_ms, idempotency_key)
         values(a.id, receipt.challenge_item_id, a.challenge_version_id, receipt.id,
           input->'pendingEvaluation'->>'status', receipt.answer,
-          input->'pendingEvaluation'->'resultDetails', (input->'pendingEvaluation'->>'points')::integer,
+          input->'pendingEvaluation'->'resultDetails', snapshot, (input->'pendingEvaluation'->>'points')::integer,
           receipt.presented_at, receipt.effective_submitted_at, receipt.time_used_ms,
           'complete:evaluation:' || receipt.id);
       end if;
@@ -178,7 +182,8 @@ begin
     result := result || jsonb_build_object('answers', coalesce((
       select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
         'answer', aa.answer, 'status', aa.status, 'points', aa.points,
-        'timeUsedMs', aa.time_used_ms, 'resultDetails', aa.result_details) order by ci.position)
+        'timeUsedMs', aa.time_used_ms, 'resultDetails', aa.result_details,
+        'reviewState', aa.review_state) order by ci.position)
       from private.attempt_answers aa join private.challenge_items ci on ci.id = aa.challenge_item_id
       where aa.attempt_id = a.id
     ), '[]'::jsonb));

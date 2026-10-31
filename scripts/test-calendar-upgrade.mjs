@@ -64,10 +64,15 @@ try {
   const snapshot = `select jsonb_build_object(${facts.map((table) => `${quote(table)},(select coalesce(jsonb_agg(to_jsonb(t) order by to_jsonb(t)::text),'[]') from ${table} t)`).join(",")});`;
   const before = await sql(snapshot);
   await sql(`begin; ${sources.slice(boundary).join("\n")} commit;`);
+  const upgraded = JSON.parse(await sql(snapshot));
+  for (const answer of upgraded["private.attempt_answers"]) {
+    assert.equal(answer.review_state, null, "Historical answers receive an empty review snapshot");
+    delete answer.review_state;
+  }
   assert.deepEqual(
-    await sql(snapshot),
-    before,
-    "Migration preserves schedules, attempts, clocks, scoring and observation facts",
+    upgraded,
+    JSON.parse(before),
+    "Migration preserves preexisting schedules, attempts, clocks, scoring and observation facts",
   );
   await checkInventory(sql);
   console.log(

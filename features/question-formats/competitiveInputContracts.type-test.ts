@@ -92,6 +92,7 @@ type ExpectedKeys = {
   queens:
     | "question"
     | "locked"
+    | "draftQueens"
     | "queensState"
     | "queensStatusVisible"
     | "queensError"

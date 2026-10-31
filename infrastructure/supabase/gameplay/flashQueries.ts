@@ -1,4 +1,5 @@
 import { assertAttemptLifecycle } from "@/lib/attemptLifecycle";
+import { reviewStateValue } from "@/lib/competitiveResponseContract";
 import type { AttemptOutcome } from "@/types/domain/attempt";
 import {
   competitivePerformanceObserver,
@@ -61,6 +62,7 @@ type FlashResultOverrides = {
   answer_status: AnswerResult["status"];
   points: number;
   result_details: AnswerResult["details"] | null;
+  review_state?: AnswerResult["reviewState"] | null;
   presented_at: string;
   submitted_at: string | null;
   time_used_ms: number;
@@ -169,6 +171,9 @@ export function isFlashResultRow<
     ) &&
     typeof value.points === "number" &&
     typeof value.time_used_ms === "number" &&
+    (value.review_state === undefined ||
+      value.review_state === null ||
+      reviewStateValue(value.review_state)) &&
     value.attempt_status === "completed" &&
     typeof value.attempt_score === "number"
   );
@@ -352,6 +357,7 @@ export class SupabaseFlashQueries {
       points: row.points,
       timeUsed: row.time_used_ms / 1000,
       ...(row.result_details ? { details: row.result_details } : {}),
+      ...(row.review_state ? { reviewState: row.review_state } : {}),
     }));
     return {
       flashPoints: first.attempt_score,

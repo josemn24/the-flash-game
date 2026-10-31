@@ -10,7 +10,7 @@ The Flash combina competición persistida sobre Supabase, ejemplos didácticos d
 demos explícitas y pruebas locales antes del intento competitivo. Las rutas de producto no
 recurren al mock cuando falla Supabase.
 
-Revisión canónica del repositorio: `20261029184633_preserve_draft_calendar_windows`.
+Revisión canónica del repositorio: `20261031160000_checkpoint_execution_and_review_fixes`.
 
 El portal permite [reprogramar temporadas y desafíos](calendar-rescheduling.md) con vista previa, cambios conjuntos atómicos y protección de partidas ya iniciadas. Las temporadas publicadas futuras se muestran como programadas.
 
@@ -83,6 +83,10 @@ reconstrucción del error. Sus capacidades están en
   «Continuar aquí» está implementada en cliente, API y PostgreSQL.
 - Respuestas, recepciones, eventos y plazos aceptados se conservan en servidor. Recuperar aplica
   la consecuencia del modo; no concede otro reloj ni repite contenido consumido.
+- Queens y Conectar parejas guardan checkpoints sin bloquear la edición. La validación y el
+  cierre pueden adelantarlos; la revisión conserva el último tablero aceptado también cuando
+  hay una evaluación pendiente. Un tablero mostrado como parcial puede mantener cero puntos
+  y estado oficial sin contestar, según las reglas del modo.
 - La pérdida del permiso competitivo cierra el intento activo sin acreditar puntos y conserva
   los hechos aceptados para auditoría.
 - La reconciliación de inactividad cierra tras 15 minutos sin actividad cuando la publicación

@@ -26,6 +26,7 @@ export type GameSessionCommandInputs = {
   wordHashtagSwap: Interaction & { readonly fromCell: number; readonly toCell: number };
   progressiveClueReveal: Interaction;
   queensDraft: Interaction & { readonly queens: readonly number[] };
+  connectPairsDraft: Interaction & { readonly paths: Readonly<Record<string, readonly number[]>> };
   queensValidation: Interaction & { readonly queens: readonly number[] };
   wordSearchSelection: Interaction & { readonly startCell: number; readonly endCell: number };
 };

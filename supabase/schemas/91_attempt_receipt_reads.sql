@@ -24,7 +24,7 @@ begin
   perform private.authorize_attempt_replay(target_attempt, private.secret_hash(session_token));
   select jsonb_strip_nulls(jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version,
     'receiptId', answer.receipt_id, 'status', answer.status, 'points', answer.points,
-    'details', answer.result_details)) into result
+    'details', answer.result_details, 'reviewState', answer.review_state)) into result
   from private.attempt_answers answer join public.attempts a on a.id = answer.attempt_id
   where answer.receipt_id = target_receipt;
   return result;
@@ -48,7 +48,8 @@ language sql stable security definer set search_path = '' as $$
       ),0),0) end,
       'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', answer.challenge_item_id,
         'answer', answer.answer, 'status', answer.status, 'points', answer.points,
-        'timeUsedMs', answer.time_used_ms, 'resultDetails', answer.result_details) order by item.position)
+        'timeUsedMs', answer.time_used_ms, 'resultDetails', answer.result_details,
+        'reviewState', answer.review_state) order by item.position)
         from private.attempt_answers answer join private.challenge_items item on item.id = answer.challenge_item_id
         where answer.attempt_id = a.id), '[]'::jsonb))) ||
       jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome, 'terminalReason', a.terminal_reason,
@@ -94,7 +95,8 @@ language sql stable security definer set search_path = '' as $$
           'status', answer.status,
           'points', answer.points,
           'timeUsedMs', answer.time_used_ms,
-          'resultDetails', answer.result_details
+          'resultDetails', answer.result_details,
+          'reviewState', answer.review_state
         ) order by item.position)
         from private.attempt_answers answer
         join private.challenge_items item on item.id = answer.challenge_item_id

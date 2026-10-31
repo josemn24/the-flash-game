@@ -14,6 +14,7 @@ import styles from "./QueensQuestion.module.css";
 export function QueensSessionQuestion({
   question,
   progress,
+  draftQueens,
   locked,
   validationState,
   validationStatusVisible,
@@ -24,6 +25,7 @@ export function QueensSessionQuestion({
 }: {
   readonly question: ServerQuestion;
   readonly progress: ServerQueensProgress;
+  readonly draftQueens?: readonly number[];
   readonly locked: boolean;
   readonly validationState: "idle" | "submitting" | "error";
   readonly validationStatusVisible: boolean;
@@ -43,7 +45,7 @@ export function QueensSessionQuestion({
   const { answer, announcement, cycleCell, clearCell } = useQueensInteraction({
     question,
     questionId: question.id,
-    initialAnswer: { queens: [...progress.queens] },
+    initialAnswer: { queens: [...(draftQueens ?? progress.queens)] },
     disabled,
     onProgress: (nextAnswer, queensChanged) => {
       if (queensChanged) onDraft(nextAnswer.queens);

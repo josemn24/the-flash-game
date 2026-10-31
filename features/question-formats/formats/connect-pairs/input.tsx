@@ -25,7 +25,10 @@ export function render(props: CompetitiveInputProps<"connect-pairs">) {
             explanation: "",
           } satisfies ClientConnectPairsQuestion
         }
-        initialAnswer={pendingAnswer ?? undefined}
+        initialAnswer={
+          pendingAnswer ??
+          (question.progress ? { paths: question.progress.paths as Record<string, number[]> } : undefined)
+        }
         locked={locked}
         onProgress={onProgress}
         onSubmit={onSubmit}

@@ -437,6 +437,10 @@ export type ServerConnectPairsQuestion = ServerFlashQuestionBase & {
   readonly grid: ConnectPairsGrid;
   readonly pairs: readonly ConnectPairsPair[];
   readonly requireFullCoverage: true;
+  readonly progress?: {
+    readonly kind: "connect-pairs";
+    readonly paths: Readonly<Record<string, readonly number[]>>;
+  };
 };
 
 export type ServerMiniWordleProgress = {

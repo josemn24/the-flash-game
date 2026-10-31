@@ -322,7 +322,7 @@ describe("Tabarnia seed", () => {
       { letter: "A", answer: "Aladdín" },
       { letter: "A", answer: "Aladín" },
       { letter: "A", answer: "ALADDIN" },
-      { letter: "C", answer: "Cien anos de soledad" },
+      { letter: "C", answer: "CIRI" },
       { letter: "P", answer: "Pokemon" },
       { letter: "T", answer: "Tintin" },
     ])("accepts the original variant $answer for letter $letter", ({ letter, answer }) => {

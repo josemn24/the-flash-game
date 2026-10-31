@@ -15,7 +15,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261029184633_preserve_draft_calendar_windows",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261031160000_checkpoint_execution_and_review_fixes",
 };
 
 async function run(label, command, args, options = {}) {

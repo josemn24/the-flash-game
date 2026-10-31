@@ -29,6 +29,16 @@ export type SessionRuntime = {
     data: CommandData<K>,
     step: CommandStep<K>,
   ) => Promise<boolean>;
+  runDeadline: <K extends Operation>(
+    operation: K,
+    data: CommandData<K>,
+    step: CommandStep<K>,
+  ) => Promise<boolean>;
+  runOvertakingDraft: <K extends Operation>(
+    operation: K,
+    data: CommandData<K>,
+    step: CommandStep<K>,
+  ) => Promise<boolean>;
   schedule: (name: string, delay: number, callback: () => void) => void;
   cancel: (name: string) => void;
   cancelAll: () => void;

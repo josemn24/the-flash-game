@@ -4,6 +4,7 @@ import type { CompetitiveInputProps } from "../../competitiveInputTypes";
 export function render(props: CompetitiveInputProps<"queens">) {
   const {
     locked,
+    draftQueens,
     queensState,
     queensStatusVisible,
     queensError,
@@ -17,6 +18,7 @@ export function render(props: CompetitiveInputProps<"queens">) {
       key={question.id}
       question={question}
       progress={question.progress}
+      draftQueens={draftQueens}
       locked={locked}
       validationState={queensState}
       validationStatusVisible={queensStatusVisible}

@@ -1,5 +1,10 @@
 import type { CSSProperties } from "react";
-import { connectPairsRoutePoints, getConnectPairsPairColor } from "@/lib/connectPairs";
+import {
+  calculateConnectPairsMetrics,
+  connectPairsRoutePoints,
+  getConnectPairsPairColor,
+  isRestorableConnectPairsDraft,
+} from "@/lib/connectPairs";
 import styles from "@/components/game/shared/ReviewAnswers.module.css";
 import { isConnectPairsAnswer } from "@/lib/scoring";
 import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
@@ -9,8 +14,27 @@ export function ReviewContent({
   question,
   result,
 }: ReviewProps<PracticeQuestionOfType<"connect-pairs">>) {
-  const answer = isConnectPairsAnswer(result.answer) ? result.answer : null;
-  const details = result.details?.type === "connect-pairs" ? result.details : undefined;
+  const storedAnswer = isConnectPairsAnswer(result.answer) ? result.answer : null;
+  const savedDraft =
+    result.reviewState?.type === "connect-pairs" &&
+    isRestorableConnectPairsDraft(question, { paths: result.reviewState.paths })
+      ? {
+          paths: Object.fromEntries(
+            Object.entries(result.reviewState.paths).map(([id, path]) => [id, [...path]]),
+          ),
+        }
+      : null;
+  const answer = storedAnswer ?? savedDraft;
+  const details =
+    (storedAnswer || !savedDraft) && result.details?.type === "connect-pairs"
+      ? result.details
+      : undefined;
+  const metrics = answer ? calculateConnectPairsMetrics(question, answer) : null;
+  const reviewMetrics = {
+    connectedPairs: details?.connectedPairs ?? metrics?.connectedPairs ?? 0,
+    totalPairs: details?.totalPairs ?? question.pairs.length,
+    coverage: details?.coverage ?? metrics?.coverageRatio ?? 0,
+  };
   const matchesSolution =
     answer !== null &&
     question.pairs.every((pair) => {
@@ -18,7 +42,8 @@ export function ReviewContent({
       const solution = question.solutionPaths[pair.id] ?? [];
       return submitted === solution.join(",") || submitted === [...solution].reverse().join(",");
     });
-  const showSubmittedPaths = answer !== null && (!result.isCorrect || !matchesSolution);
+  const showSubmittedPaths =
+    savedDraft !== null || (answer !== null && (!result.isCorrect || !matchesSolution));
   const solutionCells = new Set(Object.values(question.solutionPaths).flat());
   const solutionOwner = new Map<number, (typeof question.pairs)[number]>();
   const submittedOwner = new Map<number, (typeof question.pairs)[number]>();
@@ -30,9 +55,9 @@ export function ReviewContent({
 
   const reviewStatus = result.isCorrect
     ? "Solución completa"
-    : answer === null || result.status === "unanswered"
+    : savedDraft === null && (answer === null || result.status === "unanswered")
       ? "Sin respuesta"
-      : result.status === "partial"
+      : savedDraft !== null || result.status === "partial"
         ? "Respuesta parcial"
         : "Respuesta incorrecta";
 
@@ -102,8 +127,18 @@ export function ReviewContent({
                 isEndpoint && showSubmittedPaths && !answerIncludesEndpoint
                   ? styles.connectPairsReviewEndpointMissing
                   : ""
-              }`}
-              style={{ "--pair-color": color } as CSSProperties}
+              } ${submittedPair && showSubmittedPaths ? styles.connectPairsReviewSubmittedCell : ""}`}
+              style={
+                {
+                  "--pair-color": color,
+                  "--submitted-pair-color": submittedPair
+                    ? getConnectPairsPairColor(
+                        submittedPair.color,
+                        question.pairs.findIndex((pair) => pair.id === submittedPair.id),
+                      )
+                    : undefined,
+                } as CSSProperties
+              }
               aria-label={
                 owner
                   ? `Casilla ${cell + 1}: ${isEndpoint ? "extremo" : "ruta"} de ${owner.label}${
@@ -113,7 +148,9 @@ export function ReviewContent({
                           ? "; extremo no incluido en tu respuesta"
                           : ""
                     }`
-                  : `Casilla ${cell + 1}: vacía`
+                  : submittedPair && showSubmittedPaths
+                    ? `Casilla ${cell + 1}: tu ruta de ${submittedPair.label}`
+                    : `Casilla ${cell + 1}: vacía`
               }
             >
               {owner ? (isEndpoint ? owner.symbol : solutionCells.has(cell) ? "·" : "") : ""}
@@ -159,12 +196,12 @@ export function ReviewContent({
         <div className={styles.answerBox}>
           <span>Parejas conectadas</span>
           <strong>
-            {details?.connectedPairs ?? 0}/{details?.totalPairs ?? question.pairs.length}
+            {reviewMetrics.connectedPairs}/{reviewMetrics.totalPairs}
           </strong>
         </div>
         <div className={styles.answerBox}>
           <span>Cobertura</span>
-          <strong>{details ? `${Math.round(details.coverage * 100)} %` : "0 %"}</strong>
+          <strong>{Math.round(reviewMetrics.coverage * 100)} %</strong>
         </div>
         <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
           <span>Estado</span>

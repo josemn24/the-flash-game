@@ -142,6 +142,39 @@ it("renders Queens in the shared question stage and shows only the global timer"
   expect(screen.getAllByRole("timer")).toHaveLength(1);
 });
 
+it("shows a provisional final Queens board while the server confirms timeout closure", () => {
+  vi.mocked(useCompetitiveSession).mockImplementation(
+    () =>
+      ({
+        phase: "finalizing",
+        results: [],
+        deadlineAt: Date.now() - 1000,
+        questionIndex: 1,
+        question,
+        pendingAnswer: { queens: [0, 4, 9], marks: [] },
+        timeTrial: { solvedCount: 1, points: 30 },
+        locked: true,
+        busy: false,
+        queensState: "idle",
+        queensStatusVisible: false,
+        updateQueensDraft: vi.fn(),
+        validateQueensBoard: vi.fn(),
+        retryQueensValidation: vi.fn(),
+        abandon: vi.fn(),
+        onTimeUp: vi.fn(),
+        retryLifecycle: vi.fn(),
+      }) as unknown as ReturnType<typeof useCompetitiveSession>,
+  );
+
+  render(<ServerFlashPopTimeTrialGame challenge={challenge} roomContext={context} />);
+
+  expect(screen.getByRole("heading", { name: "Resultado provisional" })).toBeTruthy();
+  expect(screen.getByText("Guardando resultado en el servidor…")).toBeTruthy();
+  expect(screen.getByText("1/2 pruebas resueltas · 30 puntos")).toBeTruthy();
+  expect(screen.getByRole("gridcell", { name: /Fila 2, columna 1.*corona/ })).toBeTruthy();
+  expect(screen.queryByRole("timer")).toBeNull();
+});
+
 it("uses the Pyramid review layout with Contrarreloj progress labels", () => {
   const onBack = vi.fn();
   vi.mocked(useCompetitiveSession).mockImplementation(

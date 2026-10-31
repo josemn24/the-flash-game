@@ -15,6 +15,9 @@ export function toHistoricalAnswerReview(row: RoomMemberReviewReadRow): AnswerRe
     points: row.points ?? 0,
     timeUsed: (row.time_used_ms ?? 0) / 1_000,
     ...(row.result_details ? { details: row.result_details as AnswerReview["details"] } : {}),
+    ...(row.review_state
+      ? { reviewState: row.review_state as AnswerReview["reviewState"] }
+      : {}),
   };
 }
 
@@ -27,6 +30,7 @@ export function toAnswerResult(review: AnswerReview): AnswerResult {
     points: review.points ?? 0,
     timeUsed: review.timeUsed ?? 0,
     details: review.details,
+    reviewState: review.reviewState,
   };
 }
 

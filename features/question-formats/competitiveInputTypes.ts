@@ -59,6 +59,7 @@ export type CompetitiveInputByFormat = {
     Answer<"progressive-image"> &
     Submission & { readonly presentedAt?: number | null };
   readonly queens: Base<"queens"> & {
+    readonly draftQueens?: readonly number[];
     readonly queensState: "idle" | "submitting" | "error";
     readonly queensStatusVisible: boolean;
     readonly queensError?: string;

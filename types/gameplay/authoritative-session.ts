@@ -12,6 +12,7 @@ import type {
 } from "@/types/domain/time-trial";
 import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
 import type { AnswerResult, AnswerStatus } from "@/types/gameplay/result";
+import type { ReviewState } from "@/types/gameplay/result";
 import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 
 /** Public authoritative changes. Solutions belong exclusively to terminal review. */
@@ -42,6 +43,7 @@ export type AuthoritativeSessionUpdate = {
   readonly points?: number;
   readonly timeUsedMs?: number;
   readonly details?: AnswerResultDetails;
+  readonly reviewState?: ReviewState;
   readonly guess?: string;
   readonly guesses?: readonly string[];
   readonly feedback?: readonly MiniWordleLetterFeedback[];
@@ -185,6 +187,11 @@ export type SessionAcceptanceByOperation = {
     "queensDraft",
     "progress",
     ProgressState<"queens" | "incorrectValidations" | "solved">
+  >;
+  connectPairsDraft: Acceptance<
+    "connectPairsDraft",
+    "progress",
+    ProgressState<"reviewState">
   >;
   progressiveClueReveal: Acceptance<
     "progressiveClueReveal",

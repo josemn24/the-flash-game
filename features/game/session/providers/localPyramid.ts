@@ -28,6 +28,7 @@ import { compileDefinition, type CompiledLevel } from "./localShared/definition"
 import {
   initialFormatState,
   formatProgress,
+  formatReviewState,
   transitionFormat,
   LocalRejection,
   reject,
@@ -167,6 +168,9 @@ export function createLocalPyramidSessionProvider(
       points: evaluated.points,
       timeUsed: pending.timeUsedMs / 1000,
       ...(evaluated.details ? { details: evaluated.details } : {}),
+      ...(pending.timedOut && formatReviewState(level, state)
+        ? { reviewState: formatReviewState(level, state) }
+        : {}),
     });
     pending.result = result;
     answers.push(result);
@@ -355,7 +359,7 @@ export function createLocalPyramidSessionProvider(
             revision++;
           } else {
             // Drafts can still be saved after the per-level deadline, as on the server.
-            if (operation !== "queensDraft" && now >= active.deadlineAt)
+            if (operation !== "queensDraft" && operation !== "connectPairsDraft" && now >= active.deadlineAt)
               return reject("deadline_reached");
             const transition = transitionFormat(level, formats[index]!, command, dictionaries);
             formats[index] = transition.state;

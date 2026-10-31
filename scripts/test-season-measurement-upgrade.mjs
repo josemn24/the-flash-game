@@ -52,10 +52,15 @@ try {
       .map((f) => readFileSync(`supabase/migrations/${f}`, "utf8"))
       .join("\n")}\ncommit;`,
   );
+  const upgraded = JSON.parse(await sql(query));
+  for (const answer of upgraded["private.attempt_answers"]) {
+    assert.equal(answer.review_state, null, "Historical answers receive an empty review snapshot");
+    delete answer.review_state;
+  }
   assert.deepEqual(
-    JSON.parse(await sql(query)),
+    upgraded,
     before,
-    "Official facts, identities, automatic scopes, capture boundaries, events and ratings remain unchanged",
+    "Preexisting official facts, identities, automatic scopes, capture boundaries, events and ratings remain unchanged",
   );
   await sql(readFileSync("supabase/tests/support/experiment-removal-contract.sql", "utf8"));
   await sql(`begin;

@@ -10,6 +10,9 @@ export function createAdvancement(
   complete: () => Promise<void>,
 ) {
   const apply = async (step: ModeStep) => {
+    const { phase, attemptExpired } = runtime.state();
+    if (attemptExpired || phase === "finalizing" || phase === "results" || phase === "review")
+      return;
     if (step.type === "prepare") {
       runtime.commit({ type: "phase", phase: "preparing", clearQuestion: true });
       await prepare();

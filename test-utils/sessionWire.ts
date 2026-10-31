@@ -76,6 +76,7 @@ export function sessionWireFixture(
       availablePoints: 10,
       cluePenalty: 1,
     },
+    connectPairsDraft: { reviewState: { type: "connect-pairs", paths: { a: [0, 1, 2] } } },
     wordSearchSelection: {
       correct: false,
       terminal: false,

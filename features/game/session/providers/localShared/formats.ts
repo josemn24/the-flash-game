@@ -13,10 +13,12 @@ import {
   WORD_HASHTAG_ACTIVE_CELLS,
 } from "@/lib/wordHashtag";
 import { findWordSearchTarget, getWordSearchPath } from "@/lib/wordSearch";
+import { isRestorableConnectPairsDraft } from "@/lib/connectPairs";
 import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 import type { GameSessionCommand } from "@/types/contracts/game-session";
 import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import type { AnswerValue } from "@/types/contracts";
+import type { ReviewState } from "@/types/gameplay/result";
 import type { MiniWordleLetterFeedback } from "@/types/domain/mini-wordle";
 import type { CompiledLevel } from "./definition";
 
@@ -38,6 +40,7 @@ export type FormatState = {
   swaps: { fromCell: number; toCell: number }[];
   selections: { targetId: string; startCell: number; endCell: number }[];
   incorrectSelections: number;
+  connectPairsPaths: Record<string, number[]>;
 };
 export const initialFormatState = (level: CompiledLevel): FormatState => ({
   guesses: [],
@@ -52,10 +55,13 @@ export const initialFormatState = (level: CompiledLevel): FormatState => ({
   swaps: [],
   selections: [],
   incorrectSelections: 0,
+  connectPairsPaths: {},
 });
 export function formatProgress(level: CompiledLevel, state: FormatState): unknown {
   const q = level.question;
   switch (q.type) {
+    case "connect-pairs":
+      return { kind: q.type, paths: state.connectPairsPaths };
     case "queens": {
       const {
         placedQueens,
@@ -132,6 +138,26 @@ export function formatProgress(level: CompiledLevel, state: FormatState): unknow
       return null;
   }
 }
+
+export function formatReviewState(
+  level: CompiledLevel,
+  state: FormatState,
+): ReviewState | undefined {
+  const question = level.question;
+  if (
+    question.type === "connect-pairs" &&
+    Object.values(state.connectPairsPaths).some((path) => path.length > 0)
+  ) {
+    return { type: "connect-pairs", paths: structuredClone(state.connectPairsPaths) };
+  }
+  if (
+    question.type === "queens" &&
+    state.queens.some((cell) => !(question.prefilledQueens ?? []).includes(cell))
+  ) {
+    return { type: "queens", queens: [...state.queens] };
+  }
+  return undefined;
+}
 export type FormatTransition = {
   state: FormatState;
   update: AuthoritativeSessionUpdate;
@@ -152,6 +178,23 @@ export function transitionFormat(
   let terminal = false;
   let update: AuthoritativeSessionUpdate = {};
   switch (command.operation) {
+    case "connectPairsDraft": {
+      if (q.type !== "connect-pairs") return reject("unsupported_question");
+      const paths = structuredClone(command.input.paths) as Record<string, number[]>;
+      if (
+        !isRestorableConnectPairsDraft(
+          q as unknown as import("@/types/gameplay/practice").PracticeQuestionOfType<"connect-pairs">,
+          { paths },
+        )
+      )
+        return reject("invalid_command");
+      state.connectPairsPaths = paths;
+      update = {
+        challengeItemId: q.id,
+        reviewState: { type: "connect-pairs", paths },
+      };
+      break;
+    }
     case "queensDraft":
     case "queensValidation": {
       const input = command.input;

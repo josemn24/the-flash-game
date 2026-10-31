@@ -4,10 +4,15 @@ import { createAdvancement } from "./advance";
 import { preparedEvent, timestamp } from "./projection";
 import type { SessionRuntime } from "./runtime";
 import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
+import type { PendingCommand } from "./sessionReducer";
 
 export function createAttemptLifecycle(runtime: SessionRuntime) {
   let finalizationRequested = false;
   const finalization = runtime.policy.finalization;
+  const requestFinalization = () => {
+    finalizationRequested = true;
+    runtime.cancel("advance");
+  };
   const finish = (
     response: AuthoritativeSessionUpdate,
     terminalReview?: readonly ServerFlashTerminalReview[],
@@ -33,27 +38,36 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
       ...(Array.isArray(response.answers) ? { results: [...(response.answers ?? [])] } : {}),
     });
   };
-  const complete = async () => {
+  const complete = async (deadline = false) => {
     if (finalization.globalClock) {
-      finalizationRequested = true;
+      requestFinalization();
       runtime.commit({ type: "phase", phase: "finalizing" });
     }
-    await runtime.run(
-      "complete",
-      {},
-      { accept: (response, _command, review) => finish(response, review) },
-    );
+    const step = {
+      accept: (
+        response: AuthoritativeSessionUpdate,
+        _command: PendingCommand<"complete">,
+        review?: readonly ServerFlashTerminalReview[],
+      ) => finish(response, review),
+    };
+    if (deadline) await runtime.runDeadline("complete", {}, step);
+    else await runtime.run("complete", {}, step);
   };
   const finalizeGlobalClock = async () => {
-    finalizationRequested = true;
+    requestFinalization();
     const state = runtime.state();
     // Keep the outstanding answer/pass until it is accepted or reconciled.
     if (state.phase === "results" || state.phase === "review" || state.attemptExpired) return;
-    if (state.busy || state.pendingCommand) {
+    if (
+      state.busy ||
+      (state.pendingCommand &&
+        state.pendingCommand.operation !== "queensDraft" &&
+        state.pendingCommand.operation !== "connectPairsDraft")
+    ) {
       runtime.commit({ type: "phase", phase: "finalizing" });
       return;
     }
-    await complete();
+    await complete(true);
   };
   let timeoutAnswer: () => Promise<void> = async () => {};
   const prepare = async () => {
@@ -165,7 +179,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
                     ? runtime.state().deadlineAt
                     : timestamp(response.deadlineAt);
                 if (finalization.globalClock && deadline !== null && deadline <= runtime.now()) {
-                  finalizationRequested = true;
+                  requestFinalization();
                   runtime.commit({ type: "phase", phase: "finalizing" });
                 }
               },

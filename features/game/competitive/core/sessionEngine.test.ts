@@ -1,4 +1,5 @@
 import { sessionValidationContext } from "../../session/sessionResult";
+import { guide as connectPairsGuide } from "@/features/question-formats/formats/connect-pairs/guide";
 import { clientWithWireFixtures } from "@/test-utils/sessionWire";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { GameRoomContext } from "@/types/view-models/room";
@@ -208,47 +209,114 @@ describe("Contrarreloj global lifecycle", () => {
       timeTrial: { endReason: "all_solved" },
     });
   });
-  it("finalizes timeout between boards without preparing another board", async () => {
+
+  it("closes the global deadline while a Queens checkpoint request is in flight", async () => {
     const { engine, calls } = setup(challenge);
-    calls.prepare.mockResolvedValue({
-      ...prepared("a", 2, queensPayload),
-      presentedAt: progress().clockStartedAt,
-      deadlineAt: progress().deadlineAt,
-      timeTrial: progress(),
-    });
-    await play(engine);
-    calls.queensDraft.mockResolvedValue({
-      lockVersion: 3,
-      queens: [2, 4, 11, 13],
-      placedQueens: 4,
-      completedRows: 4,
-      completedColumns: 4,
-      completedRegions: 4,
-      conflictingQueens: 0,
-      solved: true,
-    });
-    calls.queensValidation.mockResolvedValue({
-      ...accepted(4),
-      terminal: true,
-      correct: true,
-      queens: [2, 4, 11, 13],
-      points: 30,
-      timeTrial: progress(1),
-    });
-    await engine.interactions.validateQueensBoard([2, 4, 11, 13]);
-    expect(engine.getSnapshot().phase).toBe("transition");
     calls.complete.mockResolvedValue({
       score: 0,
-      lockVersion: 3,
+      lockVersion: 4,
       timeTrial: progress(0, "time_limit"),
       review: [],
     });
-    engine.interactions.onTimeUp();
-    await drain();
-    expect(calls.prepare).toHaveBeenCalledTimes(1);
-    expect(calls.complete).toHaveBeenCalledTimes(1);
+    let resolveDraft!: (value: Record<string, unknown>) => void;
+    calls.queensDraft.mockImplementation(() => new Promise((resolve) => (resolveDraft = resolve)));
+    await engine.lifecycle.begin();
+    await vi.advanceTimersByTimeAsync(10_000);
+    calls.prepare.mockResolvedValue({ ...prepared("a", 2, queensPayload), timeTrial: progress() });
+    await engine.startQuestions();
+    engine.interactions.updateQueensDraft([2, 4]);
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(calls.queensDraft).toHaveBeenCalledOnce();
+
+    await engine.interactions.onTimeUp();
+
+    expect(calls.complete).toHaveBeenCalledOnce();
     expect(engine.getSnapshot().phase).toBe("results");
+    resolveDraft({ lockVersion: 3, queens: [2, 4] });
+    await drain();
+    expect(engine.getSnapshot().phase).toBe("results");
+    expect(engine.getSnapshot().lifecycleError).toBeUndefined();
   });
+
+  it.each(["queens", "connect-pairs"] as const)(
+    "keeps %s finalizing through a delayed close without advancing before or after completion",
+    async (format) => {
+      const { engine, calls } = setup({
+        ...challenge,
+        slots: challenge.slots.map((slot) => ({ ...slot, questionType: format })),
+      });
+      const board = connectPairsGuide.examples[0]!.question;
+      calls.prepare
+        .mockResolvedValueOnce({
+          ...prepared(
+            "a",
+            2,
+            format === "queens" ? queensPayload : { ...board, solutionPaths: undefined },
+          ),
+          presentedAt: progress().clockStartedAt,
+          deadlineAt: progress().deadlineAt,
+          timeTrial: progress(),
+        })
+        .mockRejectedValue(new CompetitiveCommandError("attempt_session_missing", 401));
+      let resolveClose!: (value: Record<string, unknown>) => void;
+      calls.complete.mockImplementation(() => new Promise((resolve) => (resolveClose = resolve)));
+      await play(engine);
+      const deadline = engine.getSnapshot().deadlineAt!;
+      vi.setSystemTime(deadline - 100);
+      if (format === "queens") {
+        calls.queensValidation.mockResolvedValue({
+          ...accepted(3),
+          terminal: true,
+          correct: true,
+          queens: [2, 4, 11, 13],
+          points: 30,
+          timeTrial: progress(1),
+        });
+        await engine.interactions.validateQueensBoard([2, 4, 11, 13]);
+      } else {
+        calls.answer.mockResolvedValue({ ...accepted(3), points: 30 });
+        await engine.interactions.submit({ paths: board.solutionPaths! });
+      }
+      expect(engine.getSnapshot().phase).toBe("transition");
+      const question = engine.getSnapshot().question;
+      await vi.advanceTimersByTimeAsync(100);
+      const closing = engine.interactions.onTimeUp();
+      await drain();
+      // The 1.1-second feedback timer would fire while the HTTP close is pending.
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(engine.getSnapshot()).toMatchObject({
+        phase: "finalizing",
+        question,
+        deadlineAt: deadline,
+        pendingCommand: { operation: "complete" },
+        locked: true,
+      });
+      // Also ignore an advance callback that was already dispatched before cancellation.
+      await engine.lifecycle.next();
+      expect(engine.getSnapshot().phase).toBe("finalizing");
+      expect(calls.prepare).toHaveBeenCalledOnce();
+      expect(calls.complete).toHaveBeenCalledOnce();
+
+      resolveClose({
+        score: 30,
+        lockVersion: 4,
+        timeTrial: progress(1, "time_limit"),
+        review: [],
+      });
+      await closing;
+      await engine.lifecycle.next();
+      await vi.advanceTimersByTimeAsync(30000);
+      expect(calls.prepare).toHaveBeenCalledOnce();
+      expect(calls.complete).toHaveBeenCalledOnce();
+      expect(engine.getSnapshot()).toMatchObject({
+        phase: "results",
+        score: 30,
+        deadlineAt: deadline,
+        pendingCommand: null,
+        lifecycleError: undefined,
+      });
+    },
+  );
   it("uses the server reference when recovering with a client clock five minutes ahead", async () => {
     vi.setSystemTime(new Date("2026-10-02T10:05:00Z"));
     const { engine, calls } = setup(challenge);
@@ -945,19 +1013,63 @@ describe("format coordination", () => {
     engine.interactions.updateQueensDraft([2, 4]);
     await vi.advanceTimersByTimeAsync(300);
     engine.interactions.updateQueensDraft([2, 4, 11]);
+    expect(engine.getSnapshot()).toMatchObject({ locked: false, busy: false });
     await vi.advanceTimersByTimeAsync(300);
     reject(new TypeError("lost draft response"));
     await drain();
     expect(calls.queensDraft).toHaveBeenCalledTimes(1);
+    expect(engine.getSnapshot()).toMatchObject({
+      locked: false,
+      busy: false,
+      lifecycleError: undefined,
+      pendingCommand: { operation: "queensDraft" },
+    });
     await engine.retry();
     expect(calls.queensDraft.mock.calls[1]).toEqual(calls.queensDraft.mock.calls[0]);
+    await vi.advanceTimersByTimeAsync(700);
+    await drain();
     expect(calls.queensDraft.mock.calls[2][0]).toMatchObject({
       lockVersion: 3,
       queens: [2, 4, 11],
     });
     expect(engine.getSnapshot().question).toMatchObject({ progress: { queens: [2, 4, 11] } });
   });
-  it("serializes queued Queens drafts and resolves versions at dispatch before validation", async () => {
+  it("coalesces continuous Queens edits and limits checkpoints to one per second", async () => {
+    const { engine, calls } = setup({
+      ...flash,
+      slots: [{ ...slot("a"), questionType: "queens" }],
+    });
+    calls.prepare.mockResolvedValue(prepared("a", 2, queensPayload));
+    calls.queensDraft.mockImplementation(async (input) =>
+      queensResponse(input.lockVersion + 1, input.queens),
+    );
+    await play(engine);
+
+    engine.interactions.updateQueensDraft([2, 4]);
+    await vi.advanceTimersByTimeAsync(100);
+    engine.interactions.updateQueensDraft([2, 4, 11]);
+    await vi.advanceTimersByTimeAsync(200);
+    await drain();
+
+    expect(calls.queensDraft).toHaveBeenCalledOnce();
+    expect(calls.queensDraft.mock.calls[0]?.[0].queens).toEqual([2, 4, 11]);
+
+    engine.interactions.updateQueensDraft([2, 4, 11, 13]);
+    await vi.advanceTimersByTimeAsync(500);
+    engine.interactions.updateQueensDraft([2, 4, 11, 13, 14]);
+    await vi.advanceTimersByTimeAsync(499);
+    await drain();
+    expect(calls.queensDraft).toHaveBeenCalledOnce();
+
+    await vi.advanceTimersByTimeAsync(1);
+    await drain();
+    expect(calls.queensDraft).toHaveBeenCalledTimes(2);
+    expect(calls.queensDraft.mock.calls[1]?.[0]).toMatchObject({
+      lockVersion: 3,
+      queens: [2, 4, 11, 13, 14],
+    });
+  });
+  it("overtakes an in-flight Queens checkpoint with the authoritative validation snapshot", async () => {
     const { engine, calls } = setup({
       ...flash,
       slots: [{ ...slot("a"), questionType: "queens" }],
@@ -973,8 +1085,8 @@ describe("format coordination", () => {
       )
       .mockImplementation(async (input) => queensResponse(input.lockVersion + 1, input.queens));
     calls.queensValidation.mockResolvedValue({
-      ...queensResponse(5, [2, 4, 11, 13]),
-      ...accepted(5),
+      ...queensResponse(3, [2, 4, 11, 13]),
+      ...accepted(3),
       terminal: true,
     });
     await play(engine);
@@ -986,19 +1098,17 @@ describe("format coordination", () => {
     expect(engine.getSnapshot().locked).toBe(true);
     // Even edits arriving during the preliminary draft save must be ignored.
     engine.interactions.updateQueensDraft([2, 4, 11]);
-    await drain();
     expect(calls.queensDraft).toHaveBeenCalledTimes(1);
-    expect(calls.queensValidation).not.toHaveBeenCalled();
-    resolve(queensResponse(3, [2, 4]));
-    await validation;
-    expect(calls.queensDraft.mock.calls[1][0]).toMatchObject({
-      lockVersion: 3,
+    expect(calls.queensValidation).toHaveBeenCalledOnce();
+    expect(calls.queensValidation.mock.calls[0][0]).toMatchObject({
+      lockVersion: 2,
       queens: [2, 4, 11, 13],
     });
-    expect(calls.queensValidation.mock.calls[0][0].lockVersion).toBe(4);
+    resolve(queensResponse(3, [2, 4]));
+    await validation;
     expect(engine.getSnapshot().results).toHaveLength(1);
   });
-  it("keeps a lost Queens draft blocked and retries its original payload before validating", async () => {
+  it("keeps a lost Queens checkpoint non-blocking and validates the current board directly", async () => {
     const { engine, calls } = setup({
       ...flash,
       slots: [{ ...slot("a"), questionType: "queens" }],
@@ -1008,18 +1118,21 @@ describe("format coordination", () => {
       .mockRejectedValueOnce(new TypeError("lost draft"))
       .mockImplementation(async (input) => queensResponse(input.lockVersion + 1, input.queens));
     calls.queensValidation.mockResolvedValue({
-      ...queensResponse(4, [2, 4, 11, 13]),
-      ...accepted(4),
+      ...queensResponse(3, [2, 4, 11, 13]),
+      ...accepted(3),
       terminal: true,
     });
     await play(engine);
     engine.interactions.updateQueensDraft([2, 4]);
     await vi.advanceTimersByTimeAsync(300);
+    expect(engine.getSnapshot()).toMatchObject({ locked: false, busy: false });
     await engine.interactions.validateQueensBoard([2, 4, 11, 13]);
-    expect(calls.queensValidation).not.toHaveBeenCalled();
-    await engine.retry();
-    expect(calls.queensDraft.mock.calls[1]).toEqual(calls.queensDraft.mock.calls[0]);
+    expect(calls.queensDraft).toHaveBeenCalledOnce();
     expect(calls.queensValidation).toHaveBeenCalledTimes(1);
+    expect(calls.queensValidation.mock.calls[0][0]).toMatchObject({
+      lockVersion: 2,
+      queens: [2, 4, 11, 13],
+    });
   });
   it.each(["queens_answer_overflow", "invalid_queens_answer"])(
     "keeps a definitive Queens input error recoverable in the playing phase (%s)",
@@ -1043,15 +1156,8 @@ describe("format coordination", () => {
         busy: false,
         pendingCommand: null,
         commandStatus: "definitive_failure",
-        feedback: {
-          channel: "queens",
-          state: "idle",
-          visible: true,
-          message:
-            code === "queens_answer_overflow"
-              ? "Ya tienes todas las coronas. Retira una antes de colocar otra."
-              : "La configuración de Queens no es válida. Revisa las coronas y las casillas.",
-        },
+        feedback: undefined,
+        lifecycleError: undefined,
       });
 
       await vi.advanceTimersByTimeAsync(2500);
@@ -1080,7 +1186,7 @@ describe("format coordination", () => {
     expect(calls.answer).toHaveBeenCalledTimes(1);
     expect(calls.answer.mock.calls[0][0].lockVersion).toBe(3);
   });
-  it("flushes an in-flight Queens draft before processing an expired timer", async () => {
+  it("sends the timeout answer without waiting for an in-flight Queens checkpoint", async () => {
     const { engine, calls } = setup({
       ...flash,
       slots: [{ ...slot("a"), questionType: "queens" }],
@@ -1097,10 +1203,42 @@ describe("format coordination", () => {
     engine.interactions.updateQueensDraft([2, 4]);
     await vi.advanceTimersByTimeAsync(300);
     await engine.interactions.onTimeUp();
+    expect(calls.answer).toHaveBeenCalledOnce();
+    expect(calls.answer.mock.calls[0][0]).toMatchObject({ lockVersion: 2, answer: null });
     resolve(queensResponse(3, [2, 4]));
     await drain();
     expect(calls.answer).toHaveBeenCalledTimes(1);
-    expect(calls.answer.mock.calls[0][0].lockVersion).toBe(3);
+    expect(engine.getSnapshot().phase).toBe("transition");
+  });
+  it("submits the complete Connect Pairs board without waiting for its checkpoint", async () => {
+    const { engine, calls } = setup({
+      ...flash,
+      slots: [{ ...slot("a"), questionType: "connect-pairs" }],
+    });
+    const board = connectPairsGuide.examples[0]!.question;
+    const solution = board.solutionPaths!;
+    calls.prepare.mockResolvedValue(prepared("a", 2, { ...board, solutionPaths: undefined }));
+    let resolveDraft!: (value: Record<string, unknown>) => void;
+    calls.connectPairsDraft.mockImplementation(
+      () => new Promise((resolve) => (resolveDraft = resolve)),
+    );
+    await play(engine);
+    engine.interactions.updateDraft({ paths: { a: [0, 1] } });
+    await vi.advanceTimersByTimeAsync(300);
+    expect(calls.connectPairsDraft).toHaveBeenCalledOnce();
+
+    const submitting = engine.interactions.submit({ paths: solution });
+
+    expect(calls.answer).toHaveBeenCalledOnce();
+    expect(calls.answer.mock.calls[0]![0]).toMatchObject({
+      lockVersion: 2,
+      answer: { paths: solution },
+    });
+    resolveDraft({ lockVersion: 3 });
+    await submitting;
+    await drain();
+    expect(engine.getSnapshot().results).toHaveLength(1);
+    expect(engine.getSnapshot().lifecycleError).toBeUndefined();
   });
   it("keeps the Pyramid Mini-Wordle answer reveal before feedback and completion", async () => {
     const challenge: ServerPyramidChallenge = {
@@ -1604,5 +1742,223 @@ describe("bounded gameplay retries", () => {
     expect(calls.recover).toHaveBeenCalledOnce();
     expect(engine.getSnapshot().lifecycleError).toBeUndefined();
     expect(calls.complete).toHaveBeenCalledOnce();
+  });
+});
+
+describe("superseded checkpoint ownership", () => {
+  const queensPayload = {
+    question: "Coronas",
+    grid: { rows: 4, columns: 4 },
+    regions: [1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 2, 3, 3, 3, 2],
+    prefilledQueens: [2],
+  };
+  const queens = (lockVersion: number, cells = [2, 4]) => ({
+    lockVersion,
+    queens: cells,
+    placedQueens: cells.length,
+    completedRows: cells.length,
+    completedColumns: cells.length,
+    completedRegions: cells.length,
+    conflictingQueens: 0,
+    solved: false,
+    terminal: false,
+  });
+  function deferred<T>() {
+    let resolve!: (value: T) => void;
+    let reject!: (error: Error) => void;
+    const promise = new Promise<T>((done, fail) => {
+      resolve = done;
+      reject = fail;
+    });
+    return { promise, resolve, reject };
+  }
+  const formats = ["queens", "connect-pairs"] as const;
+  it.each(formats)(
+    "advances after a %s answer while its superseded checkpoint is still pending",
+    async (format) => {
+      const { engine, calls } = setup({
+        ...flash,
+        slots: [{ ...slot("a"), questionType: format }, slot("b", 2)],
+      });
+      const board = connectPairsGuide.examples[0]!.question;
+      calls.prepare
+        .mockResolvedValueOnce(
+          prepared(
+            "a",
+            2,
+            format === "queens" ? queensPayload : { ...board, solutionPaths: undefined },
+          ),
+        )
+        .mockResolvedValue(prepared("b", 5));
+      const draft = deferred<Record<string, unknown>>();
+      if (format === "queens") {
+        calls.queensDraft.mockImplementation(() => draft.promise);
+        calls.queensValidation.mockResolvedValue({
+          ...queens(4, [2, 4, 11, 13]),
+          ...accepted(4),
+          terminal: true,
+        });
+      } else calls.connectPairsDraft.mockImplementation(() => draft.promise);
+      await play(engine);
+      if (format === "queens") engine.interactions.updateQueensDraft([2, 4]);
+      else engine.interactions.updateDraft({ paths: { a: [0, 1] } });
+      await vi.advanceTimersByTimeAsync(300);
+      if (format === "queens") await engine.interactions.validateQueensBoard([2, 4, 11, 13]);
+      else await engine.interactions.submit({ paths: board.solutionPaths! });
+      await vi.advanceTimersByTimeAsync(1100);
+      expect(calls.prepare).toHaveBeenCalledTimes(2);
+      expect(engine.getSnapshot()).toMatchObject({
+        phase: "playing",
+        question: { id: "b" },
+        attempt: { revision: 5 },
+      });
+      const before = engine.getSnapshot();
+      draft.resolve(
+        format === "queens"
+          ? queens(3)
+          : { lockVersion: 3, reviewState: { type: format, paths: { a: [0, 1] } } },
+      );
+      await drain();
+      expect(engine.getSnapshot()).toEqual(before);
+    },
+  );
+
+  it.each(formats)(
+    "retries timeout closure independently of an in-flight %s checkpoint retry",
+    async (format) => {
+      const challenge: ServerTimeTrialChallenge = {
+        ...base,
+        mode: "time-trial",
+        maxScore: 100,
+        timeLimitMs: 60000,
+        slots: ["a", "b"].map((id, index) => ({
+          ...slot(id, index + 1),
+          questionType: format,
+          points: index ? 70 : 30,
+        })),
+      };
+      const { engine, calls } = setup(challenge);
+      const board = connectPairsGuide.examples[0]!.question;
+      const progress = (endReason: string | null = null) => ({
+        kind: "time-trial",
+        currentIndex: 0,
+        solvedCount: 0,
+        totalCount: 2,
+        points: 0,
+        clockStartedAt: "2026-10-02T10:00:00Z",
+        deadlineAt: "2026-10-02T10:01:00Z",
+        serverNow: new Date().toISOString(),
+        lastCorrectElapsedMs: null,
+        elapsedTimeMs: 0,
+        endReason,
+      });
+      calls.prepare.mockResolvedValue({
+        ...prepared(
+          "a",
+          2,
+          format === "queens" ? queensPayload : { ...board, solutionPaths: undefined },
+        ),
+        timeTrial: progress(),
+      });
+      const draft = deferred<Record<string, unknown>>();
+      const checkpoint = format === "queens" ? calls.queensDraft : calls.connectPairsDraft;
+      checkpoint
+        .mockRejectedValueOnce(new TypeError("lost checkpoint"))
+        .mockImplementationOnce(() => draft.promise);
+      calls.complete
+        .mockRejectedValueOnce(new TypeError("lost completion"))
+        .mockImplementation(async () => ({
+          score: 0,
+          lockVersion: 5,
+          timeTrial: progress("time_limit"),
+          review: [],
+          answers: [],
+        }));
+      await play(engine);
+      if (format === "queens") engine.interactions.updateQueensDraft([2, 4]);
+      else engine.interactions.updateDraft({ paths: { a: [0, 1] } });
+      await vi.advanceTimersByTimeAsync(1300);
+      expect(checkpoint).toHaveBeenCalledTimes(2);
+      vi.setSystemTime(Date.parse("2026-10-02T10:01:00Z"));
+      await engine.interactions.onTimeUp();
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(calls.complete).toHaveBeenCalledTimes(2);
+      expect(calls.complete.mock.calls[1]).toEqual(calls.complete.mock.calls[0]);
+      expect(engine.getSnapshot().phase).toBe("results");
+      const before = engine.getSnapshot();
+      draft.reject(new TypeError("superseded checkpoint times out"));
+      await drain();
+      await vi.advanceTimersByTimeAsync(60000);
+      expect(engine.getSnapshot()).toEqual(before);
+      expect(checkpoint).toHaveBeenCalledTimes(2);
+      expect(calls.complete).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it("coalesces CP edits during an uncertain checkpoint and drops unsent old-board edits", async () => {
+    const board = connectPairsGuide.examples[0]!.question;
+    const { engine, calls } = setup({
+      ...flash,
+      slots: [{ ...slot("a"), questionType: "connect-pairs" }, slot("b", 2)],
+    });
+    calls.prepare
+      .mockResolvedValueOnce(prepared("a", 2, { ...board, solutionPaths: undefined }))
+      .mockResolvedValue(prepared("b", 5));
+    calls.connectPairsDraft
+      .mockRejectedValueOnce(new TypeError("lost draft"))
+      .mockImplementation(async (input) => ({
+        lockVersion: input.lockVersion + 1,
+        reviewState: { type: "connect-pairs", paths: input.paths },
+      }));
+    await play(engine);
+    engine.interactions.updateDraft({ paths: { a: [0] } });
+    await vi.advanceTimersByTimeAsync(100);
+    engine.interactions.updateDraft({ paths: { a: [0, 1] } });
+    await vi.advanceTimersByTimeAsync(200);
+    expect(calls.connectPairsDraft).toHaveBeenCalledOnce();
+    expect(calls.connectPairsDraft.mock.calls[0][0].paths).toEqual({ a: [0, 1] });
+    engine.interactions.updateDraft({ paths: { a: [0, 1, 2] } });
+    await vi.advanceTimersByTimeAsync(999);
+    expect(calls.connectPairsDraft).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(calls.connectPairsDraft.mock.calls[1]).toEqual(calls.connectPairsDraft.mock.calls[0]);
+    expect(calls.connectPairsDraft).toHaveBeenCalledTimes(3);
+    expect(calls.connectPairsDraft.mock.calls[2][0].paths).toEqual({ a: [0, 1, 2] });
+    engine.interactions.updateDraft({ paths: { a: [0, 1, 2, 3] } });
+    await engine.interactions.submit({ paths: board.solutionPaths! });
+    await vi.advanceTimersByTimeAsync(2500);
+    expect(engine.getSnapshot().question?.id).toBe("b");
+    expect(calls.connectPairsDraft).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps the current validation status timer when an older checkpoint finishes", async () => {
+    const { engine, calls } = setup({
+      ...flash,
+      slots: [{ ...slot("a"), questionType: "queens" }],
+    });
+    calls.prepare.mockResolvedValue(prepared("a", 2, queensPayload));
+    const draft = deferred<Record<string, unknown>>();
+    const validation = deferred<Record<string, unknown>>();
+    calls.queensDraft.mockImplementation(() => draft.promise);
+    calls.queensValidation.mockImplementation(() => validation.promise);
+    await play(engine);
+    engine.interactions.updateQueensDraft([2, 4]);
+    await vi.advanceTimersByTimeAsync(300);
+    const submitting = engine.interactions.validateQueensBoard([2, 4, 11, 13]);
+    await vi.advanceTimersByTimeAsync(100);
+    draft.resolve(queens(3));
+    await drain();
+    await vi.advanceTimersByTimeAsync(150);
+    expect(engine.getSnapshot()).toMatchObject({
+      locked: true,
+      busy: true,
+      pendingCommand: { operation: "queensValidation" },
+      feedback: { state: "submitting", visible: true },
+    });
+    validation.resolve(queens(5, [2, 4, 11, 13]));
+    await submitting;
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(calls.queensDraft).toHaveBeenCalledOnce();
+    expect(engine.getSnapshot().question).toMatchObject({ progress: { queens: [2, 4, 11, 13] } });
   });
 });

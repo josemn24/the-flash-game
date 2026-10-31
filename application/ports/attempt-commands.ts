@@ -32,6 +32,8 @@ import type {
   SubmitQueensPlacementResult,
   SaveQueensDraftInput,
   SaveQueensDraftResult,
+  SaveConnectPairsDraftInput,
+  SaveConnectPairsDraftResult,
   ValidateQueensBoardInput,
   ValidateQueensBoardResult,
   TakeOverAttemptInput,
@@ -126,6 +128,7 @@ export interface AttemptCommands {
   submitLogicCodeAttempt(input: SubmitLogicCodeAttemptInput): Promise<SubmitLogicCodeAttemptResult>;
   submitQueensPlacement(input: SubmitQueensPlacementInput): Promise<SubmitQueensPlacementResult>;
   saveQueensDraft(input: SaveQueensDraftInput): Promise<SaveQueensDraftResult>;
+  saveConnectPairsDraft(input: SaveConnectPairsDraftInput): Promise<SaveConnectPairsDraftResult>;
   validateQueensBoard(input: ValidateQueensBoardInput): Promise<ValidateQueensBoardResult>;
   revealProgressiveClue(input: RevealProgressiveClueInput): Promise<RevealProgressiveClueResult>;
   readEvaluationContext(

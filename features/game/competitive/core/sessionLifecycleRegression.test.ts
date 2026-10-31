@@ -285,7 +285,11 @@ describe("global closure command ordering", () => {
         true,
       );
       await vi.advanceTimersByTimeAsync(60000);
-      expect(s.commands.filter((command) => command.operation === "complete")).toHaveLength(4);
+      const retries = s.commands.filter((command) => command.operation === "complete");
+      expect(retries).toHaveLength(mode === "time-trial" ? 7 : 4);
+      expect(
+        retries.every((command) => JSON.stringify(command) === JSON.stringify(closes[0])),
+      ).toBe(true);
       s.handlers.complete = async () => accepted({ revision: 11, score: 100 });
       await s.engine.retry();
       expect(s.engine.getSnapshot().phase).toBe("results");

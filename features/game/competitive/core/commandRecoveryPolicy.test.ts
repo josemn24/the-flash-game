@@ -155,6 +155,26 @@ describe("retry budget", () => {
       }).delayMs,
     ).toBe(delayMs);
   });
+  it.each([
+    [0, 1_000],
+    [1, 2_000],
+    [2, 4_000],
+    [3, 8_000],
+    [4, 16_000],
+    [5, 30_000],
+    [8, 30_000],
+  ])("retries checkpoint %i after %i ms without a retry limit", (automaticRetries, delayMs) => {
+    expect(
+      commandRetryPlan({
+        operation: "connectPairsDraft",
+        automaticRetries,
+        failure: uncertain,
+        definitive: false,
+        now: 1_000,
+        retryUntilAccepted: true,
+      }),
+    ).toMatchObject({ limit: Number.POSITIVE_INFINITY, delayMs });
+  });
   it.each([0, 1, 7])(
     "server retry delay %i overrides exponential backoff and is at least one second",
     (retryAfterSeconds) => {

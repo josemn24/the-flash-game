@@ -14,6 +14,7 @@ const lifecycleOperations = new Set<Operation>([
   "abandon",
   "alphabetPass",
   "queensDraft",
+  "connectPairsDraft",
   "takeover",
 ]);
 /** The engine owns counters and timers; this policy only describes the next wait. */
@@ -23,17 +24,25 @@ export function commandRetryPlan({
   definitive,
   automaticRetries,
   now,
+  retryUntilAccepted = false,
 }: {
   operation: Operation;
   failure?: GameSessionFailure;
   definitive: boolean;
   automaticRetries: number;
   now: number;
+  retryUntilAccepted?: boolean;
 }) {
   const seconds =
     failure?.retryAfterSeconds === undefined ? undefined : Math.max(1, failure.retryAfterSeconds);
   const retryable = !definitive && (!failure || failure.retryable);
-  const limit = operation === "complete" ? 3 : 1;
+  const limit =
+    retryUntilAccepted || operation === "queensDraft" || operation === "connectPairsDraft"
+      ? Number.POSITIVE_INFINITY
+      : operation === "complete"
+        ? 3
+        : 1;
+  const exponentialDelay = Math.min(30_000, 1_000 * 2 ** automaticRetries);
   return {
     retryable,
     limit,
@@ -42,7 +51,7 @@ export function commandRetryPlan({
     delayMs:
       retryable && automaticRetries < limit
         ? seconds === undefined
-          ? 1000 * 2 ** automaticRetries
+          ? exponentialDelay
           : seconds * 1000
         : undefined,
   };

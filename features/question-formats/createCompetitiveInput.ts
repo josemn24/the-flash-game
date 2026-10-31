@@ -20,6 +20,16 @@ function isPoint(value: unknown): value is { x: number; y: number } {
     typeof value.y === "number"
   );
 }
+function queensFromAnswer(value: unknown): readonly number[] | undefined {
+  if (value === null || typeof value !== "object") return undefined;
+  const candidate = (value as { queens?: unknown }).queens;
+  if (!Array.isArray(candidate)) return undefined;
+  return candidate.every(
+    (cell: unknown) => typeof cell === "number" && Number.isSafeInteger(cell) && cell >= 0,
+  )
+    ? (candidate as number[])
+    : undefined;
+}
 
 /** Pure projection of the final mode facade; the engine retains ownership of all operations. */
 export function createCompetitiveInput(source: CompetitiveInputSource): CompetitiveInput | null {
@@ -181,6 +191,7 @@ export function createCompetitiveInput(source: CompetitiveInputSource): Competit
         props: {
           question,
           locked,
+          draftQueens: queensFromAnswer(pendingAnswer),
           queensState: source.queensState,
           queensStatusVisible: source.queensStatusVisible,
           queensError: source.queensError,

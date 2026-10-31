@@ -26,6 +26,7 @@ import {
 } from "./definition";
 import {
   formatProgress,
+  formatReviewState,
   initialFormatState,
   LocalRejection,
   reject,
@@ -182,6 +183,9 @@ export function createLocalSequentialSessionProvider(
       points: evaluated.points,
       timeUsed: pending.timeUsedMs / 1000,
       ...(evaluated.details ? { details: evaluated.details } : {}),
+      ...(pending.timedOut && formatReviewState(level, state)
+        ? { reviewState: formatReviewState(level, state) }
+        : {}),
     } satisfies AnswerResult;
     pending.result = result;
     answers.push(result);
@@ -347,7 +351,8 @@ export function createLocalSequentialSessionProvider(
           result = evaluationUpdate(pending);
           entry.result = result;
         } else {
-          if (now >= active!.deadlineAt) return reject("deadline_reached");
+          if (operation !== "connectPairsDraft" && now >= active!.deadlineAt)
+            return reject("deadline_reached");
           const transition = transitionFormat(level, formats[index]!, command, dictionaries);
           formats[index] = transition.state;
           revision++;
