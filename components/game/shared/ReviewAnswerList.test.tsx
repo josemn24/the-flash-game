@@ -58,7 +58,7 @@ describe("ReviewAnswerList", () => {
     expect(entries[1].lockedMessage).toContain("No alcanzado");
   });
 
-  it("labels a saved timeout board as partial while keeping the scored result unanswered", () => {
+  it("labels a saved timeout board as a draft while keeping the scored result unanswered", () => {
     const question = questionsById["pyramid-connect-pairs-trap"];
     if (question.type !== "connect-pairs") throw new Error("Expected Connect Pairs question");
     const markup = renderToStaticMarkup(
@@ -69,6 +69,7 @@ describe("ReviewAnswerList", () => {
             question,
             marker: "04",
             status: "unanswered",
+            statusLabel: "Sin responder",
             result: {
               questionId: question.id,
               answer: null,
@@ -84,9 +85,66 @@ describe("ReviewAnswerList", () => {
     );
 
     expect(markup).toContain("reviewAnswer_partial");
-    expect(markup).toContain(">Parcial<");
-    expect(markup).toContain("Respuesta parcial");
+    expect(markup).toContain(">Borrador<");
+    expect(markup).toContain("Borrador guardado · sin envío final");
     expect(markup).toContain("0 puntos");
+  });
+
+  it("keeps the no-answer label when a Connect Pairs result has no saved draft", () => {
+    const question = questionsById["pyramid-connect-pairs-trap"];
+    if (question.type !== "connect-pairs") throw new Error("Expected Connect Pairs question");
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "04",
+            status: "unanswered",
+            statusLabel: "Sin responder",
+            result: {
+              questionId: question.id,
+              answer: null,
+              status: "unanswered",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 46.3,
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain(">Sin responder<");
+    expect(markup).not.toContain(">Borrador<");
+  });
+
+  it("does not relabel a saved Queens draft as a Connect Pairs draft", () => {
+    const question = questionsById["pyramid-summit-queens"];
+    if (question.type !== "queens") throw new Error("Expected Queens question");
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "07",
+            result: {
+              questionId: question.id,
+              answer: null,
+              status: "unanswered",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 46.3,
+              reviewState: { type: "queens", queens: [0] },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain(">Parcial<");
+    expect(markup).not.toContain(">Borrador<");
   });
 
   it("uses the common history card structure for statuses and long answers", () => {

@@ -46,6 +46,7 @@ describe("Connect Pairs review", () => {
       question.pairs.length,
     );
     expect(markup).not.toContain("connectPairsReviewSubmittedLine");
+    expect(markup).not.toContain("connectPairsReviewSubmittedSingleton");
     expect(markup).toContain("Solución completa");
     expect(markup).toContain("Círculo");
     expect(markup).toContain("Triángulo");
@@ -77,6 +78,7 @@ describe("Connect Pairs review", () => {
       question.pairs.length,
     );
     expect(markup).toContain("connectPairsReviewSubmittedLine");
+    expect(markup).not.toContain("connectPairsReviewSubmittedSingleton");
     expect(markup).toContain("Tu respuesta");
     expect(markup).toContain("Respuesta parcial");
     expect(markup).toContain("extremo no incluido en tu respuesta");
@@ -96,8 +98,82 @@ describe("Connect Pairs review", () => {
     );
 
     expect(markup).toContain("connectPairsReviewSubmittedLine");
-    expect(markup).toContain("Respuesta parcial");
+    expect(markup).not.toContain("connectPairsReviewSubmittedSingleton");
+    expect(markup).toContain("Borrador guardado · sin envío final");
     expect(markup).toContain("extremo no incluido en tu respuesta");
+  });
+
+  it("marks a single-cell saved route without adding markers to every route cell", () => {
+    if (question.type !== "connect-pairs") throw new Error("Expected connect-pairs question");
+
+    const markup = renderToStaticMarkup(
+      <QuestionReviewContent
+        question={question}
+        result={result({
+          answer: null,
+          reviewState: { type: "connect-pairs", paths: { circle: [0] } },
+        })}
+      />,
+    );
+
+    expect(markup).toContain("connectPairsReviewSubmittedSingleton");
+    expect(markup).not.toContain("connectPairsReviewSubmittedLine");
+    expect(markup).toContain("Borrador guardado · sin envío final");
+  });
+
+  it("shows a correct alternative route as a separate submitted layer", () => {
+    if (question.type !== "connect-pairs") throw new Error("Expected connect-pairs question");
+
+    const markup = renderToStaticMarkup(
+      <QuestionReviewContent
+        question={question}
+        result={result({
+          answer: {
+            paths: {
+              ...question.solutionPaths,
+              circle: [0, 1, 6, 7, 2, 3, 4, 9],
+            },
+          },
+          status: "correct",
+          isCorrect: true,
+          details: {
+            type: "connect-pairs",
+            connectedPairs: 4,
+            totalPairs: 4,
+            coveredCells: 25,
+            totalCells: 25,
+            coverage: 1,
+            conflicts: 0,
+          },
+        })}
+      />,
+    );
+
+    expect(markup).toContain("connectPairsReviewSubmittedLine");
+    expect(markup).not.toContain("connectPairsReviewSubmittedSingleton");
+    expect(markup).toContain("Muestra la solución oficial y tu respuesta.");
+    expect(markup).toContain("Tu respuesta</span>");
+  });
+
+  it("hides the duplicate route when a correct answer matches the solution in reverse", () => {
+    if (question.type !== "connect-pairs") throw new Error("Expected connect-pairs question");
+    const reversedPaths = Object.fromEntries(
+      Object.entries(question.solutionPaths).map(([id, path]) => [id, [...path].reverse()]),
+    );
+
+    const markup = renderToStaticMarkup(
+      <QuestionReviewContent
+        question={question}
+        result={result({
+          answer: { paths: reversedPaths },
+          status: "correct",
+          isCorrect: true,
+        })}
+      />,
+    );
+
+    expect(markup).not.toContain("connectPairsReviewSubmittedLine");
+    expect(markup).toContain("Tu respuesta: coincide");
   });
 
   it.each([true, false])(
@@ -127,7 +203,7 @@ describe("Connect Pairs review", () => {
       );
       expect(markup).toContain("12 %");
       expect(markup).toContain("0/4");
-      expect(markup).toContain("Respuesta parcial");
+      expect(markup).toContain("Borrador guardado · sin envío final");
     },
   );
 

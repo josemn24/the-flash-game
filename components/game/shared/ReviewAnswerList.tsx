@@ -94,6 +94,14 @@ export function ReviewAnswerList({
       {entries.map((entry) => {
         const status = statusFor(entry);
         const result = entry.result;
+        const hasUnsubmittedConnectPairsDraft =
+          status === "partial" &&
+          entry.question?.type === "connect-pairs" &&
+          result?.answer === null &&
+          result.reviewState?.type === "connect-pairs";
+        const visualStatusLabel = hasUnsubmittedConnectPairsDraft
+          ? "Borrador"
+          : statusLabel(status, entry.statusLabel);
         const title =
           entry.title ?? (entry.question ? QUESTION_FORMAT_LABELS[entry.question.type] : "Nivel");
         const subtitle = entry.subtitle ?? entry.question?.category ?? "";
@@ -115,7 +123,7 @@ export function ReviewAnswerList({
               </span>
               <span className={styles.reviewAnswerStatus}>
                 {statusIcon(status)}
-                <span>{statusLabel(status, entry.statusLabel)}</span>
+                <span>{visualStatusLabel}</span>
               </span>
             </summary>
 

@@ -1122,7 +1122,7 @@
     background: color-mix(in srgb, var(--pair-color) 58%, var(--ds-color-bg-surface-soft));
   }
 
-  .connectPairsReviewSubmittedCell::after {
+  .connectPairsReviewSubmittedSingleton::after {
     position: absolute;
     inset: 0.18rem;
     border: 2px dashed var(--submitted-pair-color);

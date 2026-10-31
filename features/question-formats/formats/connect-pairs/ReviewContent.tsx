@@ -24,6 +24,7 @@ export function ReviewContent({
           ),
         }
       : null;
+  const hasUnsubmittedSavedDraft = storedAnswer === null && savedDraft !== null;
   const answer = storedAnswer ?? savedDraft;
   const details =
     (storedAnswer || !savedDraft) && result.details?.type === "connect-pairs"
@@ -47,19 +48,26 @@ export function ReviewContent({
   const solutionCells = new Set(Object.values(question.solutionPaths).flat());
   const solutionOwner = new Map<number, (typeof question.pairs)[number]>();
   const submittedOwner = new Map<number, (typeof question.pairs)[number]>();
+  const submittedSingletonCells = new Set<number>();
 
   question.pairs.forEach((pair) => {
     (question.solutionPaths[pair.id] ?? []).forEach((cell) => solutionOwner.set(cell, pair));
-    (answer?.paths[pair.id] ?? []).forEach((cell) => submittedOwner.set(cell, pair));
+    const submittedPath = answer?.paths[pair.id] ?? [];
+    submittedPath.forEach((cell) => submittedOwner.set(cell, pair));
+    if (showSubmittedPaths && submittedPath.length === 1) {
+      submittedSingletonCells.add(submittedPath[0]);
+    }
   });
 
-  const reviewStatus = result.isCorrect
-    ? "Solución completa"
-    : savedDraft === null && (answer === null || result.status === "unanswered")
-      ? "Sin respuesta"
-      : savedDraft !== null || result.status === "partial"
-        ? "Respuesta parcial"
-        : "Respuesta incorrecta";
+  const reviewStatus = hasUnsubmittedSavedDraft
+    ? "Borrador guardado · sin envío final"
+    : result.isCorrect
+      ? "Solución completa"
+      : savedDraft === null && (answer === null || result.status === "unanswered")
+        ? "Sin respuesta"
+        : savedDraft !== null || result.status === "partial"
+          ? "Respuesta parcial"
+          : "Respuesta incorrecta";
 
   const pathLayerLabel = showSubmittedPaths
     ? "Muestra la solución oficial y tu respuesta"
@@ -127,7 +135,7 @@ export function ReviewContent({
                 isEndpoint && showSubmittedPaths && !answerIncludesEndpoint
                   ? styles.connectPairsReviewEndpointMissing
                   : ""
-              } ${submittedPair && showSubmittedPaths ? styles.connectPairsReviewSubmittedCell : ""}`}
+              } ${submittedSingletonCells.has(cell) ? styles.connectPairsReviewSubmittedSingleton : ""}`}
               style={
                 {
                   "--pair-color": color,

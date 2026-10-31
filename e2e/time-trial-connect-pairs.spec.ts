@@ -105,9 +105,15 @@ test("Conectar parejas: edición libre, reloj compartido, puntos y revisión", a
   const firstReview = page.locator("details").nth(0);
   await firstReview.locator("summary").click();
   await expect(firstReview.getByLabel(/Tablero de conexiones 4×4/)).toBeVisible();
+  await expect(firstReview.locator('[class*="connectPairsReviewSubmittedSingleton"]')).toHaveCount(
+    0,
+  );
   const secondReview = page.locator("details").nth(1);
   await secondReview.locator("summary").click();
   await expect(secondReview.getByLabel(/Tablero de conexiones 6×6/)).toBeVisible();
+  await expect(secondReview.locator('[class*="connectPairsReviewSubmittedSingleton"]')).toHaveCount(
+    0,
+  );
 });
 test.describe("móvil y teclado", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
@@ -118,14 +124,33 @@ test.describe("móvil y teclado", () => {
     await solve(page, 0, true);
     await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
     await expect(page.getByRole("grid", { name: /6×6/ })).toBeVisible();
+    const draftSaved = page.waitForResponse((response) => {
+      if (!response.url().endsWith("/connect-pairs/draft") || !response.ok()) return false;
+      const body = response.request().postDataJSON() as {
+        paths?: Record<string, number[]>;
+      };
+      return Object.values(body.paths ?? {}).some((path) => path.length > 0);
+    });
     await touchCell(page, 1, 0);
     await touchCell(page, 1, 1);
+    await draftSaved;
     await page.reload();
     await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible();
     await expect(
       page.getByText("Prueba interrumpida sin respuesta recibida", { exact: true }),
     ).toBeVisible();
     await expect(page.getByText("1/2", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Ver respuestas" }).click();
+    await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible();
+    await expect(page.getByText("Borrador", { exact: true })).toBeVisible();
+    const interruptedReview = page.locator("details").nth(1);
+    await interruptedReview.locator("summary").click();
+    await expect(
+      interruptedReview.getByText("Borrador guardado · sin envío final", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      interruptedReview.locator('[class*="connectPairsReviewSubmittedSingleton"]'),
+    ).toHaveCount(1);
   });
 });
 test("una confirmación perdida reintenta la misma respuesta y avanza una sola vez", async ({
