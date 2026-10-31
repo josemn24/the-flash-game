@@ -180,7 +180,9 @@ export function ServerNarrativeGame({
                     title={feedbackCopy.title}
                     body={feedbackCopy.body}
                     points={
-                      feedbackStatus === "correct" || feedbackStatus === "partial"
+                      session.lastResult?.details?.type === "estimation" ||
+                      feedbackStatus === "correct" ||
+                      feedbackStatus === "partial"
                         ? session.lastResult?.points
                         : undefined
                     }

@@ -111,4 +111,25 @@ describe("Pyramid question loading", () => {
     expect(markup).not.toContain(question.question);
     expect(markup).not.toContain('role="timer"');
   });
+
+  it("shows a zero-proximity estimation as failed with zero points", () => {
+    useSession.mockReturnValue({
+      ...initialSessionState("transition"),
+      questionIndex: 0,
+      lastResult: {
+        questionId: "level-1",
+        answer: 18,
+        status: "incorrect",
+        isCorrect: false,
+        points: 0,
+        timeUsed: 6,
+        details: { type: "estimation", difference: 18, proximity: 0 },
+      },
+      retryLifecycle: vi.fn(),
+    });
+    const markup = renderGame();
+
+    expect(markup).toContain("Respuesta fallada");
+    expect(markup).toContain("0 puntos");
+  });
 });

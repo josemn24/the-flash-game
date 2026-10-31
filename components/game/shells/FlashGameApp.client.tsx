@@ -35,6 +35,7 @@ export function FlashGameApp({
     onProgressiveClueReveal: session.handleProgressiveClueReveal,
     onTimedResponseStart: session.handleTimedResponseStart,
   });
+  const latestResult = session.results.at(-1);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -64,6 +65,10 @@ export function FlashGameApp({
                 key={`transition-${session.questionIndex}`}
                 timedOut={session.lastTimedOut}
                 isLast={session.questionIndex === scoredChallenge.questions.length - 1}
+                status={latestResult?.status}
+                points={
+                  latestResult?.details?.type === "estimation" ? latestResult.points : undefined
+                }
               />
             )}
             {session.phase === "results" && (

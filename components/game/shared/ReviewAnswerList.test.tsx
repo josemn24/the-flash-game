@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 import { getChallengeById, questionsById } from "@/test-utils/mockGameplay";
 import {
   buildReviewAnswerEntries,
@@ -122,6 +123,41 @@ describe("ReviewAnswerList", () => {
 
     expect(markup).toContain("Punto sobre la imagen");
     expect(markup).not.toContain(">Sin respuesta<");
+  });
+
+  it("shows a zero-proximity estimate as incorrect with its distance and zero points", () => {
+    const question = QUESTION_FORMAT_CATALOG.estimation.examples[0].question;
+    const answer = question.correctAnswer - question.tolerance;
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "07",
+            result: {
+              questionId: question.id,
+              answer,
+              status: "incorrect",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 6,
+              details: {
+                type: "estimation",
+                difference: question.tolerance,
+                proximity: 0,
+              },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain("reviewAnswer_incorrect");
+    expect(markup).toContain("Incorrecta");
+    expect(markup).toContain("Cercanía: 0%");
+    expect(markup).toContain("0 puntos");
+    expect(markup).toContain(`${question.tolerance} ${question.unit}`);
   });
 
   it("flattens narrative questions without including scene steps", () => {

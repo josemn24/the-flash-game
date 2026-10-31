@@ -44,9 +44,10 @@ export function evaluateEstimation({
   }
 
   const metrics = calculateEstimationMetrics(estimationQuestion, answer);
+  const status = correct ? "correct" : metrics.proximity > 0 ? "partial" : "incorrect";
   return {
     isCorrect: correct,
-    status: correct ? "correct" : "partial",
+    status,
     points: Math.max(
       0,
       Math.round(

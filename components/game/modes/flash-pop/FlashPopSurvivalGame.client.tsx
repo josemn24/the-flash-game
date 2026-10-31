@@ -65,7 +65,9 @@ function Feedback({
           ? "Aproximación válida"
           : result.status === "unanswered"
             ? "Tiempo agotado"
-            : "Casi.";
+            : result.details?.type === "estimation" && result.details.proximity === 0
+              ? "Respuesta fallada"
+              : "Casi.";
   const body = eliminated
     ? `Has llegado al reto ${questionNumber} de ${totalQuestions}.`
     : survived
@@ -81,7 +83,13 @@ function Feedback({
       status={result.status}
       title={title}
       body={body}
-      points={result.points > 0 ? result.points : undefined}
+      points={
+        result.details?.type === "estimation"
+          ? result.points
+          : result.points > 0
+            ? result.points
+            : undefined
+      }
     />
   );
 }

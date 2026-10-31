@@ -34,7 +34,11 @@ export function Transition({
       status={status}
       title={title}
       body={body}
-      points={status === "correct" || status === "partial" ? result?.points : undefined}
+      points={
+        result?.details?.type === "estimation" || status === "correct" || status === "partial"
+          ? result?.points
+          : undefined
+      }
     />
   );
 }

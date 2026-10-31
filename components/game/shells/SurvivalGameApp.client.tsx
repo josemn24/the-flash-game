@@ -63,6 +63,9 @@ export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge })
                   session.questionIndex === scoredChallenge.questions.length - 1
                 }
                 status={latestResult?.status}
+                points={
+                  latestResult?.details?.type === "estimation" ? latestResult.points : undefined
+                }
                 eliminated={session.eliminated}
               />
             )}

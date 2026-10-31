@@ -235,7 +235,9 @@ export function NarrativeGameApp({
                     title={narrativeFeedbackCopy.title}
                     body={narrativeFeedbackCopy.body}
                     points={
-                      narrativeFeedbackStatus === "correct" || narrativeFeedbackStatus === "partial"
+                      session.results.at(-1)?.details?.type === "estimation" ||
+                      narrativeFeedbackStatus === "correct" ||
+                      narrativeFeedbackStatus === "partial"
                         ? session.results.at(-1)?.points
                         : undefined
                     }

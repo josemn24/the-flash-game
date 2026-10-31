@@ -16,7 +16,8 @@ insert into private.question_definitions (id, slug, created_by_player_id)
 values
   (test_support.id('f03-q-choice'), 'f03-choice', test_support.id('superadmin')),
   (test_support.id('f03-q-estimation'), 'f03-estimation', test_support.id('superadmin')),
-  (test_support.id('f03-q-estimation-timeout'), 'f03-estimation-timeout', test_support.id('superadmin'));
+  (test_support.id('f03-q-estimation-timeout'), 'f03-estimation-timeout', test_support.id('superadmin')),
+  (test_support.id('f03-q-estimation-zero'), 'f03-estimation-zero', test_support.id('superadmin'));
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
 values (test_support.id('f03-asset'), 'question-assets', 'question-assets/' || test_support.id('f03-asset')::text || '.png',
@@ -34,18 +35,23 @@ values
     test_support.id('superadmin')),
   (test_support.id('f03-qv-estimation-timeout'), test_support.id('f03-q-estimation-timeout'), 1, 2, 'draft', 'estimation', 22000,
     jsonb_build_object('question','¿Cuántos kilómetros?','min',0,'max',100,'step',5,'initialValue',50,'unit','km','media',null),
+    test_support.id('superadmin')),
+  (test_support.id('f03-qv-estimation-zero'), test_support.id('f03-q-estimation-zero'), 1, 2, 'draft', 'estimation', 22000,
+    jsonb_build_object('question','¿Cuál es la velocidad media?','min',10,'max',60,'step',1,'initialValue',30,'unit','km/h','media',null),
     test_support.id('superadmin'));
 insert into private.question_version_solutions (question_version_id, solution_payload)
 values
   (test_support.id('f03-qv-choice'), '{"correctAnswer":"Lisboa"}'),
   (test_support.id('f03-qv-estimation'), '{"correctAnswer":36,"tolerance":18,"explanation":"40 minutos son dos tercios de hora."}'),
-  (test_support.id('f03-qv-estimation-timeout'), '{"correctAnswer":50,"tolerance":20,"explanation":"Fixture de timeout."}');
+  (test_support.id('f03-qv-estimation-timeout'), '{"correctAnswer":50,"tolerance":20,"explanation":"Fixture de timeout."}'),
+  (test_support.id('f03-qv-estimation-zero'), '{"correctAnswer":36,"tolerance":18,"explanation":"40 minutos son dos tercios de hora."}');
 update private.question_versions
 set status = 'published', published_at = now()
 where id in (
   test_support.id('f03-qv-choice'),
   test_support.id('f03-qv-estimation'),
-  test_support.id('f03-qv-estimation-timeout')
+  test_support.id('f03-qv-estimation-timeout'),
+  test_support.id('f03-qv-estimation-zero')
 );
 
 insert into private.challenge_definitions (id, slug, created_by_player_id)
@@ -57,9 +63,10 @@ values (test_support.id('f03-cv'), test_support.id('f03-cd'), 1, 1, 'draft', 'fl
 insert into private.challenge_items
   (id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
 values
-  (test_support.id('f03-item-choice'), test_support.id('f03-cv'), test_support.id('f03-qv-choice'), 1, 34, 1, '{}'),
-  (test_support.id('f03-item-estimation'), test_support.id('f03-cv'), test_support.id('f03-qv-estimation'), 2, 33, 1, '{}'),
-  (test_support.id('f03-item-timeout'), test_support.id('f03-cv'), test_support.id('f03-qv-estimation-timeout'), 3, 33, 1, '{}');
+  (test_support.id('f03-item-choice'), test_support.id('f03-cv'), test_support.id('f03-qv-choice'), 1, 25, 1, '{}'),
+  (test_support.id('f03-item-estimation'), test_support.id('f03-cv'), test_support.id('f03-qv-estimation'), 2, 25, 1, '{}'),
+  (test_support.id('f03-item-timeout'), test_support.id('f03-cv'), test_support.id('f03-qv-estimation-timeout'), 3, 25, 1, '{}'),
+  (test_support.id('f03-item-estimation-zero'), test_support.id('f03-cv'), test_support.id('f03-qv-estimation-zero'), 4, 25, 1, '{}');
 update private.challenge_versions
 set status = 'published', published_at = now()
 where id = test_support.id('f03-cv');
@@ -136,7 +143,7 @@ set local role service_role;
 select test_support.run('start_attempt', jsonb_build_object('scheduledChallengeId', test_support.id('f03-sc')));
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer', jsonb_build_object('answer', 'Lisboa'));
-select test_support.run('record_evaluation', '{"status":"correct","points":34}');
+select test_support.run('record_evaluation', '{"status":"correct","points":25}');
 select test_support.run('prepare_interaction');
 select is((select state->>'challengeItemId' from test_support.runtime), test_support.id('f03-item-estimation')::text, 'Prepare releases estimation in order');
 select is((select state->'publicPayload'->'media'->>'assetId' from test_support.runtime), test_support.id('f03-asset')::text, 'Prepare returns only the private asset reference');
@@ -147,6 +154,13 @@ select test_support.run('prepare_interaction');
 select test_support.run('receive_answer', jsonb_build_object('answer', null));
 select test_support.run('record_evaluation', '{"status":"unanswered","points":0}');
 select is((select last_result->>'status' from test_support.runtime), 'unanswered', 'Passing an estimation without an answer yields zero');
+select test_support.run('prepare_interaction');
+select is((select state->>'challengeItemId' from test_support.runtime), test_support.id('f03-item-estimation-zero')::text, 'Prepare releases the zero-proximity estimation');
+select test_support.run('receive_answer', jsonb_build_object('answer', 54));
+select test_support.run('record_evaluation', '{"status":"incorrect","points":0,"resultDetails":{"type":"estimation","difference":18,"proximity":0}}');
+select is((select status from private.attempt_answers where receipt_id = (select (state->>'receiptId')::uuid from test_support.runtime)), 'incorrect', 'Persists zero-proximity estimates as incorrect');
+select is((select points from private.attempt_answers where receipt_id = (select (state->>'receiptId')::uuid from test_support.runtime)), 0, 'Persists zero points for zero proximity');
+select is((select result_details->>'proximity' from private.attempt_answers where receipt_id = (select (state->>'receiptId')::uuid from test_support.runtime)), '0', 'Persists the zero-proximity explanation');
 
 reset role;
 select * from finish();

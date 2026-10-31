@@ -43,6 +43,8 @@ function PyramidFeedback({
 }) {
   const passed = result.status === "correct" && result.isCorrect;
   const timedOut = result.status === "unanswered";
+  const zeroProximityEstimate =
+    result.details?.type === "estimation" && result.details.proximity === 0;
   const status = passed ? "correct" : timedOut ? "unanswered" : "incorrect";
   const title = passed
     ? isLast
@@ -50,7 +52,9 @@ function PyramidFeedback({
       : "Nivel superado"
     : timedOut
       ? "¡Se escapó por poco!"
-      : "Casi.";
+      : zeroProximityEstimate
+        ? "Respuesta fallada"
+        : "Casi.";
   const attemptsExhausted =
     result.details?.type === "queens" && result.details.failureReason === "attempts_exhausted";
   const body = passed
@@ -67,7 +71,7 @@ function PyramidFeedback({
       eyebrow={levelLabel}
       title={title}
       body={body}
-      points={passed ? result.points : undefined}
+      points={passed ? result.points : zeroProximityEstimate ? 0 : undefined}
     />
   );
 }
