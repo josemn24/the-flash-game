@@ -32,6 +32,19 @@ describe("Steel Ball Run persisted fixture", () => {
     expect(SBR_QUESTIONS.filter((item) => item.points === 6)).toHaveLength(12);
   });
 
+  it("shows iron and carbon as option B and keeps it as the correct answer", () => {
+    const item = SBR_QUESTIONS.find((candidate) => candidate.slug === "sbr-steel-composition");
+
+    expect(item).toMatchObject({
+      timeLimitMs: 16000,
+      publicPayload: {
+        options: ["Cobre y estaño", "Hierro y carbono", "Oro y plata", "Sodio y cloro"],
+      },
+      solutionPayload: { correctAnswer: "Hierro y carbono" },
+    });
+    expect(item.publicPayload.options[1]).toBe(item.solutionPayload.correctAnswer);
+  });
+
   it("keeps the heat-map solution private and the persisted public contract v2", () => {
     const item = SBR_QUESTIONS.find((candidate) => candidate.slug === "sbr-grand-canyon-heat-map");
     expect(item.payloadSchemaVersion).toBe(2);

@@ -94,6 +94,21 @@ describe("normalized mock domain store", () => {
     }
   });
 
+  it("shows iron and carbon as option B in the mock Steel Ball Run catalog", () => {
+    const question = publishedQuestionFixtures.find(({ slug }) => slug === "sbr-steel-composition");
+
+    expect(question).toMatchObject({
+      publicPayload: {
+        payload: {
+          options: ["Cobre y estaño", "Hierro y carbono", "Oro y plata", "Sodio y cloro"],
+        },
+      },
+      privatePayload: {
+        solution: { payload: { correctAnswer: "Hierro y carbono" } },
+      },
+    });
+  });
+
   it("round-trips representative data for all 31 formats", () => {
     expect(Object.values(QUESTION_FORMAT_CATALOG)).toHaveLength(31);
     for (const format of Object.values(QUESTION_FORMAT_CATALOG)) {
