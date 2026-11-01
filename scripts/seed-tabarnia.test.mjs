@@ -416,7 +416,7 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain("tabarnia-queens-time-trial-6");
     expect(sql).toContain("tabarnia-connect-pairs-time-trial-6");
     expect(sql).toContain("'time-trial'");
-    expect(sql).toContain('"correctAnswer":"square-27"');
+    expect(sql).toContain('"correctAnswer":"square-29"');
     expect(sql).toContain('"correctOptionId":"triangle-up"');
     expect(sql).toContain("avatars/00000003-0000-4000-8000-000000000000/");
     expect(sql.match(/update public\.players set avatar_path/g)).toHaveLength(7);

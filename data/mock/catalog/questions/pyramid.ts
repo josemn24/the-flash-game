@@ -32,8 +32,8 @@ export const pyramidQuestions = defineQuestionCatalog([
             label: "25",
           },
           {
-            id: "square-27",
-            label: "27",
+            id: "square-29",
+            label: "29",
           },
           {
             id: "square-36",
@@ -44,9 +44,9 @@ export const pyramidQuestions = defineQuestionCatalog([
     },
     privatePayload: {
       solution: {
-        explanation: "9, 16, 25 y 36 son cuadrados perfectos. 27 es el único que no lo es.",
+        explanation: "9, 16, 25 y 36 son cuadrados perfectos. 29 es el único que no lo es.",
         payload: {
-          correctAnswer: "square-27",
+          correctAnswer: "square-29",
         },
       },
       reveals: [],
