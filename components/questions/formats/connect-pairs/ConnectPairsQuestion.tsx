@@ -88,6 +88,7 @@ export function ConnectPairsQuestion({
   const dragRef = useRef<DragState | null>(null);
   const suppressClickRef = useRef(false);
   const [announcement, setAnnouncement] = useState("");
+  const [visibleFeedback, setVisibleFeedback] = useState("");
 
   const activePair = question.pairs.find((pair) => pair.id === activePairId) ?? question.pairs[0];
   const { rows, columns } = question.grid;
@@ -103,13 +104,18 @@ export function ConnectPairsQuestion({
     setActivePairId(pairId);
   };
 
+  const announce = (message: string, showVisually = false) => {
+    setAnnouncement(message);
+    setVisibleFeedback(showVisually ? message : "");
+  };
+
   const publishPaths = (nextPaths: Record<string, number[]>, message: string) => {
     const nextAnswer = { paths: nextPaths };
     const nextMetrics = calculateConnectPairsMetrics(question, nextAnswer);
     pathsRef.current = nextPaths;
     setPaths(nextPaths);
     onProgress(nextAnswer);
-    setAnnouncement(message);
+    announce(message);
     if (!locked && nextMetrics.exact) onSubmit(nextAnswer);
   };
 
@@ -150,7 +156,7 @@ export function ConnectPairsQuestion({
 
     const lastCell = currentPath.at(-1);
     if (lastCell === undefined || !areNeighbors(lastCell, cell, columns)) {
-      setAnnouncement("Solo puedes avanzar a una casilla ortogonal adyacente.");
+      announce("Solo puedes avanzar a una casilla ortogonal adyacente.", true);
       return;
     }
 
@@ -158,7 +164,7 @@ export function ConnectPairsQuestion({
       (pair) => pair.id !== currentActivePair.id && (currentPaths[pair.id] ?? []).includes(cell),
     );
     if (occupiedByOtherPair) {
-      setAnnouncement("Esa casilla ya pertenece a otra ruta.");
+      announce("Esa casilla ya pertenece a otra ruta.", true);
       return;
     }
 
@@ -166,7 +172,7 @@ export function ConnectPairsQuestion({
       (pair) => pair.id !== currentActivePair.id && pair.endpoints.includes(cell),
     );
     if (otherEndpoint) {
-      setAnnouncement("No puedes usar el extremo de otra pareja.");
+      announce("No puedes usar el extremo de otra pareja.", true);
       return;
     }
 
@@ -189,7 +195,7 @@ export function ConnectPairsQuestion({
       publishPaths(result.paths, result.message);
       return;
     }
-    setAnnouncement(result.message);
+    announce(result.message, true);
   };
 
   const cellAtPoint = (point: Point) => {
@@ -435,9 +441,11 @@ export function ConnectPairsQuestion({
       </div>
 
       <p className={styles.instructions}>Puedes recortar y rehacer las rutas.</p>
-      <p className={styles.statusText} role="status" aria-live="polite">
-        {announcement}
-      </p>
+      {visibleFeedback && (
+        <p className={styles.statusText} aria-hidden="true">
+          {visibleFeedback}
+        </p>
+      )}
     </section>
   );
 }
