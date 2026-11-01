@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { competitiveCapabilityFor } from "@/lib/question-formats/definitions";
+import { getWordSearchPath, isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { readStoredQuestion } from "@/lib/question-formats/storedRegistry";
 import { mechanics } from "./structure-core.mjs";
 import type { DurationMs, JsonValue } from "@/types/domain/values";
@@ -21,8 +22,43 @@ import {
   compileTimeTrialDefinition,
 } from "@/lib/gameplay/localSessionDefinition";
 
-export const GENERATOR_VERSION = 1 as const;
+export const GENERATOR_VERSION = 2 as const;
 const ranks: Record<QuestionDifficulty, number> = { easy: 0, medium: 1, hard: 2 };
+const MAX_WORD_SEARCH_FILL_ATTEMPTS = 64;
+const WORD_SEARCH_FILLER_VERSION = 2 as const;
+const SPANISH_FILLER_LETTERS = [
+  ["E", 1678],
+  ["A", 1196],
+  ["O", 869],
+  ["S", 788],
+  ["N", 701],
+  ["R", 687],
+  ["I", 625],
+  ["L", 497],
+  ["D", 467],
+  ["T", 463],
+  ["U", 393],
+  ["C", 292],
+  ["M", 251],
+  ["P", 251],
+  ["B", 142],
+  ["G", 101],
+  ["V", 90],
+  ["Y", 90],
+  ["Q", 88],
+  ["H", 70],
+  ["F", 69],
+  ["Z", 52],
+  ["J", 44],
+  ["Ñ", 31],
+  ["X", 22],
+  ["W", 2],
+  ["K", 1],
+] as const;
+const SPANISH_FILLER_WEIGHT_TOTAL = SPANISH_FILLER_LETTERS.reduce(
+  (total, [, weight]) => total + weight,
+  0,
+);
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 function canonical(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonical);
@@ -38,6 +74,104 @@ export const rehearsalHash = (value: unknown) =>
   createHash("sha256")
     .update(JSON.stringify(canonical(value)))
     .digest("hex");
+
+function sessionIdFor(
+  seed: string,
+  templateHashValue: string,
+  bankRevision: string,
+  generatorVersion: 1 | 2,
+) {
+  const identity =
+    generatorVersion === 1
+      ? [seed, templateHashValue, bankRevision]
+      : [generatorVersion, seed, templateHashValue, bankRevision];
+  return `rehearsal-${rehearsalHash(identity).slice(0, 32)}`;
+}
+
+function fillerLetter(
+  seed: string,
+  question: RehearsalBankQuestion,
+  slotIndex: number,
+  attempt: number,
+  cellIndex: number,
+) {
+  const random =
+    parseInt(
+      rehearsalHash([
+        WORD_SEARCH_FILLER_VERSION,
+        "word-search-filler",
+        seed,
+        question.id,
+        question.version,
+        slotIndex,
+        attempt,
+        cellIndex,
+      ]).slice(0, 13),
+      16,
+    ) / 0x10000000000000;
+  let cursor = random * SPANISH_FILLER_WEIGHT_TOTAL;
+  for (const [letter, weight] of SPANISH_FILLER_LETTERS) {
+    cursor -= weight;
+    if (cursor < 0) return letter;
+  }
+  return SPANISH_FILLER_LETTERS.at(-1)![0];
+}
+
+function fillWordSearchQuestion(
+  question: RehearsalBankQuestion,
+  seed: string,
+  slotIndex: number,
+): RehearsalBankQuestion {
+  if (question.type !== "word-search") return question;
+
+  const payload = question.publicPayload as unknown as {
+    question: string;
+    grid: { rows: number; columns: number };
+    letters: string[];
+    targets: { id: string; word: string }[];
+  };
+  const positions = question.solutionPayload.positionsByTargetId as Record<
+    string,
+    { startCell: number; endCell: number }
+  >;
+  const targetCells = new Set<number>();
+  const validationTargets = payload.targets.map((target) => {
+    const position = positions[target.id];
+    if (!position) throw new Error("rehearsal_word_search_positions_missing");
+    const path = getWordSearchPath(payload.grid, position.startCell, position.endCell);
+    if (!path) throw new Error("rehearsal_word_search_positions_invalid");
+    path.forEach((cell) => targetCells.add(cell));
+    return { ...target, ...position };
+  });
+
+  const hasFiller = payload.letters.some(
+    (letter, index) => letter === "X" && !targetCells.has(index),
+  );
+  if (!hasFiller) return question;
+
+  for (let attempt = 0; attempt < MAX_WORD_SEARCH_FILL_ATTEMPTS; attempt += 1) {
+    const letters = payload.letters.map((letter, index) =>
+      letter === "X" && !targetCells.has(index)
+        ? fillerLetter(seed, question, slotIndex, attempt, index)
+        : letter,
+    );
+    if (
+      isValidWordSearchConfiguration({
+        grid: payload.grid,
+        letters,
+        targets: validationTargets,
+      } as never)
+    ) {
+      return {
+        ...question,
+        publicPayload: { ...question.publicPayload, letters },
+      };
+    }
+  }
+
+  throw new Error("rehearsal_word_search_filler_failed");
+}
+
 export const questionRef = (q: RehearsalBankQuestion) => ({
   id: q.id,
   version: q.version,
@@ -212,7 +346,12 @@ function materialize(
   const levels = selected.map((q, i) => ({
     challengeItemId: `${id}:${i + 1}`,
     payloadSchemaVersion: q.payloadSchemaVersion,
-    ...resolve(q, t, i, `${id}:${i + 1}`),
+    ...resolve(
+      recipe.generatorVersion === 2 ? fillWordSearchQuestion(q, recipe.seed, i) : q,
+      t,
+      i,
+      `${id}:${i + 1}`,
+    ),
   }));
   const slots = t.questions.map((s, i) => ({
     id: levels[i]!.challengeItemId,
@@ -295,7 +434,7 @@ export function generateRehearsal(
     [...bank].sort((a, b) => compare(a.id, b.id) || a.version - b.version),
   );
   const recipe: RehearsalRecipe = {
-    sessionId: `rehearsal-${rehearsalHash([seed, templateHash(t), revision]).slice(0, 32)}`,
+    sessionId: sessionIdFor(seed, templateHash(t), revision, GENERATOR_VERSION),
     seed,
     generatorVersion: GENERATOR_VERSION,
     bankRevision: revision,
@@ -312,7 +451,7 @@ export function replayRehearsal(
 ): GeneratedRehearsal {
   if (
     !recipe ||
-    recipe.generatorVersion !== GENERATOR_VERSION ||
+    (recipe.generatorVersion !== 1 && recipe.generatorVersion !== GENERATOR_VERSION) ||
     recipe.challengeVersionId !== t.challengeVersionId ||
     recipe.templateHash !== templateHash(t) ||
     !Array.isArray(recipe.questions) ||
@@ -324,7 +463,7 @@ export function replayRehearsal(
     typeof recipe.bankRevision !== "string" ||
     !/^[a-f0-9]{64}$/.test(recipe.bankRevision) ||
     recipe.sessionId !==
-      `rehearsal-${rehearsalHash([recipe.seed, recipe.templateHash, recipe.bankRevision]).slice(0, 32)}`
+      sessionIdFor(recipe.seed, recipe.templateHash, recipe.bankRevision, recipe.generatorVersion)
   )
     throw new Error("rehearsal_recipe_incompatible");
   const selected = recipe.questions.map((ref, i) => {

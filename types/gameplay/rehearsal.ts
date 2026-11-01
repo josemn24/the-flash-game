@@ -68,7 +68,7 @@ export type RehearsalCoverage = {
 export type RehearsalRecipe = {
   readonly sessionId: string;
   readonly seed: string;
-  readonly generatorVersion: 1;
+  readonly generatorVersion: 1 | 2;
   readonly bankRevision: string;
   readonly templateHash: string;
   readonly challengeVersionId: string;

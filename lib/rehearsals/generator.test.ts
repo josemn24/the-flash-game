@@ -1,14 +1,24 @@
 import { expect, it } from "vitest";
 import { rehearsalBank } from "@/infrastructure/rehearsals/bank";
-import { rehearsalTemplates } from "@/test-utils/rehearsals/fixtures";
+import { questionTemplate, rehearsalTemplates } from "@/test-utils/rehearsals/fixtures";
+import { getWordSearchPath, isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import {
   generateRehearsal,
   rehearsalCoverage,
+  rehearsalHash,
   replayRehearsal,
   rehearsalCandidates,
+  templateHash,
 } from "./generator";
 const bank = rehearsalBank();
 const t = rehearsalTemplates.find((t) => t.mode === "time-trial")!;
+
+function wordSearchPublicQuestion(run: ReturnType<typeof generateRehearsal>, levelIndex = 0) {
+  const question = run.definition.levels[levelIndex]?.publicQuestion;
+  if (!question || question.type !== "word-search") throw new Error("Expected word search");
+  return question;
+}
+
 it("is deterministic and varies across seeds without changing the template", () => {
   const before = JSON.stringify({ bank, t });
   const a = generateRehearsal(bank, t, "seed");
@@ -27,6 +37,91 @@ it("is deterministic and varies across seeds without changing the template", () 
   expect(new Set(a.recipe.questions.map((q) => q.id)).size).toBe(t.questions.length);
   expect(a.definition.levels.map((q) => q.publicQuestion.prompt)).not.toContain(t.title);
 });
+
+it("generates seeded Spanish filler for rehearsal word searches and replays it", () => {
+  const questions = bank.filter((question) => question.type === "word-search");
+  expect(questions).toHaveLength(3);
+
+  for (const source of questions) {
+    const template = questionTemplate(source, "flash", [source]);
+    const first = generateRehearsal([source], template, `filler-${source.id}`);
+    const repeated = generateRehearsal([source], template, `filler-${source.id}`);
+    const different = generateRehearsal([source], template, `other-${source.id}`);
+    const firstQuestion = wordSearchPublicQuestion(first);
+    const repeatedQuestion = wordSearchPublicQuestion(repeated);
+    const differentQuestion = wordSearchPublicQuestion(different);
+    const generatedLetters = firstQuestion.payload.letters;
+    const sourcePayload = source.publicPayload as unknown as {
+      grid: { rows: number; columns: number };
+      letters: string[];
+      targets: { id: string; word: string }[];
+    };
+    const positions = source.solutionPayload.positionsByTargetId as Record<
+      string,
+      { startCell: number; endCell: number }
+    >;
+    const targetPaths = sourcePayload.targets.map((target) => {
+      const position = positions[target.id];
+      if (!position) throw new Error("Expected word-search target positions");
+      const path = getWordSearchPath(sourcePayload.grid, position.startCell, position.endCell);
+      if (!path) throw new Error("Expected a valid word-search target path");
+      return { target, path };
+    });
+
+    expect(first.recipe.generatorVersion).toBe(2);
+    expect(repeated).toEqual(first);
+    expect(replayRehearsal([source], template, first.recipe)).toEqual(first);
+    expect(generatedLetters).not.toEqual(sourcePayload.letters);
+    expect(generatedLetters).toEqual(repeatedQuestion.payload.letters);
+    expect(generatedLetters).not.toEqual(differentQuestion.payload.letters);
+    expect(new Set(generatedLetters).size).toBeGreaterThan(10);
+    expect(generatedLetters.filter((letter) => letter === "X").length).toBeLessThan(
+      sourcePayload.letters.filter((letter) => letter === "X").length,
+    );
+
+    for (const { target, path } of targetPaths) {
+      expect(path.map((cell) => generatedLetters[cell]).join("")).toBe(
+        path.map((cell) => sourcePayload.letters[cell]).join(""),
+      );
+      expect(path.map((cell) => generatedLetters[cell]).join("")).toBe(target.word);
+    }
+    expect(
+      isValidWordSearchConfiguration({
+        grid: sourcePayload.grid,
+        letters: generatedLetters,
+        targets: targetPaths.map(({ target, path }) => ({
+          ...target,
+          startCell: path[0]!,
+          endCell: path.at(-1)!,
+        })),
+      } as never),
+    ).toBe(true);
+  }
+});
+
+it("replays generator v1 word-search recipes with the original X filler", () => {
+  const source = bank.find((question) => question.id === "bank-sopa-1")!;
+  const template = questionTemplate(source, "flash", [source]);
+  const seed = "legacy-word-search";
+  const current = generateRehearsal([source], template, seed);
+  const legacyRecipe = {
+    ...current.recipe,
+    generatorVersion: 1 as const,
+    sessionId: `rehearsal-${rehearsalHash([
+      seed,
+      templateHash(template),
+      current.recipe.bankRevision,
+    ]).slice(0, 32)}`,
+  };
+
+  const replayed = replayRehearsal([source], template, legacyRecipe);
+  expect(replayed.recipe).toEqual(legacyRecipe);
+  expect(replayed.recipe.sessionId).not.toBe(current.recipe.sessionId);
+  expect(wordSearchPublicQuestion(replayed).payload.letters).toEqual(
+    (source.publicPayload as { letters: string[] }).letters,
+  );
+});
+
 it("uses nearest difficulty and prefers the lower one in a tie", () => {
   const q = rehearsalCandidates(bank, t, 0)[0]!;
   const choices = [
