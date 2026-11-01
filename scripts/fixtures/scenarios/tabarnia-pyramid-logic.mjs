@@ -49,7 +49,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
     items: [
       {
         questionSlug: "pyramid-square-intruder",
-        points: 10,
+        points: 13,
         modeConfig: {
           levelId: "entrance",
           label: "Entrada",
@@ -62,7 +62,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       },
       {
         questionSlug: "pyramid-growing-products",
-        points: 12,
+        points: 14,
         modeConfig: {
           levelId: "pattern",
           label: "Patrón",
@@ -75,7 +75,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       },
       {
         questionSlug: "pyramid-constraint-order",
-        points: 13,
+        points: 14,
         modeConfig: {
           levelId: "order",
           label: "Orden",
@@ -115,7 +115,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       },
       {
         questionSlug: "pyramid-secret-code",
-        points: 17,
+        points: 15,
         modeConfig: {
           levelId: "lock",
           label: "Cerradura",
@@ -129,7 +129,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       },
       {
         questionSlug: "pyramid-summit-queens",
-        points: 19,
+        points: 15,
         modeConfig: {
           levelId: "summit",
           label: "Cima",
@@ -152,7 +152,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       cognitiveSkills: ["logical_reasoning", "pattern_recognition"],
       formatSkills: ["classification", "deduction"],
       prompt: "¿Qué número rompe el patrón?",
-      timeLimitMs: 12000,
+      timeLimitMs: 25000,
       payload: {
         items: [
           { id: "square-9", label: "9" },
@@ -173,7 +173,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       cognitiveSkills: ["logical_reasoning", "pattern_recognition"],
       formatSkills: ["deduction", "calculation"],
       prompt: "Completa la secuencia.",
-      timeLimitMs: 18000,
+      timeLimitMs: 25000,
       payload: {
         options: ["26", "28", "30", "32"],
         media: null,
@@ -195,7 +195,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       formatSkills: ["ordering", "deduction"],
       prompt:
         "Ordena de izquierda a derecha. Luna va inmediatamente después de Sol; Mar está antes que Sol; Nube está después de Luna; Río está antes que Mar.",
-      timeLimitMs: 30000,
+      timeLimitMs: 35000,
       payload: {
         items: ["Sol", "Río", "Nube", "Mar", "Luna"],
         directionLabels: { start: "Izquierda", end: "Derecha" },
@@ -312,7 +312,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       cognitiveSkills: ["logical_reasoning", "problem_solving"],
       formatSkills: ["deduction", "planning"],
       prompt: "Coloca cinco coronas sin repetir fila, columna o región.",
-      timeLimitMs: 60000,
+      timeLimitMs: 45000,
       payload: {
         grid: { rows: 5, columns: 5 },
         regions: [0, 1, 1, 1, 4, 0, 2, 1, 4, 4, 0, 2, 1, 4, 3, 0, 2, 4, 4, 3, 2, 2, 3, 3, 3],

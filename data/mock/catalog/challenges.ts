@@ -404,7 +404,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
     items: [
       {
         questionSlug: "pyramid-square-intruder",
-        points: 10,
+        points: 13,
         modeConfig: {
           levelId: "entrance",
           label: "Entrada",
@@ -417,7 +417,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "pyramid-growing-products",
-        points: 12,
+        points: 14,
         modeConfig: {
           levelId: "pattern",
           label: "Patrón",
@@ -430,7 +430,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "pyramid-constraint-order",
-        points: 13,
+        points: 14,
         modeConfig: {
           levelId: "order",
           label: "Orden",
@@ -470,7 +470,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "pyramid-secret-code",
-        points: 17,
+        points: 15,
         modeConfig: {
           levelId: "lock",
           label: "Cerradura",
@@ -484,7 +484,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "pyramid-summit-queens",
-        points: 19,
+        points: 15,
         modeConfig: {
           levelId: "summit",
           label: "Cima",
