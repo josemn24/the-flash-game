@@ -147,7 +147,7 @@ test.describe("Tabarnia alpha", () => {
       status: "scheduled",
     });
     expect(data.data.publications[2]).toMatchObject({
-      title: "Contrarreloj Queens",
+      title: "Queens",
       mode: "time-trial",
       status: "scheduled",
     });
@@ -157,7 +157,7 @@ test.describe("Tabarnia alpha", () => {
       status: "scheduled",
     });
     expect(data.data.publications[4]).toMatchObject({
-      title: "La Pirámide: Cumbre lógica",
+      title: "Cumbre lógica",
       mode: "pyramid",
       status: "scheduled",
     });
@@ -167,12 +167,12 @@ test.describe("Tabarnia alpha", () => {
       status: "scheduled",
     });
     expect(data.data.publications[6]).toMatchObject({
-      title: "Contrarreloj Conectar parejas",
+      title: "Flow Free",
       mode: "time-trial",
       status: "scheduled",
     });
     expect(data.data.publications[7]).toMatchObject({
-      title: "Biblia y religiones abrahámicas",
+      title: "La Biblia",
       mode: "pyramid",
       status: "scheduled",
     });

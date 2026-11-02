@@ -26,7 +26,7 @@ describe("room history detail route", () => {
         params: Promise.resolve({ roomId: "tabarnia-room", challengeId: "tabarnia-challenge-05" }),
       }),
     ).resolves.toMatchObject({
-      title: "Ranking de La Pirámide: Cumbre lógica — Tabarnia — The Flash",
+      title: "Ranking de Cumbre lógica — Tabarnia — The Flash",
     });
 
     const model = await mockRoomReadCapabilities.getHistoryDetail(
@@ -37,7 +37,7 @@ describe("room history detail route", () => {
     if (!model) throw new Error("Expected history detail model");
     const markup = renderToStaticMarkup(<FlashPopRoomHistoryDetail {...model} />);
 
-    expect(markup).toContain("La Pirámide: Cumbre lógica");
+    expect(markup).toContain("Cumbre lógica");
     expect(markup).toContain('id="daily-leaderboard-title">Ranking</h2>');
     expect(markup).toContain("Dark");
     expect(markup).toContain("52");

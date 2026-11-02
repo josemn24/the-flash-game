@@ -185,11 +185,11 @@ npm run dev
 
 El setup reinicia la base local y crea 16 cuentas: Xesmona como superadmin fuera de la sala, Ches
 como propietario y jugador, y otros catorce miembros jugadores. Programa Steel Ball Run (16 retos,
-100 puntos), Reino de animales en Alphabet (16 letras, 150 segundos, 100 puntos), Contrarreloj
-Queens (seis tableros de 4×4 a 7×7, 100 puntos y 150 segundos globales), España (20 preguntas,
-3 vidas, 100 puntos), La Pirámide: Cumbre lógica (7 niveles, 100 puntos), Multiverso friki en
-Alphabet (16 letras, 150 segundos, 100 puntos), Contrarreloj Conectar parejas (seis tableros de
-4×4 a 7×7, 100 puntos y 150 segundos globales) y «Biblia y religiones abrahámicas» en Pirámide
+100 puntos), Reino de animales en Alphabet (16 letras, 150 segundos, 100 puntos), Queens
+(seis tableros de 4×4 a 7×7, 100 puntos y 150 segundos globales), España (20 preguntas,
+3 vidas, 100 puntos), Cumbre lógica (7 niveles, 100 puntos), Multiverso friki en
+Alphabet (16 letras, 150 segundos, 100 puntos), Flow Free (seis tableros de
+4×4 a 7×7, 100 puntos y 150 segundos globales) y «La Biblia» en Pirámide
 (7 niveles, 100 puntos), en ese orden y en ventanas consecutivas de 24 horas.
 
 Carga los diccionarios de Mini-Wordle y los recursos privados de imagen; el mapa SVG de Canarias

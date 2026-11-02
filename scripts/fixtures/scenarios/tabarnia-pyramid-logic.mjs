@@ -41,7 +41,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
   challenge: {
     slug: "pyramid-logic-definition",
     mode: "pyramid",
-    title: "La Pirámide: Cumbre lógica",
+    title: "Cumbre lógica",
     subtitle: "Siete niveles. Sube cuanto puedas.",
     description:
       "Empieza con un patrón sencillo y asciende por siete pruebas de lógica. Solo un acierto completo abre el siguiente nivel.",

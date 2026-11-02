@@ -22,12 +22,12 @@ export const scenario = {
         JSON.stringify([
           ["Steel Ball Run", "flash", "open"],
           ["Reino de animales", "alphabet", "scheduled"],
-          ["Contrarreloj Queens", "time-trial", "scheduled"],
+          ["Queens", "time-trial", "scheduled"],
           ["España", "survival", "scheduled"],
-          ["La Pirámide: Cumbre lógica", "pyramid", "scheduled"],
+          ["Cumbre lógica", "pyramid", "scheduled"],
           ["Multiverso friki", "alphabet", "scheduled"],
-          ["Contrarreloj Conectar parejas", "time-trial", "scheduled"],
-          ["Biblia y religiones abrahámicas", "pyramid", "scheduled"],
+          ["Flow Free", "time-trial", "scheduled"],
+          ["La Biblia", "pyramid", "scheduled"],
         ]),
       "El manifiesto de Tabarnia conserva el orden de las ocho publicaciones",
     );
@@ -72,7 +72,7 @@ export const scenario = {
     });
     assert(
       scheduledQueensTimeTrial.length === 0,
-      "Contrarreloj Queens permanece programado y aún no expone tableros jugables",
+      "Queens permanece programado y aún no expone tableros jugables",
     );
     const scheduledConnectPairsTimeTrial = await rpc(
       clients.ches,
@@ -84,7 +84,7 @@ export const scenario = {
     );
     assert(
       scheduledConnectPairsTimeTrial.length === 0,
-      "Contrarreloj Conectar parejas permanece programado y aún no expone tableros jugables",
+      "Flow Free permanece programado y aún no expone tableros jugables",
     );
 
     const scheduledSpain = await rpc(clients.ches, "get_my_survival_challenge", {
@@ -134,14 +134,14 @@ export const scenario = {
         `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id join private.question_versions q on q.id = i.question_version_id where v.id = '${queensTimeTrial.challengeVersionId}' and v.mode = 'time-trial' and v.global_time_limit_ms = 150000 and q.type = 'queens';`,
         config.dbContainer,
       )) === 6,
-      "Contrarreloj Queens publica seis tableros con reloj global de 150 segundos",
+      "Queens publica seis tableros con reloj global de 150 segundos",
     );
     assert(
       (await sqlCount(
         `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id join private.question_versions q on q.id = i.question_version_id where v.id = '${connectPairsTimeTrial.challengeVersionId}' and v.mode = 'time-trial' and v.global_time_limit_ms = 150000 and q.type = 'connect-pairs';`,
         config.dbContainer,
       )) === 6,
-      "Contrarreloj Conectar parejas publica seis tableros con reloj global de 150 segundos",
+      "Flow Free publica seis tableros con reloj global de 150 segundos",
     );
     assert(
       (await sqlCount(

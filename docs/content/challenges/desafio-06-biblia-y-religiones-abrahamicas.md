@@ -1,4 +1,4 @@
-# Desafío 6: La Biblia y las religiones abrahámicas
+# Desafío 6: La Biblia
 
 ## Estado del documento
 

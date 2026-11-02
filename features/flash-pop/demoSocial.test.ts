@@ -24,10 +24,10 @@ describe("Flash Pop demo social adapter", () => {
     ).toBe("available");
     expect(
       getFlashPopLobbyChallenge(null, "tabarnia-challenge-06", makeSocialSnapshot(), {
-        title: "Biblia y religiones abrahámicas",
+        title: "La Biblia",
         subtitle: "Conexiones",
       }).title,
-    ).toContain("Biblia y religiones abrahámicas");
+    ).toContain("La Biblia");
     expect(isFlashPopPreviewChallenge("tabarnia-challenge-05")).toBe(true);
     expect(isFlashPopPreviewChallenge("tabarnia-challenge-06")).toBe(true);
     expect(isFlashPopPreviewChallenge("another-challenge")).toBe(false);
@@ -170,7 +170,7 @@ describe("Flash Pop demo social adapter", () => {
   it("uses active Tabarnia memberships and leaves challenge 06 activity empty", () => {
     const challenge06Snapshot = { ...makeSocialSnapshot(4), peers: [] };
     const lobby = getFlashPopLobbyChallenge(null, "tabarnia-challenge-06", challenge06Snapshot, {
-      title: "Biblia y religiones abrahámicas",
+      title: "La Biblia",
       subtitle: "Conexiones",
     });
     expect(lobby.participants.map(({ displayName }) => displayName)).toEqual([

@@ -396,10 +396,10 @@ describe("Tabarnia seed", () => {
     );
     expect(sql).toContain("'España'");
     expect(sql).toContain("'Multiverso friki'");
-    expect(sql).toContain("'La Pirámide: Cumbre lógica'");
-    expect(sql).toContain("'Contrarreloj Queens'");
-    expect(sql).toContain("'Contrarreloj Conectar parejas'");
-    expect(sql).toContain("'Biblia y religiones abrahámicas'");
+    expect(sql).toContain("'Cumbre lógica'");
+    expect(sql).toContain("'Queens'");
+    expect(sql).toContain("'Flow Free'");
+    expect(sql).toContain("'La Biblia'");
     expect(sql).toContain("'Steel Ball Run'");
     expect(sql).toContain("'survival'");
     expect(sql).toContain("'pyramid'");
@@ -609,12 +609,12 @@ describe("Tabarnia seed", () => {
     expect(output.publications.map((publication) => publication.title)).toEqual([
       "Steel Ball Run",
       "Reino de animales",
-      "Contrarreloj Queens",
+      "Queens",
       "España",
-      "La Pirámide: Cumbre lógica",
+      "Cumbre lógica",
       "Multiverso friki",
-      "Contrarreloj Conectar parejas",
-      "Biblia y religiones abrahámicas",
+      "Flow Free",
+      "La Biblia",
     ]);
     expect(output.publications.map((publication) => publication.status)).toEqual([
       "open",

@@ -166,7 +166,7 @@ Los aciertos consecutivos aumentan un multiplicador, una recompensa o una barra 
 La partida empieza con pruebas relativamente accesibles y asciende por niveles cada vez más exigentes. La cima queda reservada para preguntas que, en teoría, solo un porcentaje pequeño de jugadores puede resolver.
 
 Pirámide integra competición persistida y ensayo local con siete niveles. El antiguo Desafío 05,
-**«La Pirámide: Cumbre lógica»**, permanece como contenido de demo; no define reintentos oficiales.
+**«Cumbre lógica»**, permanece como contenido de demo; no define reintentos oficiales.
 
 - **Motivación principal:** progresión, superación, dificultad creciente y logro visible.
 - **Relación entre jugadores:** solo / todos contra todos.

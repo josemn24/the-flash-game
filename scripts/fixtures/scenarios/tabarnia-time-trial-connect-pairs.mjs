@@ -63,7 +63,7 @@ const boards = betaVipConnectPairsQuestions.map((question, index) => {
 export const TABARNIA_CONNECT_PAIRS_TIME_TRIAL = {
   challenge: {
     slug: "tabarnia-time-trial-connect-pairs",
-    title: "Contrarreloj Conectar parejas",
+    title: "Flow Free",
     subtitle: "Seis tableros. Un único reloj.",
     description:
       "Conecta seis tableros de 4×4 a 7×7 con un reloj compartido de dos minutos y medio. Borrar y rehacer rutas no consume puntos ni intentos.",

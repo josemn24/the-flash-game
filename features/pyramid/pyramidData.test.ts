@@ -27,7 +27,7 @@ function canonicalPyramid(routeId: "tabarnia-challenge-05" | "tabarnia-challenge
   };
 }
 
-describe("La Pirámide: Cumbre lógica", () => {
+describe("Cumbre lógica", () => {
   it("defines seven unique levels worth exactly 100 points", () => {
     const definition = challengeDefinitions["pyramid-logic-definition"];
     expect(() => validatePyramidChallengeDefinition(definition)).not.toThrow();
@@ -123,7 +123,7 @@ describe("La Pirámide: Cumbre lógica", () => {
   });
 });
 
-describe("La Pirámide: Biblia y religiones abrahámicas", () => {
+describe("La Biblia", () => {
   it("defines seven unique levels worth exactly 100 points", () => {
     const definition = challengeDefinitions["pyramid-abrahamic-definition"];
     expect(() => validatePyramidChallengeDefinition(definition)).not.toThrow();

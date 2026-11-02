@@ -138,14 +138,14 @@ describe("Flash Pop local demo route", () => {
     mocks.getLocalPyramidDemoDefinition.mockResolvedValue({
       challenge: {
         mode: "pyramid",
-        title: "La Pirámide: Cumbre lógica",
+        title: "Cumbre lógica",
         description: "Sube todo lo que puedas.",
       },
     });
     await expect(
       generateMetadata({ params: Promise.resolve({ challengeId: "tabarnia-challenge-05" }) }),
     ).resolves.toEqual({
-      title: "La Pirámide: Cumbre lógica — Ensayo local — The Flash",
+      title: "Cumbre lógica — Ensayo local — The Flash",
       description: "Sube todo lo que puedas.",
     });
   });

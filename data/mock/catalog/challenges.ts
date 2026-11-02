@@ -394,7 +394,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
   {
     slug: "pyramid-logic-definition",
     mode: "pyramid",
-    title: "La Pirámide: Cumbre lógica",
+    title: "Cumbre lógica",
     subtitle: "Siete niveles. Sube cuanto puedas.",
     description:
       "Empieza con un patrón sencillo y asciende por siete pruebas de lógica. Solo un acierto completo abre el siguiente nivel.",
@@ -501,7 +501,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
   {
     slug: "pyramid-abrahamic-definition",
     mode: "pyramid",
-    title: "Biblia y religiones abrahámicas",
+    title: "La Biblia",
     subtitle: "Siete niveles. Una herencia compartida.",
     description:
       "Asciende por siete pruebas sobre personajes, textos y tradiciones del judaísmo, el cristianismo y el islam. Solo un acierto completo abre el siguiente nivel.",

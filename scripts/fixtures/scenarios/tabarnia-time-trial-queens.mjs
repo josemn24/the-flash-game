@@ -54,7 +54,7 @@ const boards = [
 export const TABARNIA_QUEENS_TIME_TRIAL = {
   challenge: {
     slug: "tabarnia-time-trial-queens",
-    title: "Contrarreloj Queens",
+    title: "Queens",
     subtitle: "Seis tableros. Un único reloj.",
     description:
       "Resuelve seis tableros Queens en orden con un reloj compartido de dos minutos y medio. La tercera validación completa incorrecta termina la partida; al avanzar, el contador se reinicia.",

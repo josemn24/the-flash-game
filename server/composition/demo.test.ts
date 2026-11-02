@@ -41,8 +41,8 @@ describe("demo local Flash composition", () => {
 
 describe("demo local Time Trial composition", () => {
   it.each([
-    ["tabarnia-time-trial-queens-01", "queens", "Contrarreloj Queens"],
-    ["tabarnia-time-trial-connect-pairs-01", "connect-pairs", "Contrarreloj Conectar parejas"],
+    ["tabarnia-time-trial-queens-01", "queens", "Queens"],
+    ["tabarnia-time-trial-connect-pairs-01", "connect-pairs", "Flow Free"],
   ] as const)("loads the approved %s fixture", (id, format, title) => {
     const definition = createDemoReadServices().localTimeTrial.getDefinition(id);
     expect(definition?.challenge).toMatchObject({ id, mode: "time-trial", title });
