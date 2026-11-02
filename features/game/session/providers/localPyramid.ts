@@ -359,7 +359,11 @@ export function createLocalPyramidSessionProvider(
             revision++;
           } else {
             // Drafts can still be saved after the per-level deadline, as on the server.
-            if (operation !== "queensDraft" && operation !== "connectPairsDraft" && now >= active.deadlineAt)
+            if (
+              operation !== "queensDraft" &&
+              operation !== "connectPairsDraft" &&
+              now >= active.deadlineAt
+            )
               return reject("deadline_reached");
             const transition = transitionFormat(level, formats[index]!, command, dictionaries);
             formats[index] = transition.state;

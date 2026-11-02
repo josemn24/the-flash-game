@@ -55,9 +55,7 @@ function isTimeTrialDefinition(
   return definition.challenge.mode === "time-trial";
 }
 
-function isAlphabetDefinition(
-  definition: LocalDefinition,
-): definition is LocalAlphabetDefinition {
+function isAlphabetDefinition(definition: LocalDefinition): definition is LocalAlphabetDefinition {
   return definition.challenge.mode === "alphabet";
 }
 

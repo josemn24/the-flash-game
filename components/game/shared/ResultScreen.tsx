@@ -29,9 +29,13 @@ export function ResultScreen({
   onReplay?: () => void;
 }) {
   const correct = results.filter((result) => result.status === "correct").length;
-  const partial = results.filter((result) => result.status === "partial" || result.reviewState).length;
+  const partial = results.filter(
+    (result) => result.status === "partial" || result.reviewState,
+  ).length;
   const incorrect = results.filter((result) => result.status === "incorrect").length;
-  const unanswered = results.filter((result) => result.status === "unanswered" && !result.reviewState).length;
+  const unanswered = results.filter(
+    (result) => result.status === "unanswered" && !result.reviewState,
+  ).length;
   const accuracyContribution = results.reduce(
     (total, result) =>
       total +

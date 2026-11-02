@@ -254,7 +254,8 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
             <p className={styles.eyebrow}>Ensayo local</p>
             <h2>Alfabeto</h2>
             <p className={styles.challengeCopy}>
-              Recorre las 16 letras del Reino de animales, pasa preguntas y vuelve a ellas antes del límite global.
+              Recorre las 16 letras del Reino de animales, pasa preguntas y vuelve a ellas antes del
+              límite global.
             </p>
             <ButtonLink
               href="/demo/flash-pop/desafios/tabarnia-challenge-02"

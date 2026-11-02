@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { createMockFlashPopAlphabetDemoDefinition } from "@/infrastructure/mock/localPyramidDefinition";
-import { confirmed, manualClock, SessionDriver } from "@/test-utils/game-session-conformance/driver";
+import {
+  confirmed,
+  manualClock,
+  SessionDriver,
+} from "@/test-utils/game-session-conformance/driver";
 import { createLocalAlphabetSessionProvider } from "./localAlphabet";
 import { compileAlphabetDefinition } from "./localShared/definition";
 import type { ServerAlphabetProgress } from "@/types/gameplay/challenge";
@@ -27,7 +31,22 @@ describe("local Alphabet authority", () => {
     const definition = createMockFlashPopAlphabetDemoDefinition();
     const compiled = compileAlphabetDefinition(definition);
     expect(compiled.definition.challenge.entries.map((entry) => entry.letter)).toEqual([
-      "A", "B", "C", "D", "E", "F", "I", "J", "L", "M", "O", "P", "R", "S", "T", "Z",
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "I",
+      "J",
+      "L",
+      "M",
+      "O",
+      "P",
+      "R",
+      "S",
+      "T",
+      "Z",
     ]);
     expect(compiled.levels).toHaveLength(16);
     expect(compiled.levels.every((level) => level.question.type === "short-text")).toBe(true);
@@ -122,7 +141,13 @@ describe("local Alphabet authority", () => {
     expect(confirmed(await driver.execute(command))).toEqual(incorrect);
     const conflicting = {
       ...command,
-      input: { ...command.input, answer: compiled.levels[0]!.question.type === "short-text" ? compiled.levels[0]!.question.correctAnswer : "" },
+      input: {
+        ...command.input,
+        answer:
+          compiled.levels[0]!.question.type === "short-text"
+            ? compiled.levels[0]!.question.correctAnswer
+            : "",
+      },
     } as GameSessionCommand;
     expect(await driver.execute(conflicting)).toMatchObject({
       kind: "rejected",

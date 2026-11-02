@@ -111,7 +111,11 @@ describe("Flash Pop local demo route", () => {
 
   it("renders the full local Alphabet rehearsal for the approved challenge id", async () => {
     const definition = {
-      challenge: { mode: "alphabet", id: "tabarnia-challenge-02", entries: Array.from({ length: 16 }) },
+      challenge: {
+        mode: "alphabet",
+        id: "tabarnia-challenge-02",
+        entries: Array.from({ length: 16 }),
+      },
       levels: Array.from({ length: 16 }),
     };
     mocks.getLocalPyramidDemoDefinition.mockResolvedValue(null);

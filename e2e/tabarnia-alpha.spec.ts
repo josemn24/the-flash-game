@@ -84,9 +84,7 @@ test.describe("Tabarnia alpha", () => {
     await expect(page.getByText("Carlos", { exact: true })).toHaveCount(0);
   });
 
-  test("Ches ve y juega Steel Ball Run como primera publicación de Tabarnia", async ({
-    page,
-  }) => {
+  test("Ches ve y juega Steel Ball Run como primera publicación de Tabarnia", async ({ page }) => {
     await page.setViewportSize({ width: 406, height: 847 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     const data = await fixture();

@@ -16,7 +16,8 @@ export function localAlphabetDefinitionFromChallenge(
     const question = entry.question;
     if (question.type !== "short-text") throw new Error("unsupported_local_alphabet_question");
     const points =
-      entry.points ?? fallbackBase + (index === challenge.entries.length - 1 ? fallbackRemainder : 0);
+      entry.points ??
+      fallbackBase + (index === challenge.entries.length - 1 ? fallbackRemainder : 0);
     const timeLimitMs = Math.round(question.timeLimit * 1_000) as DurationMs;
     const id = question.id;
     const questionVersionId = id as QuestionVersionId;

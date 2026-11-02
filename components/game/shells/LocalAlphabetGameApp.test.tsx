@@ -42,9 +42,7 @@ describe("LocalAlphabetGameApp completion bridge", () => {
       })),
     };
 
-    renderToStaticMarkup(
-      <LocalAlphabetGameApp definition={definition} onComplete={onComplete} />,
-    );
+    renderToStaticMarkup(<LocalAlphabetGameApp definition={definition} onComplete={onComplete} />);
 
     expect(onComplete).toHaveBeenCalledWith(
       expect.objectContaining({

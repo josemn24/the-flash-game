@@ -232,10 +232,13 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         ...state,
         pendingCommand: event.command,
         completionRetryScheduled: false,
-        busy: event.command.operation !== "queensDraft" && event.command.operation !== "connectPairsDraft",
+        busy:
+          event.command.operation !== "queensDraft" &&
+          event.command.operation !== "connectPairsDraft",
         commandStatus: "submitting",
         locked:
-          event.command.operation === "queensDraft" || event.command.operation === "connectPairsDraft"
+          event.command.operation === "queensDraft" ||
+          event.command.operation === "connectPairsDraft"
             ? state.locked
             : true,
         lifecycleError: undefined,
@@ -244,7 +247,8 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         feedback:
           event.feedback &&
           ((event.command.operation !== "queensDraft" &&
-            event.command.operation !== "connectPairsDraft") || state.locked)
+            event.command.operation !== "connectPairsDraft") ||
+            state.locked)
             ? { channel: event.feedback, state: "submitting", visible: false }
             : undefined,
         phase:

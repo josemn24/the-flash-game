@@ -19,7 +19,9 @@ describe("challenge intro model", () => {
     expect(model.metrics.find((metric) => metric.label === "Tiempo global")?.value).toBe("3 min");
     expect(model.rules[0].title).toBe("El reloj no se detiene");
     expect(model.rules[0].description).toContain("todos los tableros");
-    expect(model.rules[1].description).toContain("Si fallas los tres intentos, la partida termina.");
+    expect(model.rules[1].description).toContain(
+      "Si fallas los tres intentos, la partida termina.",
+    );
   });
 
   it("builds the same three-metric contract for every challenge mode", () => {
@@ -60,7 +62,7 @@ describe("challenge intro model", () => {
     expect(alphabet).toBeDefined();
     expect(pyramid).toBeDefined();
     expect(buildChallengeIntroModel(alphabet!).metrics[1].value).toBe("2 min");
-    expect(buildChallengeIntroModel(pyramid!).metrics[1].value).toBe("3 min");
+    expect(buildChallengeIntroModel(pyramid!).metrics[1].value).toBe("4 min");
     expect(
       buildChallengeIntroModel(challenges.find((challenge) => challenge.mode === "narrative")!)
         .metrics[2].value,

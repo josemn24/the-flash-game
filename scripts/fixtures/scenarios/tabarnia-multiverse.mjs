@@ -71,8 +71,7 @@ export const TABARNIA_FICTION_ALPHABET = {
     {
       slug: "alphabet-fiction-i",
       letter: "I",
-      prompt:
-        "Película de Nolan sobre una misión espacial en busca de un nuevo hogar.",
+      prompt: "Película de Nolan sobre una misión espacial en busca de un nuevo hogar.",
       correctAnswer: "Interstellar",
       acceptedAnswers: ["Interstellar"],
       domain: "media_entertainment",
@@ -120,7 +119,8 @@ export const TABARNIA_FICTION_ALPHABET = {
       acceptedAnswers: ["Ocarina"],
       domain: "media_entertainment",
       topic: "video_games",
-      explanation: "Link toca una ocarina mágica para activar efectos y abrir caminos en su aventura.",
+      explanation:
+        "Link toca una ocarina mágica para activar efectos y abrir caminos en su aventura.",
     },
     {
       slug: "alphabet-fiction-p",

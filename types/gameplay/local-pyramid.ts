@@ -28,4 +28,3 @@ export type LocalSurvivalDefinition = {
   readonly challenge: ServerSurvivalChallenge;
   readonly levels: readonly LocalQuestionLevel[];
 };
-

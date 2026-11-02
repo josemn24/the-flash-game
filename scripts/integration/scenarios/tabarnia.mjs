@@ -74,14 +74,10 @@ export const scenario = {
       scheduledQueensTimeTrial.length === 0,
       "Queens permanece programado y aún no expone tableros jugables",
     );
-    const scheduledConnectPairsTimeTrial = await rpc(
-      clients.ches,
-      "get_my_time_trial_challenge",
-      {
-        target_room_slug: fixture.data.room.slug,
-        target_publication_id: connectPairsTimeTrial.id,
-      },
-    );
+    const scheduledConnectPairsTimeTrial = await rpc(clients.ches, "get_my_time_trial_challenge", {
+      target_room_slug: fixture.data.room.slug,
+      target_publication_id: connectPairsTimeTrial.id,
+    });
     assert(
       scheduledConnectPairsTimeTrial.length === 0,
       "Flow Free permanece programado y aún no expone tableros jugables",

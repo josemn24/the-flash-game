@@ -27,7 +27,9 @@ export function render(props: CompetitiveInputProps<"connect-pairs">) {
         }
         initialAnswer={
           pendingAnswer ??
-          (question.progress ? { paths: question.progress.paths as Record<string, number[]> } : undefined)
+          (question.progress
+            ? { paths: question.progress.paths as Record<string, number[]> }
+            : undefined)
         }
         locked={locked}
         onProgress={onProgress}

@@ -34,25 +34,25 @@ crea una competición.
 
 ## 2. Glosario
 
-| Concepto                 | Significado en el dominio                                                                              |
-| ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| **Jugador**              | Persona con perfil global y, normalmente, una identidad autenticada.                                   |
-| **Sala**                 | Grupo privado que contiene la competición asíncrona.                                                   |
-| **Membresía**            | Relación de un jugador con una sala, con rol y ciclo de vida propios.                                  |
-| **Temporada**            | Periodo competitivo de una sala, con total y ranking propios.                                          |
-| **Desafío**              | Experiencia jugable reutilizable compuesta por preguntas, reglas y modo.                               |
-| **Versión de desafío**   | Snapshot concreto e inmutable del contenido de un desafío.                                             |
-| **Publicación**          | Instancia de una versión de desafío programada en una temporada y sala.                                |
-| **Pregunta**             | Unidad de contenido versionada que ofrece una interacción de un formato.                               |
-| **Elemento del desafío** | Inclusión ordenada de una versión de pregunta con puntos y configuración contextual.                   |
+| Concepto                 | Significado en el dominio                                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **Jugador**              | Persona con perfil global y, normalmente, una identidad autenticada.                                                 |
+| **Sala**                 | Grupo privado que contiene la competición asíncrona.                                                                 |
+| **Membresía**            | Relación de un jugador con una sala, con rol y ciclo de vida propios.                                                |
+| **Temporada**            | Periodo competitivo de una sala, con total y ranking propios.                                                        |
+| **Desafío**              | Experiencia jugable reutilizable compuesta por preguntas, reglas y modo.                                             |
+| **Versión de desafío**   | Snapshot concreto e inmutable del contenido de un desafío.                                                           |
+| **Publicación**          | Instancia de una versión de desafío programada en una temporada y sala.                                              |
+| **Pregunta**             | Unidad de contenido versionada que ofrece una interacción de un formato.                                             |
+| **Elemento del desafío** | Inclusión ordenada de una versión de pregunta con puntos y configuración contextual.                                 |
 | **Modo**                 | Regla de alto nivel que organiza la sesión (`flash`, `alphabet`, `survival`, `narrative`, `pyramid` o `time-trial`). |
-| **Intento**              | Ejecución competitiva o de prueba de un jugador sobre una publicación.                                 |
-| **Respuesta**            | Resultado final del jugador para un elemento concreto del desafío.                                     |
-| **Flash Points**         | Puntuación competitiva obtenida en un desafío y acumulada en su temporada.                             |
-| **Ranking**              | Proyección ordenada por desafío o por temporada; solo existen esos dos tipos funcionales.              |
-| **Práctica / preview**   | Exploración de un formato sin intento competitivo ni efectos sociales.                                 |
-| **Abandono**             | Terminación de un intento ya iniciado sin llegar a su final reglamentario.                             |
-| **Expiración**           | Publicación que se cerró antes de que el jugador iniciara un intento.                                  |
+| **Intento**              | Ejecución competitiva o de prueba de un jugador sobre una publicación.                                               |
+| **Respuesta**            | Resultado final del jugador para un elemento concreto del desafío.                                                   |
+| **Flash Points**         | Puntuación competitiva obtenida en un desafío y acumulada en su temporada.                                           |
+| **Ranking**              | Proyección ordenada por desafío o por temporada; solo existen esos dos tipos funcionales.                            |
+| **Práctica / preview**   | Exploración de un formato sin intento competitivo ni efectos sociales.                                               |
+| **Abandono**             | Terminación de un intento ya iniciado sin llegar a su final reglamentario.                                           |
+| **Expiración**           | Publicación que se cerró antes de que el jugador iniciara un intento.                                                |
 
 ## 3. Entidades y conceptos
 

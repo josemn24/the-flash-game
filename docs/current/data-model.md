@@ -522,7 +522,7 @@ Constraints y reglas:
   `type` es `queens` y contiene `queens`; la validación del comando comprueba el checkpoint antes
   de guardarlo.
 - Las FKs compuestas `(attempt_id, challenge_version_id)` y `(challenge_item_id,
-  challenge_version_id)` garantizan que la respuesta y el elemento pertenecen a la misma versión.
+challenge_version_id)` garantizan que la respuesta y el elemento pertenecen a la misma versión.
 - La FK compuesta de `receipt_id`, `attempt_id`, `challenge_item_id` y `challenge_version_id`
   garantiza que la respuesta corresponde a la recepción persistida de ese intento, elemento y
   versión.

@@ -126,9 +126,13 @@ describe("local Time Trial authority", () => {
       if (format === "connect-pairs") {
         if (question.type !== "connect-pairs") throw new Error("expected Connect Pairs fixture");
         const pair = question.pairs[0]!;
-        await driver.issue("connectPairsDraft", {
-          paths: { [pair.id]: [pair.endpoints[0]] },
-        }, 0);
+        await driver.issue(
+          "connectPairsDraft",
+          {
+            paths: { [pair.id]: [pair.endpoints[0]] },
+          },
+          0,
+        );
       } else {
         if (question.type !== "queens") throw new Error("expected Queens fixture");
         const prefilled = question.prefilledQueens ?? [];
@@ -144,10 +148,7 @@ describe("local Time Trial authority", () => {
         answer: null,
         status: "unanswered",
         points: 0,
-        reviewState:
-          format === "connect-pairs"
-            ? { type: "connect-pairs" }
-            : { type: "queens" },
+        reviewState: format === "connect-pairs" ? { type: "connect-pairs" } : { type: "queens" },
       });
       if (format === "connect-pairs")
         expect(completed.state.answers?.[0]?.reviewState).toMatchObject({

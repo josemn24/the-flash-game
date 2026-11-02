@@ -11,7 +11,9 @@ export function ReviewContent({ question, result }: ReviewProps<PracticeQuestion
     ? result.answer
     : { queens: savedQueens ?? [], marks: [] };
   const details = result.details?.type === "queens" ? result.details : undefined;
-  const draftMetrics = savedQueens ? calculateQueensDraftMetrics(question, answer.queens) : undefined;
+  const draftMetrics = savedQueens
+    ? calculateQueensDraftMetrics(question, answer.queens)
+    : undefined;
   return (
     <div className="grid gap-3">
       {details?.failureReason === "attempts_exhausted" ? (

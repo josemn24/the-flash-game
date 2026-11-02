@@ -3,8 +3,25 @@ import { alphabetAnimalsQuestions } from "../data/mock/catalog/questions/alphabe
 
 const rehearsalPath = "/demo/flash-pop/desafios/tabarnia-challenge-02";
 const backendPath = /\/auth\/v1(?:\/|$)|\/storage\/v1(?:\/|$)|\/api\/competitive(?:\/|$)/i;
-const challengeQuestions = ["a", "b", "c", "d", "e", "f", "i", "j", "l", "m", "o", "p", "r", "s", "t", "z"].map(
-  (letter) => alphabetAnimalsQuestions.find((question) => question.slug === `alphabet-animals-${letter}`)!,
+const challengeQuestions = [
+  "a",
+  "b",
+  "c",
+  "d",
+  "e",
+  "f",
+  "i",
+  "j",
+  "l",
+  "m",
+  "o",
+  "p",
+  "r",
+  "s",
+  "t",
+  "z",
+].map((letter) =>
+  alphabetAnimalsQuestions.find((question) => question.slug === `alphabet-animals-${letter}`)!,
 );
 
 async function finishCountdown(page: Page) {

@@ -115,8 +115,7 @@ function buildSafeRules(
         },
         {
           title: "Conserva tus aciertos",
-          description:
-            "Cada prueba suma puntos; interrumpirla sin respuesta termina la partida.",
+          description: "Cada prueba suma puntos; interrumpirla sin respuesta termina la partida.",
         },
       ];
     case "flash":

@@ -10,9 +10,7 @@ export type LocalFlashOptions = Omit<LocalSequentialOptions, "definition"> & {
 };
 
 /** In-memory Flash authority. It uses the canonical evaluator and session contract. */
-export function createLocalFlashSessionProvider(
-  options: LocalFlashOptions,
-): GameSessionProvider {
+export function createLocalFlashSessionProvider(options: LocalFlashOptions): GameSessionProvider {
   return createLocalSequentialSessionProvider(options);
 }
 
