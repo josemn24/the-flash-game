@@ -264,24 +264,20 @@ publicaciones, intentos, rankings y límites de seguridad, se mantienen en
 
 ## Alcance
 
-Esta versión valida la experiencia individual y social mock dentro de una sala local y un recorrido
-competitivo real acotado. Las slices persistidas actuales cubren autenticación, perfil, lecturas autorizadas de salas, un
-Flash competitivo persistido con recuperación, rankings actuales, historial cerrado y revisión;
-E01–E05/E10 y F* amplían ese Flash con eventos autoritativos y payloads versionados para los formatos habilitados.
-histórica autorizada. Incluye el portal privado de `/admin` para consultar el contexto, crear salas
-iniciales y preparar/activar temporadas; incluye una gestión parcial de miembros desde ajustes para
-el owner (conceder/quitar admin y eliminación lógica), pero todavía no incluye la transferencia de propiedad,
-bloqueo/desbloqueo ni invitaciones completas,
-contenido, otros modos ni Storage. La
-UI pública no incluye creación de salas, gestión de invitaciones ni configuración de temporadas;
-durante la beta esas tareas, incluido el alta directa de miembros, corresponden al superadmin. La
-revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` puede leer historial y
-rankings, pero no soluciones ajenas.
+La aplicación persiste en Supabase sus seis modos competitivos, junto con identidad, salas,
+temporadas, calendario, contenido versionado, resultados, revisión autorizada y medición. El portal
+privado de `/admin` incluye gestión de salas y temporadas, calendario, contenido editorial e
+inspección de intentos. Supabase Storage sirve avatares y recursos visuales privados.
 
-Las publicaciones mock apuntan a versiones de definiciones reusables y cada definición resuelve su
-contenido desde `questionsById`. Los formatos que todavía no aparecen en publicaciones, incluidos
-Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto
-contrarreloj, siguen disponibles en el modelo nativo y en la biblioteca interactiva.
+La UI pública no crea salas ni gestiona invitaciones o temporadas. El owner puede conceder y retirar
+el rol de admin y eliminar miembros lógicamente; la transferencia de propiedad, el bloqueo de
+miembros y el ciclo completo de invitaciones siguen pendientes. El inventario de capacidades y
+límites por modo está en [estado actual](docs/current/status.md); el trabajo pendiente está en el
+[backlog técnico](docs/implementation-plan.md).
+
+Las publicaciones mock relacionan desafíos con preguntas del catálogo local; son escenarios y no
+un registro de admisión competitiva. Esa admisión se define por el [registro de capacidades](lib/question-formats/definitions.ts)
+y depende del modo y formato publicados.
 
 Mini-Wordle carga bajo demanda vocabularios españoles de cuatro y cinco letras generados offline desde Hunspell. El recurso está versionado en el repositorio, no requiere backend y el cronómetro no comienza hasta que está disponible. Consulta [la documentación del diccionario](docs/content/guidelines/mini-wordle-dictionary.md) para regeneración, configuración y licencia.
 
@@ -289,7 +285,7 @@ La imagen progresiva espera a que el activo visual esté listo antes de iniciar 
 
 El laberinto contrarreloj usa una cuadrícula ortogonal controlada mediante cruceta o flechas. Conserva el recorrido para la revisión, finaliza al alcanzar la salida y no penaliza los movimientos adicionales.
 
-Conectar parejas admite cuadrículas cuadradas de 4 × 4 a 8 × 8, con entre tres parejas y tantas como filas. Las rutas ortogonales unen símbolos iguales sin solapamientos y deben cubrir todo el tablero para resolver. Conserva rutas parciales en timeout y concede crédito por parejas conectadas y cobertura.
+Conectar parejas admite cuadrículas cuadradas de 4 × 4 a 8 × 8, con entre tres parejas y tantas como filas. Las rutas ortogonales unen símbolos iguales sin solapamientos y deben cubrir todo el tablero para resolver. En práctica local, conserva rutas parciales y concede crédito por parejas conectadas y cobertura. En Contrarreloj competitivo, solo un tablero completo se valida y concede su peso; el último checkpoint aceptado por el servidor puede aparecer en la revisión tras un timeout, sin cambiar la respuesta oficial ni sus puntos. Consulta el [contrato de Contrarreloj](docs/current/domain/contrarreloj.md).
 
 Memoria de parejas usa losetas ocultas en una cuadrícula compacta con símbolos, emojis o imágenes y etiqueta accesible. Conserva el historial de intentos para la revisión, concede crédito por cada pareja encontrada y resta un 10 % de los puntos base por cada fallo.
 

@@ -46,12 +46,12 @@ describe("La Pirámide: Cumbre lógica", () => {
     );
   });
 
-  it("resolves the published challenge and applies its increasing point values", () => {
+  it("resolves the published challenge and applies its configured point progression", () => {
     const challenge = canonicalPyramid("tabarnia-challenge-05");
     expect(challenge?.mode).toBe("pyramid");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
     expect(challenge.levels.map((level) => level.question.points)).toEqual([
-      10, 12, 13, 14, 15, 17, 19,
+      13, 14, 14, 14, 15, 15, 15,
     ]);
     expect(challenge.levels.map((level) => level.briefing.format)).toEqual([
       "Encontrar el intruso",
@@ -142,14 +142,14 @@ describe("La Pirámide: Biblia y religiones abrahámicas", () => {
     );
   });
 
-  it("resolves the scheduled challenge with increasing point values and the expected formats", () => {
+  it("resolves the scheduled challenge with the Cumbre lógica point progression and expected formats", () => {
     const challenge = canonicalPyramid("tabarnia-challenge-06");
     expect(challenge?.mode).toBe("pyramid");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
 
     const scored = challenge;
     expect(scored.levels.map((level) => level.question.points)).toEqual([
-      10, 12, 13, 14, 15, 17, 19,
+      13, 14, 14, 14, 15, 15, 15,
     ]);
     expect(scored.levels.map((level) => level.question.type)).toEqual([
       "matching",

@@ -89,7 +89,7 @@ export const abrahamicQuestions = defineQuestionCatalog([
       timeLimitMs: 35000,
       payload: {
         clueCount: 4,
-        cluePenalty: 20,
+        cluePenalty: 14,
       },
     },
     privatePayload: {
@@ -171,7 +171,7 @@ export const abrahamicQuestions = defineQuestionCatalog([
       },
       prompt: "Descubre un personaje bíblico de cinco letras.",
       context: null,
-      timeLimitMs: 55000,
+      timeLimitMs: 60000,
       payload: {
         hint: null,
         wordLength: 5,

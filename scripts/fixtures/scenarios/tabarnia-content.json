@@ -125,7 +125,7 @@
       "items": [
         {
           "questionSlug": "abrahamic-matching-biblical-associations",
-          "points": 10,
+          "points": 13,
           "modeConfig": {
             "levelId": "entrance",
             "label": "Entrada",
@@ -138,7 +138,7 @@
         },
         {
           "questionSlug": "abrahamic-progressive-abraham",
-          "points": 12,
+          "points": 14,
           "modeConfig": {
             "levelId": "patriarch",
             "label": "Adivinanza",
@@ -151,7 +151,7 @@
         },
         {
           "questionSlug": "abrahamic-order-torah-books",
-          "points": 13,
+          "points": 14,
           "modeConfig": {
             "levelId": "torah",
             "label": "Secuencia",
@@ -190,7 +190,7 @@
         },
         {
           "questionSlug": "abrahamic-classification-three-traditions",
-          "points": 17,
+          "points": 15,
           "modeConfig": {
             "levelId": "traditions",
             "label": "Tradiciones",
@@ -203,7 +203,7 @@
         },
         {
           "questionSlug": "abrahamic-word-hashtag-references",
-          "points": 19,
+          "points": 15,
           "modeConfig": {
             "levelId": "summit",
             "label": "Cima",
@@ -1117,7 +1117,7 @@
         "timeLimitMs": 35000,
         "payload": {
           "clueCount": 4,
-          "cluePenalty": 20
+          "cluePenalty": 14
         }
       },
       "privatePayload": {
@@ -1197,7 +1197,7 @@
         },
         "prompt": "Descubre un personaje bíblico de cinco letras.",
         "context": null,
-        "timeLimitMs": 55000,
+        "timeLimitMs": 60000,
         "payload": {
           "hint": null,
           "wordLength": 5,

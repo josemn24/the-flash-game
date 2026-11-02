@@ -2,7 +2,7 @@
 
 # Estado actual del proyecto
 
-Último contraste documental: 2026-10-25.
+Último contraste de código y esquema: 2026-11-02.
 
 ## Alcance y verificación
 

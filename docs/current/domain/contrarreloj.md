@@ -2,7 +2,7 @@
 
 Estado: vigente para Queens y Conectar parejas.
 
-Última actualización: 2026-10-16. Identificador técnico: `time-trial`.
+Última actualización: 2026-11-02. Identificador técnico: `time-trial`.
 
 ## Propósito y alcance
 
@@ -48,6 +48,20 @@ Una respuesta inválida o incompleta devuelve `invalid_connect_pairs_answer` (HT
 la interacción; el tablero permanece editable con el reloj activo. No hay límite de errores ni cierre
 por `validation_limit` en este formato. Las reglas de recuperación estricta se conservan.
 
+## Checkpoints y revisión
+
+Queens y Conectar parejas guardan checkpoints validados por el servidor en `attempts.progress_payload`
+mientras la interacción siga abierta. El jugador puede continuar editando mientras se confirma un
+guardado anterior; el checkpoint solo refleja el último estado aceptado por el servidor. Guardarlo no
+crea una recepción ni equivale a validar el tablero.
+
+Al cerrar por timeout o conciliar una evaluación pendiente sin respuesta, el servidor copia el último
+checkpoint válido con progreso de la interacción a `attempt_answers.review_state` antes de limpiar el
+progreso del intento. En un cierre por timeout de Contrarreloj, la respuesta queda como `unanswered`
+con cero puntos; el snapshot solo permite mostrar el tablero o las rutas que quedaron guardadas. No
+concede el peso del tablero ni altera la puntuación. Una recepción aceptada a tiempo se evalúa con sus
+propias reglas y conserva su resultado.
+
 ## Reloj y finalización
 
 La introducción solo entrega metadatos y precarga controles. No crea intento ni libera tablero.
@@ -80,8 +94,9 @@ evaluación y ledger son idempotentes. No se fabrican respuestas o tiempos para 
 
 Una recepción existente se concilia primero. Si una prueba activa carece de recepción final, se
 cierra sin respuesta y termina el desafío; un borrador guardado, incluso completo, no sustituye una
-validación recibida. No se reentrega una prueba vista. La transferencia de control aplica la misma
-regla y conserva el intento y deadline originales.
+validación recibida. El último checkpoint válido puede conservarse en `review_state` para la revisión,
+sin convertirlo en respuesta ni otorgar puntos. No se reentrega una prueba vista. La transferencia de
+control aplica la misma regla y conserva el intento y deadline originales.
 
 Un intento creado sin tablero puede recibir su primera prueba. Recuperar entre pruebas, sin una
 interacción abierta ni recepción pendiente, permite preparar la siguiente si el reloj sigue vivo.

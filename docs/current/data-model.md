@@ -3,7 +3,7 @@
 ## Estado y alcance
 
 - Estado: modelo de persistencia vigente. Las verificaciones por entorno se consultan en [estado actual](status.md).
-- Fecha del modelo original: 2026-09-23; contraste documental: 2026-10-24.
+- Fecha del modelo original: 2026-09-23; contraste documental: 2026-11-02.
 - Infraestructura: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
 - Este documento concreta tablas y garantías de almacenamiento; no sustituye al
   [`domain-model.md`](domain/domain-model.md), que sigue siendo la referencia para el
@@ -427,11 +427,19 @@ Constraints y reglas:
   `removed`/`banned`, el cierre competitivo y la revocación de sesiones se confirman en la misma
   transacción, sin crear acreditaciones nuevas.
 
-Para F19, `progress_payload` contiene únicamente el tipo, el `challengeItemId` y la secuencia de
-swaps aceptados. La solución de cuatro palabras permanece en `question_version_solutions`; cada swap
-se valida dentro del comando transaccional y el payload se limpia al resolver, agotar movimientos o
+Para F19, `progress_payload` contiene el tipo, el `challengeItemId` y la secuencia de swaps
+aceptados. La solución de cuatro palabras permanece en `question_version_solutions`; cada swap se
+valida dentro del comando transaccional y el payload se limpia al resolver, agotar movimientos o
 cerrar por timeout. La recuperación materializa esa secuencia en la respuesta evaluada, sin conceder
 puntos por una interrupción.
+
+Queens y Conectar parejas también usan `progress_payload` para persistir el último checkpoint
+validado por el servidor de la interacción abierta: las reinas colocadas o las rutas del tablero. El
+comando actualiza la versión de bloqueo y la actividad del intento. Un checkpoint no es una
+recepción ni una respuesta final, y por sí solo no concede puntos. Al cerrar una interacción sin
+respuesta —por timeout o al conciliar una evaluación pendiente— el servidor valida el checkpoint y
+lo copia a `review_state` antes de limpiar el progreso mutable. Esto permite revisar el último estado
+aceptado sin convertirlo en respuesta final ni alterar el estado o la puntuación oficiales.
 
 ### `attempt_sessions`
 
@@ -494,6 +502,8 @@ Respuesta final a un `challenge_item` concreto.
 - `status text not null`: `correct`, `partial`, `incorrect`, `unanswered` o `timeout`.
 - `answer jsonb null`.
 - `result_details jsonb null`.
+- `review_state jsonb null`: snapshot validado de un checkpoint de Queens o Conectar parejas para
+  conservarlo en la revisión cuando no existe una respuesta final.
 - `points integer not null`.
 - `presented_at timestamptz not null`, `submitted_at timestamptz null`.
 - `time_used_ms bigint not null`.
@@ -505,11 +515,15 @@ Constraints y reglas:
 - `unique (attempt_id, challenge_item_id)` para una respuesta final por elemento.
 - `unique (attempt_id, idempotency_key)` para reintentos seguros de red.
 - `points >= 0`, `time_used_ms >= 0` y `presented_at <= submitted_at` cuando existe envío.
+- `review_state` es nulo o un objeto cuyo `type` es `connect-pairs` y contiene `paths`, o cuyo
+  `type` es `queens` y contiene `queens`; la validación del comando comprueba el checkpoint antes
+  de guardarlo.
 - La aplicación comprueba que el elemento pertenece a la versión del desafío del intento. Puede
   reforzarse con una FK compuesta usando `challenge_version_id` en ambas proyecciones o con un
   trigger; una FK simple sobre los dos UUID no expresa esa invariancia.
-- `answer` es el payload bruto recibido y `result_details` la evaluación concedida. Ninguno se
-  reescribe para ocultar una corrección posterior.
+- `answer` es el payload bruto recibido y `result_details` la evaluación concedida. `review_state`
+  conserva por separado el estado aceptado que se muestra en revisión. Ninguno se reescribe para
+  ocultar una corrección posterior; `review_state` no modifica el estado oficial ni la puntuación.
 
 Los intervalos de visita y las recepciones son estado técnico separado de la respuesta final. Los
 eventos adicionales de formatos concretos se validarán en servidor sin abrir DML genérico.

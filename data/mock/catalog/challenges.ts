@@ -511,7 +511,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
     items: [
       {
         questionSlug: "abrahamic-matching-biblical-associations",
-        points: 10,
+        points: 13,
         modeConfig: {
           levelId: "entrance",
           label: "Entrada",
@@ -524,7 +524,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "abrahamic-progressive-abraham",
-        points: 12,
+        points: 14,
         modeConfig: {
           levelId: "patriarch",
           label: "Adivinanza",
@@ -537,7 +537,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "abrahamic-order-torah-books",
-        points: 13,
+        points: 14,
         modeConfig: {
           levelId: "torah",
           label: "Secuencia",
@@ -577,7 +577,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "abrahamic-classification-three-traditions",
-        points: 17,
+        points: 15,
         modeConfig: {
           levelId: "traditions",
           label: "Tradiciones",
@@ -590,7 +590,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "abrahamic-word-hashtag-references",
-        points: 19,
+        points: 15,
         modeConfig: {
           levelId: "summit",
           label: "Cima",
