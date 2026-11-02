@@ -40,8 +40,9 @@ por sí mismas el estado de staging. Los resultados de entregas cerradas están 
   entrada canónica, reglas compartidas, ciclo de ejecución y conformidad HTTP con el remoto.
 - [`avatar-confirmation-recovery.md`](avatar-confirmation-recovery.md): confirmación recuperable,
   autorización transaccional de limpieza y validación de avatares.
-- [Práctica por formato](practice-format-contracts.md), [ciclo de vida](attempt-lifecycle.md),
-  [recuperación](competitive-command-recovery.md) y [resiliencia](resilience-matrix.md): contratos transversales.
+- [Práctica por formato](practice-format-contracts.md), [ciclo de vida](attempt-lifecycle.md) y
+  [recuperación](competitive-command-recovery.md): contratos transversales. La
+  [matriz de resiliencia](resilience-matrix.md) es una propuesta de riesgos y plan de QA.
 - [Operación](s22-operacion.md), [comandos SQL](sql-attempt-command-handlers-refactor.md),
   [biblioteca editorial](sql-question-library-refactor.md) y [validación SQL](sql-question-validation-refactor.md):
   referencias específicas.

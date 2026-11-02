@@ -45,7 +45,7 @@ crea una competición.
 | **Publicación**          | Instancia de una versión de desafío programada en una temporada y sala.                                |
 | **Pregunta**             | Unidad de contenido versionada que ofrece una interacción de un formato.                               |
 | **Elemento del desafío** | Inclusión ordenada de una versión de pregunta con puntos y configuración contextual.                   |
-| **Modo**                 | Regla de alto nivel que organiza la sesión (`flash`, `alphabet`, `survival`, `narrative` o `pyramid`). |
+| **Modo**                 | Regla de alto nivel que organiza la sesión (`flash`, `alphabet`, `survival`, `narrative`, `pyramid` o `time-trial`). |
 | **Intento**              | Ejecución competitiva o de prueba de un jugador sobre una publicación.                                 |
 | **Respuesta**            | Resultado final del jugador para un elemento concreto del desafío.                                     |
 | **Flash Points**         | Puntuación competitiva obtenida en un desafío y acumulada en su temporada.                             |

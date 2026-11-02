@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Último contraste documental: 2026-10-24. Las reglas por modo se conservan; no se cambian evaluadores.
+Último contraste documental: 2026-11-02. Las reglas por modo se conservan; no se cambian evaluadores.
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -357,6 +357,10 @@ pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se va
   cero aciertos empatados sin tiempo inventado. Temporada conserva Flash Points acumulados.
 - **Recuperación:** conciliar recepción existente primero; una prueba activa sin recepción termina
   sin respuesta ni replay. Con deadline vencido prevalece `time_limit`. Transferencia conserva reglas.
+- **Checkpoints y revisión:** Queens y Conectar parejas guardan el último tablero validado por el
+  servidor en `attempts.progress_payload`. Si se cierra la interacción sin respuesta, el snapshot
+  aceptado se conserva en `attempt_answers.review_state` antes de limpiar el progreso; sirve para
+  revisar, pero no crea una recepción, no valida la prueba ni concede puntos.
 - **Revisión:** pruebas alcanzadas con revisión autorizada; las no alcanzadas solo metadatos.
 - **Abandono y permisos:** contrato común, sin acreditación.
 

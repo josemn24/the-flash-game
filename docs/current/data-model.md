@@ -393,7 +393,8 @@ Raíz persistida de una ejecución competitiva o de prueba.
 
 - `id uuid primary key`.
 - `player_id uuid not null references players(id)`.
-- `scheduled_challenge_id uuid not null references scheduled_challenges(id)`.
+- `scheduled_challenge_id uuid not null`.
+- `challenge_version_id uuid not null`: versión inmutable fijada por la publicación.
 - `attempt_number integer not null`.
 - `kind text not null`: `competitive` o `test`.
 - `status text not null`: `in_progress`, `completed`, `abandoned` o `invalidated`.
@@ -403,7 +404,7 @@ Raíz persistida de una ejecución competitiva o de prueba.
 - `completed_at timestamptz null`.
 - `score integer null`.
 - `client_state_schema_version integer not null`.
-- `lock_version integer not null default 1`.
+- `lock_version bigint not null default 1`.
 - `progress_payload jsonb null`.
 - `last_activity_at timestamptz null`.
 - `terminal_reason text null`.
@@ -417,9 +418,10 @@ Constraints y reglas:
   publicación: `unique (player_id, scheduled_challenge_id) where kind = 'competitive'`.
 - Los intentos `test` pueden repetirse, pero siempre quedan fuera de puntos, ranking, historial
   ordinario y actividad social.
-- La publicación determina la sala, temporada y versión. Puede conservarse además un
-  `challenge_version_id` inmutable en la tabla como referencia redundante para consultas y
-  restricciones compuestas; no es una segunda relación conceptual.
+- La publicación determina la sala y temporada. `challenge_version_id` se persiste como columna
+  obligatoria. La FK compuesta `(scheduled_challenge_id, challenge_version_id)` garantiza que
+  corresponde a la versión publicada; la clave única `(id, challenge_version_id)` permite comprobar
+  también la versión de cada respuesta.
 - Un intento abandonado conserva respuestas aceptadas, pero su `progress_payload` recuperable se
   elimina o invalida. `terminal_reason` distingue abandono voluntario, `inactivity_timeout`,
   `permission_revoked` o invalidación administrativa; una desconexión mientras el desafío sigue
@@ -496,8 +498,9 @@ actor/clave. Reintentos idénticos recuperan el resultado; contenido diferente p
 Respuesta final a un `challenge_item` concreto.
 
 - `id uuid primary key`.
-- `attempt_id uuid not null references attempts(id)`.
-- `challenge_item_id uuid not null references challenge_items(id)`.
+- `attempt_id uuid not null`.
+- `challenge_item_id uuid not null`.
+- `challenge_version_id uuid not null`.
 - `receipt_id uuid not null`: recepción válida del mismo intento, item y versión.
 - `status text not null`: `correct`, `partial`, `incorrect`, `unanswered` o `timeout`.
 - `answer jsonb null`.
@@ -518,9 +521,11 @@ Constraints y reglas:
 - `review_state` es nulo o un objeto cuyo `type` es `connect-pairs` y contiene `paths`, o cuyo
   `type` es `queens` y contiene `queens`; la validación del comando comprueba el checkpoint antes
   de guardarlo.
-- La aplicación comprueba que el elemento pertenece a la versión del desafío del intento. Puede
-  reforzarse con una FK compuesta usando `challenge_version_id` en ambas proyecciones o con un
-  trigger; una FK simple sobre los dos UUID no expresa esa invariancia.
+- Las FKs compuestas `(attempt_id, challenge_version_id)` y `(challenge_item_id,
+  challenge_version_id)` garantizan que la respuesta y el elemento pertenecen a la misma versión.
+- La FK compuesta de `receipt_id`, `attempt_id`, `challenge_item_id` y `challenge_version_id`
+  garantiza que la respuesta corresponde a la recepción persistida de ese intento, elemento y
+  versión.
 - `answer` es el payload bruto recibido y `result_details` la evaluación concedida. `review_state`
   conserva por separado el estado aceptado que se muestra en revisión. Ninguno se reescribe para
   ocultar una corrección posterior; `review_state` no modifica el estado oficial ni la puntuación.
@@ -763,9 +768,8 @@ Ejemplos de mapeo:
 - `QuestionVersion` del dominio puede componerse de `question_versions` y
   `question_version_solutions`; el cliente solo recibe `public_payload`.
 - `expired` es una proyección de una publicación cerrada sin intento, no un valor de `attempts`.
-- `attempt_sessions`, `idempotency_key` y una posible referencia redundante a
-  `challenge_version_id` son mecanismos de persistencia. No obligan a añadir entidades públicas
-  al dominio.
+- `attempt_sessions`, `idempotency_key` y la columna obligatoria `challenge_version_id` de
+  `attempts` son mecanismos de persistencia. No obligan a añadir entidades públicas al dominio.
 - `flash_point_entries` registra la acreditación y sus correcciones, pero no crea una moneda o un
   aggregate funcional paralelo a Flash Points.
 
@@ -781,9 +785,9 @@ de dominio.
 ### Referencia directa de la versión en un intento
 
 Conceptualmente la versión se obtiene por `attempt → scheduled_challenge → challenge_version`.
-Persistir también `challenge_version_id` en `attempts` puede simplificar índices y FKs compuestas y
-deja congelada la versión usada. Si se adopta, debe ser inmutable y validarse contra la publicación;
-no se debe permitir que se convierta en una segunda fuente editable.
+La persistencia actual también guarda `challenge_version_id` en `attempts`: la FK compuesta lo
+vincula a la versión de la publicación y permite reforzar las relaciones de respuestas e items sin
+convertirlo en una segunda fuente editable.
 
 ### Libro de puntos frente a total materializado
 

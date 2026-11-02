@@ -3,11 +3,11 @@
 ## Estado y alcance
 
 Las slices verificadas consolidan la integración real de Supabase. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19,
-E01–E06/E10 y el portal privado consolidan la integración real de Supabase y completan el
-recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash/Narrative/Supervivencia/Pirámide competitivo →
-recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
-introducción, el gameplay Flash/Narrative/Supervivencia/Pirámide, los rankings, el historial común cerrado y la revisión completa consultan o
-mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
+E01–E06/E10 y el portal privado completan el recorrido `Auth → home → mis salas → detalle →
+introducción autorizada → Flash/Alfabeto/Narrative/Supervivencia/Pirámide/Contrarreloj competitivo
+→ recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
+introducción, el gameplay de los seis modos, los rankings, el historial común cerrado y la revisión
+completa consultan o mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
 superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
 transaccional de sala, owner y grupo inicial desde el portal. Alphabet ya usa una proyección
 server-only y los comandos competitivos existentes; los ajustes de sala ya tienen gestión parcial de
@@ -15,7 +15,8 @@ membresías (conceder/quitar admin y eliminación lógica por el owner), mientra
 bloqueo/desbloqueo e invitaciones completas siguen pendientes. Supervivencia aporta vidas autoritativas;
 S15 integra Pirámide con niveles, evaluación, finalización y revisión server-side, verificada en el
 stack local. Narrative reutiliza el ciclo genérico de intentos y también usa la lectura y sesión
-server-backed; la edición narrativa avanzada sigue fuera de alcance.
+server-backed; Contrarreloj usa consultas y comandos competitivos server-side. La edición narrativa
+avanzada sigue fuera de alcance.
 
 La dirección vigente es:
 

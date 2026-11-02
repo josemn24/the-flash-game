@@ -41,6 +41,11 @@ se atribuyen a la temporada activa o, si no hay ninguna, a la próxima programad
 entre la temporada actual y todas las futuras. La captura deja de aceptar eventos al acabar la
 temporada; los informes permanecen consultables al finalizar o cancelar.
 
+Si se reprograma el inicio de una temporada, el esquema recalcula `history_from` para participantes
+y publicaciones. Para participantes toma la fecha más tardía entre el nuevo inicio, su incorporación
+a la medición y la entrada en la sala; para publicaciones, entre el nuevo inicio y su incorporación
+a la medición. Así se ajusta el ámbito histórico del informe sin reescribir los eventos capturados.
+
 ## Lo que ve el superadmin
 
 - Selector de temporadas, incluidas las anteriores, y fecha de actualización.

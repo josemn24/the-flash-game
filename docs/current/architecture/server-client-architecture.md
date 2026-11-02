@@ -114,7 +114,8 @@ client states for this boundary.
 
 This pattern applies to server-authoritative modes. Practice, previews and other local sessions should
 remain immediate and should not add a network loading state. The persisted server flow is implemented
-for competitive Flash, Alphabet, Supervivencia, Narrative and Pyramid (verified on local Supabase).
+for the six competitive modes: Flash, Alphabet, Supervivencia, Narrative, Pyramid and TimeTrial
+(verified on local Supabase).
 New server-authoritative modes should adopt this lifecycle and adapt only the visible status to their
 mechanics.
 
