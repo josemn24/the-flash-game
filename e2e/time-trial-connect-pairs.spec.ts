@@ -12,7 +12,7 @@ async function start(page: Page, player: string) {
   await page.getByRole("button", { name: "Iniciar sesión" }).click();
   await page.getByRole("link", { name: /Abrir sala Sala time-trial-connect-pairs/ }).click();
   await page.getByRole("link", { name: "Jugar" }).click();
-  await expect(page.getByText("Rehaz los caminos libremente", { exact: false })).toBeVisible();
+  await expect(page.getByText("Une las parejas", { exact: false })).toBeVisible();
   await expect(page.getByText("Tercer error", { exact: true })).toHaveCount(0);
   await expect(page.getByRole("grid")).toHaveCount(0);
   await page.getByRole("button", { name: "Empezar desafío" }).click();

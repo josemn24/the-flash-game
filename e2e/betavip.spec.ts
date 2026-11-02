@@ -80,7 +80,7 @@ test("BetaVIP empieza por Conectar parejas y permite completar sus seis tableros
       `select count(*) from public.attempts where scheduled_challenge_id in ('${connectPairs.id}', '${survival.id}', '${alphabet.id}', '${pyramid.id}', '${antiquity.id}', '${timeTrial.id}');`,
     ),
   ).toBe(0);
-  await expect(page.getByText("Rehaz los caminos libremente", { exact: false })).toBeVisible();
+  await expect(page.getByText("Une las parejas", { exact: false })).toBeVisible();
   const deadlines: string[] = [];
   page.on("response", async (response) => {
     if (response.url().endsWith("/prepare") && response.ok())

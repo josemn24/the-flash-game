@@ -82,24 +82,36 @@ function buildSafeRules(
 ): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   switch (mode) {
     case "time-trial":
+      if (format === "queens" || format === "connect-pairs") {
+        return [
+          {
+            title: "El reloj no se detiene",
+            description: "Tienes un único tiempo para resolver todos los tableros.",
+          },
+          {
+            title: format === "queens" ? "Tres intentos por tablero" : "Une las parejas",
+            description:
+              format === "queens"
+                ? "Mueve las coronas libremente. Si fallas los tres intentos, la partida termina."
+                : "Cubre todo el tablero sin cruzar los caminos. Puedes rehacerlos cuanto quieras.",
+          },
+          {
+            title: "Resuelve para sumar y avanzar",
+            description:
+              "Cada tablero completado suma puntos. Si lo abandonas sin resolver, termina la partida.",
+          },
+        ];
+      }
+
       return [
         {
           title: "Un solo reloj compartido",
           description: "Validar y cambiar de prueba también consumen tiempo.",
         },
         {
-          title:
-            format === "connect-pairs"
-              ? "Rehaz los caminos libremente"
-              : format === "queens"
-                ? "3 intentos por tablero"
-                : "Resuelve para avanzar",
+          title: "Resuelve para avanzar",
           description:
-            format === "connect-pairs"
-              ? "Conecta las parejas, cubre el tablero sin cruces; rehacer no penaliza."
-              : format === "queens"
-                ? "Tienes 3 intentos por tablero; se renuevan al avanzar. La tercera validación completa incorrecta de un tablero termina el desafío. Los movimientos no consumen oportunidades."
-                : "Completar una prueba abre la siguiente. Consulta las reglas del formato antes de empezar.",
+            "Completar una prueba abre la siguiente. Consulta las reglas del formato antes de empezar.",
         },
         {
           title: "Conserva tus aciertos",
@@ -154,8 +166,8 @@ export function buildSafeChallengeIntroModel(
 function buildFlashRules(): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   return [
     {
-      title: "Primero, acierta",
-      description: "Después, responde rápido para sumar más.",
+      title: "Acierta y responde rápido",
+      description: "Cuanto antes des la respuesta correcta, más puntos ganas.",
     },
     {
       title: "Sin pausas",
@@ -173,15 +185,15 @@ function buildSurvivalRules(
 ): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   return [
     {
-      title: `${lives} vidas para llegar lejos`,
-      description: "Cada fallo o timeout consume una vida.",
+      title: `Empiezas con ${lives} vidas`,
+      description: "Si fallas o no respondes a tiempo, pierdes una vida.",
     },
     {
-      title: "Los parciales cuentan",
-      description: "Suman puntos, pero no recuperan una vida.",
+      title: "Acertar una parte también suma",
+      description: "Si tu respuesta está incompleta, puedes ganar puntos, pero no recuperas vidas.",
     },
     {
-      title: "Aguanta hasta el final",
+      title: "Llega tan lejos como puedas",
       description: "La partida termina cuando te quedas sin vidas.",
     },
   ];
@@ -190,16 +202,18 @@ function buildSurvivalRules(
 function buildAlphabetRules(): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   return [
     {
-      title: "Responde",
-      description: "Escribe una palabra que empiece por la letra activa.",
+      title: "Una palabra por letra",
+      description: "Lee la pista y escribe una palabra que empiece por la letra indicada.",
     },
     {
-      title: "Pasa si lo necesitas",
-      description: "La letra volverá en otra vuelta antes de que acabe el tiempo.",
+      title: "Puedes dejarla para después",
+      description:
+        "Si no sabes la respuesta, pasa a la siguiente. Volverás a esa pregunta mientras quede tiempo.",
     },
     {
-      title: "Desempate",
-      description: "Primero cuentan los aciertos y después la velocidad del último acierto.",
+      title: "Cuantos más aciertos, mejor",
+      description:
+        "Si hay empate, queda por delante quien haya conseguido antes su último acierto.",
     },
   ];
 }
@@ -224,16 +238,16 @@ function buildNarrativeRules(): [ChallengeIntroRule, ChallengeIntroRule, Challen
 function buildPyramidRules(): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   return [
     {
-      title: "Sube nivel a nivel",
-      description: "Solo un acierto completo abre la siguiente prueba.",
+      title: "Acierta para seguir subiendo",
+      description: "Tu respuesta debe ser totalmente correcta para pasar al siguiente nivel.",
     },
     {
-      title: "Un intento por desafío",
-      description: "Si fallas un nivel, termina el ascenso y no puedes repetir este reto.",
+      title: "Tienes una sola oportunidad",
+      description: "Si fallas, la partida termina y no puedes repetir este desafío.",
     },
     {
-      title: "Llega a la cima",
-      description: "Supera los siete niveles para completar el desafío.",
+      title: "Siete niveles hasta la cima",
+      description: "Supera las siete preguntas para completar la pirámide.",
     },
   ];
 }

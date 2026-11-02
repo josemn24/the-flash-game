@@ -17,11 +17,9 @@ describe("challenge intro model", () => {
     });
 
     expect(model.metrics.find((metric) => metric.label === "Tiempo global")?.value).toBe("3 min");
-    expect(model.rules[0].title).toBe("Un solo reloj compartido");
-    expect(model.rules[0].description).toContain("consumen tiempo");
-    expect(model.rules[1].description).toContain(
-      "La tercera validación completa incorrecta de un tablero termina el desafío",
-    );
+    expect(model.rules[0].title).toBe("El reloj no se detiene");
+    expect(model.rules[0].description).toContain("todos los tableros");
+    expect(model.rules[1].description).toContain("Si fallas los tres intentos, la partida termina.");
   });
 
   it("builds the same three-metric contract for every challenge mode", () => {
@@ -111,7 +109,7 @@ it("explains free path edits and strict recovery for Conectar parejas", () => {
     maxScore: 100,
     timeLimitMs: 60000,
   });
-  expect(model.rules[1].description).toContain("no penaliza");
+  expect(model.rules[1].description).toContain("Puedes rehacerlos cuanto quieras.");
   expect(model.rules[1].description).not.toContain("tercera");
-  expect(model.rules[2].description).toContain("sin respuesta termina");
+  expect(model.rules[2].description).toContain("Si lo abandonas sin resolver, termina la partida.");
 });
