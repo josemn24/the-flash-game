@@ -2,10 +2,10 @@
 
 export default function AdminError({
   error,
-  unstable_retry,
+  retry,
 }: {
   error: Error & { digest?: string };
-  unstable_retry: () => void;
+  retry: () => void;
 }) {
   void error;
   return (
@@ -21,7 +21,7 @@ export default function AdminError({
         <button
           className="mt-7 rounded-[var(--radius-control)] border-2 border-[var(--ds-color-border-ink)] bg-[var(--ds-color-bg-brand)] px-5 py-3 font-mono text-xs font-black uppercase shadow-[var(--shadow-control)]"
           type="button"
-          onClick={unstable_retry}
+          onClick={retry}
         >
           Reintentar
         </button>
