@@ -223,5 +223,235 @@
       "correctAnswer": "32 %",
       "explanation": "La mezcla inicial contiene 2/5 de concentrado. Al retirar un litro se retiran 0,4 litros de concentrado: quedan 1,6. Tras añadir agua hay de nuevo 5 litros; 1,6 / 5 × 100 = 32 %."
     }
+  },
+  {
+    "id": "bank-eleccion-ritmo-produccion",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-ritmo-produccion",
+    "publicPayload": {
+      "question": "Una máquina fabrica 18 piezas en 6 minutos. Si mantiene el mismo ritmo, ¿cuántas fabrica en 10 minutos?",
+      "options": ["24 piezas", "30 piezas", "36 piezas", "60 piezas"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "30 piezas",
+      "explanation": "El ritmo es 18 / 6 = 3 piezas por minuto. En 10 minutos fabrica 3 × 10 = 30 piezas."
+    }
+  },
+  {
+    "id": "bank-eleccion-escala-mapa",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-escala-mapa",
+    "publicPayload": {
+      "question": "En un mapa a escala 1:50 000, dos puntos están separados por 3 centímetros. ¿Qué distancia real los separa?",
+      "options": ["0,15 kilómetros", "15 kilómetros", "1,5 kilómetros", "150 kilómetros"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "1,5 kilómetros",
+      "explanation": "Cada centímetro del mapa representa 50 000 centímetros reales. Tres centímetros representan 150 000 centímetros, es decir, 1500 metros o 1,5 kilómetros."
+    }
+  },
+  {
+    "id": "bank-eleccion-perimetro-inverso",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-perimetro-inverso",
+    "publicPayload": {
+      "question": "Un rectángulo tiene un perímetro de 30 centímetros y un lado largo de 9 centímetros. ¿Cuánto mide su lado corto?",
+      "options": ["6 centímetros", "12 centímetros", "15 centímetros", "21 centímetros"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "6 centímetros",
+      "explanation": "El perímetro es dos veces la suma del largo y el ancho. La mitad de 30 es 15; al restar el largo, 15 − 9 = 6 centímetros."
+    }
+  },
+  {
+    "id": "bank-eleccion-media-incompleta",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-media-incompleta",
+    "publicPayload": {
+      "question": "La media aritmética de cuatro exámenes es 7. Las tres primeras notas son 6, 8 y 5. ¿Cuál es la cuarta nota?",
+      "options": ["7", "8", "10", "9"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "9",
+      "explanation": "Las cuatro notas deben sumar 4 × 7 = 28. Las tres conocidas suman 6 + 8 + 5 = 19; por tanto, la cuarta es 28 − 19 = 9."
+    }
+  },
+  {
+    "id": "bank-eleccion-division-fracciones",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-division-fracciones",
+    "publicPayload": {
+      "question": "Una jarra contiene 3/4 de litro de agua. ¿Cuántos vasos de 1/8 de litro pueden llenarse por completo sin desperdiciar agua?",
+      "options": ["3 vasos", "4 vasos", "6 vasos", "8 vasos"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "6 vasos",
+      "explanation": "Tres cuartos equivalen a seis octavos: 3/4 = 6/8. Si cada vaso contiene un octavo de litro, la jarra permite llenar seis vasos."
+    }
+  },
+  {
+    "id": "bank-eleccion-probabilidad-recuento",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-probabilidad-recuento",
+    "publicPayload": {
+      "question": "Una bolsa tiene 3 bolas rojas y 2 azules. Se añade otra bola azul y después se extrae una al azar. ¿Cuál es la probabilidad de que sea azul?",
+      "options": ["1/2", "2/5", "1/3", "3/5"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "1/2",
+      "explanation": "Tras añadir la bola hay 3 azules y 3 rojas, es decir, 6 en total. La probabilidad es 3/6 = 1/2."
+    }
+  },
+  {
+    "id": "bank-eleccion-duracion-horaria",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-duracion-horaria",
+    "publicPayload": {
+      "question": "Una sesión comienza a las 17:45 y dura 95 minutos, sin pausas. ¿A qué hora termina?",
+      "options": ["18:20", "19:10", "19:30", "19:20"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "19:20",
+      "explanation": "95 minutos son una hora y 35 minutos. A las 17:45 se suma una hora para llegar a las 18:45 y luego 35 minutos para llegar a las 19:20."
+    }
+  },
+  {
+    "id": "bank-eleccion-circuito-serie",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-circuito-serie",
+    "publicPayload": {
+      "question": "Dos bombillas funcionan conectadas en serie a una pila. Se retira una y se deja su hueco sin conectar. ¿Qué ocurre con la otra?",
+      "options": [
+        "Sigue encendida porque conserva la pila",
+        "Brilla más porque recibe más corriente",
+        "Se apaga porque el circuito queda abierto",
+        "Se atenúa porque circula menos corriente"
+      ],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "Se apaga porque el circuito queda abierto",
+      "explanation": "En serie solo hay un camino para la corriente. Al retirar una bombilla sin cerrar su hueco se interrumpe ese camino; deja de circular corriente y la otra bombilla se apaga."
+    }
+  },
+  {
+    "id": "bank-eleccion-densidad-flotacion",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-densidad-flotacion",
+    "publicPayload": {
+      "question": "Una pieza maciza tiene una masa de 54 gramos y un volumen de 20 centímetros cúbicos. Se sumerge en agua de densidad 1 g/cm³ y se suelta sin apoyos. ¿Qué sucede?",
+      "options": [
+        "Flota porque su densidad es 0,37 g/cm³",
+        "Se hunde porque su densidad es 2,7 g/cm³",
+        "Queda suspendida porque su densidad es 1 g/cm³",
+        "Flota porque su densidad es 2,7 g/cm³"
+      ],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "Se hunde porque su densidad es 2,7 g/cm³",
+      "explanation": "La densidad de la pieza es masa dividida por volumen: 54 / 20 = 2,7 g/cm³. Al ser mayor que la del agua, la pieza se hunde cuando se suelta."
+    }
+  },
+  {
+    "id": "bank-eleccion-variaciones-porcentuales",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-variaciones-porcentuales",
+    "publicPayload": {
+      "question": "Una colonia aumenta su población un 50 % y después pierde el 20 % de la población resultante. Al final quedan 96 individuos. ¿Cuántos había inicialmente?",
+      "options": ["72 individuos", "120 individuos", "80 individuos", "96 individuos"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "80 individuos",
+      "explanation": "Antes de perder el 20 % había 96 / 0,8 = 120 individuos. Esos 120 representan el 150 % de la población inicial: 120 / 1,5 = 80. La comprobación es 80 × 1,5 × 0,8 = 96."
+    }
+  },
+  {
+    "id": "bank-eleccion-extracciones-sin-reposicion",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-extracciones-sin-reposicion",
+    "publicPayload": {
+      "question": "Una bolsa contiene 3 bolas rojas y 2 azules. Se extraen dos al azar, sin devolver la primera. ¿Cuál es la probabilidad de que ambas sean del mismo color?",
+      "options": ["2/5", "1/2", "13/25", "3/5"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "2/5",
+      "explanation": "Dos rojas tienen probabilidad (3/5) × (2/4) = 6/20. Dos azules tienen probabilidad (2/5) × (1/4) = 2/20. Como los casos son excluyentes, se suman: 8/20 = 2/5. La segunda extracción tiene cuatro bolas disponibles porque no hay reposición."
+    }
   }
 ]

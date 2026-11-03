@@ -57,12 +57,19 @@ generador v1 consolidado. Las recetas de desarrollo previas quedan fuera de este
 esta base, las correcciones y retiradas añaden versiones; las anteriores conservan metadatos y
 huellas para las recetas del generador vigente. La calidad se exige al conjunto activo.
 
-La ampliación de Alfabeto añade 130 preguntas y deja el banco en 362. Sus 243 respuestas cortas
+La ampliación de Alfabeto añade 130 preguntas a la base inicial. Sus 243 respuestas cortas
 cubren tres alternativas por letra y dificultad; las preguntas de la base inicial conservan sus
 huellas. Cada nueva familia corresponde a un concepto distinto. Las variantes ortográficas se
 aceptan como respuestas del mismo ejercicio, sin contarlas como alternativas independientes.
 En las letras de vocabulario menos frecuente, las pistas fáciles incorporan ayudas directas,
 como las partes de la palabra o su longitud; las difíciles exigen vocabulario especializado.
+
+La ampliación posterior de Elección múltiple añade nueve preguntas medias y dos difíciles y deja
+el banco en 373 preguntas. El formato ofrece diez familias medias y tres difíciles, además de
+las tres familias fáciles anteriores. Las nuevas preguntas combinan operaciones, conversiones,
+interpretación de condiciones o aplicación de conceptos; incluyen distractores basados en errores
+plausibles y explicaciones verificables. Cubrir ocho posiciones medias requiere al menos ocho
+ejercicios compatibles de ese nivel; disponer de diez permite variar también el conjunto elegido.
 
 Ejecutar `npm run rehearsals:check` y revisar el informe por combinación y estructura. El mínimo de
 una familia no garantiza repeticiones de formato y dificultad sin sustituciones: la asignación

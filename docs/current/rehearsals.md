@@ -15,11 +15,17 @@ dificultad `easy | medium | hard`, tiempo de referencia y los contratos canónic
 solución. La letra es explícita para Alfabeto. Las familias permiten evitar variantes muy parecidas.
 Las dimensiones y parámetros mecánicos se derivan del contenido.
 
-El banco actual contiene 362 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
+El banco actual contiene 373 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
 letra y dificultad; la ampliación incorpora 130 ejercicios sin modificar las preguntas ni recetas
 históricas. La prueba conserva las letras y su orden oficial, y cada entrada recibe una nueva
 semilla. La variedad se aplica entre alternativas de la dificultad solicitada; no hay exclusión
 de preguntas vistas en sesiones anteriores.
+
+Elección múltiple dispone de 22 preguntas: nueve fáciles, diez medias y tres difíciles, con
+respectivamente tres, diez y tres familias independientes. Se han añadido nueve medias y dos
+difíciles. Las estructuras de referencia con hasta ocho elecciones múltiples medias pueden
+completarlas con ejercicios distintos sin sustituir esa dificultad; varias semillas también
+comprueban que cambia el conjunto elegido y que las recetas siguen siendo reproducibles.
 
 El tiempo de referencia permite validar la pregunta aisladamente: al generar se aplican los tiempos
 y pesos de la posición oficial y se comprueba otra vez su validez. Los recursos están versionados

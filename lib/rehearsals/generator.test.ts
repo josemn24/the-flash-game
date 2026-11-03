@@ -95,6 +95,39 @@ it.each(REHEARSAL_DIFFICULTIES)(
   },
 );
 
+it.each(
+  rehearsalTemplates.filter((template) =>
+    template.questions.some((question) => question.type === "multiple-choice"),
+  ),
+)(
+  "$challengeVersionId keeps repeated multiple-choice difficulty and varies the exercise set",
+  (template) => {
+    const sets = new Set<string>();
+    for (let seed = 0; seed < 12; seed++) {
+      const run = generateRehearsal(bank, template, `multiple-choice-variety-${seed}`);
+      const questions = chosen(run, bank);
+      const choices = questions.filter((question, index) => {
+        if (template.questions[index]!.type !== "multiple-choice") return false;
+        expect(question.difficulty).toBe(template.questions[index]!.difficulty);
+        return true;
+      });
+      expect(new Set(choices.map(exerciseHash)).size).toBe(choices.length);
+      expect(new Set(choices.map((question) => question.familyId ?? question.id)).size).toBe(
+        choices.length,
+      );
+      expect(
+        run.difficultyFallbacks.filter(
+          (fallback) => template.questions[fallback.position - 1]!.type === "multiple-choice",
+        ),
+      ).toEqual([]);
+      // Compare sorted IDs so that merely reordering the same exercises cannot count as variety.
+      sets.add(JSON.stringify(choices.map((question) => question.id).sort()));
+      expect(replayRehearsal(bank, template, run.recipe)).toEqual(run);
+    }
+    expect(sets.size).toBeGreaterThan(1);
+  },
+);
+
 it("fills every active word search deterministically without changing the target paths", () => {
   for (const source of active.filter((q) => q.type === "word-search")) {
     const fixture = bankQuestionCase(source, "flash", bank);

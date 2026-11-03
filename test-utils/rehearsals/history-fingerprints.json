@@ -1808,5 +1808,60 @@
     "id": "bank-alfabeto-z-zoolatria",
     "version": 1,
     "contentHash": "884c846aa9f2243dd402408e81f93f32e709e904c52fdba435f1f6a2a67a7828"
+  },
+  {
+    "id": "bank-eleccion-circuito-serie",
+    "version": 1,
+    "contentHash": "c901fa1d3882b7ee4c00cdff0647c49de6ee30c3cb05e3b1b1b2700544fd4b10"
+  },
+  {
+    "id": "bank-eleccion-densidad-flotacion",
+    "version": 1,
+    "contentHash": "d89eb2406c314412443baf92059c2702545a8d565885840bdd476e00a40c15b1"
+  },
+  {
+    "id": "bank-eleccion-division-fracciones",
+    "version": 1,
+    "contentHash": "759a40a403a3563c15cd01ef4c372d8272cf1f181090b7b66ee064b22b94e64c"
+  },
+  {
+    "id": "bank-eleccion-duracion-horaria",
+    "version": 1,
+    "contentHash": "484a8c227b8de362a7820c4ae94530f88ed387ceb42c2a3b5fb2e2f6f26e5cec"
+  },
+  {
+    "id": "bank-eleccion-escala-mapa",
+    "version": 1,
+    "contentHash": "e9381ee065755b5af325889006259949d1582ed9508239aa5978a23b970dd946"
+  },
+  {
+    "id": "bank-eleccion-extracciones-sin-reposicion",
+    "version": 1,
+    "contentHash": "6b7e1ec7e01a54767422041f5901f81ad4cfb40fb4c36e80bc1e3a6f553c564a"
+  },
+  {
+    "id": "bank-eleccion-media-incompleta",
+    "version": 1,
+    "contentHash": "5a24fa76fd23f34fd2022ac8ed2b72b949f0ee71a64f3d8a693432c76b4c5f22"
+  },
+  {
+    "id": "bank-eleccion-perimetro-inverso",
+    "version": 1,
+    "contentHash": "00c90ead97baff1d9dea9b372d55c2ed07d81b5043355af8a2d1948007419226"
+  },
+  {
+    "id": "bank-eleccion-probabilidad-recuento",
+    "version": 1,
+    "contentHash": "c7aa81e84c84e7853802584378564642a92a982c099aed950c9f26e959656237"
+  },
+  {
+    "id": "bank-eleccion-ritmo-produccion",
+    "version": 1,
+    "contentHash": "6fbe2b7b7b2a4b059cdcbe092e3587df7218b4f7686e5df6383cd0897dd26b63"
+  },
+  {
+    "id": "bank-eleccion-variaciones-porcentuales",
+    "version": 1,
+    "contentHash": "e27fbcacfec1950d1ed30961a3f8fcc49ff231631c54aca051dfb6ba7d8a6568"
   }
 ]
