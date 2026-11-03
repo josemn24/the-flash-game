@@ -56,8 +56,8 @@ describe("Cumbre lógica", () => {
     expect(challenge.levels.map((level) => level.briefing.format)).toEqual([
       "Encontrar el intruso",
       "Secuencia numérica",
-      "Ordenación lógica",
       "Matriz visual",
+      "Ordenación lógica",
       "Conectar parejas",
       "Código secreto",
       "Queens",

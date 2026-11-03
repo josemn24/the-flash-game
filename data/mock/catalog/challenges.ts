@@ -429,19 +429,6 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
         },
       },
       {
-        questionSlug: "pyramid-constraint-order",
-        points: 14,
-        modeConfig: {
-          levelId: "order",
-          label: "Orden",
-          briefing: {
-            title: "Construye el orden",
-            format: "Ordenación lógica",
-            description: "Coloca todos los elementos respetando simultáneamente las restricciones.",
-          },
-        },
-      },
-      {
         questionSlug: "pyramid-shape-direction-matrix",
         points: 14,
         modeConfig: {
@@ -451,6 +438,19 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
             title: "Completa la matriz",
             format: "Matriz visual",
             description: "Observa la regla de figuras y flechas y elige la pieza que falta.",
+          },
+        },
+      },
+      {
+        questionSlug: "pyramid-constraint-order",
+        points: 14,
+        modeConfig: {
+          levelId: "order",
+          label: "Orden",
+          briefing: {
+            title: "Construye el orden",
+            format: "Ordenación lógica",
+            description: "Coloca todos los elementos respetando simultáneamente las restricciones.",
           },
         },
       },
