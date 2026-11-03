@@ -90,6 +90,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Ches-123!",
     displayName: "Ches",
     role: "owner",
+    avatarFile: "ches.jpg",
   },
   {
     label: "dark",
@@ -97,7 +98,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Dark-123!",
     displayName: "Dark",
     role: "member",
-    avatarFile: "dark.jpeg",
+    avatarFile: "dark.jpg",
   },
   {
     label: "palmera",
@@ -113,6 +114,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Carlos-123!",
     displayName: "Carlos",
     role: "member",
+    avatarFile: "carlos.jpg",
   },
   {
     label: "kike",
@@ -128,6 +130,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Javi-123!",
     displayName: "Javi",
     role: "member",
+    avatarFile: "javi.jpg",
   },
   {
     label: "rielbe",
@@ -143,6 +146,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Alejandro-123!",
     displayName: "Alejandro",
     role: "member",
+    avatarFile: "alejandro.jpeg",
   },
   {
     label: "jacobo",
@@ -158,7 +162,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Lambda-123!",
     displayName: "Lambda",
     role: "member",
-    avatarFile: "lambda.jpg",
+    avatarFile: "lambda.jpeg",
   },
   {
     label: "jhon3d",
@@ -174,6 +178,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Diego-123!",
     displayName: "Diego",
     role: "member",
+    avatarFile: "diego.jpg",
   },
   {
     label: "mimi",
@@ -181,6 +186,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Mimi-123!",
     displayName: "Mimi",
     role: "member",
+    avatarFile: "mimi.jpg",
   },
   {
     label: "lucas",
@@ -188,6 +194,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Lucas-123!",
     displayName: "Lucas",
     role: "member",
+    avatarFile: "lucas.jpg",
   },
   {
     label: "neak",
@@ -195,6 +202,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Neak-123!",
     displayName: "Neak",
     role: "member",
+    avatarFile: "neak.jpeg",
   },
 ];
 

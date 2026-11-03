@@ -195,25 +195,25 @@ describe("Tabarnia seed", () => {
     expect(TABARNIA_USERS).toHaveLength(16);
     expect(TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => user.avatarFile)).toEqual(
       [
-        "dark.jpeg",
+        "ches.jpg",
+        "dark.jpg",
         "palmera.jpeg",
+        "carlos.jpg",
         "kike.jpeg",
+        "javi.jpg",
         "rielbe.jpeg",
+        "alejandro.jpeg",
         "jacobo.jpeg",
-        "lambda.jpg",
+        "lambda.jpeg",
         "jhon3d.jpg",
+        "diego.jpg",
+        "mimi.jpg",
+        "lucas.jpg",
+        "neak.jpeg",
       ],
     );
     expect(TABARNIA_USERS.filter((user) => !user.avatarFile).map((user) => user.label)).toEqual([
       "xesmona",
-      "ches",
-      "carlos",
-      "javi",
-      "alejandro",
-      "diego",
-      "mimi",
-      "lucas",
-      "neak",
     ]);
     expect(TABARNIA_USERS.find((user) => user.label === "xesmona")).toMatchObject({
       role: "superadmin",
