@@ -4,6 +4,7 @@ import { rehearsalBank } from "@/infrastructure/rehearsals/bank";
 import { bankQuestionCase, rehearsalTemplates } from "@/test-utils/rehearsals/fixtures";
 import { getWordSearchPath, isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { activeQuestions } from "./catalog";
+import { REHEARSAL_DIFFICULTIES, REHEARSAL_LETTERS } from "./audit";
 import { exerciseHash, rehearsalHash } from "./hash";
 import { COMPETITIVE_RESOLVERS } from "@/lib/scoringCore/resolution/registry";
 import {
@@ -60,6 +61,39 @@ it("is deterministic, independent of bank order, and varies by seed", () => {
   expect(new Set(chosen(a, bank).map(exerciseHash)).size).toBe(t.questions.length);
   expect(JSON.stringify({ bank, t })).toBe(before);
 });
+
+it.each(REHEARSAL_DIFFICULTIES)(
+  "varies every alphabet letter across seeds at %s difficulty while retaining its structure",
+  (difficulty) => {
+    const base = rehearsalTemplates.find((template) => template.mode === "alphabet")!;
+    // An alphabet session supports at most 20 letters, so exercise the full bank in two rounds.
+    for (const letters of [REHEARSAL_LETTERS.slice(0, 14), REHEARSAL_LETTERS.slice(14)]) {
+      const template: RehearsalTemplate = {
+        ...base,
+        questions: letters.map((letter, index) => ({
+          ...base.questions[0]!,
+          difficulty,
+          points: Math.floor(100 / letters.length) + (index < 100 % letters.length ? 1 : 0),
+          modeConfig: { letter },
+        })),
+      };
+      const seen = letters.map(() => new Set<string>());
+      for (let seed = 0; seed < 12; seed++) {
+        const run = generateRehearsal(bank, template, `alphabet-variety-${seed}`);
+        expect(run.difficultyFallbacks).toEqual([]);
+        expect(run.definition.challenge.mode).toBe("alphabet");
+        if (run.definition.challenge.mode !== "alphabet") throw new Error("alphabet expected");
+        expect(run.definition.challenge.entries.map((entry) => entry.letter)).toEqual(letters);
+        chosen(run, bank).forEach((question, index) => {
+          expect(question.difficulty).toBe(difficulty);
+          expect(question.alphabetLetter).toBe(letters[index]);
+          seen[index]!.add(String(question.solutionPayload.correctAnswer));
+        });
+      }
+      seen.forEach((answers, index) => expect(answers.size, letters[index]).toBeGreaterThan(1));
+    }
+  },
+);
 
 it("fills every active word search deterministically without changing the target paths", () => {
   for (const source of active.filter((q) => q.type === "word-search")) {

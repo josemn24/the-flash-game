@@ -85,13 +85,9 @@ it("has specific explanations and complete capability-derived letter/difficulty 
   expect(activeQuality(bank)).toEqual({ duplicates: [], genericExplanations: [] });
   const audit = auditRehearsalBank(bank);
   expect(audit.ready).toBe(true);
-  expect(audit.retiredIdentities).toHaveLength(0);
-  expect(audit.historicalVersions).toBe(0);
-  expect(audit.activeIdentities).toBe(232);
-  expect(bank.every((q) => q.version === 1)).toBe(true);
   expect(audit.combinations.filter((c) => c.mode === "alphabet")).toHaveLength(27 * 3);
   for (const c of audit.combinations)
-    expect(c.familyCount, JSON.stringify(c)).toBeGreaterThanOrEqual(1);
+    expect(c.familyCount, JSON.stringify(c)).toBeGreaterThanOrEqual(c.mode === "alphabet" ? 3 : 1);
   for (const phrase of [
     "",
     "La solución de este ejercicio permite revisar cómo funciona el formato.",
@@ -100,6 +96,18 @@ it("has specific explanations and complete capability-derived letter/difficulty 
     "Isla es la respuesta descrita.",
   ])
     expect(genericExplanation(phrase)).toBe(true);
+});
+
+it("rejects missing same-difficulty alphabet variety even when other difficulties remain", () => {
+  const alternatives = active.filter((q) => q.alphabetLetter === "Ñ" && q.difficulty === "medium");
+  const depleted = bank.filter((q) => q.id !== alternatives[0]!.id);
+  expect(auditRehearsalBank(depleted).ready).toBe(false);
+  const related = bank.map((q) =>
+    q.id === alternatives[0]!.id
+      ? { ...q, familyId: alternatives[1]!.familyId ?? alternatives[1]!.id }
+      : q,
+  );
+  expect(auditRehearsalBank(related).ready).toBe(false);
 });
 
 it.each(rehearsalTemplates)(

@@ -1,4 +1,4 @@
-> Estado: base consolidada v1 para cinco modos. Narrativa queda fuera.
+> Estado: banco v1 ampliado para cinco modos. Narrativa queda fuera.
 
 # Pruebas antes del intento competitivo
 
@@ -14,6 +14,12 @@ Los archivos `data/rehearsals/bank/*.json` contienen preguntas versionadas con m
 dificultad `easy | medium | hard`, tiempo de referencia y los contratos canónicos de contenido y
 solución. La letra es explícita para Alfabeto. Las familias permiten evitar variantes muy parecidas.
 Las dimensiones y parámetros mecánicos se derivan del contenido.
+
+El banco actual contiene 362 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
+letra y dificultad; la ampliación incorpora 130 ejercicios sin modificar las preguntas ni recetas
+históricas. La prueba conserva las letras y su orden oficial, y cada entrada recibe una nueva
+semilla. La variedad se aplica entre alternativas de la dificultad solicitada; no hay exclusión
+de preguntas vistas en sesiones anteriores.
 
 El tiempo de referencia permite validar la pregunta aisladamente: al generar se aplican los tiempos
 y pesos de la posición oficial y se comprueba otra vez su validez. Los recursos están versionados
@@ -44,8 +50,8 @@ determina su `generationStatus` (`active` por defecto o `retired`); una retirada
 una anterior para nuevas partidas. Las versiones editoriales publicadas desde la base se conservan
 para reproducir recetas de este generador mientras sus referencias y huellas sigan disponibles.
 Las variantes de una familia no cuentan como alternativas independientes para el mínimo editorial.
-El chequeo exige una familia por formato/modo/dificultad y por letra/dificultad para las 27 letras
-españolas, incluida Ñ. Deriva formatos y modos del registro de capacidades.
+El chequeo exige una familia por formato/modo/dificultad y tres por letra/dificultad para las 27 letras
+españolas de Alfabeto, incluida Ñ. Deriva formatos y modos del registro de capacidades.
 
 Las correcciones sustituyen las explicaciones de plantilla por cálculos, relaciones o pasos
 verificables. La [rúbrica editorial](../content/guidelines/rehearsal-bank.md) define criterios por

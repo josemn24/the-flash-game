@@ -3,8 +3,8 @@
 # Rúbrica editorial del banco de prueba
 
 Las preguntas activas deben enseñar su solución, admitir los modos declarados y ofrecer al menos
-una familia por formato/modo/dificultad. Alfabeto exige ese mínimo para cada una de las 27 letras
-españolas en cada dificultad. Narrativa no forma parte de este banco.
+una familia por formato/modo/dificultad. Alfabeto exige **tres familias independientes** para cada
+una de las 27 letras españolas en cada dificultad. Narrativa no forma parte de este banco.
 
 La dificultad describe conocimientos, inferencias, alternativas plausibles y restricciones
 mecánicas. El tiempo oficial se hereda del desafío: acortar el cronómetro no convierte una pregunta
@@ -57,9 +57,34 @@ generador v1 consolidado. Las recetas de desarrollo previas quedan fuera de este
 esta base, las correcciones y retiradas añaden versiones; las anteriores conservan metadatos y
 huellas para las recetas del generador vigente. La calidad se exige al conjunto activo.
 
+La ampliación de Alfabeto añade 130 preguntas y deja el banco en 362. Sus 243 respuestas cortas
+cubren tres alternativas por letra y dificultad; las preguntas de la base inicial conservan sus
+huellas. Cada nueva familia corresponde a un concepto distinto. Las variantes ortográficas se
+aceptan como respuestas del mismo ejercicio, sin contarlas como alternativas independientes.
+En las letras de vocabulario menos frecuente, las pistas fáciles incorporan ayudas directas,
+como las partes de la palabra o su longitud; las difíciles exigen vocabulario especializado.
+
 Ejecutar `npm run rehearsals:check` y revisar el informe por combinación y estructura. El mínimo de
 una familia no garantiza repeticiones de formato y dificultad sin sustituciones: la asignación
 completa y sus avisos muestran esa limitación. Antes de publicar, añadir las nuevas huellas al
 inventario con `npm run rehearsals:history:register`, que rechaza cambios históricos, y revisar el
 preview con una semilla fija.
 El [procedimiento técnico](../../current/rehearsals.md) detalla selección y compatibilidad.
+
+## Referencias de la ampliación de Alfabeto
+
+Las pistas y explicaciones son de redacción propia. Para comprobar acepciones y variantes menos
+habituales se han consultado fuentes lexicográficas y materiales docentes:
+
+- RAE-ASALE: [ñapa](https://dle.rae.es/ñapa), [ñoño](https://dle.rae.es/ñoño),
+  [ñandutí](https://dle.rae.es/ñandutí), [ñáñigo](https://dle.rae.es/ñáñigo),
+  [koiné](https://dle.rae.es/koiné), [kermes o quermes](https://dle.rae.es/quermes),
+  [xilografía](https://dle.rae.es/xilografía) y [xenofobia](https://dle.rae.es/xenofobia).
+- RAE-ASALE: [entimema](https://dle.rae.es/entimema),
+  [metempsícosis](https://dle.rae.es/metempsícosis), [quincunce](https://dle.rae.es/quincunce),
+  [jitanjáfora](https://dle.rae.es/jitanjáfora) y [neuma](https://dle.rae.es/neuma).
+- Universidad de Granada: [xenolito](https://www.ugr.es/~petgquim/PTexxenolitox.html).
+  Universidad Complutense de Madrid: [xilópalo](https://biblioteca.ucm.es/geo/muestrario2).
+  Handbook of Mineralogy: [wurtzita](https://www.handbookofmineralogy.org/pdfs/wurtzite.pdf).
+- Universidad de Cádiz: [yodometría](https://rodin.uca.es/handle/10498/7029).
+  Universidad Nacional de la Patagonia: [nictinastia y movimientos vegetales](https://www.fcn.unp.edu.ar/sitio/fisiologiageneral/images/teoricas/15-Diferenciacion.pdf).

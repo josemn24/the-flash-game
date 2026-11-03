@@ -52,6 +52,6 @@ export function auditRehearsalBank(bank: readonly RehearsalBankQuestion[]) {
     ready:
       quality.duplicates.length === 0 &&
       quality.genericExplanations.length === 0 &&
-      combinations.every((c) => c.familyCount >= 1),
+      combinations.every((c) => c.familyCount >= (c.mode === "alphabet" ? 3 : 1)),
   };
 }

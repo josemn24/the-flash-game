@@ -5,6 +5,11 @@ formato en `bank/`. Cada entrada declara `id`, `version`, `type`, `payloadSchema
 `difficulty`, `referenceTimeLimitMs`, `publicPayload` y `solutionPayload`. `alphabetLetter` es
 obligatorio si admite Alfabeto; `familyId` agrupa variantes para favorecer variedad.
 
+El banco actual contiene **362 preguntas activas**. Alfabeto dispone de **243 preguntas**: tres
+familias independientes por cada una de las 27 letras españolas y cada dificultad. La ampliación
+añade 130 ejercicios (22 fáciles, 54 medios y 54 difíciles) y conserva intacta la base inicial.
+Las preguntas de respuesta corta también admiten Flash, Supervivencia y Pirámide.
+
 El generador consolidado usa exclusivamente recetas **v1**. Su versión, la versión editorial de
 cada pregunta y `payloadSchemaVersion` son contratos diferentes. Los esquemas de payload conservan
 sus valores requeridos por cada formato; no se han renumerado. Las recetas anteriores a esta base
@@ -17,8 +22,8 @@ público y solución normalizados en NFC, sin explicación ni metadatos editoria
 variantes distintas de una familia. Las sopas de letras mantienen su relleno español con semilla.
 
 `npm run rehearsals:check` comprueba contratos, recursos, resolución con proveedores reales,
-explicaciones y cobertura: una familia por formato/modo/dificultad y por letra/dificultad para las
-27 letras españolas. Las diez estructuras BetaVIP/Tabarnia mantienen tres familias por posición,
+explicaciones y cobertura: una familia por formato/modo/dificultad y tres por letra/dificultad para
+las 27 letras españolas de Alfabeto. Las diez estructuras BetaVIP/Tabarnia mantienen tres familias por posición,
 sumando dificultades. El informe `output/rehearsal-coverage.json` muestra calidad, combinaciones,
 asignaciones y sustituciones reales de dificultad.
 

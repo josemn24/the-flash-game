@@ -1158,5 +1158,655 @@
     "id": "flash-referencia-q9",
     "version": 1,
     "contentHash": "1ec23425c98b04310c633f0902b6ce59a0322165b0689dcc12e3f6976affdf9c"
+  },
+  {
+    "id": "bank-alfabeto-a-acuifero",
+    "version": 1,
+    "contentHash": "c123e1be495f54228bdbdb33812dfff6f9c7dd929dd1f7d799ea01e3ed5d1616"
+  },
+  {
+    "id": "bank-alfabeto-a-albedo",
+    "version": 1,
+    "contentHash": "9dcfa6305b2c8cfca6362dc77511a53b270a170888cb80b8a0c71bb46dc2f1fd"
+  },
+  {
+    "id": "bank-alfabeto-a-almidon",
+    "version": 1,
+    "contentHash": "aeb460eab9c8e727e2d6c000537a0f1c0ad488d743d5f3fd734c98311ea13cb2"
+  },
+  {
+    "id": "bank-alfabeto-a-anacoluto",
+    "version": 1,
+    "contentHash": "98f5fbe4494eb2c831a42d0184483ac5913c2822c27fb4459a72fd96a6ed9db4"
+  },
+  {
+    "id": "bank-alfabeto-b-batimetria",
+    "version": 1,
+    "contentHash": "d04274709c3b46d6cbe301b86f929b5c2b3ce098566646ecdabef0fe9b02d46e"
+  },
+  {
+    "id": "bank-alfabeto-b-biela",
+    "version": 1,
+    "contentHash": "49b6c6cf4553c4fa453b18a110e9e40151fb3b0b707e15f13a9ffd778b457ab0"
+  },
+  {
+    "id": "bank-alfabeto-b-borax",
+    "version": 1,
+    "contentHash": "fef88c5669df9a93e1196b44f81e23ac7655c37c71b015ebf9206cce6ccce9df"
+  },
+  {
+    "id": "bank-alfabeto-b-boveda",
+    "version": 1,
+    "contentHash": "2846e2b7e5cc7859dbe3125799482d7707c01c4d7c474d377cb6fdf3922e1960"
+  },
+  {
+    "id": "bank-alfabeto-c-capilar",
+    "version": 1,
+    "contentHash": "42416d3c000bbcfb323cf612970cadbdd0d789750f68a7973f9cd2094b5b5081"
+  },
+  {
+    "id": "bank-alfabeto-c-catacresis",
+    "version": 1,
+    "contentHash": "8ecd404439638a789883f0823adb0ebec5cef6323110152c8e9cb86c87e7c85b"
+  },
+  {
+    "id": "bank-alfabeto-c-catalizador",
+    "version": 1,
+    "contentHash": "a25aa2f4204cd4c89819120cdbe839a81f58dcfed08071b8e8fb0b885bd5a982"
+  },
+  {
+    "id": "bank-alfabeto-c-catenaria",
+    "version": 1,
+    "contentHash": "ad49f99b809db4365e731dccc06a3cafb8f1a41e007d1f7b8c08fb9cebe162fd"
+  },
+  {
+    "id": "bank-alfabeto-d-dehiscencia",
+    "version": 1,
+    "contentHash": "bbc9ea12664e141ec7285ca8ba1b17a9a1a9fe8213839dabe8816b06ef3565b9"
+  },
+  {
+    "id": "bank-alfabeto-d-dendrocronologia",
+    "version": 1,
+    "contentHash": "e8781109532cfd805584b505c058475db2465d3fc92e0cedfeee3bf2fef8f4b6"
+  },
+  {
+    "id": "bank-alfabeto-d-diafragma",
+    "version": 1,
+    "contentHash": "479e687bf7edd3318ac5d8a9a5f4d0d617eef9ddb3933be0e1389e750eab7f44"
+  },
+  {
+    "id": "bank-alfabeto-d-dintel",
+    "version": 1,
+    "contentHash": "a89fab35cdbdc441b60aa7e90718dc2cf5c4cf65a6754f6807b2b3d9a61110c9"
+  },
+  {
+    "id": "bank-alfabeto-e-entimema",
+    "version": 1,
+    "contentHash": "6daa22d5560251c9980fea565015134c63b7a61da67b54b65c9046ab72509357"
+  },
+  {
+    "id": "bank-alfabeto-e-enzima",
+    "version": 1,
+    "contentHash": "59af9e52c643ddbe748e8858067bdec8a420cce348fe81939648b053e964477e"
+  },
+  {
+    "id": "bank-alfabeto-e-estuario",
+    "version": 1,
+    "contentHash": "fc0e667ccbd4135ff308c836aa422d68b0f5683ba7f9ce4ac43659b2feb7723a"
+  },
+  {
+    "id": "bank-alfabeto-e-exegesis",
+    "version": 1,
+    "contentHash": "7319f28b1870d76db72fce0026a1d2bc79e088045b1afed94e478df2dd767b36"
+  },
+  {
+    "id": "bank-alfabeto-f-fagocitosis",
+    "version": 1,
+    "contentHash": "b5a35305358f2373edcbff44d6828db123684bdc870e1768351d35ee6c617659"
+  },
+  {
+    "id": "bank-alfabeto-f-fotosintesis",
+    "version": 1,
+    "contentHash": "435feb1cd7f44b6c3264b48429b9c964b89b2b41130568230bcc4c6f8e96239b"
+  },
+  {
+    "id": "bank-alfabeto-f-fricativa",
+    "version": 1,
+    "contentHash": "1d8b9b1b62b1cd369d8bc3eb0e278e0ede59ee3a20c1570524c5966a3feb24f4"
+  },
+  {
+    "id": "bank-alfabeto-f-fusible",
+    "version": 1,
+    "contentHash": "9370bf6392083dd707e18fd6afcd62d0a10818258a035e460cbdede8cfe1c040"
+  },
+  {
+    "id": "bank-alfabeto-g-gafas",
+    "version": 1,
+    "contentHash": "bac562a57b69ab54184bfa6cb7e0850e1ddf02b5fd2abc9cc88fc8b79fe99545"
+  },
+  {
+    "id": "bank-alfabeto-g-galvanometro",
+    "version": 1,
+    "contentHash": "2db21cee3f02b245dd3c71df645748b0279ffce1c2559f85b7078d817ab17dc5"
+  },
+  {
+    "id": "bank-alfabeto-g-gliptoteca",
+    "version": 1,
+    "contentHash": "6bc7b429eb31c51c7bdb25abaf2e5a687cf10ef7399023450bd512250b8ce933"
+  },
+  {
+    "id": "bank-alfabeto-g-gnoseologia",
+    "version": 1,
+    "contentHash": "0bb6a4a4df999d10970468c3b83da862b0fe5e23661ebff5b3ac3cd7cd58a7b1"
+  },
+  {
+    "id": "bank-alfabeto-g-guante",
+    "version": 1,
+    "contentHash": "55226918d617b089df16b46f0080dce9c4909f1f90f9b10699a7bace3e19d2b9"
+  },
+  {
+    "id": "bank-alfabeto-g-gubia",
+    "version": 1,
+    "contentHash": "d4aef88d30f6e91a62fd3a3669139cc5467303ecfda2519532a866bb582c64c1"
+  },
+  {
+    "id": "bank-alfabeto-h-hapax",
+    "version": 1,
+    "contentHash": "11185be49993d2b707fadd0c699f0e9c020d08a76fdb84d4914824c5e3b5c875"
+  },
+  {
+    "id": "bank-alfabeto-h-hemoglobina",
+    "version": 1,
+    "contentHash": "dc18d3a761f01d9222a34ad68e28da6d7929592822ef3d1eee17fa3dc6d268c9"
+  },
+  {
+    "id": "bank-alfabeto-h-higrometro",
+    "version": 1,
+    "contentHash": "c5f89a2c665bf65f65e0f20487b3abd9b341c7610f9fedd1cc14caa4e168e332"
+  },
+  {
+    "id": "bank-alfabeto-h-hilo",
+    "version": 1,
+    "contentHash": "e044fbcf4408f14910b1e5321556d8550b72dc61402bd261c7deac267c228f84"
+  },
+  {
+    "id": "bank-alfabeto-h-homotecia",
+    "version": 1,
+    "contentHash": "866b9f2f1656ad25f6e2767aea9d7de832f290cec7ab02d56bc55b74f0147b17"
+  },
+  {
+    "id": "bank-alfabeto-h-hucha",
+    "version": 1,
+    "contentHash": "537ccb940b7473481f363bca3263944406ac04de02311208f980a2cb751d7b3a"
+  },
+  {
+    "id": "bank-alfabeto-i-inercia",
+    "version": 1,
+    "contentHash": "075218e0f3f3a8e451a07bcdd763df0a52aad54ae0c6d95922cdf7d7c4bcaf87"
+  },
+  {
+    "id": "bank-alfabeto-i-isoglosa",
+    "version": 1,
+    "contentHash": "b025857814dc63cf189f19fc1dec8d61f3c829e98b6401e194ae4a628206922c"
+  },
+  {
+    "id": "bank-alfabeto-i-isomorfismo",
+    "version": 1,
+    "contentHash": "06e2987b50f9a58802dad83f435166201e17e37bb04d6fce233be47d0a68c613"
+  },
+  {
+    "id": "bank-alfabeto-i-isotopo",
+    "version": 1,
+    "contentHash": "905d772bbbc74442f476004fb8e568d3c167d2b55df8d06c4925351af0e12908"
+  },
+  {
+    "id": "bank-alfabeto-j-jalon",
+    "version": 1,
+    "contentHash": "64ca6fcc738f61c9524de6cf73271c4d14d58eae146e267df7ee8b5645e1a29a"
+  },
+  {
+    "id": "bank-alfabeto-j-jarcha",
+    "version": 1,
+    "contentHash": "31b7b1d6952ed016bb3164c327f006747e536ec916848d749ab965d6fbc03dc5"
+  },
+  {
+    "id": "bank-alfabeto-j-jeroglifico",
+    "version": 1,
+    "contentHash": "50949b729a89fd5f89e85674f9d1e13fff9cb3a59425b7a513e4e18ce3b3be99"
+  },
+  {
+    "id": "bank-alfabeto-j-jitanjafora",
+    "version": 1,
+    "contentHash": "7451c856ae05fceec9f76a6dee7294e4d9e7fa4c4c607dd115474e963320b9ad"
+  },
+  {
+    "id": "bank-alfabeto-k-karate",
+    "version": 1,
+    "contentHash": "a2314ec993405adbced1e93ba6f68217a39978f15640f4e4f705b1211fcf08d3"
+  },
+  {
+    "id": "bank-alfabeto-k-kelvin",
+    "version": 1,
+    "contentHash": "a0cd0328adf9fce0e955a7af210ba543580f0a54812bc4e36924e7d6c64486ce"
+  },
+  {
+    "id": "bank-alfabeto-k-kermes",
+    "version": 1,
+    "contentHash": "18fd4ae60c199c6b4641d20890a18fcac9a356bdc0bb735c06804982052c98ae"
+  },
+  {
+    "id": "bank-alfabeto-k-kilopascal",
+    "version": 1,
+    "contentHash": "17a30ba4361d543cbe4a4c7fd691057441c66b7f66fa13c95cb07ff887b6a1b5"
+  },
+  {
+    "id": "bank-alfabeto-k-kimono",
+    "version": 1,
+    "contentHash": "4fae739673a205e5709ad5a77043f0eeecf802389f4cc68aeed405eb9b857b8d"
+  },
+  {
+    "id": "bank-alfabeto-k-koine",
+    "version": 1,
+    "contentHash": "e16882df5d652bbacd2bd8156e49bbe9de3ba1ec0f0763e88de89fac06f0b937"
+  },
+  {
+    "id": "bank-alfabeto-l-lenticela",
+    "version": 1,
+    "contentHash": "40a1a3399fd2d97f6c76bf7a88ac658a7b52d91ed30e8a81bb4eca4285469045"
+  },
+  {
+    "id": "bank-alfabeto-l-ligamento",
+    "version": 1,
+    "contentHash": "42279046fda360e7690e4acc36b88a5e14968e4694775f368efd0e23fd5a0810"
+  },
+  {
+    "id": "bank-alfabeto-l-limbo",
+    "version": 1,
+    "contentHash": "e81341a171f58cffd9ca825b92a39b51c498ecff8adc5356e0f64b91ef445671"
+  },
+  {
+    "id": "bank-alfabeto-l-litote",
+    "version": 1,
+    "contentHash": "30ef05dbe404ecbbe0cc64902eaa5f2956f4a2e764abbb075b6c50d9e811ffd0"
+  },
+  {
+    "id": "bank-alfabeto-m-membrana",
+    "version": 1,
+    "contentHash": "a5bc9f97de75fd1084fe4abf08ae217ee9df844b1388e59734a00c8f518a8739"
+  },
+  {
+    "id": "bank-alfabeto-m-menisco",
+    "version": 1,
+    "contentHash": "98b9d6edf83f79f879e9552c316f43ffda59f3ef848cfd7830e12814d6a7cc1b"
+  },
+  {
+    "id": "bank-alfabeto-m-metempsicosis",
+    "version": 1,
+    "contentHash": "1f089d8e26aff98ca294ea27e21045affa66b25eae23897f15bf99d35e4f09b3"
+  },
+  {
+    "id": "bank-alfabeto-m-mirmecologia",
+    "version": 1,
+    "contentHash": "4f8cfe4aee3bf621820e6f78a227a785f99e2cdb0145f6dca8b741e0b862df46"
+  },
+  {
+    "id": "bank-alfabeto-n-name",
+    "version": 1,
+    "contentHash": "d9de1cceb32cb64dd89cfc466d0b02629f5e216b87f8493595ddeef994e4090a"
+  },
+  {
+    "id": "bank-alfabeto-n-nanduti",
+    "version": 1,
+    "contentHash": "d60d90f30485b0a492d15962926b612b882048e0f04e3e26f994c485cd50e3b1"
+  },
+  {
+    "id": "bank-alfabeto-n-nanigo",
+    "version": 1,
+    "contentHash": "0c45ae1c24fdf920a2ae88be3e9a04ec745c1851b80216d1b81765ceb029c0bb"
+  },
+  {
+    "id": "bank-alfabeto-n-napa",
+    "version": 1,
+    "contentHash": "c3441e3c8e78079c79156d0d1b9a93763cc18f6097adf53631a71835ae81016b"
+  },
+  {
+    "id": "bank-alfabeto-n-naranja",
+    "version": 1,
+    "contentHash": "2b2ff1786d5a105cbab8affe3261e5481c049c3137ed386a63641ad0e216b907"
+  },
+  {
+    "id": "bank-alfabeto-n-neuma",
+    "version": 1,
+    "contentHash": "2b425632efd862d81cdb16ca22b90964d02ec04ff69c875ac4cc388de25fcd21"
+  },
+  {
+    "id": "bank-alfabeto-n-nevera",
+    "version": 1,
+    "contentHash": "6f44aaa792961b538a4c265629708ba62c84b175f5f316e1a51cadb20f20fd48"
+  },
+  {
+    "id": "bank-alfabeto-n-nictinastia",
+    "version": 1,
+    "contentHash": "8b92dd1627a34443b1023d5df6b11e6039a8f93f183d63c2ae01203314914432"
+  },
+  {
+    "id": "bank-alfabeto-n-nitrogeno",
+    "version": 1,
+    "contentHash": "32ba9b59d718a25963c50cf68a99fef664ca679b88b2f2bab60e033321493b23"
+  },
+  {
+    "id": "bank-alfabeto-n-nono",
+    "version": 1,
+    "contentHash": "eb81a17ab5439c4b325621cd3c66be1a20cefe6a5ec6dd34dcc215ef49901a7b"
+  },
+  {
+    "id": "bank-alfabeto-n-nu",
+    "version": 1,
+    "contentHash": "b11e75fd1d259b681112d1bc900333b9ea847b8c183fc0372fa747002db54eea"
+  },
+  {
+    "id": "bank-alfabeto-n-nucleo",
+    "version": 1,
+    "contentHash": "00f2e51c53645bf44f385f19b8bade3393f3fb8748264c2de09d119cfe5a6997"
+  },
+  {
+    "id": "bank-alfabeto-o-obturador",
+    "version": 1,
+    "contentHash": "d0c3f853fbbdbea5a2d43eeb27c3a4fef05199242bb2fabfdd6e0195f92457ca"
+  },
+  {
+    "id": "bank-alfabeto-o-opistografo",
+    "version": 1,
+    "contentHash": "8c4a724a3eee73dc83e5fd3aa9742f0560718c56e89afdcf81f08e5bb1fb206c"
+  },
+  {
+    "id": "bank-alfabeto-o-ortocentro",
+    "version": 1,
+    "contentHash": "bce0f5fc02c77ddd4a1ecd2fefbc1d6f13b068c6322ce8ee6c2841f876b77e81"
+  },
+  {
+    "id": "bank-alfabeto-o-osmosis",
+    "version": 1,
+    "contentHash": "fb83e466c409e01bdb9141dfea8a0d64706ea7169985b73b514c5ec073f20a16"
+  },
+  {
+    "id": "bank-alfabeto-p-paleografia",
+    "version": 1,
+    "contentHash": "b1ee16eafa024f5f90fd65df91842ab2931a179ff1c011595acef47df4638d16"
+  },
+  {
+    "id": "bank-alfabeto-p-parenquima",
+    "version": 1,
+    "contentHash": "e44273525f559f6dedd62acd3376f10a33419224163d069febfc7e19a605c0e6"
+  },
+  {
+    "id": "bank-alfabeto-p-periscopio",
+    "version": 1,
+    "contentHash": "2947e20219c0ed334cd4f2f3168a8a6d9afa717202b5a53426e30b75a333bc05"
+  },
+  {
+    "id": "bank-alfabeto-p-pluviometro",
+    "version": 1,
+    "contentHash": "53fd6461a8224ebbdfbab1b0713be91dd09b62dd3908581d03bd319ed224ebab"
+  },
+  {
+    "id": "bank-alfabeto-q-quena",
+    "version": 1,
+    "contentHash": "6ba9d6dd3869be215173ea2e33347a2e3b8b384feeada34a594d0f0b5f83e515"
+  },
+  {
+    "id": "bank-alfabeto-q-quesadilla",
+    "version": 1,
+    "contentHash": "3c152e3c29f18c4be6a328cd2d3c630eaad3c8c7c0a6c9def6584c0b6c2ab670"
+  },
+  {
+    "id": "bank-alfabeto-q-quilla",
+    "version": 1,
+    "contentHash": "fad582d018ba114ef2536adec521d2d91abba360a5ee35592ae52d7400eb527a"
+  },
+  {
+    "id": "bank-alfabeto-q-quincunce",
+    "version": 1,
+    "contentHash": "cbcb8d571cdc921405e8beb23a7f0fb945fd05c6763b897da09216e9f9987443"
+  },
+  {
+    "id": "bank-alfabeto-q-quiosco",
+    "version": 1,
+    "contentHash": "979594a15a6910af37a8431742e7075284f2fc0c59b26f6cd6766cfa3b49f1f5"
+  },
+  {
+    "id": "bank-alfabeto-q-quiralidad",
+    "version": 1,
+    "contentHash": "cbedb23fdd2b470a5f416c0fbf78ffd16f89b0999711cd72ed39d87a269f7ceb"
+  },
+  {
+    "id": "bank-alfabeto-r-refraccion",
+    "version": 1,
+    "contentHash": "4e5bd1cab6049c32ed813f42a1caf47068b5623c1bf634b07dc212650247ee63"
+  },
+  {
+    "id": "bank-alfabeto-r-remache",
+    "version": 1,
+    "contentHash": "a7ea28a6725a4d3219bcc666c1c2d4df3cc6aeef8973ff77fe057555cc40a90f"
+  },
+  {
+    "id": "bank-alfabeto-r-reologia",
+    "version": 1,
+    "contentHash": "0b2cd1f07e49c8d18839fa1de26eb8d29d0a40ecd36ab978b1eb96510376afd6"
+  },
+  {
+    "id": "bank-alfabeto-r-ritornelo",
+    "version": 1,
+    "contentHash": "4148ffd43bf3daff37bf2909a86872fe777d66f28cd9751a7d5ced9c38abf9d1"
+  },
+  {
+    "id": "bank-alfabeto-s-sinalefa",
+    "version": 1,
+    "contentHash": "08a35cf0a7c0975ee19b601a7087a746cb42c45e2310f5fa3d027ae520f81bef"
+  },
+  {
+    "id": "bank-alfabeto-s-sinapsis",
+    "version": 1,
+    "contentHash": "5566aa5694773a5ad07d19350e9ead705949b00122315f8f5bc80706369ad95b"
+  },
+  {
+    "id": "bank-alfabeto-s-sincrotron",
+    "version": 1,
+    "contentHash": "6adcd00ec04c5d7644ce07df6a01a6e9dba24412a0914d3f46f21369f78df92d"
+  },
+  {
+    "id": "bank-alfabeto-s-solenoide",
+    "version": 1,
+    "contentHash": "9ddb513731de462bfdb4a26647153348423383e387aae5e4923e04bdec71182c"
+  },
+  {
+    "id": "bank-alfabeto-t-telomero",
+    "version": 1,
+    "contentHash": "af9c9bb35457ecdac21c9f3dcb36677c19b963002dbc34c72c490aeeed4b4b1e"
+  },
+  {
+    "id": "bank-alfabeto-t-teodolito",
+    "version": 1,
+    "contentHash": "c92ef2a3c711e24bad66ea8bbd10d3a5115b34c1223f458a488bbd8b017bbabe"
+  },
+  {
+    "id": "bank-alfabeto-t-transistor",
+    "version": 1,
+    "contentHash": "2e5c07de00394af7965a0145b36afcecb4604d73b5371bedebd9007b05e9dd05"
+  },
+  {
+    "id": "bank-alfabeto-t-tropopausa",
+    "version": 1,
+    "contentHash": "e86cbebeb6fe24fe079856106cb8df26addd3d51b008ab075a490ed852f0ae78"
+  },
+  {
+    "id": "bank-alfabeto-u-ubicuidad",
+    "version": 1,
+    "contentHash": "bd2f275eb8b309477828bfec55b8f059dd1d1f578e31994c5db0886ef5179586"
+  },
+  {
+    "id": "bank-alfabeto-u-ucronia",
+    "version": 1,
+    "contentHash": "b4d20589bc07f6cac95a07cba2ec135f50778059a510413186595841b3abddd0"
+  },
+  {
+    "id": "bank-alfabeto-u-ultrasonido",
+    "version": 1,
+    "contentHash": "45c66a522b948ce37764980a46f08a782505611b08b6dea596b064590f3cf9d7"
+  },
+  {
+    "id": "bank-alfabeto-u-una",
+    "version": 1,
+    "contentHash": "c6fcb5eccdc451a3c57befad0adaa6c16f88e26a9ab309b3182d8ddffac8af11"
+  },
+  {
+    "id": "bank-alfabeto-u-uranio",
+    "version": 1,
+    "contentHash": "4e4fd79e740e052ba5206501fbca255c687b52feb05e37980add728a62b41160"
+  },
+  {
+    "id": "bank-alfabeto-u-uva",
+    "version": 1,
+    "contentHash": "d9e27ff6613d7c15f849e9d64200fa180b9cea32a877cecb2af4b0597efd47cc"
+  },
+  {
+    "id": "bank-alfabeto-v-valvula",
+    "version": 1,
+    "contentHash": "cf23b5bb56fa2678130881dd1d291a96373548a3a17d64fa7825441f7e119644"
+  },
+  {
+    "id": "bank-alfabeto-v-vaso",
+    "version": 1,
+    "contentHash": "534fb8c7e139cc529ee9dd961c9df64b1b377d68e438da081445b1eb745734ee"
+  },
+  {
+    "id": "bank-alfabeto-v-vestido",
+    "version": 1,
+    "contentHash": "57aea12be9ca1514a55b61ba8ef764a657caf31c57e60d99b5bda85069c97c94"
+  },
+  {
+    "id": "bank-alfabeto-v-vexilologia",
+    "version": 1,
+    "contentHash": "1870615c0c617f357f490c3147e1386f8d12bb6d88433803b5e2249790b0b0b3"
+  },
+  {
+    "id": "bank-alfabeto-v-vitelo",
+    "version": 1,
+    "contentHash": "3bd9e27f37239021c07f3e2ff10e08b8d2dff6945825ec6466fee7c3eace35b0"
+  },
+  {
+    "id": "bank-alfabeto-v-voltimetro",
+    "version": 1,
+    "contentHash": "cd2675bac1922f344eb8d1f46f48aefe89f3656e88aee55d8206f905ba28458c"
+  },
+  {
+    "id": "bank-alfabeto-w-walkie-talkie",
+    "version": 1,
+    "contentHash": "f14ef5498e0710dd45a48c02f6fb41091d53b919039021762729ab80ffa219b7"
+  },
+  {
+    "id": "bank-alfabeto-w-weber",
+    "version": 1,
+    "contentHash": "b5d818bcc1398f4fbeb45f7141b436dc296d34d4e3d4773cac05db93d28a79ef"
+  },
+  {
+    "id": "bank-alfabeto-w-wifi",
+    "version": 1,
+    "contentHash": "c2f4a8b99947fe035b080e508b0e358ceaca0b80d0a6347720ae406553509252"
+  },
+  {
+    "id": "bank-alfabeto-w-windsurf",
+    "version": 1,
+    "contentHash": "69cff4bad32a9dbac2a6a571f1f4c692aa0c87f45a68b22ece885d7421cee26c"
+  },
+  {
+    "id": "bank-alfabeto-w-wok",
+    "version": 1,
+    "contentHash": "633d74be6c7ae93e0c007b7d57b0116f238d68e088ecfe2cb2d371e6169de0ad"
+  },
+  {
+    "id": "bank-alfabeto-w-wurtzita",
+    "version": 1,
+    "contentHash": "c28bc96736a9cd87fde415e7c8bc89a18052d72a41f8038a59b40535ebdf1c5d"
+  },
+  {
+    "id": "bank-alfabeto-x-xantofila",
+    "version": 1,
+    "contentHash": "c03e1ac8ef68ab8bdfd2f9a1b426bc9429ae1225a642bb50a39087af83f41b31"
+  },
+  {
+    "id": "bank-alfabeto-x-xenofobia",
+    "version": 1,
+    "contentHash": "160030393005ba509d78f75ebb77fa2da9e27248a67fa5049f71ff4697930c99"
+  },
+  {
+    "id": "bank-alfabeto-x-xenolito",
+    "version": 1,
+    "contentHash": "efac3de33e1745db05f854913c945f9da013ece4a627074df621ad928ce47c43"
+  },
+  {
+    "id": "bank-alfabeto-x-xilofago",
+    "version": 1,
+    "contentHash": "ec87356b29a09fbe932065fd8fd2b7186c6cbd85d9b508c7a80697150db1cf06"
+  },
+  {
+    "id": "bank-alfabeto-x-xilografia",
+    "version": 1,
+    "contentHash": "b9dfaaec04351c9b1fd69cbdbe3b7f58bdf5650f453787270719505e4b9ad4d2"
+  },
+  {
+    "id": "bank-alfabeto-x-xilopalo",
+    "version": 1,
+    "contentHash": "b802f3365a658637dde1352f0419c0c4f63f9c8e4da02eba0cbbc03fd8298e01"
+  },
+  {
+    "id": "bank-alfabeto-y-yacimiento",
+    "version": 1,
+    "contentHash": "1c93075da1f4eeff23a5ddbf15c4a1b6aab107d4c69c4e1dbd508f7cd6b058c8"
+  },
+  {
+    "id": "bank-alfabeto-y-yema",
+    "version": 1,
+    "contentHash": "821ac734248a27345c44ee1209c386937b548d6bb816c4faccaee72a4048b003"
+  },
+  {
+    "id": "bank-alfabeto-y-yesca",
+    "version": 1,
+    "contentHash": "e2b5d54ece53b1404bd1d0b64662b3405990a5482a50869c24e014cda50e91e8"
+  },
+  {
+    "id": "bank-alfabeto-y-yodometria",
+    "version": 1,
+    "contentHash": "2782e152b163f9e701aad2428a2a775cb83490755727cf7333661ca0f4cb7d06"
+  },
+  {
+    "id": "bank-alfabeto-y-yoyo",
+    "version": 1,
+    "contentHash": "b75cf796573dcd3c28310f438922af21cdce976336615aa9e989dae97ca3af06"
+  },
+  {
+    "id": "bank-alfabeto-y-yuxtaposicion",
+    "version": 1,
+    "contentHash": "0d4a78fe80d0142b3f5132e42dc6dd57f97465c25a19fc374c74af3b35480510"
+  },
+  {
+    "id": "bank-alfabeto-z-zarcillo",
+    "version": 1,
+    "contentHash": "eaa525c463827c0b66e66472d64bf9ce8b2105ed5bad0753e01ac4b22ec7b8e5"
+  },
+  {
+    "id": "bank-alfabeto-z-zigurat",
+    "version": 1,
+    "contentHash": "02cbe92b68093f684b5d9ba47f7dd631c7f988d8d4cae90414cf2f23c10bb58c"
+  },
+  {
+    "id": "bank-alfabeto-z-zocalo",
+    "version": 1,
+    "contentHash": "d74691fabf4674144b78d767c7ac2e5e17c52cea86f3f2c7d3b887f09c77b101"
+  },
+  {
+    "id": "bank-alfabeto-z-zoolatria",
+    "version": 1,
+    "contentHash": "884c846aa9f2243dd402408e81f93f32e709e904c52fdba435f1f6a2a67a7828"
   }
 ]
