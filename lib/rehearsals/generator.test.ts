@@ -128,42 +128,48 @@ it.each(
   },
 );
 
-it("maximizes exact connect-pairs difficulty in a six-board trial and varies its exercise set", () => {
-  const template = rehearsalTemplates.find(
-    (candidate) =>
-      candidate.mode === "time-trial" &&
-      candidate.questions.every((question) => question.type === "connect-pairs"),
-  )!;
-  const candidates = rehearsalCandidates(bank, template, 0);
-  const medium = candidates.filter((question) => question.difficulty === "medium");
-  expect(medium.length).toBeGreaterThanOrEqual(4);
-  const exactCount = Math.min(template.questions.length, medium.length);
-  const coverage = rehearsalCoverage(bank, template);
-  expect(coverage.ready).toBe(true);
-  expect(coverage.exactDifficultyReady).toBe(exactCount === template.questions.length);
-  const sets = new Set<string>();
-  for (let seed = 0; seed < 12; seed++) {
-    const run = generateRehearsal(bank, template, `connect-pairs-variety-${seed}`);
-    const selected = chosen(run, bank);
-    expect(selected.every((question) => question.type === "connect-pairs")).toBe(true);
-    expect(new Set(selected.map(exerciseHash)).size).toBe(template.questions.length);
-    expect(new Set(selected.map((question) => question.familyId ?? question.id)).size).toBe(
-      template.questions.length,
-    );
-    expect(selected.filter((question) => question.difficulty === "medium")).toHaveLength(
-      exactCount,
-    );
-    expect(run.difficultyFallbacks).toHaveLength(template.questions.length - exactCount);
-    expect(
-      run.difficultyFallbacks.every(
-        (fallback) => fallback.requested === "medium" && fallback.selected === "easy",
-      ),
-    ).toBe(true);
-    sets.add(JSON.stringify(selected.map((question) => question.id).sort()));
-    expect(replayRehearsal(bank, template, run.recipe)).toEqual(run);
-  }
-  expect(sets.size).toBeGreaterThan(1);
-});
+it.each([
+  { format: "connect-pairs", minimumMedium: 4 },
+  { format: "queens", minimumMedium: 5 },
+] as const)(
+  "maximizes exact $format difficulty in a six-board trial and varies its exercise set",
+  ({ format, minimumMedium }) => {
+    const template = rehearsalTemplates.find(
+      (candidate) =>
+        candidate.mode === "time-trial" &&
+        candidate.questions.every((question) => question.type === format),
+    )!;
+    const candidates = rehearsalCandidates(bank, template, 0);
+    const medium = candidates.filter((question) => question.difficulty === "medium");
+    expect(medium.length).toBeGreaterThanOrEqual(minimumMedium);
+    const exactCount = Math.min(template.questions.length, medium.length);
+    const coverage = rehearsalCoverage(bank, template);
+    expect(coverage.ready).toBe(true);
+    expect(coverage.exactDifficultyReady).toBe(exactCount === template.questions.length);
+    const sets = new Set<string>();
+    for (let seed = 0; seed < 12; seed++) {
+      const run = generateRehearsal(bank, template, `${format}-variety-${seed}`);
+      const selected = chosen(run, bank);
+      expect(selected.every((question) => question.type === format)).toBe(true);
+      expect(new Set(selected.map(exerciseHash)).size).toBe(template.questions.length);
+      expect(new Set(selected.map((question) => question.familyId ?? question.id)).size).toBe(
+        template.questions.length,
+      );
+      expect(selected.filter((question) => question.difficulty === "medium")).toHaveLength(
+        exactCount,
+      );
+      expect(run.difficultyFallbacks).toHaveLength(template.questions.length - exactCount);
+      expect(
+        run.difficultyFallbacks.every(
+          (fallback) => fallback.requested === "medium" && fallback.selected === "easy",
+        ),
+      ).toBe(true);
+      sets.add(JSON.stringify(selected.map((question) => question.id).sort()));
+      expect(replayRehearsal(bank, template, run.recipe)).toEqual(run);
+    }
+    expect(sets.size).toBeGreaterThan(1);
+  },
+);
 
 it("fills every active word search deterministically without changing the target paths", () => {
   for (const source of active.filter((q) => q.type === "word-search")) {

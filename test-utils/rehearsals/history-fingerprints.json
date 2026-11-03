@@ -1883,5 +1883,25 @@
     "id": "bank-parejas-pasillo-central",
     "version": 1,
     "contentHash": "a42b2d0eed326520ce0694090eacc17ac7c9539e335f0da214c920693f16c443"
+  },
+  {
+    "id": "bank-queens-bordes",
+    "version": 1,
+    "contentHash": "e8aec7b29b081414844752a7228923c40b6429556d9b9c07e5e374be1231207a"
+  },
+  {
+    "id": "bank-queens-deduccion-central",
+    "version": 1,
+    "contentHash": "7bba3f24e67c5a82649a9b7ec0ccd0150927f16074af712e8b97013d4495501a"
+  },
+  {
+    "id": "bank-queens-escalones",
+    "version": 1,
+    "contentHash": "e19fbf96be5936a1c21d5ddabceed10aebef4d2949febfcc2b8f5b6f3bac0f01"
+  },
+  {
+    "id": "bank-queens-regiones-entrelazadas",
+    "version": 1,
+    "contentHash": "7cd8a71061018728ba9d3fd05181a966dc76026baabe626e0a135962d872bf6b"
   }
 ]

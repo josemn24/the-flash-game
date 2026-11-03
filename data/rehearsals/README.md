@@ -5,7 +5,7 @@ formato en `bank/`. Cada entrada declara `id`, `version`, `type`, `payloadSchema
 `difficulty`, `referenceTimeLimitMs`, `publicPayload` y `solutionPayload`. `alphabetLetter` es
 obligatorio si admite Alfabeto; `familyId` agrupa variantes para favorecer variedad.
 
-El banco actual contiene **377 preguntas activas**. Alfabeto dispone de **243 preguntas**: tres
+El banco actual contiene **381 preguntas activas**. Alfabeto dispone de **243 preguntas**: tres
 familias independientes por cada una de las 27 letras españolas y cada dificultad. La ampliación
 añade 130 ejercicios (22 fáciles, 54 medios y 54 difíciles) y conserva intacta la base inicial.
 Las preguntas de respuesta corta también admiten Flash, Supervivencia y Pirámide.
@@ -20,6 +20,13 @@ ampliación añade dos tableros fáciles de 4×4 y dos medios de 5×5, con soluc
 y distribuciones distintas incluso al comparar rotaciones y reflejos con el banco previo y los
 escenarios BetaVIP. Admiten Flash, Supervivencia, Pirámide y Contrarreloj. La estructura de referencia
 de seis tableros medios sigue necesitando dos sustituciones de dificultad, frente a las cuatro anteriores.
+
+Queens contiene **11 tableros**: tres fáciles, cinco medios y tres difíciles. Se añaden dos fáciles
+de 4×4, cada uno con una corona inicial, y dos medios de 5×5, con una o ninguna corona inicial.
+Todos tienen regiones conectadas y solución única aun sin las pistas iniciales. Sus distribuciones
+son distintas bajo rotaciones, reflejos y cambios de etiquetas respecto del banco previo y BetaVIP.
+Admiten Flash, Supervivencia, Pirámide y Contrarreloj; la referencia de seis tableros medios
+necesita una sustitución de dificultad, frente a las tres anteriores.
 
 El generador consolidado usa exclusivamente recetas **v1**. Su versión, la versión editorial de
 cada pregunta y `payloadSchemaVersion` son contratos diferentes. Los esquemas de payload conservan

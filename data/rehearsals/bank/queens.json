@@ -168,5 +168,97 @@
     "difficulty": "hard",
     "referenceTimeLimitMs": 60000,
     "familyId": "queens-2bc0f40b196c8e336fbd"
+  },
+  {
+    "id": "bank-queens-escalones",
+    "version": 1,
+    "type": "queens",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Completa el tablero con 4 coronas en total: una por fila, columna y región, sin que se toquen.",
+      "grid": {
+        "rows": 4,
+        "columns": 4
+      },
+      "regions": [0, 0, 1, 1, 0, 1, 1, 1, 2, 2, 1, 1, 2, 3, 3, 3],
+      "prefilledQueens": [14]
+    },
+    "solutionPayload": {
+      "solution": [1, 7, 8, 14],
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 2), (2, 4), (3, 1), (4, 3). Las coronas ocupan filas, columnas y regiones diferentes. Entre filas consecutivas, sus columnas difieren en más de uno, de modo que no hay contacto diagonal. Se conserva la corona inicial en (4, 3)."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "queens-499257d2ec37997407cd"
+  },
+  {
+    "id": "bank-queens-bordes",
+    "version": 1,
+    "type": "queens",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Completa el tablero con 4 coronas en total: una por fila, columna y región, sin que se toquen.",
+      "grid": {
+        "rows": 4,
+        "columns": 4
+      },
+      "regions": [1, 3, 0, 0, 1, 3, 0, 0, 3, 3, 0, 2, 3, 3, 3, 2],
+      "prefilledQueens": [4]
+    },
+    "solutionPayload": {
+      "solution": [2, 4, 11, 13],
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 3), (2, 1), (3, 4), (4, 2). Las coronas ocupan filas, columnas y regiones diferentes. Entre filas consecutivas, sus columnas difieren en más de uno, de modo que no hay contacto diagonal. Se conserva la corona inicial en (2, 1)."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "queens-d5c603efc26256e29055"
+  },
+  {
+    "id": "bank-queens-regiones-entrelazadas",
+    "version": 1,
+    "type": "queens",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Completa el tablero con 5 coronas en total: una por fila, columna y región, sin que se toquen.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "regions": [0, 2, 1, 1, 1, 0, 2, 4, 1, 3, 4, 2, 4, 4, 3, 4, 4, 4, 4, 3, 4, 4, 4, 4, 3],
+      "prefilledQueens": [19]
+    },
+    "solutionPayload": {
+      "solution": [0, 8, 11, 19, 22],
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 1), (2, 4), (3, 2), (4, 5), (5, 3). Las coronas ocupan filas, columnas y regiones diferentes. Entre filas consecutivas, sus columnas difieren en más de uno, de modo que no hay contacto diagonal. Se conserva la corona inicial en (4, 5)."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "queens-d5cea8ee4b6798171c8d"
+  },
+  {
+    "id": "bank-queens-deduccion-central",
+    "version": 1,
+    "type": "queens",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Completa el tablero con 5 coronas en total: una por fila, columna y región, sin que se toquen.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "regions": [0, 0, 0, 0, 2, 0, 1, 1, 2, 2, 0, 3, 3, 3, 2, 3, 3, 3, 3, 2, 3, 3, 3, 4, 4],
+      "prefilledQueens": []
+    },
+    "solutionPayload": {
+      "solution": [0, 7, 14, 16, 23],
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 1), (2, 3), (3, 5), (4, 2), (5, 4). Las coronas ocupan filas, columnas y regiones diferentes. Entre filas consecutivas, sus columnas difieren en más de uno, de modo que no hay contacto diagonal. La solución se deduce de las regiones sin coronas iniciales."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "queens-92ada258a01645a2b0f2"
   }
 ]

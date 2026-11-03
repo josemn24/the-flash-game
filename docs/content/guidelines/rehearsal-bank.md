@@ -79,6 +79,14 @@ completa. La comparación de extremos bajo las ocho simetrías del cuadrado evit
 distribución del banco previo o los escenarios BetaVIP mediante rotaciones, reflejos o cambio de
 etiquetas. Las explicaciones enumeran recorridos comprobables con coordenadas desde uno.
 
+Queens añade dos tableros fáciles y dos medios, dejando el banco en 381 preguntas. El formato
+reúne tres fáciles, cinco medios y tres difíciles. Los nuevos fáciles son de 4×4 con una corona
+inicial; los medios son de 5×5, uno con una pista y otro sin pistas. Cada región es conexa y la
+distribución tiene una única solución incluso al ignorar las coronas iniciales. La comparación de
+regiones bajo las ocho simetrías del cuadrado y la normalización de etiquetas evita reutilizar
+un tablero del banco previo o BetaVIP cambiando su orientación, sus etiquetas o sus pistas.
+Las explicaciones incluyen las coordenadas desde uno y conservan las coronas iniciales.
+
 Ejecutar `npm run rehearsals:check` y revisar el informe por combinación y estructura. El mínimo de
 una familia no garantiza repeticiones de formato y dificultad sin sustituciones: la asignación
 completa y sus avisos muestran esa limitación. Antes de publicar, añadir las nuevas huellas al

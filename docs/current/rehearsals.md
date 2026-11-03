@@ -15,7 +15,7 @@ dificultad `easy | medium | hard`, tiempo de referencia y los contratos canónic
 solución. La letra es explícita para Alfabeto. Las familias permiten evitar variantes muy parecidas.
 Las dimensiones y parámetros mecánicos se derivan del contenido.
 
-El banco actual contiene 377 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
+El banco actual contiene 381 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
 letra y dificultad; la ampliación incorpora 130 ejercicios sin modificar las preguntas ni recetas
 históricas. La prueba conserva las letras y su orden oficial, y cada entrada recibe una nueva
 semilla. La variedad se aplica entre alternativas de la dificultad solicitada; no hay exclusión
@@ -32,6 +32,12 @@ dos fáciles de 4×4 y dos medios de 5×5, con recorridos completos sin cruces, 
 distribuciones nuevas. Las partidas de seis posiciones medias conservan una asignación completa:
 utilizan los cuatro medios y dos fáciles, y notifican ambas sustituciones en `difficultyFallbacks`.
 La ampliación mejora la variedad, aunque todavía no permite respetar seis dificultades medias.
+
+Queens ofrece once tableros: tres fáciles, cinco medios y tres difíciles. La ampliación añade
+dos fáciles de 4×4 y dos medios de 5×5, con regiones conectadas y una única solución aun sin
+las coronas iniciales. Las seis posiciones medias de Contrarreloj se completan con cinco medios
+y un fácil; `difficultyFallbacks` sigue indicando esa sustitución. Distintas semillas permiten
+variar el conjunto de tableros y las recetas anteriores permanecen reproducibles.
 
 El tiempo de referencia permite validar la pregunta aisladamente: al generar se aplican los tiempos
 y pesos de la posición oficial y se comprueba otra vez su validez. Los recursos están versionados
