@@ -2,7 +2,7 @@
 
 # Estado actual del proyecto
 
-Último contraste de código y esquema: 2026-11-02.
+Último contraste de código y esquema: 2026-11-03.
 
 ## Alcance y verificación
 
@@ -10,7 +10,10 @@ The Flash combina competición persistida sobre Supabase, ejemplos didácticos d
 demos explícitas y pruebas locales antes del intento competitivo. Las rutas de producto no
 recurren al mock cuando falla Supabase.
 
-Revisión canónica del repositorio: `20261031160000_checkpoint_execution_and_review_fixes`.
+El historial activo se consolida en una única inicial. La [entrega de consolidación](../archive/reports/migration-consolidation-2026-11-03.md) registra la evidencia aislada y no acredita reinstalación de local o staging.
+La [reinstalación local posterior](../archive/reports/local-reinstallation-2026-11-03.md) acredita la adopción de esa inicial en el entorno habitual; staging sigue pendiente.
+
+Revisión canónica del repositorio: `20261103090247_initial_schema`.
 
 El portal permite [reprogramar temporadas y desafíos](calendar-rescheduling.md) con vista previa, cambios conjuntos atómicos y protección de partidas ya iniciadas. Las temporadas publicadas futuras se muestran como programadas.
 
@@ -37,20 +40,17 @@ invitaciones, incidencias y feedback. La aplicación muestra actividad descripti
 hipótesis ni condicionar la activación de temporadas a estudios.
 
 La [guía de medición](product-measurement.md) describe captura, valoración única 1–5 y los cuatro
-CSV. La migración de limpieza retira el sistema experimental y sus datos de preproducción;
-conserva los datos automáticos y competitivos. La aplicación de esta entrega en staging sigue
+CSV. La inicial consolidada crea directamente el modelo automático, sin el sistema experimental retirado. La aplicación de esta entrega en staging sigue
 pendiente y no queda acreditada por las verificaciones archivadas.
 
-La base local se reinició desde cero el 2026-10-25 con la revisión
-`20261029184633_preserve_draft_calendar_windows`. Queda vacía de usuarios, jugadores, salas,
-temporadas, preguntas, partidas y medición, con los dos buckets canónicos vacíos. Se verificaron
-el historial completo de migraciones, permisos, el índice único parcial de ensayos, el sondeo SQL
-de health y las respuestas 200 de Auth y REST. No se ha cargado el bootstrap ni escenarios.
-Los registros operativos quedan en `output/local/reset-manifest.json` y
-`output/local/schema-reset-verification.json`; el detalle está en la
-[guía de medición](product-measurement.md#instalación-y-verificación).
-La revisión corrige el rechazo por desfase del reloj y los duplicados de ensayos con un índice
-único parcial y recuentos directos. La reinstalación de staging queda pendiente.
+La base local se reinstaló desde cero el 2026-11-03 con la revisión canónica y una única
+entrada en el ledger. El bootstrap mínimo deja un superadmin, su jugador, la asignación y su
+auditoría, más 11.207 palabras de los diccionarios. Las otras 33 tablas de dominio y ambos
+buckets canónicos quedan vacíos. Auth, REST y health responden 200; se comprobaron el acceso
+al portal, la persistencia de sesión y la protección del portal tras salir. Pasan las 71 suites SQL
+desde migraciones y la equivalencia de catálogo con el esquema declarativo.
+La [evidencia de reinstalación](../archive/reports/local-reinstallation-2026-11-03.md) detalla
+los comandos, resultados y límites. Staging no se accedió ni modificó en esta operación.
 
 ## Modos y formatos
 

@@ -60,8 +60,7 @@ const localEnv = {
   // Editorial E2E scenarios create and publish several records in one flow.
   // Keep production's smaller admin burst while allowing the local browser run to complete.
   FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
-  EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261031160000_checkpoint_execution_and_review_fixes",
+  EXPECTED_SCHEMA_REVISION: process.env.EXPECTED_SCHEMA_REVISION || "20261103090247_initial_schema",
 };
 
 export default defineConfig({

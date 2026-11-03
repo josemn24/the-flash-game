@@ -3,6 +3,8 @@
 Estado: histórico. Conservar como evidencia; para trabajar usar [documentación vigente](../../current/README.md).
 
 - [Entrega de confirmación y limpieza segura de avatares](avatar-confirmation-recovery-2026-10-06.md)
+- [Consolidación de migraciones de noviembre](migration-consolidation-2026-11-03.md)
+- [Reinstalación del entorno local con la inicial consolidada](local-reinstallation-2026-11-03.md)
 - [Corrección de checkpoints y cierre competitivo](checkpoint-corrections-2026-10-31.md)
 - [Entrega de recuperación de operaciones competitivas](competitive-command-recovery-2026-10-06.md)
 - [Medición local de lecturas competitivas](competitive-read-performance-2026-10-02.md)

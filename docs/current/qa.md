@@ -27,17 +27,17 @@ partidas para acreditar una corrección de Markdown.
 
 ## Pruebas funcionales
 
-| Alcance                                                          | Comando o referencia                                                                   |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Dominio, scoring, contratos, componentes y autoridades de sesión | `npm test -- --maxWorkers=1`                                                           |
-| Banco y cobertura de ensayos                                     | `npm run rehearsals:check`                                                             |
-| Diccionarios versionados                                         | `npm run dictionary:check`                                                             |
-| Recorridos locales de cinco modos, sin Supabase                  | `npm run test:e2e:local-rehearsals`                                                    |
-| Competición, permisos, persistencia y recuperación               | `npm run test:e2e:isolated -- <spec>`                                                  |
-| SQL, RLS/ACL, conformidad y concurrencia                         | `npm run supabase:schema:test` y la variante `-- --migrations`                         |
-| Actualización y reconciliación SQL                               | `npm run supabase:schema:upgrade:test` y `npm run supabase:schema:reconciliation:test` |
-| Tipos Supabase generados                                         | `npm run supabase:types:check`                                                         |
-| Compilación optimizada                                           | `npm run build`                                                                        |
+| Alcance                                                          | Comando o referencia                                                                       |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Dominio, scoring, contratos, componentes y autoridades de sesión | `npm test -- --maxWorkers=1`                                                               |
+| Banco y cobertura de ensayos                                     | `npm run rehearsals:check`                                                                 |
+| Diccionarios versionados                                         | `npm run dictionary:check`                                                                 |
+| Recorridos locales de cinco modos, sin Supabase                  | `npm run test:e2e:local-rehearsals`                                                        |
+| Competición, permisos, persistencia y recuperación               | `npm run test:e2e:isolated -- <spec>`                                                      |
+| SQL, RLS/ACL, conformidad y concurrencia                         | `npm run supabase:schema:test` y la variante `-- --migrations`                             |
+| Equivalencia de catálogos y reconciliación SQL                   | `npm run supabase:schema:equivalence:test` y `npm run supabase:schema:reconciliation:test` |
+| Tipos Supabase generados                                         | `npm run supabase:types:check`                                                             |
+| Compilación optimizada                                           | `npm run build`                                                                            |
 
 Los E2E aislados crean y eliminan su propio stack. Las pruebas SQL crean bases desechables y
 requieren un contenedor de pruebas disponible; consultar el

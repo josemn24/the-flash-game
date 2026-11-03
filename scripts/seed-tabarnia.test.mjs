@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import sharp from "sharp";
 import { parseFlashEditorialQuestionDocument } from "../lib/editorial/flashDocument.ts";
 import { supabaseCompetitiveEvaluator } from "../server/evaluation/competitive-evaluator.ts";
 import {
@@ -34,7 +35,7 @@ function avatarMetadata() {
         width: 640,
         height: 640,
         sha256: "a".repeat(64),
-        mimeType: "image/jpeg",
+        mimeType: user.avatarFile.endsWith(".webp") ? "image/webp" : "image/jpeg",
         extension: user.avatarFile.split(".").pop(),
         filePath: `/tmp/${user.avatarFile}`,
       },
@@ -81,6 +82,13 @@ function spainAssets() {
 }
 
 describe("Tabarnia seed", () => {
+  it("ships avatar files matching their declared image formats", async () => {
+    for (const user of TABARNIA_USERS.filter((user) => user.avatarFile)) {
+      const metadata = await sharp(`public/flash-pop/avatars/${user.avatarFile}`).metadata();
+      const extension = user.avatarFile.split(".").pop();
+      expect(metadata.format, user.avatarFile).toBe(extension === "jpg" ? "jpeg" : extension);
+    }
+  });
   it.each([
     ["10m", 10, 80],
     ["30m", 30, 240],
@@ -196,7 +204,7 @@ describe("Tabarnia seed", () => {
     expect(TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => user.avatarFile)).toEqual(
       [
         "ches.jpg",
-        "dark.jpg",
+        "dark.webp",
         "palmera.jpeg",
         "carlos.jpg",
         "kike.jpeg",
@@ -419,7 +427,7 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain('"correctAnswer":"square-29"');
     expect(sql).toContain('"correctOptionId":"triangle-up"');
     expect(sql).toContain("avatars/00000003-0000-4000-8000-000000000000/");
-    expect(sql.match(/update public\.players set avatar_path/g)).toHaveLength(7);
+    expect(sql.match(/update public\.players set avatar_path/g)).toHaveLength(15);
     expect(sql).not.toContain("insert into public.attempts");
     expect(sql).not.toContain("answer_receipts");
     expect(sql).not.toContain("flash_point_entries");
@@ -582,7 +590,7 @@ describe("Tabarnia seed", () => {
     expect(reset.mock.invocationCallOrder[0]).toBeLessThan(
       loadDictionary.mock.invocationCallOrder[0],
     );
-    expect(uploadStorageObject).toHaveBeenCalledTimes(11);
+    expect(uploadStorageObject).toHaveBeenCalledTimes(19);
     expect(uploadStorageObject.mock.calls.every(([, input]) => input.upsert === false)).toBe(true);
     expect(runSql).toHaveBeenCalledOnce();
     expect(saveFixture).toHaveBeenCalledWith(
@@ -626,7 +634,7 @@ describe("Tabarnia seed", () => {
       "scheduled",
       "scheduled",
     ]);
-    expect(output.avatars).toHaveLength(7);
+    expect(output.avatars).toHaveLength(15);
     expect(output.questionAssets).toHaveLength(3);
     expect(cleanupSpainAssets).toHaveBeenCalledOnce();
   });
@@ -663,7 +671,7 @@ describe("Tabarnia seed", () => {
         },
       }),
     ).rejects.toThrow("Tabarnia SQL failed");
-    expect(removeStorageObject).toHaveBeenCalledTimes(11);
+    expect(removeStorageObject).toHaveBeenCalledTimes(19);
     expect(cleanupSpainAssets).toHaveBeenCalledOnce();
     expect(saveFixture).not.toHaveBeenCalled();
   });

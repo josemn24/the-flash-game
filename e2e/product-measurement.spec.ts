@@ -54,10 +54,19 @@ test("records visible usage, saves optional enjoyment with retry, and restricts 
   const bank = repositoryRehearsalQuestions();
   for (const ref of recipe.questions as { id: string; version: number }[]) {
     const question = bank.find((q) => q.id === ref.id && q.version === ref.version)!;
-    await expect(
-      page.getByRole("heading", { name: question.publicPayload.question, exact: true }),
-    ).toBeVisible();
-    await page
+    // Context and the interrogative sentence can occupy separate elements.
+    const prompt = new RegExp(
+      question.publicPayload.question
+        .split(/\s+/)
+        .map((word: string) => word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+        .join("\\s*"),
+    );
+    const questionRegion = page.getByRole("region").filter({
+      has: page.getByRole("heading", { level: 1 }),
+    });
+    await expect(questionRegion).toBeVisible();
+    await expect(questionRegion).toContainText(prompt);
+    await questionRegion
       .getByRole("button", { name: question.solutionPayload.correctAnswer, exact: true })
       .click();
   }

@@ -168,7 +168,7 @@ export function createLocalPyramidSessionProvider(
       points: evaluated.points,
       timeUsed: pending.timeUsedMs / 1000,
       ...(evaluated.details ? { details: evaluated.details } : {}),
-      ...(pending.timedOut && formatReviewState(level, state)
+      ...((pending.timedOut || pending.answer === null) && formatReviewState(level, state)
         ? { reviewState: formatReviewState(level, state) }
         : {}),
     });

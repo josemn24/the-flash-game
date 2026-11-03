@@ -20,7 +20,7 @@ y pesos de la posición oficial y se comprueba otra vez su validez. Los recursos
 bajo `public/rehearsals/`. Se preparan imágenes y diccionarios antes de iniciar cualquier reloj.
 
 La dificultad oficial pertenece a `question_versions`, fuera del payload y de la puntuación.
-La migración asigna `medium` a las versiones existentes sin modificar contenido ni resultados.
+Las versiones nuevas usan `medium` por defecto; el relleno de versiones antiguas pertenece al historial retirado.
 El editor y la biblioteca muestran Fácil, Media o Difícil. Las referencias heredan la dificultad de
 su versión publicada; cambiarla requiere otra versión. Los documentos antiguos sin campo se
 normalizan a `medium`.
@@ -100,9 +100,9 @@ permite generar previews, introducir semillas y reproducir recetas exactas. Una 
 una huella cambiada o una estructura incompatible impiden la reproducción con un error explícito.
 La publicación competitiva no queda bloqueada por una cobertura incompleta.
 
-La migración [dinámica](../../supabase/migrations/20261020210000_dynamic_rehearsals.sql) retira las
-asociaciones rígidas, sus comandos y triggers. Conserva migraciones históricas, auditoría e historial
-de comandos. Las lecturas nuevas solo proyectan estructura autorizada y no leen soluciones oficiales.
+La [migración inicial](../../supabase/migrations/20261103090247_initial_schema.sql) crea directamente el modelo
+de ensayos dinámicos, sin asociaciones rígidas ni sus comandos o triggers retirados. Las migraciones
+anteriores se conservan en Git. Las lecturas solo proyectan estructura autorizada y no leen soluciones oficiales.
 El banco se comparte en memoria; autorización y sesiones nunca se cachean globalmente.
 
 ## Experiencia y comprobación
@@ -116,10 +116,10 @@ Los fallos de preparación ofrecen reintento; una prueba desactivada o sin cober
 Comprobar con `npm run rehearsals:check`, `npm test`, `npm run typecheck`,
 `npm run type-architecture`, `npm run schema:revision:check` y `npm run docs:check`.
 Las suites SQL se ejecutan desde esquema y migraciones con `npm run supabase:schema:test` y
-`npm run supabase:schema:test -- --migrations`. La actualización incremental se verifica mediante
-`node scripts/test-rehearsals-upgrade.mjs`. `npm run test:e2e:rehearsals` usa un stack aislado.
+`npm run supabase:schema:test -- --migrations`. La equivalencia estructural se verifica con
+`npm run supabase:schema:equivalence:test`. `npm run test:e2e:rehearsals` usa un stack aislado.
 El despliegue de aplicación y esquema es coordinado; las comprobaciones locales no aplican cambios
 a la base habitual ni a entornos remotos.
-Antes de actualizar un entorno compartido, conservar su respaldo habitual y verificar la actualización
-completa desde el esquema anterior en un stack desechable. Aplicar la migración y la aplicación en
-la misma ventana y comprobar la revisión esperada mediante el healthcheck privado.
+Para adoptar la nueva inicial en un entorno existente, seguir la reinstalación o reconciliación
+documentada en la [guía de entornos](supabase-clean-installation.md#adoptar-el-historial-consolidado).
+Los cambios posteriores requieren verificar sus migraciones incrementales antes del despliegue.

@@ -98,7 +98,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Dark-123!",
     displayName: "Dark",
     role: "member",
-    avatarFile: "dark.jpg",
+    avatarFile: "dark.webp",
   },
   {
     label: "palmera",

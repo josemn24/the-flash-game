@@ -214,8 +214,8 @@ ni un registro alternativo de respuestas/puntos.
 
 ## Despliegue
 
-1. Tras el reset acordado, reconstruir la base con el [baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql)
-   y las migraciones incrementales antes del cliente; verificar la revisión canónica de
+1. Tras el reset acordado, reconstruir la base con el [baseline activo](../../supabase/migrations/20261103090247_initial_schema.sql)
+   antes del cliente; verificar la revisión canónica de
    [estado actual](status.md), según la [guía de entornos](supabase-clean-installation.md). El baseline incluye
    recuperación, cierre por permisos, transferencia y reconciliación. El reset elimina los datos
    anteriores; no se migran intentos ni sesiones entre revisiones.

@@ -1,19 +1,6 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
-function definition(source, name) {
-  const start = source.search(
-    new RegExp(`create\\s+(?:or\\s+replace\\s+)?function\\s+private\\.${name}\\s*\\(`, "i"),
-  );
-  assert.ok(start >= 0, `Reference contains ${name}`);
-  const rest = source.slice(start);
-  const delimiter = /\bas\s+(\$[a-z_]*\$)/i.exec(rest);
-  assert.ok(delimiter, `${name} has a dollar-quoted body`);
-  const end = rest.indexOf(delimiter[1], delimiter.index + delimiter[0].length);
-  assert.ok(end >= 0, `${name} has a body terminator`);
-  return rest.slice(0, end + delimiter[1].length) + ";";
-}
-
 // Run the actual runtime probe against both new and old function bodies, in a disposable DB.
 export async function testCompletionHealthContract(sql) {
   const source = await readFile("infrastructure/supabase/platform/health.ts", "utf8");
@@ -25,22 +12,36 @@ export async function testCompletionHealthContract(sql) {
     "t|t|t",
     "The runtime health role can inspect the private operation contracts without EXECUTE grants",
   );
-  const baseline = await readFile("supabase/migrations/20261011180045_initial_schema.sql", "utf8");
-  for (const name of ["execute_command", "handle_attempt_command"]) {
-    const oldFunction = definition(baseline, name);
-    const result = await sql(`begin; ${oldFunction}\n${query}; rollback;`);
-    assert.equal(result.trim(), "t|t|f", `Health rejects the old ${name} contract`);
-  }
-  const previous = await readFile(
-    "supabase/migrations/20261014200324_authoritative_completion_score.sql",
-    "utf8",
+  // Deliberately incompatible contracts; no dependency on retired migration files.
+  const current = async (signature) =>
+    JSON.parse(await sql(`select to_json(pg_get_functiondef('${signature}'::regprocedure));`));
+  const coordinator = await current(
+    "private.handle_attempt_command(text,jsonb,jsonb,uuid,jsonb,timestamptz)",
   );
+  const bodyStart = coordinator.indexOf("AS $");
+  assert.ok(bodyStart >= 0, "Coordinator has a PostgreSQL-rendered body");
+  const delimiter = coordinator.slice(bodyStart + 3).match(/^\$[^$]*\$/)?.[0];
+  assert.ok(delimiter, "Coordinator has a dollar quote");
+  const stub =
+    coordinator.slice(0, bodyStart) + `AS ${delimiter} begin return null; end; ${delimiter};`;
   assert.equal(
-    (
-      await sql(`begin; ${definition(previous, "handle_attempt_command")} ${query}; rollback;`)
-    ).trim(),
+    (await sql(`begin; ${stub} ${query}; rollback;`)).trim(),
     "t|t|f",
-    "Health rejects the pre-refactor coordinator even with all new helpers installed",
+    "Health rejects a coordinator that does not delegate to its handlers",
+  );
+  const command = await current("private.execute_command(text,jsonb)");
+  const complete = "required := array['idempotencyKey','attemptId','lockVersion','sessionToken'];";
+  const branch = command.indexOf("when 'complete' then");
+  const requiredIndex = command.indexOf(complete, branch);
+  assert.ok(branch >= 0 && requiredIndex > branch, "Current complete contract is available");
+  const incompatibleCommand =
+    command.slice(0, requiredIndex) +
+    complete.replace("'sessionToken'", "'sessionToken','score'") +
+    command.slice(requiredIndex + complete.length);
+  assert.equal(
+    (await sql(`begin; ${incompatibleCommand}; ${query}; rollback;`)).trim(),
+    "t|t|f",
+    "Health rejects completion accepting a client-supplied score",
   );
 
   const signatures = [

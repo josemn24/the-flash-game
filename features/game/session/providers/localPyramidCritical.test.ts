@@ -29,6 +29,37 @@ function setup(type: string) {
   );
   return { definition, clock, driver, question: resolvedFor(definition) };
 }
+it("Connect pairs distinguishes an untouched board from an accepted empty checkpoint", async () => {
+  const { driver, question } = setup("connect-pairs");
+  await driver.begin();
+  expect((await driver.issue("prepare")).state.progress).toBeNull();
+  await driver.issue("activate");
+  const checkpoint = driver.command("connectPairsDraft", { paths: {} });
+  const saved = await driver.execute(checkpoint);
+  expect(await driver.execute(checkpoint)).toEqual(saved);
+  expect((await driver.issue("prepare")).state.progress).toEqual({
+    kind: "connect-pairs",
+    paths: {},
+  });
+  for (const action of correctActions(question)) await driver.action(action);
+  expect((await driver.issue("prepare", {}, 1)).state.progress).toBeNull();
+});
+it("Queens recovery keeps the accepted board in review before the deadline", async () => {
+  const { driver, clock, question } = setup("queens");
+  if (question.type !== "queens") throw new Error("fixture");
+  await driver.begin();
+  await driver.open();
+  await driver.issue("queensDraft", { queens: question.solution });
+  clock.advance(100);
+  const recovered = await driver.issue("recover");
+  expect(recovered.state.answers).toHaveLength(1);
+  expect(recovered.state.answers![0]).toMatchObject({
+    answer: null,
+    status: "correct",
+    points: question.points,
+    reviewState: { type: "queens", queens: question.solution },
+  });
+});
 it.each([0, 1, 2])(
   "Queens succeeds after %i failures with the existing weight penalty",
   async (failures) => {

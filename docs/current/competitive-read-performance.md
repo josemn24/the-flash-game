@@ -64,7 +64,7 @@ el rango más próximo. Los artefactos en `output/performance/` están ignorados
 ## Migración y reversión
 
 El cambio sigue el flujo declarativo de [Supabase](../../supabase/schemas/README.md). El
-[baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql) contiene las dos funciones
+[baseline activo](../../supabase/migrations/20261103090247_initial_schema.sql) contiene las dos funciones
 y sus permisos. El inventario de seguridad, los tipos públicos
 Supabase y los marcadores del health check están sincronizados.
 

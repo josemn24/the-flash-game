@@ -22,42 +22,29 @@ El esquema declarativo es la fuente de verdad:
 La configuración de Supabase usa `pg-delta` con `declarative_schema_path = "./schemas"`. El detalle
 de tablas, funciones, RLS y comandos está en [`schemas/README.md`](schemas/README.md).
 
-El historial activo comienza con `20261011180045_initial_schema.sql`, un baseline generado desde los
-82 archivos declarativos, y continúa con las migraciones incrementales. La revisión canónica está centralizada en
-[estado actual](../docs/current/status.md) y se comprueba con `schema:revision:check`. Las migraciones anteriores al baseline permanecen en Git,
-pero no forman parte del historial activo.
+El historial activo contiene una única migración inicial: `20261103090247_initial_schema.sql`,
+generada desde el esquema declarativo. Las 26 migraciones anteriores y sus verificadores de
+actualización se conservan en Git, en el commit `f317fc44e3df1519164a68ce91f3a9cc5ecdc50a`.
+La revisión canónica está centralizada en [estado actual](../docs/current/status.md) y se comprueba
+con `schema:revision:check`. Los cambios posteriores vuelven a generar migraciones incrementales.
+La [consolidación de noviembre](../docs/archive/reports/migration-consolidation-2026-11-03.md)
+registra el procedimiento y sus resultados; no acredita la reinstalación de local ni de staging.
 
-La [extracción de operaciones de intentos](../docs/current/sql-attempt-command-handlers-refactor.md)
-reduce el coordinador a autorización y delegación, mantiene los contratos y se entrega en una
-única migración incremental. Su prueba de actualización usa partidas existentes en bases desechables.
-La [biblioteca de preguntas](../docs/current/sql-question-library-refactor.md) corrige autorización
-y paginación mediante dos migraciones, y mantiene la colección completa del portal con lecturas sucesivas.
+La inicial incluye los [handlers de intentos](../docs/current/sql-attempt-command-handlers-refactor.md),
+la [biblioteca editorial](../docs/current/sql-question-library-refactor.md), la longitud de Alfabeto
+y el [total autoritativo](../docs/current/attempt-lifecycle.md#total-autoritativo-al-completar).
+Sus contratos se verifican directamente desde schemas y migraciones, sin reconstruir versiones retiradas.
 
-La migración de longitud de Alfabeto añade una lectura privada para el servidor. La API de preparación
-expone solo `answerLength`, fuera del payload almacenado; no cambia las soluciones ni las versiones publicadas.
+También incluye `public.run_calendar_tick(jsonb)` y `public.expire_stale_attempts(jsonb)`,
+exclusivas de `service_role`. Los adaptadores utilizan un cliente servidor sin sesión de usuario;
+los comandos de juego mantienen su conexión PostgreSQL. El tick fija `statement_timeout = 0`
+y `lock_timeout = 0`; la expiración independiente tiene un límite de cinco segundos, incluida
+la espera por bloqueos. Los límites HTTP del proveedor siguen vigentes.
 
-La migración de [total autoritativo](../docs/current/attempt-lifecycle.md#total-autoritativo-al-completar)
-hace que `complete_attempt` sume las respuestas aceptadas en los seis modos. Su JSON privado
-rechaza `score`; debe aplicarse antes de servir la nueva versión de la app.
-
-La migración [maintenance_rpc](migrations/20261014203717_maintenance_rpc.sql) añade
-`public.run_calendar_tick(jsonb)` y `public.expire_stale_attempts(jsonb)`, con ejecución
-exclusiva de `service_role`. Los adaptadores usan `NEXT_PUBLIC_SUPABASE_URL` y
-`SUPABASE_SERVICE_ROLE_KEY` mediante un cliente sin sesión de usuario. La clave de servicio
-permanece en servidor; `private` sigue fuera de la Data API y los comandos de juego conservan `pg`.
-El tick usa `statement_timeout = 0` y `lock_timeout = 0` para evitar los límites heredados
-de `authenticator`; la expiración independiente mantiene
-cinco segundos, incluida la espera por bloqueos. Los límites HTTP del proveedor siguen vigentes.
-
-Aplicar primero la migración, que notifica la recarga de la caché de PostgREST, y después
-desplegar la aplicación. Las funciones privadas se conservan para permitir volver al adaptador
-anterior sin revertir el esquema. No hay reintentos ni fallback automático a PostgreSQL directo.
-La comprobación de salud exige las dos RPC y la nueva revisión canónica.
-
-`npm run test:integration:maintenance-rpc` ejecuta S12 y verifica permisos, expiración,
-timeouts de bloqueo y rollback de auditoría en una base y un proceso PostgREST desechables.
-Usar `-- --migrations` para probar el historial en lugar del esquema declarativo. Requiere
-Supabase local iniciado; el runner no ejecuta el tick sobre la base de la aplicación.
+Aplicar el esquema antes de desplegar una aplicación que lo necesite. La inicial notifica la
+recarga de PostgREST. `npm run test:integration:maintenance-rpc` verifica permisos, expiración,
+timeouts y rollback de auditoría en una base y un proceso PostgREST desechables; su variante
+`-- --migrations` utiliza la inicial. Ninguna de estas pruebas ejecuta el tick sobre la base habitual.
 
 La [validación SQL por formato](../docs/current/sql-question-validation-refactor.md) documenta
 los helpers privados, las pruebas de compatibilidad y la reversión del último refactor.
@@ -65,7 +52,11 @@ los helpers privados, las pruebas de compatibilidad y la reversión del último 
 La [auditoría de las 14 funciones pendientes](../docs/archive/reports/supabase-function-drift-audit-2026-10-09.md)
 clasifica las diferencias anteriores entre esquema e historial y documenta cómo reproducirlas.
 La [reconciliación de comandos competitivos](../docs/current/competitive-command-reconciliation.md)
-resuelve esas diferencias, documenta los cambios intencionados y prueba actualización y reversión.
+resuelve esas diferencias y documenta los cambios intencionados. Las comprobaciones vigentes cubren
+los contratos desde schemas y migraciones y la equivalencia de sus catálogos; las pruebas históricas
+de actualización y reversión se retiraron al consolidar el historial. La
+[evidencia de consolidación](../docs/archive/reports/migration-consolidation-2026-11-03.md) resume
+esa transición.
 
 ## Flujo para un cambio de esquema
 
@@ -79,7 +70,7 @@ resuelve esas diferencias, documenta los cambios intencionados y prueba actualiz
 3. Generar una migración incremental sin aplicarla:
 
    ```bash
-   npm run supabase:db:schema:sync -- --name nombre_descriptivo
+   npm run supabase:db:schema:sync -- --name nombre_descriptivo --no-apply --strict-coverage
    ```
 
 4. Revisar la definición y la migración resultante:
@@ -94,7 +85,7 @@ resuelve esas diferencias, documenta los cambios intencionados y prueba actualiz
    npm run supabase:migration:up
    ```
 
-No se deben renombrar ni reescribir migraciones ya aplicadas. Una migración nueva es la unidad
+Después de esta consolidación de preproducción, no se deben renombrar ni reescribir migraciones ya aplicadas. Una migración nueva es la unidad
 reproducible que se desplegará posteriormente en un entorno remoto.
 
 ## Workflow de tipos TypeScript generados
@@ -153,6 +144,8 @@ Después de cambiar `supabase/schemas/` y crear o actualizar la migración:
 6. Versionar juntos la migración, la definición declarativa y
    `infrastructure/supabase/database.types.ts`.
 
+Para un stack aislado, `SUPABASE_TEST_WORKDIR` selecciona su configuración local;
+`SUPABASE_TYPES_DB_URL` sigue disponible para una base desechable explícita.
 El script de generación usa el CLI local de Supabase, limita la salida al schema `public` y no
 ejecuta `db reset` automáticamente. Si la base local está obsoleta, actualízala explícitamente
 con el flujo de migraciones. En un entorno desechable, como CI, puede reconstruirse primero desde
@@ -206,12 +199,12 @@ Usa una migración creada con `npx supabase migration new nombre_descriptivo` cu
 pueda representarse de forma fiable mediante el sincronizador declarativo. Ejemplos:
 
 - DML, backfills o transformaciones de datos existentes.
-- Cambios de políticas RLS, especialmente `alter policy`.
-- Comentarios, privilegios, ciertos `grant`, particiones y publicaciones.
-- Propiedad de vistas, `security_invoker` y vistas materializadas.
+- Objetos que el motor instalado identifica como no gestionados mediante `--strict-coverage`.
+- Configuración operativa que no es DDL, como las filas de buckets de Storage.
 - Pasos que requieran un orden operativo, comprobaciones o lógica procedural específica.
 
-Si la excepción también tiene una representación declarativa, actualiza ambas fuentes. Si no la
+Las políticas RLS, ACL, vistas y funciones gestionadas por pg-delta siguen el flujo declarativo.
+Si una excepción también tiene una representación declarativa, actualiza ambas fuentes. Si no la
 tiene, documenta en la migración por qué queda fuera del diff declarativo y revisa posibles pérdidas
 de datos.
 
@@ -229,3 +222,23 @@ Los detalles de formatos, payloads, tamaños de tablero y recuperación pertenec
 [contratos por modo](../docs/current/domain/mode-contracts.md) y al
 [contrato de Contrarreloj](../docs/current/domain/contrarreloj.md). Este workflow mantiene
 el procedimiento de migración; no duplica sus requisitos editoriales.
+
+## Equivalencia de esquema e historial
+
+```bash
+npm run supabase:schema:equivalence:test
+npm run supabase:schema:equivalence:test -- --reference-dir=/ruta/al/historial-original
+```
+
+El comparador reconstruye bases aleatorias dentro de `SUPABASE_DB_CONTAINER` y las elimina incluso
+si falla. La opción de referencia compara también un directorio de migraciones originales; no
+acepta una base destino existente. El informe y los hashes quedan en
+`output/audits/schema-equivalence.json`. Compara estructura, funciones, triggers, índices, RLS,
+políticas, propietarios, privilegios, defaults y extensiones, incluidas las políticas propias de Storage.
+Normaliza OIDs y el orden físico de columnas de tablas; conserva el orden de vistas y retornos RPC.
+Las concesiones redundantes de schema se comparan por permisos efectivos y capacidad de delegación.
+Las pruebas negativas alteran una restricción, un índice, el permiso CREATE de un schema y una política; revierten cada cambio.
+
+El bloque histórico de relleno de mediciones se conserva en Git. No forma parte del esquema
+estructural ni de la inicial vacía: las funciones y triggers actuales preparan las temporadas nuevas.
+Los diccionarios, usuarios, buckets y archivos se aprovisionan mediante sus herramientas específicas.

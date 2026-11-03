@@ -5,7 +5,7 @@ Estado: vigente. Contratos del esquema; la evidencia fechada se conserva en el a
 ## Fuentes y operación
 
 Este directorio declara el estado esperado de PostgreSQL. El historial aplicado está en
-[`../migrations`](../migrations/), partiendo del baseline y sus migraciones incrementales.
+[`../migrations`](../migrations/), partiendo de la nueva migración inicial; los cambios siguientes serán incrementales.
 La revisión canónica está centralizada en [estado actual](../../docs/current/status.md) y se
 contrasta mediante `npm run schema:revision:check`. No acredita la revisión instalada en una base concreta.
 
@@ -142,7 +142,7 @@ la exposición de schemas y los privilegios efectivos del rol creador real.
 npm run schema:revision:check
 npm run supabase:schema:test
 npm run supabase:schema:test -- --migrations
-npm run supabase:schema:upgrade:test
+npm run supabase:schema:equivalence:test
 npm run supabase:schema:reconciliation:test
 npm run supabase:types:check
 ```
@@ -164,8 +164,8 @@ La captura es común a todas las salas y la creación de temporadas prepara su m
 intervención administrativa. El superadmin consulta el informe y cuatro CSV. La autorización
 compartida `private.require_measurement_admin()` permanece en el esquema de medición.
 Los objetivos y umbrales Lean se aplican en análisis posterior y no condicionan la competición.
-La migración `20261025120000_remove_product_experiments.sql` elimina los datos y objetos
-experimentales de preproducción; las migraciones anteriores se conservan como historial.
+La inicial crea directamente el modelo vigente, sin objetos experimentales. La limpieza y el
+backfill históricos se conservan en Git; las temporadas nuevas preparan su medición mediante triggers.
 
 El generador de tipos admite `SUPABASE_TYPES_DB_URL` para generar y contrastar el contrato contra
 una base desechable actualizada, sin aplicar migraciones a la base local habitual. Si se omite,

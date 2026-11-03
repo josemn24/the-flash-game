@@ -62,16 +62,16 @@ envía un total. Los replays recuperan el resultado registrado sin volver a suma
 Abandonar conserva un total nulo y no acredita puntos aceptados. Si falla la acreditación,
 se revierten también el cierre, las sesiones, la auditoría y las evaluaciones añadidas al cerrar.
 
-La migración [authoritative_completion_score](../../supabase/migrations/20261014200324_authoritative_completion_score.sql)
-reemplaza únicamente el dispatcher y el handler de intentos, conservando firmas y permisos.
-El health check comprueba el contrato sin `score` y la suma interna; las pruebas del esquema
-ejecutan esa misma consulta con los cuerpos anteriores para verificar que los rechaza.
+La [migración inicial](../../supabase/migrations/20261103090247_initial_schema.sql)
+incluye el cierre autoritativo con sus firmas y permisos. El health check comprueba el contrato
+sin `score`, la delegación y la suma interna. Las pruebas introducen incompatibilidades controladas
+en una transacción revertida y verifican que health las rechaza, sin leer migraciones retiradas.
 
 ## Despliegue y verificación
 
-El ciclo de vida está incluido en el [baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql),
-generado desde el esquema declarativo. La reconstrucción vigente aplica además todas las
-migraciones incrementales, incluida la del total autoritativo, antes de servir la app.
+El ciclo de vida está incluido en el [baseline activo](../../supabase/migrations/20261103090247_initial_schema.sql),
+generado desde el esquema declarativo. La reconstrucción vigente aplica únicamente esa
+inicial antes de servir la app; los cambios posteriores se entregarán como incrementales.
 No incluye backfills ni adaptación de solicitudes idempotentes antiguas. Esta implementación
 no reinicia ni despliega staging.
 

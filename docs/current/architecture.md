@@ -103,7 +103,7 @@ La consulta superadmin combina las fuentes privadas; `lib/seasonMeasurement.ts` 
 y los CSV actuales. Los criterios de éxito de un estudio y su cohorte externa se evalúan después,
 sin configurar la captura ni bloquear temporadas. La [guía de medición](product-measurement.md)
 centraliza fórmulas, ventanas, permisos y límites de reproducibilidad; las migraciones experimentales
-anteriores forman parte del historial y su retirada está en la revisión `20261025120000`.
+anteriores y su retirada en la revisión `20261025120000` permanecen en Git; la inicial vigente crea directamente el modelo actual.
 
 ## 2. Responsabilidades por capa
 

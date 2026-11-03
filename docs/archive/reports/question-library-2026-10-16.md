@@ -6,11 +6,11 @@
 
 ## Migraciones y despliegue
 
-1. [question_library_detail_authorization](../../../supabase/migrations/20261015212128_question_library_detail_authorization.sql)
+1. [question_library_detail_authorization](https://github.com/josemn24/the-flash-game/blob/f317fc44e3df1519164a68ce91f3a9cc5ecdc50a/supabase/migrations/20261015212128_question_library_detail_authorization.sql)
    sustituye únicamente el cuerpo del detalle privado.
 2. Desplegar la aplicación que reúne todas las páginas. Funciona con el SQL anterior y con el
    corregido; actualizar también `EXPECTED_SCHEMA_REVISION` a la revisión canónica.
-3. [question_library_pagination](../../../supabase/migrations/20261015212231_question_library_pagination.sql)
+3. [question_library_pagination](https://github.com/josemn24/the-flash-game/blob/f317fc44e3df1519164a68ce91f3a9cc5ecdc50a/supabase/migrations/20261015212231_question_library_pagination.sql)
    sustituye únicamente el cuerpo del listado privado.
 
 Ambas migraciones se generaron con sincronización declarativa y `--no-apply`, cada una contra

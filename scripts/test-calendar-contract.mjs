@@ -1,20 +1,7 @@
 import assert from "node:assert/strict";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-import { readFile, readdir } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { checkInventory } from "./supabase-security-inventory.mjs";
 
-const exec = promisify(execFile);
-const container = process.env.SUPABASE_DB_CONTAINER ?? "supabase_db_the-flash-game";
-const database = `flash_calendar_upgrade_${randomUUID().replaceAll("-", "")}`;
-const docker = async (args, input = "") => {
-  const child = exec("docker", ["exec", "-i", container, ...args], { maxBuffer: 50 * 1024 * 1024 });
-  child.child.stdin.end(input);
-  return (await child).stdout;
-};
-const sql = (input) =>
-  docker(["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", database], input);
 const quote = (value) => `'${value.replaceAll("'", "''")}'`;
 const json = (output) =>
   JSON.parse(
@@ -24,20 +11,9 @@ const json = (output) =>
       .filter((line) => line.startsWith("{"))
       .at(-1),
   );
-let created = false;
-try {
-  await docker(["createdb", "-U", "postgres", database]);
-  created = true;
-  await sql(await readFile("supabase/tests/support/bootstrap.sql", "utf8"));
-  const migrations = (await readdir("supabase/migrations"))
-    .filter((file) => file.endsWith(".sql"))
-    .sort();
-  const boundary = migrations.findIndex((file) => file.endsWith("_safe_calendar_changes.sql"));
-  assert.ok(boundary > 0, "Calendar migration exists after the baseline");
-  const sources = await Promise.all(
-    migrations.map((file) => readFile(`supabase/migrations/${file}`, "utf8")),
-  );
-  await sql(`begin; ${sources.slice(0, boundary).join("\n")} commit;`);
+
+// Committed fixtures support independent connections; the caller owns a disposable DB.
+export async function testCalendarContract(sql) {
   await sql(`begin; ${await readFile("supabase/tests/support/command-fixtures.sql", "utf8")}
     select test_support.as_actor('owner');
     select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-flash')));
@@ -51,34 +27,6 @@ try {
     select test_support.as_actor('member');
     select test_support.run('start_attempt',jsonb_build_object('scheduledChallengeId',test_support.id('sc-alphabet'),'sessionToken',repeat('m',40)));
     commit;`);
-  const facts = [
-    "public.seasons",
-    "public.scheduled_challenges",
-    "public.attempts",
-    "private.attempt_sessions",
-    "private.attempt_answers",
-    "private.flash_point_entries",
-    "private.room_measurement_events",
-    "private.room_measurement_ratings",
-  ];
-  const snapshot = `select jsonb_build_object(${facts.map((table) => `${quote(table)},(select coalesce(jsonb_agg(to_jsonb(t) order by to_jsonb(t)::text),'[]') from ${table} t)`).join(",")});`;
-  const before = await sql(snapshot);
-  await sql(`begin; ${sources.slice(boundary).join("\n")} commit;`);
-  const upgraded = JSON.parse(await sql(snapshot));
-  for (const answer of upgraded["private.attempt_answers"]) {
-    assert.equal(answer.review_state, null, "Historical answers receive an empty review snapshot");
-    delete answer.review_state;
-  }
-  assert.deepEqual(
-    upgraded,
-    JSON.parse(before),
-    "Migration preserves preexisting schedules, attempts, clocks, scoring and observation facts",
-  );
-  await checkInventory(sql);
-  console.log(
-    "Calendar upgrade preserves existing competition and matches the security inventory.",
-  );
-
   const claims = async (actor) =>
     (await sql(`select jsonb_build_object('sub',test_support.id('auth-${actor}'))`)).trim();
   const operator = await claims("superadmin");
@@ -181,6 +129,4 @@ try {
   console.log(
     "Calendar races passed: concurrent edits, gameplay start, opening after lock wait, and calendar tick.",
   );
-} finally {
-  if (created) await docker(["dropdb", "-U", "postgres", "--force", database]);
 }

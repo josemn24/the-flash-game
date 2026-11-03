@@ -93,8 +93,8 @@ jobs:
       - name: Schema tests from migration history
         run: npm run supabase:schema:test -- --migrations
 
-      - name: Schema upgrades
-        run: npm run supabase:schema:upgrade:test
+      - name: Schema catalog equivalence
+        run: npm run supabase:schema:equivalence:test
 
       - name: Generated Supabase types
         run: npm run supabase:types:check

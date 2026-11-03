@@ -168,7 +168,10 @@ y pesos de 30 y 70 puntos; es contenido de prueba y no modifica los calendarios 
 El setup habitual `npm run supabase:betavip:setup` también incluye «Circuito de parejas» como
 primer desafío de BetaVIP: seis tableros 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7; 150 segundos y pesos
 12, 14, 16, 18, 19 y 21.
-La migración `20261016144218_time_trial_connect_pairs` añadió el formato a Contrarreloj.
-`20261016193510_connect_pairs_variable_square_boards` habilita los nuevos tamaños y debe aplicarse
-antes de desplegar la aplicación y publicar contenido con dimensiones nuevas; conserva el payload v1
-y no añade tablas, columnas ni RPC públicas.
+Las migraciones originales `20261016144218_time_trial_connect_pairs` y
+`20261016193510_connect_pairs_variable_square_boards` añadieron el formato y sus tamaños actuales;
+ambas forman parte de la [inicial activa](../../../supabase/migrations/20261103090247_initial_schema.sql).
+Una instalación nueva debe aplicar esa inicial antes de desplegar la aplicación. Las bases con el
+historial anterior deben seguir el procedimiento de
+[adopción](../supabase-clean-installation.md#adoptar-el-historial-consolidado); esos IDs retirados
+no se aplican individualmente.

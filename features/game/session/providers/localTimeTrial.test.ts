@@ -24,6 +24,16 @@ function setup(definition = createTimeTrialTestDefinition()) {
 }
 
 describe("local Time Trial authority", () => {
+  it("exposes Connect pairs progress only after accepting a checkpoint", async () => {
+    const { driver } = setup(createTimeTrialTestDefinition({ format: "connect-pairs" }));
+    await driver.begin();
+    expect((await driver.issue("prepare")).state.progress).toBeNull();
+    await driver.issue("connectPairsDraft", { paths: {} });
+    expect((await driver.issue("prepare")).state.progress).toEqual({
+      kind: "connect-pairs",
+      paths: {},
+    });
+  });
   it.each([
     createTimeTrialTestDefinition({ format: "queens" }),
     createTimeTrialTestDefinition({ format: "connect-pairs" }),

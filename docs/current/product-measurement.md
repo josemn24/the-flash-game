@@ -170,17 +170,11 @@ por su responsable y no debe confundirse con la persistencia de temporada.
 
 ## Instalación y verificación
 
-La instalación desde cero aplica las migraciones hasta
-`20261025140000_measurement_event_reliability.sql`, antes de publicar el cliente actualizado.
-La corrección de fiabilidad admite el desfase del reloj y protege las señales de ensayo con
-un índice único parcial. Local y staging utilizan instalación desde cero; esta definición no incluye
-compatibilidad ni reparación de duplicados de versiones anteriores.
-
-La migración previa `20261025120000_remove_product_experiments.sql` elimina exclusivamente el
-almacenamiento y el comportamiento experimental anteriores y el inicio manual de medición.
-Conserva usuarios, salas, temporadas, publicaciones, partidas y datos automáticos existentes.
-Los datos experimentales se descartan sin trasladar sus valoraciones. Las rutas antiguas dejan de
-existir y se retira su cron; el calendario mantiene su cron y `CRON_SECRET`.
+La instalación desde cero aplica `20261103090247_initial_schema.sql` antes de publicar el cliente.
+La inicial incluye la tolerancia al desfase del reloj y el índice único parcial de señales de ensayo.
+Crea directamente la medición automática sin almacenamiento experimental ni inicio manual.
+Las transformaciones y la limpieza anteriores se conservan en Git; no se ejecutan al instalar una base vacía.
+Para adoptar el historial en local o staging, seguir la [guía de entornos](supabase-clean-installation.md#adoptar-el-historial-consolidado).
 
 El esquema declarativo instala directamente el modelo final. Antes de compilar, actualizar
 `EXPECTED_SCHEMA_REVISION` y fijar `NEXT_PUBLIC_APP_VERSION`. Las comprobaciones SQL utilizan
@@ -226,3 +220,7 @@ y el inventario de permisos coinciden con el repositorio; el índice de ensayo e
 Pasan el sondeo SQL de health y los endpoints locales de Auth y REST. No se ha ejecutado el
 bootstrap. Los manifiestos de fixtures y credenciales anteriores se retiraron mediante el reset;
 la verificación se conserva en `output/local/schema-reset-verification.json`. Staging sigue pendiente.
+
+El [estado local verificado del 2026-11-03](../archive/reports/local-reinstallation-2026-11-03.md)
+sustituye esa instalación: inicial consolidada y bootstrap mínimo, sin salas ni medición.
+Las verificaciones anteriores se conservan como evidencia fechada; staging no se modificó.

@@ -40,7 +40,7 @@ export type FormatState = {
   swaps: { fromCell: number; toCell: number }[];
   selections: { targetId: string; startCell: number; endCell: number }[];
   incorrectSelections: number;
-  connectPairsPaths: Record<string, number[]>;
+  connectPairsPaths: Record<string, number[]> | null;
 };
 export const initialFormatState = (level: CompiledLevel): FormatState => ({
   guesses: [],
@@ -55,13 +55,16 @@ export const initialFormatState = (level: CompiledLevel): FormatState => ({
   swaps: [],
   selections: [],
   incorrectSelections: 0,
-  connectPairsPaths: {},
+  // No checkpoint yet is different from an explicitly accepted empty checkpoint.
+  connectPairsPaths: null,
 });
 export function formatProgress(level: CompiledLevel, state: FormatState): unknown {
   const q = level.question;
   switch (q.type) {
     case "connect-pairs":
-      return { kind: q.type, paths: state.connectPairsPaths };
+      return state.connectPairsPaths === null
+        ? null
+        : { kind: q.type, paths: state.connectPairsPaths };
     case "queens": {
       const {
         placedQueens,
@@ -146,6 +149,7 @@ export function formatReviewState(
   const question = level.question;
   if (
     question.type === "connect-pairs" &&
+    state.connectPairsPaths !== null &&
     Object.values(state.connectPairsPaths).some((path) => path.length > 0)
   ) {
     return { type: "connect-pairs", paths: structuredClone(state.connectPairsPaths) };

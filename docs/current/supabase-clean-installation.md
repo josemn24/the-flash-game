@@ -1,9 +1,9 @@
 # Preparación de entornos Supabase
 
-> Estado: vigente. Entornos admitidos: local y staging. La migración incremental de limpieza conserva la medición automática por temporada; su aplicación en staging y la comprobación de cron siguen pendientes.
+> Estado: vigente. Entornos admitidos: local y staging. El historial consolidado conserva la medición automática por temporada; su aplicación en staging y la comprobación de cron siguen pendientes.
 
 Esta es la guía principal para elegir y preparar un entorno. El historial activo parte de un baseline
-generado desde `supabase/schemas/` y continúa con migraciones incrementales. Un reinicio
+generado desde `supabase/schemas/`. Actualmente contiene una única migración inicial; los cambios posteriores serán incrementales. Un reinicio
 completo elimina datos de aplicación, usuarios de Auth y archivos de Storage; debe hacerse
 únicamente cuando esos datos sean prescindibles.
 
@@ -29,7 +29,7 @@ también utiliza staging. Los archivos `production-*` y el perfil de calendario 
 conservan sus nombres técnicos; ninguno añade un destino operativo.
 
 La revisión esperada se consulta en [estado actual](status.md) y en `.env.example`;
-`npm run schema:revision:check` comprueba su coherencia con la última migración. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md). La [extracción del handler](sql-attempt-command-handlers-refactor.md) conserva estos contratos con siete operaciones privadas. La [biblioteca de preguntas](sql-question-library-refactor.md) tiene dos migraciones y un orden de despliegue específico: autorización, aplicación y paginación.
+`npm run schema:revision:check` comprueba su coherencia con la última migración. El refactor y la reconciliación se describen en [los validadores por formato](sql-question-validation-refactor.md) y [los comandos competitivos](competitive-command-reconciliation.md). La [extracción del handler](sql-attempt-command-handlers-refactor.md) conserva estos contratos con siete operaciones privadas. La [biblioteca de preguntas](sql-question-library-refactor.md) incluye autorización y paginación en la inicial vigente.
 
 Calendario y expiración independiente usan las RPC `run_calendar_tick` y `expire_stale_attempts`,
 exclusivas de `service_role`, con `NEXT_PUBLIC_SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en
@@ -80,6 +80,10 @@ sin añadir un bypass ni reiniciar un entorno con partidas nuevas para recuperar
 El reset retira manifiestos de fixtures y credenciales del bootstrap anterior. Su progreso queda en `output/local/reset-manifest.json`, que registra las fases completadas y marca un fallo. Los archivos de auditoría y reversión se conservan.
 
 El perfil mínimo deja un usuario, un jugador, una asignación de superadmin y un evento de asignación. No crea salas, temporadas, preguntas, desafíos, intentos, resultados ni puntos. Los buckets quedan vacíos. El superadmin crea después el contenido desde `/admin`.
+
+La [reinstalación local del 2026-11-03](../archive/reports/local-reinstallation-2026-11-03.md)
+verifica este perfil sobre `20261103090247_initial_schema`, con Auth, Storage, diccionarios y
+acceso al portal. Staging quedó fuera de esa operación.
 
 La CLI local recrea los buckets vacíos de `config.toml` durante el reset. La verificación acepta únicamente su configuración canónica y conserva sus límites de tamaño, que la CLI interpreta en unidades binarias. Los límites del bootstrap remoto conservan las unidades decimales de la API.
 
@@ -373,12 +377,34 @@ Antes de abrir cada entorno:
 4. En local, comprobar el perfil mínimo con una identidad y jugador, buckets vacíos y diccionarios completos. En staging, comprobar Xesmona como superadmin, Ches como owner de BetaVIP, sus cinco desafíos, el asset y los diccionarios.
 5. Abrir acceso y reactivar calendario. Registrar commit, revisión, bootstrap y health en un informe sin credenciales.
 
-Las puertas locales/CI incluyen esquema declarativo, migraciones, reconciliación, contratos, permisos y concurrencia; tipos públicos, arquitectura, documentación, lint, unitarias, build y E2E. Las pruebas de actualización histórica se conservan, pero este despliegue no requiere migrar partidas anteriores.
+Las puertas locales/CI incluyen esquema declarativo, migraciones, reconciliación, contratos, permisos y concurrencia; tipos públicos, arquitectura, documentación, lint, unitarias, build y E2E. Las pruebas de actualización histórica permanecen en Git; sus garantías vigentes se verifican como contratos y equivalencia de catálogos.
 
 Si una fase de reset falla, mantener cerrado el entorno y revisar `reset-manifest.json`. Repetir solo dentro de la ventana de reinicio: vuelve a verificar el destino y elimina lo que quede. El bootstrap puede repetirse tras un fallo parcial si conserva sus credenciales; no cambia la contraseña ni duplica la asignación.
 
-Antes de abrir puede repetirse la instalación desde cero. Después de abrir, detener escrituras y aplicar la [reversión de comandos documentada](competitive-command-reconciliation.md#reversión-de-la-migración-incremental-original) mediante una migración posterior, con el build compatible y sus marcadores. No reiniciar una base que ya haya recibido partidas nuevas como rollback automático. Las pruebas de actualización generan y verifican el SQL de reversión en `output/audits/competitive-command-reconciliation-rollback.sql`.
+Antes de abrir puede repetirse la instalación desde cero. Después de abrir, detener escrituras y aplicar la [reversión de comandos documentada](competitive-command-reconciliation.md#reversión-de-la-migración-incremental-original) mediante una migración posterior, con el build compatible y sus marcadores. No reiniciar una base que ya haya recibido partidas nuevas como rollback automático. El antiguo SQL de reversión se recupera desde Git; los verificadores actuales no generan ese artefacto.
 
 Tras abrir staging, revisar errores, sesiones, auditoría y puntos durante las primeras partidas y
 el primer tick. Una incidencia requiere revisión antes de seguir probando; no se cambia el commit
 validado durante la comprobación.
+
+## Adoptar el historial consolidado
+
+La consolidación del repositorio se verificó en un stack desechable. La
+[reinstalación local posterior](../archive/reports/local-reinstallation-2026-11-03.md) adoptó la
+inicial en la base habitual; staging sigue pendiente. Una base con las 26 migraciones anteriores no puede recibir la
+nueva inicial mediante `migration up` o `db push`: sus tablas ya existen y el ledger difiere.
+
+Para un entorno cuyos datos sean prescindibles, usar el reset completo correspondiente de esta
+guía y después cargar diccionarios y ejecutar su bootstrap. El reset reconstruye el esquema y el
+ledger; Auth, objetos de Storage y buckets se coordinan por separado con sus APIs y configuración.
+Los diccionarios y los usuarios no forman parte de la migración. Verificar revisión, historial,
+health y cuentas antes de reabrir el acceso o reactivar calendario.
+
+Para conservar datos, guardar y comprobar un respaldo de PostgreSQL, Auth y archivos, congelar
+escrituras y comparar el esquema instalado con la inicial en un stack desechable. Solo después de
+verificar equivalencia y restauración puede diseñarse una reconciliación del ledger. `migration repair`
+modifica el historial registrado; no transforma tablas ni constituye una migración de datos.
+Ese procedimiento debe prepararse para el estado real del entorno y no se ejecuta en esta entrega.
+
+Después de adoptar la inicial, entregar cambios mediante nuevas migraciones incrementales. El
+rollback también se realiza con una migración posterior compatible y el build correspondiente.

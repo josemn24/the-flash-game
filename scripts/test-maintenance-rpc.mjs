@@ -274,8 +274,9 @@ try {
       "Expiration audit failure rolls back state and session revocation",
     );
     await sql(
-      // Only the still-future publication may be reprogrammed; keep the terminal one intact.
-      `update public.scheduled_challenges set status='open', opens_at=clock_timestamp()-interval '2 hours', closes_at=clock_timestamp()-interval '1 hour' where season_id=${sqlString(fixture.data.seasonId)} and number=2;`,
+      // Simulate a missed tick with an already elapsed window; never backdate a future publication.
+      `insert into public.scheduled_challenges(season_id,challenge_version_id,number,status,opens_at,closes_at)
+       values (${sqlString(fixture.data.seasonId)},${sqlString(fixture.data.challengeVersionId)},3,'open',clock_timestamp()-interval '2 hours',clock_timestamp()-interval '1 hour');`,
     );
     const beforeTick = await snapshot();
     const failedTick = await service.rpc("run_calendar_tick", {

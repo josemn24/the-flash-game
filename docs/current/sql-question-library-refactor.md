@@ -57,7 +57,7 @@ de creación, edición, publicación y archivo, incluidas soluciones e idempoten
 npm run supabase:schema:test
 npm run supabase:schema:test -- --migrations
 npm run supabase:schema:reconciliation:test
-npm run supabase:schema:upgrade:test
+npm run supabase:schema:equivalence:test
 npm run test:e2e:isolated -- e2e/s11-editorial.spec.ts e2e/s17-editorial-versioning.spec.ts
 npm run typecheck
 npm run lint
@@ -66,11 +66,10 @@ npm run schema:revision:check
 npm run docs:check
 ```
 
-La verificación habitual de actualización mantiene la prueba de intentos y añade la de
-biblioteca. Esta instala el historial anterior, conserva preguntas en todos los estados,
-referencias, resultados idempotentes y partidas activas/terminadas, y aplica las dos migraciones
-por separado. Comprueba datos exactos, OID, ACL, atributos, índices, health y replays, y después
-continúa una partida y crea otra versión editorial.
+Las suites de caracterización, autorización y paginación comprueban documentos, errores,
+reutilización de versiones, resultados idempotentes y rollback sobre el esquema actual. La suite
+de continuación comprueba partidas pendientes y terminadas; la equivalencia de catálogos verifica
+índices, firmas, ACL y atributos. Los verificadores de actualización originales permanecen en Git.
 
 El escenario S17 usa 125 preguntas posteriores a una versión objetivo. Comprueba la denegación
 RPC a un miembro, la sexta página, la búsqueda de esa versión, su reutilización y el selector

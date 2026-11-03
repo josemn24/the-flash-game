@@ -102,8 +102,12 @@ Cada uno conserva por separado el contrato editorial y, cuando existe, la elegib
 Las fachadas coordinan el envelope, las versiones y las excepciones; el desafío completo se valida
 en `54z_challenge_validation.sql`. La [caracterización previa al refactor](../../test-utils/format-contracts/sql-validation-baseline.json)
 fija 904 resultados, incluidos `NULL`, SQLSTATE y mensajes de error. Véase
-[validación SQL por formato](sql-question-validation-refactor.md) para las fronteras de seguridad,
-la prueba de actualización con datos y la reversión.
+[validación SQL por formato](sql-question-validation-refactor.md) para las fronteras de seguridad
+y los contratos actuales. `npm run supabase:schema:test` comprueba el comportamiento desde schemas
+y migraciones; `npm run supabase:schema:equivalence:test` compara sus catálogos. La prueba histórica
+de actualización con datos y su reversión se retiraron al consolidar el historial; el
+[informe de consolidación](../archive/reports/migration-consolidation-2026-11-03.md) describe el
+cambio y la evidencia conservada.
 
 `npm run test:e2e:isolated` ejecuta los escenarios competitivos en un stack local separado. Incluye
 partidas con `short-text` en Flash, Supervivencia, Narrative, Alfabeto y Pirámide, pérdida de una

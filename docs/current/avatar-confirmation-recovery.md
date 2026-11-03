@@ -66,7 +66,7 @@ tras el commit, limpieza, cancelación/confirmación concurrentes y reintento si
 [QA](qa.md) describe cómo elegir los runners y distinguir local de staging.
 
 1. Aplicar la cadena de migraciones activa, que comienza con el
-   [baseline](../../supabase/migrations/20261011180045_initial_schema.sql), antes del código nuevo.
+   [baseline](../../supabase/migrations/20261103090247_initial_schema.sql), antes del código nuevo.
    El entorno debe haberse
    reiniciado; no se conservan datos anteriores.
 2. Desplegar el servidor y cliente nuevos; verificar readiness para las dos funciones privadas

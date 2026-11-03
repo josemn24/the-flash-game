@@ -55,11 +55,7 @@ for each row execute function private.track_room_measurement_scope();
 create trigger room_measurement_publication_scope after insert or update on public.scheduled_challenges
 for each row execute function private.track_room_measurement_scope();
 
-do $$declare season_id uuid; begin
- for season_id in select id from public.seasons order by id loop
-   perform private.ensure_season_measurement(season_id);
- end loop;
-end $$;
+-- Historical season backfill lives in the retired migrations; new seasons use the triggers above.
 
 create table private.room_measurement_ratings (
  measurement_id uuid not null references private.room_measurements(id),
