@@ -1863,5 +1863,25 @@
     "id": "bank-eleccion-variaciones-porcentuales",
     "version": 1,
     "contentHash": "e27fbcacfec1950d1ed30961a3f8fcc49ff231631c54aca051dfb6ba7d8a6568"
+  },
+  {
+    "id": "bank-parejas-cinco-desvios",
+    "version": 1,
+    "contentHash": "685c99b9161b931321ec7d2598cf2c51633eed767bc9c601be12867b3cfc523e"
+  },
+  {
+    "id": "bank-parejas-cuatro-rutas",
+    "version": 1,
+    "contentHash": "270480bf42a8910b6eec56dba7e93e8dbf5b2272ca4baf996043e907aa2e7b32"
+  },
+  {
+    "id": "bank-parejas-esquinas",
+    "version": 1,
+    "contentHash": "c9e945358dc635fc3839dc0525f1204caed3388a0ce0f72febf97776dfa0f84b"
+  },
+  {
+    "id": "bank-parejas-pasillo-central",
+    "version": 1,
+    "contentHash": "a42b2d0eed326520ce0694090eacc17ac7c9539e335f0da214c920693f16c443"
   }
 ]

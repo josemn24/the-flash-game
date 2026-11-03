@@ -71,6 +71,14 @@ interpretación de condiciones o aplicación de conceptos; incluyen distractores
 plausibles y explicaciones verificables. Cubrir ocho posiciones medias requiere al menos ocho
 ejercicios compatibles de ese nivel; disponer de diez permite variar también el conjunto elegido.
 
+Conectar parejas añade después dos tableros fáciles y dos medios, dejando el banco en 377 preguntas.
+El formato reúne tres fáciles, cuatro medios y tres difíciles. Los nuevos fáciles usan tableros
+4×4 con tres o cuatro parejas; los medios usan 5×5 con cuatro o cinco parejas y más giros y pasos
+que reservar para otras rutas. La búsqueda exhaustiva comprueba una única solución con cobertura
+completa. La comparación de extremos bajo las ocho simetrías del cuadrado evita reutilizar una
+distribución del banco previo o los escenarios BetaVIP mediante rotaciones, reflejos o cambio de
+etiquetas. Las explicaciones enumeran recorridos comprobables con coordenadas desde uno.
+
 Ejecutar `npm run rehearsals:check` y revisar el informe por combinación y estructura. El mínimo de
 una familia no garantiza repeticiones de formato y dificultad sin sustituciones: la asignación
 completa y sus avisos muestran esa limitación. Antes de publicar, añadir las nuevas huellas al
