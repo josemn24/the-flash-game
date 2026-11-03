@@ -8,29 +8,41 @@ const tags = {
 
 const boards = [
   {
+    slug: "tabarnia-queens-time-trial-intro-4x4",
     size: 4,
     points: 12,
+    regions: [1, 0, 0, 2, 1, 1, 2, 2, 3, 3, 2, 2, 3, 3, 3, 2],
+    prefilledQueens: [2, 13],
+    solution: [2, 4, 11, 13],
+  },
+  {
+    slug: "tabarnia-queens-time-trial-1",
+    size: 4,
+    points: 13,
     regions: [1, 1, 0, 2, 1, 0, 0, 2, 1, 3, 2, 2, 3, 3, 3, 2],
     prefilledQueens: [11],
     solution: [2, 4, 11, 13],
   },
   {
     size: 5,
-    points: 14,
+    slug: "tabarnia-queens-time-trial-2",
+    points: 13,
     regions: [2, 0, 0, 0, 1, 2, 2, 2, 2, 1, 2, 2, 2, 1, 1, 2, 2, 3, 3, 3, 2, 4, 4, 3, 3],
     prefilledQueens: [2, 9],
     solution: [2, 9, 10, 18, 21],
   },
   {
     size: 5,
-    points: 16,
+    slug: "tabarnia-queens-time-trial-3",
+    points: 14,
     regions: [1, 1, 1, 1, 0, 1, 1, 1, 1, 3, 2, 2, 3, 3, 3, 2, 4, 3, 3, 3, 4, 4, 3, 3, 3],
     prefilledQueens: [4],
     solution: [4, 7, 10, 18, 21],
   },
   {
     size: 6,
-    points: 18,
+    slug: "tabarnia-queens-time-trial-4",
+    points: 15,
     regions: [
       0, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 1, 3, 1, 1, 3, 3, 3, 3, 3, 3, 5, 5, 5, 3, 4, 4, 5,
       5, 5, 5, 5, 5,
@@ -40,7 +52,8 @@ const boards = [
   },
   {
     size: 6,
-    points: 19,
+    slug: "tabarnia-queens-time-trial-5",
+    points: 16,
     regions: [
       2, 2, 1, 1, 1, 0, 2, 2, 2, 1, 1, 1, 2, 2, 3, 3, 4, 4, 2, 2, 3, 4, 4, 4, 5, 5, 5, 4, 4, 4, 5,
       5, 4, 4, 4, 4,
@@ -50,7 +63,8 @@ const boards = [
   },
   {
     size: 7,
-    points: 21,
+    slug: "tabarnia-queens-time-trial-6",
+    points: 17,
     regions: [
       0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 2, 2, 1, 1, 1, 1, 2, 2, 4, 4, 4, 3, 1, 2, 2, 4,
       4, 4, 3, 3, 2, 2, 4, 5, 5, 5, 5, 5, 5, 5, 5, 6, 5, 5,
@@ -64,20 +78,20 @@ export const TABARNIA_QUEENS_TIME_TRIAL = {
   challenge: {
     slug: "tabarnia-time-trial-queens",
     title: "Queens",
-    subtitle: "Seis tableros. Un único reloj.",
+    subtitle: "Siete tableros. Un único reloj.",
     description:
-      "Resuelve seis tableros Queens en orden con un reloj compartido de dos minutos y medio. La tercera validación completa incorrecta termina la partida; al avanzar, el contador se reinicia.",
+      "Resuelve siete tableros Queens en orden con un reloj compartido de dos minutos y medio, empezando con un 4×4 fácil. La tercera validación completa incorrecta termina la partida; al avanzar, el contador se reinicia.",
     mode: "time-trial",
     globalTimeLimitMs: 150_000,
     modeConfig: {},
-    items: boards.map((board, index) => ({
-      questionSlug: `tabarnia-queens-time-trial-${index + 1}`,
+    items: boards.map((board) => ({
+      questionSlug: board.slug,
       points: board.points,
       modeConfig: {},
     })),
   },
   questions: boards.map((board, index) => ({
-    slug: `tabarnia-queens-time-trial-${index + 1}`,
+    slug: board.slug,
     type: "queens",
     payloadSchemaVersion: 1,
     timeLimitMs: 60_000,

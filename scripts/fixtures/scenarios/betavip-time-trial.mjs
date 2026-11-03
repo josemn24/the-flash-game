@@ -44,7 +44,7 @@ const solution7 = solution6Reflected.map((cell) => {
   return row * 7 + column;
 });
 
-function question({ slug, size, points, solution, prefilledQueens, regions, position }) {
+function question({ slug, size, points, solution, prefilledQueens, regions }, index, boards) {
   return {
     slug,
     type: "queens",
@@ -54,7 +54,7 @@ function question({ slug, size, points, solution, prefilledQueens, regions, posi
     publicPayload: {
       category: "Escalera de coronas",
       tags,
-      question: `Tablero ${position} de 6 · ${size}×${size}. Coloca una corona por fila, columna y región; ninguna puede tocar a otra.`,
+      question: `Tablero ${index + 1} de ${boards.length} · ${size}×${size}. Coloca una corona por fila, columna y región; ninguna puede tocar a otra.`,
       grid: { rows: size, columns: size },
       regions,
       prefilledQueens,
@@ -69,66 +69,68 @@ function question({ slug, size, points, solution, prefilledQueens, regions, posi
 export const BETA_VIP_TIME_TRIAL = {
   slug: "betavip-escalera-de-coronas",
   title: "Escalera de coronas",
-  subtitle: "Seis tableros, un único reloj",
+  subtitle: "Siete tableros, un único reloj",
   description:
-    "Resuelve seis tableros Queens en orden con un único reloj compartido de dos minutos y medio. La tercera validación incorrecta de cualquier tablero termina la partida.",
+    "Resuelve siete tableros Queens en orden con un único reloj compartido de dos minutos y medio. Empieza con un 4×4 fácil. La tercera validación incorrecta de cualquier tablero termina la partida.",
   globalTimeLimitMs: 150_000,
   modeConfig: {},
 };
 
 export const betaVipTimeTrialQuestions = [
-  question({
+  {
+    slug: "betavip-escalera-coronas-intro-4x4",
+    size: 4,
+    points: 12,
+    regions: [0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 3, 1, 2, 2, 3, 1],
+    prefilledQueens: [1, 8],
+    solution: [1, 7, 8, 14],
+  },
+  {
     slug: "betavip-escalera-coronas-4x4",
     size: 4,
-    position: 1,
-    points: 12,
+    points: 13,
     regions: [0, 0, 1, 1, 0, 0, 1, 1, 2, 2, 2, 3, 2, 3, 3, 3],
     prefilledQueens: [1],
     solution: [1, 7, 8, 14],
-  }),
-  question({
+  },
+  {
     slug: "betavip-escalera-coronas-5x5-a",
     size: 5,
-    position: 2,
-    points: 14,
+    points: 13,
     regions: [1, 1, 0, 0, 2, 1, 0, 0, 2, 2, 1, 3, 0, 2, 4, 1, 3, 3, 2, 4, 3, 3, 4, 4, 4],
     prefilledQueens: [2, 5],
     solution: [2, 5, 13, 16, 24],
-  }),
-  question({
+  },
+  {
     slug: "betavip-escalera-coronas-5x5-b",
     size: 5,
-    position: 3,
-    points: 16,
+    points: 14,
     regions: [0, 0, 0, 1, 1, 0, 1, 1, 1, 2, 0, 3, 2, 2, 2, 3, 3, 3, 2, 4, 3, 4, 4, 4, 4],
     prefilledQueens: [0],
     solution: [0, 7, 14, 16, 23],
-  }),
-  question({
+  },
+  {
     slug: "betavip-escalera-coronas-6x6-a",
     size: 6,
-    position: 4,
-    points: 18,
+    points: 15,
     regions: regions6,
     prefilledQueens: [0, 13, 35],
     solution: solution6,
-  }),
-  question({
+  },
+  {
     slug: "betavip-escalera-coronas-6x6-b",
     size: 6,
-    position: 5,
-    points: 19,
+    points: 16,
     regions: regions6Reflected,
     prefilledQueens: [5, 19],
     solution: solution6Reflected,
-  }),
-  question({
+  },
+  {
     slug: "betavip-escalera-coronas-7x7",
     size: 7,
-    position: 6,
-    points: 21,
+    points: 17,
     regions: regions7,
     prefilledQueens: [5, 48],
     solution: [...solution7, 48],
-  }),
-];
+  },
+].map(question);

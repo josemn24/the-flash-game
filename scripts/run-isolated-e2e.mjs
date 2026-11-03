@@ -79,7 +79,9 @@ for (const scenario of new Set(
   specs
     .map(scenarioForSpec)
     .filter(Boolean)
-    .flatMap((s) => (s === "rehearsals" ? ["tabarnia", "betavip"] : [s])),
+    .flatMap((s) =>
+      ["rehearsals", "betavip", "tabarnia"].includes(s) ? ["tabarnia", "betavip"] : [s],
+    ),
 )) {
   const fixturePath = path.join("output", "fixtures", `${scenario}.json`);
   try {

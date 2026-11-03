@@ -45,7 +45,7 @@ export const scenario = {
     );
     assert(
       beta.questionCount === connectPairs.questionCount,
-      "El manifiesto conserva los seis tableros de Conectar parejas",
+      "El manifiesto conserva los siete tableros de Conectar parejas",
     );
     assert(
       beta.pointsTotal === connectPairs.pointsTotal,
@@ -86,8 +86,8 @@ export const scenario = {
       (await sqlCount(
         `select count(*) from public.room_memberships where room_id = '${beta.tabarnia.room.id}' and status = 'active';`,
         config.dbContainer,
-      )) === 12,
-      "Tabarnia mantiene sus doce miembros",
+      )) === 15,
+      "Tabarnia mantiene sus quince miembros",
     );
     assert(
       (await sqlCount(
@@ -252,7 +252,7 @@ export const scenario = {
         target_publication_id: connectPairs.id,
       });
       assert(
-        connectPairsPlayable.length === 6,
+        connectPairsPlayable.length === 7,
         "Conectar parejas está disponible durante el primer día",
       );
       assert(
@@ -261,8 +261,8 @@ export const scenario = {
       );
       assert(
         connectPairsPlayable.map((row) => Number(row.item_points)).join(",") ===
-          "12,14,16,18,19,21",
-        "Circuito de parejas conserva los pesos progresivos de sus seis tableros",
+          "12,13,13,14,15,16,17",
+        "Circuito de parejas conserva los pesos progresivos de sus siete tableros",
       );
       assert(
         !JSON.stringify(connectPairsPlayable).match(
@@ -274,7 +274,7 @@ export const scenario = {
         connectPairsPlayable.every(
           (row) => row.question_type === "connect-pairs" && row.global_time_limit_ms === 150000,
         ),
-        "Los seis tableros comparten dos minutos y medio",
+        "Los siete tableros comparten dos minutos y medio",
       );
       assert(
         (
@@ -373,8 +373,8 @@ export const scenario = {
           target_room_slug: tabarniaSlug,
           target_publication_id: beta.tabarnia.steelBallRunPublicationId,
         })
-      ).length === 0,
-      "Steel Ball Run sigue programado en Tabarnia",
+      ).length === 16,
+      "Steel Ball Run está abierto como primera publicación de Tabarnia",
     );
     assert(
       (await rpc(clients.manuel, "get_room_detail", { target_room_slug: tabarniaSlug })).length ===
@@ -390,7 +390,8 @@ export const scenario = {
       `
 begin;
 update public.scheduled_challenges set status = 'cancelled', cancelled_at = clock_timestamp() where id = '${connectPairs.id}';
-update public.scheduled_challenges set opens_at = (select starts_at from public.seasons where id = season_id), closes_at = clock_timestamp() + interval '1 hour' where id = '${alphabet.id}';
+update public.scheduled_challenges set opens_at = clock_timestamp() + interval '200 milliseconds', closes_at = clock_timestamp() + interval '1 hour' where id = '${alphabet.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-integration-alphabet-before-ranking"}'::jsonb);
 commit;
@@ -469,9 +470,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where id = '${alphabet.id}';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${pyramid.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-integration-pyramid"}'::jsonb);
 commit;
@@ -518,9 +520,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where id = '${pyramid.id}';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${survival.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-integration-survival"}'::jsonb);
 commit;
@@ -553,9 +556,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where id in ('${alphabet.id}', '${pyramid.id}', '${survival.id}', '${antiquity.id}') and status <> 'cancelled';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${timeTrial.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-integration-time-trial"}'::jsonb);
 commit;
@@ -567,21 +571,21 @@ commit;
         `select count(*) from public.scheduled_challenges where id = '${timeTrial.id}' and status = 'open';`,
         config.dbContainer,
       )) === 1,
-      "El tick abre Contrarreloj como tercer desafío",
+      "El tick abre Contrarreloj como cuarto desafío",
     );
     const timeTrialRows = await rpc(clients.ches, "get_my_time_trial_challenge", {
       target_room_slug: betaSlug,
       target_publication_id: timeTrial.id,
     });
-    assert(timeTrialRows.length === 6, "Ches puede iniciar el tercer desafío Contrarreloj");
+    assert(timeTrialRows.length === 7, "Ches puede iniciar el cuarto desafío Contrarreloj");
     assert(
       timeTrialRows.every(
         (row) =>
           row.challenge_mode === "time-trial" &&
           row.global_time_limit_ms === 150000 &&
-          Number(row.question_count) === 6,
-      ) && timeTrialRows.map((row) => Number(row.item_points)).join(",") === "12,14,16,18,19,21",
-      "Contrarreloj entrega el reloj global y los seis pesos publicados",
+          Number(row.question_count) === 7,
+      ) && timeTrialRows.map((row) => Number(row.item_points)).join(",") === "12,13,13,14,15,16,17",
+      "Contrarreloj entrega el reloj global y los siete pesos publicados",
     );
     assert(
       !JSON.stringify(timeTrialRows).match(/solution|prefilledQueens|regions|public_payload/i),

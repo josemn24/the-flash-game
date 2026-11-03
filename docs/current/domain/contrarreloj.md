@@ -2,7 +2,7 @@
 
 Estado: vigente para Queens y Conectar parejas.
 
-Última actualización: 2026-11-02. Identificador técnico: `time-trial`.
+Última actualización: 2026-11-03. Identificador técnico: `time-trial`.
 
 ## Propósito y alcance
 
@@ -166,8 +166,20 @@ fixtures de pruebas validan contratos técnicos y no constituyen contenido edito
 ambos formatos en un stack desechable. El escenario incluye dos tableros curados, 120 segundos globales
 y pesos de 30 y 70 puntos; es contenido de prueba y no modifica los calendarios de BetaVIP o Tabarnia.
 El setup habitual `npm run supabase:betavip:setup` también incluye «Circuito de parejas» como
-primer desafío de BetaVIP: seis tableros 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7; 150 segundos y pesos
-12, 14, 16, 18, 19 y 21.
+primer desafío de BetaVIP: siete tableros 4×4, 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7; 150 segundos y pesos
+12, 13, 13, 14, 15, 16 y 17. Queens de BetaVIP y ambos Contrarreloj de Tabarnia comparten esta
+secuencia de tamaños, duración y pesos. Cada uno empieza con un 4×4 fácil propio; los seis
+tableros anteriores conservan sus diseños y orden relativo.
+
+Para comprobar las cuatro secuencias con integración Supabase y navegador en un stack desechable:
+
+```bash
+E2E_INTEGRATION_SCENARIOS=betavip,tabarnia npm run test:e2e:isolated -- e2e/betavip.spec.ts e2e/tabarnia-time-trial.spec.ts
+```
+
+El ejecutor prepara las salas con sus seeds y restaura los manifiestos locales de ambas al finalizar.
+Esta comprobación no actualiza publicaciones ni historiales de las bases existentes.
+
 Las migraciones originales `20261016144218_time_trial_connect_pairs` y
 `20261016193510_connect_pairs_variable_square_boards` añadieron el formato y sus tamaños actuales;
 ambas forman parte de la [inicial activa](../../../supabase/migrations/20261103090247_initial_schema.sql).

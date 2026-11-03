@@ -4,7 +4,7 @@ import { parseFlashEditorialDocument } from "../../../lib/editorial/flashDocumen
 import { BETA_VIP_CONNECT_PAIRS, betaVipConnectPairsQuestions } from "./betavip-connect-pairs.mjs";
 
 describe("BetaVIP Conectar parejas", () => {
-  it("can publish the complete six-board time trial through the editorial validator", () => {
+  it("can publish the complete seven-board time trial through the editorial validator", () => {
     const document = {
       challenge: {
         ...BETA_VIP_CONNECT_PAIRS,
@@ -14,7 +14,7 @@ describe("BetaVIP Conectar parejas", () => {
       },
       questions: betaVipConnectPairsQuestions,
     };
-    expect(parseFlashEditorialDocument(document).questions).toHaveLength(6);
+    expect(parseFlashEditorialDocument(document).questions).toHaveLength(7);
     expect(betaVipConnectPairsQuestions.reduce((sum, question) => sum + question.points, 0)).toBe(
       100,
     );
@@ -29,12 +29,13 @@ describe("BetaVIP Conectar parejas", () => {
         question.points,
       ]),
     ).toEqual([
-      [4, 4, 3, 12],
-      [5, 5, 5, 14],
-      [5, 5, 4, 16],
-      [6, 6, 6, 18],
-      [6, 6, 5, 19],
-      [7, 7, 7, 21],
+      [4, 4, 4, 12],
+      [4, 4, 3, 13],
+      [5, 5, 5, 13],
+      [5, 5, 4, 14],
+      [6, 6, 6, 15],
+      [6, 6, 5, 16],
+      [7, 7, 7, 17],
     ]);
   });
 

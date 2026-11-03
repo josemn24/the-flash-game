@@ -69,6 +69,10 @@ function run(command, args, options = {}) {
 }
 
 async function prepareScenario(scenario) {
+  if (scenario === "betavip" || scenario === "tabarnia") {
+    await run(process.execPath, [`scripts/seed-${scenario}.mjs`]);
+    return;
+  }
   if (scenario === "rehearsals") {
     await run("npx", [
       "supabase",
@@ -97,7 +101,7 @@ async function prepareScenario(scenario) {
 }
 
 async function cleanScenario(scenario) {
-  if (scenario === "rehearsals") return;
+  if (["rehearsals", "betavip", "tabarnia"].includes(scenario)) return;
   await run("npm", ["run", "supabase:fixture", "--", "--scenario", scenario, "--clean"]);
 }
 

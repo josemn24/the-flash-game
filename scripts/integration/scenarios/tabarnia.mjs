@@ -129,15 +129,15 @@ export const scenario = {
       (await sqlCount(
         `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id join private.question_versions q on q.id = i.question_version_id where v.id = '${queensTimeTrial.challengeVersionId}' and v.mode = 'time-trial' and v.global_time_limit_ms = 150000 and q.type = 'queens';`,
         config.dbContainer,
-      )) === 6,
-      "Queens publica seis tableros con reloj global de 150 segundos",
+      )) === 7,
+      "Queens publica siete tableros con reloj global de 150 segundos",
     );
     assert(
       (await sqlCount(
         `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id join private.question_versions q on q.id = i.question_version_id where v.id = '${connectPairsTimeTrial.challengeVersionId}' and v.mode = 'time-trial' and v.global_time_limit_ms = 150000 and q.type = 'connect-pairs';`,
         config.dbContainer,
-      )) === 6,
-      "Flow Free publica seis tableros con reloj global de 150 segundos",
+      )) === 7,
+      "Flow Free publica siete tableros con reloj global de 150 segundos",
     );
     assert(
       (await sqlCount(
@@ -210,20 +210,20 @@ export const scenario = {
     const chesPreview = memberPreviews.find((preview) => preview.name === "Ches");
     assert(darkPreview?.avatarPath?.startsWith("avatars/"), "Dark tiene avatar en Storage");
     assert(jacoboPreview?.avatarPath?.startsWith("avatars/"), "Jacobo tiene avatar en Storage");
-    assert(!chesPreview?.avatarPath, "Ches conserva el fallback sin avatar");
+    assert(chesPreview?.avatarPath?.startsWith("avatars/"), "Ches tiene avatar en Storage");
     assert(
       (await sqlCount(
         "select count(*) from private.media_assets where bucket_id = 'avatars' and kind = 'avatar' and status = 'ready';",
         config.dbContainer,
-      )) === 7,
-      "Tabarnia tiene siete avatares listos en Storage",
+      )) === 15,
+      "Tabarnia tiene quince avatares listos en Storage",
     );
     assert(
       (await sqlCount(
-        "select count(*) from public.players where display_name in ('xesmona', 'Ches', 'Carlos', 'Javi', 'Alejandro', 'Diego', 'Mimi', 'Lucas', 'Neak') and avatar_path is null;",
+        "select count(*) from public.players where display_name = 'xesmona' and avatar_path is null;",
         config.dbContainer,
-      )) === 9,
-      "Los nueve perfiles sin avatar conservan avatar_path nulo",
+      )) === 1,
+      "El superadmin conserva el fallback sin avatar",
     );
     assert(
       (await sqlCount(
@@ -240,6 +240,15 @@ export const scenario = {
     const timeoutCheck = await dockerSql(
       `
 begin;
+update public.scheduled_challenges
+set status = 'cancelled', cancelled_at = clock_timestamp()
+where season_id = '${fixture.data.seasonId}' and id <> '${animals.id}' and status <> 'cancelled';
+update public.scheduled_challenges
+set status = 'open', cancelled_at = null,
+    opens_at = clock_timestamp() + interval '200 milliseconds',
+    closes_at = clock_timestamp() + interval '1 hour'
+where id = '${animals.id}';
+select pg_sleep(0.3);
 do $$
 declare
   auth_user uuid;
@@ -354,8 +363,7 @@ begin
     'idempotencyKey', 'integration-tabarnia-timeout-complete',
     'attemptId', v_attempt_id,
     'lockVersion', lock_version,
-    'sessionToken', token,
-    'score', current_points
+    'sessionToken', token
   ));
   select a.status, count(answer.*), count(*) filter (where answer.status = 'timeout'),
     max(answer.points) filter (where answer.status = 'correct'), a.score
@@ -399,9 +407,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where season_id = '${fixture.data.seasonId}' and id <> '${multiverse.id}' and status <> 'cancelled';
 update public.scheduled_challenges
-set opens_at = clock_timestamp() - interval '1 minute',
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '5 minutes'
 where id = '${multiverse.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"integration-tabarnia-multiverse-open"}'::jsonb);
 commit;

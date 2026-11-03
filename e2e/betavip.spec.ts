@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { betaVipConnectPairsQuestions } from "../scripts/fixtures/scenarios/betavip-connect-pairs.mjs";
 import { betaVipTimeTrialQuestions } from "../scripts/fixtures/scenarios/betavip-time-trial.mjs";
 import { dockerSql, sqlCount } from "../scripts/support/supabase-local.mjs";
+import { captureRoomTimeTrialIntro, roomTimeTrialTests } from "./support/room-time-trials";
 
 type Account = { email: string; password: string; playerId: string };
 type Publication = {
@@ -46,7 +47,7 @@ function queensCell(page: Page, index: number, size: number) {
   });
 }
 
-test("BetaVIP empieza por Conectar parejas y permite completar sus seis tableros", async ({
+test("BetaVIP empieza por Conectar parejas y permite completar sus siete tableros", async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -88,9 +89,12 @@ test("BetaVIP empieza por Conectar parejas y permite completar sus seis tableros
   });
   await page.getByRole("button", { name: "Empezar desafío" }).click();
   for (const [index, question] of betaVipConnectPairsQuestions.entries()) {
-    await expect(page.getByText(`Prueba ${index + 1} de 6`, { exact: true })).toBeVisible({
+    await expect(page.getByText(`Prueba ${index + 1} de 7`, { exact: true })).toBeVisible({
       timeout: 15000,
     });
+    if (index === 0) {
+      await captureRoomTimeTrialIntro(page, "betavip-connect-pairs-desktop");
+    }
     const size = question.publicPayload.grid.rows;
     for (const path of Object.values(question.solutionPayload.paths)) {
       for (const cell of path) {
@@ -106,7 +110,7 @@ test("BetaVIP empieza por Conectar parejas y permite completar sus seis tableros
   }
   await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible();
   await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
-  expect(deadlines).toHaveLength(6);
+  expect(deadlines).toHaveLength(7);
   expect(new Set(deadlines).size).toBe(1);
   expect(
     await sqlCount(
@@ -114,6 +118,8 @@ test("BetaVIP empieza por Conectar parejas y permite completar sus seis tableros
     ),
   ).toBe(1);
 });
+
+roomTimeTrialTests("betavip", ["mobile"], ["connect-pairs"]);
 
 test("Ches continúa con Cumbre lógica II en el tercer periodo", async ({ page }) => {
   test.setTimeout(90_000);
@@ -137,9 +143,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where id in ('${connectPairs.id}', '${alphabet.id}') and status <> 'cancelled';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${pyramid.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-e2e-pyramid"}'::jsonb);
 commit;
@@ -188,9 +195,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where id in ('${connectPairs.id}', '${alphabet.id}', '${pyramid.id}') and status <> 'cancelled';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${timeTrial.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-e2e-time-trial"}'::jsonb);
 commit;
@@ -214,21 +222,22 @@ commit;
   await expect(
     page.getByRole("heading", { name: "Escalera de coronas", exact: true }),
   ).toBeVisible();
-  await expect(page.getByText(/el reloj de 3 min es único para todas las pruebas/i)).toBeVisible();
-  await expect(
-    page.getByText(/la tercera validación completa incorrecta de un tablero termina el desafío/i),
-  ).toBeVisible();
+  await expect(page.getByText("2 min 30 s", { exact: true })).toBeVisible();
+  await expect(page.getByText("Tres intentos por tablero", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Empezar desafío" }).click();
 
   const boards = betaVipTimeTrialQuestions.map((question, index) => ({
     size: question.publicPayload.grid.rows,
-    progress: `Prueba ${index + 1} de 6`,
+    progress: `Prueba ${index + 1} de 7`,
     clicks: question.solutionPayload.solution.filter(
       (cell: number) => !question.publicPayload.prefilledQueens.includes(cell),
     ),
   }));
   for (const [index, board] of boards.entries()) {
     await expect(page.getByText(board.progress, { exact: true })).toBeVisible({ timeout: 15_000 });
+    if (index === 0) {
+      await captureRoomTimeTrialIntro(page, "betavip-queens-desktop");
+    }
     for (const [placement, position] of board.clicks.entries()) {
       const target = queensCell(page, position, board.size);
       await target.press("Space");
@@ -248,9 +257,9 @@ commit;
   await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible({
     timeout: 15_000,
   });
-  await expect(page.getByText("6/6", { exact: true })).toBeVisible();
+  await expect(page.getByText("7/7", { exact: true })).toBeVisible();
   await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
-  expect(preparations).toHaveLength(6);
+  expect(preparations).toHaveLength(7);
   expect(new Set(preparations.map((preparation) => preparation.deadlineAt)).size).toBe(1);
   expect(JSON.stringify(preparations)).not.toMatch(/solutionPayload|"solution"/);
   expect(
@@ -265,6 +274,8 @@ commit;
   ).toBe(1);
 });
 
+roomTimeTrialTests("betavip", ["mobile"], ["queens"]);
+
 test("Ches responde la imagen progresiva en el quinto periodo de Supervivencia", async ({
   page,
 }) => {
@@ -278,9 +289,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where id in ('${pyramid.id}', '${timeTrial.id}') and status = 'open';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${survival.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-e2e-survival"}'::jsonb);
 commit;
@@ -350,9 +362,10 @@ where id in (
   '${connectPairs.id}', '${alphabet.id}', '${pyramid.id}', '${timeTrial.id}', '${survival.id}'
 ) and status <> 'cancelled';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${antiquity.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-e2e-antiquity"}'::jsonb);
 commit;

@@ -39,7 +39,7 @@ function transformCell(cell, size, transformation) {
   }
 }
 
-const boards = betaVipConnectPairsQuestions.map((question, index) => {
+const existingBoards = betaVipConnectPairsQuestions.slice(1).map((question, index) => {
   const size = question.publicPayload.grid.rows;
   const transformation = transformations[index];
   const paths = Object.fromEntries(
@@ -50,6 +50,7 @@ const boards = betaVipConnectPairsQuestions.map((question, index) => {
   );
 
   return {
+    slug: `tabarnia-connect-pairs-time-trial-${index + 1}`,
     size,
     points: question.points,
     paths,
@@ -60,24 +61,46 @@ const boards = betaVipConnectPairsQuestions.map((question, index) => {
   };
 });
 
+const introPaths = {
+  a: [0, 1, 2, 3],
+  b: [4, 5, 9, 8],
+  c: [6, 7, 11, 10],
+  d: [12, 13, 14, 15],
+};
+const boards = [
+  {
+    slug: "tabarnia-connect-pairs-time-trial-intro-4x4",
+    size: 4,
+    points: 12,
+    paths: introPaths,
+    pairs: Object.entries(introPaths).map(([id, cells]) => ({
+      id,
+      label: `Pareja ${id.toUpperCase()}`,
+      symbol: id.toUpperCase(),
+      endpoints: [cells[0], cells.at(-1)],
+    })),
+  },
+  ...existingBoards,
+];
+
 export const TABARNIA_CONNECT_PAIRS_TIME_TRIAL = {
   challenge: {
     slug: "tabarnia-time-trial-connect-pairs",
     title: "Flow Free",
-    subtitle: "Seis tableros. Un único reloj.",
+    subtitle: "Siete tableros. Un único reloj.",
     description:
-      "Conecta seis tableros de 4×4 a 7×7 con un reloj compartido de dos minutos y medio. Borrar y rehacer rutas no consume puntos ni intentos.",
+      "Conecta siete tableros de 4×4 a 7×7 con un reloj compartido de dos minutos y medio, empezando con un 4×4 fácil. Borrar y rehacer rutas no consume puntos ni intentos.",
     mode: "time-trial",
     globalTimeLimitMs: 150_000,
     modeConfig: {},
-    items: boards.map((board, index) => ({
-      questionSlug: `tabarnia-connect-pairs-time-trial-${index + 1}`,
+    items: boards.map((board) => ({
+      questionSlug: board.slug,
       points: board.points,
       modeConfig: {},
     })),
   },
   questions: boards.map((board, index) => ({
-    slug: `tabarnia-connect-pairs-time-trial-${index + 1}`,
+    slug: board.slug,
     type: "connect-pairs",
     payloadSchemaVersion: 1,
     timeLimitMs: 60_000,

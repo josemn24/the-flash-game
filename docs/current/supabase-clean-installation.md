@@ -151,13 +151,13 @@ El desafío queda visible como
 próximo y se podrá jugar al llegar el inicio; cada persona inicia su propia partida manualmente.
 
 Con el perfil predeterminado `production`, «Circuito de parejas» está abierto durante las primeras 24 horas:
-seis tableros de Conectar parejas de 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7, de tres a siete parejas,
-un único reloj de 150 segundos y pesos de 12, 14, 16, 18, 19 y 21 puntos. Borrar y rehacer caminos
+siete tableros de Conectar parejas de 4×4, 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7, de tres a siete parejas,
+un único reloj de 150 segundos y pesos de 12, 13, 13, 14, 15, 16 y 17 puntos. Borrar y rehacer caminos
 no penaliza. Después se programan
 «La vuelta al mundo» para el segundo día, «Cumbre lógica II» para el tercero, «Escalera de coronas»
 para el cuarto, «Supervivencia: Cultura pop» para el quinto y «Ecos de la Antigüedad» para el sexto.
-«Escalera de coronas» conserva sus seis tableros Queens de 4×4 a 7×7, 100 puntos con pesos
-12, 14, 16, 18, 19 y 21, 150 segundos globales y finalización por la tercera validación incorrecta
+«Escalera de coronas» ofrece siete tableros Queens de 4×4 a 7×7, comenzando con un 4×4 fácil, 100 puntos con pesos
+12, 13, 13, 14, 15, 16 y 17, 150 segundos globales y finalización por la tercera validación incorrecta
 de un tablero.
 La temporada dura 144 horas. El perfil rápido usa seis ventanas consecutivas de cinco minutos
 (30 minutos en total). El manifiesto lista las publicaciones en ese orden; `data.publicationId`
@@ -190,9 +190,9 @@ npm run dev
 El setup reinicia la base local y crea 16 cuentas: Xesmona como superadmin fuera de la sala, Ches
 como propietario y jugador, y otros catorce miembros jugadores. Programa Steel Ball Run (16 retos,
 100 puntos), Reino de animales en Alphabet (16 letras, 150 segundos, 100 puntos), Queens
-(seis tableros de 4×4 a 7×7, 100 puntos y 150 segundos globales), España (20 preguntas,
+(siete tableros de 4×4 a 7×7, 100 puntos y 150 segundos globales), España (20 preguntas,
 3 vidas, 100 puntos), Cumbre lógica (7 niveles, 100 puntos), Multiverso friki en
-Alphabet (16 letras, 150 segundos, 100 puntos), Flow Free (seis tableros de
+Alphabet (16 letras, 150 segundos, 100 puntos), Flow Free (siete tableros de
 4×4 a 7×7, 100 puntos y 150 segundos globales) y «La Biblia» en Pirámide
 (7 niveles, 100 puntos), en ese orden y en ventanas consecutivas de 24 horas.
 

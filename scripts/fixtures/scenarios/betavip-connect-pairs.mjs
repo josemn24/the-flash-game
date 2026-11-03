@@ -1,9 +1,9 @@
 export const BETA_VIP_CONNECT_PAIRS = {
   slug: "betavip-circuito-de-parejas",
   title: "Circuito de parejas",
-  subtitle: "Seis tableros de 4×4 a 7×7, un único reloj",
+  subtitle: "Siete tableros de 4×4 a 7×7, un único reloj",
   description:
-    "Conecta todas las parejas y cubre cada tablero completo, desde 4×4 hasta 7×7. Tienes dos minutos y medio para completar seis pruebas. Puedes borrar y rehacer caminos sin penalización.",
+    "Conecta todas las parejas y cubre cada tablero completo, desde 4×4 hasta 7×7. Tienes dos minutos y medio para completar siete pruebas, empezando con un 4×4 fácil. Puedes borrar y rehacer caminos sin penalización.",
   globalTimeLimitMs: 150_000,
 };
 
@@ -27,12 +27,20 @@ function rowBandPaths(size, bandHeights) {
 // Recorridos curados: cada conjunto ocupa exactamente todas las casillas.
 const boards = [
   {
+    slug: `${BETA_VIP_CONNECT_PAIRS.slug}-intro-4x4`,
     points: 12,
+    size: 4,
+    paths: rowBandPaths(4, [1, 1, 1, 1]),
+  },
+  {
+    slug: `${BETA_VIP_CONNECT_PAIRS.slug}-1`,
+    points: 13,
     size: 4,
     paths: rowBandPaths(4, [1, 1, 2]),
   },
   {
-    points: 14,
+    slug: `${BETA_VIP_CONNECT_PAIRS.slug}-2`,
+    points: 13,
     size: 5,
     paths: {
       a: [0, 1, 2, 3, 4, 9, 14, 19, 24],
@@ -50,7 +58,8 @@ const boards = [
     },
   },
   {
-    points: 16,
+    slug: `${BETA_VIP_CONNECT_PAIRS.slug}-3`,
+    points: 14,
     size: 5,
     paths: {
       a: [0, 1, 6, 7, 2, 3, 4, 9],
@@ -60,7 +69,8 @@ const boards = [
     },
   },
   {
-    points: 18,
+    slug: `${BETA_VIP_CONNECT_PAIRS.slug}-4`,
+    points: 15,
     size: 6,
     paths: {
       a: [1, 0, 6, 12, 18, 24, 30, 31, 32, 33, 34, 35, 29],
@@ -80,7 +90,8 @@ const boards = [
     },
   },
   {
-    points: 19,
+    slug: `${BETA_VIP_CONNECT_PAIRS.slug}-5`,
+    points: 16,
     size: 6,
     paths: {
       a: [1, 0, 6, 7, 13, 12, 18],
@@ -91,7 +102,8 @@ const boards = [
     },
   },
   {
-    points: 21,
+    slug: `${BETA_VIP_CONNECT_PAIRS.slug}-6`,
+    points: 17,
     size: 7,
     paths: {
       a: [1, 0, 7, 14, 21, 28, 35, 42, 43, 44],
@@ -115,8 +127,8 @@ const boards = [
 ];
 
 export const betaVipConnectPairsQuestions = boards.map(
-  ({ points, size, paths, pairColors }, index) => ({
-    slug: `${BETA_VIP_CONNECT_PAIRS.slug}-${index + 1}`,
+  ({ slug, points, size, paths, pairColors }, index) => ({
+    slug,
     type: "connect-pairs",
     points,
     payloadSchemaVersion: 1,

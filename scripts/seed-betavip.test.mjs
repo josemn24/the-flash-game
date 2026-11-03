@@ -409,7 +409,7 @@ describe("BetaVIP seed", () => {
     );
   });
 
-  it("defines six valid, distinct Queens boards for the 150-second time trial", () => {
+  it("defines seven valid, distinct Queens boards for the 150-second time trial", () => {
     expect(BETA_VIP_TIME_TRIAL).toMatchObject({
       slug: "betavip-escalera-de-coronas",
       title: "Escalera de coronas",
@@ -419,16 +419,18 @@ describe("BetaVIP seed", () => {
       /único reloj compartido de dos minutos y medio/i,
     );
     expect(BETA_VIP_TIME_TRIAL.description).toMatch(/tercera validación incorrecta/i);
-    expect(betaVipTimeTrialQuestions).toHaveLength(6);
-    expect(new Set(betaVipTimeTrialQuestions.map((item) => item.slug)).size).toBe(6);
+    expect(betaVipTimeTrialQuestions).toHaveLength(7);
+    expect(new Set(betaVipTimeTrialQuestions.map((item) => item.slug)).size).toBe(7);
     expect(
       new Set(betaVipTimeTrialQuestions.map((item) => JSON.stringify(item.publicPayload))).size,
-    ).toBe(6);
+    ).toBe(7);
     expect(betaVipTimeTrialQuestions.map((item) => item.publicPayload.grid.rows)).toEqual([
-      4, 5, 5, 6, 6, 7,
+      4, 4, 5, 5, 6, 6, 7,
     ]);
-    expect(betaVipTimeTrialQuestions.map((item) => item.type)).toEqual(Array(6).fill("queens"));
-    expect(betaVipTimeTrialQuestions.map((item) => item.points)).toEqual([12, 14, 16, 18, 19, 21]);
+    expect(betaVipTimeTrialQuestions.map((item) => item.type)).toEqual(Array(7).fill("queens"));
+    expect(betaVipTimeTrialQuestions.map((item) => item.points)).toEqual([
+      12, 13, 13, 14, 15, 16, 17,
+    ]);
     expect(betaVipTimeTrialQuestions.reduce((total, item) => total + item.points, 0)).toBe(100);
     for (const item of betaVipTimeTrialQuestions) {
       expect(validateQuestionTags(item.publicPayload.tags).valid).toBe(true);
@@ -534,7 +536,7 @@ describe("BetaVIP seed", () => {
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([
       100, 100, 100, 100, 100, 100,
     ]);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([6, 16, 7, 6, 20, 7]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([7, 16, 7, 7, 20, 7]);
     expect(data.connectPairsPublicationId).toBe(data.publications[0].id);
     expect(data.alphabetPublicationId).toBe(data.publications[1].id);
     expect(data.pyramidPublicationId).toBe(data.publications[2].id);

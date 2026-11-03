@@ -606,11 +606,11 @@ describe("Tabarnia seed", () => {
     ).toEqual([
       ["flash", 16, 100],
       ["alphabet", 16, 100],
-      ["time-trial", 6, 100],
+      ["time-trial", 7, 100],
       ["survival", 20, 100],
       ["pyramid", 7, 100],
       ["alphabet", 16, 100],
-      ["time-trial", 6, 100],
+      ["time-trial", 7, 100],
       ["pyramid", 7, 100],
     ]);
     expect(output.publicationId).toBe(output.publications[0]?.id);
