@@ -1,9 +1,21 @@
 "use client";
 
-import { Avatar, BackLink, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import {
+  Avatar,
+  BackLink,
+  BoltIcon,
+  Card,
+  Canvas,
+  Chip,
+  CrossIcon,
+  IconButton,
+} from "@/components/ui";
 import { ReviewAnswerList } from "@/components/game/shared";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { applyRoomMemberChallengeResult } from "@/features/rooms/localResults";
+import { shouldBypassImageOptimization } from "@/lib/media/imageOptimization";
 import type { AnswerReview, AnswerResult } from "@/types/gameplay";
 import type { RoomMemberDetailModel } from "@/types/view-models/room";
 import styles from "./FlashPopRoomMemberDetail.module.css";
@@ -101,6 +113,9 @@ function AnswerHistory({
 }
 
 export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailModel }) {
+  const avatarDialogRef = useRef<HTMLDialogElement>(null);
+  const avatarCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const { getCompletion } = useRoomSession();
   const completion =
     model.source === "supabase" || !model.challengeSummary
@@ -123,6 +138,19 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
   const attempt = result?.attempt;
   const hasAttempt = Boolean(attempt);
   const isComplete = Boolean(result?.completed && attempt);
+  const avatarSrc = resolvedModel.member.avatarSrc;
+
+  useEffect(() => {
+    const dialog = avatarDialogRef.current;
+    if (!dialog) return;
+
+    if (avatarSrc && isAvatarDialogOpen) {
+      if (!dialog.open) dialog.showModal();
+      avatarCloseButtonRef.current?.focus({ preventScroll: true });
+    } else if (dialog.open) {
+      dialog.close();
+    }
+  }, [avatarSrc, isAvatarDialogOpen]);
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -132,18 +160,73 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
 
       <div>
         <section className={styles.profile} aria-labelledby="member-detail-title">
-          <Avatar
-            name={resolvedModel.member.name}
-            src={resolvedModel.member.avatarSrc}
-            initials={resolvedModel.member.initials}
-            tone="social"
-            size="lg"
-          />
+          {avatarSrc ? (
+            <button
+              type="button"
+              className={styles.avatarTrigger}
+              aria-label={`Ampliar foto de ${resolvedModel.member.name}`}
+              aria-haspopup="dialog"
+              aria-expanded={isAvatarDialogOpen}
+              onClick={() => setIsAvatarDialogOpen(true)}
+            >
+              <Avatar
+                name={resolvedModel.member.name}
+                src={avatarSrc}
+                initials={resolvedModel.member.initials}
+                tone="social"
+                size="lg"
+              />
+            </button>
+          ) : (
+            <Avatar
+              name={resolvedModel.member.name}
+              initials={resolvedModel.member.initials}
+              tone="social"
+              size="lg"
+            />
+          )}
           <div>
             <p className={styles.eyebrow}>{model.roomTitle}</p>
             <h1 id="member-detail-title">{resolvedModel.member.name}</h1>
           </div>
         </section>
+
+        {avatarSrc ? (
+          <dialog
+            ref={avatarDialogRef}
+            className={styles.avatarDialog}
+            aria-label={`Foto de perfil de ${resolvedModel.member.name}`}
+            onClose={() => setIsAvatarDialogOpen(false)}
+            onCancel={(event) => {
+              event.preventDefault();
+              setIsAvatarDialogOpen(false);
+            }}
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setIsAvatarDialogOpen(false);
+            }}
+          >
+            <div className={styles.avatarDialogSurface}>
+              <IconButton
+                ref={avatarCloseButtonRef}
+                className={styles.avatarDialogClose}
+                label={`Cerrar foto de ${resolvedModel.member.name}`}
+                onClick={() => setIsAvatarDialogOpen(false)}
+              >
+                <CrossIcon />
+              </IconButton>
+              <div className={styles.avatarDialogImage}>
+                <Image
+                  src={avatarSrc}
+                  alt={`Foto de perfil de ${resolvedModel.member.name}`}
+                  fill
+                  sizes="(max-width: 768px) calc(100vw - 48px), 720px"
+                  className={styles.avatarImage}
+                  unoptimized={shouldBypassImageOptimization(avatarSrc)}
+                />
+              </div>
+            </div>
+          </dialog>
+        ) : null}
 
         <Card as="section" className={styles.summary} aria-labelledby="attempt-summary-title">
           <h2 id="attempt-summary-title">

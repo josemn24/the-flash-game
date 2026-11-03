@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderToStaticMarkup } from "react-dom/server";
-import { within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { fireEvent, render, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type {
   MatchingQuestion,
   MultipleChoiceQuestion,
@@ -9,6 +9,26 @@ import type {
 } from "@/types/gameplay/practice";
 import type { RoomMemberDetailModel, RoomMemberReviewItem } from "@/types/view-models/room";
 import { FlashPopRoomMemberDetail } from "./FlashPopRoomMemberDetail.client";
+
+const dialogPrototype = HTMLDialogElement.prototype;
+const nativeShowModal = Object.getOwnPropertyDescriptor(dialogPrototype, "showModal");
+const nativeClose = Object.getOwnPropertyDescriptor(dialogPrototype, "close");
+
+beforeEach(() => {
+  Object.defineProperty(dialogPrototype, "showModal", {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.setAttribute("open", "");
+    },
+  });
+  Object.defineProperty(dialogPrototype, "close", {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.removeAttribute("open");
+      this.dispatchEvent(new Event("close"));
+    },
+  });
+});
 
 const questionBase = {
   category: "Cultura",
@@ -143,7 +163,13 @@ function renderModel(model: RoomMemberDetailModel) {
   return within(container);
 }
 
-afterEach(() => document.body.replaceChildren());
+afterEach(() => {
+  document.body.replaceChildren();
+  if (nativeShowModal) Object.defineProperty(dialogPrototype, "showModal", nativeShowModal);
+  else Reflect.deleteProperty(dialogPrototype, "showModal");
+  if (nativeClose) Object.defineProperty(dialogPrototype, "close", nativeClose);
+  else Reflect.deleteProperty(dialogPrototype, "close");
+});
 
 describe("FlashPopRoomMemberDetail", () => {
   it.each(["flash", "survival"] as const)(
@@ -206,8 +232,36 @@ describe("FlashPopRoomMemberDetail", () => {
     model.result = null;
     const view = renderModel(model);
     expect(view.getByRole("heading", { name: "Palmera" })).toBeTruthy();
+    expect(view.getByRole("img", { name: "Palmera" })).toBeTruthy();
+    expect(view.queryByRole("button", { name: "Ampliar foto de Palmera" })).toBeNull();
     expect(view.getByText("Todavía no ha jugado")).toBeTruthy();
     expect(view.queryByRole("region", { name: "Respuestas" })).toBeNull();
+  });
+
+  it("opens the complete member photo in an accessible dialog and supports each close method", () => {
+    const model = memberModel();
+    model.member = { ...model.member, avatarSrc: "/flash-pop/avatars/ches.jpeg" };
+    const view = render(<FlashPopRoomMemberDetail model={model} />);
+    const trigger = view.getByRole("button", { name: "Ampliar foto de Dark" });
+    const dialog = view.container.querySelector("dialog")!;
+
+    expect(dialog.open).toBe(false);
+    fireEvent.click(trigger);
+    expect(dialog.open).toBe(true);
+    expect(view.getByRole("dialog", { name: "Foto de perfil de Dark" })).toBe(dialog);
+    expect(view.getByRole("img", { name: "Foto de perfil de Dark" })).toBeTruthy();
+    fireEvent.click(view.getByRole("button", { name: "Cerrar foto de Dark" }));
+    expect(dialog.open).toBe(false);
+
+    fireEvent.click(trigger);
+    const cancelEvent = new Event("cancel", { cancelable: true });
+    fireEvent(dialog, cancelEvent);
+    expect(cancelEvent.defaultPrevented).toBe(true);
+    expect(dialog.open).toBe(false);
+
+    fireEvent.click(trigger);
+    fireEvent.click(dialog);
+    expect(dialog.open).toBe(false);
   });
 
   it.each(["completed", "abandoned"] as const)(

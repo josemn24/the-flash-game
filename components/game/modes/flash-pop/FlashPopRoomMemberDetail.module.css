@@ -16,6 +16,66 @@
     margin: var(--space-6) 0 var(--space-4);
   }
 
+  .avatarTrigger {
+    display: inline-grid;
+    flex: 0 0 auto;
+    border: 0;
+    border-radius: var(--radius-pill);
+    padding: 0;
+    background: transparent;
+    cursor: zoom-in;
+  }
+
+  .avatarTrigger:focus-visible {
+    outline: 3px solid var(--ds-color-fg-selected);
+    outline-offset: 4px;
+  }
+
+  .avatarDialog {
+    position: fixed;
+    inset: 0;
+    width: min(calc(100% - 24px), 768px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    margin: auto;
+    border: 0;
+    padding: 0;
+    overflow: visible;
+    background: transparent;
+  }
+
+  .avatarDialog::backdrop {
+    background: var(--ds-color-bg-overlay);
+    backdrop-filter: blur(8px);
+  }
+
+  .avatarDialogSurface {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+
+  .avatarDialogClose {
+    position: absolute;
+    z-index: 1;
+    top: var(--space-3);
+    right: var(--space-3);
+  }
+
+  .avatarDialogImage {
+    position: relative;
+    width: min(720px, calc(100vw - 32px));
+    height: min(720px, calc(100dvh - 64px));
+    overflow: hidden;
+    border: var(--border-subtle);
+    border-radius: var(--radius-card);
+    background: var(--ds-color-bg-inverse);
+  }
+
+  .avatarImage {
+    object-fit: contain;
+  }
+
   .profile h1,
   .summary h2,
   .sectionHeading h2 {
