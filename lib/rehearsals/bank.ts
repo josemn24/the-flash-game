@@ -3,6 +3,7 @@ import { competitiveCapabilityFor } from "@/lib/question-formats/definitions";
 import { readStoredQuestion } from "@/lib/question-formats/storedRegistry";
 import type { DurationMs, JsonValue } from "@/types/domain/values";
 import type { QuestionVersionId } from "@/types/domain/identifiers";
+import { activeQuality } from "./catalog";
 
 function freeze<T>(value: T): T {
   if (value && typeof value === "object") {
@@ -22,6 +23,7 @@ export function validateBank(
       !/^[a-z0-9][a-z0-9-]{0,119}$/.test(q.id) ||
       !Number.isSafeInteger(q.version) ||
       q.version < 1 ||
+      (q.generationStatus !== undefined && !["active", "retired"].includes(q.generationStatus)) ||
       identities.has(identity) ||
       !["easy", "medium", "hard"].includes(q.difficulty) ||
       !q.modes.length ||
@@ -88,5 +90,8 @@ export function validateBank(
       }
     }
   }
+  const quality = activeQuality(bank);
+  if (quality.duplicates.length)
+    throw new Error(`duplicate_bank_exercise:${quality.duplicates[0]!.join(":")}`);
   return freeze(bank);
 }

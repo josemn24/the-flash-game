@@ -25,6 +25,7 @@ export type RehearsalBankQuestion = {
   readonly id: string;
   readonly version: number;
   readonly type: CompetitiveQuestionType;
+  readonly generationStatus?: "active" | "retired";
   readonly payloadSchemaVersion: number;
   readonly modes: readonly RehearsalMode[];
   readonly difficulty: QuestionDifficulty;
@@ -53,6 +54,8 @@ export type RehearsalTemplate = {
 };
 export type RehearsalCoverage = {
   readonly ready: boolean;
+  readonly exactDifficultyReady: boolean;
+  readonly warnings: readonly string[];
   readonly slots: readonly {
     readonly position: number;
     readonly type: CompetitiveQuestionType;
@@ -68,7 +71,7 @@ export type RehearsalCoverage = {
 export type RehearsalRecipe = {
   readonly sessionId: string;
   readonly seed: string;
-  readonly generatorVersion: 1 | 2;
+  readonly generatorVersion: 1;
   readonly bankRevision: string;
   readonly templateHash: string;
   readonly challengeVersionId: string;
@@ -77,6 +80,11 @@ export type RehearsalRecipe = {
 export type GeneratedRehearsal = {
   readonly definition: RehearsalDefinition;
   readonly recipe: RehearsalRecipe;
+  readonly difficultyFallbacks: readonly {
+    readonly position: number;
+    readonly requested: QuestionDifficulty;
+    readonly selected: QuestionDifficulty;
+  }[];
 };
 export type RehearsalPolicy = {
   readonly label?: string;

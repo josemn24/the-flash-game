@@ -1,19 +1,29 @@
 import { expect, it } from "vitest";
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { rehearsalBank } from "./bank";
-import originals from "@/test-utils/rehearsals/original-questions.json";
+import history from "@/test-utils/rehearsals/history-fingerprints.json";
 import {
   rehearsalTemplates,
-  questionTemplate,
+  bankQuestionCase,
   providerFor,
 } from "@/test-utils/rehearsals/fixtures";
-import { generateRehearsal, rehearsalCoverage } from "@/lib/rehearsals/generator";
+import {
+  generateRehearsal,
+  rehearsalCoverage,
+  rehearsalHash,
+  questionRef,
+} from "@/lib/rehearsals/generator";
+import { activeQuestions, activeQuality, genericExplanation } from "@/lib/rehearsals/catalog";
+import { auditRehearsalBank } from "@/lib/rehearsals/audit";
+import { exerciseHash } from "@/lib/rehearsals/hash";
 import { validateBank } from "@/lib/rehearsals/bank";
 import { SessionDriver, manualClock } from "@/test-utils/game-session-conformance/driver";
 import { correctActions } from "@/test-utils/game-session-conformance/corpus";
 import type { CompetitiveQuestionType } from "@/lib/question-formats/definitions";
+import type { GeneratedRehearsal, RehearsalMode } from "@/types/gameplay/rehearsal";
 import { COMPETITIVE_RESOLVERS } from "@/lib/scoringCore/resolution/registry";
 const bank = rehearsalBank();
+const active = activeQuestions(bank);
 const dictionary = new Map([
   [
     "es-general-5.v1",
@@ -22,21 +32,42 @@ const dictionary = new Map([
     ),
   ],
 ]);
-it("preserves all 78 original questions and solutions", () => {
-  expect(originals).toHaveLength(78);
-  for (const q of originals) {
-    const preserved = bank.find((v) => v.id === q.id && v.version === q.version);
-    expect(preserved).toMatchObject(q);
-    expect(preserved?.publicPayload).toEqual(q.publicPayload);
-    expect(preserved?.solutionPayload).toEqual(q.solutionPayload);
+
+it("protects the consolidated baseline and every subsequently registered version", () => {
+  expect(history.length).toBeGreaterThanOrEqual(232);
+  expect(history.slice(0, 232).every((ref) => ref.version === 1)).toBe(true);
+  expect(new Set(history.slice(0, 232).map((ref) => ref.id)).size).toBe(232);
+  expect(bank).toHaveLength(history.length);
+  for (const ref of history) {
+    const preserved = bank.find((q) => q.id === ref.id && q.version === ref.version);
+    expect(preserved, ref.id).toBeDefined();
+    expect(rehearsalHash(preserved), ref.id).toBe(ref.contentHash);
   }
   expect(Object.isFrozen(bank)).toBe(true);
 });
-it("rejects undeclared modes, duplicate identities, invalid letters and external assets", () => {
-  const q = bank[0]!;
+
+it("rejects invalid metadata and current duplicate exercises while allowing archived copies", () => {
+  const q = active[0]!;
   expect(() => validateBank([q, q])).toThrow("metadata");
-  expect(() => validateBank([{ ...q, modes: ["alphabet"] }])).toThrow();
-  const image = bank.find((q) => q.type === "progressive-image")!;
+  expect(() => validateBank([{ ...q, modes: ["alphabet"], alphabetLetter: "!" }])).toThrow();
+  expect(() => validateBank([{ ...q, generationStatus: "bad" as "active" }])).toThrow("metadata");
+  const duplicate = {
+    ...q,
+    id: "copy",
+    solutionPayload: {
+      ...q.solutionPayload,
+      explanation: "A different explanation does not create a new exercise.",
+    },
+  };
+  expect(() => validateBank([q, duplicate])).toThrow("duplicate_bank_exercise");
+  expect(() =>
+    validateBank([
+      q,
+      duplicate,
+      { ...duplicate, version: duplicate.version + 1, generationStatus: "retired" },
+    ]),
+  ).not.toThrow();
+  const image = active.find((q) => q.type === "progressive-image")!;
   expect(() =>
     validateBank([
       {
@@ -49,72 +80,107 @@ it("rejects undeclared modes, duplicate identities, invalid letters and external
     ]),
   ).toThrow("asset");
 });
+
+it("has specific explanations and complete capability-derived letter/difficulty coverage", () => {
+  expect(activeQuality(bank)).toEqual({ duplicates: [], genericExplanations: [] });
+  const audit = auditRehearsalBank(bank);
+  expect(audit.ready).toBe(true);
+  expect(audit.retiredIdentities).toHaveLength(0);
+  expect(audit.historicalVersions).toBe(0);
+  expect(audit.activeIdentities).toBe(232);
+  expect(bank.every((q) => q.version === 1)).toBe(true);
+  expect(audit.combinations.filter((c) => c.mode === "alphabet")).toHaveLength(27 * 3);
+  for (const c of audit.combinations)
+    expect(c.familyCount, JSON.stringify(c)).toBeGreaterThanOrEqual(1);
+  for (const phrase of [
+    "",
+    "La solución de este ejercicio permite revisar cómo funciona el formato.",
+    "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución.",
+    "  LA SOLUCION de este ejercicio permite revisar como funciona el formato!  ",
+    "Isla es la respuesta descrita.",
+  ])
+    expect(genericExplanation(phrase)).toBe(true);
+});
+
 it.each(rehearsalTemplates)(
-  "$challengeVersionId has at least three valid alternatives per slot",
+  "$challengeVersionId has a full distinct assignment and three families per slot",
   (t) => {
     const coverage = rehearsalCoverage(bank, t);
     expect(coverage.ready).toBe(true);
     for (const slot of coverage.slots)
       expect(
         slot.independentCandidateCount,
-        `${t.challengeVersionId}:${slot.position}:${slot.type}`,
+        `${t.challengeVersionId}:${slot.position}`,
       ).toBeGreaterThanOrEqual(3);
+    const run = generateRehearsal(bank, t, "structural-coverage");
+    const questions = run.recipe.questions.map((ref) =>
+      bank.find((q) => q.id === ref.id && q.version === ref.version)!,
+    );
+    expect(new Set(questions.map(exerciseHash)).size).toBe(t.questions.length);
+    if (coverage.exactDifficultyReady) expect(run.difficultyFallbacks).toEqual([]);
   },
 );
+
 it("references only available repository resources", () => {
   function visit(value: unknown) {
     if (value && typeof value === "object")
       for (const [key, v] of Object.entries(value)) {
-        if (key === "src") expect(existsSync(`public${v}`)).toBe(true);
+        if (key === "src") expect(existsSync(`public${v}`), String(v)).toBe(true);
         else visit(v);
       }
   }
   bank.forEach((q) => visit(q.publicPayload));
 });
-it.each(bank.flatMap((q) => q.modes.map((mode) => ({ q, mode }))))(
-  "$q.id is solvable in $mode using the real provider",
+
+async function solve(run: GeneratedRehearsal, mode: RehearsalMode) {
+  const { definition } = run;
+  const driver = new SessionDriver(
+    providerFor(definition, manualClock(), dictionary),
+    definition.challenge.id,
+    definition.levels.map((l) => l.challengeItemId),
+  );
+  await driver.begin();
+  for (const [i, level] of definition.levels.entries()) {
+    await driver.issue("prepare", {}, i);
+    if (mode === "pyramid") await driver.issue("activate", {}, i);
+    const question = COMPETITIVE_RESOLVERS[level.publicQuestion.type as CompetitiveQuestionType]({
+      ...level,
+      points: 100,
+    });
+    for (const action of correctActions(question)) await driver.action(action, i);
+  }
+  const result = await driver.issue("complete");
+  expect(result.effect).toBe("completed");
+  expect(result.state.score).toBe(100);
+}
+
+it.each(active.flatMap((q) => q.modes.map((mode) => ({ q, mode }))))(
+  "active $q.id is generated and solved in $mode",
   async ({ q, mode }) => {
-    const t = questionTemplate(q, mode, bank);
-    const candidates =
-      mode === "alphabet"
-        ? [q, bank.find((v) => v.type === "short-text" && v.alphabetLetter !== q.alphabetLetter)!]
-        : [q];
-    const { definition } = generateRehearsal(candidates, t, "bank-conformance");
-    const driver = new SessionDriver(
-      providerFor(definition, manualClock(), dictionary),
-      definition.challenge.id,
-      definition.levels.map((l) => l.challengeItemId),
-    );
-    await driver.begin();
-    for (const [i, level] of definition.levels.entries()) {
-      await driver.issue("prepare", {}, i);
-      if (mode === "pyramid") await driver.issue("activate", {}, i);
-      const question = COMPETITIVE_RESOLVERS[level.publicQuestion.type as CompetitiveQuestionType]({
-        ...level,
-        points: t.questions[i]!.points,
-      });
-      for (const action of correctActions(question)) await driver.action(action, i);
-    }
-    const result = await driver.issue("complete");
-    expect(result.effect).toBe("completed");
-    expect(result.state.score).toBe(100);
+    const fixture = bankQuestionCase(q, mode, bank);
+    const run = generateRehearsal(fixture.bank, fixture.template, "bank-conformance");
+    expect(run.recipe.questions).toContainEqual(questionRef(q));
+    await solve(run, mode);
   },
 );
 
-it("emits the requested structural coverage report", () => {
-  if (process.env.REHEARSAL_COVERAGE_REPORT) {
-    mkdirSync("output", { recursive: true });
-    writeFileSync(
-      process.env.REHEARSAL_COVERAGE_REPORT,
-      JSON.stringify(
-        rehearsalTemplates.map((t) => ({
+it("emits the consolidated bank audit, matrix coverage and actual fallbacks", () => {
+  if (!process.env.REHEARSAL_COVERAGE_REPORT) return;
+  mkdirSync("output", { recursive: true });
+  writeFileSync(
+    process.env.REHEARSAL_COVERAGE_REPORT,
+    JSON.stringify(
+      {
+        ...auditRehearsalBank(bank),
+        templates: rehearsalTemplates.map((t) => ({
           challengeVersionId: t.challengeVersionId,
           mode: t.mode,
           ...rehearsalCoverage(bank, t),
+          difficultyFallbacks: generateRehearsal(bank, t, "coverage-report").difficultyFallbacks,
         })),
-        null,
-        2,
-      ) + "\n",
-    );
-  }
+      },
+      null,
+      2,
+    ) + "\n",
+  );
 });

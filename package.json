@@ -46,6 +46,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "rehearsals:check": "node scripts/check-rehearsal-catalog.mjs",
+    "rehearsals:history:register": "node scripts/register-rehearsal-history.mjs",
     "test:e2e:rehearsals": "node scripts/run-isolated-e2e.mjs e2e/rehearsals.spec.ts",
     "docs:check": "node scripts/check-doc-links.mjs",
     "schema:revision:check": "node scripts/check-schema-revision.mjs",

@@ -30,6 +30,9 @@ export function RehearsalManagement({ versions }: { versions: readonly Rehearsal
         <Card as="article" key={v.challengeVersionId}>
           <h3>Prueba de la versión {v.versionNumber}</h3>
           <p>{v.coverage.ready ? "Cobertura disponible" : "Faltan preguntas compatibles"}</p>
+          {v.coverage.warnings.map((warning) => (
+            <p key={warning}>{warning}</p>
+          ))}
           <ul>
             {v.coverage.slots.map((s) => (
               <li key={s.position}>
@@ -148,6 +151,19 @@ export function RehearsalPreviewClient({
           Reproducir receta
         </Button>
         {error && <p role="alert">{error}</p>}
+        {run && run.difficultyFallbacks.length > 0 && (
+          <section aria-label="Ajustes de dificultad">
+            <h2>Dificultades ajustadas</h2>
+            <ul>
+              {run.difficultyFallbacks.map((fallback) => (
+                <li key={fallback.position}>
+                  Posición {fallback.position}: solicitada {difficulty[fallback.requested]},
+                  seleccionada {difficulty[fallback.selected]}.
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
         {run && (
           <details>
             <summary>Receta generada</summary>

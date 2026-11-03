@@ -40,38 +40,6 @@
     "familyId": "betavip-logica-q6"
   },
   {
-    "id": "bank-codigo-aritmetico",
-    "version": 1,
-    "type": "logic-code",
-    "payloadSchemaVersion": 1,
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
-    "referenceTimeLimitMs": 60000,
-    "familyId": "bank-codigo-aritmetico",
-    "publicPayload": {
-      "question": "Abre la caja usando las tres pistas numéricas: codigo aritmetico.",
-      "codeLength": 3,
-      "clues": [
-        {
-          "code": "800",
-          "hint": "La primera cifra es el doble de cuatro."
-        },
-        {
-          "code": "020",
-          "hint": "La cifra central es el único primo par."
-        },
-        {
-          "code": "006",
-          "hint": "La última cifra es el triple de dos."
-        }
-      ]
-    },
-    "solutionPayload": {
-      "correctAnswer": "826",
-      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
-    }
-  },
-  {
     "id": "bank-codigo-cuadrados",
     "version": 1,
     "type": "logic-code",
@@ -109,6 +77,38 @@
     "solutionPayload": {
       "correctAnswer": "042",
       "explanation": "738 descarta 7, 3 y 8. En 780, la única cifra posible es 0, pero no va al final. En 206, 0 y 2 pertenecen al código, ambos mal colocados; así, 0 va primero. Como 6 está descartado, la pista 682 coloca el 2 al final. La pista 614 deja el 4 en el centro. El código es 042."
+    }
+  },
+  {
+    "id": "bank-codigo-aritmetico",
+    "version": 1,
+    "type": "logic-code",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-codigo-aritmetico",
+    "publicPayload": {
+      "question": "Abre la caja usando las tres pistas numéricas: codigo aritmetico.",
+      "codeLength": 3,
+      "clues": [
+        {
+          "code": "800",
+          "hint": "La primera cifra es el doble de cuatro."
+        },
+        {
+          "code": "020",
+          "hint": "La cifra central es el único primo par."
+        },
+        {
+          "code": "006",
+          "hint": "La última cifra es el triple de dos."
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "826",
+      "explanation": "La primera cifra es 2 × 4 = 8; la central es 2, el único número primo par; la última es 3 × 2 = 6. Juntas forman 826."
     }
   }
 ]

@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { dockerSql, sqlCount } from "../scripts/support/supabase-local.mjs";
 import { repositoryRehearsalQuestions } from "../scripts/support/rehearsal-catalog.mjs";
+import { exerciseHash } from "../lib/rehearsals/hash";
 
 type Account = { email: string; password: string; playerId: string };
 type Publication = { id: string; mode: string; challengeVersionId: string; challengeId: string };
@@ -75,9 +76,16 @@ for (let index = 0; index < 7; index++) {
         writes.push(request.url());
     });
     const selected = await open(page, index);
-    const firstSession = JSON.parse(
+    const firstRecipe = JSON.parse(
       (await page.locator("script[data-rehearsal-recipe]").textContent())!,
-    ).sessionId;
+    );
+    const firstSession = firstRecipe.sessionId;
+    expect(firstRecipe.generatorVersion).toBe(1);
+    const questions = await selectedQuestions(page);
+    expect(new Set(questions.map(exerciseHash)).size).toBe(questions.length);
+    expect(
+      questions.every((q: { generationStatus?: string }) => q.generationStatus !== "retired"),
+    ).toBe(true);
     await page.reload();
     await expectGameReady(page, index);
     expect(
@@ -294,12 +302,10 @@ test("Flash timeout advances the practice without recording any official answer"
   await login(page, fixture("betavip").users.ches!);
   const selected = await open(page, 6);
   const questions = await selectedQuestions(page);
-  await expect(
-    page.getByRole("heading", { name: questions[0].publicPayload.question }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: questions[1].publicPayload.question }),
-  ).toBeVisible({ timeout: 25_000 });
+  await expect(page.getByText(`Pregunta 01 de ${questions.length}`, { exact: true })).toBeVisible();
+  await expect(page.getByText(`Pregunta 02 de ${questions.length}`, { exact: true })).toBeVisible({
+    timeout: 25_000,
+  });
   await page.goto(`/desafios/${selected.id}?roomId=${selected.room}`);
   await expect(page.getByRole("link", { name: "Probar primero" })).toBeVisible();
 });
@@ -310,10 +316,14 @@ test("editorial coverage and generated preview are restricted to superadmins", a
   await page.goto(`/admin/challenges/${publication.challengeId}`);
   const panel = page.getByRole("region", { name: "Pruebas del desafío" });
   await expect(panel.getByText("Cobertura disponible")).toBeVisible();
+  await expect(
+    panel.getByText("La combinación requiere sustituir alguna dificultad por una próxima"),
+  ).toBeVisible();
   await expect(panel.getByRole("combobox", { name: "Ensayo compatible" })).toHaveCount(0);
   await panel.getByRole("link", { name: "Generar vista previa" }).click();
   await expectGameReady(page, 3);
   await expect(page.getByText("Receta generada")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Ajustes de dificultad" })).toBeVisible();
   const recipe = () => page.locator("script[data-rehearsal-recipe]").textContent();
   await page.getByLabel("Semilla (opcional)").fill("browser-fixed-seed");
   await page.getByRole("button", { name: "Generar combinación" }).click();
@@ -325,6 +335,14 @@ test("editorial coverage and generated preview are restricted to superadmins", a
   await page.getByLabel("Receta para reproducir").fill(reproducible);
   await page.getByRole("button", { name: "Reproducir receta" }).click();
   await expect.poll(recipe).toBe(reproducible);
+  for (const generatorVersion of [2, 3]) {
+    const unsupported = { ...JSON.parse(reproducible), generatorVersion };
+    await page.getByLabel("Receta para reproducir").fill(JSON.stringify(unsupported));
+    await page.getByRole("button", { name: "Reproducir receta" }).click();
+    await expect(page.getByRole("button", { name: "Reproducir receta" })).toBeEnabled();
+    await expect(page.getByRole("alert").filter({ hasText: "no corresponde" })).toBeVisible();
+    await expect.poll(recipe).toBe(reproducible);
+  }
   const damaged = JSON.parse(reproducible);
   damaged.questions[0].contentHash = "0".repeat(64);
   await page.getByLabel("Receta para reproducir").fill(JSON.stringify(damaged));

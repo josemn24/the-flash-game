@@ -4,8 +4,14 @@ const result = spawnSync(
   [
     "node_modules/vitest/vitest.mjs",
     "run",
+    "--reporter=dot",
     "infrastructure/rehearsals/bank.test.ts",
     "infrastructure/rehearsals/editorial.test.ts",
+    "lib/rehearsals",
+    "application/use-cases/rehearsals.test.ts",
+    "app/admin/rehearsal-actions.test.ts",
+    "components/admin/RehearsalManagement.client.test.tsx",
+    "components/game/shells/RehearsalGameApp.test.tsx",
   ],
   {
     stdio: "inherit",

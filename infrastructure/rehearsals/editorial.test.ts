@@ -53,9 +53,9 @@ it("does not repeat official statements or meaningful exact text answers in its 
       .map(normalize),
   );
   for (const q of rehearsalBank()) {
-    expect(prompts.has(normalize(q.publicPayload.question))).toBe(false);
+    expect.soft(prompts.has(normalize(q.publicPayload.question)), q.id).toBe(false);
     const answer = q.solutionPayload?.correctAnswer;
     if (typeof answer === "string" && answer.length >= 4)
-      expect(answers.has(normalize(answer))).toBe(false);
+      expect.soft(answers.has(normalize(answer)), `${q.id}: ${answer}`).toBe(false);
   }
 });

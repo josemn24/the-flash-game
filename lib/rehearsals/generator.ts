@@ -1,11 +1,13 @@
-import { createHash } from "node:crypto";
 import { competitiveCapabilityFor } from "@/lib/question-formats/definitions";
 import { getWordSearchPath, isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { readStoredQuestion } from "@/lib/question-formats/storedRegistry";
 import { mechanics } from "./structure-core.mjs";
 import type { DurationMs, JsonValue } from "@/types/domain/values";
 import type { QuestionVersionId } from "@/types/domain/identifiers";
-import type { QuestionDifficulty } from "@/types/domain/content";
+import { activeQuestions } from "./catalog";
+import { compare, exerciseHash, rehearsalHash } from "./hash";
+import { RehearsalAssignment } from "./assignment";
+export { rehearsalHash } from "./hash";
 import type {
   GeneratedRehearsal,
   RehearsalBankQuestion,
@@ -22,10 +24,8 @@ import {
   compileTimeTrialDefinition,
 } from "@/lib/gameplay/localSessionDefinition";
 
-export const GENERATOR_VERSION = 2 as const;
-const ranks: Record<QuestionDifficulty, number> = { easy: 0, medium: 1, hard: 2 };
+export const GENERATOR_VERSION = 1 as const;
 const MAX_WORD_SEARCH_FILL_ATTEMPTS = 64;
-const WORD_SEARCH_FILLER_VERSION = 2 as const;
 const SPANISH_FILLER_LETTERS = [
   ["E", 1678],
   ["A", 1196],
@@ -59,33 +59,8 @@ const SPANISH_FILLER_WEIGHT_TOTAL = SPANISH_FILLER_LETTERS.reduce(
   (total, [, weight]) => total + weight,
   0,
 );
-const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
-function canonical(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(canonical);
-  if (value && typeof value === "object")
-    return Object.fromEntries(
-      Object.entries(value)
-        .sort(([a], [b]) => compare(a, b))
-        .map(([k, v]) => [k, canonical(v)]),
-    );
-  return value;
-}
-export const rehearsalHash = (value: unknown) =>
-  createHash("sha256")
-    .update(JSON.stringify(canonical(value)))
-    .digest("hex");
-
-function sessionIdFor(
-  seed: string,
-  templateHashValue: string,
-  bankRevision: string,
-  generatorVersion: 1 | 2,
-) {
-  const identity =
-    generatorVersion === 1
-      ? [seed, templateHashValue, bankRevision]
-      : [generatorVersion, seed, templateHashValue, bankRevision];
-  return `rehearsal-${rehearsalHash(identity).slice(0, 32)}`;
+function sessionIdFor(seed: string, templateHashValue: string, bankRevision: string) {
+  return `rehearsal-${rehearsalHash([GENERATOR_VERSION, seed, templateHashValue, bankRevision]).slice(0, 32)}`;
 }
 
 function fillerLetter(
@@ -98,7 +73,7 @@ function fillerLetter(
   const random =
     parseInt(
       rehearsalHash([
-        WORD_SEARCH_FILLER_VERSION,
+        GENERATOR_VERSION,
         "word-search-filler",
         seed,
         question.id,
@@ -211,12 +186,6 @@ function resolve(q: RehearsalBankQuestion, template: RehearsalTemplate, index: n
     publicRepresentation: "authorized-runtime",
   });
 }
-function latest(bank: readonly RehearsalBankQuestion[]) {
-  const entries = new Map<string, RehearsalBankQuestion>();
-  for (const q of bank)
-    if (!entries.has(q.id) || entries.get(q.id)!.version < q.version) entries.set(q.id, q);
-  return [...entries.values()].sort((a, b) => compare(a.id, b.id));
-}
 function exclusion(q: RehearsalBankQuestion, t: RehearsalTemplate, i: number): string | null {
   const slot = t.questions[i]!;
   if (q.type !== slot.type) return "format";
@@ -248,13 +217,13 @@ export function rehearsalCandidates(
   template: RehearsalTemplate,
   i: number,
 ) {
-  return latest(bank).filter((q) => exclusion(q, template, i) === null);
+  return activeQuestions(bank).filter((q) => exclusion(q, template, i) === null);
 }
 export function rehearsalCoverage(
   bank: readonly RehearsalBankQuestion[],
   template: RehearsalTemplate,
 ): RehearsalCoverage {
-  const active = latest(bank);
+  const active = activeQuestions(bank);
   const slots = template.questions.map((slot, i) => {
     const excluded: Record<string, number> = {};
     const candidates = active.filter((q) => {
@@ -291,12 +260,33 @@ export function rehearsalCoverage(
           ? ["Se utilizará una dificultad próxima"]
           : []),
         ...(candidates.length > 0 && candidates.length < repeated
-          ? ["Puede ser necesario repetir preguntas"]
+          ? ["No hay suficientes ejercicios distintos para estas posiciones"]
           : []),
       ],
     };
   });
-  return { ready: slots.length > 0 && slots.every((s) => s.candidateCount > 0), slots };
+  const pools = template.questions.map((_slot, i) => rehearsalCandidates(bank, template, i));
+  const requested = template.questions.map((slot) => slot.difficulty);
+  const ready =
+    slots.length > 0 && Number.isFinite(new RehearsalAssignment(pools, requested).minimumCost());
+  const exactDifficultyReady =
+    ready &&
+    Number.isFinite(
+      new RehearsalAssignment(
+        pools.map((pool, i) => pool.filter((q) => q.difficulty === requested[i])),
+        requested,
+      ).minimumCost(),
+    );
+  return {
+    ready,
+    exactDifficultyReady,
+    slots,
+    warnings: !ready
+      ? ["No hay suficientes ejercicios distintos compatibles para completar la prueba"]
+      : !exactDifficultyReady
+        ? ["La combinación requiere sustituir alguna dificultad por una próxima"]
+        : [],
+  };
 }
 function similarity(q: RehearsalBankQuestion, expected: Readonly<Record<string, unknown>>) {
   const actual = publicMechanics(q.type, q.publicPayload);
@@ -308,33 +298,58 @@ function similarity(q: RehearsalBankQuestion, expected: Readonly<Record<string, 
   return 1 / (1 + distance);
 }
 function choose(bank: readonly RehearsalBankQuestion[], t: RehearsalTemplate, seed: string) {
-  const cycles = new Map<string, Set<string>>(),
-    families = new Set<string>();
-  return t.questions.map((slot, i) => {
-    const bucket = `${slot.type}:${t.mode === "alphabet" ? String(slot.modeConfig.letter) : ""}`;
-    const used = cycles.get(bucket) ?? new Set<string>();
-    cycles.set(bucket, used);
-    let pool = rehearsalCandidates(bank, t, i);
-    if (!pool.length) throw new Error("rehearsal_coverage_missing");
-    if (!pool.some((q) => !used.has(q.id))) used.clear();
-    pool = pool.filter((q) => !used.has(q.id));
-    const best = Math.min(
-      ...pool.map((q) => Math.abs(ranks[q.difficulty] - ranks[slot.difficulty])),
-    );
-    pool = pool.filter((q) => Math.abs(ranks[q.difficulty] - ranks[slot.difficulty]) === best);
-    const easier = Math.min(...pool.map((q) => ranks[q.difficulty]));
-    pool = pool.filter((q) => ranks[q.difficulty] === easier);
-    if (pool.some((q) => !families.has(q.familyId ?? q.id)))
-      pool = pool.filter((q) => !families.has(q.familyId ?? q.id));
-    const weights = pool.map((q) => similarity(q, slot.mechanics));
+  const problem = new RehearsalAssignment(
+    t.questions.map((_slot, i) => rehearsalCandidates(bank, t, i)),
+    t.questions.map((slot) => slot.difficulty),
+  );
+  let budget = problem.minimumCost();
+  if (!t.questions.length || !Number.isFinite(budget))
+    throw new Error("rehearsal_coverage_missing");
+  const used = new Set<string>();
+  const families = new Set<string>();
+  function weighted<T>(
+    values: readonly T[],
+    weight: (value: T) => number,
+    index: number,
+    stage: string,
+  ): T {
+    const weights = values.map(weight);
     const random =
-      parseInt(rehearsalHash([GENERATOR_VERSION, seed, templateHash(t), i]).slice(0, 13), 16) /
-      0x10000000000000;
+      parseInt(
+        rehearsalHash([GENERATOR_VERSION, seed, templateHash(t), index, stage]).slice(0, 13),
+        16,
+      ) / 0x10000000000000;
     let cursor = random * weights.reduce((a, b) => a + b, 0);
-    const q = pool.find((_q, j) => (cursor -= weights[j]!) < 0) ?? pool[pool.length - 1]!;
-    used.add(q.id);
-    families.add(q.familyId ?? q.id);
-    return q;
+    return values.find((_value, i) => (cursor -= weights[i]!) < 0) ?? values[values.length - 1]!;
+  }
+  return t.questions.map((slot, i) => {
+    let pool = problem.slots[i]!.filter((candidate) => {
+      if (used.has(candidate.exercise)) return false;
+      const remaining = new Set(used).add(candidate.exercise);
+      return candidate.cost + problem.minimumCost(i + 1, remaining) === budget;
+    });
+    const nearest = Math.min(...pool.map((q) => q.cost));
+    pool = pool.filter((q) => q.cost === nearest);
+    if (pool.some((q) => !families.has(q.question.familyId ?? q.question.id)))
+      pool = pool.filter((q) => !families.has(q.question.familyId ?? q.question.id));
+    const groups = new Map<string, typeof pool>();
+    for (const candidate of pool) {
+      const family = candidate.question.familyId ?? candidate.question.id;
+      groups.set(family, [...(groups.get(family) ?? []), candidate]);
+    }
+    const family = weighted(
+      [...groups.values()],
+      (members) =>
+        members.reduce((sum, q) => sum + similarity(q.question, slot.mechanics), 0) /
+        members.length,
+      i,
+      "family",
+    );
+    const selected = weighted(family, (q) => similarity(q.question, slot.mechanics), i, "question");
+    used.add(selected.exercise);
+    families.add(selected.question.familyId ?? selected.question.id);
+    budget -= selected.cost;
+    return selected.question;
   });
 }
 function materialize(
@@ -346,12 +361,7 @@ function materialize(
   const levels = selected.map((q, i) => ({
     challengeItemId: `${id}:${i + 1}`,
     payloadSchemaVersion: q.payloadSchemaVersion,
-    ...resolve(
-      recipe.generatorVersion === 2 ? fillWordSearchQuestion(q, recipe.seed, i) : q,
-      t,
-      i,
-      `${id}:${i + 1}`,
-    ),
+    ...resolve(fillWordSearchQuestion(q, recipe.seed, i), t, i, `${id}:${i + 1}`),
   }));
   const slots = t.questions.map((s, i) => ({
     id: levels[i]!.challengeItemId,
@@ -407,7 +417,18 @@ function materialize(
             : { ...base, mode: t.mode, slots };
   const definition = { challenge, levels } as RehearsalDefinition;
   validateRehearsalDefinition(definition);
-  return { definition, recipe };
+  const difficultyFallbacks = selected.flatMap((q, i) =>
+    q.difficulty === t.questions[i]!.difficulty
+      ? []
+      : [
+          {
+            position: i + 1,
+            requested: t.questions[i]!.difficulty,
+            selected: q.difficulty,
+          },
+        ],
+  );
+  return { definition, recipe, difficultyFallbacks };
 }
 export function validateRehearsalDefinition(d: RehearsalDefinition) {
   switch (d.challenge.mode) {
@@ -434,7 +455,7 @@ export function generateRehearsal(
     [...bank].sort((a, b) => compare(a.id, b.id) || a.version - b.version),
   );
   const recipe: RehearsalRecipe = {
-    sessionId: sessionIdFor(seed, templateHash(t), revision, GENERATOR_VERSION),
+    sessionId: sessionIdFor(seed, templateHash(t), revision),
     seed,
     generatorVersion: GENERATOR_VERSION,
     bankRevision: revision,
@@ -442,6 +463,8 @@ export function generateRehearsal(
     challengeVersionId: t.challengeVersionId,
     questions: selected.map(questionRef),
   };
+  if (new Set(selected.map(exerciseHash)).size !== selected.length)
+    throw new Error("rehearsal_recipe_incompatible");
   return materialize(t, selected, recipe);
 }
 export function replayRehearsal(
@@ -451,7 +474,7 @@ export function replayRehearsal(
 ): GeneratedRehearsal {
   if (
     !recipe ||
-    (recipe.generatorVersion !== 1 && recipe.generatorVersion !== GENERATOR_VERSION) ||
+    recipe.generatorVersion !== GENERATOR_VERSION ||
     recipe.challengeVersionId !== t.challengeVersionId ||
     recipe.templateHash !== templateHash(t) ||
     !Array.isArray(recipe.questions) ||
@@ -462,8 +485,7 @@ export function replayRehearsal(
     !/^[a-zA-Z0-9_-]{1,128}$/.test(recipe.seed) ||
     typeof recipe.bankRevision !== "string" ||
     !/^[a-f0-9]{64}$/.test(recipe.bankRevision) ||
-    recipe.sessionId !==
-      sessionIdFor(recipe.seed, recipe.templateHash, recipe.bankRevision, recipe.generatorVersion)
+    recipe.sessionId !== sessionIdFor(recipe.seed, recipe.templateHash, recipe.bankRevision)
   )
     throw new Error("rehearsal_recipe_incompatible");
   const selected = recipe.questions.map((ref, i) => {
@@ -473,5 +495,7 @@ export function replayRehearsal(
     if (exclusion(q, t, i)) throw new Error("rehearsal_recipe_incompatible");
     return q;
   });
+  if (new Set(selected.map(exerciseHash)).size !== selected.length)
+    throw new Error("rehearsal_recipe_incompatible");
   return materialize(t, selected, recipe);
 }

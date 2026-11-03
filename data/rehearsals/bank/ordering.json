@@ -1,137 +1,5 @@
 [
   {
-    "id": "betavip-antiguedad-q4",
-    "version": 1,
-    "type": "ordering",
-    "payloadSchemaVersion": 1,
-    "publicPayload": {
-      "question": "Ordena estos números de menor a mayor.",
-      "items": ["15", "14", "13", "12"],
-      "directionLabels": {
-        "start": "Menor",
-        "end": "Mayor"
-      }
-    },
-    "solutionPayload": {
-      "correctOrder": ["12", "13", "14", "15"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
-    },
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
-    "referenceTimeLimitMs": 30000,
-    "familyId": "ordering-enteros-consecutivos"
-  },
-  {
-    "id": "betavip-supervivencia-q13",
-    "version": 1,
-    "type": "ordering",
-    "payloadSchemaVersion": 1,
-    "publicPayload": {
-      "question": "Ordena estos números de menor a mayor.",
-      "items": ["42", "41", "40", "39"],
-      "directionLabels": {
-        "start": "Menor",
-        "end": "Mayor"
-      }
-    },
-    "solutionPayload": {
-      "correctOrder": ["39", "40", "41", "42"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
-    },
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
-    "referenceTimeLimitMs": 20000,
-    "familyId": "ordering-enteros-consecutivos"
-  },
-  {
-    "id": "betavip-supervivencia-q16",
-    "version": 1,
-    "type": "ordering",
-    "payloadSchemaVersion": 1,
-    "publicPayload": {
-      "question": "Ordena estos números de menor a mayor.",
-      "items": ["51", "50", "49", "48"],
-      "directionLabels": {
-        "start": "Menor",
-        "end": "Mayor"
-      }
-    },
-    "solutionPayload": {
-      "correctOrder": ["48", "49", "50", "51"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
-    },
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
-    "referenceTimeLimitMs": 20000,
-    "familyId": "ordering-enteros-consecutivos"
-  },
-  {
-    "id": "betavip-supervivencia-q20",
-    "version": 1,
-    "type": "ordering",
-    "payloadSchemaVersion": 1,
-    "publicPayload": {
-      "question": "Ordena estos números de menor a mayor.",
-      "items": ["63", "62", "61", "60"],
-      "directionLabels": {
-        "start": "Menor",
-        "end": "Mayor"
-      }
-    },
-    "solutionPayload": {
-      "correctOrder": ["60", "61", "62", "63"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
-    },
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
-    "referenceTimeLimitMs": 20000,
-    "familyId": "ordering-enteros-consecutivos"
-  },
-  {
-    "id": "flash-referencia-q4",
-    "version": 1,
-    "type": "ordering",
-    "payloadSchemaVersion": 1,
-    "publicPayload": {
-      "question": "Ordena estos números de menor a mayor.",
-      "items": ["15", "14", "13", "12"],
-      "directionLabels": {
-        "start": "Menor",
-        "end": "Mayor"
-      }
-    },
-    "solutionPayload": {
-      "correctOrder": ["12", "13", "14", "15"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
-    },
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
-    "referenceTimeLimitMs": 26000,
-    "familyId": "ordering-enteros-consecutivos"
-  },
-  {
-    "id": "flash-referencia-q13",
-    "version": 1,
-    "type": "ordering",
-    "payloadSchemaVersion": 1,
-    "publicPayload": {
-      "question": "Ordena estos números de menor a mayor.",
-      "items": ["41", "40", "39"],
-      "directionLabels": {
-        "start": "Menor",
-        "end": "Mayor"
-      }
-    },
-    "solutionPayload": {
-      "correctOrder": ["39", "40", "41"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
-    },
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
-    "referenceTimeLimitMs": 20000,
-    "familyId": "ordering-enteros-consecutivos"
-  },
-  {
     "id": "bank-ordenar-ciclo-agua",
     "version": 1,
     "type": "ordering",
@@ -174,5 +42,137 @@
     "difficulty": "medium",
     "referenceTimeLimitMs": 60000,
     "familyId": "bank-ordenar-masa"
+  },
+  {
+    "id": "betavip-antiguedad-q4",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["15", "14", "13", "12"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["12", "13", "14", "15"],
+      "explanation": "Al comparar sus valores numéricos, el orden creciente es 12 < 13 < 14 < 15. Cada número debe quedar antes que los mayores que él."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "betavip-supervivencia-q13",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["42", "41", "40", "39"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["39", "40", "41", "42"],
+      "explanation": "Al comparar sus valores numéricos, el orden creciente es 39 < 40 < 41 < 42. Cada número debe quedar antes que los mayores que él."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "betavip-supervivencia-q16",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["51", "50", "49", "48"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["48", "49", "50", "51"],
+      "explanation": "Al comparar sus valores numéricos, el orden creciente es 48 < 49 < 50 < 51. Cada número debe quedar antes que los mayores que él."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "betavip-supervivencia-q20",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["63", "62", "61", "60"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["60", "61", "62", "63"],
+      "explanation": "Al comparar sus valores numéricos, el orden creciente es 60 < 61 < 62 < 63. Cada número debe quedar antes que los mayores que él."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "flash-referencia-q13",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena estos números de menor a mayor.",
+      "items": ["41", "40", "39"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["39", "40", "41"],
+      "explanation": "Al comparar sus valores numéricos, el orden creciente es 39 < 40 < 41. Cada número debe quedar antes que los mayores que él."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "ordering-enteros-consecutivos"
+  },
+  {
+    "id": "bank-ordenar-fracciones",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-fracciones",
+    "publicPayload": {
+      "question": "Ordena estas fracciones de menor a mayor.",
+      "items": ["5/8", "7/12", "2/3", "3/5"],
+      "directionLabels": {
+        "start": "Menor",
+        "end": "Mayor"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["7/12", "3/5", "5/8", "2/3"],
+      "explanation": "Con denominador común 120: 7/12 = 70/120, 3/5 = 72/120, 5/8 = 75/120 y 2/3 = 80/120. Por ello 70 < 72 < 75 < 80 da el orden."
+    }
   }
 ]

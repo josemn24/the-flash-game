@@ -158,7 +158,7 @@
           "endCell": 87
         }
       },
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Localiza las palabras en estos extremos (fila, columna), desde 1: NATURALEZA: (1, 1) → (1, 10); BOSQUE: (3, 1) → (3, 6); NUBES: (5, 1) → (5, 5); PLANETA: (7, 1) → (7, 7); ESTRELLA: (9, 1) → (9, 8). Lee en línea recta entre ambos extremos."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "medium",
@@ -328,7 +328,7 @@
           "endCell": 82
         }
       },
-      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+      "explanation": "Localiza las palabras en estos extremos (fila, columna), desde 1: BALON: (1, 1) → (1, 5); RAQUETA: (2, 10) → (8, 10); RED: (4, 1) → (4, 3); PESAS: (7, 1) → (7, 5); GOL: (9, 1) → (9, 3). Lee en línea recta entre ambos extremos."
     }
   },
   {
@@ -494,7 +494,323 @@
           "endCell": 85
         }
       },
-      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+      "explanation": "Localiza las palabras en estos extremos (fila, columna), desde 1: PIANO: (1, 1) → (1, 5); VIOLIN: (2, 10) → (7, 10); ARPA: (4, 1) → (4, 4); TAMBOR: (7, 1) → (7, 6); FLAUTA: (9, 1) → (9, 6). Lee en línea recta entre ambos extremos."
+    }
+  },
+  {
+    "id": "bank-sopa-easy",
+    "version": 1,
+    "type": "word-search",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-sopa-easy",
+    "publicPayload": {
+      "question": "Encuentra las palabras indicadas en la cuadrícula.",
+      "grid": {
+        "rows": 10,
+        "columns": 10
+      },
+      "letters": [
+        "P",
+        "A",
+        "N",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "S",
+        "A",
+        "L",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "U",
+        "V",
+        "A",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X"
+      ],
+      "targets": [
+        {
+          "id": "w0",
+          "word": "PAN"
+        },
+        {
+          "id": "w1",
+          "word": "SAL"
+        },
+        {
+          "id": "w2",
+          "word": "UVA"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "positionsByTargetId": {
+        "w0": {
+          "startCell": 0,
+          "endCell": 2
+        },
+        "w1": {
+          "startCell": 20,
+          "endCell": 22
+        },
+        "w2": {
+          "startCell": 40,
+          "endCell": 42
+        }
+      },
+      "explanation": "Extremos (fila, columna), desde 1: PAN: (1, 1) → (1, 3); SAL: (3, 1) → (3, 3); UVA: (5, 1) → (5, 3). Lee en línea recta entre los extremos; las palabras comparten letras cuando sus trayectos coinciden."
+    }
+  },
+  {
+    "id": "bank-sopa-hard",
+    "version": 1,
+    "type": "word-search",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-sopa-hard",
+    "publicPayload": {
+      "question": "Encuentra las palabras indicadas en la cuadrícula.",
+      "grid": {
+        "rows": 10,
+        "columns": 10
+      },
+      "letters": [
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "S",
+        "G",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "I",
+        "E",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "M",
+        "O",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "E",
+        "M",
+        "E",
+        "C",
+        "I",
+        "T",
+        "R",
+        "E",
+        "V",
+        "X",
+        "T",
+        "E",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "R",
+        "T",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "I",
+        "R",
+        "P",
+        "O",
+        "L",
+        "I",
+        "G",
+        "O",
+        "N",
+        "O",
+        "A",
+        "I",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "X",
+        "A",
+        "E",
+        "T",
+        "N",
+        "O",
+        "Z",
+        "I",
+        "R",
+        "O",
+        "H",
+        "X"
+      ],
+      "targets": [
+        {
+          "id": "w0",
+          "word": "GEOMETRIA"
+        },
+        {
+          "id": "w1",
+          "word": "HORIZONTE"
+        },
+        {
+          "id": "w2",
+          "word": "POLIGONO"
+        },
+        {
+          "id": "w3",
+          "word": "SIMETRIA"
+        },
+        {
+          "id": "w4",
+          "word": "VERTICE"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "positionsByTargetId": {
+        "w0": {
+          "startCell": 9,
+          "endCell": 89
+        },
+        "w1": {
+          "startCell": 98,
+          "endCell": 90
+        },
+        "w2": {
+          "startCell": 70,
+          "endCell": 77
+        },
+        "w3": {
+          "startCell": 8,
+          "endCell": 78
+        },
+        "w4": {
+          "startCell": 46,
+          "endCell": 40
+        }
+      },
+      "explanation": "Extremos (fila, columna), desde 1: GEOMETRIA: (1, 10) → (9, 10); HORIZONTE: (10, 9) → (10, 1); POLIGONO: (8, 1) → (8, 8); SIMETRIA: (1, 9) → (8, 9); VERTICE: (5, 7) → (5, 1). Lee en línea recta entre los extremos; las palabras comparten letras cuando sus trayectos coinciden."
     }
   }
 ]

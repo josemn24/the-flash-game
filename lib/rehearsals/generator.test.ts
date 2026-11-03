@@ -1,249 +1,304 @@
 import { expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { rehearsalBank } from "@/infrastructure/rehearsals/bank";
-import { questionTemplate, rehearsalTemplates } from "@/test-utils/rehearsals/fixtures";
+import { bankQuestionCase, rehearsalTemplates } from "@/test-utils/rehearsals/fixtures";
 import { getWordSearchPath, isValidWordSearchConfiguration } from "@/lib/wordSearch";
+import { activeQuestions } from "./catalog";
+import { exerciseHash, rehearsalHash } from "./hash";
+import { COMPETITIVE_RESOLVERS } from "@/lib/scoringCore/resolution/registry";
 import {
   generateRehearsal,
   rehearsalCoverage,
-  rehearsalHash,
   replayRehearsal,
   rehearsalCandidates,
-  templateHash,
 } from "./generator";
+import type {
+  GeneratedRehearsal,
+  RehearsalBankQuestion,
+  RehearsalTemplate,
+} from "@/types/gameplay/rehearsal";
 const bank = rehearsalBank();
+const active = activeQuestions(bank);
 const t = rehearsalTemplates.find((t) => t.mode === "time-trial")!;
-
-function wordSearchPublicQuestion(run: ReturnType<typeof generateRehearsal>, levelIndex = 0) {
-  const question = run.definition.levels[levelIndex]?.publicQuestion;
-  if (!question || question.type !== "word-search") throw new Error("Expected word search");
-  return question;
+const two = {
+  ...t,
+  questions: t.questions.slice(0, 2).map((q) => ({ ...q, points: 50, mechanics: {} })),
+};
+const base = active.find((q) => q.type === "queens")!;
+function choice(
+  id: string,
+  difficulty: RehearsalBankQuestion["difficulty"] = "medium",
+  familyId = id,
+): RehearsalBankQuestion {
+  return {
+    ...base,
+    id,
+    difficulty,
+    familyId,
+    publicPayload: { ...base.publicPayload, question: id },
+  };
 }
+const chosen = (run: GeneratedRehearsal, pool: readonly RehearsalBankQuestion[]) =>
+  run.recipe.questions.map((ref) =>
+    pool.find((q) => q.id === ref.id && q.version === ref.version)!,
+  );
 
-it("is deterministic and varies across seeds without changing the template", () => {
+it("is deterministic, independent of bank order, and varies by seed", () => {
   const before = JSON.stringify({ bank, t });
   const a = generateRehearsal(bank, t, "seed");
-  expect(generateRehearsal([...bank].reverse(), t, "seed").recipe.questions).toEqual(
-    a.recipe.questions,
-  );
+  expect(a.recipe.generatorVersion).toBe(1);
+  expect(generateRehearsal([...bank].reverse(), t, "seed")).toEqual(a);
   expect(generateRehearsal(bank, t, "seed")).toEqual(a);
   expect(replayRehearsal(bank, t, a.recipe)).toEqual(a);
-  const sequences = new Set(
-    Array.from({ length: 12 }, (_, i) =>
-      JSON.stringify(generateRehearsal(bank, t, `seed-${i}`).recipe.questions),
-    ),
-  );
-  expect(sequences.size).toBeGreaterThan(1);
+  expect(
+    new Set(
+      Array.from({ length: 12 }, (_, i) =>
+        JSON.stringify(generateRehearsal(bank, t, `seed-${i}`).recipe.questions),
+      ),
+    ).size,
+  ).toBeGreaterThan(1);
+  expect(new Set(chosen(a, bank).map(exerciseHash)).size).toBe(t.questions.length);
   expect(JSON.stringify({ bank, t })).toBe(before);
-  expect(new Set(a.recipe.questions.map((q) => q.id)).size).toBe(t.questions.length);
-  expect(a.definition.levels.map((q) => q.publicQuestion.prompt)).not.toContain(t.title);
 });
 
-it("generates seeded Spanish filler for rehearsal word searches and replays it", () => {
-  const questions = bank.filter((question) => question.type === "word-search");
-  expect(questions).toHaveLength(3);
-
-  for (const source of questions) {
-    const template = questionTemplate(source, "flash", [source]);
-    const first = generateRehearsal([source], template, `filler-${source.id}`);
-    const repeated = generateRehearsal([source], template, `filler-${source.id}`);
-    const different = generateRehearsal([source], template, `other-${source.id}`);
-    const firstQuestion = wordSearchPublicQuestion(first);
-    const repeatedQuestion = wordSearchPublicQuestion(repeated);
-    const differentQuestion = wordSearchPublicQuestion(different);
-    const generatedLetters = firstQuestion.payload.letters;
-    const sourcePayload = source.publicPayload as unknown as {
-      grid: { rows: number; columns: number };
-      letters: string[];
-      targets: { id: string; word: string }[];
-    };
+it("fills every active word search deterministically without changing the target paths", () => {
+  for (const source of active.filter((q) => q.type === "word-search")) {
+    const fixture = bankQuestionCase(source, "flash", bank);
+    const seed = `filler-${source.id}`;
+    const run = generateRehearsal(fixture.bank, fixture.template, seed);
+    const same = generateRehearsal(fixture.bank, fixture.template, seed);
+    const other = generateRehearsal(fixture.bank, fixture.template, `other-${source.id}`);
+    expect(same).toEqual(run);
+    expect(replayRehearsal(bank, fixture.template, run.recipe)).toEqual(run);
+    const first = run.definition.levels[0]!.publicQuestion;
+    const different = other.definition.levels[0]!.publicQuestion;
+    if (first.type !== "word-search" || different.type !== "word-search")
+      throw new Error("word-search expected");
+    expect(first.payload.letters).not.toEqual(source.publicPayload.letters);
+    expect(first.payload.letters).not.toEqual(different.payload.letters);
     const positions = source.solutionPayload.positionsByTargetId as Record<
       string,
       { startCell: number; endCell: number }
     >;
-    const targetPaths = sourcePayload.targets.map((target) => {
-      const position = positions[target.id];
-      if (!position) throw new Error("Expected word-search target positions");
-      const path = getWordSearchPath(sourcePayload.grid, position.startCell, position.endCell);
-      if (!path) throw new Error("Expected a valid word-search target path");
-      return { target, path };
-    });
-
-    expect(first.recipe.generatorVersion).toBe(2);
-    expect(repeated).toEqual(first);
-    expect(replayRehearsal([source], template, first.recipe)).toEqual(first);
-    expect(generatedLetters).not.toEqual(sourcePayload.letters);
-    expect(generatedLetters).toEqual(repeatedQuestion.payload.letters);
-    expect(generatedLetters).not.toEqual(differentQuestion.payload.letters);
-    expect(new Set(generatedLetters).size).toBeGreaterThan(10);
-    expect(generatedLetters.filter((letter) => letter === "X").length).toBeLessThan(
-      sourcePayload.letters.filter((letter) => letter === "X").length,
-    );
-
-    for (const { target, path } of targetPaths) {
-      expect(path.map((cell) => generatedLetters[cell]).join("")).toBe(
-        path.map((cell) => sourcePayload.letters[cell]).join(""),
-      );
-      expect(path.map((cell) => generatedLetters[cell]).join("")).toBe(target.word);
+    const targets = first.payload.targets.map((target) => ({
+      ...target,
+      ...positions[target.id]!,
+    }));
+    for (const target of targets) {
+      const path = getWordSearchPath(first.payload.grid, target.startCell, target.endCell)!;
+      expect(path.map((cell) => first.payload.letters[cell]).join("")).toBe(target.word);
     }
     expect(
-      isValidWordSearchConfiguration({
-        grid: sourcePayload.grid,
-        letters: generatedLetters,
-        targets: targetPaths.map(({ target, path }) => ({
-          ...target,
-          startCell: path[0]!,
-          endCell: path.at(-1)!,
-        })),
-      } as never),
+      isValidWordSearchConfiguration(
+        COMPETITIVE_RESOLVERS["word-search"]({ ...run.definition.levels[0]!, points: 100 }),
+      ),
     ).toBe(true);
   }
 });
 
-it("replays generator v1 word-search recipes with the original X filler", () => {
-  const source = bank.find((question) => question.id === "bank-sopa-1")!;
-  const template = questionTemplate(source, "flash", [source]);
-  const seed = "legacy-word-search";
-  const current = generateRehearsal([source], template, seed);
-  const legacyRecipe = {
-    ...current.recipe,
-    generatorVersion: 1 as const,
-    sessionId: `rehearsal-${rehearsalHash([
-      seed,
-      templateHash(template),
-      current.recipe.bankRevision,
-    ]).slice(0, 32)}`,
+type FrozenRun = {
+  template: RehearsalTemplate;
+  recipe: GeneratedRehearsal["recipe"];
+  definitionHash: string;
+};
+const frozen = JSON.parse(
+  readFileSync("test-utils/rehearsals/v1-recipes.json", "utf8"),
+) as FrozenRun[];
+it.each(frozen)(
+  "replays the consolidated v1 reference for $template.challengeVersionId unchanged",
+  (fixture) => {
+    const run = replayRehearsal(bank, fixture.template, fixture.recipe);
+    expect(run.recipe).toEqual(fixture.recipe);
+    expect(rehearsalHash(run.definition)).toBe(fixture.definitionHash);
+  },
+);
+
+it("uses nearby difficulty only after exhausting distinct exact candidates and reports it", () => {
+  const pool = [choice("easy", "easy"), choice("medium"), choice("hard", "hard")];
+  const coverage = rehearsalCoverage(pool, two);
+  expect(coverage.ready).toBe(true);
+  expect(coverage.exactDifficultyReady).toBe(false);
+  expect(coverage.warnings).toHaveLength(1);
+  const run = generateRehearsal(pool, two, "fallback");
+  expect(run.recipe.questions.map((q) => q.id)).toEqual(["medium", "easy"]);
+  expect(run.difficultyFallbacks).toEqual([{ position: 2, requested: "medium", selected: "easy" }]);
+});
+it("uses the lower nearby difficulty on equal distance", () => {
+  const pool = [choice("easy", "easy"), choice("hard", "hard")];
+  expect(generateRehearsal(pool, two, "tie").recipe.questions.map((q) => q.id)).toEqual([
+    "easy",
+    "hard",
+  ]);
+});
+it("never repeats identical content even when its IDs, explanations and metadata differ", () => {
+  const first = choice("first");
+  const duplicate = {
+    ...first,
+    id: "second",
+    familyId: "another-family",
+    difficulty: "hard" as const,
+    solutionPayload: { ...first.solutionPayload, explanation: "Otra explicación." },
   };
-
-  const replayed = replayRehearsal([source], template, legacyRecipe);
-  expect(replayed.recipe).toEqual(legacyRecipe);
-  expect(replayed.recipe.sessionId).not.toBe(current.recipe.sessionId);
-  expect(wordSearchPublicQuestion(replayed).payload.letters).toEqual(
-    (source.publicPayload as { letters: string[] }).letters,
-  );
+  expect(exerciseHash(first)).toBe(exerciseHash(duplicate));
+  expect(rehearsalCoverage([first, duplicate], two).ready).toBe(false);
+  expect(() => generateRehearsal([first, duplicate], two, "duplicates")).toThrow("coverage");
 });
-
-it("uses nearest difficulty and prefers the lower one in a tie", () => {
-  const q = rehearsalCandidates(bank, t, 0)[0]!;
-  const choices = [
-    { ...q, id: "easy", difficulty: "easy" as const },
-    { ...q, id: "hard", difficulty: "hard" as const },
-  ];
-  const one = { ...t, questions: t.questions.slice(0, 2) };
-  const result = generateRehearsal(
-    choices,
-    { ...one, questions: one.questions.map((q) => ({ ...q, points: 50 })) },
-    "difficulty",
-  );
-  expect(result.recipe.questions[0]!.id).toBe("easy");
-  expect(result.recipe.questions[1]!.id).toBe("hard");
-  expect(rehearsalCoverage(choices, t).slots[0]!.warnings).toContain(
-    "Se utilizará una dificultad próxima",
-  );
+it("detects shared shortages even when every slot has multiple candidates", () => {
+  const pool = [choice("first"), choice("second")];
+  expect(rehearsalCoverage(pool, t).slots.every((s) => s.candidateCount === 2)).toBe(true);
+  expect(rehearsalCoverage(pool, t).ready).toBe(false);
+  expect(() => generateRehearsal(pool, t, "insufficient")).toThrow("coverage");
 });
-it("reports missing and invalid candidates before generation", () => {
-  expect(rehearsalCoverage([], t).ready).toBe(false);
-  expect(() => generateRehearsal([], t, "empty")).toThrow("coverage");
-  const imageTemplate = rehearsalTemplates.find((t) =>
-    t.questions.some((q) => q.type === "progressive-image"),
+it("reserves the only fast-compatible image instead of stranding a later slot", () => {
+  const source = active.find(
+    (q) => q.type === "progressive-image" && q.payloadSchemaVersion === 2,
   )!;
-  const i = imageTemplate.questions.findIndex((q) => q.type === "progressive-image");
-  expect(
-    rehearsalCandidates(
-      bank,
-      {
-        ...imageTemplate,
-        questions: imageTemplate.questions.map((q, j) => (j === i ? { ...q, timeLimitMs: 1 } : q)),
-      },
-      i,
-    ),
-  ).toEqual([]);
+  const fast = {
+    ...source,
+    id: "fast",
+    difficulty: "medium" as const,
+    publicPayload: { ...source.publicPayload, question: "fast", revealDurationMs: 2000 },
+  };
+  const slow = {
+    ...source,
+    id: "slow",
+    difficulty: "medium" as const,
+    publicPayload: { ...source.publicPayload, question: "slow", revealDurationMs: 8000 },
+  };
+  const fixture = bankQuestionCase(source, "flash", bank).template;
+  const template = {
+    ...fixture,
+    questions: [10000, 5000].map((timeLimitMs) => ({
+      ...fixture.questions[0]!,
+      timeLimitMs,
+      points: 50,
+      difficulty: "medium" as const,
+    })),
+  };
+  expect(rehearsalCoverage([fast, slow], template).exactDifficultyReady).toBe(true);
+  for (let i = 0; i < 12; i++)
+    expect(
+      generateRehearsal([fast, slow], template, `reserve-${i}`).recipe.questions.map((q) => q.id),
+    ).toEqual(["slow", "fast"]);
 });
-it("repeats only after exhausting candidates and rejects damaged recipes", () => {
-  const choices = rehearsalCandidates(bank, t, 0).slice(0, 2);
-  const result = generateRehearsal(choices, t, "repeat");
-  expect(result.recipe.questions[0]!.id).not.toBe(result.recipe.questions[1]!.id);
-  expect(() => replayRehearsal(choices, t, { ...result.recipe, templateHash: "wrong" })).toThrow(
+it("keeps exact difficulty globally when an alternative would force an avoidable fallback", () => {
+  const source = active.find(
+    (q) => q.type === "progressive-image" && q.payloadSchemaVersion === 2,
+  )!;
+  const pool = [
+    {
+      ...source,
+      id: "fast-medium",
+      difficulty: "medium" as const,
+      publicPayload: { ...source.publicPayload, question: "fast", revealDurationMs: 2000 },
+    },
+    {
+      ...source,
+      id: "slow-medium",
+      difficulty: "medium" as const,
+      publicPayload: { ...source.publicPayload, question: "slow", revealDurationMs: 8000 },
+    },
+    {
+      ...source,
+      id: "fast-easy",
+      difficulty: "easy" as const,
+      publicPayload: { ...source.publicPayload, question: "easy", revealDurationMs: 2000 },
+    },
+  ];
+  const sample = bankQuestionCase(source, "flash", bank).template;
+  const template = {
+    ...sample,
+    questions: [10000, 5000].map((timeLimitMs) => ({
+      ...sample.questions[0]!,
+      timeLimitMs,
+      points: 50,
+      difficulty: "medium" as const,
+    })),
+  };
+  for (let i = 0; i < 12; i++)
+    expect(generateRehearsal(pool, template, `exact-${i}`).difficultyFallbacks).toEqual([]);
+});
+it("weights families independently of their number of variants and allows distinct variants", () => {
+  const small = [choice("a0", "medium", "a"), choice("b0", "medium", "b")];
+  const large = [
+    ...small,
+    ...Array.from({ length: 8 }, (_, i) => choice(`a${i + 1}`, "medium", "a")),
+  ];
+  const families = new Set<string>();
+  for (let i = 0; i < 40; i++) {
+    const a = chosen(generateRehearsal(small, two, `family-${i}`), small);
+    const b = chosen(generateRehearsal(large, two, `family-${i}`), large);
+    expect(a[0]!.familyId).toBe(b[0]!.familyId);
+    expect(a[0]!.familyId).not.toBe(a[1]!.familyId);
+    families.add(a[0]!.familyId!);
+  }
+  expect(families.size).toBe(2);
+  const variants = large.filter((q) => q.familyId === "a");
+  expect(generateRehearsal(variants, two, "variants").recipe.questions[0]!.id).not.toBe(
+    generateRehearsal(variants, two, "variants").recipe.questions[1]!.id,
+  );
+});
+it("supports future editorial versions and retirements without losing new v1 recipes", () => {
+  const originalPool = [choice("first"), choice("second")];
+  const original = generateRehearsal(originalPool, two, "before");
+  const updated = [...originalPool, { ...originalPool[0]!, version: originalPool[0]!.version + 1 }];
+  expect(
+    generateRehearsal(updated, two, "after").recipe.questions.find((q) => q.id === "first")!
+      .version,
+  ).toBe(originalPool[0]!.version + 1);
+  expect(replayRehearsal(updated, two, original.recipe)).toEqual(original);
+  const retired = [
+    ...updated,
+    {
+      ...originalPool[0]!,
+      version: originalPool[0]!.version + 2,
+      generationStatus: "retired" as const,
+    },
+  ];
+  expect(rehearsalCandidates(retired, two, 0).map((q) => q.id)).toEqual(["second"]);
+  expect(rehearsalCoverage(retired, two).ready).toBe(false);
+  expect(replayRehearsal(retired, two, original.recipe)).toEqual(original);
+});
+it("rejects damaged, changed and unsupported recipes", () => {
+  const pool = [choice("first"), choice("second")];
+  const run = generateRehearsal(pool, two, "receipt");
+  for (const generatorVersion of [0, 2, 3]) {
+    const unsupported = { ...JSON.parse(JSON.stringify(run.recipe)), generatorVersion };
+    expect(() => replayRehearsal(pool, two, unsupported)).toThrow("incompatible");
+  }
+  const oldV1 = {
+    ...run.recipe,
+    sessionId: `rehearsal-${rehearsalHash([run.recipe.seed, run.recipe.templateHash, run.recipe.bankRevision]).slice(0, 32)}`,
+  };
+  expect(() => replayRehearsal(pool, two, oldV1)).toThrow("incompatible");
+  expect(() => replayRehearsal(pool, two, { ...run.recipe, templateHash: "wrong" })).toThrow(
     "incompatible",
   );
-  expect(() => replayRehearsal(choices, t, { ...result.recipe, seed: "altered" })).toThrow(
+  expect(() => replayRehearsal(pool, two, { ...run.recipe, seed: "altered" })).toThrow(
     "incompatible",
   );
   expect(() =>
     replayRehearsal(
-      choices.map((q) => ({ ...q, version: q.version + 1 })),
-      t,
-      result.recipe,
+      pool.map((q) => ({ ...q, difficulty: "hard" })),
+      two,
+      run.recipe,
     ),
-  ).toThrow("missing");
+  ).toThrow("changed");
+  expect(() =>
+    replayRehearsal(pool, two, {
+      ...run.recipe,
+      questions: [run.recipe.questions[0]!, run.recipe.questions[0]!],
+    }),
+  ).toThrow("incompatible");
 });
-it("keeps exhaustion cycles independent across formats", () => {
-  const a = bank.find((q) => q.type === "true-false")!;
-  const b = bank.filter((q) => q.type === "multiple-choice").slice(0, 2);
-  const source = {
-    ...rehearsalTemplates.find((t) => t.mode === "flash")!,
-    questions: [a, b[0]!, a, b[0]!].map((q) => ({
-      type: q.type,
-      payloadSchemaVersion: q.payloadSchemaVersion,
-      difficulty: q.difficulty,
-      timeLimitMs: 30000,
-      points: 25,
-      modeConfig: {},
-      mechanics: {},
-    })),
-  };
-  const result = generateRehearsal([a, ...b], source, "independent-cycles");
-  expect(result.recipe.questions[1]!.id).not.toBe(result.recipe.questions[3]!.id);
-});
-it("prefers exact difficulty before families and keeps every eligible choice reachable", () => {
-  const q = rehearsalCandidates(bank, t, 0)[0]!;
-  const choices = [
-    { ...q, id: "first", familyId: "shared", difficulty: "medium" as const },
-    { ...q, id: "second", familyId: "shared", difficulty: "medium" as const },
-    { ...q, id: "third", familyId: "independent", difficulty: "medium" as const },
-    { ...q, id: "easier", familyId: "easy", difficulty: "easy" as const },
-  ];
-  const source = { ...t, questions: t.questions.slice(0, 2).map((s) => ({ ...s, points: 50 })) };
-  const reached = new Set<string>();
-  for (let i = 0; i < 40; i++) {
-    const result = generateRehearsal(choices, source, `families-${i}`);
-    const selected = result.recipe.questions.map((ref) => choices.find((q) => q.id === ref.id)!);
-    expect(selected.every((q) => q.difficulty === "medium")).toBe(true);
-    expect(selected[0]!.familyId).not.toBe(selected[1]!.familyId);
-    reached.add(selected[0]!.id);
-  }
-  expect([...reached].sort()).toEqual(["first", "second", "third"]);
-});
-it("uses latest identities for new sessions and retains exact old versions for replay", () => {
-  const old = rehearsalCandidates(bank, t, 0)[0]!;
-  const original = generateRehearsal([old], t, "before-correction");
-  const next = { ...old, version: old.version + 1 };
-  const updated = [old, next];
-  expect(
-    generateRehearsal(updated, t, "after-correction").recipe.questions.every(
-      (q) => q.version === next.version,
-    ),
-  ).toBe(true);
-  expect(replayRehearsal(updated, t, original.recipe)).toEqual(original);
-  expect(() => replayRehearsal([{ ...old, difficulty: "hard" }], t, original.recipe)).toThrow(
-    "changed",
-  );
-});
-it("requires the letter, supported contract and declared mode for every candidate", () => {
+it("requires letter, declared mode, supported schema and valid official timing", () => {
   const alphabet = rehearsalTemplates.find((t) => t.mode === "alphabet")!;
   const letter = rehearsalCandidates(bank, alphabet, 0)[0]!;
   expect(rehearsalCandidates([{ ...letter, alphabetLetter: "Ñ" }], alphabet, 0)).toEqual([]);
   expect(rehearsalCandidates([{ ...letter, payloadSchemaVersion: 999 }], alphabet, 0)).toEqual([]);
-  expect(
-    rehearsalCandidates(
-      [letter],
-      {
-        ...alphabet,
-        questions: alphabet.questions.map((q) => ({ ...q, payloadSchemaVersion: 999 })),
-      },
-      0,
-    ),
-  ).toEqual([]);
   expect(rehearsalCandidates([{ ...letter, modes: ["flash"] }], alphabet, 0)).toEqual([]);
+  expect(rehearsalCoverage([], t).ready).toBe(false);
+  expect(() => generateRehearsal([], t, "empty")).toThrow("coverage");
 });
 it.each(rehearsalTemplates)(
   "preserves all positions and mode rules in $challengeVersionId",

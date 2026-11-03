@@ -1,5 +1,29 @@
 [
   {
+    "id": "bank-estimar-angulos",
+    "version": 1,
+    "type": "estimation",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "¿Cuántos grados suman los ángulos interiores de un triángulo plano?",
+      "min": 0,
+      "max": 360,
+      "step": 1,
+      "initialValue": 90,
+      "unit": "grados",
+      "media": null
+    },
+    "solutionPayload": {
+      "correctAnswer": 180,
+      "tolerance": 0,
+      "explanation": "En geometría plana, los tres ángulos interiores de un triángulo suman 180 grados."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-estimar-angulos"
+  },
+  {
     "id": "betavip-supervivencia-q11",
     "version": 1,
     "type": "estimation",
@@ -16,7 +40,7 @@
     "solutionPayload": {
       "correctAnswer": 1975,
       "tolerance": 2,
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Para contar enteros con ambos extremos incluidos se resta el primero al último y se suma uno: 1975 − 1 + 1 = 1975."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -40,7 +64,7 @@
     "solutionPayload": {
       "correctAnswer": 15,
       "tolerance": 18,
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Para contar enteros con ambos extremos incluidos se resta el primero al último y se suma uno: 15 − 1 + 1 = 15."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -68,31 +92,31 @@
     "solutionPayload": {
       "correctAnswer": 72,
       "tolerance": 3,
-      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+      "explanation": "Cada día completo tiene 24 horas; tres días suman 3 × 24 = 72 horas."
     }
   },
   {
-    "id": "bank-estimar-angulos",
+    "id": "bank-estimar-deposito",
     "version": 1,
     "type": "estimation",
     "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-estimar-deposito",
     "publicPayload": {
-      "question": "¿Cuántos grados suman los ángulos interiores de un triángulo plano?",
+      "question": "Un depósito de 600 litros está lleno al 75 %. Se consume el 20 % del agua que contiene. ¿Cuántos litros quedan?",
       "min": 0,
-      "max": 360,
+      "max": 600,
       "step": 1,
-      "initialValue": 90,
-      "unit": "grados",
+      "initialValue": 300,
+      "unit": "litros",
       "media": null
     },
     "solutionPayload": {
-      "correctAnswer": 180,
+      "correctAnswer": 360,
       "tolerance": 0,
-      "explanation": "En geometría plana, los tres ángulos interiores de un triángulo suman 180 grados."
-    },
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "medium",
-    "referenceTimeLimitMs": 60000,
-    "familyId": "bank-estimar-angulos"
+      "explanation": "Al principio hay 600 × 0,75 = 450 litros. Se consume 450 × 0,20 = 90, de modo que quedan 450 − 90 = 360 litros."
+    }
   }
 ]

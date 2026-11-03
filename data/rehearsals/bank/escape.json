@@ -87,7 +87,7 @@
         }
       ],
       "optimalMoves": 2,
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Mueve, en este orden y con posiciones contadas desde cero: gate de 0 a 3; target de 0 a 4. Los obstáculos dejan libre la fila de salida y el bloque objetivo llega al extremo derecho."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "medium",
@@ -172,7 +172,7 @@
         }
       ],
       "optimalMoves": 4,
-      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+      "explanation": "Mueve, en este orden y con posiciones contadas desde cero: bar de 1 a 3; gate de 0 a 3; pillar de 0 a 3; target de 0 a 4. Los obstáculos dejan libre la fila de salida y el bloque objetivo llega al extremo derecho."
     }
   },
   {
@@ -240,7 +240,151 @@
         }
       ],
       "optimalMoves": 3,
-      "explanation": "Resuelve el ejercicio siguiendo sus reglas y comprueba la solución."
+      "explanation": "Mueve, en este orden y con posiciones contadas desde cero: bar de 1 a 0; gate de 1 a 3; target de 0 a 4. Los obstáculos dejan libre la fila de salida y el bloque objetivo llega al extremo derecho."
+    }
+  },
+  {
+    "id": "bank-escape-directo",
+    "version": 1,
+    "type": "escape",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-escape-directo",
+    "publicPayload": {
+      "question": "La salida está libre: lleva el objetivo al borde derecho.",
+      "grid": {
+        "rows": 6,
+        "columns": 6,
+        "exit": {
+          "side": "right",
+          "row": 2
+        }
+      },
+      "initialBlocks": [
+        {
+          "id": "target",
+          "kind": "target",
+          "orientation": "horizontal",
+          "row": 2,
+          "column": 0,
+          "length": 2
+        }
+      ]
+    },
+    "solutionPayload": {
+      "referenceSolution": [
+        {
+          "blockId": "target",
+          "from": 0,
+          "to": 4
+        }
+      ],
+      "optimalMoves": 1,
+      "explanation": "La fila 2 está libre a la derecha del objetivo. Desplázalo desde la columna 0 hasta la 4: sus dos casillas ocupan las columnas 4 y 5 junto a la salida."
+    }
+  },
+  {
+    "id": "bank-escape-dependencias",
+    "version": 1,
+    "type": "escape",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-escape-dependencias",
+    "publicPayload": {
+      "question": "Desbloquea la salida: una barrera impide mover otra. Planifica el orden.",
+      "grid": {
+        "rows": 6,
+        "columns": 6,
+        "exit": {
+          "side": "right",
+          "row": 2
+        }
+      },
+      "initialBlocks": [
+        {
+          "id": "target",
+          "kind": "target",
+          "orientation": "horizontal",
+          "row": 2,
+          "column": 0,
+          "length": 2
+        },
+        {
+          "id": "gate",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 0,
+          "column": 2,
+          "length": 3
+        },
+        {
+          "id": "bar",
+          "kind": "obstacle",
+          "orientation": "horizontal",
+          "row": 3,
+          "column": 1,
+          "length": 2
+        },
+        {
+          "id": "pillar",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 0,
+          "column": 5,
+          "length": 3
+        },
+        {
+          "id": "stop",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 3,
+          "column": 3,
+          "length": 2
+        },
+        {
+          "id": "blocker",
+          "kind": "obstacle",
+          "orientation": "vertical",
+          "row": 3,
+          "column": 0,
+          "length": 3
+        }
+      ]
+    },
+    "solutionPayload": {
+      "referenceSolution": [
+        {
+          "blockId": "stop",
+          "from": 3,
+          "to": 4
+        },
+        {
+          "blockId": "bar",
+          "from": 1,
+          "to": 3
+        },
+        {
+          "blockId": "gate",
+          "from": 0,
+          "to": 3
+        },
+        {
+          "blockId": "pillar",
+          "from": 0,
+          "to": 3
+        },
+        {
+          "blockId": "target",
+          "from": 0,
+          "to": 4
+        }
+      ],
+      "optimalMoves": 5,
+      "explanation": "Primero baja stop de fila 3 a 4 para liberar la fila 3. Mueve bar de columna 1 a 3; entonces gate puede bajar de fila 0 a 3. Baja pillar de fila 0 a 3 y, por último, lleva target de columna 0 a 4. Las cuatro maniobras previas despejan la fila 2. El bloque blocker impide desplazar bar hacia la izquierda y el objetivo impide subir blocker, así que se necesita la cadena indicada."
     }
   }
 ]

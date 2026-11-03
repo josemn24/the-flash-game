@@ -23,6 +23,7 @@ import {
   betaVipConnectPairsQuestions,
 } from "@/scripts/fixtures/scenarios/betavip-connect-pairs.mjs";
 import { publicMechanics } from "@/lib/rehearsals/generator";
+import { activeQuestions } from "@/lib/rehearsals/catalog";
 import type {
   RehearsalTemplate,
   RehearsalBankQuestion,
@@ -211,5 +212,42 @@ export function questionTemplate(
         mechanics: publicMechanics(selected.type, selected.publicPayload),
       };
     }),
+  };
+}
+
+/** Isolates the requested exercise in its format while supplying distinct filler slots. */
+export function bankQuestionCase(
+  q: RehearsalBankQuestion,
+  mode: RehearsalTemplate["mode"],
+  bank: readonly RehearsalBankQuestion[],
+) {
+  const count = mode === "pyramid" ? 7 : 2;
+  const fillers = activeQuestions(bank).filter(
+    (v) =>
+      v.id !== q.id &&
+      v.modes.includes(mode) &&
+      (mode === "alphabet"
+        ? v.alphabetLetter !== q.alphabetLetter
+        : mode === "time-trial"
+          ? v.type === q.type
+          : v.type !== q.type),
+  );
+  const selected = [q, ...fillers.slice(0, count - 1)];
+  if (selected.length !== count) throw new Error("bank_test_fillers_missing");
+  const template = questionTemplate(q, mode, bank);
+  return {
+    bank: selected,
+    template: {
+      ...template,
+      questions: selected.map((v, i) => ({
+        ...template.questions[i]!,
+        type: v.type,
+        payloadSchemaVersion: v.payloadSchemaVersion,
+        difficulty: v.difficulty,
+        timeLimitMs: v.referenceTimeLimitMs,
+        modeConfig: mode === "alphabet" ? { letter: v.alphabetLetter } : {},
+        mechanics: publicMechanics(v.type, v.publicPayload),
+      })),
+    },
   };
 }

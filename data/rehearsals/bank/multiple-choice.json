@@ -1,5 +1,25 @@
 [
   {
+    "id": "bank-eleccion-raiz",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué parte de una planta absorbe normalmente el agua del suelo?",
+      "options": ["Raíz", "Hoja", "Flor", "Fruto"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "Raíz",
+      "explanation": "Las raíces absorben agua y sales minerales del suelo."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-raiz"
+  },
+  {
     "id": "betavip-supervivencia-q2",
     "version": 1,
     "type": "multiple-choice",
@@ -12,7 +32,7 @@
     },
     "solutionPayload": {
       "correctAnswer": "9",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "2 + 7 = 9. Añadir siete equivale a avanzar siete unidades desde 2."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -32,7 +52,7 @@
     },
     "solutionPayload": {
       "correctAnswer": "16",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "9 + 7 = 16. Añadir siete equivale a avanzar siete unidades desde 9."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -52,7 +72,7 @@
     },
     "solutionPayload": {
       "correctAnswer": "19",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "12 + 7 = 19. Añadir siete equivale a avanzar siete unidades desde 12."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -72,7 +92,7 @@
     },
     "solutionPayload": {
       "correctAnswer": "26",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "19 + 7 = 26. Añadir siete equivale a avanzar siete unidades desde 19."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -97,7 +117,7 @@
     },
     "solutionPayload": {
       "correctAnswer": "Tres",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "La figura es un triángulo: al recorrer su contorno se cuentan tres segmentos y tres vértices."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -117,27 +137,7 @@
     },
     "solutionPayload": {
       "correctAnswer": "17",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
-    },
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
-    "referenceTimeLimitMs": 16000,
-    "familyId": "multiple-choice-sumas"
-  },
-  {
-    "id": "flash-referencia-q12",
-    "version": 1,
-    "type": "multiple-choice",
-    "payloadSchemaVersion": 1,
-    "publicPayload": {
-      "question": "¿Cuánto suman 12 y 7?",
-      "options": ["18", "19", "20", "21"],
-      "media": null,
-      "promptVisual": null
-    },
-    "solutionPayload": {
-      "correctAnswer": "19",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "10 + 7 = 17. Añadir siete equivale a avanzar siete unidades desde 10."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -157,7 +157,7 @@
     },
     "solutionPayload": {
       "correctAnswer": "21",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "14 + 7 = 21. Añadir siete equivale a avanzar siete unidades desde 14."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -177,7 +177,7 @@
     },
     "solutionPayload": {
       "correctAnswer": "23",
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "16 + 7 = 23. Añadir siete equivale a avanzar siete unidades desde 16."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -185,23 +185,43 @@
     "familyId": "multiple-choice-sumas"
   },
   {
-    "id": "bank-eleccion-raiz",
+    "id": "bank-eleccion-descuento",
     "version": 1,
     "type": "multiple-choice",
     "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-eleccion-descuento",
     "publicPayload": {
-      "question": "¿Qué parte de una planta absorbe normalmente el agua del suelo?",
-      "options": ["Raíz", "Hoja", "Flor", "Fruto"],
+      "question": "Un cuaderno cuesta 40 euros y se rebaja un 15 %. ¿Cuánto se paga?",
+      "options": ["34 euros", "25 euros", "36 euros", "46 euros"],
       "media": null,
       "promptVisual": null
     },
     "solutionPayload": {
-      "correctAnswer": "Raíz",
-      "explanation": "Las raíces absorben agua y sales minerales del suelo."
-    },
+      "correctAnswer": "34 euros",
+      "explanation": "El descuento es 40 × 15 / 100 = 6 euros. Se resta del precio inicial: 40 − 6 = 34 euros."
+    }
+  },
+  {
+    "id": "bank-eleccion-mezcla",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
     "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
+    "difficulty": "hard",
     "referenceTimeLimitMs": 60000,
-    "familyId": "bank-eleccion-raiz"
+    "familyId": "bank-eleccion-mezcla",
+    "publicPayload": {
+      "question": "Una mezcla contiene 2 litros de concentrado y 3 de agua. Se retira 1 litro de mezcla homogénea y se añade 1 litro de agua. ¿Qué porcentaje final es concentrado?",
+      "options": ["32 %", "40 %", "30 %", "20 %"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "32 %",
+      "explanation": "La mezcla inicial contiene 2/5 de concentrado. Al retirar un litro se retiran 0,4 litros de concentrado: quedan 1,6. Tras añadir agua hay de nuevo 5 litros; 1,6 / 5 × 100 = 32 %."
+    }
   }
 ]

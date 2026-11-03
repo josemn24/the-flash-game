@@ -1,4 +1,4 @@
-> Estado: generación dinámica para cinco modos. Narrativa queda fuera.
+> Estado: base consolidada v1 para cinco modos. Narrativa queda fuera.
 
 # Pruebas antes del intento competitivo
 
@@ -33,26 +33,55 @@ revisión e índices son automáticos.
 `npm run rehearsals:check` valida el banco y resuelve las preguntas con los proveedores locales reales.
 Exige tres candidatos independientes por posición de las estructuras de BetaVIP y Tabarnia,
 incluidas sus letras. Otros desafíos pueden funcionar con menos variedad; el portal lo advierte.
-El banco inicial contiene 143 preguntas, incluidas las 78 originales con contenido e identidades
-conservados. Las variantes equivalentes comparten familia y no cuentan como alternativas
-independientes para este mínimo. El informe se escribe en `output/rehearsal-coverage.json`.
+La base inicial contiene 232 preguntas activas, todas en versión editorial 1, sin identidades
+retiradas ni versiones de desarrollo anteriores. El generador admite exclusivamente el contrato
+consolidado v1. Se han regenerado las huellas y recetas de referencia; las recetas anteriores a
+esta consolidación no son compatibles, incluidas las de la antigua v1. El historial previo queda
+conservado en Git. Este corte no cambia Supabase ni los `payloadSchemaVersion` requeridos por formato.
+
+Desde esta base, las correcciones y retiradas añaden versiones. La última versión de cada ID
+determina su `generationStatus` (`active` por defecto o `retired`); una retirada no permite rescatar
+una anterior para nuevas partidas. Las versiones editoriales publicadas desde la base se conservan
+para reproducir recetas de este generador mientras sus referencias y huellas sigan disponibles.
+Las variantes de una familia no cuentan como alternativas independientes para el mínimo editorial.
+El chequeo exige una familia por formato/modo/dificultad y por letra/dificultad para las 27 letras
+españolas, incluida Ñ. Deriva formatos y modos del registro de capacidades.
+
+Las correcciones sustituyen las explicaciones de plantilla por cálculos, relaciones o pasos
+verificables. La [rúbrica editorial](../content/guidelines/rehearsal-bank.md) define criterios por
+formato. CI detecta explicaciones vacías y las plantillas conocidas; la justificación semántica y la
+calibración siguen requiriendo revisión editorial. El informe `output/rehearsal-coverage.json` separa
+versiones históricas, identidades activas/retiradas, familias, calidad, combinaciones y sustituciones.
 
 ## Generación y cobertura
 
 La disponibilidad se consulta sin consumir azar. El generador usa exactamente las mismas reglas de
 candidatos: formato, modo, contrato soportado, letra y validación con tiempos y pesos oficiales.
-Los candidatos se eligen sin repetir identidad mientras queden alternativas. Después se prioriza
-la dificultad oficial o la más próxima (inferior en empate), las familias no utilizadas y una
-selección aleatoria ponderada por semejanza mecánica. Todo candidato del grupo final conserva una
-probabilidad positiva. La semejanza solo utiliza propiedades públicas; nunca enunciados o soluciones.
+Una asignación bipartita de coste mínimo comprueba toda la partida y prohíbe repetir ejercicio,
+incluso bajo IDs diferentes. La huella del ejercicio usa formato, contenido público y solución con
+JSON canónico y texto NFC; excluye explicación y metadatos editoriales. La huella completa de versión
+usada por las recetas cubre todos sus campos, sin normalización adicional.
 
-Los parámetros internos de cada ejercicio se conservan. No se reescriben tableros ni soluciones para
-encajar. Cero candidatos en cualquier posición impide ofrecer la prueba; pocas alternativas,
-repeticiones o diferencias de dificultad producen avisos editoriales. Un fallo de prueba no bloquea
+La selección minimiza la suma de distancias entre dificultad solicitada y elegida (fácil 0, media 1,
+difícil 2), y en empate favorece la inferior. Solo considera elecciones que permitan completar una
+asignación óptima de las posiciones restantes: no consume la única pregunta válida de otra posición.
+Entre alternativas equivalentes favorece familias nuevas; elige primero familia, con peso igual a
+la media de semejanzas de sus miembros, y después pregunta. Añadir variantes no multiplica el peso
+de la familia. La selección es determinista para banco, plantilla y semilla; no mantiene historial
+entre partidas. La semejanza solo usa propiedades mecánicas públicas, nunca enunciados o soluciones.
+
+Los parámetros internos se conservan; la sopa de letras rellena los marcadores X fuera de las
+palabras con letras españolas deterministas para la semilla. `coverage.ready` exige una asignación completa sin contenido repetido;
+candidatos en cada posición por separado no bastan. `exactDifficultyReady` indica si puede respetar
+todas las dificultades. La escasez de variedad y las sustituciones generan avisos editoriales; el
+preview lista las posiciones con dificultad solicitada y elegida en `difficultyFallbacks`. Si no
+queda una asignación distinta compatible, no se ofrece la prueba. Un fallo de prueba no bloquea
 la competición.
 
 Cada selección produce una receta con sesión, semilla, versión del generador, revisión del banco,
-huella de estructura y referencias exactas de preguntas. Un render o reintento de recursos conserva
+huella de estructura y referencias exactas de preguntas. Su identidad incluye explícitamente la
+versión del generador; la reproducción aplica siempre las mismas reglas de unicidad y relleno.
+Un render o reintento de recursos conserva
 receta y proveedor. Una nueva entrada o recarga genera otra partida. La receta disponible como
 metadato de diagnóstico contiene referencias alternativas, sin respuestas oficiales ni el banco.
 

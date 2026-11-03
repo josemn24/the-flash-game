@@ -15,7 +15,7 @@
     },
     "solutionPayload": {
       "solution": [2, 9, 10, 18, 21],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 3), (2, 5), (3, 1), (4, 4), (5, 2). Hay una corona por fila, columna y región; entre filas consecutivas las columnas difieren en más de uno, por lo que ninguna pareja se toca."
     },
     "modes": ["flash", "survival", "pyramid", "time-trial"],
     "difficulty": "medium",
@@ -38,7 +38,7 @@
     },
     "solutionPayload": {
       "solution": [2, 4, 11, 13],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 3), (2, 1), (3, 4), (4, 2). Hay una corona por fila, columna y región; entre filas consecutivas las columnas difieren en más de uno, por lo que ninguna pareja se toca."
     },
     "modes": ["flash", "survival", "pyramid", "time-trial"],
     "difficulty": "easy",
@@ -61,7 +61,7 @@
     },
     "solutionPayload": {
       "solution": [0, 7, 14, 16, 23],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 1), (2, 3), (3, 5), (4, 2), (5, 4). Hay una corona por fila, columna y región; entre filas consecutivas las columnas difieren en más de uno, por lo que ninguna pareja se toca."
     },
     "modes": ["flash", "survival", "pyramid", "time-trial"],
     "difficulty": "medium",
@@ -84,7 +84,7 @@
     },
     "solutionPayload": {
       "solution": [2, 9, 10, 18, 21],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 3), (2, 5), (3, 1), (4, 4), (5, 2). Hay una corona por fila, columna y región; entre filas consecutivas las columnas difieren en más de uno, por lo que ninguna pareja se toca."
     },
     "modes": ["flash", "survival", "pyramid", "time-trial"],
     "difficulty": "medium",
@@ -110,7 +110,7 @@
     },
     "solutionPayload": {
       "solution": [2, 6, 16, 19, 27, 35],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 3), (2, 1), (3, 5), (4, 2), (5, 4), (6, 6). Hay una corona por fila, columna y región; entre filas consecutivas las columnas difieren en más de uno, por lo que ninguna pareja se toca."
     },
     "modes": ["flash", "survival", "pyramid", "time-trial"],
     "difficulty": "hard",
@@ -136,7 +136,7 @@
     },
     "solutionPayload": {
       "solution": [2, 10, 13, 21, 24, 35],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 3), (2, 5), (3, 2), (4, 4), (5, 1), (6, 6). Hay una corona por fila, columna y región; entre filas consecutivas las columnas difieren en más de uno, por lo que ninguna pareja se toca."
     },
     "modes": ["flash", "survival", "pyramid", "time-trial"],
     "difficulty": "hard",
@@ -162,7 +162,7 @@
     },
     "solutionPayload": {
       "solution": [0, 11, 16, 26, 31, 41, 43],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Coordenadas (fila, columna), contando desde 1: (1, 1), (2, 5), (3, 3), (4, 6), (5, 4), (6, 7), (7, 2). Hay una corona por fila, columna y región; entre filas consecutivas las columnas difieren en más de uno, por lo que ninguna pareja se toca."
     },
     "modes": ["flash", "survival", "pyramid", "time-trial"],
     "difficulty": "hard",

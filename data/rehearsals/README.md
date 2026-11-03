@@ -1,20 +1,38 @@
 # Banco de preguntas de prueba
 
-`bank/` agrupa por formato preguntas independientes. Cada entrada declara `id`, `version`, `type`,
-`payloadSchemaVersion`, `modes`, `difficulty`, `referenceTimeLimitMs`, `publicPayload` y
-`solutionPayload`. `alphabetLetter` es obligatorio si admite Alfabeto; `familyId` agrupa variantes
-para favorecer variedad. Los recursos propios están en `public/rehearsals/`.
+La base inicial contiene **232 preguntas activas, todas en versión editorial 1**, agrupadas por
+formato en `bank/`. Cada entrada declara `id`, `version`, `type`, `payloadSchemaVersion`, `modes`,
+`difficulty`, `referenceTimeLimitMs`, `publicPayload` y `solutionPayload`. `alphabetLetter` es
+obligatorio si admite Alfabeto; `familyId` agrupa variantes para favorecer variedad.
 
-La partida se genera desde la estructura competitiva autorizada. No se definen partidas completas,
-asociaciones, manifiestos ni perfiles manuales. Las huellas y el índice se calculan automáticamente.
+El generador consolidado usa exclusivamente recetas **v1**. Su versión, la versión editorial de
+cada pregunta y `payloadSchemaVersion` son contratos diferentes. Los esquemas de payload conservan
+sus valores requeridos por cada formato; no se han renumerado. Las recetas anteriores a esta base
+no se admiten, aunque usaran también el número 1. El historial de desarrollo permanece en Git.
 
-Una corrección añade otra versión de pregunta conservando la anterior. La generación usa la última;
-una receta puede reproducir una versión anterior mientras esté disponible y conserve su huella.
-La huella incluye los metadatos: cambiar dificultad, modos admitidos o familia también requiere
-otra versión una vez publicada la entrada en el banco.
+Las imágenes de la base están bajo `public/rehearsals/v1/`. La partida se genera desde la estructura
+competitiva autorizada: no hay asociaciones ni perfiles manuales. La selección comprueba una
+asignación completa sin ejercicios idénticos. La huella de ejercicio incluye formato, contenido
+público y solución normalizados en NFC, sin explicación ni metadatos editoriales. Se permiten
+variantes distintas de una familia. Las sopas de letras mantienen su relleno español con semilla.
 
-Ejecuta `npm run rehearsals:check` para comprobar contratos, recursos, soluciones reales y cobertura
-mínima de tres familias independientes por posición de los setups BetaVIP y Tabarnia. Las 78 preguntas originales
-se conservan; el inventario histórico de prueba acredita sus identidades y contenido.
+`npm run rehearsals:check` comprueba contratos, recursos, resolución con proveedores reales,
+explicaciones y cobertura: una familia por formato/modo/dificultad y por letra/dificultad para las
+27 letras españolas. Las diez estructuras BetaVIP/Tabarnia mantienen tres familias por posición,
+sumando dificultades. El informe `output/rehearsal-coverage.json` muestra calidad, combinaciones,
+asignaciones y sustituciones reales de dificultad.
 
-El [modelo y procedimiento](../../docs/current/rehearsals.md) explica selección, dificultad y operación.
+`test-utils/rehearsals/history-fingerprints.json` comienza con las 232 referencias de esta base.
+`test-utils/rehearsals/v1-recipes.json` fija recetas y huellas de sus definiciones para detectar
+regresiones del generador, incluidos los tableros de sopa de letras.
+
+Desde esta v1, una corrección añade una versión superior conservando la anterior. La selección usa
+la última por ID. `generationStatus` es opcional (`active` por defecto o `retired`); retirar exige
+otra versión y no permite volver a seleccionar una anterior. Las recetas de este generador pueden
+reproducir versiones editoriales anteriores que sigan presentes con su huella original.
+
+Al incorporar versiones, ejecutar `npm run rehearsals:history:register`: añade referencias y rechaza
+cambios o bajas de versiones ya registradas antes de escribir. Cambiar dificultad, modos o familia
+también exige otra versión. La [rúbrica editorial](../../docs/content/guidelines/rehearsal-bank.md)
+define dificultad y explicaciones por formato. El [modelo y procedimiento](../../docs/current/rehearsals.md)
+detalla selección, autorización y comprobaciones.

@@ -16,32 +16,12 @@
     "solutionPayload": {
       "correctAnswer": "guitarra",
       "acceptedAnswers": ["guitarra"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "La guitarra es un instrumento musical de cuerda; sus cuerdas vibran al pulsarlas y habitualmente tiene seis."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
     "referenceTimeLimitMs": 35000,
     "familyId": "progressive-clues-577310512452b39514dd"
-  },
-  {
-    "id": "betavip-supervivencia-q5",
-    "version": 1,
-    "type": "progressive-clues",
-    "payloadSchemaVersion": 1,
-    "publicPayload": {
-      "question": "¿Qué objeto describen estas pistas?",
-      "clues": ["Ayuda a orientarse.", "Puede llevar una aguja.", "Señala el norte."],
-      "cluePenalty": 30
-    },
-    "solutionPayload": {
-      "correctAnswer": "brújula",
-      "acceptedAnswers": ["brújula"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
-    },
-    "modes": ["flash", "survival", "pyramid"],
-    "difficulty": "easy",
-    "referenceTimeLimitMs": 25000,
-    "familyId": "progressive-clues-ff436ad15054dd4d6880"
   },
   {
     "id": "betavip-supervivencia-q10",
@@ -56,7 +36,7 @@
     "solutionPayload": {
       "correctAnswer": "brújula",
       "acceptedAnswers": ["brújula"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "La brújula orienta mediante una aguja imantada que se alinea aproximadamente con el campo magnético terrestre e indica el norte."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -80,7 +60,7 @@
     "solutionPayload": {
       "correctAnswer": "termómetro",
       "acceptedAnswers": ["termómetro"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "El termómetro mide temperatura; esa es la magnitud que une las pistas sobre su uso doméstico y de laboratorio."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
@@ -100,11 +80,59 @@
     "solutionPayload": {
       "correctAnswer": "bicicleta",
       "acceptedAnswers": ["bicicleta", "bici"],
-      "explanation": "La solución de este ejercicio permite revisar cómo funciona el formato."
+      "explanation": "Las dos ruedas y los pedales identifican la bicicleta: el pedaleo transmite movimiento a una rueda para desplazarse."
     },
     "modes": ["flash", "survival", "pyramid"],
     "difficulty": "easy",
     "referenceTimeLimitMs": 25000,
     "familyId": "progressive-clues-cf05668ac3be6c8edd8e"
+  },
+  {
+    "id": "bank-pistas-medium",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-medium",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Puede separar colores.",
+        "Desvía la luz al atravesarlo.",
+        "Un ejemplo tiene dos bases triangulares y tres caras laterales."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "prisma",
+      "acceptedAnswers": ["prisma"],
+      "explanation": "Un prisma transparente refracta la luz. Como la desviación depende de la longitud de onda, puede separar la luz blanca en colores; el prisma triangular tiene las caras descritas."
+    }
+  },
+  {
+    "id": "bank-pistas-hard",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-hard",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Conservo rastros de una escritura anterior.",
+        "Mi soporte se reutilizó después de borrar lo escrito.",
+        "Soy un manuscrito cuyo texto antiguo puede recuperarse."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "palimpsesto",
+      "acceptedAnswers": ["palimpsesto"],
+      "explanation": "Un palimpsesto es un manuscrito reutilizado: se borró una escritura y se escribió otra encima. Los restos de la primera permiten identificarlo."
+    }
   }
 ]
