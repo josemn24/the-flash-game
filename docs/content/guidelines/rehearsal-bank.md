@@ -87,6 +87,13 @@ regiones bajo las ocho simetrías del cuadrado y la normalización de etiquetas 
 un tablero del banco previo o BetaVIP cambiando su orientación, sus etiquetas o sus pistas.
 Las explicaciones incluyen las coordenadas desde uno y conservan las coronas iniciales.
 
+Pistas progresivas incorpora cinco preguntas medias y dos difíciles, dejando el banco en 388.
+El formato reúne cuatro fáciles, seis medias y tres difíciles, todas con familias independientes.
+Las pistas nuevas avanzan desde propiedades generales hasta una identificación concreta. Las medias
+combinan características de instrumentos, objetos o recintos; las difíciles requieren distinguir
+conceptos especializados de patrimonio. Las explicaciones relacionan las pistas con la respuesta,
+y las variantes ortográficas aceptadas pertenecen al mismo ejercicio.
+
 Ejecutar `npm run rehearsals:check` y revisar el informe por combinación y estructura. El mínimo de
 una familia no garantiza repeticiones de formato y dificultad sin sustituciones: la asignación
 completa y sus avisos muestran esa limitación. Antes de publicar, añadir las nuevas huellas al
@@ -111,3 +118,13 @@ habituales se han consultado fuentes lexicográficas y materiales docentes:
   Handbook of Mineralogy: [wurtzita](https://www.handbookofmineralogy.org/pdfs/wurtzite.pdf).
 - Universidad de Cádiz: [yodometría](https://rodin.uca.es/handle/10498/7029).
   Universidad Nacional de la Patagonia: [nictinastia y movimientos vegetales](https://www.fcn.unp.edu.ar/sitio/fisiologiageneral/images/teoricas/15-Diferenciacion.pdf).
+
+## Referencias de la ampliación de Pistas progresivas
+
+Las pistas y explicaciones son de redacción propia. Se han comprobado los términos menos
+habituales y sus variantes con estas fuentes:
+
+- RAE-ASALE: [caleidoscopio y calidoscopio](https://dle.rae.es/caleidoscopio),
+  [bumerán](https://dle.rae.es/bumerán) y [sismógrafo](https://dle.rae.es/sismógrafo).
+- Museo Arqueológico Nacional: [ostracón como soporte reutilizado de escritura](https://www.man.es/man/actividades/pieza-mes/historico/2024/202407-ostracon.html).
+- ICOMOS-CIF: [anastilosis en el glosario de conservación](https://cif.icomos.org/glossary/).

@@ -1903,5 +1903,40 @@
     "id": "bank-queens-regiones-entrelazadas",
     "version": 1,
     "contentHash": "7cd8a71061018728ba9d3fd05181a966dc76026baabe626e0a135962d872bf6b"
+  },
+  {
+    "id": "bank-pistas-anastilosis",
+    "version": 1,
+    "contentHash": "090ef561b5f712f76e62f5b3fbd3c041e78760eec9c5ae8d905e3142bf2d5213"
+  },
+  {
+    "id": "bank-pistas-bumeran",
+    "version": 1,
+    "contentHash": "a41eb667887949e8e40a19cc69cd4cdf6e4c15db2ce21b729532ce224a584e09"
+  },
+  {
+    "id": "bank-pistas-caleidoscopio",
+    "version": 1,
+    "contentHash": "890fdbf31bc9806632efeb8b77e33011006a663279173702cb343c55868c056a"
+  },
+  {
+    "id": "bank-pistas-invernadero",
+    "version": 1,
+    "contentHash": "b334e910080bb9b60f901c3ef899ea66da45b205357c56fb5d9cf52969a1209a"
+  },
+  {
+    "id": "bank-pistas-ostracon",
+    "version": 1,
+    "contentHash": "55defbe836d6dad5acbb88220e2f92f4acff627c430d301b7cf9daf17e11c8be"
+  },
+  {
+    "id": "bank-pistas-sismografo",
+    "version": 1,
+    "contentHash": "f04429767e37d40755a7d6fe8a55d22890eb710dfb825bc1436e5aa5ff37f543"
+  },
+  {
+    "id": "bank-pistas-telegrafo",
+    "version": 1,
+    "contentHash": "19b7af1ca38444f95af0af7b8f41629d4dfa2d990994717d6312406430600cf1"
   }
 ]

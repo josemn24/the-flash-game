@@ -172,6 +172,52 @@ it.each(active.flatMap((q) => q.modes.map((mode) => ({ q, mode }))))(
   },
 );
 
+it.each(
+  active
+    .filter((q) => q.type === "progressive-clues")
+    .flatMap((q) => q.modes.map((mode) => ({ q, mode }))),
+)(
+  "$q.id reveals its authored clues in order and applies their penalty in $mode",
+  async ({ q, mode }) => {
+    const fixture = bankQuestionCase(q, mode, bank);
+    const { definition } = generateRehearsal(fixture.bank, fixture.template, "bank-clue-reveals");
+    const driver = new SessionDriver(
+      providerFor(definition, manualClock(), dictionary),
+      definition.challenge.id,
+      definition.levels.map((level) => level.challengeItemId),
+    );
+    const clues = q.publicPayload.clues as string[];
+    const points = fixture.template.questions[0]!.points;
+    const penalty = Math.max(1, Math.round((Number(q.publicPayload.cluePenalty) * points) / 100));
+    await driver.begin();
+    const initial = await driver.issue("prepare");
+    for (const hidden of clues.slice(1)) expect(JSON.stringify(initial)).not.toContain(hidden);
+    if (mode === "pyramid") await driver.issue("activate");
+    for (let index = 1; index < clues.length; index++) {
+      const revealed = await driver.issue("progressiveClueReveal");
+      expect(revealed.state).toMatchObject({
+        clue: clues[index],
+        clues: clues.slice(0, index + 1),
+        revealedClues: index + 1,
+        totalClues: clues.length,
+        cluePenalty: penalty,
+        availablePoints: Math.max(0, points - penalty * index),
+      });
+      for (const hidden of clues.slice(index + 1))
+        expect(JSON.stringify(revealed)).not.toContain(hidden);
+    }
+    expect(await driver.execute(driver.command("progressiveClueReveal"))).toMatchObject({
+      code: "all_clues_revealed",
+    });
+    const answer = (q.solutionPayload.acceptedAnswers as string[]).at(-1)!;
+    const answered = await driver.issue("answer", { answer });
+    expect(answered.state).toMatchObject({
+      status: "correct",
+      points: Math.max(0, points - penalty * (clues.length - 1)),
+    });
+  },
+);
+
 it("emits the consolidated bank audit, matrix coverage and actual fallbacks", () => {
   if (!process.env.REHEARSAL_COVERAGE_REPORT) return;
   mkdirSync("output", { recursive: true });

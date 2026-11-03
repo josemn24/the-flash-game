@@ -134,5 +134,173 @@
       "acceptedAnswers": ["palimpsesto"],
       "explanation": "Un palimpsesto es un manuscrito reutilizado: se borró una escritura y se escribió otra encima. Los restos de la primera permiten identificarlo."
     }
+  },
+  {
+    "id": "bank-pistas-caleidoscopio",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-caleidoscopio",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Mis imágenes cambian al moverme, aunque mis piezas sean las mismas.",
+        "Varios espejos multiplican pequeñas piezas de colores y crean figuras simétricas.",
+        "Soy un tubo por el que se mira mientras se gira para observar esos patrones."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "caleidoscopio",
+      "acceptedAnswers": ["caleidoscopio", "calidoscopio"],
+      "explanation": "El caleidoscopio combina espejos y pequeñas piezas de colores. Las reflexiones producen figuras simétricas; al girar el tubo se redistribuyen las piezas y cambia la imagen observada."
+    }
+  },
+  {
+    "id": "bank-pistas-sismografo",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-sismografo",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Convierto movimientos que a veces pasan inadvertidos en un registro que puede estudiarse.",
+        "Observo las vibraciones del suelo, incluidas las que producen los terremotos.",
+        "El instrumento que soy produce un registro llamado sismograma."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "sismógrafo",
+      "acceptedAnswers": ["sismógrafo"],
+      "explanation": "El sismógrafo registra las oscilaciones del terreno. Su registro, el sismograma, permite estudiar cómo varían esas vibraciones con el tiempo; no se limita a indicar que ha ocurrido un terremoto."
+    }
+  },
+  {
+    "id": "bank-pistas-telegrafo",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-telegrafo",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Transmito mensajes mediante señales codificadas en lugar de transportar la voz.",
+        "En mi versión eléctrica, las señales pueden viajar por un cable hasta otra estación.",
+        "Soy el aparato de comunicación asociado al envío de puntos y rayas del código Morse."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "telégrafo",
+      "acceptedAnswers": ["telégrafo", "telégrafo eléctrico"],
+      "explanation": "El telégrafo comunica mensajes mediante señales codificadas. En la telegrafía eléctrica asociada al código Morse, se distinguen impulsos cortos y largos; esos puntos y rayas representan letras y otros signos."
+    }
+  },
+  {
+    "id": "bank-pistas-invernadero",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-invernadero",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Permito modificar las condiciones del ambiente en el que crecen seres vivos.",
+        "Mi cubierta deja pasar luz y protege los cultivos del ambiente exterior.",
+        "Soy un recinto de vidrio o plástico utilizado para cultivar plantas."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "invernadero",
+      "acceptedAnswers": ["invernadero"],
+      "explanation": "El invernadero protege plantas dentro de un recinto con cubierta transparente o translúcida. Permite aprovechar la luz y regular condiciones como la temperatura o la ventilación para el cultivo."
+    }
+  },
+  {
+    "id": "bank-pistas-bumeran",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-bumeran",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Mi vuelo depende del giro que llevo y de cómo atravieso el aire.",
+        "Mi forma tradicional tiene dos brazos en ángulo y se lanza con la mano.",
+        "En mis variantes de retorno, una trayectoria curva puede llevarme de vuelta al lanzador."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "bumerán",
+      "acceptedAnswers": ["bumerán", "boomerang"],
+      "explanation": "El bumerán se lanza con giro y su forma influye en la trayectoria. Algunas variantes pueden regresar hacia el punto de lanzamiento; no todos los bumeranes están diseñados para retornar. También se admite la grafía boomerang."
+    }
+  },
+  {
+    "id": "bank-pistas-anastilosis",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-anastilosis",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Recupero una disposición antigua reuniendo elementos que habían quedado separados.",
+        "En la conservación arquitectónica, trabajo con piezas originales conservadas de un monumento.",
+        "Soy la técnica de volver a montar elementos originales desmembrados, como los bloques de una columna caída."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "anastilosis",
+      "acceptedAnswers": ["anastilosis"],
+      "explanation": "La anastilosis recompone una estructura con elementos originales que se habían separado. Su rasgo distintivo es reunir las piezas conservadas en su disposición documentada; no consiste en fabricar una réplica nueva del monumento."
+    }
+  },
+  {
+    "id": "bank-pistas-ostracon",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-ostracon",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Una rotura pudo darme una segunda vida como portador de palabras.",
+        "En la Antigüedad podía sustituir a un soporte de escritura más costoso.",
+        "Soy un fragmento de un recipiente cerámico reutilizado para escribir sobre él."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "ostracón",
+      "acceptedAnswers": ["ostracón"],
+      "explanation": "Un ostracón aprovecha un trozo de cerámica como soporte para escribir. Un recipiente roto podía reutilizarse para cartas, cuentas u otros textos; el fragmento conserva así información escrita además de su uso material anterior."
+    }
   }
 ]

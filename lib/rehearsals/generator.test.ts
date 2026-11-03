@@ -128,6 +128,37 @@ it.each(
   },
 );
 
+it.each(
+  rehearsalTemplates.filter((template) =>
+    template.questions.some((question) => question.type === "progressive-clues"),
+  ),
+)(
+  "$challengeVersionId keeps progressive-clues difficulty and varies its exercise set",
+  (template) => {
+    const sets = new Set<string>();
+    for (let seed = 0; seed < 12; seed++) {
+      const run = generateRehearsal(bank, template, `progressive-clues-variety-${seed}`);
+      const clues = chosen(run, bank).filter((question, index) => {
+        if (template.questions[index]!.type !== "progressive-clues") return false;
+        expect(question.difficulty).toBe(template.questions[index]!.difficulty);
+        return true;
+      });
+      expect(new Set(clues.map(exerciseHash)).size).toBe(clues.length);
+      expect(new Set(clues.map((question) => question.familyId ?? question.id)).size).toBe(
+        clues.length,
+      );
+      expect(
+        run.difficultyFallbacks.filter(
+          (fallback) => template.questions[fallback.position - 1]!.type === "progressive-clues",
+        ),
+      ).toEqual([]);
+      sets.add(JSON.stringify(clues.map((question) => question.id).sort()));
+      expect(replayRehearsal(bank, template, run.recipe)).toEqual(run);
+    }
+    expect(sets.size).toBeGreaterThan(1);
+  },
+);
+
 it.each([
   { format: "connect-pairs", minimumMedium: 4 },
   { format: "queens", minimumMedium: 5 },

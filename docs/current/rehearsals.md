@@ -15,7 +15,7 @@ dificultad `easy | medium | hard`, tiempo de referencia y los contratos canónic
 solución. La letra es explícita para Alfabeto. Las familias permiten evitar variantes muy parecidas.
 Las dimensiones y parámetros mecánicos se derivan del contenido.
 
-El banco actual contiene 381 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
+El banco actual contiene 388 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
 letra y dificultad; la ampliación incorpora 130 ejercicios sin modificar las preguntas ni recetas
 históricas. La prueba conserva las letras y su orden oficial, y cada entrada recibe una nueva
 semilla. La variedad se aplica entre alternativas de la dificultad solicitada; no hay exclusión
@@ -38,6 +38,13 @@ dos fáciles de 4×4 y dos medios de 5×5, con regiones conectadas y una única 
 las coronas iniciales. Las seis posiciones medias de Contrarreloj se completan con cinco medios
 y un fácil; `difficultyFallbacks` sigue indicando esa sustitución. Distintas semillas permiten
 variar el conjunto de tableros y las recetas anteriores permanecen reproducibles.
+
+Pistas progresivas ofrece trece preguntas: cuatro fáciles, seis medias y tres difíciles. Las cinco
+medias y dos difíciles nuevas conservan el contrato de tres pistas, penalización de 25 sobre la
+escala de 100 puntos y tiempos oficiales de cada posición. Las cuatro posiciones medias de la
+referencia de Supervivencia se completan sin sustituciones y con alternativas entre partidas.
+Los proveedores reales comprueban el revelado en orden, la privacidad de las pistas pendientes,
+la penalización adaptada a los puntos oficiales y la evaluación de la respuesta final.
 
 El tiempo de referencia permite validar la pregunta aisladamente: al generar se aplican los tiempos
 y pesos de la posición oficial y se comprueba otra vez su validez. Los recursos están versionados
