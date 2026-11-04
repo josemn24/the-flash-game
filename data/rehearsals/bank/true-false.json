@@ -117,5 +117,107 @@
       "correctAnswer": false,
       "explanation": "El mínimo común múltiplo de 6 y 10 es 30. El número 30 es divisible por ambos y no por 60, así que proporciona un contraejemplo."
     }
+  },
+  {
+    "id": "bank-vf-escala-area",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-vf-escala-area",
+    "publicPayload": {
+      "question": "Si duplicamos la longitud del lado de un cuadrado, su área se multiplica por cuatro."
+    },
+    "solutionPayload": {
+      "correctAnswer": true,
+      "explanation": "El área es lado por lado. Un cuadrado de lado 3 tiene área 9; al duplicar el lado a 6, el área pasa a 36. Algebraicamente, (2 × lado)² = 4 × lado²."
+    }
+  },
+  {
+    "id": "bank-vf-lanzamientos-independientes",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-vf-lanzamientos-independientes",
+    "publicPayload": {
+      "question": "En dos lanzamientos independientes de una moneda equilibrada, obtener cara en el primero mantiene en 1/2 la probabilidad de cara en el segundo."
+    },
+    "solutionPayload": {
+      "correctAnswer": true,
+      "explanation": "La independencia significa que el primer resultado no altera las probabilidades del segundo lanzamiento. Como la moneda está equilibrada, la probabilidad de cara sigue siendo 1/2."
+    }
+  },
+  {
+    "id": "bank-vf-respiracion-vegetal",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-vf-respiracion-vegetal",
+    "publicPayload": {
+      "question": "Una célula vegetal puede realizar respiración celular durante las horas de luz."
+    },
+    "solutionPayload": {
+      "correctAnswer": true,
+      "explanation": "La respiración celular permite obtener energía aprovechable a partir de compuestos orgánicos y también ocurre con luz. La fotosíntesis es un proceso distinto y no sustituye la respiración durante el día."
+    }
+  },
+  {
+    "id": "bank-vf-ebullicion-presion",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-vf-ebullicion-presion",
+    "publicPayload": {
+      "question": "Al disminuir la presión atmosférica en una montaña, el agua pura en un recipiente abierto hierve a una temperatura mayor que al nivel del mar."
+    },
+    "solutionPayload": {
+      "correctAnswer": false,
+      "explanation": "El agua hierve cuando su presión de vapor alcanza la presión exterior. Si la presión atmosférica es menor, esa igualdad se alcanza a una temperatura menor; por eso la afirmación invierte la relación."
+    }
+  },
+  {
+    "id": "bank-vf-medias-ponderadas",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-vf-medias-ponderadas",
+    "publicPayload": {
+      "question": "La media conjunta de dos grupos con medias 10 y 20 es siempre 15, aunque los grupos tengan tamaños distintos."
+    },
+    "solutionPayload": {
+      "correctAnswer": false,
+      "explanation": "Cada media debe ponderarse por su número de datos. Un grupo de 3 datos con media 10 suma 30; otro de 6 datos con media 20 suma 120. La media conjunta es 150/9, aproximadamente 16,67. Este contraejemplo refuta que siempre sea 15."
+    }
+  },
+  {
+    "id": "bank-vf-enteros-consecutivos",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-vf-enteros-consecutivos",
+    "publicPayload": {
+      "question": "Para cualquier entero n, el producto n × (n + 1) × (n + 2) es divisible por 6."
+    },
+    "solutionPayload": {
+      "correctAnswer": true,
+      "explanation": "Entre tres enteros consecutivos hay al menos uno par y uno múltiplo de 3. El producto contiene por tanto los factores 2 y 3; como son coprimos, es divisible por 6. Si uno de los factores es cero, el producto también es divisible por 6."
+    }
   }
 ]

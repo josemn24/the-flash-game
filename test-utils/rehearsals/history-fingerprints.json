@@ -1938,5 +1938,35 @@
     "id": "bank-pistas-telegrafo",
     "version": 1,
     "contentHash": "19b7af1ca38444f95af0af7b8f41629d4dfa2d990994717d6312406430600cf1"
+  },
+  {
+    "id": "bank-vf-ebullicion-presion",
+    "version": 1,
+    "contentHash": "4aa09a3ea675cfd86e229cebcb47da3595f957073a0073d91fb7af1bf706881c"
+  },
+  {
+    "id": "bank-vf-enteros-consecutivos",
+    "version": 1,
+    "contentHash": "e35c7e56a0713ac86cfbf71ea965c3a3f4a36a1a098c45ba4bbad493b3fbc51b"
+  },
+  {
+    "id": "bank-vf-escala-area",
+    "version": 1,
+    "contentHash": "17a5f84267423e6688291c222bf980aeaaf19012d78571c6595714e6e847d5f9"
+  },
+  {
+    "id": "bank-vf-lanzamientos-independientes",
+    "version": 1,
+    "contentHash": "3b558ad2b02a920344118b8888985b25b7d2f7bdd3de0bf0cf8452f613194817"
+  },
+  {
+    "id": "bank-vf-medias-ponderadas",
+    "version": 1,
+    "contentHash": "c6a4b9a558f771c9a89f040b7ec1a8fb1f8b759a5c18382766076b29100da022"
+  },
+  {
+    "id": "bank-vf-respiracion-vegetal",
+    "version": 1,
+    "contentHash": "5414b4c1cd3a4a9a3aec507713fad32d21290a8284016386d6f49378a2235afb"
   }
 ]

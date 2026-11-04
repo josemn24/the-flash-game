@@ -14,7 +14,7 @@ la etiqueta no es suficiente.
 | Formato                    | Fácil                                        | Media                                              | Difícil                                                       |
 | -------------------------- | -------------------------------------------- | -------------------------------------------------- | ------------------------------------------------------------- |
 | Elección múltiple          | Identificación o cálculo directo             | Dos pasos y distractores plausibles                | Composición de proporciones u operaciones                     |
-| Verdadero/falso            | Hecho elemental o propiedad visible          | Aplicar una propiedad a un caso                    | Refutar una generalización mediante un contraejemplo          |
+| Verdadero/falso            | Hecho elemental o propiedad visible          | Aplicar una propiedad a un caso                    | Combinar propiedades o construir un contraejemplo             |
 | Respuesta corta / Alfabeto | Vocabulario cotidiano con definición directa | Vocabulario técnico que exige distinguir conceptos | Terminología especializada con diferencias precisas           |
 | Intruso                    | Propiedad inmediatamente visible             | Reconocer una categoría matemática o conceptual    | Comprobar varios candidatos con una regla no evidente         |
 | Emparejar                  | Pocas asociaciones o sumas elementales       | Varias asociaciones y conocimientos diferenciados  | Conversiones o cálculos previos para cada asociación          |
@@ -93,6 +93,14 @@ Las pistas nuevas avanzan desde propiedades generales hasta una identificación 
 combinan características de instrumentos, objetos o recintos; las difíciles requieren distinguir
 conceptos especializados de patrimonio. Las explicaciones relacionan las pistas con la respuesta,
 y las variantes ortográficas aceptadas pertenecen al mismo ejercicio.
+
+Verdadero/falso añade cuatro preguntas medias y dos difíciles, dejando el banco en 394. Sus trece
+preguntas se distribuyen en cinco fáciles, cinco medias y tres difíciles, con diez familias.
+Las nuevas medias aplican propiedades geométricas, independencia de sucesos, respiración vegetal
+y relación entre presión y ebullición. Las difíciles justifican divisibilidad de productos o refutan
+una regla sobre medias de grupos mediante un contraejemplo calculado. Ambas dificultades contienen
+respuestas verdaderas y falsas; la explicación demuestra el veredicto con propiedades o valores
+concretos, sin convertir la respuesta en una cadena de texto.
 
 Ejecutar `npm run rehearsals:check` y revisar el informe por combinación y estructura. El mínimo de
 una familia no garantiza repeticiones de formato y dificultad sin sustituciones: la asignación

@@ -159,11 +159,47 @@ it.each(
   },
 );
 
+it.each(
+  rehearsalTemplates.filter((template) =>
+    template.questions.some((question) => question.type === "true-false"),
+  ),
+)("$challengeVersionId keeps true-false difficulty and varies its exercise set", (template) => {
+  const first = template.questions.findIndex((question) => question.type === "true-false");
+  const candidates = rehearsalCandidates(bank, template, first).filter(
+    (question) => question.difficulty === template.questions[first]!.difficulty,
+  );
+  expect(new Set(candidates.map((question) => question.solutionPayload.correctAnswer))).toEqual(
+    new Set([true, false]),
+  );
+  const sets = new Set<string>();
+  for (let seed = 0; seed < 12; seed++) {
+    const run = generateRehearsal(bank, template, `true-false-variety-${seed}`);
+    const selected = chosen(run, bank).filter((question, index) => {
+      if (template.questions[index]!.type !== "true-false") return false;
+      expect(question.difficulty).toBe(template.questions[index]!.difficulty);
+      expect(typeof question.solutionPayload.correctAnswer).toBe("boolean");
+      return true;
+    });
+    expect(new Set(selected.map(exerciseHash)).size).toBe(selected.length);
+    expect(new Set(selected.map((question) => question.familyId ?? question.id)).size).toBe(
+      selected.length,
+    );
+    expect(
+      run.difficultyFallbacks.filter(
+        (fallback) => template.questions[fallback.position - 1]!.type === "true-false",
+      ),
+    ).toEqual([]);
+    sets.add(JSON.stringify(selected.map((question) => question.id).sort()));
+    expect(replayRehearsal(bank, template, run.recipe)).toEqual(run);
+  }
+  expect(sets.size).toBeGreaterThan(1);
+});
+
 it.each([
   { format: "connect-pairs", minimumMedium: 4 },
   { format: "queens", minimumMedium: 5 },
 ] as const)(
-  "maximizes exact $format difficulty in a six-board trial and varies its exercise set",
+  "maximizes exact $format difficulty in a trial and varies the available choices",
   ({ format, minimumMedium }) => {
     const template = rehearsalTemplates.find(
       (candidate) =>
@@ -178,6 +214,7 @@ it.each([
     expect(coverage.ready).toBe(true);
     expect(coverage.exactDifficultyReady).toBe(exactCount === template.questions.length);
     const sets = new Set<string>();
+    const orders = new Set<string>();
     for (let seed = 0; seed < 12; seed++) {
       const run = generateRehearsal(bank, template, `${format}-variety-${seed}`);
       const selected = chosen(run, bank);
@@ -196,9 +233,16 @@ it.each([
         ),
       ).toBe(true);
       sets.add(JSON.stringify(selected.map((question) => question.id).sort()));
+      orders.add(JSON.stringify(selected.map((question) => question.id)));
       expect(replayRehearsal(bank, template, run.recipe)).toEqual(run);
     }
-    expect(sets.size).toBeGreaterThan(1);
+    expect(orders.size).toBeGreaterThan(1);
+    const fallbackCount = template.questions.length - exactCount;
+    const easyCount = candidates.filter((question) => question.difficulty === "easy").length;
+    // A trial that exhausts both difficulty pools can vary only the boards' order.
+    if (medium.length > exactCount || (fallbackCount > 0 && easyCount > fallbackCount))
+      expect(sets.size).toBeGreaterThan(1);
+    else expect(sets.size).toBe(1);
   },
 );
 

@@ -15,7 +15,7 @@ dificultad `easy | medium | hard`, tiempo de referencia y los contratos canónic
 solución. La letra es explícita para Alfabeto. Las familias permiten evitar variantes muy parecidas.
 Las dimensiones y parámetros mecánicos se derivan del contenido.
 
-El banco actual contiene 388 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
+El banco actual contiene 394 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
 letra y dificultad; la ampliación incorpora 130 ejercicios sin modificar las preguntas ni recetas
 históricas. La prueba conserva las letras y su orden oficial, y cada entrada recibe una nueva
 semilla. La variedad se aplica entre alternativas de la dificultad solicitada; no hay exclusión
@@ -29,14 +29,14 @@ comprueban que cambia el conjunto elegido y que las recetas siguen siendo reprod
 
 Conectar parejas ofrece diez tableros: tres fáciles, cuatro medios y tres difíciles. Se han añadido
 dos fáciles de 4×4 y dos medios de 5×5, con recorridos completos sin cruces, una única solución y
-distribuciones nuevas. Las partidas de seis posiciones medias conservan una asignación completa:
-utilizan los cuatro medios y dos fáciles, y notifican ambas sustituciones en `difficultyFallbacks`.
-La ampliación mejora la variedad, aunque todavía no permite respetar seis dificultades medias.
+distribuciones nuevas. La referencia actual de siete posiciones medias conserva una asignación
+completa: utiliza los cuatro medios y tres fáciles, y notifica las tres sustituciones en
+`difficultyFallbacks`. Al agotar esas alternativas, distintas semillas pueden variar su orden.
 
 Queens ofrece once tableros: tres fáciles, cinco medios y tres difíciles. La ampliación añade
 dos fáciles de 4×4 y dos medios de 5×5, con regiones conectadas y una única solución aun sin
-las coronas iniciales. Las seis posiciones medias de Contrarreloj se completan con cinco medios
-y un fácil; `difficultyFallbacks` sigue indicando esa sustitución. Distintas semillas permiten
+las coronas iniciales. Las siete posiciones medias de Contrarreloj se completan con cinco medios
+y dos fáciles; `difficultyFallbacks` indica esas dos sustituciones. Distintas semillas permiten
 variar el conjunto de tableros y las recetas anteriores permanecen reproducibles.
 
 Pistas progresivas ofrece trece preguntas: cuatro fáciles, seis medias y tres difíciles. Las cinco
@@ -45,6 +45,12 @@ escala de 100 puntos y tiempos oficiales de cada posición. Las cuatro posicione
 referencia de Supervivencia se completan sin sustituciones y con alternativas entre partidas.
 Los proveedores reales comprueban el revelado en orden, la privacidad de las pistas pendientes,
 la penalización adaptada a los puntos oficiales y la evaluación de la respuesta final.
+
+Verdadero/falso dispone de trece preguntas: cinco fáciles, cinco medias y tres difíciles. Las
+cuatro medias y dos difíciles nuevas ofrecen ambos veredictos con explicaciones específicas.
+Las referencias de Flash y Supervivencia con hasta tres posiciones medias se completan sin
+sustituir dificultad y con conjuntos distintos entre semillas. La evaluación conserva respuestas
+booleanas, y las versiones y recetas anteriores siguen disponibles sin modificaciones.
 
 El tiempo de referencia permite validar la pregunta aisladamente: al generar se aplican los tiempos
 y pesos de la posición oficial y se comprueba otra vez su validez. Los recursos están versionados
