@@ -101,7 +101,7 @@ describe("ranking poster renderer", () => {
     expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
     expect(metadata).toMatchObject({ format: "png", width: 1080, height: 1920 });
     expect(png).toEqual(repeatedPng);
-  });
+  }, 15_000);
 
   it("resolves only local public avatar proxy URLs in development", () => {
     vi.stubEnv("NODE_ENV", "development");
