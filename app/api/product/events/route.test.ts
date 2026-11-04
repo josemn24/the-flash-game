@@ -15,7 +15,10 @@ const event = {
 const request = (body: unknown) =>
   new Request("http://127.0.0.1:3000/api/product/events", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Origin: "http://127.0.0.1:3000",
+    },
     body: JSON.stringify(body),
   });
 describe("product event route", () => {

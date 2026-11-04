@@ -9,8 +9,8 @@ describe("demo local Pyramid composition", () => {
     expect(definition?.challenge.levels.map((level) => level.questionType)).toEqual([
       "odd-one-out",
       "multiple-choice",
-      "ordering",
       "logic-matrix",
+      "ordering",
       "connect-pairs",
       "logic-code",
       "queens",
@@ -46,8 +46,8 @@ describe("demo local Time Trial composition", () => {
   ] as const)("loads the approved %s fixture", (id, format, title) => {
     const definition = createDemoReadServices().localTimeTrial.getDefinition(id);
     expect(definition?.challenge).toMatchObject({ id, mode: "time-trial", title });
-    expect(definition?.challenge.slots).toHaveLength(6);
-    expect(definition?.levels).toHaveLength(6);
+    expect(definition?.challenge.slots).toHaveLength(7);
+    expect(definition?.levels).toHaveLength(7);
     expect(definition?.challenge.slots.every((slot) => slot.questionType === format)).toBe(true);
     expect(definition?.challenge.timeLimitMs).toBe(150_000);
     expect(definition?.challenge.slots.reduce((sum, slot) => sum + slot.points, 0)).toBe(100);

@@ -20,7 +20,11 @@ beforeEach(() => {
   vi.mocked(loadMiniWordleDictionary).mockResolvedValue(new Set(["LUNA", "CASA"]));
   vi.stubGlobal(
     "matchMedia",
-    vi.fn(() => ({ matches: false, addListener: vi.fn(), removeListener: vi.fn() })),
+    vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
   );
 });
 afterEach(() => {
@@ -248,9 +252,9 @@ describe("shared practice stage timer", () => {
     expect(onTimedResponseStart).not.toHaveBeenCalled();
     await act(async () => resolve(new Set(["LUNA", "CASA"])));
     expect(onTimedResponseStart).toHaveBeenCalledOnce();
-    const field = screen.getByLabelText("Escribe tu intento");
-    fireEvent.change(field, { target: { value: "CASA" } });
-    fireEvent.submit(field.closest("form")!);
+    const editor = screen.getByRole("textbox", { name: "Escribe tu intento" });
+    for (const key of "CASA") fireEvent.keyDown(editor, { key });
+    fireEvent.keyDown(editor, { key: "Enter" });
     view.rerender(
       <FlashQuestionStage input={input} questionNumber={1} totalQuestions={1} onTimeUp={vi.fn()} />,
     );

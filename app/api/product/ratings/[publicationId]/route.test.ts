@@ -12,7 +12,10 @@ const body = { id: measurementId(1), seasonId: measurementId(3), value: 4 };
 const request = (value: unknown) =>
   new Request(url, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Origin: "http://127.0.0.1:3000",
+    },
     body: JSON.stringify(value),
   });
 beforeEach(() => vi.resetAllMocks());
