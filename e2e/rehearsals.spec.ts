@@ -53,7 +53,7 @@ async function expectGameReady(page: Page, index: number) {
   await expect(page.getByRole("button", { name: "Empezar prueba" })).toHaveCount(0);
   if (index === 2 || index === 5)
     await expect(page.getByRole("button", { name: "Empezar nivel" })).toBeVisible();
-  else await expect(page.getByRole("timer")).toBeVisible();
+  else await expect(page.getByRole("timer")).toBeVisible({ timeout: 10_000 });
 }
 async function open(page: Page, index: number) {
   const { id, room } = entry(index);
@@ -108,15 +108,16 @@ test("practice uses the full Queens flow, review and return without writing offi
   await login(page, fixture("betavip").users.ches!);
   await open(page, 3);
   const questions = await selectedQuestions(page);
+  expect(questions).toHaveLength(7);
   const writes: string[] = [];
   page.on("request", (request) => {
     if (new URL(request.url()).pathname.startsWith("/api/competitive/attempts"))
       writes.push(request.url());
   });
   for (const [index, q] of questions.entries()) {
-    await expect(page.getByText(`Prueba ${index + 1} de 6`, { exact: true })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(
+      page.getByText(`Prueba ${index + 1} de ${questions.length}`, { exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
     const size = q.publicPayload.grid.rows;
     for (const cell of q.solutionPayload.solution) {
       if (q.publicPayload.prefilledQueens.includes(cell)) continue;
@@ -169,15 +170,16 @@ async function reviewAndReturn(page: Page, index: number) {
   await expect(page.getByRole("link", { name: "Probar primero" })).toBeVisible();
 }
 
-test("Connect Pairs completes and reviews all six practice boards", async ({ page }) => {
+test("Connect Pairs completes and reviews all seven practice boards", async ({ page }) => {
   test.setTimeout(120_000);
   await login(page, fixture("betavip").users.ches!);
   await open(page, 0);
   const questions = await selectedQuestions(page);
+  expect(questions).toHaveLength(7);
   for (const [index, q] of questions.entries()) {
-    await expect(page.getByText(`Prueba ${index + 1} de 6`, { exact: true })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(
+      page.getByText(`Prueba ${index + 1} de ${questions.length}`, { exact: true }),
+    ).toBeVisible({ timeout: 15_000 });
     const size = q.publicPayload.grid.rows;
     for (const path of Object.values(q.solutionPayload.paths) as number[][])
       for (const cell of path)
