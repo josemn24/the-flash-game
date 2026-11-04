@@ -5,7 +5,7 @@ formato en `bank/`. Cada entrada declara `id`, `version`, `type`, `payloadSchema
 `difficulty`, `referenceTimeLimitMs`, `publicPayload` y `solutionPayload`. `alphabetLetter` es
 obligatorio si admite Alfabeto; `familyId` agrupa variantes para favorecer variedad.
 
-El banco actual contiene **394 preguntas activas**. Alfabeto dispone de **243 preguntas**: tres
+El banco actual contiene **400 preguntas activas**. Alfabeto dispone de **243 preguntas**: tres
 familias independientes por cada una de las 27 letras españolas y cada dificultad. La ampliación
 añade 130 ejercicios (22 fáciles, 54 medios y 54 difíciles) y conserva intacta la base inicial.
 Las preguntas de respuesta corta también admiten Flash, Supervivencia y Pirámide.
@@ -39,6 +39,12 @@ Verdadero/falso contiene **13 preguntas**: cinco fáciles, cinco medias y tres d
 familias independientes. La ampliación añade cuatro medias y dos difíciles con enunciados
 verdaderos y falsos en ambas dificultades. Admiten Flash, Supervivencia y Pirámide. Las referencias
 con hasta tres posiciones medias mantienen la dificultad sin sustituciones y varían entre semillas.
+
+Ordenar contiene **14 preguntas**: cinco fáciles, seis medias y tres difíciles, en diez familias
+independientes. La ampliación añade cuatro medias y dos difíciles sobre duraciones, biología,
+velocidades y descuentos sucesivos. Admiten Flash, Supervivencia y Pirámide. Las referencias con
+hasta tres posiciones de Ordenar mantienen su dificultad tanto en nivel medio como difícil;
+las medias permiten variar el conjunto y las difíciles también cuando no se agotan las tres.
 
 El generador consolidado usa exclusivamente recetas **v1**. Su versión, la versión editorial de
 cada pregunta y `payloadSchemaVersion` son contratos diferentes. Los esquemas de payload conservan

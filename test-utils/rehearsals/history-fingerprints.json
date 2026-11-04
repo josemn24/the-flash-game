@@ -1968,5 +1968,35 @@
     "id": "bank-vf-respiracion-vegetal",
     "version": 1,
     "contentHash": "5414b4c1cd3a4a9a3aec507713fad32d21290a8284016386d6f49378a2235afb"
+  },
+  {
+    "id": "bank-ordenar-duraciones",
+    "version": 1,
+    "contentHash": "b7a9890511ab28b6de17b1337fe1db474242c8de0d235977fa721556647108bf"
+  },
+  {
+    "id": "bank-ordenar-metamorfosis-mariposa",
+    "version": 1,
+    "contentHash": "c04a8e9624fae149b29ccc057260c30867fae1c6a502d651b5d918fc90c435a8"
+  },
+  {
+    "id": "bank-ordenar-organizacion-biologica",
+    "version": 1,
+    "contentHash": "ae58ee3ce1b7244f98664d6df3832e0be325b45dde1f81727ea3e6d7604f430f"
+  },
+  {
+    "id": "bank-ordenar-precios-descuentos",
+    "version": 1,
+    "contentHash": "3e4fba201bade10cf2e8ddd88eac74bcc4195bde312a181507f2c09c9766e4e8"
+  },
+  {
+    "id": "bank-ordenar-recorrido-digestivo",
+    "version": 1,
+    "contentHash": "a551e0f0504a44448f621d6df5d8304510a78102888dceb0270f9db0a70e4f21"
+  },
+  {
+    "id": "bank-ordenar-velocidades",
+    "version": 1,
+    "contentHash": "70b53466c16309c67e7f4f7427086659ed50b8c620ce06d917ba23b0315d8d81"
   }
 ]

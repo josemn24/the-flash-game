@@ -174,5 +174,147 @@
       "correctOrder": ["7/12", "3/5", "5/8", "2/3"],
       "explanation": "Con denominador común 120: 7/12 = 70/120, 3/5 = 72/120, 5/8 = 75/120 y 2/3 = 80/120. Por ello 70 < 72 < 75 < 80 da el orden."
     }
+  },
+  {
+    "id": "bank-ordenar-duraciones",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-duraciones",
+    "publicPayload": {
+      "question": "Ordena estas duraciones de menor a mayor.",
+      "items": ["2 horas", "90 minutos", "1 hora y 45 minutos", "6000 segundos"],
+      "directionLabels": {
+        "start": "Menor duración",
+        "end": "Mayor duración"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["90 minutos", "6000 segundos", "1 hora y 45 minutos", "2 horas"],
+      "explanation": "Expresadas en minutos, las duraciones son 90; 6000/60 = 100; 60 + 45 = 105; y 2 × 60 = 120. Como 90 < 100 < 105 < 120, ese es el orden creciente."
+    }
+  },
+  {
+    "id": "bank-ordenar-recorrido-digestivo",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-recorrido-digestivo",
+    "publicPayload": {
+      "question": "Ordena estos órganos según el recorrido del alimento por el tubo digestivo humano, comenzando por la entrada.",
+      "items": ["Estómago", "Intestino grueso", "Boca", "Intestino delgado", "Esófago"],
+      "directionLabels": {
+        "start": "Antes en el recorrido",
+        "end": "Después en el recorrido"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["Boca", "Esófago", "Estómago", "Intestino delgado", "Intestino grueso"],
+      "explanation": "El alimento entra por la boca y, tras pasar por la faringe, atraviesa el esófago hasta el estómago. El contenido continúa al intestino delgado y después al intestino grueso. La faringe no figura entre los elementos que hay que ordenar."
+    }
+  },
+  {
+    "id": "bank-ordenar-organizacion-biologica",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-organizacion-biologica",
+    "publicPayload": {
+      "question": "Ordena estos niveles de organización del cuerpo humano, desde la unidad más simple hasta el individuo completo.",
+      "items": ["Órgano", "Organismo", "Tejido", "Célula", "Sistema de órganos"],
+      "directionLabels": {
+        "start": "Unidad más simple",
+        "end": "Individuo completo"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["Célula", "Tejido", "Órgano", "Sistema de órganos", "Organismo"],
+      "explanation": "Las células se organizan en tejidos; varios tejidos forman órganos. Los órganos que actúan coordinadamente integran sistemas, y el conjunto de sistemas forma el organismo humano. Por eso cada nivel queda después de sus componentes."
+    }
+  },
+  {
+    "id": "bank-ordenar-metamorfosis-mariposa",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-metamorfosis-mariposa",
+    "publicPayload": {
+      "question": "Ordena las fases de una mariposa con metamorfosis completa, comenzando por el huevo.",
+      "items": ["Crisálida (pupa)", "Huevo", "Mariposa adulta", "Oruga (larva)"],
+      "directionLabels": {
+        "start": "Primera fase",
+        "end": "Última fase"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["Huevo", "Oruga (larva)", "Crisálida (pupa)", "Mariposa adulta"],
+      "explanation": "Del huevo sale la oruga, que es la fase larvaria de crecimiento. Después se forma la crisálida o pupa, donde tiene lugar la transformación de la que emerge la mariposa adulta. El enunciado fija el huevo como inicio para ordenar este ciclo."
+    }
+  },
+  {
+    "id": "bank-ordenar-velocidades",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-velocidades",
+    "publicPayload": {
+      "question": "Ordena estas velocidades de menor a mayor, convirtiéndolas a una unidad común.",
+      "items": ["36 km/h", "950 cm/s", "9 m/s", "0,55 km/min"],
+      "directionLabels": {
+        "start": "Menor velocidad",
+        "end": "Mayor velocidad"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["9 m/s", "0,55 km/min", "950 cm/s", "36 km/h"],
+      "explanation": "En metros por segundo: 9 m/s permanece igual; 0,55 km/min = 550/60 m/s, aproximadamente 9,17 m/s; 950 cm/s = 9,5 m/s; y 36 km/h = 36000/3600 m/s = 10 m/s. Así, 9 < 550/60 < 9,5 < 10."
+    }
+  },
+  {
+    "id": "bank-ordenar-precios-descuentos",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-precios-descuentos",
+    "publicPayload": {
+      "question": "Ordena estas ofertas de menor a mayor precio final, después de aplicar los descuentos indicados.",
+      "items": [
+        "80 € con un 20 % de descuento",
+        "75 € con un 10 % de descuento",
+        "100 € con descuentos sucesivos del 20 % y del 25 %",
+        "90 € con un 30 % de descuento"
+      ],
+      "directionLabels": {
+        "start": "Menor precio final",
+        "end": "Mayor precio final"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": [
+        "100 € con descuentos sucesivos del 20 % y del 25 %",
+        "90 € con un 30 % de descuento",
+        "80 € con un 20 % de descuento",
+        "75 € con un 10 % de descuento"
+      ],
+      "explanation": "Los precios finales son 100 × 0,80 × 0,75 = 60 €; 90 × 0,70 = 63 €; 80 × 0,80 = 64 €; y 75 × 0,90 = 67,50 €. Los descuentos sucesivos se aplican sobre el precio ya rebajado, por lo que no se suman. El orden es 60 < 63 < 64 < 67,50."
+    }
   }
 ]

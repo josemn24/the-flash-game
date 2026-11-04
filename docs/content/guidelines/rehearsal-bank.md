@@ -102,6 +102,14 @@ una regla sobre medias de grupos mediante un contraejemplo calculado. Ambas difi
 respuestas verdaderas y falsas; la explicación demuestra el veredicto con propiedades o valores
 concretos, sin convertir la respuesta en una cadena de texto.
 
+Ordenar incorpora cuatro preguntas medias y dos difíciles, dejando el banco en 400. El formato
+reúne cinco fáciles, seis medias y tres difíciles, con diez familias. Las medias requieren convertir
+duraciones o reconocer el recorrido digestivo, la jerarquía del cuerpo humano y las fases de una
+metamorfosis completa. Las difíciles convierten velocidades con distintas unidades de espacio y
+tiempo o comparan precios tras descuentos, incluidos los sucesivos. Los enunciados fijan dirección
+y punto de inicio cuando procede; los valores numéricos no empatan y cada solución es una permutación
+completa de los elementos visibles. Las explicaciones detallan relaciones o cálculos verificables.
+
 Ejecutar `npm run rehearsals:check` y revisar el informe por combinación y estructura. El mínimo de
 una familia no garantiza repeticiones de formato y dificultad sin sustituciones: la asignación
 completa y sus avisos muestran esa limitación. Antes de publicar, añadir las nuevas huellas al

@@ -195,6 +195,63 @@ it.each(
   expect(sets.size).toBeGreaterThan(1);
 });
 
+it.each(
+  rehearsalTemplates
+    .filter((template) => template.questions.some((question) => question.type === "ordering"))
+    .flatMap((source) =>
+      (["medium", "hard"] as const).map((difficulty) => ({
+        challengeVersionId: source.challengeVersionId,
+        difficulty,
+        template: {
+          ...source,
+          questions: source.questions.map((question) =>
+            question.type === "ordering" ? { ...question, difficulty } : question,
+          ),
+        },
+      })),
+    ),
+)(
+  "$challengeVersionId keeps ordering at $difficulty and varies the available exercises",
+  ({ template, difficulty }) => {
+    const first = template.questions.findIndex((question) => question.type === "ordering");
+    const candidates = rehearsalCandidates(bank, template, first).filter(
+      (question) => question.difficulty === difficulty,
+    );
+    const slotCount = template.questions.filter((question) => question.type === "ordering").length;
+    expect(
+      new Set(candidates.map((question) => question.familyId ?? question.id)).size,
+    ).toBeGreaterThanOrEqual(slotCount);
+    const sets = new Set<string>();
+    const orders = new Set<string>();
+    for (let seed = 0; seed < 12; seed++) {
+      const run = generateRehearsal(bank, template, `ordering-${difficulty}-variety-${seed}`);
+      const selected = chosen(run, bank).filter((question, index) => {
+        if (template.questions[index]!.type !== "ordering") return false;
+        expect(question.difficulty).toBe(difficulty);
+        expect([...(question.solutionPayload.correctOrder as string[])].sort()).toEqual(
+          [...(question.publicPayload.items as string[])].sort(),
+        );
+        return true;
+      });
+      expect(new Set(selected.map(exerciseHash)).size).toBe(slotCount);
+      expect(new Set(selected.map((question) => question.familyId ?? question.id)).size).toBe(
+        slotCount,
+      );
+      expect(
+        run.difficultyFallbacks.filter(
+          (fallback) => template.questions[fallback.position - 1]!.type === "ordering",
+        ),
+      ).toEqual([]);
+      sets.add(JSON.stringify(selected.map((question) => question.id).sort()));
+      orders.add(JSON.stringify(selected.map((question) => question.id)));
+      expect(replayRehearsal(bank, template, run.recipe)).toEqual(run);
+    }
+    expect(orders.size).toBeGreaterThan(1);
+    if (candidates.length > slotCount) expect(sets.size).toBeGreaterThan(1);
+    else expect(sets.size).toBe(1);
+  },
+);
+
 it.each([
   { format: "connect-pairs", minimumMedium: 4 },
   { format: "queens", minimumMedium: 5 },
