@@ -54,6 +54,7 @@ export type RoomHistoryDetailModel = {
   readonly entry: RoomHistoryEntry;
   readonly ranking: RoomDailyLeaderboardEntry[];
   readonly canReviewMembers?: boolean;
+  readonly canExportRankingPoster: boolean;
   readonly source?: "mock" | "supabase";
 };
 

@@ -880,6 +880,8 @@ export class MockRoomReadProjection
       entry,
       ranking: history.rankings[challengeKey] ?? [],
       canReviewMembers: access.membership.role !== "spectator",
+      canExportRankingPoster:
+        access.membership.role === "owner" || access.membership.role === "admin",
     };
   }
 }

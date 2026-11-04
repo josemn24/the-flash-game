@@ -876,6 +876,28 @@ describe("Supabase history and review capabilities S07", () => {
     expect(model?.source).toBe("supabase");
   });
 
+  it.each([
+    ["owner", true],
+    ["admin", true],
+    ["member", false],
+    ["spectator", false],
+  ] as const)("grants ranking poster export to %s: %s", async (role, canExport) => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) =>
+        functionName === "get_room_history"
+          ? { data: [{ ...historyRows[0], viewer_role: role }], error: null }
+          : { data: [], error: null },
+      ),
+    });
+    const model = await createRoomReadCapabilities().getHistoryDetail(
+      "s06-main",
+      historyRows[0].publication_id,
+      queryContext,
+    );
+
+    expect(model?.canExportRankingPoster).toBe(canExport);
+  });
+
   it("reconstructs a persisted completed review without local session data", async () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async (functionName: string) => {

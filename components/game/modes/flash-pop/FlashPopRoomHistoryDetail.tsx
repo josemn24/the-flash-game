@@ -1,4 +1,4 @@
-import { BackLink, Card, Canvas } from "@/components/ui";
+import { BackLink, ButtonLink, Card, Canvas } from "@/components/ui";
 import type { RoomDailyLeaderboardEntry, RoomHistoryEntry } from "@/types/view-models/room";
 import { RoomLeaderboard } from "./RoomLeaderboard";
 import styles from "./FlashPopRoomSecondary.module.css";
@@ -18,6 +18,7 @@ export function FlashPopRoomHistoryDetail({
   ranking,
   currentUserId,
   canReviewMembers = false,
+  canExportRankingPoster = false,
 }: {
   roomId: string;
   roomTitle: string;
@@ -25,6 +26,7 @@ export function FlashPopRoomHistoryDetail({
   ranking: RoomDailyLeaderboardEntry[];
   currentUserId: string;
   canReviewMembers?: boolean;
+  canExportRankingPoster?: boolean;
 }) {
   return (
     <Canvas contentClassName={styles.content}>
@@ -55,17 +57,32 @@ export function FlashPopRoomHistoryDetail({
 
       <section className={styles.detailRanking} aria-label="Ranking del desafío">
         {ranking.length > 0 ? (
-          <RoomLeaderboard
-            title="Ranking"
-            entries={ranking}
-            currentUserId={currentUserId}
-            daily
-            bare
-            headingLevel="h2"
-            memberHrefBase={
-              canReviewMembers ? `/salas/${roomId}/historial/${entry.challengeId}` : undefined
-            }
-          />
+          <>
+            {canExportRankingPoster ? (
+              <div className={styles.historyPosterAction}>
+                <ButtonLink
+                  href={`/api/salas/${roomId}/historial/${entry.challengeId}/poster`}
+                  variant="secondary"
+                  size="sm"
+                  prefetch={false}
+                  download
+                >
+                  Descargar ranking
+                </ButtonLink>
+              </div>
+            ) : null}
+            <RoomLeaderboard
+              title="Ranking"
+              entries={ranking}
+              currentUserId={currentUserId}
+              daily
+              bare
+              headingLevel="h2"
+              memberHrefBase={
+                canReviewMembers ? `/salas/${roomId}/historial/${entry.challengeId}` : undefined
+              }
+            />
+          </>
         ) : (
           <Card as="section" surface="soft" className={styles.emptyState}>
             <h2 id="history-ranking-title">No hay resultados disponibles.</h2>

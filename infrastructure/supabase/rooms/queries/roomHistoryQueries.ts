@@ -82,6 +82,7 @@ export class SupabaseRoomHistoryQueries implements RoomHistoryQueries {
       entry: toHistoryEntry(first),
       ranking: toHistoricalLeaderboard(rows),
       canReviewMembers: first.viewer_role !== "spectator",
+      canExportRankingPoster: first.viewer_role === "owner" || first.viewer_role === "admin",
       source: "supabase",
     };
   }

@@ -43,8 +43,27 @@ describe("room history detail route", () => {
     expect(markup).toContain("52");
     expect(markup).toContain("Jackobo");
     expect(markup).toContain("44");
+    expect(markup).toContain(
+      'href="/api/salas/tabarnia-room/historial/tabarnia-challenge-05/poster"',
+    );
     expect(markup).toContain('href="/salas/tabarnia-room/historial"');
     expect(model.canReviewMembers).toBe(true);
+    expect(model.canExportRankingPoster).toBe(true);
+  });
+
+  it("does not show the poster download to a non-admin member", async () => {
+    const model = await mockRoomReadCapabilities.getHistoryDetail(
+      "tabarnia-room",
+      "tabarnia-challenge-05",
+      mockQueryContext(),
+    );
+    if (!model) throw new Error("Expected history detail model");
+    const markup = renderToStaticMarkup(
+      <FlashPopRoomHistoryDetail {...model} canExportRankingPoster={false} />,
+    );
+
+    expect(markup).not.toContain("/poster");
+    expect(markup).toContain("Ranking");
   });
 
   it("renders an empty state when the challenge has no completed results", async () => {
@@ -66,5 +85,6 @@ describe("room history detail route", () => {
     );
 
     expect(markup).toContain("No hay resultados disponibles.");
+    expect(markup).not.toContain("/poster");
   });
 });

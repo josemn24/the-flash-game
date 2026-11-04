@@ -39,6 +39,7 @@ export default async function RoomHistoryDetailPage({ params }: Props) {
         ranking={model.ranking}
         currentUserId={model.currentUserId}
         canReviewMembers={model.canReviewMembers}
+        canExportRankingPoster={model.canExportRankingPoster}
       />
     </MeasurementProvider>
   );
