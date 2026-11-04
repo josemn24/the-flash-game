@@ -41,6 +41,8 @@ type FixtureData = {
 type ScenarioFixture = { users: Record<string, Account>; data: FixtureData };
 
 const origin = process.env.APP_ORIGIN ?? "http://127.0.0.1:3300";
+// The backend and manual clock can differ slightly at a global-timeout boundary.
+const TIME_USED_TOLERANCE_MS = 20;
 let browserContext: BrowserContext;
 let request: APIRequestContext;
 
@@ -199,17 +201,57 @@ function normalized(value: unknown): unknown {
           return [key, Math.round(Date.parse(child) / 10) * 10];
         if (key === "timeUsedMs" && typeof child === "number")
           return [key, Math.round(child / 10) * 10];
-        if (key === "timeUsed" && typeof child === "number")
-          return [key, Math.round(child * 100) / 100];
         return [key, normalized(child)];
       }),
   );
 }
 
+function withoutTimeUsed(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(withoutTimeUsed);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => key !== "timeUsed")
+      .map(([key, child]) => [key, withoutTimeUsed(child)]),
+  );
+}
+
+function expectTimeUsedWithinTolerance(local: unknown, remote: unknown) {
+  if (Array.isArray(local) && Array.isArray(remote)) {
+    expect(local).toHaveLength(remote.length);
+    local.forEach((value, index) => expectTimeUsedWithinTolerance(value, remote[index]));
+    return;
+  }
+  if (!local || !remote || typeof local !== "object" || typeof remote !== "object") return;
+
+  const localFields = local as Record<string, unknown>;
+  const remoteFields = remote as Record<string, unknown>;
+  for (const key of new Set([...Object.keys(localFields), ...Object.keys(remoteFields)])) {
+    const localValue = localFields[key];
+    const remoteValue = remoteFields[key];
+    if (key === "timeUsed" && typeof localValue === "number" && typeof remoteValue === "number") {
+      expect(Math.abs(localValue - remoteValue) * 1000).toBeLessThanOrEqual(
+        TIME_USED_TOLERANCE_MS,
+      );
+    } else if (key === "timeUsed") {
+      expect(localValue).toEqual(remoteValue);
+    } else {
+      expectTimeUsedWithinTolerance(localValue, remoteValue);
+    }
+  }
+}
+
+function expectConformant(local: unknown, remote: unknown) {
+  const normalizedLocal = normalized(local);
+  const normalizedRemote = normalized(remote);
+  expect(withoutTimeUsed(normalizedLocal)).toEqual(withoutTimeUsed(normalizedRemote));
+  expectTimeUsedWithinTolerance(normalizedLocal, normalizedRemote);
+}
+
 function compare(local: GameSessionResult, remote: GameSessionResult) {
   expect(local.kind).toBe(remote.kind);
   if (local.kind !== "accepted" || remote.kind !== "accepted") {
-    expect(normalized(local)).toEqual(normalized(remote));
+    expectConformant(local, remote);
     return;
   }
   expect(local.effect).toBe(remote.effect);
@@ -248,7 +290,7 @@ function compare(local: GameSessionResult, remote: GameSessionResult) {
     Object.fromEntries(
       stateFields.filter((key) => remote.state[key] !== undefined).map((key) => [key, state[key]]),
     );
-  expect(normalized(project(local.state))).toEqual(normalized(project(remote.state)));
+  expectConformant(project(local.state), project(remote.state));
 
   if (local.effect === "completed" && remote.effect === "completed") {
     const rows = (review: typeof local.review) =>
