@@ -4,7 +4,8 @@ import { createPracticeInput } from "@/features/question-formats/createPracticeI
 import type { PracticeInputSource } from "@/features/question-formats/practiceInputTypes";
 
 import { MotionConfig } from "motion/react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { KeyboardGameLayout } from "@/components/ui/KeyboardGameLayout";
 import { CrossIcon, RotateIcon } from "@/components/ui";
 import styles from "./PlayableFormatExample.module.css";
 import { QuestionMedia } from "@/components/questions/shared/QuestionMedia";
@@ -43,6 +44,27 @@ function ExampleQuestionInput({ source }: { source: PracticeInputSource }) {
   return input ? <QuestionInput input={input} /> : null;
 }
 
+function ExamplePlayingPanel({
+  header,
+  children,
+  keyboard,
+}: {
+  header: ReactNode;
+  children: ReactNode;
+  keyboard: boolean;
+}) {
+  return keyboard ? (
+    <KeyboardGameLayout contained header={header}>
+      {children}
+    </KeyboardGameLayout>
+  ) : (
+    <div className={styles.playPanel}>
+      {header}
+      {children}
+    </div>
+  );
+}
+
 export function PlayableFormatExample({
   title,
   question,
@@ -66,6 +88,7 @@ export function PlayableFormatExample({
   const [codeAttemptCount, setCodeAttemptCount] = useState(0);
   const [timedResponseStarted, setTimedResponseStarted] = useState(false);
   const [result, setResult] = useState<AnswerResult | null>(null);
+  const keyboardPlaying = phase === "playing" && question.type === "mini-wordle";
 
   useEffect(() => {
     if (!open) return;
@@ -171,6 +194,16 @@ export function PlayableFormatExample({
     );
   }, [question, submitAnswer]);
 
+  const timer =
+    !hasDelayedTimedResponse(question) || timedResponseStarted ? (
+      <Timer
+        key={`timer-${attempt}`}
+        duration={question.timeLimit}
+        active={!hasDelayedTimedResponse(question) || timedResponseStarted}
+        onTimeUp={handleTimeUp}
+      />
+    ) : null;
+
   return (
     <MotionConfig reducedMotion="user">
       <div className={styles.launcher}>
@@ -194,19 +227,20 @@ export function PlayableFormatExample({
 
       <dialog
         ref={dialogRef}
-        className={styles.dialog}
+        className={`${styles.dialog} ${keyboardPlaying ? styles.keyboardDialog : ""}`}
         aria-labelledby={titleId}
         onClose={handleDialogClosed}
         onClick={(event) => {
           if (event.target === event.currentTarget) closeExample();
         }}
       >
-        <div className={styles.dialogSurface}>
+        <div className={`${styles.dialogSurface} ${keyboardPlaying ? styles.keyboardSurface : ""}`}>
           <header className={styles.dialogHeader}>
             <div>
               <span className={styles.dialogEyebrow}>Ejemplo jugable</span>
               <strong>{question.category}</strong>
             </div>
+            {keyboardPlaying ? timer : null}
             <button
               className={styles.closeButton}
               type="button"
@@ -257,18 +291,18 @@ export function PlayableFormatExample({
           )}
 
           {phase === "playing" && (
-            <div className={styles.playPanel} key={attempt}>
-              <div className={styles.questionHeader}>
-                <Chip>{question.category}</Chip>
-                {!hasDelayedTimedResponse(question) || timedResponseStarted ? (
-                  <Timer
-                    key={`timer-${attempt}`}
-                    duration={question.timeLimit}
-                    active={!hasDelayedTimedResponse(question) || timedResponseStarted}
-                    onTimeUp={handleTimeUp}
-                  />
-                ) : null}
-              </div>
+            <ExamplePlayingPanel
+              key={attempt}
+              keyboard={question.type === "mini-wordle"}
+              header={
+                question.type === "mini-wordle" ? null : (
+                  <div className={styles.questionHeader}>
+                    <Chip>{question.category}</Chip>
+                    {timer}
+                  </div>
+                )
+              }
+            >
               <h2 id={titleId} className={styles.questionTitle}>
                 {question.question}
               </h2>
@@ -300,7 +334,7 @@ export function PlayableFormatExample({
                   },
                 }}
               />
-            </div>
+            </ExamplePlayingPanel>
           )}
 
           {phase === "feedback" && result && (

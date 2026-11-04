@@ -7,6 +7,7 @@ import {
   getMiniWordleWordLength,
   isValidMiniWordleWord,
   normalizeMiniWordleWord,
+  normalizeMiniWordleDraft,
 } from "@/lib/miniWordle";
 import { loadMiniWordleDictionary } from "@/lib/miniWordleDictionary";
 import type { MiniWordleAnswer } from "@/types/gameplay/practice";
@@ -48,6 +49,7 @@ export function usePracticeMiniWordle({
   const [dictionaryError, setDictionaryError] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const timedResponseStarted = useRef(false);
+  const acceptedGuesses = useRef<readonly string[] | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -86,10 +88,11 @@ export function usePracticeMiniWordle({
       })),
     [guesses, correctAnswer],
   );
-  const canSubmit = dictionary !== null && !locked && guesses.length < maxAttempts;
+  const solved = guesses.includes(normalizeMiniWordleWord(correctAnswer));
+  const canSubmit = dictionary !== null && !locked && !solved && guesses.length < maxAttempts;
 
   function submit() {
-    if (!canSubmit) return;
+    if (!canSubmit || acceptedGuesses.current === guesses) return;
     const guess = normalizeMiniWordleWord(value);
     if (!isValidMiniWordleWord(guess, wordLength)) {
       setError(`Escribe una palabra de ${wordLength} letras.`);
@@ -100,6 +103,7 @@ export function usePracticeMiniWordle({
       return;
     }
     const nextGuesses = [...guesses, guess];
+    acceptedGuesses.current = guesses;
     const answer = { guesses: nextGuesses };
     setGuesses(nextGuesses);
     setValue("");
@@ -121,7 +125,8 @@ export function usePracticeMiniWordle({
     dictionaryReady: dictionary !== null,
     dictionaryError,
     changeValue(next: string) {
-      setValue(next.toLocaleUpperCase("es-ES"));
+      if (!canSubmit) return;
+      setValue(normalizeMiniWordleDraft(next, wordLength));
       if (error) setError("");
     },
     retryDictionary() {

@@ -13,6 +13,7 @@ export function PracticeInput({
 }: PracticeInputProps<"mini-wordle">) {
   return (
     <MiniWordleQuestion
+      key={question.id}
       correctAnswer={question.correctAnswer}
       additionalGuesses={question.additionalGuesses}
       hint={question.hint}

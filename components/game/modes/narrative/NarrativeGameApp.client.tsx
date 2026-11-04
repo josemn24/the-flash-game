@@ -13,6 +13,7 @@ import {
   getFlashPopFeedbackCopy,
 } from "@/components/game/modes/flash-pop/FlashPopFeedback";
 import { QuestionInput } from "@/features/question-formats/QuestionInput";
+import { QuestionStage } from "@/components/game/shared/QuestionStage";
 import { ReviewAnswers } from "@/components/game/shared/ReviewAnswers";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
 import { useNarrativeSession } from "@/features/narrative/useNarrativeSession";
@@ -66,6 +67,28 @@ function NarrativeQuestionScreen({
     setTimedResponseStarted(true);
     onTimedResponseStart?.();
   };
+
+  if (input.format === "mini-wordle") {
+    return (
+      <QuestionStage
+        input={input}
+        questionNumber={questionNumber}
+        totalQuestions={totalQuestions}
+        onTimeUp={onTimeUp}
+        renderHeader={({ timer }) => (
+          <GameHeader
+            left={
+              <p className={styles.questionIndicator}>
+                Prueba {String(questionNumber).padStart(2, "0")}{" "}
+                <span>de {String(totalQuestions).padStart(2, "0")}</span>
+              </p>
+            }
+            timer={timer}
+          />
+        )}
+      />
+    );
+  }
 
   return (
     <motion.section

@@ -34,7 +34,9 @@ export const guide = {
   ],
   accessibility: [
     "Acompaña cada color con un símbolo y una etiqueta textual",
-    "Permite enviar con Enter y conserva un campo de texto nativo para teclados móviles",
+    "Escribe en la fila activa con el teclado del juego, el teclado físico o el del dispositivo",
+    "Permite enviar con Enter y ofrece entrada nativa accesible integrada en el tablero, sin un campo separado",
+    "En móvil muestra directamente el teclado del juego; en escritorio conserva la elección mientras la pregunta está abierta",
     "Anuncia los errores de validación sin consumir intentos ni mover el foco",
   ],
   mediaSupport: ["Texto", "Pista temática opcional"],

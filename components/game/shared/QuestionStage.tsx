@@ -9,6 +9,7 @@ import { useQuestionStageTimer } from "@/features/game/useQuestionStageTimer";
 import type { PracticeInput } from "@/features/question-formats/practiceInputTypes";
 import { withPracticeTimedResponseStart } from "@/features/question-formats/withPracticeTimedResponseStart";
 import styles from "./QuestionStage.module.css";
+import { KeyboardGameLayout } from "@/components/ui/KeyboardGameLayout";
 
 export type QuestionStageHeaderRenderParams = {
   timer: ReactNode;
@@ -72,8 +73,8 @@ export function QuestionStage({
 
   useEffect(() => onReady?.(), [onReady]);
 
-  return (
-    <div className={`${styles.stage} ${className ?? ""}`}>
+  const header = (
+    <>
       {renderHeader({
         timer: (
           <Timer
@@ -90,17 +91,31 @@ export function QuestionStage({
       })}
 
       {renderQuestionMeta?.({ questionNumber, totalQuestions })}
+    </>
+  );
+  const content = (
+    <section className={styles.questionCard} aria-labelledby={titleId}>
+      {prompt.context ? <p className={styles.promptContext}>{prompt.context}</p> : null}
+      <h1 id={titleId}>{prompt.title}</h1>
+      {input.format === "mini-wordle" && question.questionContext ? (
+        <p className={styles.promptContext}>{question.questionContext}</p>
+      ) : null}
+      {"media" in question && question.media ? (
+        <div className={styles.questionMedia}>
+          <QuestionMedia media={question.media} prominent={prominentMedia} />
+        </div>
+      ) : null}
+      <QuestionInput input={withPracticeTimedResponseStart(input, timer.start)} />
+    </section>
+  );
 
-      <section className={styles.questionCard} aria-labelledby={titleId}>
-        {prompt.context ? <p className={styles.promptContext}>{prompt.context}</p> : null}
-        <h1 id={titleId}>{prompt.title}</h1>
-        {"media" in question && question.media ? (
-          <div className={styles.questionMedia}>
-            <QuestionMedia media={question.media} prominent={prominentMedia} />
-          </div>
-        ) : null}
-        <QuestionInput input={withPracticeTimedResponseStart(input, timer.start)} />
-      </section>
+  if (input.format === "mini-wordle") {
+    return <KeyboardGameLayout header={header}>{content}</KeyboardGameLayout>;
+  }
+  return (
+    <div className={`${styles.stage} ${className ?? ""}`}>
+      {header}
+      {content}
     </div>
   );
 }

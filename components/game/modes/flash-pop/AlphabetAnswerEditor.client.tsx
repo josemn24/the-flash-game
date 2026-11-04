@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, type RefObject } from "react";
 import { flushSync } from "react-dom";
-import { ArrowIcon, Button, RotateIcon } from "@/components/ui";
+import { ArrowIcon, Button, GameKeyboard, RotateIcon } from "@/components/ui";
 import {
   alphabetAnswerCharacters as characters,
   alphabetAnswerSlots,
@@ -232,11 +232,6 @@ export function AlphabetAnswerDock({
   onPass: () => void;
 }) {
   const keyboardId = useId();
-  const rows = [
-    Array.from("QWERTYUIOP"),
-    Array.from("ASDFGHJKLÑ"),
-    [" ", ...Array.from("ZXCVBNM"), "Backspace"],
-  ];
   return (
     <footer className={styles.answerDock}>
       <div className={styles.answerActions}>
@@ -269,42 +264,17 @@ export function AlphabetAnswerDock({
             </button>
           ) : null}
           {!compact || expanded ? (
-            <div
-              className={styles.keyboard}
-              role="group"
-              aria-label="Teclado del juego"
-              id={keyboardId}
-            >
-              {rows.map((row, index) => (
-                <div className={styles.keyboardRow} key={index}>
-                  {row.map((key) => (
-                    <button
-                      type="button"
-                      key={key}
-                      className={key === " " || key === "Backspace" ? styles.wideKey : undefined}
-                      aria-label={
-                        key === " "
-                          ? "Espacio"
-                          : key === "Backspace"
-                            ? "Borrar último carácter"
-                            : key
-                      }
-                      disabled={disabled}
-                      onPointerDown={(event) => {
-                        event.preventDefault();
-                        editorRef.current?.focus({ preventScroll: true });
-                      }}
-                      onClick={() =>
-                        onChange(
-                          key === "Backspace" ? deleteLastAlphabetCharacter(value) : value + key,
-                        )
-                      }
-                    >
-                      {key === " " ? "␣" : key === "Backspace" ? "⌫" : key}
-                    </button>
-                  ))}
-                </div>
-              ))}
+            <div className={styles.keyboardArea}>
+              <GameKeyboard
+                id={keyboardId}
+                disabled={disabled}
+                includeSpace
+                compact={compact}
+                onPreserveFocus={() => editorRef.current?.focus({ preventScroll: true })}
+                onKeyPress={(key) =>
+                  onChange(key === "Backspace" ? deleteLastAlphabetCharacter(value) : value + key)
+                }
+              />
             </div>
           ) : null}
         </>

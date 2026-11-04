@@ -71,6 +71,11 @@ export default defineConfig({
       testMatch: "**/profile-dialog-layout.spec.ts",
       use: { ...devices["Desktop Safari"] },
     },
+    {
+      name: "webkit-wordle",
+      testMatch: "**/mini-wordle-practice.spec.ts",
+      use: { ...devices["Desktop Safari"] },
+    },
   ],
   testDir: "./e2e",
   timeout: 30_000,

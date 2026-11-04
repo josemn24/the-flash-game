@@ -343,7 +343,6 @@
   }
 
   .answerPanel:focus-visible .activeSlot,
-  .keyboard button:focus-visible,
   .keyboardSwitch:focus-visible,
   .keyboardToggle:focus-visible {
     outline: 3px solid var(--ds-color-focus-ring);
@@ -473,8 +472,7 @@
   }
 
   .keyboardSwitch:disabled,
-  .keyboardToggle:disabled,
-  .keyboard button:disabled {
+  .keyboardToggle:disabled {
     opacity: var(--ds-opacity-disabled);
     cursor: not-allowed;
   }
@@ -492,44 +490,14 @@
     min-height: 48px;
   }
 
-  .keyboard {
+  .keyboardArea {
     display: grid;
     width: min(100%, 640px);
-    gap: var(--space-2);
     justify-self: center;
   }
 
-  .keyboardRow {
-    display: flex;
-    gap: 4px;
-  }
-
-  .keyboard button {
-    height: 48px;
-    min-width: 0;
-    flex: 1 1 0;
-    padding: 0;
-    border: var(--border-subtle);
-    border-radius: var(--radius-control);
-    color: var(--ds-color-fg-primary);
-    background: var(--ds-color-bg-surface);
-    box-shadow: var(--shadow-control);
-    font-family: var(--type-ui);
-    font-size: 16px;
-    font-weight: 800;
-    cursor: pointer;
-  }
-
-  .keyboard .wideKey {
-    flex-grow: 1.5;
-  }
-
-  .keyboard button:active:not(:disabled) {
-    background: var(--ds-color-bg-brand);
-  }
-
   @media (max-width: 640px) {
-    .keyboard {
+    .keyboardArea {
       width: auto;
       justify-self: stretch;
       margin-left: calc(
@@ -561,11 +529,6 @@
     overflow-y: hidden;
   }
 
-  .compactHeight .keyboard button {
-    height: 32px;
-  }
-
-  .compactHeight .keyboard,
   .compactHeight .answerDock {
     gap: var(--space-1);
   }

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { MotionButton } from "@/components/ui";
 import {
   usePracticeMiniWordle,
@@ -13,22 +12,6 @@ type Props = PracticeMiniWordleOptions & { className?: string };
 
 export function MiniWordleQuestion(props: Props) {
   const session = usePracticeMiniWordle(props);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const previousGuessCount = useRef(session.attemptsUsed);
-  useEffect(() => {
-    if (session.dictionaryReady) inputRef.current?.focus();
-  }, [session.dictionaryReady]);
-  useEffect(() => {
-    const previous = previousGuessCount.current;
-    previousGuessCount.current = session.attemptsUsed;
-    if (
-      session.attemptsUsed > previous &&
-      session.attemptsUsed < session.maxAttempts &&
-      !props.locked
-    ) {
-      inputRef.current?.focus();
-    }
-  }, [session.attemptsUsed, session.maxAttempts, props.locked]);
   return (
     <MiniWordleView
       rows={session.rows}
@@ -41,8 +24,6 @@ export function MiniWordleQuestion(props: Props) {
       disabled={!session.canSubmit}
       onValueChange={session.changeValue}
       onSubmit={session.submit}
-      inputRef={inputRef}
-      autoFocus={session.dictionaryReady}
       animateSubmit
       beforeInput={
         <>

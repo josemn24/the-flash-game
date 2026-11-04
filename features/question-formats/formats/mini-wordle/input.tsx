@@ -13,6 +13,7 @@ export function render(props: MiniWordleCompetitiveInputProps) {
   const { question } = props;
   return (
     <ServerMiniWordleQuestion
+      key={question.id}
       question={question}
       progress={question.progress}
       locked={locked}

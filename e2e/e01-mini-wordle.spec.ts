@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { expectPinnedWordleKeyboard } from "./support/keyboard-layout";
 
 type FixtureAccount = { email: string; password: string };
 
@@ -46,18 +47,37 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
     expect(await page.content()).not.toContain("JESUS");
     expect(await page.content()).not.toContain("dictionaryId");
 
-    const input = page.getByLabel("Escribe tu intento");
-    await input.fill("ZZZZZ");
+    const originalViewport = page.viewportSize()!;
+    for (const size of [
+      { width: 320, height: 568 },
+      { width: 390, height: 844 },
+      { width: 844, height: 390 },
+    ]) {
+      await page.setViewportSize(size);
+      await expectPinnedWordleKeyboard(page);
+    }
+    await page.setViewportSize(originalViewport);
+
+    const input = page.getByRole("textbox", { name: "Escribe tu intento" });
+    const keyboard = page.getByRole("group", { name: "Teclado del juego" });
+    for (const letter of "ZZZZZ") {
+      await keyboard.getByRole("button", { name: letter, exact: true }).click();
+    }
     await page.getByRole("button", { name: "Enviar" }).click();
     await expect(
       page.getByText("Esta palabra no está disponible para este desafío."),
     ).toBeVisible();
-    await expect(page.getByText("Intento 1 de 4")).toBeVisible();
+    await expect(input).toHaveAccessibleDescription(/Intento 1 de 4/);
+    await expect(page.getByLabel("Intento 1, en curso")).toHaveText("ZZZZZ");
 
+    await page.getByRole("button", { name: "Usar teclado del dispositivo" }).click();
+    await expect(input).toHaveValue("ZZZZZ");
     await input.fill("JOSUE");
     await page.getByRole("button", { name: "Enviar" }).click();
     await expect(page.getByLabel(/Intento 1: JOSUE/)).toBeVisible();
-    await expect(page.getByText("Intento 2 de 4")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Usar teclado del juego" })).toBeVisible();
+    await expect(input).toHaveValue("");
+    await expect(input).toHaveAccessibleDescription(/Intento 2 de 4/);
 
     await page.reload();
     await expect(page.getByRole("heading", { name: "Descubre el personaje bíblico" })).toBeVisible({
@@ -65,17 +85,19 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
     });
     await expect(page.getByLabel(/Intento 1: JOSUE/)).toBeVisible();
 
+    await expect(keyboard).toBeVisible();
+    await page.getByRole("button", { name: "Usar teclado del dispositivo" }).click();
     await input.fill("JOSUE");
     await page.getByRole("button", { name: "Enviar" }).click();
     await expect(
       page.getByText("Ya has probado esa palabra. El intento no se ha consumido."),
     ).toBeVisible();
-    await expect(page.getByText("Intento 2 de 4")).toBeVisible();
+    await expect(input).toHaveAccessibleDescription(/Intento 2 de 4/);
 
     await input.fill("SALON");
     await page.getByRole("button", { name: "Enviar" }).click();
     await expect(page.getByLabel(/Intento 2: SALON/)).toBeVisible();
-    await expect(page.getByText("Intento 3 de 4")).toBeVisible();
+    await expect(input).toHaveAccessibleDescription(/Intento 3 de 4/);
 
     let failureResponses = 2;
     const requestBodies: Array<Record<string, unknown>> = [];
@@ -99,6 +121,10 @@ test.describe("E01 — Mini-Wordle competitivo", () => {
     await page.getByRole("button", { name: "Enviar" }).click();
     await expect.poll(() => requestBodies.length).toBe(2);
     await expect(page.getByRole("button", { name: "Reintentar", exact: true })).toBeVisible();
+    await expect(input).toHaveValue("JESUS");
+    await expect(input).toHaveAttribute("aria-disabled", "true");
+    expect(await input.evaluate((element) => (element as HTMLInputElement).disabled)).toBe(false);
+    await expect(page.getByLabel("Intento 3, en curso")).toHaveText("JESUS");
     await page.getByRole("button", { name: "Reintentar", exact: true }).click();
     await expect.poll(() => requestBodies.length).toBe(3);
     expect(requestBodies[2]).toEqual(requestBodies[0]);

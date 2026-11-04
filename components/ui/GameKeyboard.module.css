@@ -1,0 +1,56 @@
+@layer app-components {
+  .keyboard {
+    display: grid;
+    width: min(100%, 640px);
+    min-width: 0;
+    gap: var(--game-keyboard-gap, var(--space-2));
+    justify-self: center;
+  }
+
+  .row {
+    display: flex;
+    gap: 4px;
+  }
+
+  .keyboard button {
+    height: var(--game-keyboard-key-height, 48px);
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 0;
+    border: var(--border-subtle);
+    border-radius: var(--radius-control);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
+    box-shadow: var(--shadow-control);
+    font-family: var(--type-ui);
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .keyboard .wideKey {
+    flex-grow: 1.5;
+  }
+
+  .keyboard button:focus-visible {
+    outline: 3px solid var(--ds-color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .keyboard button:active:not(:disabled) {
+    background: var(--ds-color-bg-brand);
+  }
+
+  .keyboard button:disabled {
+    opacity: var(--ds-opacity-disabled);
+    cursor: not-allowed;
+  }
+
+  .compact {
+    gap: var(--space-1);
+  }
+
+  .compact button {
+    height: 32px;
+  }
+}
