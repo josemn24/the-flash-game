@@ -302,5 +302,37 @@
       "acceptedAnswers": ["ostracón"],
       "explanation": "Un ostracón aprovecha un trozo de cerámica como soporte para escribir. Un recipiente roto podía reutilizarse para cartas, cuentas u otros textos; el fragmento conserva así información escrita además de su uso material anterior."
     }
+  },
+  {
+    "id": "bank-pistas-filosofia-socrates",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-filosofia-socrates",
+    "publicPayload": {
+      "category": "Filosofía",
+      "tags": {
+        "domains": ["philosophy", "history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["recall", "interpretation"],
+        "lifeSkills": []
+      },
+      "question": "¿Qué filósofo describen estas pistas?",
+      "clues": [
+        "Vivió en Atenas durante el siglo V a. C.",
+        "No dejó obras escritas; lo conocemos principalmente mediante testimonios como los de Platón y Jenofonte.",
+        "Fue juzgado y condenado a muerte en Atenas en el año 399 a. C."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "Sócrates",
+      "acceptedAnswers": ["Sócrates"],
+      "explanation": "Sócrates vivió en Atenas en el siglo V a. C. y no dejó obras escritas; Platón y Jenofonte son fuentes principales para conocerlo. Su juicio y condena a muerte tuvieron lugar en Atenas en 399 a. C., lo que concreta la identificación de la última pista."
+    }
   }
 ]

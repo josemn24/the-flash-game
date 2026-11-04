@@ -316,5 +316,35 @@
       ],
       "explanation": "Los precios finales son 100 × 0,80 × 0,75 = 60 €; 90 × 0,70 = 63 €; 80 × 0,80 = 64 €; y 75 × 0,90 = 67,50 €. Los descuentos sucesivos se aplican sobre el precio ya rebajado, por lo que no se suman. El orden es 60 < 63 < 64 < 67,50."
     }
+  },
+  {
+    "id": "bank-ordenar-filosofia-historia-pensamiento",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-ordenar-filosofia-historia-pensamiento",
+    "publicPayload": {
+      "category": "Filosofía",
+      "tags": {
+        "domains": ["philosophy", "history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["ordering"],
+        "lifeSkills": []
+      },
+      "question": "Ordena estos pensadores por su año de nacimiento, del más antiguo al más reciente.",
+      "items": ["Hannah Arendt", "Confucio", "David Hume", "Agustín de Hipona"],
+      "directionLabels": {
+        "start": "Nacimiento más antiguo",
+        "end": "Nacimiento más reciente"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": ["Confucio", "Agustín de Hipona", "David Hume", "Hannah Arendt"],
+      "explanation": "Los años de nacimiento son 551 a. C. para Confucio, según la fecha tradicional; 354 para Agustín de Hipona; 1711 para David Hume; y 1906 para Hannah Arendt. Por ello, el orden del más antiguo al más reciente es Confucio, Agustín, Hume y Arendt."
+    }
   }
 ]

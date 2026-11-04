@@ -110,6 +110,14 @@ tiempo o comparan precios tras descuentos, incluidos los sucesivos. Los enunciad
 y punto de inicio cuando procede; los valores numéricos no empatan y cada solución es una permutación
 completa de los elementos visibles. Las explicaciones detallan relaciones o cálculos verificables.
 
+La tanda temática de filosofía añade cuatro preguntas y deja el banco en 404: validez y verdad
+(Verdadero/falso, media), autores y obras (Emparejar, fácil), identificación de Sócrates (Pistas
+progresivas, media) y cronología de pensadores (Ordenar, media). Incluyen categoría `Filosofía` y
+dominio `philosophy`, con familias distintas por ejercicio. La cronología utiliza el nacimiento como
+criterio y explicita que el año de Confucio es tradicional. Las pistas de Sócrates aumentan su
+precisión y mantienen la penalización de 25 sobre 100. Las referencias siguientes documentan las
+atribuciones y conceptos; las etiquetas temáticas no cambian la selección del generador.
+
 Ejecutar `npm run rehearsals:check` y revisar el informe por combinación y estructura. El mínimo de
 una familia no garantiza repeticiones de formato y dificultad sin sustituciones: la asignación
 completa y sus avisos muestran esa limitación. Antes de publicar, añadir las nuevas huellas al
@@ -144,3 +152,17 @@ habituales y sus variantes con estas fuentes:
   [bumerán](https://dle.rae.es/bumerán) y [sismógrafo](https://dle.rae.es/sismógrafo).
 - Museo Arqueológico Nacional: [ostracón como soporte reutilizado de escritura](https://www.man.es/man/actividades/pieza-mes/historico/2024/202407-ostracon.html).
 - ICOMOS-CIF: [anastilosis en el glosario de conservación](https://cif.icomos.org/glossary/).
+
+## Referencias de la tanda de filosofía
+
+Los enunciados y explicaciones son de redacción propia. Las fuentes consultadas son:
+
+- Stanford, _Introduction to Logic_: [validez y verdad de las premisas](https://logical.stanford.edu/intrologic/chapters/chapter_01.html).
+- Project Gutenberg: [La República, de Platón](https://www.gutenberg.org/ebooks/1497),
+  [Ética a Nicómaco, de Aristóteles](https://www.gutenberg.org/ebooks/8438) y
+  [Discurso del método, de René Descartes](https://www.gutenberg.org/ebooks/59).
+- Stanford Encyclopedia of Philosophy: [Sócrates](https://plato.stanford.edu/entries/socrates/),
+  [Confucio](https://plato.stanford.edu/entries/confucius/),
+  [Agustín de Hipona](https://plato.stanford.edu/entries/augustine/),
+  [David Hume](https://plato.stanford.edu/entries/hume/) y
+  [Hannah Arendt](https://plato.stanford.edu/entries/arendt/).

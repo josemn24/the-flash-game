@@ -533,5 +533,40 @@
     "difficulty": "medium",
     "referenceTimeLimitMs": 60000,
     "familyId": "bank-emparejar-instrumentos"
+  },
+  {
+    "id": "bank-emparejar-filosofia-autores-obras",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-emparejar-filosofia-autores-obras",
+    "publicPayload": {
+      "category": "Filosofía",
+      "tags": {
+        "domains": ["philosophy"],
+        "topics": [],
+        "cognitiveSkills": ["memory"],
+        "formatSkills": ["recall"],
+        "lifeSkills": []
+      },
+      "question": "Relaciona cada autor con su obra.",
+      "leftItems": [
+        { "id": "l0", "label": "Platón" },
+        { "id": "l1", "label": "Aristóteles" },
+        { "id": "l2", "label": "René Descartes" }
+      ],
+      "rightItems": [
+        { "id": "r2", "label": "Discurso del método" },
+        { "id": "r0", "label": "La República" },
+        { "id": "r1", "label": "Ética a Nicómaco" }
+      ]
+    },
+    "solutionPayload": {
+      "matches": { "l0": "r0", "l1": "r1", "l2": "r2" },
+      "explanation": "Platón es el autor de La República; Aristóteles, de Ética a Nicómaco; y René Descartes, de Discurso del método. Cada pareja relaciona una obra filosófica con su autor."
+    }
   }
 ]

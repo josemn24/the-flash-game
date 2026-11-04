@@ -15,7 +15,7 @@ dificultad `easy | medium | hard`, tiempo de referencia y los contratos canónic
 solución. La letra es explícita para Alfabeto. Las familias permiten evitar variantes muy parecidas.
 Las dimensiones y parámetros mecánicos se derivan del contenido.
 
-El banco actual contiene 400 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
+El banco actual contiene 404 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
 letra y dificultad; la ampliación incorpora 130 ejercicios sin modificar las preguntas ni recetas
 históricas. La prueba conserva las letras y su orden oficial, y cada entrada recibe una nueva
 semilla. La variedad se aplica entre alternativas de la dificultad solicitada; no hay exclusión
@@ -39,25 +39,32 @@ las coronas iniciales. Las siete posiciones medias de Contrarreloj se completan 
 y dos fáciles; `difficultyFallbacks` indica esas dos sustituciones. Distintas semillas permiten
 variar el conjunto de tableros y las recetas anteriores permanecen reproducibles.
 
-Pistas progresivas ofrece trece preguntas: cuatro fáciles, seis medias y tres difíciles. Las cinco
+Pistas progresivas ofrece catorce preguntas: cuatro fáciles, siete medias y tres difíciles. Las cinco
 medias y dos difíciles nuevas conservan el contrato de tres pistas, penalización de 25 sobre la
 escala de 100 puntos y tiempos oficiales de cada posición. Las cuatro posiciones medias de la
 referencia de Supervivencia se completan sin sustituciones y con alternativas entre partidas.
 Los proveedores reales comprueban el revelado en orden, la privacidad de las pistas pendientes,
 la penalización adaptada a los puntos oficiales y la evaluación de la respuesta final.
 
-Verdadero/falso dispone de trece preguntas: cinco fáciles, cinco medias y tres difíciles. Las
+Verdadero/falso dispone de catorce preguntas: cinco fáciles, seis medias y tres difíciles. Las
 cuatro medias y dos difíciles nuevas ofrecen ambos veredictos con explicaciones específicas.
 Las referencias de Flash y Supervivencia con hasta tres posiciones medias se completan sin
 sustituir dificultad y con conjuntos distintos entre semillas. La evaluación conserva respuestas
 booleanas, y las versiones y recetas anteriores siguen disponibles sin modificaciones.
 
-Ordenar dispone de catorce preguntas: cinco fáciles, seis medias y tres difíciles. Las cuatro
+Ordenar dispone de quince preguntas: cinco fáciles, siete medias y tres difíciles. Las cuatro
 medias y dos difíciles nuevas incluyen un criterio de orden explícito, elementos distintos y una
 explicación del recorrido, la jerarquía o los cálculos. Las cinco estructuras de referencia con
 este formato se comprueban en nivel medio y difícil: conservan la dificultad y no repiten ejercicios.
 Distintas semillas cambian el conjunto cuando quedan alternativas; si se utilizan las tres difíciles,
 puede variar su orden. Las dos sustituciones de Ordenar en las referencias de Supervivencia desaparecen.
+
+La ampliación temática de filosofía añade cuatro ejercicios: un Verdadero/falso medio sobre validez
+y verdad, un Emparejar fácil de autores y obras, unas Pistas progresivas medias sobre Sócrates y un
+Ordenar medio por año de nacimiento de pensadores. Emparejar alcanza once preguntas (dos fáciles,
+ocho medias y una difícil). Las cuatro conservan sus contratos de formato y admiten Flash,
+Supervivencia y Pirámide. La categoría `Filosofía` y el dominio `philosophy` identifican el tema;
+el generador continúa seleccionando por compatibilidad y dificultad, sin selección temática.
 
 El tiempo de referencia permite validar la pregunta aisladamente: al generar se aplican los tiempos
 y pesos de la posición oficial y se comprueba otra vez su validez. Los recursos están versionados

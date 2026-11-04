@@ -1998,5 +1998,25 @@
     "id": "bank-ordenar-velocidades",
     "version": 1,
     "contentHash": "70b53466c16309c67e7f4f7427086659ed50b8c620ce06d917ba23b0315d8d81"
+  },
+  {
+    "id": "bank-emparejar-filosofia-autores-obras",
+    "version": 1,
+    "contentHash": "ccef4a05f7b61df97acb3495ad10293962a863e551b161c0bc836a6956194fbf"
+  },
+  {
+    "id": "bank-ordenar-filosofia-historia-pensamiento",
+    "version": 1,
+    "contentHash": "a22bfed0d1be7e23195b66cc73f2b449269db7a4a5c6d23ef4182f31cd6ef856"
+  },
+  {
+    "id": "bank-pistas-filosofia-socrates",
+    "version": 1,
+    "contentHash": "377d9115000fe71dbf6719e2230d30b0e0b3f4941c1398000689b2535dcaf2c0"
+  },
+  {
+    "id": "bank-vf-filosofia-validez-verdad",
+    "version": 1,
+    "contentHash": "15799d2caa7c7f71f0027387b93a7b89cc1ce11e78141ba52f25476f2355a4f0"
   }
 ]
