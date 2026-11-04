@@ -254,7 +254,7 @@ async function getImageMetadata(filePath, expected = {}) {
   return getImageMetadataFromBytes(await readFile(filePath), filePath, expected);
 }
 
-async function prepareSpainAssets() {
+export async function prepareSpainAssets() {
   const tempDirectory = await mkdtemp(path.join(os.tmpdir(), "tabarnia-spain-assets-"));
   try {
     const assets = {};
@@ -289,7 +289,7 @@ async function prepareSpainAssets() {
   }
 }
 
-async function getSbrMapMetadata() {
+export async function getSbrMapMetadata() {
   return getImageMetadata(sbrMapPath, {
     expectedFormat: "png",
     expectedWidth: 1859,
@@ -297,7 +297,7 @@ async function getSbrMapMetadata() {
   });
 }
 
-async function getAvatarMetadata(user) {
+export async function getAvatarMetadata(user) {
   const filePath = path.join(avatarDirectory, user.avatarFile);
   const extension = path.extname(user.avatarFile).slice(1).toLowerCase();
   const expectedMimeType = avatarMimeTypes[extension];
@@ -548,6 +548,8 @@ export function buildTabarniaDomainSql({
   avatarMetadata,
   schedule = "production",
   startsAt = null,
+  conflictSafe = false,
+  wrapTransaction = true,
 }) {
   const profile = resolveScheduleProfile(schedule);
   const normalizedStartAt = normalizeStartAt(startsAt);
@@ -558,6 +560,14 @@ export function buildTabarniaDomainSql({
   const challenges = tabarniaChallenges();
   const season = scheduleSeason(profile, challenges.length, "tabarnia", normalizedStartAt);
   const seasonEnd = `${seasonStart} + interval '${season.endInterval}'`;
+  const conflictClause = conflictSafe ? "\non conflict (id) do nothing" : "";
+  const roleConflictClause = conflictSafe ? "\non conflict (player_id) do nothing" : "";
+  const membershipConflictClause = conflictSafe
+    ? "\non conflict (room_id, player_id) do nothing"
+    : "";
+  const solutionConflictClause = conflictSafe
+    ? "\non conflict (question_version_id) do nothing"
+    : "";
   const items = [];
   const alphabetItems = challenges.find(
     (challenge) => challenge.slug === "animals-alphabet-definition",
@@ -646,12 +656,31 @@ export function buildTabarniaDomainSql({
         `(${sqlString(stableId(`question-version:${item.slug}`))}, ${sqlString(JSON.stringify(item.solutionPayload))})`,
     )
     .join(",\n");
+  const solutionInsertSource = conflictSafe
+    ? `select incoming.question_version_id::uuid, incoming.solution_payload::jsonb
+       from (values ${solutionSql}) as incoming(question_version_id, solution_payload)
+      where not exists (
+        select 1 from private.question_version_solutions existing
+         where existing.question_version_id::text = incoming.question_version_id
+      )`
+    : `values\n${solutionSql}`;
   const challengeItemSql = items
     .map(({ item, challenge, index }) => {
       const config = item.modeConfig ?? {};
       return `(${sqlString(stableId(`challenge-item:${item.questionSlug}`))}, ${sqlString(challenge.versionId)}, ${sqlString(stableId(`question-version:${item.questionSlug}`))}, ${index + 1}, ${item.points}, 1, ${sqlString(JSON.stringify(config))})`;
     })
     .join(",\n");
+  const challengeItemInsertSource = conflictSafe
+    ? `select incoming.id::uuid, incoming.challenge_version_id::uuid, incoming.question_version_id::uuid,
+              incoming.position, incoming.points, incoming.config_schema_version, incoming.mode_config::jsonb
+       from (values ${challengeItemSql}) as incoming(
+         id, challenge_version_id, question_version_id, position, points,
+         config_schema_version, mode_config
+       )
+      where not exists (
+        select 1 from private.challenge_items existing where existing.id::text = incoming.id
+      )`
+    : `values\n${challengeItemSql}`;
   const publishedQuestionIds = questions
     .map((item) => sqlString(stableId(`question-version:${item.slug}`)))
     .join(", ");
@@ -681,7 +710,7 @@ export function buildTabarniaDomainSql({
   const avatarPlayerUpdates = avatarAssets
     .map(
       (avatar) =>
-        `update public.players set avatar_path = ${sqlString(avatar.objectPath)} where id = ${sqlString(avatar.playerId)};`,
+        `update public.players set avatar_path = ${sqlString(avatar.objectPath)} where id = ${sqlString(avatar.playerId)} and avatar_path is distinct from ${sqlString(avatar.objectPath)};`,
     )
     .join("\n");
   const mediaAssets = [
@@ -723,81 +752,78 @@ export function buildTabarniaDomainSql({
     })
     .join(",\n");
 
-  return `
-begin;
-set constraints all deferred;
+  return `${wrapTransaction ? "begin;\n" : ""}set constraints all deferred;
 
 insert into private.platform_role_assignments (player_id, role)
-values (${sqlString(xesmona)}, 'superadmin');
+values (${sqlString(xesmona)}, 'superadmin')${roleConflictClause};
 
 insert into public.rooms (id, slug, title, description, time_zone, status)
-values (${sqlString(roomId)}, 'tabarnia', 'Tabarnia', 'Sala privada de la alpha de The Flash.', 'Europe/Madrid', 'active');
+values (${sqlString(roomId)}, 'tabarnia', 'Tabarnia', 'Sala privada de la alpha de The Flash.', 'Europe/Madrid', 'active')${conflictClause};
 
 insert into public.room_memberships (room_id, player_id, role, status, joined_at)
 values
-${memberships};
+${memberships}${membershipConflictClause};
 
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
-values (${sqlString(seasonId)}, ${sqlString(roomId)}, 'Temporada Alpha de Tabarnia', 'active', ${seasonStart}, ${seasonEnd});
+values (${sqlString(seasonId)}, ${sqlString(roomId)}, 'Temporada Alpha de Tabarnia', 'active', ${seasonStart}, ${seasonEnd})${conflictClause};
 
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
 values
-${questionMediaSql};
+${questionMediaSql}${conflictClause};
 
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, owner_player_id, created_by_player_id,
    mime_type, byte_size, width, height, sha256)
 values
-${avatarMediaSql};
+${avatarMediaSql}${conflictClause};
 
 ${avatarPlayerUpdates}
 
 insert into private.question_definitions (id, slug, created_by_player_id)
 values
-${questionDefinitionSql};
+${questionDefinitionSql}${conflictClause};
 
 insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, status, type,
    time_limit_ms, public_payload, created_by_player_id)
 values
-${questionVersionSql};
+${questionVersionSql}${conflictClause};
 
 insert into private.question_version_solutions (question_version_id, solution_payload)
-values
-${solutionSql};
+${solutionInsertSource}${solutionConflictClause};
 
 update private.question_versions
-set status = 'published', published_at = now()
-where id in (${publishedQuestionIds});
+set status = 'published', published_at = coalesce(published_at, now())
+where id in (${publishedQuestionIds}) and status <> 'published';
 
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values
-${challengeDefinitionSql};
+${challengeDefinitionSql}${conflictClause};
 
 insert into private.challenge_versions
   (id, challenge_definition_id, version_number, config_schema_version, status, mode,
    title, subtitle, description, max_score, global_time_limit_ms, mode_config, created_by_player_id, published_at)
 values
-${challengeVersionSql};
+${challengeVersionSql}${conflictClause};
 
 insert into private.challenge_items
   (id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
-values
-${challengeItemSql};
+${challengeItemInsertSource}${conflictClause};
 
 update private.challenge_versions
-set status = 'published', published_at = now()
-where id in (${challenges.map((challenge) => sqlString(challenge.versionId)).join(", ")});
+set status = 'published', published_at = coalesce(published_at, now())
+where id in (${challenges.map((challenge) => sqlString(challenge.versionId)).join(", ")})
+  and status <> 'published';
 
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-${scheduledSql};
+${scheduledSql}${conflictClause};
 
 
 set constraints all immediate;
-commit;
+${wrapTransaction ? "commit;" : ""}
 `;
 }
 

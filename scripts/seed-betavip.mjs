@@ -818,6 +818,12 @@ export function buildStagingBetaVipDomainSql({
       return `(${sqlString(item.versionId)}, ${sqlString(JSON.stringify(solutionPayload))})`;
     })
     .join(",\n");
+  const solutionInsertSource = `select incoming.question_version_id::uuid, incoming.solution_payload::jsonb
+       from (values ${questionSolutions}) as incoming(question_version_id, solution_payload)
+      where not exists (
+        select 1 from private.question_version_solutions existing
+         where existing.question_version_id::text = incoming.question_version_id
+      )`;
   const alphabetChallengeItems = alphabetItems
     .map(
       (item, index) =>
@@ -857,12 +863,30 @@ export function buildStagingBetaVipDomainSql({
         `(${sqlString(item.itemId)}, ${sqlString(timeTrial.challengeVersionId)}, ${sqlString(item.versionId)}, ${item.position}, ${item.points}, 1, '{}')`,
     )
     .join(",\n");
+  const allChallengeItems = [
+    alphabetChallengeItems,
+    survivalChallengeItems,
+    pyramidChallengeItems,
+    antiquityChallengeItems,
+    timeTrialChallengeItems,
+  ].join(",\n");
+  const challengeItemInsertSource = `select incoming.id::uuid, incoming.challenge_version_id::uuid, incoming.question_version_id::uuid,
+              incoming.position, incoming.points, incoming.config_schema_version, incoming.mode_config::jsonb
+       from (values ${allChallengeItems}) as incoming(
+         id, challenge_version_id, question_version_id, position, points,
+         config_schema_version, mode_config
+       )
+      where not exists (
+        select 1 from private.challenge_items existing where existing.id::text = incoming.id
+      )`;
   const questionIds = allItems.map((item) => sqlString(item.versionId)).join(", ");
   const challengeVersionIds = [alphabet, survival, pyramid, antiquity, timeTrial]
     .map((item) => sqlString(item.challengeVersionId))
     .join(", ");
 
   return `
+set constraints all deferred;
+
 insert into private.platform_role_assignments (player_id, role)
 values (${sqlString(xesmonaPlayerId)}, 'superadmin')
 on conflict (player_id) do nothing;
@@ -900,13 +924,12 @@ ${timeTrialQuestionVersions}
 on conflict (id) do nothing;
 
 insert into private.question_version_solutions (question_version_id, solution_payload)
-values
-${questionSolutions}
+${solutionInsertSource}
 on conflict (question_version_id) do nothing;
 
 update private.question_versions
 set status = 'published', published_at = coalesce(published_at, now())
-where id in (${questionIds});
+where id in (${questionIds}) and status <> 'published';
 
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values
@@ -929,17 +952,12 @@ on conflict (id) do nothing;
 
 insert into private.challenge_items
   (id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
-values
-${alphabetChallengeItems},
-${survivalChallengeItems},
-${pyramidChallengeItems},
-${antiquityChallengeItems},
-${timeTrialChallengeItems}
+${challengeItemInsertSource}
 on conflict (id) do nothing;
 
 update private.challenge_versions
 set status = 'published', published_at = coalesce(published_at, now())
-where id in (${challengeVersionIds});
+where id in (${challengeVersionIds}) and status <> 'published';
 
 select private.assert_supported_calendar_content(${sqlString(survival.challengeVersionId)});
 select private.assert_supported_calendar_content(${sqlString(pyramid.challengeVersionId)});

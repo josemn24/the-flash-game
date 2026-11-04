@@ -11,6 +11,7 @@ import { testCompletionHealthContract } from "./test-completion-health-contract.
 import { testCalendarContract } from "./test-calendar-contract.mjs";
 import { testAttemptContinuationContract } from "./test-attempt-continuation-contract.mjs";
 import { testCheckpointContract } from "./test-checkpoint-contract.mjs";
+import { testStagingBootstrapSql } from "./test-staging-bootstrap-sql.mjs";
 
 const container = process.env.SUPABASE_DB_CONTAINER ?? "supabase_db_the-flash-game";
 const sourceDirectory = process.argv.includes("--migrations")
@@ -52,6 +53,10 @@ try {
   );
   await sql(`begin;\n${statements.join("\n")}\ncommit;`);
   await checkInventory(sql);
+  const stagingBootstrap = await testStagingBootstrapSql(sql);
+  console.log(
+    `Staging SQL bootstraps passed in both orders with repeats (${stagingBootstrap.orders.join("; ")}).`,
+  );
   await testCompletionHealthContract(sql);
   await testSeasonMeasurementContract(sql);
   console.log(`Loaded ${files.length} files from ${sourceDirectory}; security inventory verified.`);

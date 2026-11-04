@@ -105,7 +105,7 @@ jobs:
   browser:
     name: Browser scenarios
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -152,6 +152,26 @@ jobs:
           e2e/f19-word-hashtag.spec.ts
           e2e/rehearsals.spec.ts
 
+  session_conformance:
+    name: Session authority conformance
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
       - name: Session authority conformance
         run: >-
           npm run test:e2e:isolated --
@@ -170,6 +190,7 @@ jobs:
       - application
       - supabase
       - browser
+      - session_conformance
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -178,13 +199,16 @@ jobs:
           APPLICATION_RESULT: ${{ needs.application.result }}
           SUPABASE_RESULT: ${{ needs.supabase.result }}
           BROWSER_RESULT: ${{ needs.browser.result }}
+          SESSION_CONFORMANCE_RESULT: ${{ needs.session_conformance.result }}
         run: |
           if [[ "$APPLICATION_RESULT" != "success" || \
                 "$SUPABASE_RESULT" != "success" || \
-                "$BROWSER_RESULT" != "success" ]]; then
+                "$BROWSER_RESULT" != "success" || \
+                "$SESSION_CONFORMANCE_RESULT" != "success" ]]; then
             echo "::error::One or more quality jobs did not succeed."
             echo "Application: $APPLICATION_RESULT"
             echo "Supabase: $SUPABASE_RESULT"
             echo "Browser: $BROWSER_RESULT"
+            echo "Session conformance: $SESSION_CONFORMANCE_RESULT"
             exit 1
           fi

@@ -3,8 +3,6 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "pg";
-import { createClient } from "@supabase/supabase-js";
-import { validateRemoteEnvironment } from "./support/supabase-environment.mjs";
 import { normalizeStartAt, validateFutureStartAt } from "./schedule-profile.mjs";
 import {
   buildStagingBetaVipDomainSql,
@@ -13,181 +11,36 @@ import {
   stagingBetaVipManifest,
 } from "./seed-betavip.mjs";
 import {
+  ensureStagingAccounts,
+  ensureStagingFoundation,
+  loadStagingBootstrapEnv,
+  parseStagingBootstrapArgs,
+  stagingAdminClient,
+  STAGING_CREDENTIALS_PATH,
+  validateStagingBootstrapConfig,
+} from "./support/staging-bootstrap.mjs";
+import { writeJsonSecure } from "./support/supabase-provisioning.mjs";
+export {
   APPLICATION_BUCKETS as STAGING_BUCKETS,
   bucketMatches,
-  ensureBuckets,
   generatePassword,
-  readJsonIfPresent,
   writeJsonSecure,
 } from "./support/supabase-provisioning.mjs";
-export { STAGING_BUCKETS, bucketMatches, generatePassword, writeJsonSecure };
+export { buildStagingAuthUserPayload as buildAuthUserPayload } from "./support/staging-bootstrap.mjs";
 
-const CONFIRMATION_VALUE = "the-flash-game-staging";
-const DEFAULT_CREDENTIALS_PATH = path.join("output", "staging", "bootstrap-credentials.json");
 const DEFAULT_MANIFEST_PATH = path.join("output", "staging", "bootstrap-manifest.json");
-const ACCOUNT_DEFINITIONS = [
+export const BETAVIP_ACCOUNT_DEFINITIONS = [
   { key: "xesmona", displayName: "Xesmona" },
   { key: "ches", displayName: "Ches" },
 ];
 
 export function parseArgs(args) {
-  const options = { dryRun: false };
-  for (let index = 0; index < args.length; index += 1) {
-    const argument = args[index];
-    if (argument === "--dry-run") {
-      options.dryRun = true;
-      continue;
-    }
-    if (argument === "--starts-at") {
-      const value = args[index + 1];
-      if (!value || value.startsWith("--")) {
-        throw new Error(
-          "Falta la fecha de --starts-at. Usa ISO 8601 con zona horaria, por ejemplo 2026-10-20T19:00:00+02:00.",
-        );
-      }
-      options.startsAt = normalizeStartAt(value);
-      index += 1;
-      continue;
-    }
-    throw new Error(
-      `Argumento desconocido: ${argument}. Usa --dry-run, --starts-at <ISO-8601-con-zona-horaria> o sin argumentos.`,
-    );
-  }
+  const options = parseStagingBootstrapArgs(args);
+  if (options.startsAt) options.startsAt = normalizeStartAt(options.startsAt);
   return options;
 }
 
-export function validateBootstrapConfig(env = process.env) {
-  const { projectRef, supabaseUrl, publishableKey, serviceRoleKey, adminDbUrl } =
-    validateRemoteEnvironment("staging", env);
-  const required = ["STAGING_XESMONA_EMAIL", "STAGING_CHES_EMAIL", "STAGING_BOOTSTRAP_CONFIRM"];
-  for (const name of required) {
-    if (!env[name]?.trim()) throw new Error(`${name} es obligatorio.`);
-  }
-  if (env.STAGING_BOOTSTRAP_CONFIRM !== CONFIRMATION_VALUE) {
-    throw new Error(`STAGING_BOOTSTRAP_CONFIRM debe ser ${CONFIRMATION_VALUE}.`);
-  }
-
-  const emails = {
-    xesmona: env.STAGING_XESMONA_EMAIL.trim().toLowerCase(),
-    ches: env.STAGING_CHES_EMAIL.trim().toLowerCase(),
-  };
-  if (emails.xesmona === emails.ches) {
-    throw new Error("Xesmona y Ches deben utilizar emails diferentes.");
-  }
-
-  return {
-    projectRef,
-    supabaseUrl,
-    publishableKey,
-    serviceRoleKey,
-    adminDbUrl,
-    emails,
-  };
-}
-
-export function buildAuthUserPayload({ definition, email, password, projectRef }) {
-  return {
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { display_name: definition.displayName },
-    app_metadata: {
-      staging_bootstrap: { project_ref: projectRef, version: 1 },
-    },
-  };
-}
-
-function adminClient(config) {
-  return createClient(config.supabaseUrl, config.serviceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
-  });
-}
-
-function userClient(config) {
-  return createClient(config.supabaseUrl, config.publishableKey, {
-    auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false },
-  });
-}
-
-async function findAuthUserByEmail(client, email) {
-  for (let page = 1; ; page += 1) {
-    const { data, error } = await client.auth.admin.listUsers({ page, perPage: 1000 });
-    if (error) throw new Error(`No se pudieron consultar los usuarios de Auth: ${error.message}`);
-    const match = data.users.find((user) => user.email?.trim().toLowerCase() === email);
-    if (match) return match;
-    if (data.users.length < 1000) return null;
-  }
-}
-
-function isBootstrapUser(user, projectRef) {
-  return (
-    user?.app_metadata?.staging_bootstrap?.project_ref === projectRef &&
-    user?.app_metadata?.staging_bootstrap?.version === 1
-  );
-}
-
-async function provisionPlayer(config, account) {
-  const client = userClient(config);
-  const { error: signInError } = await client.auth.signInWithPassword({
-    email: account.email,
-    password: account.password,
-  });
-  if (signInError) {
-    throw new Error(`No se pudo validar la contraseña existente de ${account.key}.`);
-  }
-  const { data, error } = await client.rpc("provision_player");
-  if (error)
-    throw new Error(`No se pudo aprovisionar el Player de ${account.key}: ${error.message}`);
-  const row = Array.isArray(data) ? data[0] : data;
-  if (!row?.player_id)
-    throw new Error(`provision_player no devolvió player_id para ${account.key}.`);
-  return { ...account, playerId: row.player_id };
-}
-
-async function ensureAccount(config, definition, credentials, { onCreated } = {}) {
-  const email = config.emails[definition.key];
-  const client = adminClient(config);
-  const existing = await findAuthUserByEmail(client, email);
-  let password = credentials?.users?.[definition.key]?.password;
-  let authUserId = existing?.id;
-
-  if (existing) {
-    if (!isBootstrapUser(existing, config.projectRef) || !password) {
-      throw new Error(
-        `La cuenta ${email} ya existe y no fue creada por este bootstrap o no tiene credencial local.`,
-      );
-    }
-  } else {
-    password ??= generatePassword();
-    const { data, error } = await client.auth.admin.createUser(
-      buildAuthUserPayload({ definition, email, password, projectRef: config.projectRef }),
-    );
-    if (error || !data.user) {
-      throw new Error(
-        `No se pudo crear la cuenta ${email}: ${error?.message ?? "respuesta inválida"}`,
-      );
-    }
-    authUserId = data.user.id;
-    await onCreated?.({
-      key: definition.key,
-      displayName: definition.displayName,
-      email,
-      password,
-      authUserId,
-    });
-  }
-
-  return provisionPlayer(config, {
-    key: definition.key,
-    displayName: definition.displayName,
-    email,
-    password,
-    authUserId,
-  }).then((account) => ({
-    ...account,
-    authUserId: account.authUserId ?? authUserId,
-  }));
-}
+export const validateBootstrapConfig = validateStagingBootstrapConfig;
 
 async function prepareAndUploadCassette(client) {
   const prepared = await prepareCassetteAsset();
@@ -478,25 +331,6 @@ async function writeManifest(accounts, config, startsAt = null) {
   });
 }
 
-function credentialsDocument(accounts, config) {
-  return {
-    version: 1,
-    projectRef: config.projectRef,
-    generatedAt: new Date().toISOString(),
-    users: Object.fromEntries(
-      Object.entries(accounts).map(([key, account]) => [
-        key,
-        {
-          email: account.email,
-          password: account.password,
-          authUserId: account.authUserId,
-          playerId: account.playerId,
-        },
-      ]),
-    ),
-  };
-}
-
 export async function runBootstrap({ env = process.env, args = [], dependencies = {} } = {}) {
   const options = parseArgs(args);
   const config = validateBootstrapConfig(env);
@@ -509,21 +343,17 @@ export async function runBootstrap({ env = process.env, args = [], dependencies 
     return result;
   }
 
-  const credentialsPath = dependencies.credentialsPath ?? DEFAULT_CREDENTIALS_PATH;
-  const previousCredentials = await readJsonIfPresent(credentialsPath);
-  const accounts = {};
-  for (const definition of ACCOUNT_DEFINITIONS) {
-    accounts[definition.key] = await ensureAccount(config, definition, previousCredentials, {
-      onCreated: async (account) => {
-        accounts[definition.key] = account;
-        await writeJsonSecure(credentialsPath, credentialsDocument(accounts, config));
-      },
-    });
-    await writeJsonSecure(credentialsPath, credentialsDocument(accounts, config));
-  }
+  const credentialsPath = dependencies.credentialsPath ?? STAGING_CREDENTIALS_PATH;
+  await (dependencies.ensureFoundation ?? ensureStagingFoundation)(config, {
+    dependencies,
+  });
+  const accountResult = await ensureStagingAccounts(config, BETAVIP_ACCOUNT_DEFINITIONS, {
+    credentialsPath,
+    dependencies,
+  });
+  const accounts = accountResult.accounts;
 
-  const service = adminClient(config);
-  await ensureBuckets(service);
+  const service = (dependencies.adminClient ?? stagingAdminClient)(config);
   const asset = await prepareAndUploadCassette(service);
   try {
     await applyDomain(config, accounts, asset.metadata, options.startsAt);
@@ -547,7 +377,9 @@ export async function runBootstrap({ env = process.env, args = [], dependencies 
 }
 
 async function main() {
-  const result = await runBootstrap({ args: process.argv.slice(2) });
+  const args = process.argv.slice(2);
+  loadStagingBootstrapEnv(parseArgs(args));
+  const result = await runBootstrap({ args });
   if (result.dryRun) {
     console.log(`Dry-run correcto para ${result.config.projectRef}. No se ha escrito nada.`);
     if (result.seasonStartsAt) console.log(`Inicio de temporada: ${result.seasonStartsAt}.`);

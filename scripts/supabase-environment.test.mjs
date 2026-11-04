@@ -274,21 +274,73 @@ describe("clean Supabase installation", () => {
       throw new Error("must not run");
     });
     const save = vi.fn();
+    const guards = vi.fn();
     const result = await runEnvironmentReset({
       env,
       args: ["--target", "staging", "--dry-run"],
       dependencies: {
         resolveEnvironment: async () => config,
+        assertPreconditions: guards,
         environmentClient: create,
         writeJsonSecure: save,
       },
     });
     expect(create).not.toHaveBeenCalled();
     expect(save).not.toHaveBeenCalled();
+    expect(guards).toHaveBeenCalledWith(config, env);
     expect(result.dryRun).toBe(true);
     expect(JSON.stringify(result)).not.toMatch(
       /publishable-secret|service-role-secret|database-secret/,
     );
+  });
+
+  it("validates reset confirmation, pause and linked project during dry-run", async () => {
+    const create = vi.fn(() => {
+      throw new Error("must not run");
+    });
+    const save = vi.fn();
+    const linkedRef = vi.fn(async () => "staging-ref");
+    const assertGuards = (resolved, values) =>
+      assertResetPreconditions(resolved, values, linkedRef);
+    const goodEnv = {
+      ...env,
+      SUPABASE_RESET_CONFIRM: "staging:staging-ref",
+      FLASH_WRITES_PAUSED: "true",
+    };
+
+    for (const badEnv of [
+      { ...goodEnv, SUPABASE_RESET_CONFIRM: "" },
+      { ...goodEnv, FLASH_WRITES_PAUSED: "false" },
+    ]) {
+      await expect(
+        runEnvironmentReset({
+          env: badEnv,
+          args: ["--target", "staging", "--dry-run"],
+          dependencies: {
+            resolveEnvironment: async () => config,
+            assertPreconditions: assertGuards,
+            environmentClient: create,
+            writeJsonSecure: save,
+          },
+        }),
+      ).rejects.toThrow();
+    }
+    linkedRef.mockResolvedValueOnce("another-ref");
+    await expect(
+      runEnvironmentReset({
+        env: goodEnv,
+        args: ["--target", "staging", "--dry-run"],
+        dependencies: {
+          resolveEnvironment: async () => config,
+          assertPreconditions: assertGuards,
+          environmentClient: create,
+          writeJsonSecure: save,
+        },
+      }),
+    ).rejects.toThrow(/enlazado/);
+
+    expect(create).not.toHaveBeenCalled();
+    expect(save).not.toHaveBeenCalled();
   });
 
   it("checks confirmation, paused writes and CLI binding before deletion", async () => {
@@ -376,12 +428,16 @@ describe("clean Supabase installation", () => {
       for (const name of [
         "bootstrap-credentials.json",
         "bootstrap-manifest.json",
+        "tabarnia-bootstrap-manifest.json",
         "reset-manifest.json",
       ])
         await writeFile(path.join(directory, name), "{}");
       await clearEnvironmentArtifacts({ target: "staging", artifactDirectory: directory });
       await expect(
         readFile(path.join(directory, "bootstrap-credentials.json")),
+      ).rejects.toMatchObject({ code: "ENOENT" });
+      await expect(
+        readFile(path.join(directory, "tabarnia-bootstrap-manifest.json")),
       ).rejects.toMatchObject({ code: "ENOENT" });
       expect(await readFile(path.join(directory, "reset-manifest.json"), "utf8")).toBe("{}");
     } finally {

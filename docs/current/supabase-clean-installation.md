@@ -16,8 +16,8 @@ completo elimina datos de aplicación, usuarios de Auth y archivos de Storage; d
 | Probar solo la alpha de Tabarnia                           | [Tabarnia](#alpha-local-de-tabarnia): `supabase:tabarnia:setup`                         | Reinicia la base local y carga la alpha.                                                          |
 | Probar permisos y pantallas, con historial opcional        | [Navegador](#dataset-para-probar-el-navegador): `supabase:browser:setup`                | Reinicia la base local; `--with-history` añade partidas anteriores.                               |
 | Preparar un caso específico de integración o E2E           | [Fixtures](#fixtures-de-escenarios): `supabase:fixture -- --scenario <scenario>`        | Crea cuentas y contenido; `--clean` puede reiniciar toda la base local.                           |
-| Preparar staging sin una reinstalación                     | [Base migrada](#bootstrap-sobre-una-base-migrada): diccionarios y bootstrap de staging  | Aprovisiona cuentas y contenido; no ejecuta un reset.                                             |
-| Reconstruir staging desde cero                             | [Reinstalación completa](#reinstalación-completa): reset, diccionarios y bootstrap      | Elimina PostgreSQL, Auth y Storage del proyecto confirmado.                                       |
+| Reconstruir staging desde cero                             | [Reset solamente](#reset-solamente)                                                     | Elimina PostgreSQL, Auth y Storage del proyecto confirmado; no crea escenarios.                   |
+| Preparar BetaVIP o Tabarnia en staging                     | [Bootstrap de escenarios](#bootstrap-de-escenarios)                                     | Prepara solo el escenario elegido y sus requisitos.                                               |
 
 Los recorridos locales requieren Docker y Supabase local activos. Copiar `.env.example` a
 `.env.local`, iniciar el stack con `npm run supabase:start` y obtener las claves locales con
@@ -44,17 +44,16 @@ describe validación y reversión.
 - `supabase:environment:reset` exige `--target local|staging`. Cualquier otro destino se rechaza antes de cargar el archivo de entorno o ejecutar operaciones, incluso con `--dry-run`. Elimina archivos y buckets por la API de Storage, elimina usuarios por Auth Admin y reconstruye PostgreSQL con la migración activa, sin seed. No borra archivos mediante SQL.
 - El destino local comprueba URL, puerto y contenedor frente a `supabase/config.toml`. El remoto comprueba la referencia, URL de API, conexión administrativa y proyecto enlazado en la CLI antes de borrar nada. La CLI recibe también la referencia explícita.
 - Un reinicio remoto requiere `SUPABASE_RESET_CONFIRM=<entorno>:<project-ref>` y `FLASH_WRITES_PAUSED=true`, después de detener acceso y calendario. Estas variables documentan la intervención del operador; el script no bloquea Vercel ni desactiva su cron automáticamente.
-- `--dry-run` muestra destino y operaciones. No crea clientes de API, escribe manifiestos ni ejecuta migraciones. Puede consultar el estado de la CLI local si faltan sus parámetros en el entorno.
+- El `--dry-run` del reset valida confirmación, pausa de escrituras y proyecto enlazado. No crea clientes de API, escribe manifiestos ni ejecuta migraciones.
 - El reset comprueba el historial completo aplicado, el inventario de permisos y la ausencia de datos. Los sondeos de mutación del inventario siguen limitados a las bases desechables de pruebas.
 - `supabase:local:bootstrap` exige `--target local` y prepara superadmin, diccionarios y buckets. Rechaza otros destinos, entornos con contenido, cuentas ajenas al bootstrap o credenciales de otro stack. La asignación de superadmin tiene un evento de auditoría y no se duplica al repetir el comando.
 - `supabase:dictionary:load` conserva local como destino predeterminado y admite `--target staging` explícito. Ambos destinos pueden comprobarse con `--dry-run`.
-- El bootstrap local es mínimo y el de staging prepara BetaVIP. Los setups de ejemplos y fixtures también pueden incluir BetaVIP, pero actúan únicamente en local y no deben usarse para preparar una base remota.
+- Los bootstraps `supabase:staging:bootstrap:betavip` y `supabase:staging:bootstrap:tabarnia` preparan escenarios independientes, comparten Xesmona, Ches y el archivo de credenciales, y aseguran diccionarios y buckets. Sus `--dry-run` validan configuración sin crear clientes, cuentas, assets ni manifiestos. Los setups de ejemplos y fixtures actúan únicamente en local.
 
-Se requiere Node.js 20.12 o posterior. Los comandos operativos de reset, bootstrap local y
-diccionarios admiten `--env-file <ruta>` y cargan `.env.local` cuando el destino es local.
-Las variables presentes en el proceso tienen precedencia. El bootstrap de staging solo admite
-`--dry-run`: requiere las variables exportadas o un archivo cargado mediante la opción de Node
-`--env-file=<ruta>`. Ningún comando remoto carga `.env.local` automáticamente.
+Se requiere Node.js 20.12 o posterior. Los comandos operativos admiten `--env-file <ruta>` y
+cargan `.env.local` cuando el destino es local. Las variables presentes en el proceso tienen
+precedencia. Los comandos de staging requieren el archivo operativo explícito; no cargan
+`.env.local` automáticamente.
 
 Los comandos npm de reset, bootstrap local y diccionarios delimitan los argumentos de Node con
 `node --`: `--env-file` pertenece al script y se procesa después de validar el destino. Si se
@@ -273,67 +272,77 @@ Preparar `.env.staging.operations`, excluido de Git, con `STAGING_PROJECT_REF`,
 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
 `SUPABASE_ADMIN_DB_URL`, `STAGING_XESMONA_EMAIL`, `STAGING_CHES_EMAIL` y
 `STAGING_BOOTSTRAP_CONFIRM=the-flash-game-staging`, según `.env.example`.
-Los emails deben ser distintos después de quitar espacios y normalizar mayúsculas.
+Los emails deben ser distintos después de normalizar mayúsculas. La conexión administrativa debe
+ser Direct connection con usuario `postgres` o Session pooler en puerto `5432` con usuario
+`postgres.<project-ref>`; la conexión Transaction pooler no sirve para provisionamiento. Mantener
+las credenciales administrativas fuera de Vercel Runtime.
 
-La conexión administrativa debe ser Direct connection con usuario `postgres` o Session pooler en puerto `5432` con usuario `postgres.<project-ref>`. La conexión Transaction pooler del runtime no sirve para provisionamiento. Mantener las credenciales administrativas fuera de Vercel Runtime.
+Hay tres operaciones distintas: reset, bootstrap BetaVIP y bootstrap Tabarnia. Cada bootstrap
+asegura por sí mismo los diccionarios y buckets que necesita. Se pueden ejecutar en cualquier
+orden y repetir; ejecútalos uno por uno. El reset no prepara escenarios.
 
-### Bootstrap sobre una base migrada
+### Reset solamente
 
-Con el proyecto enlazado y sus migraciones aplicadas, cargar diccionarios y comprobar el bootstrap
-antes de aprovisionar. Si faltan migraciones, aplicarlas con `npx supabase db push` antes
-de continuar; este recorrido no limpia datos existentes.
-
-```bash
-npx supabase link --project-ref <staging-project-ref>
-npm run supabase:dictionary:load -- --target staging --env-file .env.staging.operations
-node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs --dry-run
-node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs
-```
-
-Con esas variables ya exportadas, los dos últimos comandos equivalen a
-`npm run supabase:staging:bootstrap -- --dry-run` y `npm run supabase:staging:bootstrap`.
-El bootstrap crea Xesmona, Ches, BetaVIP y su asset sin cambiar la configuración global de Auth.
-Las contraseñas aleatorias quedan en `output/staging/bootstrap-credentials.json`, con permisos
-`0600`, y el estado sin contraseñas en `output/staging/bootstrap-manifest.json`. Guardar las
-contraseñas en un gestor seguro y retirar el archivo después de completar la preparación y
-verificación; conservarlo durante una recuperación parcial del bootstrap.
-
-Para programar el inicio de una temporada BetaVIP nueva, pasar `--starts-at` al dry-run y al
-bootstrap real. Usa una fecha y hora ISO 8601 con zona horaria; por ejemplo, las 19:00 en Madrid:
-
-```bash
-node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs --dry-run --starts-at "2026-10-20T19:00:00+02:00"
-node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs --starts-at "2026-10-20T19:00:00+02:00"
-```
-
-El manifiesto registra la fecha convertida a UTC. El bootstrap no cambia temporadas ya creadas: si
-se indica una fecha distinta de la existente, falla con una instrucción para usar el procedimiento
-de reinstalación completa.
-
-### Reinstalación completa
-
-Cuando se haya decidido eliminar los datos del proyecto, añadir al archivo operativo:
+Solo usarlo cuando se puedan eliminar todos los datos de staging. Añadir al archivo operativo:
 
 ```dotenv
 SUPABASE_RESET_CONFIRM=staging:<project-ref>
 FLASH_WRITES_PAUSED=true
 ```
 
-En la ventana acordada, cerrar el acceso al despliegue y detener las invocaciones del calendario. Enlazar la CLI al proyecto de staging y comprobar el destino:
+En la ventana acordada, cerrar el acceso al despliegue y detener las invocaciones del calendario.
+Enlazar la CLI al proyecto correcto. El `--dry-run` verifica la confirmación, la pausa y la
+referencia enlazada, pero no borra datos ni escribe archivos:
 
 ```bash
 npx supabase link --project-ref <staging-project-ref>
 npm run supabase:environment:reset -- --target staging --env-file .env.staging.operations --dry-run
 npm run supabase:environment:reset -- --target staging --env-file .env.staging.operations
-npm run supabase:dictionary:load -- --target staging --env-file .env.staging.operations
-node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs --dry-run
-node --env-file=.env.staging.operations scripts/bootstrap-staging.mjs
 ```
 
-El reset ya aplica todas las migraciones; no hace falta volver a ejecutarlas con `db push`.
-Su progreso queda en `output/staging/reset-manifest.json`. El bootstrap utiliza la misma validación
-de proyecto, API y conexión administrativa que el reset; las credenciales y el manifiesto se
-regeneran en `output/staging/`.
+El reset vacía Storage, elimina usuarios de Auth y reconstruye PostgreSQL con las migraciones,
+sin seed, diccionarios, usuarios ni salas. También elimina las credenciales compartidas y los dos
+manifiestos de escenario antiguos; conserva `output/staging/reset-manifest.json` como evidencia.
+No ejecuta después ningún bootstrap.
+
+### Bootstrap de escenarios
+
+Tras el reset, o sobre una base migrada, ejecuta uno o ambos escenarios. Primero comprueba cada uno
+con `--dry-run`; después quita esa opción para aprovisionarlo:
+
+```bash
+npm run supabase:staging:bootstrap:betavip -- --env-file .env.staging.operations --dry-run
+npm run supabase:staging:bootstrap:betavip -- --env-file .env.staging.operations
+
+npm run supabase:staging:bootstrap:tabarnia -- --env-file .env.staging.operations --dry-run
+npm run supabase:staging:bootstrap:tabarnia -- --env-file .env.staging.operations
+```
+
+BetaVIP crea su sala y cinco desafíos. Tabarnia crea su sala, ocho desafíos, quince miembros y
+catorce cuentas de prueba propias; no reutiliza los emails ni las contraseñas del seed local.
+Ambos reutilizan las mismas cuentas de Xesmona y Ches. Xesmona mantiene el rol superadmin y Ches
+es propietario en cada sala. El registro seguro compartido está en
+`output/staging/bootstrap-credentials.json` (permisos `0600`); los manifiestos separados son
+`output/staging/bootstrap-manifest.json` para BetaVIP y
+`output/staging/tabarnia-bootstrap-manifest.json` para Tabarnia. Conserva las credenciales durante
+una recuperación y guárdalas también en el gestor seguro del equipo.
+
+Cada comando se puede repetir. Las cuentas ya registradas se reutilizan y los datos de escenario
+usan IDs estables; si un ID existente tiene contenido incompatible, el comando falla en vez de
+reemplazarlo. No lances ambos bootstraps simultáneamente: los archivos de credenciales son
+compartidos.
+
+Para fijar el inicio de una temporada nueva, Tabarnia acepta `--starts-at` con ISO 8601 y zona
+horaria. Pasa la misma fecha al `--dry-run` y a la ejecución real:
+
+```bash
+npm run supabase:staging:bootstrap:tabarnia -- --env-file .env.staging.operations --dry-run --starts-at "2026-11-10T19:00:00+01:00"
+npm run supabase:staging:bootstrap:tabarnia -- --env-file .env.staging.operations --starts-at "2026-11-10T19:00:00+01:00"
+```
+
+BetaVIP también admite `--starts-at`. Las dos temporadas conservan el calendario técnico de
+ventanas de 24 horas. Si la temporada ya existe con otra fecha, el bootstrap se detiene; para
+cambiarla hay que hacer la reinstalación completa.
 
 Desplegar el commit validado y comprobar con intentos nuevos:
 
@@ -371,15 +380,15 @@ modifica esa configuración.
 
 Antes de abrir cada entorno:
 
-1. Confirmar que el manifiesto del reset está completo y que el bootstrap corresponde al mismo proyecto y revisión.
+1. Confirmar que el manifiesto del reset está completo y que cada manifiesto de escenario corresponde al mismo proyecto y revisión.
 2. Solicitar `GET /api/internal/health` con el secreto del entorno: `200`, con `auth`, `database` y `schema` en `true`. Comprobar también `supabase migration list`: health valida atributos y marcadores, no sustituye al historial aplicado.
 3. Iniciar sesión con el superadmin y comprobar `/admin`. Una cuenta sin ese rol no debe obtener acceso al portal.
-4. En local, comprobar el perfil mínimo con una identidad y jugador, buckets vacíos y diccionarios completos. En staging, comprobar Xesmona como superadmin, Ches como owner de BetaVIP, sus cinco desafíos, el asset y los diccionarios.
+4. En local, comprobar el perfil mínimo con una identidad y jugador, buckets vacíos y diccionarios completos. En staging, comprobar Xesmona como superadmin, Ches como owner de cada sala preparada, los desafíos de cada manifiesto, los assets y los diccionarios.
 5. Abrir acceso y reactivar calendario. Registrar commit, revisión, bootstrap y health en un informe sin credenciales.
 
 Las puertas locales/CI incluyen esquema declarativo, migraciones, reconciliación, contratos, permisos y concurrencia; tipos públicos, arquitectura, documentación, lint, unitarias, build y E2E. Las pruebas de actualización histórica permanecen en Git; sus garantías vigentes se verifican como contratos y equivalencia de catálogos.
 
-Si una fase de reset falla, mantener cerrado el entorno y revisar `reset-manifest.json`. Repetir solo dentro de la ventana de reinicio: vuelve a verificar el destino y elimina lo que quede. El bootstrap puede repetirse tras un fallo parcial si conserva sus credenciales; no cambia la contraseña ni duplica la asignación.
+Si una fase de reset falla, mantener cerrado el entorno y revisar `reset-manifest.json`. Repetir solo dentro de la ventana de reinicio: vuelve a verificar el destino y elimina lo que quede. Cada bootstrap puede repetirse tras un fallo parcial si conserva `bootstrap-credentials.json`; las cuentas compartidas mantienen sus contraseñas y no se duplican.
 
 Antes de abrir puede repetirse la instalación desde cero. Después de abrir, detener escrituras y aplicar la [reversión de comandos documentada](competitive-command-reconciliation.md#reversión-de-la-migración-incremental-original) mediante una migración posterior, con el build compatible y sus marcadores. No reiniciar una base que ya haya recibido partidas nuevas como rollback automático. El antiguo SQL de reversión se recupera desde Git; los verificadores actuales no generan ese artefacto.
 

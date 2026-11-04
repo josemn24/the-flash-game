@@ -441,6 +441,31 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain('"letter":"A"');
   });
 
+  it("builds an idempotent staging SQL transaction without taking over its transaction", () => {
+    const sql = buildTabarniaDomainSql({
+      accounts: accounts(),
+      sbrAssetMetadata: {
+        byteSize: 10,
+        width: 1859,
+        height: 968,
+        sha256: "a".repeat(64),
+        mimeType: "image/png",
+      },
+      spainAssets: spainAssets(),
+      avatarMetadata: avatarMetadata(),
+      conflictSafe: true,
+      wrapTransaction: false,
+    });
+
+    expect(sql).not.toMatch(/^begin;/);
+    expect(sql).not.toContain("commit;");
+    expect(sql.match(/on conflict \(id\) do nothing/gi)?.length).toBeGreaterThanOrEqual(9);
+    expect(sql).toContain("on conflict (room_id, player_id) do nothing");
+    expect(sql).toContain("on conflict (question_version_id) do nothing");
+    expect(sql).toContain("set constraints all deferred");
+    expect(sql).toContain("set constraints all immediate");
+  });
+
   it("generates eight contiguous five-minute publications for the fast schedule", () => {
     const sql = buildTabarniaDomainSql({
       accounts: accounts(),

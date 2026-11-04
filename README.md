@@ -75,28 +75,30 @@ Para probar desde un móvil u otro equipo de la red local, consulta la
 
 ## Comandos disponibles
 
-| Comando                              | Descripción                                                                                                                  |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                        | Inicia el servidor de desarrollo.                                                                                            |
-| `npm run lint`                       | Comprueba la calidad estática del código.                                                                                    |
-| `npm run typecheck`                  | Valida todos los contratos TypeScript sin emitir código.                                                                     |
-| `npm run type-architecture`          | Comprueba las dependencias entre las capas de tipos.                                                                         |
-| `npm run mock-data:check`            | Valida fixtures, adaptadores y límites del almacén mock local.                                                               |
-| `npm test`                           | Ejecuta los tests unitarios con Vitest.                                                                                      |
-| `npm run build`                      | Genera la compilación optimizada de producción.                                                                              |
-| `npm run start`                      | Sirve localmente una compilación de producción.                                                                              |
-| `npm run supabase:start`             | Inicia el stack local de Supabase.                                                                                           |
-| `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                                               |
-| `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                                     |
-| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara el escenario técnico de Tabarnia con ocho desafíos y sus siete avatares.                   |
-| `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Circuito de parejas» salvo que se indique un inicio futuro. |
-| `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.                        |
-| `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                                            |
-| `npm run supabase:schema:test`       | Verifica esquema, RLS, comandos y concurrencia.                                                                              |
-| `npm run schema:revision:check`      | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                                    |
-| `npm run dictionary:generate`        | Regenera el vocabulario español de Mini-Wordle.                                                                              |
-| `npm run dictionary:check`           | Comprueba que el vocabulario versionado esté actualizado.                                                                    |
-| `npm run format:check`               | Comprueba el formato con Prettier.                                                                                           |
+| Comando                                                  | Descripción                                                                                                                  |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                                            | Inicia el servidor de desarrollo.                                                                                            |
+| `npm run lint`                                           | Comprueba la calidad estática del código.                                                                                    |
+| `npm run typecheck`                                      | Valida todos los contratos TypeScript sin emitir código.                                                                     |
+| `npm run type-architecture`                              | Comprueba las dependencias entre las capas de tipos.                                                                         |
+| `npm run mock-data:check`                                | Valida fixtures, adaptadores y límites del almacén mock local.                                                               |
+| `npm test`                                               | Ejecuta los tests unitarios con Vitest.                                                                                      |
+| `npm run build`                                          | Genera la compilación optimizada de producción.                                                                              |
+| `npm run start`                                          | Sirve localmente una compilación de producción.                                                                              |
+| `npm run supabase:start`                                 | Inicia el stack local de Supabase.                                                                                           |
+| `npm run supabase:status`                                | Muestra el estado del stack local de Supabase.                                                                               |
+| `npm run supabase:browser:setup`                         | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                                     |
+| `npm run supabase:tabarnia:setup`                        | Reinicia Supabase local y prepara el escenario técnico de Tabarnia con ocho desafíos y sus siete avatares.                   |
+| `npm run supabase:betavip:setup`                         | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Circuito de parejas» salvo que se indique un inicio futuro. |
+| `npm run supabase:local:bootstrap`                       | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.                        |
+| `npm run supabase:staging:bootstrap:betavip`             | Prepara BetaVIP en staging y comparte Xesmona y Ches con los demás escenarios.                                               |
+| `npm run supabase:staging:bootstrap:tabarnia`            | Prepara Tabarnia en staging con ocho desafíos, quince miembros y cuentas de prueba propias.                                  |
+| `npm run supabase:environment:reset -- --target staging` | Reconstruye staging sin cargar diccionarios ni crear cuentas, salas o desafíos.                                              |
+| `npm run supabase:schema:test`                           | Verifica esquema, RLS, comandos y concurrencia.                                                                              |
+| `npm run schema:revision:check`                          | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                                    |
+| `npm run dictionary:generate`                            | Regenera el vocabulario español de Mini-Wordle.                                                                              |
+| `npm run dictionary:check`                               | Comprueba que el vocabulario versionado esté actualizado.                                                                    |
+| `npm run format:check`                                   | Comprueba el formato con Prettier.                                                                                           |
 
 La [guía de preparación](docs/current/supabase-clean-installation.md#qué-necesito-preparar) reúne
 los requisitos, comandos, efectos destructivos y archivos de cada recorrido. El
@@ -182,11 +184,10 @@ ejecución única. El ranking puede leerse sin tick cuando la ventana temporal e
 el tick sigue siendo necesario para persistir aperturas, cierres, finalización de temporada y
 expiración de intentos.
 
-Para staging, elegir entre el
-[bootstrap sobre una base migrada](docs/current/supabase-clean-installation.md#bootstrap-sobre-una-base-migrada)
-y una [reinstalación completa](docs/current/supabase-clean-installation.md#reinstalación-completa).
-La guía conserva las confirmaciones de reset y el manejo de credenciales. La ejecución registrada
-es local; la preparación y validación remotas de staging siguen pendientes.
+Para staging, el [reset](docs/current/supabase-clean-installation.md#reset-solamente) y los
+[bootstraps de BetaVIP y Tabarnia](docs/current/supabase-clean-installation.md#bootstrap-de-escenarios)
+son comandos separados. La guía conserva las confirmaciones de reset y el manejo de credenciales.
+La ejecución registrada es local; la preparación y validación remotas de staging siguen pendientes.
 
 ## Estructura principal
 
