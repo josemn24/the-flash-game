@@ -2018,5 +2018,50 @@
     "id": "bank-vf-filosofia-validez-verdad",
     "version": 1,
     "contentHash": "15799d2caa7c7f71f0027387b93a7b89cc1ce11e78141ba52f25476f2355a4f0"
+  },
+  {
+    "id": "bank-estimar-angulos",
+    "version": 2,
+    "contentHash": "7c6ff9af4961141d3041fa95ecde505c3d0d3d5c8a1d71f67346ee3996dda081"
+  },
+  {
+    "id": "bank-historia-atentado-sarajevo",
+    "version": 1,
+    "contentHash": "d4455d48dfd3b59d6be4b610f96d6074412485dc3141e03df53cc84ab582d6a3"
+  },
+  {
+    "id": "bank-historia-constantinopla",
+    "version": 1,
+    "contentHash": "018c6535fab9a780fed05badbe9042a7b22a09c6cd7221c11cbdcb12275e77cf"
+  },
+  {
+    "id": "bank-historia-cronologia-mundial",
+    "version": 1,
+    "contentHash": "279e0baac4003e9d8b59944831352649aaf65c709bd6392866a06ace6b947829"
+  },
+  {
+    "id": "bank-historia-monumentos-civilizaciones",
+    "version": 1,
+    "contentHash": "dbed787b797083a32a0c576e413a1dca7dbb6c847e23137cdbdb586e7ed14fd9"
+  },
+  {
+    "id": "bank-historia-saint-domingue",
+    "version": 1,
+    "contentHash": "fa7dc0206e61dc31e62a5fec66028353989ff6206b06133a93a4562d3a2cea63"
+  },
+  {
+    "id": "bank-historia-tenochtitlan",
+    "version": 1,
+    "contentHash": "28d6121ebe2ae186fa8de94adfdee44ed1266de0077a84d3dd4b6c0d7a534d88"
+  },
+  {
+    "id": "bank-historia-tombuctu-comercio-saber",
+    "version": 1,
+    "contentHash": "acb78edbc9fab3fd25ec989ff342502181d02273d258bd8dbd453b551a755db1"
+  },
+  {
+    "id": "bank-historia-tratado-tordesillas",
+    "version": 1,
+    "contentHash": "8dbd1413067459d03dec12701fc11cc3f25fa56d234983d71bf801456dd00ce2"
   }
 ]

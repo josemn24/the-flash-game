@@ -33,13 +33,15 @@ async function signIn(page: Page, account: { email: string; password: string }) 
 async function openFlash(page: Page, account: { email: string; password: string }) {
   await signIn(page, account);
   await page.getByRole("link", { name: /Abrir sala Sala competitiva S03/ }).click();
-  await page.getByRole("link", { name: /^(Jugar|Continuar)$/ }).click();
-  await expect(page.getByRole("heading", { name: "Flash competitivo" })).toBeVisible();
+  const challengeLink = page.getByRole("link", { name: /^(Jugar|Continuar)$/ });
+  await expect(challengeLink).toHaveAttribute("href", /\/desafios\/[^/]+\?roomId=/);
+  await challengeLink.click();
   await expect(page).toHaveURL(/\/desafios\/[^/]+\?roomId=/);
-  const startButton = page.getByRole("button", { name: "Empezar desafío" });
   await expect(
     page.getByRole("button", { name: /^(Empezar desafío|Continuar aquí)$/ }),
   ).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "Flash competitivo" })).toBeVisible();
+  const startButton = page.getByRole("button", { name: "Empezar desafío" });
   if (await startButton.count()) await startButton.click();
 }
 

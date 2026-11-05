@@ -12,10 +12,14 @@ type AttemptCommandContext = {
 };
 
 export type CompetitiveAttemptClient = {
-  prepareSession: (input: { scheduledChallengeId: string }) => Promise<CompetitiveJsonObject>;
+  prepareSession: (input: {
+    scheduledChallengeId: string;
+    expectedAttemptId?: string;
+  }) => Promise<CompetitiveJsonObject>;
   start: (input: {
     scheduledChallengeId: string;
     idempotencyKey: string;
+    preparationId?: string;
   }) => Promise<CompetitiveJsonObject>;
   takeover: (input: {
     attemptId: string;
@@ -107,10 +111,8 @@ export function createCompetitiveAttemptClient(signal?: AbortSignal): Competitiv
       timeoutMs: path.endsWith("/complete") ? 10000 : 5000,
     });
   return {
-    prepareSession: ({ scheduledChallengeId }) =>
-      post("/api/competitive/attempts/session", { scheduledChallengeId }),
-    start: ({ scheduledChallengeId, idempotencyKey }) =>
-      post("/api/competitive/attempts/start", { scheduledChallengeId, idempotencyKey }),
+    prepareSession: (input) => post("/api/competitive/attempts/session", input),
+    start: (input) => post("/api/competitive/attempts/start", input),
     takeover: ({ attemptId, scheduledChallengeId, lockVersion, idempotencyKey }) =>
       post(`/api/competitive/attempts/${attemptId}/takeover`, {
         scheduledChallengeId,

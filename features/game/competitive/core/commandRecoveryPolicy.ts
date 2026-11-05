@@ -104,7 +104,7 @@ export function classifyCommandFailure({
     });
   if (code === "attempt_inactivity_expired") return result({ type: "expired" });
   if (
-    ["complete", "recover", "start"].includes(operation) &&
+    ["complete", "recover", "start", "prepareSession"].includes(operation) &&
     (code === "attempt_session_missing" || code === "attempt_terminal")
   )
     return result({

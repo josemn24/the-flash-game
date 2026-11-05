@@ -1,4 +1,5 @@
 import { execFileSync, spawn } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { BROWSER_FIXTURE_SPECS, normalizeSpecPath, scenarioForSpec } from "./e2e-scenarios.mjs";
 
@@ -70,8 +71,7 @@ function run(command, args, options = {}) {
 
 function localSupabaseStatus() {
   const args = ["supabase", "status", "-o", "env"];
-  if (process.env.SUPABASE_TEST_WORKDIR)
-    args.push("--workdir", process.env.SUPABASE_TEST_WORKDIR);
+  if (process.env.SUPABASE_TEST_WORKDIR) args.push("--workdir", process.env.SUPABASE_TEST_WORKDIR);
   const output = execFileSync("npx", args, { encoding: "utf8", env: pilotEnv });
   return Object.fromEntries(
     output.split("\n").flatMap((line) => {
@@ -82,40 +82,129 @@ function localSupabaseStatus() {
   );
 }
 
-async function waitForSupabaseAuth(status) {
+async function fixtureAuthAccount(scenario) {
+  const fixtureScenario = scenario === "rehearsals" ? "betavip" : scenario;
+  const fixturePath = `output/fixtures/${fixtureScenario}.json`;
+  let fixture;
+  try {
+    fixture = JSON.parse(await readFile(fixturePath, "utf8"));
+  } catch (error) {
+    throw new Error(`No se pudo leer el fixture de Auth para ${scenario} (${fixturePath}).`, {
+      cause: error,
+    });
+  }
+
+  const account = Object.values(fixture.users ?? {}).find(
+    (candidate) =>
+      candidate && typeof candidate.email === "string" && typeof candidate.password === "string",
+  );
+  if (!account) throw new Error(`El fixture ${fixtureScenario} no contiene una cuenta de Auth.`);
+  return account;
+}
+
+async function waitForSupabaseAuth(status, scenario) {
   const apiUrl = status.API_URL;
   const apiKey = status.PUBLISHABLE_KEY || status.ANON_KEY;
-  if (!apiUrl || !apiKey) throw new Error("No se pudo resolver la URL/clave local de Supabase Auth.");
+  if (!apiUrl || !apiKey)
+    throw new Error("No se pudo resolver la URL/clave local de Supabase Auth.");
 
-  const endpoint = new URL("/auth/v1/health", apiUrl);
-  if (!["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname))
+  const healthEndpoint = new URL("/auth/v1/health", apiUrl);
+  const tokenEndpoint = new URL("/auth/v1/token?grant_type=password", apiUrl);
+  const userEndpoint = new URL("/auth/v1/user", apiUrl);
+  if (
+    ![healthEndpoint, tokenEndpoint, userEndpoint].every((endpoint) =>
+      ["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname),
+    )
+  )
     throw new Error("La comprobación de readiness solo admite Supabase local.");
 
+  const account = await fixtureAuthAccount(scenario);
+  const startedAt = Date.now();
   const deadline = Date.now() + 30_000;
-  let consecutiveSuccesses = 0;
   let lastFailure = "sin respuesta";
+  let attempt = 0;
   while (Date.now() < deadline) {
+    attempt += 1;
+    const attemptStartedAt = Date.now();
+    let stage = "health";
+    let stageStartedAt = attemptStartedAt;
     try {
-      const response = await fetch(endpoint, {
+      const healthResponse = await fetch(healthEndpoint, {
         headers: { apikey: apiKey },
-        signal: AbortSignal.timeout(2_000),
+        signal: AbortSignal.timeout(Math.min(2_000, Math.max(1, deadline - Date.now()))),
       });
-      await response.text();
-      if (response.ok) {
-        consecutiveSuccesses += 1;
-        if (consecutiveSuccesses >= 2) return;
-        lastFailure = `Auth respondió ${response.status}; esperando estabilidad.`;
-      } else {
-        consecutiveSuccesses = 0;
-        lastFailure = `Auth respondió HTTP ${response.status}.`;
+      await healthResponse.text();
+      if (!healthResponse.ok)
+        throw new Error(`Auth health respondió HTTP ${healthResponse.status}.`);
+      const healthMs = Date.now() - stageStartedAt;
+
+      stage = "sign-in";
+      stageStartedAt = Date.now();
+      const tokenResponse = await fetch(tokenEndpoint, {
+        method: "POST",
+        headers: { apikey: apiKey, "content-type": "application/json" },
+        body: JSON.stringify({ email: account.email, password: account.password }),
+        signal: AbortSignal.timeout(Math.min(5_000, Math.max(1, deadline - Date.now()))),
+      });
+      if (!tokenResponse.ok) {
+        await tokenResponse.body?.cancel();
+        const failure = new Error(`Auth sign-in respondió HTTP ${tokenResponse.status}.`);
+        if (tokenResponse.status === 400 || tokenResponse.status === 401)
+          Object.assign(failure, { retryable: false });
+        throw failure;
       }
+
+      const session = await tokenResponse.json();
+      if (typeof session.access_token !== "string" || typeof session.user?.id !== "string")
+        throw new Error("Auth sign-in no devolvió una sesión válida.");
+      const signInMs = Date.now() - stageStartedAt;
+
+      stage = "getUser";
+      stageStartedAt = Date.now();
+      const userResponse = await fetch(userEndpoint, {
+        headers: {
+          apikey: apiKey,
+          authorization: `Bearer ${session.access_token}`,
+        },
+        signal: AbortSignal.timeout(Math.min(5_000, Math.max(1, deadline - Date.now()))),
+      });
+      if (!userResponse.ok) {
+        await userResponse.body?.cancel();
+        const failure = new Error(`Auth getUser respondió HTTP ${userResponse.status}.`);
+        if (userResponse.status === 400 || userResponse.status === 401)
+          Object.assign(failure, { retryable: false });
+        throw failure;
+      }
+
+      const user = await userResponse.json();
+      if (user.id !== session.user.id) throw new Error("Auth getUser devolvió otro usuario.");
+      const getUserMs = Date.now() - stageStartedAt;
+
+      const elapsedMs = Date.now() - startedAt;
+      console.log(
+        `Supabase Auth lista para ${scenario}: health ${healthMs} ms, sign-in ${signInMs} ms y getUser ${getUserMs} ms (intento ${attempt}, ${elapsedMs} ms hasta quedar lista).`,
+      );
+      return;
     } catch (error) {
-      consecutiveSuccesses = 0;
       lastFailure = error instanceof Error ? error.message : String(error);
+      const stageMs = Date.now() - stageStartedAt;
+      console.warn(
+        `[e2e auth readiness] ${scenario}: ${stage} falló tras ${stageMs} ms en el intento ${attempt} (${Date.now() - startedAt} ms total): ${lastFailure}`,
+      );
+      if (error?.retryable === false) {
+        throw new Error(
+          `Falló la cuenta del fixture durante el preflight de Auth: ${lastFailure}`,
+          {
+            cause: error,
+          },
+        );
+      }
     }
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, Math.min(1_500, attempt * 500)));
   }
-  throw new Error(`Supabase Auth no estuvo lista tras 30 s: ${lastFailure}`);
+  throw new Error(
+    `Supabase Auth no completó health, sign-in y getUser en 30 s para ${scenario}: ${lastFailure}`,
+  );
 }
 
 async function prepareScenario(scenario) {
@@ -194,7 +283,7 @@ export async function runSelectedE2E(args) {
         // need a fresh fixture rather than inheriting those mutations.
         await prepareScenario(scenario);
       }
-      if (supabaseStatus) await waitForSupabaseAuth(supabaseStatus);
+      if (supabaseStatus) await waitForSupabaseAuth(supabaseStatus, scenario);
       const scenarioEnv = {
         ...(scenario === "e01" ? { FLASH_RATE_LIMIT_BURST: "30" } : {}),
         ...(specs.some((spec) =>

@@ -3,6 +3,7 @@ import { updateSession } from "@/infrastructure/supabase/auth/proxy";
 import {
   AUTH_DEADLINE_HEADER,
   AUTH_FAILURE_HEADER,
+  AUTH_USER_ID_HEADER,
 } from "@/infrastructure/supabase/auth/auth-availability";
 import {
   isDesignSystemAvailable,
@@ -20,12 +21,17 @@ import {
 
 const pyramidDemoPrefix = "/demo/flash-pop/desafios/";
 
+function clearAuthContextHeaders(headers: Headers) {
+  headers.delete(AUTH_DEADLINE_HEADER);
+  headers.delete(AUTH_FAILURE_HEADER);
+  headers.delete(AUTH_USER_ID_HEADER);
+}
+
 function localCompetitiveDemoResponse(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (pathname === "/demo/flash-pop" || pathname === "/demo/flash-pop/") {
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.delete(AUTH_DEADLINE_HEADER);
-    requestHeaders.delete(AUTH_FAILURE_HEADER);
+    clearAuthContextHeaders(requestHeaders);
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
   if (!/^\/demo\/flash-pop\/desafios\/[^/]+\/?$/.test(pathname)) return null;
@@ -46,8 +52,7 @@ function localCompetitiveDemoResponse(request: NextRequest) {
     });
   }
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.delete(AUTH_DEADLINE_HEADER);
-  requestHeaders.delete(AUTH_FAILURE_HEADER);
+  clearAuthContextHeaders(requestHeaders);
   return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
@@ -64,8 +69,7 @@ export async function proxy(request: NextRequest) {
       });
     }
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.delete(AUTH_DEADLINE_HEADER);
-    requestHeaders.delete(AUTH_FAILURE_HEADER);
+    clearAuthContextHeaders(requestHeaders);
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
   const localCompetitiveResponse = localCompetitiveDemoResponse(request);

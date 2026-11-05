@@ -180,6 +180,21 @@ async function transaction<T>(
   }
 }
 
+export async function purgeTerminalAttempt(
+  identity: VerifiedAuthIdentity,
+  input: import("@/application/ports/superadmin-attempt-commands").PurgeTerminalAttemptInput,
+) {
+  return transaction(identity, async (client) => {
+    const result = await client.query<{ room_slug: string }>(
+      "select private.purge_terminal_attempt($1::jsonb) as room_slug",
+      [JSON.stringify(input)],
+    );
+    const roomSlug = result.rows[0]?.room_slug;
+    requireResponse(typeof roomSlug === "string" && roomSlug.length > 0, "purge.roomSlug");
+    return roomSlug;
+  });
+}
+
 export async function callAttemptCommand<K extends keyof AttemptSqlCommandMap>(
   identity: VerifiedAuthIdentity,
   functionName: K,
@@ -311,16 +326,22 @@ export class SupabaseAttemptCommands implements Pick<
   constructor(private readonly identity: VerifiedAuthIdentity) {}
 
   async prepareSession(input: Parameters<AttemptCommands["prepareSession"]>[0]) {
-    await transaction(this.identity, async (client) => {
-      const result = await client.query<{ result: unknown }>(
-        "select private.prepare_attempt_session($1::uuid) as result",
-        [input.scheduledChallengeId],
+    return transaction(this.identity, async (client) => {
+      const response = await client.query<{ result: unknown }>(
+        "select private.issue_attempt_start($1::uuid, $2::uuid, $3::text, $4::text) as result",
+        [
+          input.scheduledChallengeId,
+          input.expectedAttemptId ?? null,
+          input.freshToken,
+          input.previousToken ?? null,
+        ],
       );
+      const result = record(response.rows[0]?.result);
       requireResponse(
-        result.rows.length === 1 &&
-          (result.rows[0].result === "" || result.rows[0].result === null),
-        "prepareSession.result",
+        typeof result.preparationId === "string" && typeof result.usePreviousToken === "boolean",
+        "prepareSession.preparation",
       );
+      return { preparationId: result.preparationId, usePreviousToken: result.usePreviousToken };
     });
   }
 
@@ -356,7 +377,7 @@ export class SupabaseAttemptCommands implements Pick<
     });
   }
   start(input: StartAttemptCommand) {
-    return callAttemptCommand(this.identity, "start_attempt", input);
+    return callAttemptCommand(this.identity, "start_prepared_attempt", input);
   }
 
   takeOver(input: TakeOverAttemptCommand) {

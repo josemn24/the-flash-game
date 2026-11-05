@@ -114,13 +114,13 @@ npm run supabase:betavip:setup -- --schedule 30m
 npm run supabase:betavip:setup -- --schedule 1h
 ```
 
-| Calendario                    | Ventana por desafío | Temporada Tabarnia (8 desafíos) | Temporada BetaVIP (6 desafíos) |
+| Calendario                    | Ventana por desafío | Temporada Tabarnia (9 desafíos) | Temporada BetaVIP (6 desafíos) |
 | ----------------------------- | ------------------- | ------------------------------- | ------------------------------ |
 | `production` (predeterminado) | 24 horas            | 17 días                         | 6 días                         |
-| `fast`                        | 5 minutos           | 40 minutos                      | 30 minutos                     |
-| `10m`                         | 10 minutos          | 80 minutos                      | 60 minutos                     |
-| `30m`                         | 30 minutos          | 4 horas                         | 3 horas                        |
-| `1h`                          | 1 hora              | 8 horas                         | 6 horas                        |
+| `fast`                        | 5 minutos           | 45 minutos                      | 30 minutos                     |
+| `10m`                         | 10 minutos          | 90 minutos                      | 60 minutos                     |
+| `30m`                         | 30 minutos          | 4 h 30 min                      | 3 horas                        |
+| `1h`                          | 1 hora              | 9 horas                         | 6 horas                        |
 
 Con `fast` o una duración personalizada, las ventanas son consecutivas y la temporada termina al
 cerrar el último desafío. BetaVIP transmite el mismo calendario a Tabarnia al preparar ambas salas.
@@ -175,9 +175,9 @@ los desafíos y crea partidas.
 
 ## Alpha local de Tabarnia
 
-Este seed es un escenario técnico de ocho desafíos y quince jugadores en la sala. No configura
-las 14 invitaciones ni las nueve publicaciones del [estudio Lean de Tabarnia](../product/strategy/lean-startup/cycles/CYCLE-001.md).
-Sirve para verificar recorridos y la medición común; no acredita preparación ni resultados del estudio.
+Este seed es un escenario técnico de nueve desafíos y quince jugadores en la sala. Sirve para
+verificar recorridos y la medición común. La cohorte y las publicaciones del
+[estudio Lean de Tabarnia](../product/strategy/lean-startup/cycles/CYCLE-001.md) se preparan por separado.
 
 Con el stack local activo:
 
@@ -192,8 +192,10 @@ como propietario y jugador, y otros catorce miembros jugadores. Programa Steel B
 (siete tableros de 4×4 a 7×7, 100 puntos y 150 segundos globales), España (20 preguntas,
 3 vidas, 100 puntos), Cumbre lógica (7 niveles, 100 puntos), Multiverso friki en
 Alphabet (16 letras, 150 segundos, 100 puntos), Flow Free (siete tableros de
-4×4 a 7×7, 100 puntos y 150 segundos globales) y «La Biblia» en Pirámide
-(7 niveles, 100 puntos), en ese orden y en ventanas consecutivas de 24 horas.
+4×4 a 7×7, 100 puntos y 150 segundos globales), «La Biblia» en Pirámide
+(7 niveles, 100 puntos) y Tabarniaverso en Flash (16 preguntas, tiempos de 12 a 30 segundos y
+100 puntos), en ese orden y en ventanas consecutivas de 24 horas. La novena ventana ocupa
+las horas 192 a 216 desde el inicio. La temporada dura 17 días con el perfil predeterminado.
 
 Carga los diccionarios de Mini-Wordle y los recursos privados de imagen; el mapa SVG de Canarias
 se rasteriza a PNG durante la preparación. No crea intentos ni resultados históricos. Las cuentas,
@@ -305,6 +307,17 @@ sin seed, diccionarios, usuarios ni salas. También elimina las credenciales com
 manifiestos de escenario antiguos; conserva `output/staging/reset-manifest.json` como evidencia.
 No ejecuta después ningún bootstrap.
 
+Durante la limpieza, la consola indica cada operación de Storage. El manifiesto se actualiza
+progresivamente con la operación actual, el bucket, el progreso de cada bucket y el error
+(código, estado HTTP y mensaje saneado). Si falla Storage, puede haber buckets ya vaciados o
+eliminados: consulta `storage` en el manifiesto y verifica el estado actual en Supabase antes de
+reintentar el reset.
+
+`emptyBucket` inicia el borrado asíncrono. El reset comprueba de forma read-only que ya no queden
+filas de ese bucket en `storage.objects` antes de pedir su eliminación; espera hasta dos minutos.
+Si el borrado no termina dentro de ese límite, se detiene en `waitForEmpty` y no continúa a Auth ni
+a PostgreSQL.
+
 ### Bootstrap de escenarios
 
 Tras el reset, o sobre una base migrada, ejecuta uno o ambos escenarios. Primero comprueba cada uno
@@ -318,7 +331,7 @@ npm run supabase:staging:bootstrap:tabarnia -- --env-file .env.staging.operation
 npm run supabase:staging:bootstrap:tabarnia -- --env-file .env.staging.operations
 ```
 
-BetaVIP crea su sala y cinco desafíos. Tabarnia crea su sala, ocho desafíos, quince miembros y
+BetaVIP crea su sala y cinco desafíos. Tabarnia crea su sala, nueve desafíos, quince miembros y
 catorce cuentas de prueba propias; no reutiliza los emails ni las contraseñas del seed local.
 Ambos reutilizan las mismas cuentas de Xesmona y Ches. Xesmona mantiene el rol superadmin y Ches
 es propietario en cada sala. El registro seguro compartido está en
@@ -331,6 +344,10 @@ Cada comando se puede repetir. Las cuentas ya registradas se reutilizan y los da
 usan IDs estables; si un ID existente tiene contenido incompatible, el comando falla en vez de
 reemplazarlo. No lances ambos bootstraps simultáneamente: los archivos de credenciales son
 compartidos.
+
+La incorporación de Tabarniaverso a una temporada de staging ya aprovisionada con ocho
+publicaciones requiere una operación de calendario separada. El bootstrap incluye la novena
+publicación al crear una temporada nueva.
 
 Para fijar el inicio de una temporada nueva, Tabarnia acepta `--starts-at` con ISO 8601 y zona
 horaria. Pasa la misma fecha al `--dry-run` y a la ejecución real:
@@ -358,10 +375,10 @@ Desplegar el commit validado y comprobar con intentos nuevos:
 
 La inactividad conserva la regla de 15 minutos tras cierre/deadline. No modificar reglas ni acortar
 los tiempos competitivos para acelerar la prueba. Se conserva la integración de Vercel Cron con
-GET, `CRON_SECRET` y la programación diaria `0 13 * * *` de `vercel.json`; el POST y el CLI usan
-`CALENDAR_TICK_SECRET`. Vercel interpreta el cron en UTC: se ejecuta a las 13:00 UTC, que son las
-15:00 en Madrid durante el horario de verano (CEST) y las 14:00 durante el horario de invierno
-(CET). Por tanto, mantiene fija la hora UTC, no las 15:00 locales durante todo el año.
+GET, `CRON_SECRET` y la programación diaria `5 14 * * *` de `vercel.json`; el POST y el CLI usan
+`CALENDAR_TICK_SECRET`. Vercel interpreta el cron en UTC: se ejecuta a las 14:05 UTC, que son las
+15:05 en Madrid durante el horario de invierno (CET) y las 16:05 durante el horario de verano
+(CEST). Por tanto, mantiene fija la hora UTC, no las 15:05 locales durante todo el año.
 
 La etiqueta Production de Vercel es un tipo de despliegue de la plataforma, no otro entorno de
 aplicación. Vercel solo programa crons para despliegues Production, no para previews; la ejecución

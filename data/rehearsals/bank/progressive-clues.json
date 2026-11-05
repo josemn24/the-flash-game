@@ -334,5 +334,37 @@
       "acceptedAnswers": ["Sócrates"],
       "explanation": "Sócrates vivió en Atenas en el siglo V a. C. y no dejó obras escritas; Platón y Jenofonte son fuentes principales para conocerlo. Su juicio y condena a muerte tuvieron lugar en Atenas en 399 a. C., lo que concreta la identificación de la última pista."
     }
+  },
+  {
+    "id": "bank-historia-constantinopla",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-historia-constantinopla",
+    "publicPayload": {
+      "category": "Historia",
+      "tags": {
+        "domains": ["history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["recall"],
+        "lifeSkills": []
+      },
+      "question": "¿Qué ciudad describen estas pistas?",
+      "clues": [
+        "Fui capital de un imperio que hoy suele denominarse bizantino.",
+        "Me encuentro junto al estrecho del Bósforo, entre Europa y Asia.",
+        "Los otomanos me conquistaron en 1453; hoy soy Estambul."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "Constantinopla",
+      "acceptedAnswers": ["Constantinopla", "Estambul", "Istanbul"],
+      "explanation": "Constantinopla fue la capital del Imperio romano de Oriente, conocido habitualmente como bizantino. Tras la conquista otomana de 1453, la ciudad pasó a conocerse como Estambul."
+    }
   }
 ]

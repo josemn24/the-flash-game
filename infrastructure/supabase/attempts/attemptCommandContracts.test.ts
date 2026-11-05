@@ -44,14 +44,14 @@ const input = {
 
 describe("mandatory SQL command decoders", () => {
   it.each([
-    ["start_attempt", start],
+    ["start_prepared_attempt", start],
     ["receive_answer", receipt],
     ["record_evaluation", evaluation],
   ] as const)("rejects missing, mistyped and contradictory %s fields", (name, valid) => {
     const decode = (value: unknown) =>
       attemptSqlDecoders[name](
         value,
-        name === "start_attempt"
+        name === "start_prepared_attempt"
           ? ({
               scheduledChallengeId: "challenge" as never,
               idempotencyKey: "original",
@@ -67,7 +67,8 @@ describe("mandatory SQL command decoders", () => {
       expect(() => decode({ ...valid, [key]: [] }), key).toThrow(CompetitiveResponseContractError);
     }
     expect(() => decode({ lockVersion: 2 })).toThrow();
-    if (name !== "start_attempt") expect(() => decode({ ...valid, attemptId: "other" })).toThrow();
+    if (name !== "start_prepared_attempt")
+      expect(() => decode({ ...valid, attemptId: "other" })).toThrow();
   });
   it("validates persisted evaluation reads rather than trusting a pg generic", () => {
     expect(decodeRecordedEvaluation(null, "receipt")).toBeNull();

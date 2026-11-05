@@ -35,7 +35,7 @@ import {
 import { decodeFinishAttemptResult } from "./attemptLifecycleContracts";
 
 type Methods = {
-  start_attempt: AttemptCommands["start"];
+  start_prepared_attempt: AttemptCommands["start"];
   take_over_attempt: AttemptCommands["takeOver"];
   prepare_interaction: AttemptCommands["prepare"];
   activate_interaction: AttemptCommands["activate"];
@@ -119,15 +119,17 @@ const format = (op: string) => (row: Record<string, unknown>) => {
   fields(row, { challengeItemId: text });
   formatFields(op, row, false);
 };
+function decodeStart(row: Record<string, unknown>) {
+  fields(row, {
+    sessionId: text,
+    resumed: boolean,
+    controlRequired: boolean,
+    deadlineAt: nullable(date),
+  });
+}
+
 export const attemptSqlDecoders: { [K in keyof Methods]: Decoder<K> } = {
-  start_attempt: decode("start_attempt", (r) =>
-    fields(r, {
-      sessionId: text,
-      resumed: boolean,
-      controlRequired: boolean,
-      deadlineAt: nullable(date),
-    }),
-  ),
+  start_prepared_attempt: decode("start_prepared_attempt", decodeStart),
   take_over_attempt: decode("take_over_attempt", (r) =>
     fields(r, { sessionId: text, transferred: oneOf(true), deadlineAt: nullable(date) }),
   ),

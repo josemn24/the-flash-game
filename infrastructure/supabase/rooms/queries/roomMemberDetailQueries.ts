@@ -151,6 +151,7 @@ export class SupabaseRoomMemberDetailQueries implements RoomMemberDetailQueries 
       challengeSummary,
       challenge,
       result,
+      ...(reviewMember ? { attemptId: reviewMember.attempt_id } : {}),
       reviewItems: reviewRows.length ? toRoomMemberReviewItems(reviewRows) : [],
       reviewProgress: reviewRows.length ? toRoomMemberReviewProgress(reviewRows) : null,
       roomRank: seasonEntry?.position ?? 0,

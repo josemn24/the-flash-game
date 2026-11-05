@@ -30,7 +30,13 @@ function date(value: string | null) {
     : "—";
 }
 
-export function AdminAttemptList({ model }: { readonly model: SuperadminAttemptListModel }) {
+export function AdminAttemptList({
+  model,
+  deleted,
+}: {
+  readonly model: SuperadminAttemptListModel;
+  readonly deleted?: boolean;
+}) {
   const { publication } = model;
   return (
     <AdminShell
@@ -58,6 +64,11 @@ export function AdminAttemptList({ model }: { readonly model: SuperadminAttemptL
           Cambiar desafío
         </ButtonLink>
       </header>
+      {deleted ? (
+        <Card as="section" surface="soft" role="status">
+          Intento eliminado.
+        </Card>
+      ) : null}
       <section className={styles.section} aria-labelledby="attempt-list-title">
         <div className={styles.heading}>
           <div>

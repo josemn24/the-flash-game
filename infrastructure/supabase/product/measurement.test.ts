@@ -27,6 +27,7 @@ describe("season signal persistence", () => {
     const input = {
       id: measurementId(1),
       publicationId: measurementId(2),
+      attemptId: measurementId(4),
       seasonId: saved.seasonId,
       value: 4,
     };

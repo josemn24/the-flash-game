@@ -64,7 +64,7 @@ export function AdminAttemptActions({
   if (status !== "completed" && status !== "abandoned") {
     return (
       <p className={styles.muted}>
-        Este intento es solo de lectura porque no está en un estado terminal corregible.
+        Los ajustes y la invalidación están disponibles para intentos completados o abandonados.
       </p>
     );
   }

@@ -254,7 +254,10 @@ test("Survival practice removes lives and reaches its own terminal result", asyn
   );
   await page.getByRole("button", { name: wrong, exact: true }).click();
   await expect(page.getByLabel("1 de 3 vidas restantes")).toBeVisible();
-  await page.getByRole("textbox", { name: "¿Qué aparece en la imagen?" }).fill("incorrecta");
+  const lastLifeQuestion = questions[2];
+  expect(lastLifeQuestion.type).toBe("progressive-image");
+  const answerLabel = lastLifeQuestion.publicPayload.answerLabel ?? "Tu respuesta";
+  await page.getByRole("textbox", { name: answerLabel }).fill("incorrecta");
   await page.getByRole("button", { name: "Enviar respuesta", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Sin vidas" })).toBeVisible({ timeout: 15_000 });
   await reviewAndReturn(page, 4);
@@ -371,7 +374,13 @@ test("publication policy disables and reenables dynamic practice without a fixed
   await panel.getByRole("combobox", { name: "Pruebas habilitadas" }).selectOption("false");
   await panel.getByRole("textbox", { name: "Motivo" }).fill("Comprobación de política dinámica");
   await panel.getByRole("button", { name: "Guardar disponibilidad" }).click();
-  await expect(panel.getByRole("combobox", { name: "Pruebas habilitadas" })).toHaveValue("false");
+  await expect
+    .poll(() =>
+      sqlCount(
+        `select count(*) from private.rehearsal_publication_policies where scheduled_challenge_id='${publication.id}' and enabled=false`,
+      ),
+    )
+    .toBe(1);
   await page.context().clearCookies();
   await login(page, fixture("betavip").users.ches!);
   await page.goto(`/desafios/${publication.id}/prueba?roomId=beta-vip`);
@@ -384,7 +393,13 @@ test("publication policy disables and reenables dynamic practice without a fixed
     .getByRole("textbox", { name: "Motivo" })
     .fill("Reactivación tras comprobar la política");
   await panel.getByRole("button", { name: "Guardar disponibilidad" }).click();
-  await expect(panel.getByRole("combobox", { name: "Pruebas habilitadas" })).toHaveValue("true");
+  await expect
+    .poll(() =>
+      sqlCount(
+        `select count(*) from private.rehearsal_publication_policies where scheduled_challenge_id='${publication.id}' and enabled=true`,
+      ),
+    )
+    .toBe(1);
 });
 
 test("question difficulty survives publication and changes only in a new version", async ({

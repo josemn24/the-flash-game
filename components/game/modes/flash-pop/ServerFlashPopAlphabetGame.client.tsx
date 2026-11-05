@@ -1,5 +1,6 @@
 "use client";
 
+import { useMeasurementAttempt } from "@/components/product/Measurement.client";
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
 
 import { motion, AnimatePresence, MotionConfig } from "motion/react";
@@ -28,6 +29,7 @@ export function ServerFlashPopAlphabetGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const session = useServerAlphabetSession({ challenge, roomContext, terminalReview });
+  useMeasurementAttempt(session.attempt?.id);
   return (
     <AlphabetGameView challenge={challenge} session={session} returnTo={roomContext.returnTo} />
   );

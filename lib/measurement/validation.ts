@@ -22,6 +22,7 @@ export function parseEvent(value: unknown): ProductEventInput {
           "type",
           "roomId",
           "publicationId",
+          "attemptId",
           "visitId",
           "occurredAt",
           "appVersion",
@@ -34,6 +35,7 @@ export function parseEvent(value: unknown): ProductEventInput {
     value.roomId.length < 1 ||
     value.roomId.length > 120 ||
     (value.publicationId !== undefined && !uuid(value.publicationId)) ||
+    (value.type === "review_viewed" ? !uuid(value.attemptId) : value.attemptId !== undefined) ||
     !date(value.occurredAt) ||
     !str(value.appVersion) ||
     (value.appVersion as string).length < 1 ||

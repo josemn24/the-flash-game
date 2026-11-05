@@ -18,7 +18,7 @@ import { sendProductEvent } from "@/features/product/transport";
 import { Button, Card, StarIcon } from "@/components/ui";
 import { randomUuid } from "@/lib/randomUuid";
 import styles from "./Measurement.module.css";
-type Context = { roomId: string; publicationId?: string } & (
+type Context = { roomId: string; publicationId?: string; attemptId?: string } & (
   { rehearsal: true; runId: string } | { rehearsal?: false; runId?: never }
 );
 type Observation = {
@@ -29,16 +29,32 @@ type Observation = {
   input?: ProductEventInput;
 };
 const MeasurementContext = createContext<
-  (Context & { rehearsalEvents: RefObject<Map<string, Observation>> }) | null
+  | (Context & {
+      rehearsalEvents: RefObject<Map<string, Observation>>;
+      setAttemptId: (id: string) => void;
+    })
+  | null
 >(null);
-export function MeasurementProvider({ children, ...context }: Context & { children: ReactNode }) {
+export function MeasurementProvider({
+  children,
+  attemptId: initialAttemptId,
+  ...context
+}: Context & { children: ReactNode }) {
+  const [attemptId, setAttemptId] = useState(initialAttemptId);
   const rehearsalEvents = useRef(new Map<string, Observation>());
   return (
-    <MeasurementContext.Provider value={{ ...context, rehearsalEvents }}>
+    <MeasurementContext.Provider value={{ ...context, attemptId, setAttemptId, rehearsalEvents }}>
       {children}
     </MeasurementContext.Provider>
   );
 }
+export function useMeasurementAttempt(attemptId: string | undefined) {
+  const setAttemptId = useContext(MeasurementContext)?.setAttemptId;
+  useEffect(() => {
+    if (attemptId) setAttemptId?.(attemptId);
+  }, [attemptId, setAttemptId]);
+}
+
 export function useProductSignal(type: ProductEventType, enabled = true) {
   const context = useContext(MeasurementContext),
     event = useRef<Observation | null>(null);
@@ -47,15 +63,17 @@ export function useProductSignal(type: ProductEventType, enabled = true) {
     run = context?.runId,
     rehearsal = context?.rehearsal,
     rehearsalEvents = context?.rehearsalEvents;
+  const attemptId = type === "review_viewed" ? context?.attemptId : undefined;
   useEffect(() => {
     if (
       !room ||
       !enabled ||
+      (type === "review_viewed" && !attemptId) ||
       (!rehearsal && type.startsWith("rehearsal_")) ||
       (rehearsal && !type.startsWith("rehearsal_"))
     )
       return;
-    const key = JSON.stringify([room, pub, type, run]);
+    const key = JSON.stringify([room, pub, type, run, attemptId]);
     // The provider survives results/review remounts within the same execution.
     const saved = rehearsal ? rehearsalEvents?.current.get(key) : undefined;
     if (saved) event.current = saved;
@@ -83,6 +101,7 @@ export function useProductSignal(type: ProductEventType, enabled = true) {
         type,
         roomId: room!,
         ...(pub ? { publicationId: pub } : {}),
+        ...(attemptId ? { attemptId } : {}),
         visitId: current.visit,
         occurredAt: new Date().toISOString(),
         appVersion: process.env.NEXT_PUBLIC_APP_VERSION ?? "0.1.0",
@@ -93,7 +112,7 @@ export function useProductSignal(type: ProductEventType, enabled = true) {
     document.addEventListener("visibilitychange", emit);
     return () => document.removeEventListener("visibilitychange", emit);
     // Context object identity changes during renders; scalar keys define the observation.
-  }, [room, pub, run, type, enabled, rehearsal, rehearsalEvents]);
+  }, [room, pub, run, type, enabled, rehearsal, rehearsalEvents, attemptId]);
 }
 export function ProductSignal({ type }: { type: ProductEventType }) {
   useProductSignal(type);
@@ -101,31 +120,41 @@ export function ProductSignal({ type }: { type: ProductEventType }) {
 }
 export function EnjoymentRating() {
   const context = useContext(MeasurementContext);
-  const pub = context?.rehearsal ? undefined : context?.publicationId;
-  const [loaded, setLoaded] = useState<{ pub: string; rating: ProductRating | null } | null>(null);
+  const attemptId = context?.attemptId;
+  const pub = context?.rehearsal || !attemptId ? undefined : context?.publicationId;
+  const [loaded, setLoaded] = useState<{
+    pub: string;
+    attemptId: string;
+    rating: ProductRating | null;
+  } | null>(null);
   useEffect(() => {
     let active = true;
-    if (!pub) return;
+    if (!pub || !attemptId) return;
     void fetch(`/api/product/ratings/${encodeURIComponent(pub)}`, { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((value: ProductRating | null) => {
-        if (active) setLoaded({ pub, rating: value });
+        if (active) setLoaded({ pub, attemptId, rating: value });
       })
       .catch(() => {});
     return () => {
       active = false;
     };
-  }, [pub]);
-  if (!pub || loaded?.pub !== pub || !loaded.rating) return null;
+  }, [pub, attemptId]);
+  if (!pub || !attemptId || loaded?.pub !== pub || loaded.attemptId !== attemptId || !loaded.rating)
+    return null;
   return (
-    <OwnEnjoymentRating
-      key={`${pub}:${loaded.rating.seasonId ?? ""}`}
-      pub={pub}
-      initial={loaded.rating}
-    />
+    <OwnEnjoymentRating key={attemptId} pub={pub} attemptId={attemptId} initial={loaded.rating} />
   );
 }
-function OwnEnjoymentRating({ pub, initial }: { pub: string; initial: ProductRating }) {
+function OwnEnjoymentRating({
+  pub,
+  attemptId,
+  initial,
+}: {
+  pub: string;
+  attemptId: string;
+  initial: ProductRating;
+}) {
   const ratingId = useId();
   const [rating, setRating] = useState<ProductRating | null>(initial),
     [pending, setPending] = useState<{ id: string; value: number } | null>(null),
@@ -143,6 +172,7 @@ function OwnEnjoymentRating({ pub, initial }: { pub: string; initial: ProductRat
         body: JSON.stringify({
           ...command,
           seasonId: initial.seasonId,
+          attemptId,
         }),
       });
       if (!response.ok) throw new Error("rating_failed");

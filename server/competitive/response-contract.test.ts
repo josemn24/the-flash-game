@@ -46,8 +46,8 @@ const challenge: ServerFlashChallenge = {
 const at = "2026-10-01T10:00:00Z";
 const base = { attemptId: "attempt", lockVersion: 1 };
 const fixtures: Record<string, object> = {
-  prepare_attempt_session: {},
-  start_attempt: {
+  issue_attempt_start: { preparationId: "prep", usePreviousToken: false },
+  start_prepared_attempt: {
     ...base,
     sessionId: "controller",
     resumed: false,
@@ -212,7 +212,6 @@ beforeEach(() => {
           },
         ],
       };
-    if (sql.includes("prepare_attempt_session")) return { rows: [{ result: "" }] };
     const name = Object.keys(fixtures).find((key) => sql.includes(`private.${key}(`));
     return {
       rows: name ? [{ result: name === broken ? { lockVersion: 4 } : fixtures[name] }] : [],
@@ -233,13 +232,17 @@ beforeEach(() => {
       } as AttemptCommandInput;
       try {
         if (operation === "session") {
-          await commands.prepareSession({ scheduledChallengeId: "challenge" as never });
-          return Response.json({ ready: true });
+          await commands.prepareSession({
+            scheduledChallengeId: "challenge" as never,
+            freshToken: "private",
+          });
+          return Response.json({ ready: true, preparationId: "prep" });
         }
         if (operation === "start") {
           const result = await commands.start({
             scheduledChallengeId: "challenge" as never,
             sessionToken: "private",
+            preparationId: body.preparationId,
             idempotencyKey: body.idempotencyKey,
           });
           return Response.json({
@@ -336,12 +339,16 @@ function transactions() {
 }
 
 describe("SQL decoder → HTTP → provider → engine", () => {
-  it.each(["start_attempt", "prepare_interaction", "receive_answer", "record_evaluation"])(
+  it.each(["start_prepared_attempt", "prepare_interaction", "receive_answer", "record_evaluation"])(
     "normalizes malformed %s as uncertain, with rollback and no fabricated result",
     async (name) => {
       broken = name;
       const op =
-        name === "start_attempt" ? "start" : name === "prepare_interaction" ? "prepare" : "answer";
+        name === "start_prepared_attempt"
+          ? "start"
+          : name === "prepare_interaction"
+            ? "prepare"
+            : "answer";
       const result = await provider().execute(
         op === "start"
           ? { operation: op, input: { challengeId: "challenge", idempotencyKey: "key" } }

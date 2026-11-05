@@ -15,6 +15,7 @@ import type {
 import type {
   SuperadminAttemptCommands,
   SuperadminAttemptCommandInput,
+  PurgeTerminalAttemptInput,
   SuperadminAdjustResultInput,
   SuperadminAdministrativeResult,
 } from "@/application/ports/superadmin-attempt-commands";
@@ -466,9 +467,14 @@ export class ApplicationSuperadminCommands {
     );
   }
 
-  private async runAttemptCommand(
-    operation: () => Promise<SuperadminAdministrativeResult>,
-  ): Promise<SuperadminAdministrativeResult> {
+  async purgeAttempt(input: PurgeTerminalAttemptInput): Promise<string> {
+    const access = await this.prepare("superadmin");
+    return this.runAttemptCommand(() =>
+      this.dependencies.attemptCommandsFor(access.authUserId).purge(input),
+    );
+  }
+
+  private async runAttemptCommand<T>(operation: () => Promise<T>): Promise<T> {
     try {
       return await operation();
     } catch (error) {

@@ -15,6 +15,9 @@
         "table": ["SELECT"]
       }
     },
+    "private.attempt_start_preparations": {
+      "kind": "r"
+    },
     "private.attempt_timing_units": {
       "kind": "r"
     },
@@ -706,6 +709,24 @@
       "arguments": "secret text",
       "securityDefiner": false,
       "executeRoles": []
+    },
+    "private.issue_attempt_start": {
+      "arguments": "publication_id uuid, expected_attempt_id uuid, fresh_token text, previous_token text",
+      "securityDefiner": true,
+      "volatility": "v",
+      "executeRoles": ["service_role"]
+    },
+    "private.purge_terminal_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "volatility": "v",
+      "executeRoles": ["service_role"]
+    },
+    "private.start_prepared_attempt": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "volatility": "v",
+      "executeRoles": ["service_role"]
     },
     "private.start_attempt": {
       "arguments": "input jsonb",

@@ -87,7 +87,7 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
       await signIn(secondPage, data.users.carol);
 
       const blocked = await secondPage.evaluate(async (scheduledChallengeId) => {
-        await fetch("/api/competitive/attempts/session", {
+        const preparation = await fetch("/api/competitive/attempts/session", {
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ scheduledChallengeId }),
@@ -98,6 +98,7 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
           body: JSON.stringify({
             scheduledChallengeId,
             idempotencyKey: "s04-second-device-start",
+            preparationId: (await preparation.json()).preparationId,
           }),
         });
         return { status: response.status, body: await response.json() };
@@ -168,11 +169,12 @@ test.describe("S04 — recuperación y abandono de Flash", () => {
           headers: { "content-type": "application/json" },
           body: JSON.stringify(body),
         });
-      await post("/api/competitive/attempts/session", { scheduledChallengeId });
+      const preparation = await post("/api/competitive/attempts/session", { scheduledChallengeId });
       return (
         await post("/api/competitive/attempts/start", {
           scheduledChallengeId,
           idempotencyKey: "s04-abandon-start",
+          preparationId: (await preparation.json()).preparationId,
         })
       ).json();
     }, publicationId);

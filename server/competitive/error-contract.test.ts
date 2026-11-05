@@ -58,12 +58,13 @@ afterEach(() => {
 async function databaseFailure(code: string, sqlstate = "55000", detail?: string) {
   const cause = Object.assign(new Error(code), { code: sqlstate, detail });
   pg.query.mockImplementation(async (sql: string) => {
-    if (sql.includes("private.start_attempt")) throw cause;
+    if (sql.includes("private.start_prepared_attempt")) throw cause;
     return { rows: [] };
   });
   try {
-    await callAttemptCommand({ authUserId: "actor" }, "start_attempt", {
+    await callAttemptCommand({ authUserId: "actor" }, "start_prepared_attempt", {
       scheduledChallengeId: "challenge" as never,
+      preparationId: "prep",
       sessionToken: "token",
       idempotencyKey: "key",
     });

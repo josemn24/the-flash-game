@@ -7,6 +7,7 @@ import {
   SuperadminAttemptCommandError,
   SuperadminAccessDeniedError,
 } from "@/application/administration/errors";
+import { productionAdminServices } from "@/server/composition/admin";
 import { requireSuperadmin } from "@/server/admin";
 import {
   adjustSuperadminAttempt as executeAdjustSuperadminAttempt,
@@ -170,4 +171,53 @@ export async function invalidateSuperadminAttempt(
     }
     throw error;
   }
+}
+
+export async function deleteSuperadminAttempt(
+  _state: AttemptActionState,
+  formData: FormData,
+): Promise<AttemptActionState> {
+  const roomId = textValue(formData, "roomId");
+  const scheduledChallengeId = textValue(formData, "scheduledChallengeId");
+  const attemptId = textValue(formData, "attemptId");
+  if (![roomId, scheduledChallengeId, attemptId].every((id) => uuidPattern.test(id))) {
+    return { message: "La partida no es válida. Recarga la inspección." };
+  }
+
+  let roomSlug: string;
+  try {
+    roomSlug = await productionAdminServices.commands.purgeAttempt({
+      roomId,
+      scheduledChallengeId,
+      attemptId,
+    });
+  } catch (error) {
+    if (error instanceof SuperadminAttemptCommandError) {
+      return {
+        message:
+          error.code === "attempt_not_terminal"
+            ? "Solo puedes eliminar partidas que ya han terminado."
+            : "No se ha podido eliminar el intento. Recarga la inspección.",
+      };
+    }
+    handlePortalBoundary(error);
+  }
+
+  const roomPath = `/salas/${roomSlug}`;
+  const adminRoomPath = `/admin/rooms/${roomId}`;
+  const listPath = `${adminRoomPath}/attempts/${scheduledChallengeId}`;
+  for (const path of [
+    adminRoomPath,
+    `${adminRoomPath}/measurement`,
+    listPath,
+    `${listPath}/${attemptId}`,
+    roomPath,
+    `${roomPath}/ranking`,
+    `${roomPath}/introduccion/${scheduledChallengeId}`,
+    `${roomPath}/historial`,
+    `${roomPath}/historial/${scheduledChallengeId}`,
+    `/desafios/${scheduledChallengeId}`,
+  ])
+    revalidatePath(path);
+  redirect(`${listPath}?deleted=1`);
 }

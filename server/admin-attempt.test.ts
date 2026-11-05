@@ -15,6 +15,7 @@ vi.mock("@/server/competitive/rate-limit", () => ({
 
 function commands() {
   return {
+    purge: vi.fn(),
     adjust: mocks.adjust,
     invalidate: mocks.invalidate,
   };

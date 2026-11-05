@@ -14,7 +14,7 @@ export default async function AdminAttemptListPage({
   searchParams,
 }: {
   readonly params: Promise<{ roomId: string; scheduledChallengeId: string }>;
-  readonly searchParams: Promise<{ cursorAt?: string; cursorId?: string }>;
+  readonly searchParams: Promise<{ cursorAt?: string; cursorId?: string; deleted?: string }>;
 }) {
   const { roomId, scheduledChallengeId } = await params;
   const query = await searchParams;
@@ -26,5 +26,5 @@ export default async function AdminAttemptListPage({
     getSuperadminAttemptListPageModel(roomId, scheduledChallengeId, cursor),
   );
   if (!page) notFound();
-  return <AdminAttemptList model={page} />;
+  return <AdminAttemptList model={page} deleted={query.deleted === "1"} />;
 }

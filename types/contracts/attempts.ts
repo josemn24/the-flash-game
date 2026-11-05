@@ -27,9 +27,18 @@ import type {
 export type StartAttemptInput = {
   readonly scheduledChallengeId: ScheduledChallengeId;
   readonly idempotencyKey: string;
+  readonly preparationId: string;
 };
-export type PrepareAttemptSessionInput = Pick<StartAttemptInput, "scheduledChallengeId">;
-export type PrepareAttemptSessionResult = { readonly ready: true };
+export type PrepareAttemptSessionInput = Pick<StartAttemptInput, "scheduledChallengeId"> & {
+  readonly expectedAttemptId?: string;
+  readonly freshToken: string;
+  readonly previousToken?: string;
+};
+export type PrepareAttemptSessionResult = {
+  readonly ready: true;
+  readonly preparationId: string;
+  readonly usePreviousToken: boolean;
+};
 export type StartAttemptResult = {
   readonly attemptId: AttemptId;
   readonly sessionId: AttemptSessionId;

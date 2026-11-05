@@ -40,11 +40,26 @@ select throws_ok(
   'Auth identity is not exposed through profile columns'
 );
 
-select lives_ok(
+reset role;
+create function pg_temp.reject_player_insert() returns trigger language plpgsql as $$
+begin
+  raise exception 'Existing players must be read without attempting an insert';
+end;
+$$;
+create trigger reject_player_insert before insert on public.players
+  for each statement execute function pg_temp.reject_player_insert();
+set local role authenticated;
+
+select results_eq(
   $$select * from public.provision_player()$$,
-  'Repeated provisioning is idempotent'
+  $$select id, display_name, avatar_path, status from public.players$$,
+  'Repeated provisioning returns the existing Player without writing'
 );
 select is((select count(*) from public.players), 1::bigint, 'Repeated provisioning creates no duplicate Player');
+
+reset role;
+drop trigger reject_player_insert on public.players;
+set local role authenticated;
 
 select set_config(
   'request.jwt.claims',

@@ -74,7 +74,15 @@ export function validateStagingBootstrapConfig(env = process.env) {
     throw new Error("Xesmona y Ches deben utilizar emails diferentes.");
   }
 
-  return { projectRef, supabaseUrl, publishableKey, serviceRoleKey, adminDbUrl, emails };
+  return {
+    target: "staging",
+    projectRef,
+    supabaseUrl,
+    publishableKey,
+    serviceRoleKey,
+    adminDbUrl,
+    emails,
+  };
 }
 
 export function buildStagingAuthUserPayload({ definition, email, password, projectRef }) {

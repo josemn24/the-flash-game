@@ -18,21 +18,187 @@ import {
   writeJsonSecure,
 } from "./support/supabase-provisioning.mjs";
 
-export async function clearStorage(client) {
+function redactStorageErrorMessage(value) {
+  return String(value ?? "Error de Storage sin mensaje")
+    .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, "Bearer [redacted]")
+    .replace(/\b(?:sb_secret|sb_publishable)_[A-Za-z0-9_-]+/gi, "[redacted key]")
+    .replace(/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g, "[redacted token]")
+    .replace(
+      /\b([A-Z0-9_]*(?:API_KEY|SERVICE_ROLE_KEY|ANON_KEY|PUBLISHABLE_KEY|SECRET|PASSWORD|TOKEN|JWT)[A-Z0-9_]*)\s*[:=]\s*([^\s,"']+)/gi,
+      "$1=[redacted]",
+    )
+    .replace(
+      /\b(authorization|api[_ -]?key|apikey|service[_ -]?role|password|secret|token)\b(\s*[:=]\s*|\s+)(?:["']?)([^\s,"']+)/gi,
+      "$1$2[redacted]",
+    );
+}
+
+function storageErrorDetails(error) {
+  const details = {
+    message: redactStorageErrorMessage(
+      typeof error === "string" || typeof error === "number" ? error : error?.message,
+    ),
+  };
+  const code = error?.code;
+  const statusCode = error?.statusCode ?? error?.status;
+  if (typeof code === "string" || typeof code === "number") details.code = code;
+  if (typeof statusCode === "string" || typeof statusCode === "number")
+    details.statusCode = statusCode;
+  return details;
+}
+
+function storageCleanupError(operation, bucketId, error, message) {
+  const details = storageErrorDetails(error);
+  const location = bucketId ? ` en ${bucketId}` : "";
+  const wrapped = new Error(`${message}${location}. Detalle: ${details.message}`);
+  wrapped.name = "StorageCleanupError";
+  wrapped.storageFailure = { operation, ...(bucketId ? { bucketId } : {}), ...details };
+  return wrapped;
+}
+
+export async function waitForStorageBucketEmpty(
+  sql,
+  bucketId,
+  {
+    onProgress = async () => {},
+    timeoutMs = 120_000,
+    pollIntervalMs = 1_000,
+    delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)),
+    now = () => Date.now(),
+  } = {},
+) {
+  await onProgress({ event: "operation_started", operation: "waitForEmpty", bucketId });
+  const deadline = now() + timeoutMs;
+  const bucketLiteral = `'${bucketId.replaceAll("'", "''")}'`;
+  for (;;) {
+    const result = await sql(
+      `select exists(select 1 from storage.objects where bucket_id = ${bucketLiteral});`,
+    );
+    const exists = String(result).trim().toLowerCase();
+    if (exists !== "true" && exists !== "false")
+      throw new Error("No se pudo interpretar la comprobación de objetos de Storage.");
+    const objectsRemain = exists === "true";
+    await onProgress({
+      event: "object_check",
+      operation: "waitForEmpty",
+      bucketId,
+      objectsRemain,
+    });
+    if (!objectsRemain) {
+      await onProgress({
+        event: "operation_completed",
+        operation: "waitForEmpty",
+        bucketId,
+      });
+      return;
+    }
+    const remainingMs = deadline - now();
+    if (remainingMs <= 0)
+      throw storageCleanupError(
+        "waitForEmpty",
+        bucketId,
+        {
+          code: "Timeout",
+          message: `Storage sigue mostrando objetos tras ${Math.ceil(timeoutMs / 1_000)} segundos`,
+        },
+        "No se confirmó que el bucket quedara vacío",
+      );
+    await delay(Math.min(pollIntervalMs, remainingMs));
+  }
+}
+
+export async function clearStorage(
+  client,
+  { onProgress = async () => {}, waitForBucketEmpty } = {},
+) {
+  if (typeof waitForBucketEmpty !== "function")
+    throw new Error("La limpieza de Storage requiere verificar que el vaciado haya terminado.");
+  await onProgress({ event: "operation_started", operation: "listBuckets" });
   const { data: buckets, error } = await client.storage.listBuckets();
   if (error)
-    throw new Error("No se pudieron consultar los buckets; no se ha reiniciado PostgreSQL.");
+    throw storageCleanupError("listBuckets", null, error, "No se pudieron consultar los buckets");
+  await onProgress({
+    event: "operation_completed",
+    operation: "listBuckets",
+    bucketCount: buckets.length,
+  });
   for (const bucket of buckets) {
+    await onProgress({ event: "operation_started", operation: "emptyBucket", bucketId: bucket.id });
     const emptied = await client.storage.emptyBucket(bucket.id);
     if (emptied.error)
-      throw new Error(`No se pudo vaciar ${bucket.id}; se interrumpe el reinicio.`);
+      throw storageCleanupError(
+        "emptyBucket",
+        bucket.id,
+        emptied.error,
+        "No se pudo vaciar el bucket",
+      );
+    await onProgress({
+      event: "operation_completed",
+      operation: "emptyBucket",
+      bucketId: bucket.id,
+    });
+    await waitForBucketEmpty(bucket.id);
+
+    await onProgress({
+      event: "operation_started",
+      operation: "deleteBucket",
+      bucketId: bucket.id,
+    });
     const deleted = await client.storage.deleteBucket(bucket.id);
     if (deleted.error)
-      throw new Error(`No se pudo eliminar ${bucket.id}; se interrumpe el reinicio.`);
+      throw storageCleanupError(
+        "deleteBucket",
+        bucket.id,
+        deleted.error,
+        "No se pudo eliminar el bucket",
+      );
+    await onProgress({
+      event: "operation_completed",
+      operation: "deleteBucket",
+      bucketId: bucket.id,
+    });
   }
+  await onProgress({ event: "operation_started", operation: "verifyBuckets" });
   const verified = await client.storage.listBuckets();
-  if (verified.error || verified.data.length) throw new Error("Storage no ha quedado vacío.");
+  if (verified.error)
+    throw storageCleanupError(
+      "verifyBuckets",
+      null,
+      verified.error,
+      "No se pudo comprobar que Storage haya quedado vacío",
+    );
+  if (verified.data.length)
+    throw storageCleanupError(
+      "verifyBuckets",
+      null,
+      { message: `Quedan buckets: ${verified.data.map(({ id }) => id).join(", ")}` },
+      "Storage no ha quedado vacío",
+    );
+  await onProgress({ event: "operation_completed", operation: "verifyBuckets" });
   return buckets.length;
+}
+
+function storageProgressLog(event) {
+  const bucket = event.bucketId ? ` ${event.bucketId}` : "";
+  if (event.event === "operation_started") {
+    const action = {
+      connectForEmptyCheck: "conectando para verificar el vaciado de Storage",
+      listBuckets: "consultando buckets",
+      emptyBucket: "vaciando bucket",
+      waitForEmpty: "esperando a que termine el vaciado de",
+      deleteBucket: "eliminando bucket",
+      verifyBuckets: "comprobando que no queden buckets",
+    }[event.operation];
+    return `Storage: ${action}${bucket}.`;
+  }
+  if (event.operation === "listBuckets")
+    return `Storage: encontrados ${event.bucketCount} bucket(s).`;
+  if (event.operation === "emptyBucket") return `Storage: vaciado solicitado para bucket${bucket}.`;
+  if (event.operation === "waitForEmpty" && event.event === "operation_completed")
+    return `Storage: bucket${bucket} confirmado vacío.`;
+  if (event.operation === "deleteBucket") return `Storage: bucket${bucket} eliminado.`;
+  if (event.operation === "verifyBuckets") return "Storage: limpieza completada.";
+  return null;
 }
 
 export async function clearAuth(client) {
@@ -153,6 +319,10 @@ export async function runEnvironmentReset({
     startedAt: new Date().toISOString(),
     completedSteps: [],
     status: "running",
+    storage: {
+      status: "pending",
+      bucketProgress: [],
+    },
   };
   const record = async (step) => {
     journal.completedSteps.push(step);
@@ -161,15 +331,75 @@ export async function runEnvironmentReset({
   await save(journalPath, journal);
   try {
     const client = (dependencies.environmentClient ?? environmentClient)(config);
-    journal.deletedBuckets = await clearStorage(client);
+    const log = dependencies.log ?? ((message) => console.error(message));
+    const updateStorageProgress = async (event) => {
+      const storage = journal.storage;
+      storage.status = "running";
+      storage.currentOperation = event.operation;
+      if (event.bucketId) {
+        storage.currentBucket = event.bucketId;
+        if (!storage.bucketProgress.some(({ id }) => id === event.bucketId))
+          storage.bucketProgress.push({
+            id: event.bucketId,
+            emptyRequested: false,
+            emptyVerified: false,
+            objectsRemain: null,
+            deleted: false,
+          });
+      } else {
+        delete storage.currentBucket;
+      }
+      if (event.event === "object_check") {
+        const bucket = storage.bucketProgress.find(({ id }) => id === event.bucketId);
+        if (bucket) {
+          bucket.objectsRemain = event.objectsRemain;
+          bucket.emptyVerified = !event.objectsRemain;
+        }
+      }
+      if (event.event === "operation_completed") {
+        storage.lastCompletedOperation = event.operation;
+        if (event.operation === "listBuckets") storage.bucketCount = event.bucketCount;
+        if (event.operation === "emptyBucket") {
+          const bucket = storage.bucketProgress.find(({ id }) => id === event.bucketId);
+          if (bucket) bucket.emptyRequested = true;
+        }
+        if (event.operation === "deleteBucket") {
+          const bucket = storage.bucketProgress.find(({ id }) => id === event.bucketId);
+          if (bucket) bucket.deleted = true;
+        }
+        if (event.operation === "verifyBuckets") {
+          storage.status = "complete";
+          storage.completedAt = new Date().toISOString();
+          delete storage.currentOperation;
+          delete storage.currentBucket;
+        }
+      }
+      await save(journalPath, journal);
+      const message = storageProgressLog(event);
+      if (message) log(message);
+    };
+    const withSql = dependencies.withSql ?? withEnvironmentSql;
+    const waitForEmpty = dependencies.waitForStorageBucketEmpty ?? waitForStorageBucketEmpty;
+    await updateStorageProgress({
+      event: "operation_started",
+      operation: "connectForEmptyCheck",
+    });
+    journal.deletedBuckets = await withSql(config, (sql) =>
+      clearStorage(client, {
+        onProgress: updateStorageProgress,
+        waitForBucketEmpty: (bucketId) =>
+          waitForEmpty(sql, bucketId, {
+            ...(dependencies.storageWaitOptions ?? {}),
+            onProgress: updateStorageProgress,
+          }),
+      }),
+    );
     await record("storage");
     journal.deletedUsers = await clearAuth(client);
     await record("auth");
     await (dependencies.resetDatabase ?? resetEnvironmentDatabase)(config, env);
     await record("postgres");
-    const verification = await (dependencies.withSql ?? withEnvironmentSql)(config, (sql) =>
-      verifyCleanDatabase(sql, config.buckets),
-    );
+    const verification = await withSql(config, (sql) => verifyCleanDatabase(sql, config.buckets));
     Object.assign(journal, verification);
     await record("verification");
     await (dependencies.clearArtifacts ?? clearEnvironmentArtifacts)(config);
@@ -184,14 +414,31 @@ export async function runEnvironmentReset({
       revision: journal.revision,
       manifestPath: journalPath,
     };
-  } catch {
+  } catch (error) {
     journal.status = "failed";
     journal.failedStep = ["storage", "auth", "postgres", "verification", "artifacts"][
       journal.completedSteps.length
     ];
+    let storageFailure;
+    if (journal.failedStep === "storage") {
+      storageFailure = error?.storageFailure ?? {
+        operation: journal.storage.currentOperation ?? "unknown",
+        ...(journal.storage.currentBucket ? { bucketId: journal.storage.currentBucket } : {}),
+        ...storageErrorDetails(error),
+      };
+      journal.storage = {
+        ...journal.storage,
+        status: "failed",
+        failedAt: new Date().toISOString(),
+        error: storageFailure,
+      };
+    }
     await save(journalPath, journal);
+    const storageDetail = storageFailure
+      ? ` (${storageFailure.operation}${storageFailure.bucketId ? `, bucket ${storageFailure.bucketId}` : ""}${storageFailure.code ? `, code ${storageFailure.code}` : ""}${storageFailure.statusCode ? `, HTTP ${storageFailure.statusCode}` : ""}: ${storageFailure.message})`
+      : "";
     throw new Error(
-      `Reinicio interrumpido en ${journal.failedStep}. Consulta ${journalPath}; el bootstrap no se ha ejecutado.`,
+      `Reinicio interrumpido en ${journal.failedStep}${storageDetail}. Consulta ${journalPath}; el bootstrap no se ha ejecutado.`,
     );
   }
 }

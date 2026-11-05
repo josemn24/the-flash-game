@@ -568,5 +568,42 @@
       "matches": { "l0": "r0", "l1": "r1", "l2": "r2" },
       "explanation": "Platón es el autor de La República; Aristóteles, de Ética a Nicómaco; y René Descartes, de Discurso del método. Cada pareja relaciona una obra filosófica con su autor."
     }
+  },
+  {
+    "id": "bank-historia-monumentos-civilizaciones",
+    "version": 1,
+    "type": "matching",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-historia-monumentos-civilizaciones",
+    "publicPayload": {
+      "category": "Historia",
+      "tags": {
+        "domains": ["history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["classification"],
+        "lifeSkills": []
+      },
+      "question": "Relaciona cada monumento con la civilización o contexto histórico asociado.",
+      "leftItems": [
+        { "id": "l0", "label": "Machu Picchu" },
+        { "id": "l1", "label": "Angkor Wat" },
+        { "id": "l2", "label": "Chichén Itzá" },
+        { "id": "l3", "label": "Coliseo" }
+      ],
+      "rightItems": [
+        { "id": "r2", "label": "Civilización maya-tolteca" },
+        { "id": "r0", "label": "Imperio jemer" },
+        { "id": "r3", "label": "Imperio inca" },
+        { "id": "r1", "label": "Roma imperial" }
+      ]
+    },
+    "solutionPayload": {
+      "matches": { "l0": "r3", "l1": "r0", "l2": "r2", "l3": "r1" },
+      "explanation": "Machu Picchu fue una creación del Imperio inca; Angkor Wat forma parte del complejo de capitales del Imperio jemer; Chichén Itzá es un vestigio de la civilización maya-tolteca de Yucatán; y el Coliseo es un monumento de la Roma imperial."
+    }
   }
 ]

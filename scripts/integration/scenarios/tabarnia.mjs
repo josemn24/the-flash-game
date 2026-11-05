@@ -14,6 +14,7 @@ export const scenario = {
       multiverse,
       connectPairsTimeTrial,
       bible,
+      tabarniaverso,
     ] = fixture.data.publications;
     assert(
       JSON.stringify(
@@ -28,8 +29,9 @@ export const scenario = {
           ["Multiverso friki", "alphabet", "scheduled"],
           ["Flow Free", "time-trial", "scheduled"],
           ["La Biblia", "pyramid", "scheduled"],
+          ["Tabarniaverso", "flash", "scheduled"],
         ]),
-      "El manifiesto de Tabarnia conserva el orden de las ocho publicaciones",
+      "El manifiesto de Tabarnia conserva el orden de las nueve publicaciones",
     );
     const playableFlash = await rpc(clients.ches, "get_my_flash_challenge", {
       target_room_slug: fixture.data.room.slug,
@@ -58,6 +60,11 @@ export const scenario = {
       target_publication_id: bible.id,
     });
     assert(scheduledPyramid.length === 0, "La Pirámide bíblica permanece programada");
+    const scheduledFlash = await rpc(clients.ches, "get_my_flash_challenge", {
+      target_room_slug: fixture.data.room.slug,
+      target_publication_id: tabarniaverso.id,
+    });
+    assert(scheduledFlash.length === 0, "Tabarniaverso aún no expone preguntas jugables");
     const scheduledLogicPyramid = await rpc(clients.ches, "get_my_pyramid_challenge", {
       target_room_slug: fixture.data.room.slug,
       target_publication_id: logicPyramid.id,
@@ -106,8 +113,8 @@ export const scenario = {
     );
     assert(
       publicationOrder.stdout.trim() ===
-        "1:open,2:scheduled,3:scheduled,4:scheduled,5:scheduled,6:scheduled,7:scheduled,8:scheduled",
-      "Steel Ball Run está abierto; los siete desafíos siguientes quedan programados en orden",
+        "1:open,2:scheduled,3:scheduled,4:scheduled,5:scheduled,6:scheduled,7:scheduled,8:scheduled,9:scheduled",
+      "Steel Ball Run está abierto y los ocho desafíos siguientes quedan programados en orden",
     );
     for (const publication of [
       sbr,
@@ -118,6 +125,7 @@ export const scenario = {
       multiverse,
       connectPairsTimeTrial,
       bible,
+      tabarniaverso,
     ]) {
       const points = await dockerSql(
         `select coalesce(sum(points), 0) from private.challenge_items where challenge_version_id = '${publication.challengeVersionId}';`,

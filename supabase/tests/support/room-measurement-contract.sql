@@ -85,7 +85,7 @@ select test_support.as_actor('member');
 do $$declare rating jsonb; body jsonb; begin
  rating:=public.get_my_season_rating(test_support.id('sc-flash'));
  assert (rating->>'eligible')::boolean,'Enjoyment is available without experiment configuration';
- body:=jsonb_build_object('id',test_support.id('automatic-rating'),'publicationId',test_support.id('sc-flash'),'seasonId',test_support.id('season-flash'),'value',4);
+ body:=jsonb_build_object('id',test_support.id('automatic-rating'),'publicationId',test_support.id('sc-flash'),'seasonId',test_support.id('season-flash'),'attemptId',(select id from public.attempts where player_id=test_support.id('member') and scheduled_challenge_id=test_support.id('sc-flash')),'value',4);
  rating:=public.save_my_season_rating(body);
  assert (rating->>'value')::integer=4,'Automatic enjoyment is stored';
  perform public.save_my_season_rating(body);
@@ -152,7 +152,7 @@ select test_support.as_actor('member');
 do $$declare rating jsonb; begin
  rating:=public.get_my_season_rating(test_support.id('sc-flash'));
  assert not (rating->>'eligible')::boolean and (rating->>'value')::integer=5,'Closed enjoyment retains the saved value';
- perform test_support.must_fail(format('select public.save_my_season_rating(%L::jsonb)',jsonb_build_object('id',test_support.id('closed-rating'),'publicationId',test_support.id('sc-flash'),'seasonId',test_support.id('season-flash'),'value',3)),'22023');
+ perform test_support.must_fail(format('select public.save_my_season_rating(%L::jsonb)',jsonb_build_object('id',test_support.id('closed-rating'),'publicationId',test_support.id('sc-flash'),'seasonId',test_support.id('season-flash'),'attemptId',(select id from public.attempts where player_id=test_support.id('member') and scheduled_challenge_id=test_support.id('sc-flash')),'value',3)),'22023');
  assert not public.record_room_measurement_event(jsonb_build_object('eventId',test_support.id('closed-event'),'visitId',test_support.id('closed-visit'),'roomId','commands-flash','publicationId',test_support.id('sc-flash'),'type','review_viewed','occurredAt',clock_timestamp(),'appVersion','closed')),'Finished seasons reject new observations';
 end $$;
 reset role;

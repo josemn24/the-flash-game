@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { BETAVIP_ACCOUNT_DEFINITIONS } from "../bootstrap-staging.mjs";
 import { TABARNIA_USERS } from "../seed-tabarnia.mjs";
-import { ensureStagingAccounts } from "./staging-bootstrap.mjs";
+import { ensureStagingAccounts, validateStagingBootstrapConfig } from "./staging-bootstrap.mjs";
 
 const projectRef = "staging-ref";
 const config = {
@@ -104,6 +104,21 @@ async function provisionScenario(world, scenario) {
 }
 
 describe("shared staging account registry", () => {
+  it("retains the staging target in validated configuration for shared SQL helpers", () => {
+    expect(
+      validateStagingBootstrapConfig({
+        STAGING_PROJECT_REF: projectRef,
+        NEXT_PUBLIC_SUPABASE_URL: `https://${projectRef}.supabase.co`,
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "publishable-secret",
+        SUPABASE_SERVICE_ROLE_KEY: "service-role-secret",
+        SUPABASE_ADMIN_DB_URL: `postgresql://postgres:database-secret@db.${projectRef}.supabase.co:5432/postgres`,
+        STAGING_XESMONA_EMAIL: "xesmona@example.test",
+        STAGING_CHES_EMAIL: "ches@example.test",
+        STAGING_BOOTSTRAP_CONFIRM: "the-flash-game-staging",
+      }).target,
+    ).toBe("staging");
+  });
+
   it.each([
     ["BetaVIP then Tabarnia", ["betavip", "tabarnia"]],
     ["Tabarnia then BetaVIP", ["tabarnia", "betavip"]],

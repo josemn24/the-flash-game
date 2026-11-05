@@ -68,6 +68,8 @@ create table private.room_measurement_ratings (
  foreign key(measurement_id,player_id) references private.room_measurement_participants(measurement_id,player_id),
  foreign key(measurement_id,publication_id) references private.room_measurement_publications(measurement_id,publication_id)
 );
+alter table private.room_measurement_ratings add column attempt_id uuid references public.attempts(id);
+create index room_measurement_ratings_attempt_idx on private.room_measurement_ratings(attempt_id) where attempt_id is not null;
 create index room_measurement_ratings_latest_idx on private.room_measurement_ratings(measurement_id,player_id,publication_id,received_at desc,id desc);
 alter table private.room_measurement_ratings enable row level security;
 revoke all on private.room_measurement_ratings from public,anon,authenticated,service_role;
@@ -146,23 +148,28 @@ grant execute on function public.get_my_season_rating(uuid) to authenticated;
 create function public.save_my_season_rating(input jsonb) returns jsonb
 language plpgsql volatile security definer set search_path='' as $$
 declare actor uuid:=private.current_player_id(); eligibility jsonb; measurement private.room_measurements%rowtype; previous private.room_measurement_ratings%rowtype;
+ target_attempt uuid := (input->>'attemptId')::uuid;
 begin
  if actor is null then raise exception 'not_authorized' using errcode='42501'; end if;
- if jsonb_typeof(input)<>'object' or exists(select 1 from jsonb_object_keys(input) k where not k=any(array['id','value','publicationId','seasonId']))
-   or input->>'id' is null or input->>'publicationId' is null or input->>'seasonId' is null
+ if jsonb_typeof(input)<>'object' or exists(select 1 from jsonb_object_keys(input) k where not k=any(array['id','value','publicationId','seasonId','attemptId']))
+   or input->>'id' is null or input->>'publicationId' is null or input->>'seasonId' is null or target_attempt is null
    or coalesce(input->>'value','') !~ '^[1-5]$' then raise exception 'invalid_rating' using errcode='22023'; end if;
+ perform 1 from public.attempts a where a.id=target_attempt and a.player_id=actor
+   and a.scheduled_challenge_id=(input->>'publicationId')::uuid
+   and a.kind='competitive' and a.status='completed' for share;
+ if not found then raise exception 'not_authorized' using errcode='42501'; end if;
  eligibility:=public.get_my_season_rating((input->>'publicationId')::uuid);
  if eligibility->>'seasonId' is distinct from input->>'seasonId' then raise exception 'not_authorized' using errcode='42501'; end if;
  select * into measurement from private.room_measurements where season_id=(input->>'seasonId')::uuid;
  perform pg_advisory_xact_lock(hashtextextended('season-rating:'||measurement.id||':'||actor,0));
  select * into previous from private.room_measurement_ratings where measurement_id=measurement.id and id=(input->>'id')::uuid;
  if found then
-   if previous.player_id<>actor or previous.publication_id<>(input->>'publicationId')::uuid or previous.value<>(input->>'value')::integer then raise exception 'idempotency_conflict' using errcode='40001'; end if;
+   if previous.player_id<>actor or previous.publication_id<>(input->>'publicationId')::uuid or previous.value<>(input->>'value')::integer or previous.attempt_id is distinct from target_attempt then raise exception 'idempotency_conflict' using errcode='40001'; end if;
  else
    if not coalesce((eligibility->>'eligible')::boolean,false) then raise exception 'rating_closed' using errcode='22023'; end if;
    if (select count(*) from private.room_measurement_ratings where measurement_id=measurement.id and player_id=actor and received_at>clock_timestamp()-interval '1 minute')>=60 then raise exception 'measurement_rate_limited'; end if;
-   insert into private.room_measurement_ratings(measurement_id,id,player_id,publication_id,value)
-   values(measurement.id,(input->>'id')::uuid,actor,(input->>'publicationId')::uuid,(input->>'value')::integer);
+   insert into private.room_measurement_ratings(measurement_id,id,player_id,publication_id,attempt_id,value)
+   values(measurement.id,(input->>'id')::uuid,actor,(input->>'publicationId')::uuid,target_attempt,(input->>'value')::integer);
  end if;
  return public.get_my_season_rating((input->>'publicationId')::uuid);
 end $$;
@@ -175,16 +182,23 @@ create or replace function public.record_room_measurement_event(input jsonb) ret
 language plpgsql volatile security definer set search_path='' as $$
 declare actor uuid:=private.current_player_id(); room public.rooms%rowtype; measurement private.room_measurements%rowtype;
  participant private.room_measurement_participants%rowtype; previous private.room_measurement_events%rowtype;
+ target_attempt uuid := (input->>'attemptId')::uuid;
  pid uuid:=nullif(input->>'publicationId','')::uuid; event_at timestamptz:=(input->>'occurredAt')::timestamptz;
  visit uuid:=(input->>'visitId')::uuid; event_id_value uuid:=(input->>'eventId')::uuid;
  instant timestamptz:=clock_timestamp(); recorded boolean:=false;
 begin
  if actor is null then raise exception 'not_authorized' using errcode='42501'; end if;
- if jsonb_typeof(input)<>'object' or exists(select 1 from jsonb_object_keys(input) k where not k=any(array['eventId','type','roomId','publicationId','visitId','occurredAt','appVersion']))
+ if jsonb_typeof(input)<>'object' or exists(select 1 from jsonb_object_keys(input) k where not k=any(array['eventId','type','roomId','publicationId','visitId','occurredAt','appVersion','attemptId']))
    or input->>'eventId' is null or input->>'visitId' is null or input->>'roomId' is null or input->>'occurredAt' is null
    or input->>'appVersion' is null
    or input->>'type' not in ('room_viewed','challenge_intro_viewed','ranking_viewed','review_viewed','rehearsal_started','rehearsal_completed') then
    raise exception 'invalid_event' using errcode='22023';
+ end if;
+ if input->>'type'='review_viewed' then
+   perform 1 from public.attempts a where a.id=target_attempt and a.scheduled_challenge_id=pid for share;
+   if not found or not private.can_review_competitive_attempt(target_attempt) then return false; end if;
+ elsif target_attempt is not null then
+   raise exception 'invalid_context' using errcode='22023';
  end if;
  if pid is null and input->>'type' not in ('room_viewed','ranking_viewed') then raise exception 'invalid_context' using errcode='22023'; end if;
  -- Client time is diagnostic; admission and attribution use the server reception clock.
@@ -213,7 +227,7 @@ begin
    perform pg_advisory_xact_lock(hashtextextended('room-measurement-event:'||measurement.id||':'||actor,0));
    select * into previous from private.room_measurement_events where measurement_id=measurement.id and event_id=event_id_value;
    if found then
-     if previous.player_id<>actor or previous.type<>input->>'type' or previous.visit_id<>visit or previous.publication_id is distinct from pid then
+     if previous.player_id<>actor or previous.type<>input->>'type' or previous.visit_id<>visit or previous.publication_id is distinct from pid or previous.attempt_id is distinct from target_attempt then
        raise exception 'idempotency_conflict' using errcode='40001';
      end if;
      recorded:=true; continue;
@@ -226,8 +240,8 @@ begin
    ) then recorded:=true; continue; end if;
    if (select count(*) from private.room_measurement_events event_row where event_row.measurement_id=measurement.id
      and event_row.player_id=actor and event_row.received_at>instant-interval '1 minute')>=60 then continue; end if;
-   insert into private.room_measurement_events(measurement_id,event_id,player_id,publication_id,type,visit_id,occurred_at,app_version)
-   values(measurement.id,event_id_value,actor,pid,input->>'type',visit,event_at,input->>'appVersion') on conflict do nothing;
+   insert into private.room_measurement_events(measurement_id,event_id,player_id,publication_id,attempt_id,type,visit_id,occurred_at,app_version)
+   values(measurement.id,event_id_value,actor,pid,target_attempt,input->>'type',visit,event_at,input->>'appVersion') on conflict do nothing;
    recorded:=true;
  end loop;
  return recorded;

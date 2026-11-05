@@ -1063,4 +1063,72 @@ export async function testConcurrentCommands(sql) {
     "A blocked late Connect pairs answer creates no receipt",
   );
   console.log("Conectar parejas post-lock deadline race passed.");
+
+  // The purge must wait for the finalizer's committed status and remove its accreditation too.
+  const purgeToken = "purge-race-token-".repeat(3);
+  const purgePublication = id("sc-survival");
+  const purgeStart = await run("member2", "start_attempt", {
+    scheduledChallengeId: purgePublication,
+    sessionToken: purgeToken,
+    idempotencyKey: "purge-race-start",
+  });
+  const purgeContext = { attemptId: purgeStart.attemptId, sessionToken: purgeToken };
+  const purgePrepared = await run("member2", "prepare_interaction", {
+    ...purgeContext,
+    lockVersion: purgeStart.lockVersion,
+    idempotencyKey: "purge-race-prepare",
+  });
+  const purgeReceipt = await run("member2", "receive_answer", {
+    ...purgeContext,
+    lockVersion: purgePrepared.lockVersion,
+    challengeItemId: purgePrepared.challengeItemId,
+    answer: false,
+    idempotencyKey: "purge-race-answer",
+  });
+  const purgeEvaluated = await run("member2", "record_evaluation", {
+    ...purgeContext,
+    lockVersion: purgeReceipt.lockVersion,
+    receiptId: purgeReceipt.receiptId,
+    status: "incorrect",
+    points: 0,
+    idempotencyKey: "purge-race-evaluate",
+  });
+  await sql(`create function test_support.purge_attempt(input jsonb) returns jsonb
+    language sql as $$ select jsonb_build_object('roomSlug',private.purge_terminal_attempt(input)) $$;
+    grant execute on function test_support.purge_attempt(jsonb) to service_role;`);
+  const purgeScope = {
+    attemptId: purgeStart.attemptId,
+    roomId: id("room-survival"),
+    scheduledChallengeId: purgePublication,
+  };
+  const finalizing = await invoke(
+    "member2",
+    "complete_attempt",
+    {
+      ...purgeContext,
+      lockVersion: purgeEvaluated.lockVersion,
+      idempotencyKey: "purge-race-complete",
+    },
+    true,
+  );
+  const purging = await invoke(
+    "superadmin",
+    "purge_attempt",
+    purgeScope,
+    false,
+    "service_role",
+    "test_support",
+  );
+  const [finalized, purged] = await Promise.all([finalizing.done, purging.done]);
+  assert.equal(finalized.status, "completed");
+  assert.equal(purged.roomSlug, "commands-survival");
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.flash_point_entries where attempt_id=${quote(purgeStart.attemptId)};`,
+      )
+    ).trim(),
+    "0",
+  );
+  console.log("Terminal purge waits for completion and removes its accreditation.");
 }

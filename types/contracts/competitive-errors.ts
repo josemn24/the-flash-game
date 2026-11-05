@@ -17,6 +17,7 @@ export type AttemptErrorCode =
   | "attempt_permission_revoked"
   | "competitive_access_denied"
   | "session_revoked"
+  | "attempt_session_missing"
   | "session_transferred"
   | "stale_version"
   | "idempotency_conflict"
@@ -92,7 +93,6 @@ export type SessionErrorCode =
   | "not_authenticated"
   | "auth_required"
   | "unauthorized"
-  | "attempt_session_missing"
   | "attempt_control_required"
   | "rate_limited"
   | "unknown_rejection";

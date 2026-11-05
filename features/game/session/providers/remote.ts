@@ -301,8 +301,11 @@ function failure(error: unknown): GameSessionFailure {
 export function createRemoteGameSessionProvider<M extends GameMode>(options: {
   client?: CompetitiveAttemptClient;
   context: GameSessionValidationContext<M>;
+  expectedAttemptId?: string;
 }): GameSessionProvider<M> {
   const decodeResult = createSessionResultDecoder(options.context);
+  let preparationId: string | undefined;
+  let expectedAttemptId = options.expectedAttemptId;
   return {
     async execute(command, execution) {
       try {
@@ -318,11 +321,21 @@ export function createRemoteGameSessionProvider<M extends GameMode>(options: {
           ...data,
           ...(sessionId !== undefined ? { attemptId: sessionId, lockVersion: revision } : {}),
           ...(challengeId !== undefined ? { scheduledChallengeId: challengeId } : {}),
+          ...(command.operation === "prepareSession" && expectedAttemptId
+            ? { expectedAttemptId }
+            : {}),
+          ...(command.operation === "start" && preparationId ? { preparationId } : {}),
         };
         const invoke = client[command.operation] as (
           input: typeof wire,
         ) => Promise<CompetitiveJsonObject>;
         const value = parseCompetitiveObject(await invoke(wire));
+        if (command.operation === "prepareSession") {
+          preparationId = typeof value.preparationId === "string" ? value.preparationId : undefined;
+        }
+        if (command.operation === "start" && typeof value.attemptId === "string") {
+          expectedAttemptId = value.attemptId;
+        }
         if (command.operation === "complete" || command.operation === "abandon")
           optionalFields(value, { status: oneOf("completed", "abandoned") });
         const outcome = sessionEffect(command.operation, value);

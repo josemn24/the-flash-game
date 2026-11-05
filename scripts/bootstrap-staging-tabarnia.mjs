@@ -8,6 +8,7 @@ import {
   getSbrMapMetadata,
   prepareSpainAssets,
   TABARNIA_USERS,
+  tabarniaChallengeCount,
   tabarniaManifest,
 } from "./seed-tabarnia.mjs";
 import { normalizeStartAt, validateFutureStartAt } from "./schedule-profile.mjs";
@@ -219,13 +220,13 @@ async function validateTabarniaDomain(
   ).rows;
   assertEqual(
     publications.map((row) => [row.id, row.status, row.opens_after, row.duration]),
-    data.publications.map((item, index) => [
+    data.publications.map((item) => [
       item.id,
-      index === 0 && !startsAt ? "open" : "scheduled",
-      index * 24 * 60 * 60,
-      24 * 60 * 60,
+      item.status,
+      item.opensAfterMinutes * 60,
+      item.durationMinutes * 60,
     ]),
-    "La temporada Tabarnia debe publicar ocho desafíos en ventanas de 24 horas.",
+    `La temporada Tabarnia debe publicar ${data.publications.length} desafíos en ventanas de 24 horas.`,
   );
 
   const challenges = (
@@ -239,7 +240,11 @@ async function validateTabarniaDomain(
       [data.publications.map((item) => item.challengeVersionId)],
     )
   ).rows;
-  assertEqual(challenges.length, 8, "Deben existir los ocho desafíos de Tabarnia.");
+  assertEqual(
+    challenges.length,
+    data.publications.length,
+    "Deben existir todos los desafíos de Tabarnia.",
+  );
   for (const expected of data.publications) {
     const actual = challenges.find((row) => row.version_id === expected.challengeVersionId);
     if (
@@ -375,7 +380,7 @@ export async function runTabarniaBootstrap({
       scenario: "tabarnia",
       projectRef: config.projectRef,
       memberCount: 15,
-      challengeCount: 8,
+      challengeCount: tabarniaChallengeCount(),
       ...(startsAt ? { seasonStartsAt: startsAt } : {}),
     };
   }
@@ -475,7 +480,9 @@ async function main() {
   const result = await runTabarniaBootstrap({ args });
   if (result.dryRun) {
     console.log(`Dry-run correcto para Tabarnia en ${result.projectRef}. No se ha escrito nada.`);
-    console.log("Escenario: 8 desafíos y 15 miembros; el inicio configurado es válido.");
+    console.log(
+      `Escenario: ${result.challengeCount} desafíos y ${result.memberCount} miembros; el inicio configurado es válido.`,
+    );
     if (result.seasonStartsAt) console.log(`Inicio de temporada: ${result.seasonStartsAt}.`);
     return;
   }

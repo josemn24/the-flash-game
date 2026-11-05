@@ -83,6 +83,7 @@ describe("staging bootstrap", () => {
       STAGING_CHES_EMAIL: " CHES@Example.test ",
     });
     expect(result).toEqual({
+      target: "staging",
       projectRef,
       supabaseUrl: `https://${projectRef}.supabase.co`,
       publishableKey: validEnv.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,

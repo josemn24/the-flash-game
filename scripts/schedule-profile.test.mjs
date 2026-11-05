@@ -72,7 +72,7 @@ describe("schedule profiles", () => {
   it("validates the full season span and the selected start", () => {
     const large = resolveScheduleProfile("20000000000m");
     expect(scheduleSeason(large, 6, "betavip").durationMinutes).toBe(120000000000);
-    expect(() => scheduleSeason(large, 8, "tabarnia")).toThrow("rango de fechas");
+    expect(() => scheduleSeason(large, 9, "tabarnia")).toThrow("rango de fechas");
     const nearLimit = resolveScheduleProfile("143950000000m");
     expect(() => scheduleSeason(nearLimit, 1, "tabarnia", "9999-01-01T00:00:00Z")).toThrow(
       "rango de fechas",
@@ -81,7 +81,7 @@ describe("schedule profiles", () => {
 
   it("retains production season lengths and derives fast lengths from the actual count", () => {
     const production = resolveScheduleProfile();
-    expect(scheduleSeason(production, 8, "tabarnia")).toEqual({
+    expect(scheduleSeason(production, 9, "tabarnia")).toEqual({
       durationMinutes: 24480,
       endInterval: "17 days",
     });
@@ -89,9 +89,9 @@ describe("schedule profiles", () => {
       durationMinutes: 8640,
       endInterval: "144 hours",
     });
-    expect(scheduleSeason(resolveScheduleProfile("fast"), 8, "tabarnia")).toEqual({
-      durationMinutes: 40,
-      endInterval: "40 minutes",
+    expect(scheduleSeason(resolveScheduleProfile("fast"), 9, "tabarnia")).toEqual({
+      durationMinutes: 45,
+      endInterval: "45 minutes",
     });
     expect(scheduleSeason(resolveScheduleProfile("fast"), 7, "betavip")).toEqual({
       durationMinutes: 35,

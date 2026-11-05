@@ -93,8 +93,12 @@ export function useCompetitiveSession(options: CompetitiveSessionOptions) {
   const router = useRouter();
   const { challenge, roomContext, terminalReview } = options;
   const provider = useMemo(
-    () => createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) }),
-    [challenge],
+    () =>
+      createRemoteGameSessionProvider({
+        context: sessionValidationContext(challenge),
+        expectedAttemptId: roomContext.attemptId,
+      }),
+    [challenge, roomContext.attemptId],
   );
   const initialSession = useMemo(
     () => remoteSessionBootstrap(roomContext, terminalReview),

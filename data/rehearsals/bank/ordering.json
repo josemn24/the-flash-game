@@ -346,5 +346,45 @@
       "correctOrder": ["Confucio", "Agustín de Hipona", "David Hume", "Hannah Arendt"],
       "explanation": "Los años de nacimiento son 551 a. C. para Confucio, según la fecha tradicional; 354 para Agustín de Hipona; 1711 para David Hume; y 1906 para Hannah Arendt. Por ello, el orden del más antiguo al más reciente es Confucio, Agustín, Hume y Arendt."
     }
+  },
+  {
+    "id": "bank-historia-cronologia-mundial",
+    "version": 1,
+    "type": "ordering",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-historia-cronologia-mundial",
+    "publicPayload": {
+      "category": "Historia",
+      "tags": {
+        "domains": ["history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["ordering"],
+        "lifeSkills": []
+      },
+      "question": "Ordena estos acontecimientos del más antiguo al más reciente.",
+      "items": [
+        "Conquista otomana de Constantinopla",
+        "Hégira de La Meca a Medina",
+        "Inicio de la Revolución francesa",
+        "Deposición de Rómulo Augústulo, hito tradicionalmente asociado a la caída del Imperio romano de Occidente"
+      ],
+      "directionLabels": {
+        "start": "Más antiguo",
+        "end": "Más reciente"
+      }
+    },
+    "solutionPayload": {
+      "correctOrder": [
+        "Deposición de Rómulo Augústulo, hito tradicionalmente asociado a la caída del Imperio romano de Occidente",
+        "Hégira de La Meca a Medina",
+        "Conquista otomana de Constantinopla",
+        "Inicio de la Revolución francesa"
+      ],
+      "explanation": "Las fechas son 476, 622, 1453 y 1789. El año 476 se usa convencionalmente para marcar la caída del Imperio romano de Occidente; la Hégira tuvo lugar en 622, los otomanos conquistaron Constantinopla en 1453 y la Revolución francesa comenzó en 1789."
+    }
   }
 ]

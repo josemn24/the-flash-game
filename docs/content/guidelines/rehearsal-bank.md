@@ -166,3 +166,24 @@ Los enunciados y explicaciones son de redacción propia. Las fuentes consultadas
   [Agustín de Hipona](https://plato.stanford.edu/entries/augustine/),
   [David Hume](https://plato.stanford.edu/entries/hume/) y
   [Hannah Arendt](https://plato.stanford.edu/entries/arendt/).
+
+La tanda temática de historia añade ocho preguntas y deja el banco en 412: capital mexica, lugares y
+civilizaciones, cronología mundial, el Tratado de Tordesillas, Tombuctú, Haití, Sarajevo y
+Constantinopla. Se distribuyen en Elección múltiple (tres), Emparejar, Ordenar, Pistas progresivas,
+Respuesta corta y Verdadero/falso (una por formato). Todas declaran categoría `Historia` y dominio
+`history`; admiten Flash, Supervivencia y Pirámide. Cada pregunta usa una familia independiente.
+
+## Referencias de la tanda de historia
+
+Los enunciados y explicaciones son de redacción propia. Se han contrastado los lugares, fechas y
+acontecimientos con fuentes patrimoniales e institucionales:
+
+- UNESCO: [Tenochtitlan y la capital mexica](https://whc.unesco.org/en/list/412/),
+  [Machu Picchu](https://whc.unesco.org/en/list/274), [Angkor](https://whc.unesco.org/en/list/668),
+  [Chichén Itzá](https://whc.unesco.org/en/list/483), [centro histórico de Roma](https://whc.unesco.org/en/list/91),
+  [Tombuctú](https://whc.unesco.org/en/list/119) e [Istanbul](https://whc.unesco.org/en/list/356).
+- Ministerio de Cultura de España: [Tratado de Tordesillas](https://www.cultura.gob.es/actualidad/2023/06/230607-ipce-tratado-tordesillas.html).
+- Embassy of Haiti: [fechas clave, incluida la independencia de 1804](https://www.haiti.org/key-dates/).
+- Canadian War Museum: [el atentado de Sarajevo como detonante inmediato de la Primera Guerra Mundial](https://www.warmuseum.ca/firstworldwar/history/going-to-war/origins-and-early-phases/war-begins-in-europe/).
+- The Metropolitan Museum of Art: [la caída del Imperio romano de Occidente en 476 y la conquista otomana de Constantinopla en 1453](https://www.metmuseum.org/it/essays/the-roman-empire-27-b-c-393-a-d).
+- Britannica: [la Hégira de 622](https://www.britannica.com/topic/Islamic-calendar). Château de Versailles: [la Revolución francesa desde 1789](https://en.chateauversailles.fr/discover/history/key-dates/versailles-heart-french-revolution).

@@ -53,7 +53,8 @@ export function formatFailure(
     action.type === "reload-projection"
       ? !action.automatic
         ? "La operación se ha rechazado. Recarga la partida para continuar desde el estado guardado."
-        : operation === "start" && code === "attempt_session_missing"
+        : (operation === "start" || operation === "prepareSession") &&
+            code === "attempt_session_missing"
           ? "Recarga la página para preparar la sesión antes de empezar."
           : "Comprobando el resultado guardado. Puedes volver a cargarlo."
       : retry?.retryable && retry.delayMs === undefined

@@ -15,10 +15,11 @@ export class ProductMeasurementUseCases {
   rate(input: ProductRatingInput) {
     if (
       Object.keys(input).some(
-        (key) => !["id", "publicationId", "seasonId", "value"].includes(key),
+        (key) => !["id", "publicationId", "attemptId", "seasonId", "value"].includes(key),
       ) ||
       !uuid(input.id) ||
       !uuid(input.publicationId) ||
+      !uuid(input.attemptId) ||
       !uuid(input.seasonId) ||
       !Number.isInteger(input.value) ||
       input.value < 1 ||

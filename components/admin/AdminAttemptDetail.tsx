@@ -1,6 +1,7 @@
 import { Avatar, Card, Chip } from "@/components/ui";
 import type { SuperadminAttemptInspectionModel } from "@/types/view-models";
 import { AdminEmptyState } from "./AdminEmptyState";
+import { AdminAttemptDelete } from "./AdminAttemptDelete.client";
 import { AdminAttemptActions } from "./AdminAttemptActions.client";
 import { AdminShell } from "./AdminShell";
 import styles from "./AdminAttemptInspection.module.css";
@@ -104,7 +105,7 @@ export function AdminAttemptDetail({
         <div className={styles.heading}>
           <div>
             <p className={styles.eyebrow}>Operación</p>
-            <h2 id="attempt-actions-title">Corregir con motivo</h2>
+            <h2 id="attempt-actions-title">Acciones sobre el intento</h2>
           </div>
         </div>
         <AdminAttemptActions
@@ -115,6 +116,16 @@ export function AdminAttemptDetail({
           status={attempt.status}
           effectiveScore={attempt.effectiveScore}
         />
+        {attempt.status !== "in_progress" ? (
+          <AdminAttemptDelete
+            roomId={model.roomId}
+            publicationId={publication.scheduledChallengeId}
+            attemptId={attempt.attemptId}
+            playerName={attempt.displayName}
+            roomTitle={publication.roomTitle}
+            challengeTitle={publication.challengeTitle}
+          />
+        ) : null}
       </section>
       <section className={styles.section} aria-labelledby="attempt-items-title">
         <div className={styles.heading}>
