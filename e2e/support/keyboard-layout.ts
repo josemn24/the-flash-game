@@ -20,9 +20,9 @@ export async function expectPinnedWordleKeyboard(page: Page) {
       gap: element.getBoundingClientRect().bottom - dock!.getBoundingClientRect().bottom,
     };
   });
-  expect(bottomSpacing.padding).toBeGreaterThanOrEqual(32);
-  // DOM geometry can round fractional viewport pixels; the CSS padding above remains 32px.
-  expect(bottomSpacing.gap).toBeGreaterThanOrEqual(31);
+  expect(bottomSpacing.padding).toBeGreaterThanOrEqual(48);
+  // DOM geometry can round fractional viewport pixels; the CSS padding above remains 48px.
+  expect(bottomSpacing.gap).toBeGreaterThanOrEqual(47);
   const originalScroll = await scroll.evaluate((element) => element.scrollTop);
   const pageScroll = await page.evaluate(() => window.scrollY);
   await scroll.evaluate((element) => {
