@@ -108,7 +108,9 @@ export type EvaluationContext = EvaluationReceipt & {
  * There is deliberately no insert/update/delete escape hatch.
  */
 export interface AttemptCommands {
-  prepareSession(input: PrepareAttemptSessionInput): Promise<void>;
+  prepareSession(
+    input: PrepareAttemptSessionInput,
+  ): Promise<{ readonly preparationId: string; readonly usePreviousToken: boolean }>;
   readCompletedAttempt(attemptId: string): Promise<SavedAttemptResult | null>;
   readAbandonedAttempt(attemptId: string): Promise<SavedAbandonedAttemptResult | null>;
   readRecordedEvaluation(

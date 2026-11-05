@@ -1,5 +1,6 @@
 "use client";
 
+import { useMeasurementAttempt } from "@/components/product/Measurement.client";
 import { motion } from "motion/react";
 import { Card, GameHeader, Timer } from "@/components/ui";
 import {
@@ -32,6 +33,7 @@ export function ServerFlashPopTimeTrialGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const session = useServerTimeTrialSession({ challenge, roomContext, terminalReview });
+  useMeasurementAttempt(session.attempt?.id);
   return (
     <FlashPopTimeTrialGameView
       challenge={challenge}

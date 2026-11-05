@@ -324,10 +324,12 @@ describe("ApplicationAttemptUseCases", () => {
     const fresh = await useCases.start({
       scheduledChallengeId: "44444444-4444-4444-8444-444444444444" as never,
       idempotencyKey: "start-key",
+      preparationId: "prep",
     });
     const resumed = await useCases.start({
       scheduledChallengeId: "44444444-4444-4444-8444-444444444444" as never,
       idempotencyKey: "start-key",
+      preparationId: "prep",
       sessionToken: "existing-token",
     });
 

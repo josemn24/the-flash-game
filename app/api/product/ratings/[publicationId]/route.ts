@@ -18,12 +18,13 @@ export async function PUT(request: Request, { params }: Context) {
     const body = await productBody(request);
     if (
       typeof body.value !== "number" ||
-      Object.keys(body).some((k) => !["id", "value", "seasonId"].includes(k))
+      Object.keys(body).some((k) => !["id", "value", "seasonId", "attemptId"].includes(k))
     )
       throw new Error("invalid_rating");
     return NextResponse.json(
       await productMeasurement.rate({
         id: String(body.id),
+        attemptId: String(body.attemptId ?? ""),
         value: body.value,
         seasonId: String(body.seasonId ?? ""),
         publicationId: (await params).publicationId,

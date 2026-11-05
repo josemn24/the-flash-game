@@ -43,6 +43,7 @@ export const scenario = {
   users: [
     { label: "alice", displayName: "Alice" },
     { label: "bob", displayName: "Bob" },
+    { label: "superadmin", displayName: "Operador Narrative" },
   ],
 
   buildDomainSql({ accounts, sqlString, sqlUuid }) {
@@ -112,6 +113,8 @@ export const scenario = {
     return `
 begin;
 set constraints all deferred;
+insert into private.platform_role_assignments (player_id, role)
+values (${sqlString(accounts.superadmin.playerId)}, 'superadmin');
 insert into public.rooms (id, slug, title, description)
 values (${sqlUuid(domainIds.room)}, 'narrative-main', 'Sala Narrative', 'Narrativa competitiva persistida');
 insert into public.room_memberships (room_id, player_id, role, status, joined_at)

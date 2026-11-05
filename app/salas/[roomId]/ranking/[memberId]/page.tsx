@@ -28,7 +28,11 @@ export default async function RoomMemberRankingPage({ params }: Props) {
   if (!model) notFound();
 
   return (
-    <MeasurementProvider roomId={roomId} publicationId={model.challengeSummary?.id}>
+    <MeasurementProvider
+      roomId={roomId}
+      publicationId={model.challengeSummary?.id}
+      attemptId={model.attemptId}
+    >
       <FlashPopRoomMemberDetail model={model} />
     </MeasurementProvider>
   );

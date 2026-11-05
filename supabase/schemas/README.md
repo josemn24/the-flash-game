@@ -54,7 +54,9 @@ la [validación por formato](../../docs/current/sql-question-validation-refactor
 - Las RPC de mantenimiento solo permiten `service_role`. El tick aplica `statement_timeout = 0`
   y `lock_timeout = 0`; la expiración independiente tiene límite de 5 s. No exponerlas al navegador.
 - Publicaciones, versiones, recepciones y hechos de puntuación se preservan. Ajustar o invalidar
-  exige motivo, autorización y auditoría; los ensayos en memoria no acreditan puntos oficiales.
+  exige motivo, autorización y auditoría. El comando privado de borrado es una excepción limitada a
+  un intento competitivo terminal, con autorización global y limpieza de sus datos vinculados en
+  una transacción. Los ensayos en memoria no acreditan puntos oficiales.
 
 ## Matriz de permisos SQL directos
 

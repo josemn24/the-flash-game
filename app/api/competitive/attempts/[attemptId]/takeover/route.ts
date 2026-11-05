@@ -4,7 +4,7 @@ import {
   commandsFor,
   errorResponse,
   readJson,
-  readStartAttemptToken,
+  readTakeoverToken,
   requireKey,
   requireLockVersion,
   requirePathUuid,
@@ -23,7 +23,7 @@ type RouteContext = { params: Promise<{ attemptId: string }> };
 
 /**
  * Confirms the explicit transfer using the HttpOnly candidate token prepared
- * by /session. The token is deliberately never part of the response body.
+ * during start. The token is deliberately never part of the response body.
  */
 export async function POST(request: Request, context: RouteContext) {
   const startedAt = Date.now();
@@ -37,7 +37,7 @@ export async function POST(request: Request, context: RouteContext) {
     >[0]["attemptId"];
     const body = await readJson(request);
     const scheduledChallengeId = requireUuid(body, "scheduledChallengeId") as ScheduledChallengeId;
-    const sessionToken = await readStartAttemptToken(identity.authUserId, scheduledChallengeId);
+    const sessionToken = await readTakeoverToken(attemptId);
     if (!sessionToken) throw new AttemptApiError("takeover_not_prepared", 409);
 
     const transferred = await commandsFor(identity, requestId).takeOver({

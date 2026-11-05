@@ -12,6 +12,7 @@ export type ProductEventInput = {
   type: ProductEventType;
   roomId: string;
   publicationId?: string;
+  attemptId?: string;
   visitId: string;
   occurredAt: string;
   appVersion: string;
@@ -25,6 +26,7 @@ export type ProductRating = {
 export type ProductRatingInput = {
   id: string;
   publicationId: string;
+  attemptId: string;
   seasonId: string;
   value: number;
 };

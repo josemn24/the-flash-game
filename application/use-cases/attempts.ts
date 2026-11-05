@@ -125,8 +125,8 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
   }
 
   async prepareSession(input: PrepareAttemptSessionInput): Promise<PrepareAttemptSessionResult> {
-    await this.commands.prepareSession(input);
-    return { ready: true };
+    const preparation = await this.commands.prepareSession(input);
+    return { ready: true, ...preparation };
   }
 
   async start(input: StartAttemptUseCaseInput): Promise<StartAttemptUseCaseResult> {

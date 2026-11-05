@@ -22,6 +22,7 @@ const event = {
 const rating = {
   id: measurementId(1),
   publicationId: measurementId(2),
+  attemptId: measurementId(4),
   seasonId: measurementId(3),
   value: 4,
 };

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMeasurementAttempt } from "@/components/product/Measurement.client";
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
 
 import { AnimatePresence, motion, MotionConfig } from "motion/react";
@@ -33,6 +34,7 @@ export function ServerNarrativeGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const session = useServerNarrativeSession({ challenge, roomContext, terminalReview });
+  useMeasurementAttempt(session.attempt?.id);
   const pageCount = 1 + challenge.beats.reduce((total, beat) => total + beat.steps.length, 0);
   const isBlackoutScene =
     session.phase === "scene" &&

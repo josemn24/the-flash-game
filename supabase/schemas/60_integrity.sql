@@ -291,6 +291,22 @@ revoke all on function private.guard_attempt() from public, anon, authenticated,
 create function private.reject_rewrite() returns trigger
 language plpgsql set search_path = '' as $$
 begin
+  if tg_op = 'DELETE' and current_user = 'postgres' then
+    declare
+      target text := nullif(current_setting('flash.purge_attempt_id', true), '');
+      row_data jsonb := to_jsonb(old);
+    begin
+      if target is not null and (case tg_table_name
+        when 'attempts' then row_data->>'id' = target
+        when 'audit_log' then row_data->>'entity_type' = 'attempt' and row_data->>'entity_id' = target
+        when 'command_requests' then row_data#>>'{input,attemptId}' = target
+          or row_data#>>'{result,attemptId}' = target
+        else row_data->>'attempt_id' = target
+      end) then
+        return old;
+      end if;
+    end;
+  end if;
   raise exception 'Historical records cannot be overwritten or deleted';
 end;
 $$;

@@ -46,7 +46,12 @@ export default async function ChallengePage({ params, searchParams }: Props) {
   const rehearsal = roomId ? await getRehearsalAvailability(roomId, challengeId) : undefined;
   if (model) {
     return (
-      <MeasurementProvider roomId={roomId!} publicationId={challengeId}>
+      <MeasurementProvider
+        key={model.roomContext.attemptId ?? challengeId}
+        roomId={roomId!}
+        publicationId={challengeId}
+        attemptId={model.roomContext.attemptId}
+      >
         <RoomChallengeClient
           rehearsal={rehearsal}
           challenge={model.challenge}

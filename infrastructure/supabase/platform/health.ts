@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261103090247_initial_schema";
+const canonicalSchemaRevision = "20261105110000_terminal_attempt_purge";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -72,6 +72,9 @@ async function checkDatabase() {
           like '%case when terminal_reason_value = ''permission_revoked''%'
         and pg_get_functiondef(to_regprocedure('private.recover_attempt(jsonb)'))
           like '%private.raise_if_session_transferred%'
+        and to_regprocedure('private.issue_attempt_start(uuid,uuid,text,text)') is not null
+        and to_regprocedure('private.start_prepared_attempt(jsonb)') is not null
+        and to_regprocedure('private.purge_terminal_attempt(jsonb)') is not null
         and to_regprocedure('private.read_attempt_context(uuid,text)') is not null
         and to_regprocedure('private.prepare_attempt_session(uuid)') is not null
         and to_regprocedure('private.read_recorded_evaluation(uuid,text)') is not null

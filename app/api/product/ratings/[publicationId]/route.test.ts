@@ -8,7 +8,12 @@ vi.mock("@/server/product/measurement", () => ({
 import { GET, PUT } from "./route";
 const context = { params: Promise.resolve({ publicationId: measurementId(2) }) };
 const url = `http://127.0.0.1:3000/api/product/ratings/${measurementId(2)}`;
-const body = { id: measurementId(1), seasonId: measurementId(3), value: 4 };
+const body = {
+  id: measurementId(1),
+  attemptId: measurementId(4),
+  seasonId: measurementId(3),
+  value: 4,
+};
 const request = (value: unknown) =>
   new Request(url, {
     method: "PUT",

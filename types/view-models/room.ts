@@ -84,6 +84,7 @@ export type GameRoomContext = {
   memberId: string;
   availabilityStatus: ChallengeAvailabilityStatus;
   attemptStatus: CompetitiveAttemptStatus;
+  attemptId?: string;
   /** Competitive room contexts never opt into the local mock runtime. */
   gameplayPersistence?: Extract<GameplayPersistence, "server">;
   result?: RoomChallengeResult;
@@ -198,6 +199,7 @@ export type RoomIntroductionModel = {
 };
 
 export type RoomMemberDetailModel = {
+  attemptId?: string;
   roomId: string;
   roomTitle: string;
   member: RoomMemberViewModel;

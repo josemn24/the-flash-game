@@ -2,7 +2,7 @@
 
 # Estado actual del proyecto
 
-Último contraste de código y esquema: 2026-11-03.
+Último contraste de código y esquema: 2026-11-05.
 
 ## Alcance y verificación
 
@@ -10,10 +10,10 @@ The Flash combina competición persistida sobre Supabase, ejemplos didácticos d
 demos explícitas y pruebas locales antes del intento competitivo. Las rutas de producto no
 recurren al mock cuando falla Supabase.
 
-El historial activo se consolida en una única inicial. La [entrega de consolidación](../archive/reports/migration-consolidation-2026-11-03.md) registra la evidencia aislada y no acredita reinstalación de local o staging.
+El historial activo parte de la inicial consolidada e incorpora la migración incremental de borrado de intentos terminales. La [entrega de consolidación](../archive/reports/migration-consolidation-2026-11-03.md) registra la evidencia aislada y no acredita reinstalación de local o staging.
 La [reinstalación local posterior](../archive/reports/local-reinstallation-2026-11-03.md) acredita la adopción de esa inicial en el entorno habitual; staging sigue pendiente.
 
-Revisión canónica del repositorio: `20261103090247_initial_schema`.
+Revisión canónica del repositorio: `20261105110000_terminal_attempt_purge`.
 
 El portal permite [reprogramar temporadas y desafíos](calendar-rescheduling.md) con vista previa, cambios conjuntos atómicos y protección de partidas ya iniciadas. Las temporadas publicadas futuras se muestran como programadas.
 
@@ -130,7 +130,9 @@ existentes de cada modo.
 | Tick y health internos                                           | Operación protegida y comprobaciones de servicios/esquema        |
 
 El portal privado exige superadmin. El contenido publicado es inmutable: las correcciones crean
-versiones y los ajustes de resultados conservan el original, el ledger y la auditoría.
+versiones y los ajustes de resultados conservan el original, el ledger y la auditoría. En los seis
+modos, el superadmin puede eliminar definitivamente un intento completado, abandonado o invalidado
+y sus datos vinculados. Si la publicación sigue abierta, el jugador puede volver a empezar.
 La UI pública no crea salas ni gestiona invitaciones. El tick tiene ejecución manual y una
 integración declarada de Vercel Cron; sus logs remotos requieren comprobación en staging.
 

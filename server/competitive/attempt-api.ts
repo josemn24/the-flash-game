@@ -238,25 +238,38 @@ export async function readAttemptToken(attemptId: string) {
 }
 
 /**
- * The scheduled-challenge cookie is a one-device candidate. It lets the server
- * reuse the token after a reload and authorizes an explicit takeover request;
- * it never grants control until PostgreSQL commits the transfer.
+ * The scheduled-challenge cookie lets the server recognize a previously
+ * confirmed controller when preparing a new request for this device.
  */
 export async function readStartAttemptToken(authUserId: string, scheduledChallengeId: string) {
   return (await cookies()).get(startCookieName(authUserId, scheduledChallengeId))?.value;
 }
 
-export async function setStartAttemptToken(
-  authUserId: string,
-  scheduledChallengeId: string,
-  token: string,
-) {
-  (await cookies()).set(startCookieName(authUserId, scheduledChallengeId), token, {
+export async function readTakeoverToken(attemptId: string) {
+  return (await cookies()).get(`${attemptCookiePrefix}takeover-${attemptId}`)?.value;
+}
+
+export async function setTakeoverToken(attemptId: string, token: string) {
+  (await cookies()).set(`${attemptCookiePrefix}takeover-${attemptId}`, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/api/competitive/attempts",
     maxAge: attemptTokenMaxAgeSeconds,
+  });
+}
+
+export async function readPreparationToken(preparationId: string) {
+  return (await cookies()).get(`${attemptCookiePrefix}prep-${preparationId}`)?.value;
+}
+
+export async function setPreparationToken(preparationId: string, token: string) {
+  (await cookies()).set(`${attemptCookiePrefix}prep-${preparationId}`, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/api/competitive/attempts",
+    maxAge: 300,
   });
 }
 
@@ -329,6 +342,7 @@ const attemptErrorStatuses = {
   attempt_permission_revoked: 409,
   competitive_access_denied: 404,
   session_revoked: 409,
+  attempt_session_missing: 409,
   session_transferred: 409,
   stale_version: 409,
   idempotency_conflict: 409,

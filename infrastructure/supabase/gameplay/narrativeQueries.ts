@@ -170,6 +170,7 @@ function toRoomContext(
     returnTo: `/salas/${row.room_slug}`,
     memberId: viewerId,
     availabilityStatus: "available",
+    ...(row.own_attempt_id ? { attemptId: row.own_attempt_id } : {}),
     attemptStatus:
       row.own_attempt_status === "completed"
         ? "completed"

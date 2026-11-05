@@ -50,6 +50,8 @@ create table private.room_measurement_events (
 );
 create index room_measurement_participant_player_idx on private.room_measurement_participants(player_id,measurement_id);
 create index room_measurement_publication_lookup_idx on private.room_measurement_publications(publication_id,measurement_id);
+alter table private.room_measurement_events add column attempt_id uuid references public.attempts(id);
+create index room_measurement_events_attempt_idx on private.room_measurement_events(attempt_id) where attempt_id is not null;
 create index room_measurement_events_summary_idx on private.room_measurement_events(measurement_id,type,occurred_at);
 create unique index room_measurement_events_rehearsal_run_idx
  on private.room_measurement_events(measurement_id,player_id,publication_id,type,visit_id)

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   takeOver: vi.fn(),
-  readStartAttemptToken: vi.fn(),
+  readTakeoverToken: vi.fn(),
   setAttemptToken: vi.fn(),
 }));
 
@@ -20,7 +20,7 @@ vi.mock("@/server/competitive/attempt-api", () => ({
     }
   },
   readJson: (request: Request) => request.json(),
-  readStartAttemptToken: mocks.readStartAttemptToken,
+  readTakeoverToken: mocks.readTakeoverToken,
   requireKey: (body: { idempotencyKey: string }) => body.idempotencyKey,
   requireLockVersion: (body: { lockVersion: number }) => body.lockVersion,
   requirePathUuid: (value: string) => value,
@@ -48,7 +48,7 @@ const invoke = () =>
 
 beforeEach(() => {
   vi.resetAllMocks();
-  mocks.readStartAttemptToken.mockResolvedValue("candidate-token");
+  mocks.readTakeoverToken.mockResolvedValue("candidate-token");
   mocks.takeOver.mockResolvedValue({
     sessionToken: "candidate-token",
     result: {
@@ -88,7 +88,7 @@ describe("attempt takeover HTTP contract", () => {
   });
 
   it("rejects a device that was not prepared by /session", async () => {
-    mocks.readStartAttemptToken.mockResolvedValue(undefined);
+    mocks.readTakeoverToken.mockResolvedValue(undefined);
     const response = await invoke();
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({ error: { code: "takeover_not_prepared" } });

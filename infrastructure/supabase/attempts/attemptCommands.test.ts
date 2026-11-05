@@ -30,18 +30,24 @@ describe("Supabase attempt database connection", () => {
     process.env.SUPABASE_DB_URL = configuredUrl;
     pgMocks.Pool.mockImplementation(() => pool);
     client.query.mockImplementation(async (query: string) => {
-      if (query.includes("private.start_attempt")) return { rows: [{ result: startResult }] };
+      if (query.includes("private.start_prepared_attempt"))
+        return { rows: [{ result: startResult }] };
       return {};
     });
   });
 
   it("preserves the configured pooler URL and elevates only inside the transaction", async () => {
     await expect(
-      callAttemptCommand({ authUserId: "00000000-0000-4000-8000-000000000001" }, "start_attempt", {
-        scheduledChallengeId: "00000000-0000-4000-8000-000000000002" as never,
-        idempotencyKey: "key",
-        sessionToken: "token",
-      }),
+      callAttemptCommand(
+        { authUserId: "00000000-0000-4000-8000-000000000001" },
+        "start_prepared_attempt",
+        {
+          scheduledChallengeId: "00000000-0000-4000-8000-000000000002" as never,
+          preparationId: "prep",
+          idempotencyKey: "key",
+          sessionToken: "token",
+        },
+      ),
     ).resolves.toEqual(startResult);
 
     expect(pgMocks.Pool).toHaveBeenCalledWith({
@@ -58,7 +64,7 @@ describe("Supabase attempt database connection", () => {
     "classifies PostgreSQL configuration error %s as database_unavailable",
     async (code) => {
       client.query.mockImplementation(async (query: string) => {
-        if (query.includes("private.start_attempt")) {
+        if (query.includes("private.start_prepared_attempt")) {
           throw Object.assign(new Error("database configuration failure"), { code });
         }
         return {};
@@ -67,9 +73,10 @@ describe("Supabase attempt database connection", () => {
       await expect(
         callAttemptCommand(
           { authUserId: "00000000-0000-4000-8000-000000000001" },
-          "start_attempt",
+          "start_prepared_attempt",
           {
             scheduledChallengeId: "00000000-0000-4000-8000-000000000002" as never,
+            preparationId: "prep",
             idempotencyKey: "key",
             sessionToken: "token",
           },
@@ -133,13 +140,14 @@ describe("Supabase attempt database connection", () => {
     "preserves domain denial %s even with PostgreSQL permission SQLSTATE",
     async (code) => {
       client.query.mockImplementation(async (sql: string) => {
-        if (sql.includes("private.start_attempt"))
+        if (sql.includes("private.start_prepared_attempt"))
           throw Object.assign(new Error(code), { code: "42501" });
         return {};
       });
       await expect(
-        callAttemptCommand({ authUserId: attemptId }, "start_attempt", {
+        callAttemptCommand({ authUserId: attemptId }, "start_prepared_attempt", {
           scheduledChallengeId: "challenge" as never,
+          preparationId: "prep",
           sessionToken: "token",
           idempotencyKey: "key",
         }),

@@ -3,7 +3,8 @@ import {
   AttemptApiError,
   commandsFor,
   errorResponse,
-  readStartAttemptToken,
+  readPreparationToken,
+  setTakeoverToken,
   readJson,
   requireKey,
   requireUuid,
@@ -25,14 +26,18 @@ export async function POST(request: Request) {
     const body = await readJson(request);
     const identity = await verifiedIdentity();
     const scheduledChallengeId = requireUuid(body, "scheduledChallengeId") as ScheduledChallengeId;
-    const sessionToken = await readStartAttemptToken(identity.authUserId, scheduledChallengeId);
+    if (body.preparationId === undefined) throw new AttemptApiError("attempt_session_missing", 409);
+    const preparationId = requireUuid(body, "preparationId");
+    const sessionToken = await readPreparationToken(preparationId);
     if (!sessionToken) throw new AttemptApiError("attempt_session_missing", 409);
     const started = await commandsFor(identity, requestId).start({
       scheduledChallengeId,
       idempotencyKey: requireKey(body),
+      preparationId,
       sessionToken,
     });
     if (started.result.controlRequired) {
+      await setTakeoverToken(started.result.attemptId, sessionToken);
       return responseFor(
         {
           error: { code: "attempt_control_required", requestId },

@@ -141,7 +141,11 @@ describe("optional enjoyment", () => {
       });
     vi.stubGlobal("fetch", fetcher);
     render(
-      <MeasurementProvider roomId="tabarnia" publicationId={measurementId(3)}>
+      <MeasurementProvider
+        roomId="tabarnia"
+        publicationId={measurementId(3)}
+        attemptId={measurementId(81)}
+      >
         <EnjoymentRating />
       </MeasurementProvider>,
     );
@@ -167,7 +171,11 @@ describe("optional enjoyment", () => {
       });
     vi.stubGlobal("fetch", fetcher);
     render(
-      <MeasurementProvider roomId="tabarnia" publicationId={measurementId(3)}>
+      <MeasurementProvider
+        roomId="tabarnia"
+        publicationId={measurementId(3)}
+        attemptId={measurementId(81)}
+      >
         <EnjoymentRating />
         <Link href="/salas/tabarnia">Volver</Link>
       </MeasurementProvider>,
@@ -198,7 +206,11 @@ describe("optional enjoyment", () => {
       .mockImplementationOnce(() => new Promise((resolve) => (finishSave = resolve)));
     vi.stubGlobal("fetch", fetcher);
     render(
-      <MeasurementProvider roomId="tabarnia" publicationId={measurementId(3)}>
+      <MeasurementProvider
+        roomId="tabarnia"
+        publicationId={measurementId(3)}
+        attemptId={measurementId(81)}
+      >
         <EnjoymentRating />
         <Link href="/salas/tabarnia">Volver</Link>
       </MeasurementProvider>,
@@ -228,7 +240,11 @@ describe("optional enjoyment", () => {
     });
     vi.stubGlobal("fetch", fetcher);
     render(
-      <MeasurementProvider roomId="tabarnia" publicationId={measurementId(3)}>
+      <MeasurementProvider
+        roomId="tabarnia"
+        publicationId={measurementId(3)}
+        attemptId={measurementId(81)}
+      >
         <EnjoymentRating />
       </MeasurementProvider>,
     );
@@ -258,7 +274,11 @@ it("saves the automatic season enjoyment with the fixed 1–5 scale", async () =
     });
   vi.stubGlobal("fetch", fetcher);
   render(
-    <MeasurementProvider roomId="tabarnia" publicationId={measurementId(3)}>
+    <MeasurementProvider
+      roomId="tabarnia"
+      publicationId={measurementId(3)}
+      attemptId={measurementId(81)}
+    >
       <EnjoymentRating />
     </MeasurementProvider>,
   );

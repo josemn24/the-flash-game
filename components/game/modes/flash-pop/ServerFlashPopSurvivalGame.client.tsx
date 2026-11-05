@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { SurvivalGameView } from "@/components/game/modes/flash-pop/SurvivalGameView";
 import { sessionValidationContext } from "@/features/game/session/sessionResult";
+import { useMeasurementAttempt } from "@/components/product/Measurement.client";
 import { createRemoteGameSessionProvider } from "@/features/game/session/providers/remote";
 import { remoteSessionBootstrap } from "@/features/game/session/providers/remoteBootstrap";
 import { useSurvivalGameSession } from "@/features/game/useSurvivalGameSession";
@@ -25,8 +26,12 @@ export function ServerFlashPopSurvivalGame({
 }) {
   const router = useRouter();
   const provider = useMemo(
-    () => createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) }),
-    [challenge],
+    () =>
+      createRemoteGameSessionProvider({
+        context: sessionValidationContext(challenge),
+        expectedAttemptId: roomContext.attemptId,
+      }),
+    [challenge, roomContext.attemptId],
   );
   const initialSession = useMemo(
     () => remoteSessionBootstrap(roomContext, terminalReview),
@@ -34,6 +39,7 @@ export function ServerFlashPopSurvivalGame({
   );
   const refresh = useMemo(() => () => router.refresh(), [router]);
   const session = useSurvivalGameSession({ challenge, provider, initialSession, refresh });
+  useMeasurementAttempt(session.attempt?.id);
   return (
     <SurvivalGameView
       challenge={challenge}

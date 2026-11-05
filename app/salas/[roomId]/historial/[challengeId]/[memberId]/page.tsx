@@ -25,7 +25,7 @@ export default async function HistoricalMemberPage({ params }: Props) {
   const model = await getRoomMemberDetailPageModel(roomId, memberId, challengeId);
   if (!model) notFound();
   return (
-    <MeasurementProvider roomId={roomId} publicationId={challengeId}>
+    <MeasurementProvider roomId={roomId} publicationId={challengeId} attemptId={model.attemptId}>
       <FlashPopRoomMemberDetail model={model} />
     </MeasurementProvider>
   );
