@@ -261,9 +261,9 @@ export function registerTimeTrialConformance(options: {
         compare(localResult, remoteResult);
         expect(localResult.state.timeTrial).toMatchObject({
           endReason: "time_limit",
-          elapsedTimeMs: 3_000,
+          elapsedTimeMs: definition.challenge.timeLimitMs,
         });
-        expect(remoteResult.state.timeTrial?.elapsedTimeMs).toBe(3_000);
+        expect(remoteResult.state.timeTrial?.elapsedTimeMs).toBe(definition.challenge.timeLimitMs);
         expect(localResult.state.answers?.map((answer) => answer.status)).toEqual(["unanswered"]);
         expect(localResult.review).toHaveLength(1);
         return;

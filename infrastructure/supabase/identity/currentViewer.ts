@@ -1,8 +1,10 @@
 import "server-only";
 
+import { headers } from "next/headers";
 import type { CurrentViewerReader } from "@/application/ports/current-viewer";
 import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
 import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import { AUTH_USER_ID_HEADER } from "@/infrastructure/supabase/auth/auth-availability";
 import type { PublicFunctionRow, RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
 import type { PlayerId } from "@/types/domain";
 import type { ViewerProfile } from "@/types/view-models";
@@ -64,9 +66,18 @@ function toViewerProfile(row: CurrentPlayerProfileRow | null): ViewerProfile | n
 
 export async function getProvisionedCurrentPlayer(): Promise<ProvisionedCurrentPlayer | null> {
   const supabase = await createClient();
-  const { data: userData, error: userError } = await supabase.auth.getUser();
-  if (userError && !isInvalidSession(userError)) throw userError;
-  if (!userData.user) return null;
+  let authUserId: string | null = null;
+  try {
+    authUserId = (await headers()).get(AUTH_USER_ID_HEADER);
+  } catch {
+    // Non-request callers fall back to the authoritative Auth lookup below.
+  }
+  if (!authUserId) {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError && !isInvalidSession(userError)) throw userError;
+    if (!userData.user) return null;
+    authUserId = userData.user.id;
+  }
 
   const response = await supabase.rpc("provision_player");
   const { data, error } = response as RawRpcResponse<typeof response>;
@@ -75,7 +86,7 @@ export async function getProvisionedCurrentPlayer(): Promise<ProvisionedCurrentP
     throw new Error("The authenticated Player could not be provisioned.");
   }
 
-  return { supabase, row, authUserId: userData.user.id };
+  return { supabase, row, authUserId };
 }
 
 export function supabaseCurrentViewerReaderFor(

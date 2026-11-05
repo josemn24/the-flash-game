@@ -7,6 +7,7 @@ import {
 export const AUTH_BUDGET_MS = 5_000;
 export const AUTH_DEADLINE_HEADER = "x-flash-auth-deadline";
 export const AUTH_FAILURE_HEADER = "x-flash-auth-failure";
+export const AUTH_USER_ID_HEADER = "x-flash-auth-user-id";
 
 export type AuthFailureReason = "connection" | "service" | "timeout";
 
