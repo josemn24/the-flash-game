@@ -254,7 +254,10 @@ test("Survival practice removes lives and reaches its own terminal result", asyn
   );
   await page.getByRole("button", { name: wrong, exact: true }).click();
   await expect(page.getByLabel("1 de 3 vidas restantes")).toBeVisible();
-  await page.getByRole("textbox", { name: "¿Qué aparece en la imagen?" }).fill("incorrecta");
+  const lastLifeQuestion = questions[2];
+  expect(lastLifeQuestion.type).toBe("progressive-image");
+  const answerLabel = lastLifeQuestion.publicPayload.answerLabel ?? "Tu respuesta";
+  await page.getByRole("textbox", { name: answerLabel }).fill("incorrecta");
   await page.getByRole("button", { name: "Enviar respuesta", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Sin vidas" })).toBeVisible({ timeout: 15_000 });
   await reviewAndReturn(page, 4);
