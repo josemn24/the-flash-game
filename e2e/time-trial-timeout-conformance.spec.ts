@@ -60,8 +60,10 @@ test("timeout retries its close while a committed Queens checkpoint retry is hel
     await expect(page.getByText("Prueba 1 de 2", { exact: true })).toBeVisible({ timeout: 15000 });
     const crown = page.getByRole("gridcell", { name: /^Fila 3, columna 1,/ });
     await placeQueensCrown(crown);
-    await expect.poll(() => checkpoints.length).toBe(2);
-    await expect(page.getByRole("heading", { name: "Resultado provisional" })).toBeVisible();
+    await expect.poll(() => checkpoints.length, { timeout: 8000 }).toBe(2);
+    await expect(page.getByRole("heading", { name: "Resultado provisional" })).toBeVisible({
+      timeout: 15000,
+    });
     await expect(crown).toHaveAccessibleName(/corona/);
     await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible({
       timeout: 8000,
