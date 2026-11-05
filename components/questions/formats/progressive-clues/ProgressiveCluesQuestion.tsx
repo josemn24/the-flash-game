@@ -113,7 +113,6 @@ export function ProgressiveCluesQuestion({
               placeholder="Tu respuesta…"
               disabled={locked}
               autoComplete="off"
-              autoFocus
             />
             <motion.button
               type="submit"
