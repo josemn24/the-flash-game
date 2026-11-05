@@ -244,5 +244,30 @@
       "correctAnswer": false,
       "explanation": "La validez garantiza que, si las premisas fueran verdaderas, la conclusión también lo sería. No establece que las premisas sean verdaderas de hecho."
     }
+  },
+  {
+    "id": "bank-historia-tombuctu-comercio-saber",
+    "version": 1,
+    "type": "true-false",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-historia-tombuctu-comercio-saber",
+    "publicPayload": {
+      "category": "Historia",
+      "tags": {
+        "domains": ["history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["interpretation"],
+        "lifeSkills": []
+      },
+      "question": "Entre los siglos XV y XVI, Tombuctú fue un importante centro intelectual y un mercado destacado de las rutas transaharianas."
+    },
+    "solutionPayload": {
+      "correctAnswer": true,
+      "explanation": "Tombuctú fue un centro intelectual y espiritual, con escuelas y mezquitas, además de un importante cruce comercial donde se negociaban manuscritos, sal, oro, ganado y grano. Su apogeo económico y cultural se produjo en los siglos XV y XVI."
+    }
   }
 ]

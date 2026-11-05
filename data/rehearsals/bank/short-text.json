@@ -4615,5 +4615,31 @@
     "referenceTimeLimitMs": 120000,
     "familyId": "bank-alfabeto-z-zoolatria",
     "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-historia-tratado-tordesillas",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "category": "Historia",
+      "tags": {
+        "domains": ["history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["recall"],
+        "lifeSkills": []
+      },
+      "question": "¿Cómo se llamó el tratado firmado en 1494 por las coronas de Castilla y Portugal que estableció una línea de demarcación para sus expansiones ultramarinas?"
+    },
+    "solutionPayload": {
+      "correctAnswer": "Tratado de Tordesillas",
+      "acceptedAnswers": ["Tratado de Tordesillas", "Tordesillas"],
+      "explanation": "Firmado en 1494 por representantes de las coronas de Castilla y Portugal, el Tratado de Tordesillas fijó una línea de demarcación en el Atlántico a 370 leguas al oeste de las islas de Cabo Verde para delimitar sus áreas de expansión."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-historia-tratado-tordesillas"
   }
 ]

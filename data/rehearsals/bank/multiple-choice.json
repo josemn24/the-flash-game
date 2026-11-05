@@ -453,5 +453,94 @@
       "correctAnswer": "2/5",
       "explanation": "Dos rojas tienen probabilidad (3/5) × (2/4) = 6/20. Dos azules tienen probabilidad (2/5) × (1/4) = 2/20. Como los casos son excluyentes, se suman: 8/20 = 2/5. La segunda extracción tiene cuatro bolas disponibles porque no hay reposición."
     }
+  },
+  {
+    "id": "bank-historia-tenochtitlan",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-historia-tenochtitlan",
+    "publicPayload": {
+      "category": "Historia",
+      "tags": {
+        "domains": ["history"],
+        "topics": [],
+        "cognitiveSkills": ["memory"],
+        "formatSkills": ["recall"],
+        "lifeSkills": []
+      },
+      "question": "¿Qué ciudad fue la capital del Imperio mexica antes de la conquista española?",
+      "options": ["Tenochtitlan", "Cuzco", "Teotihuacán", "Tikal"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "Tenochtitlan",
+      "explanation": "Los mexicas construyeron su capital sobre una isla del lago de Texcoco. Tras la conquista, la ciudad española se levantó sobre las ruinas de Tenochtitlan."
+    }
+  },
+  {
+    "id": "bank-historia-saint-domingue",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-historia-saint-domingue",
+    "publicPayload": {
+      "category": "Historia",
+      "tags": {
+        "domains": ["history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["recall"],
+        "lifeSkills": []
+      },
+      "question": "¿Cómo se llamaba la colonia francesa que se independizó como Haití en 1804?",
+      "options": ["Saint-Domingue", "Martinica", "Nueva Francia", "Luisiana"],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "Saint-Domingue",
+      "explanation": "Saint-Domingue era la colonia francesa en la parte occidental de La Española. Tras la Revolución haitiana, declaró su independencia en 1804 y adoptó el nombre de Haití."
+    }
+  },
+  {
+    "id": "bank-historia-atentado-sarajevo",
+    "version": 1,
+    "type": "multiple-choice",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-historia-atentado-sarajevo",
+    "publicPayload": {
+      "category": "Historia",
+      "tags": {
+        "domains": ["history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["interpretation"],
+        "lifeSkills": []
+      },
+      "question": "¿Qué hecho fue el detonante inmediato de la crisis de julio de 1914 que desembocó en la Primera Guerra Mundial?",
+      "options": [
+        "El asesinato del archiduque Francisco Fernando en Sarajevo",
+        "La invasión alemana de Polonia",
+        "La toma de la Bastilla",
+        "La firma del Tratado de Versalles"
+      ],
+      "media": null,
+      "promptVisual": null
+    },
+    "solutionPayload": {
+      "correctAnswer": "El asesinato del archiduque Francisco Fernando en Sarajevo",
+      "explanation": "El asesinato del heredero austrohúngaro en Sarajevo el 28 de junio de 1914 precipitó la crisis de julio. Las alianzas y decisiones de los gobiernos ampliaron esa crisis hasta convertirla en una guerra general; el atentado fue el detonante inmediato, no su única causa."
+    }
   }
 ]

@@ -40,8 +40,8 @@ function prefersReducedMotion() {
 export function ProgressiveImageQuestion({
   surface,
   revealDuration,
-  answerLabel = "¿Qué aparece en la imagen?",
-  answerPlaceholder = "Tu respuesta…",
+  answerLabel = "Tu respuesta",
+  answerPlaceholder = "Respuesta",
   locked,
   onSubmit,
   onTimedResponseStart,
@@ -200,7 +200,7 @@ export function ProgressiveImageQuestion({
             type="text"
             value={answer}
             onChange={(event) => setAnswer(event.target.value)}
-            placeholder={answerPlaceholder}
+            placeholder={answerPlaceholder || undefined}
             disabled={unavailable}
             autoComplete="off"
           />
