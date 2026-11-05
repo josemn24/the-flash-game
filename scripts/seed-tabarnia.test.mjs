@@ -388,7 +388,7 @@ describe("Tabarnia seed", () => {
       });
     }
 
-    it("defines the agreed order, formats, answers and weights", () => {
+    it("defines the agreed order, formats, answers, time limits and weights", () => {
       expect(
         TABARNIAVERSO_QUESTIONS.map((question) => [question.type, correctAnswerFor(question)]),
       ).toEqual([
@@ -397,25 +397,30 @@ describe("Tabarnia seed", () => {
           "multiple-choice",
           "Acercarse al orgasmo y reducir o pausar la estimulación para retrasarlo.",
         ],
-        ["multiple-choice", "Ser macho."],
+        ["multiple-choice", "Que tenga pito."],
+        ["ordering", ["Troposfera", "Estratosfera", "Mesosfera", "Termosfera"]],
         ["estimation", 96],
         ["multiple-choice", "Betania"],
         ["multiple-choice", "Miller"],
         ["true-false", true],
-        ["multiple-choice", "Circuito de Jerez"],
-        ["short-text", "Canberra"],
-        ["multiple-choice", "Dos"],
-        ["multiple-choice", "Pokémon: Catch the Numbers!"],
-        ["ordering", ["Troposfera", "Estratosfera", "Mesosfera", "Termosfera"]],
         [
           "matching",
           { fenrir: "nordica", anubis: "egipcia", cerbero: "griega", quetzalcoatl: "mexica" },
         ],
+        ["multiple-choice", "Circuito de Jerez"],
+        ["short-text", "Canberra"],
+        ["multiple-choice", "Dos"],
+        ["multiple-choice", "Pokémon: Catch the Numbers!"],
         ["odd-one-out", "el-grito"],
       ]);
-      expect(
-        TABARNIAVERSO_QUESTIONS.map(({ points, timeLimitMs }) => [points, timeLimitMs]),
-      ).toEqual([[8, 15_000], [8, 15_000], ...Array.from({ length: 12 }, () => [7, 15_000])]);
+      expect(TABARNIAVERSO_QUESTIONS.map(({ timeLimitMs }) => timeLimitMs / 1_000)).toEqual([
+        20, 20, 18, 22, 16, 14, 14, 12, 25, 20, 16, 20, 18, 20,
+      ]);
+      expect(TABARNIAVERSO_QUESTIONS.map(({ points }) => points)).toEqual([
+        8,
+        8,
+        ...Array(12).fill(7),
+      ]);
     });
 
     it.each(TABARNIAVERSO_QUESTIONS)("publishes and scores $slug", (question) => {
@@ -425,7 +430,9 @@ describe("Tabarnia seed", () => {
     });
 
     it("scores the Zelda estimates by distance and cuts off at four points", () => {
-      const question = TABARNIAVERSO_QUESTIONS[3];
+      const question = TABARNIAVERSO_QUESTIONS.find(
+        ({ slug }) => slug === "tabarniaverso-ocarina-of-time",
+      );
       expect(question.publicPayload).toMatchObject({
         min: 80,
         max: 100,
@@ -442,7 +449,9 @@ describe("Tabarnia seed", () => {
     });
 
     it("normalizes the single accepted spelling of Canberra", () => {
-      const question = TABARNIAVERSO_QUESTIONS[8];
+      const question = TABARNIAVERSO_QUESTIONS.find(
+        ({ slug }) => slug === "tabarniaverso-capital-australia",
+      );
       expect(question.solutionPayload.acceptedAnswers).toEqual(["Canberra"]);
       expect(evaluate(question, "canberra")).toMatchObject({ status: "correct", points: 7 });
       expect(evaluate(question, "Sídney")).toMatchObject({ status: "incorrect", points: 0 });

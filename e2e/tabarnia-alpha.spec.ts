@@ -202,12 +202,16 @@ test.describe("Tabarnia alpha", () => {
     });
     const url = `/desafios/${publication.id}?roomId=${data.room.slug}`;
     const start = page.getByRole("button", { name: "Empezar desafío" });
+    const firstQuestion = page.getByRole("heading", {
+      name: "¿Quiénes fueron los «padres» de la saga Assassin’s Creed?",
+      exact: true,
+    });
 
     await signIn(page, users.dark);
     await page.goto(url);
     await expect(page.getByRole("heading", { name: "Tabarniaverso" }).first()).toBeVisible();
     await expect(start).toHaveCount(0);
-    await expect(page.getByText(/lanzado en 2007/)).toHaveCount(0);
+    await expect(firstQuestion).toHaveCount(0);
 
     await dockerSql(`begin;
       update public.scheduled_challenges
@@ -224,13 +228,20 @@ test.describe("Tabarnia alpha", () => {
 
     await page.goto(url);
     await start.click();
+    await expect(firstQuestion).toBeVisible();
     await page.getByRole("button", { name: "Patrice Désilets y Jade Raymond" }).click();
     await page
       .getByRole("button", {
         name: "Acercarse al orgasmo y reducir o pausar la estimulación para retrasarlo.",
       })
       .click();
-    await page.getByRole("button", { name: "Ser macho." }).click();
+    await page.getByRole("button", { name: "Que tenga pito.", exact: true }).click();
+
+    await page.getByRole("button", { name: "Mover Troposfera arriba" }).click();
+    const moveStratosphere = page.getByRole("button", { name: "Mover Estratosfera arriba" });
+    await moveStratosphere.click();
+    await moveStratosphere.click();
+    await page.getByRole("button", { name: "Confirmar orden" }).click();
 
     const estimation = page.getByRole("slider", { name: "Estimación en /100" });
     await expect(estimation).toHaveValue("90");
@@ -247,17 +258,6 @@ test.describe("Tabarnia alpha", () => {
     await page.getByRole("button", { name: "Betania" }).click();
     await page.getByRole("button", { name: "Miller" }).click();
     await page.getByRole("button", { name: "Verdadero" }).click();
-    await page.getByRole("button", { name: "Circuito de Jerez" }).click();
-    await page.getByRole("textbox", { name: "Escribe tu respuesta" }).fill("canberra");
-    await page.getByRole("button", { name: "Enviar respuesta" }).click();
-    await page.getByRole("button", { name: "Dos", exact: true }).click();
-    await page.getByRole("button", { name: "Pokémon: Catch the Numbers!", exact: true }).click();
-
-    await page.getByRole("button", { name: "Mover Troposfera arriba" }).click();
-    const moveStratosphere = page.getByRole("button", { name: "Mover Estratosfera arriba" });
-    await moveStratosphere.click();
-    await moveStratosphere.click();
-    await page.getByRole("button", { name: "Confirmar orden" }).click();
 
     for (const [figure, tradition] of [
       ["Fenrir", "Nórdica"],
@@ -269,6 +269,11 @@ test.describe("Tabarnia alpha", () => {
       await page.getByRole("button", { name: tradition, exact: true }).click();
     }
     await page.getByRole("button", { name: "Comprobar parejas" }).click();
+    await page.getByRole("button", { name: "Circuito de Jerez" }).click();
+    await page.getByRole("textbox", { name: "Escribe tu respuesta" }).fill("canberra");
+    await page.getByRole("button", { name: "Enviar respuesta" }).click();
+    await page.getByRole("button", { name: "Dos", exact: true }).click();
+    await page.getByRole("button", { name: "Pokémon: Catch the Numbers!", exact: true }).click();
     await page.getByRole("button", { name: "El grito", exact: true }).click();
 
     await expect(page.locator("#challenge-result-title")).toBeVisible();
@@ -279,7 +284,7 @@ test.describe("Tabarnia alpha", () => {
     await expect(answers.filter({ has: page.getByText("Correcta", { exact: true }) })).toHaveCount(
       14,
     );
-    await answers.nth(4).locator("summary").click();
+    await answers.filter({ hasText: "Completa Mateo 21:17" }).locator("summary").click();
     await expect(
       page.getByText(/Jesús salió de la ciudad y pasó la noche en Betania/),
     ).toBeVisible();
