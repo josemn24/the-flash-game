@@ -374,7 +374,13 @@ test("publication policy disables and reenables dynamic practice without a fixed
   await panel.getByRole("combobox", { name: "Pruebas habilitadas" }).selectOption("false");
   await panel.getByRole("textbox", { name: "Motivo" }).fill("Comprobación de política dinámica");
   await panel.getByRole("button", { name: "Guardar disponibilidad" }).click();
-  await expect(panel.getByRole("combobox", { name: "Pruebas habilitadas" })).toHaveValue("false");
+  await expect
+    .poll(() =>
+      sqlCount(
+        `select count(*) from private.rehearsal_publication_policies where scheduled_challenge_id='${publication.id}' and enabled=false`,
+      ),
+    )
+    .toBe(1);
   await page.context().clearCookies();
   await login(page, fixture("betavip").users.ches!);
   await page.goto(`/desafios/${publication.id}/prueba?roomId=beta-vip`);
@@ -387,7 +393,13 @@ test("publication policy disables and reenables dynamic practice without a fixed
     .getByRole("textbox", { name: "Motivo" })
     .fill("Reactivación tras comprobar la política");
   await panel.getByRole("button", { name: "Guardar disponibilidad" }).click();
-  await expect(panel.getByRole("combobox", { name: "Pruebas habilitadas" })).toHaveValue("true");
+  await expect
+    .poll(() =>
+      sqlCount(
+        `select count(*) from private.rehearsal_publication_policies where scheduled_challenge_id='${publication.id}' and enabled=true`,
+      ),
+    )
+    .toBe(1);
 });
 
 test("question difficulty survives publication and changes only in a new version", async ({

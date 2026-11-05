@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261105110000_terminal_attempt_purge";
+const canonicalSchemaRevision = "20261105140525_provision_player_read_first";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -43,6 +43,8 @@ async function checkDatabase() {
         true as database_ok,
         to_regclass('public.players') is not null as schema_ready,
         to_regprocedure('private.submit_mini_wordle_guess(jsonb)') is not null
+          and pg_get_functiondef(to_regprocedure('public.provision_player()'))
+            like '%if found then%return next;%return;%insert into public.players%'
           and to_regprocedure('private.submit_logic_code_attempt(jsonb)') is not null
           and to_regprocedure('private.reveal_progressive_clue(jsonb)') is not null
           and to_regprocedure('private.matching_answer_valid(jsonb,jsonb,boolean)') is not null

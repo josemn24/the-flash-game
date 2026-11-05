@@ -15,7 +15,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261105110000_terminal_attempt_purge",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261105140525_provision_player_read_first",
 };
 
 async function run(label, command, args, options = {}) {

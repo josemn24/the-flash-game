@@ -13,7 +13,7 @@ recurren al mock cuando falla Supabase.
 El historial activo parte de la inicial consolidada e incorpora la migración incremental de borrado de intentos terminales. La [entrega de consolidación](../archive/reports/migration-consolidation-2026-11-03.md) registra la evidencia aislada y no acredita reinstalación de local o staging.
 La [reinstalación local posterior](../archive/reports/local-reinstallation-2026-11-03.md) acredita la adopción de esa inicial en el entorno habitual; staging sigue pendiente.
 
-Revisión canónica del repositorio: `20261105110000_terminal_attempt_purge`.
+Revisión canónica del repositorio: `20261105140525_provision_player_read_first`.
 
 El portal permite [reprogramar temporadas y desafíos](calendar-rescheduling.md) con vista previa, cambios conjuntos atómicos y protección de partidas ya iniciadas. Las temporadas publicadas futuras se muestran como programadas.
 
