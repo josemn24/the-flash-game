@@ -32,7 +32,12 @@ export function FlashPopGameShell({
         contentClassName={contentClassName}
       >
         {notice}
-        <AnimatePresence mode="wait">{children}</AnimatePresence>
+        {/* Pyramid's timed stages must advance even if an exit animation stalls. */}
+        {presentation === "pyramid" ? (
+          children
+        ) : (
+          <AnimatePresence mode="wait">{children}</AnimatePresence>
+        )}
       </Canvas>
     </MotionConfig>
   );
