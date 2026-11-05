@@ -422,7 +422,7 @@
 
 - **Decisión vigente (2026-09-28):** Vercel Cron es el scheduler oficial del calendar tick para el
   tipo de despliegue Production de Vercel.
-- Vercel invoca `GET /api/internal/calendar/tick` diariamente a las 13:00 UTC mediante
+- Vercel invoca `GET /api/internal/calendar/tick` diariamente a las 14:05 UTC mediante
   `CRON_SECRET`. La tarea no se ejecuta en previews y Vercel no reintenta automáticamente una
   invocación fallida.
 - `POST /api/internal/calendar/tick` y `npm run calendar:tick` se conservan para ejecución local,
@@ -435,6 +435,9 @@
 - **Alcance actual (2026-10-10):** los únicos entornos de aplicación son local y staging.
   Production es la etiqueta técnica de Vercel que admite cron; no añade un destino operativo.
   Se conserva la integración y su ejecución automática en staging sigue pendiente de verificar.
+- **Horario actualizado (2026-11-05):** se cambia a las 14:05 UTC, equivalente a las 15:05 en
+  Madrid durante el horario de invierno. Vercel mantiene la hora UTC fija durante los cambios
+  estacionales.
 
 ## 16. Incidencias del servicio durante partidas
 

@@ -375,10 +375,10 @@ Desplegar el commit validado y comprobar con intentos nuevos:
 
 La inactividad conserva la regla de 15 minutos tras cierre/deadline. No modificar reglas ni acortar
 los tiempos competitivos para acelerar la prueba. Se conserva la integración de Vercel Cron con
-GET, `CRON_SECRET` y la programación diaria `0 13 * * *` de `vercel.json`; el POST y el CLI usan
-`CALENDAR_TICK_SECRET`. Vercel interpreta el cron en UTC: se ejecuta a las 13:00 UTC, que son las
-15:00 en Madrid durante el horario de verano (CEST) y las 14:00 durante el horario de invierno
-(CET). Por tanto, mantiene fija la hora UTC, no las 15:00 locales durante todo el año.
+GET, `CRON_SECRET` y la programación diaria `5 14 * * *` de `vercel.json`; el POST y el CLI usan
+`CALENDAR_TICK_SECRET`. Vercel interpreta el cron en UTC: se ejecuta a las 14:05 UTC, que son las
+15:05 en Madrid durante el horario de invierno (CET) y las 16:05 durante el horario de verano
+(CEST). Por tanto, mantiene fija la hora UTC, no las 15:05 locales durante todo el año.
 
 La etiqueta Production de Vercel es un tipo de despliegue de la plataforma, no otro entorno de
 aplicación. Vercel solo programa crons para despliegues Production, no para previews; la ejecución
