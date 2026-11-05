@@ -9,6 +9,12 @@ const storageRewrite = getLocalStorageRewrite(supabaseUrl, process.env.NODE_ENV)
 
 const nextConfig: NextConfig = {
   distDir: process.env.FLASH_NEXT_DIST_DIR || ".next",
+  serverExternalPackages: ["@resvg/resvg-js"],
+  outputFileTracingIncludes: {
+    "/api/salas/\\[roomId\\]/historial/\\[challengeId\\]/poster": [
+      "./features/flash-pop/ranking-poster/fonts/*",
+    ],
+  },
   allowedDevOrigins: getAllowedDevOrigins(
     process.env.NODE_ENV === "development" ? process.env.FLASH_DEV_ALLOWED_ORIGINS : undefined,
   ),
