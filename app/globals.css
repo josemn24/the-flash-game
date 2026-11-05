@@ -107,7 +107,7 @@
     --space-10: 40px;
     --space-12: 48px;
 
-    --game-keyboard-bottom-gap: 16px;
+    --game-keyboard-bottom-gap: 32px;
 
     /* Angular surfaces; rounding is reserved for compact controls and status. */
     --radius-sm: 8px;
