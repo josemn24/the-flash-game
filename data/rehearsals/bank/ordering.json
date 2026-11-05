@@ -367,10 +367,10 @@
       },
       "question": "Ordena estos acontecimientos del más antiguo al más reciente.",
       "items": [
-        "Conquista otomana de Constantinopla (1453)",
-        "Hégira de La Meca a Medina (622)",
-        "Inicio de la Revolución francesa (1789)",
-        "Deposición de Rómulo Augústulo, fecha convencional de la caída del Imperio romano de Occidente (476)"
+        "Conquista otomana de Constantinopla",
+        "Hégira de La Meca a Medina",
+        "Inicio de la Revolución francesa",
+        "Deposición de Rómulo Augústulo, hito tradicionalmente asociado a la caída del Imperio romano de Occidente"
       ],
       "directionLabels": {
         "start": "Más antiguo",
@@ -379,10 +379,10 @@
     },
     "solutionPayload": {
       "correctOrder": [
-        "Deposición de Rómulo Augústulo, fecha convencional de la caída del Imperio romano de Occidente (476)",
-        "Hégira de La Meca a Medina (622)",
-        "Conquista otomana de Constantinopla (1453)",
-        "Inicio de la Revolución francesa (1789)"
+        "Deposición de Rómulo Augústulo, hito tradicionalmente asociado a la caída del Imperio romano de Occidente",
+        "Hégira de La Meca a Medina",
+        "Conquista otomana de Constantinopla",
+        "Inicio de la Revolución francesa"
       ],
       "explanation": "Las fechas son 476, 622, 1453 y 1789. El año 476 se usa convencionalmente para marcar la caída del Imperio romano de Occidente; la Hégira tuvo lugar en 622, los otomanos conquistaron Constantinopla en 1453 y la Revolución francesa comenzó en 1789."
     }
