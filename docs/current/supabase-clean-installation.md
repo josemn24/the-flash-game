@@ -193,7 +193,7 @@ como propietario y jugador, y otros catorce miembros jugadores. Programa Steel B
 3 vidas, 100 puntos), Cumbre lógica (7 niveles, 100 puntos), Multiverso friki en
 Alphabet (16 letras, 150 segundos, 100 puntos), Flow Free (siete tableros de
 4×4 a 7×7, 100 puntos y 150 segundos globales), «La Biblia» en Pirámide
-(7 niveles, 100 puntos) y Tabarniaverso en Flash (14 preguntas, tiempos de 10 a 25 segundos y
+(7 niveles, 100 puntos) y Tabarniaverso en Flash (16 preguntas, tiempos de 12 a 30 segundos y
 100 puntos), en ese orden y en ventanas consecutivas de 24 horas. La novena ventana ocupa
 las horas 192 a 216 desde el inicio. La temporada dura 17 días con el perfil predeterminado.
 

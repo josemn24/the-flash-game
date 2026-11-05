@@ -273,6 +273,61 @@ const questions = [
         "El grito es obra de Edvard Munch. Las otras tres obras son de Vincent van Gogh.",
     },
   }),
+  question({
+    slug: "petra",
+    timeLimitSeconds: 30,
+    type: "progressive-clues",
+    category: "Patrimonio",
+    domains: ["culture", "geography"],
+    topic: "landmarks",
+    prompt: "¿Qué ciudad antigua buscamos?",
+    fields: {
+      clues: [
+        "Fue la capital del reino nabateo.",
+        "Sus ruinas se encuentran en la actual Jordania.",
+        "Uno de sus monumentos, tallado en la roca, se conoce como «El Tesoro».",
+      ],
+      cluePenalty: 1,
+    },
+    solution: {
+      correctAnswer: "Petra",
+      acceptedAnswers: ["Petra"],
+      explanation:
+        "Petra fue la capital de los nabateos y allí se encuentra el monumento conocido como «El Tesoro».",
+    },
+  }),
+  question({
+    slug: "quimica-cotidiana",
+    timeLimitSeconds: 30,
+    type: "classification",
+    category: "Química",
+    domains: ["natural_sciences"],
+    topic: "chemistry_elements",
+    prompt: "Clasifica cada sustancia como elemento, compuesto o mezcla.",
+    fields: {
+      items: [
+        { label: "Aire" },
+        { label: "Hierro" },
+        { label: "Agua destilada" },
+        { label: "Helio" },
+        { label: "Agua de mar" },
+        { label: "Dióxido de carbono" },
+      ],
+      categories: ["elemento", "compuesto", "mezcla"],
+    },
+    solution: {
+      categoriesByItem: {
+        Aire: "mezcla",
+        Hierro: "elemento",
+        "Agua destilada": "compuesto",
+        Helio: "elemento",
+        "Agua de mar": "mezcla",
+        "Dióxido de carbono": "compuesto",
+      },
+      explanation:
+        "El hierro y el helio son elementos. El agua destilada y el dióxido de carbono son compuestos. El aire y el agua de mar son mezclas.",
+    },
+  }),
 ];
 
 const pointsPerQuestion = Math.floor(100 / questions.length);

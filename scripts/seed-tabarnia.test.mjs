@@ -362,7 +362,10 @@ describe("Tabarnia seed", () => {
   describe("Tabarniaverso", () => {
     function correctAnswerFor({ solutionPayload }) {
       return (
-        solutionPayload.correctAnswer ?? solutionPayload.correctOrder ?? solutionPayload.matches
+        solutionPayload.correctAnswer ??
+        solutionPayload.correctOrder ??
+        solutionPayload.matches ??
+        solutionPayload.categoriesByItem
       );
     }
 
@@ -412,14 +415,25 @@ describe("Tabarnia seed", () => {
         ["multiple-choice", "Dos"],
         ["multiple-choice", "Pokémon: Catch the Numbers!"],
         ["odd-one-out", "el-grito"],
+        ["progressive-clues", "Petra"],
+        [
+          "classification",
+          {
+            Aire: "mezcla",
+            Hierro: "elemento",
+            "Agua destilada": "compuesto",
+            Helio: "elemento",
+            "Agua de mar": "mezcla",
+            "Dióxido de carbono": "compuesto",
+          },
+        ],
       ]);
       expect(TABARNIAVERSO_QUESTIONS.map(({ timeLimitMs }) => timeLimitMs / 1_000)).toEqual([
-        20, 20, 18, 22, 16, 14, 14, 12, 25, 20, 16, 20, 18, 20,
+        20, 20, 18, 22, 16, 14, 14, 12, 25, 20, 16, 20, 18, 20, 30, 30,
       ]);
       expect(TABARNIAVERSO_QUESTIONS.map(({ points }) => points)).toEqual([
-        8,
-        8,
-        ...Array(12).fill(7),
+        ...Array(4).fill(7),
+        ...Array(12).fill(6),
       ]);
     });
 
@@ -453,7 +467,7 @@ describe("Tabarnia seed", () => {
         ({ slug }) => slug === "tabarniaverso-capital-australia",
       );
       expect(question.solutionPayload.acceptedAnswers).toEqual(["Canberra"]);
-      expect(evaluate(question, "canberra")).toMatchObject({ status: "correct", points: 7 });
+      expect(evaluate(question, "canberra")).toMatchObject({ status: "correct", points: 6 });
       expect(evaluate(question, "Sídney")).toMatchObject({ status: "incorrect", points: 0 });
     });
   });
@@ -745,7 +759,7 @@ describe("Tabarnia seed", () => {
       ["alphabet", 16, 100],
       ["time-trial", 7, 100],
       ["pyramid", 7, 100],
-      ["flash", 14, 100],
+      ["flash", 16, 100],
     ]);
     expect(output.publicationId).toBe(output.publications[0]?.id);
     expect(output.publications.map((publication) => publication.title)).toEqual([

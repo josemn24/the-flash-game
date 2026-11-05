@@ -118,10 +118,10 @@ do $$ begin
     join private.question_version_solutions s on s.question_version_id = q.id
     where i.challenge_version_id = '${tabarniaverso.challengeVersionId}'
       and q.status = 'published'
-    having count(*) = 14 and count(distinct i.question_version_id) = 14 and sum(i.points) = 100
+    having count(*) = 16 and count(distinct i.question_version_id) = 16 and sum(i.points) = 100
       and array_agg(q.time_limit_ms order by i.position) = array[${TABARNIAVERSO_QUESTIONS.map(({ timeLimitMs }) => timeLimitMs).join(", ")}]
   ) then
-    raise exception 'expected fourteen distinct published Tabarniaverso questions with solutions, individual time limits and 100 points';
+    raise exception 'expected sixteen distinct published Tabarniaverso questions with solutions, individual time limits and 100 points';
   end if;
   if (select count(*) from public.scheduled_challenges where season_id = '${betaVip.seasonId}') <> 5 then
     raise exception 'expected five BetaVIP publications';

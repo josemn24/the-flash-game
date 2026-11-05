@@ -185,7 +185,7 @@ test.describe("Tabarnia alpha", () => {
     await expect(page.getByRole("link", { name: /Abrir sala Tabarnia/ })).toHaveCount(0);
   });
 
-  test("Tabarniaverso abre como noveno desafío y permite jugar y revisar los siete formatos", async ({
+  test("Tabarniaverso abre como noveno desafío y permite jugar y revisar los nueve formatos", async ({
     page,
   }) => {
     test.skip(!process.env.SUPABASE_TEST_WORKDIR, "Requiere el stack desechable de E2E.");
@@ -276,13 +276,31 @@ test.describe("Tabarnia alpha", () => {
     await page.getByRole("button", { name: "Pokémon: Catch the Numbers!", exact: true }).click();
     await page.getByRole("button", { name: "El grito", exact: true }).click();
 
+    await expect(page.getByText("Fue la capital del reino nabateo.")).toBeVisible();
+    await page.getByRole("button", { name: /Revelar otra pista/ }).click();
+    await expect(page.getByText("Sus ruinas se encuentran en la actual Jordania.")).toBeVisible();
+    await page.getByRole("textbox", { name: "Escribe tu respuesta" }).fill("Petra");
+    await page.getByRole("button", { name: "Enviar respuesta" }).click();
+
+    for (const [substance, category] of [
+      ["Aire", "Mezcla"],
+      ["Hierro", "Elemento"],
+      ["Agua destilada", "Compuesto"],
+      ["Helio", "Elemento"],
+      ["Agua de mar", "Mezcla"],
+      ["Dióxido de carbono", "Compuesto"],
+    ]) {
+      await page.getByRole("button", { name: `Clasificar ${substance} como ${category}` }).click();
+    }
+    await page.getByRole("button", { name: "Confirmar clasificación" }).click();
+
     await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.reload();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     const answers = page.locator("details");
-    await expect(answers).toHaveCount(14);
+    await expect(answers).toHaveCount(16);
     await expect(answers.filter({ has: page.getByText("Correcta", { exact: true }) })).toHaveCount(
-      14,
+      16,
     );
     await answers.filter({ hasText: "Completa Mateo 21:17" }).locator("summary").click();
     await expect(

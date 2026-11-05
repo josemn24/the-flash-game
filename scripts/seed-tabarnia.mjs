@@ -550,9 +550,9 @@ function tabarniaChallenges() {
       id: challengeId(TABARNIAVERSO_SLUG),
       versionId: challengeVersionId(TABARNIAVERSO_SLUG),
       title: "Tabarniaverso",
-      subtitle: "Catorce preguntas de temas variados",
+      subtitle: `${TABARNIAVERSO_QUESTIONS.length} preguntas de temas variados`,
       description:
-        "Catorce preguntas contrarreloj sobre videojuegos, cine, ciencia, mitología, pintura y otros temas.",
+        "Una ronda contrarreloj sobre videojuegos, cine, ciencia, mitología, pintura y otros temas.",
       mode: "flash",
       modeConfig: {},
       items: TABARNIAVERSO_QUESTIONS.map(({ slug, points }) => ({ questionSlug: slug, points })),
