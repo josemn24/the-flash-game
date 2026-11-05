@@ -82,10 +82,12 @@ asignaciones y sustituciones reales de dificultad.
 `test-utils/rehearsals/v1-recipes.json` fija recetas y huellas de sus definiciones para detectar
 regresiones del generador, incluidos los tableros de sopa de letras.
 
-Desde esta v1, una corrección añade una versión superior conservando la anterior. La selección usa
-la última por ID. `generationStatus` es opcional (`active` por defecto o `retired`); retirar exige
-otra versión y no permite volver a seleccionar una anterior. Las recetas de este generador pueden
-reproducir versiones editoriales anteriores que sigan presentes con su huella original.
+Antes de publicar esta base por primera vez en staging, el contenido puede corregirse directamente
+en v1 actualizando su huella de referencia. Tras esa publicación, una corrección añade una versión
+superior y conserva la anterior. La selección usa la última por ID. `generationStatus` es opcional
+(`active` por defecto o `retired`); retirar exige otra versión y no permite volver a seleccionar una
+anterior. Las recetas de este generador pueden reproducir versiones editoriales anteriores que sigan
+presentes con su huella original.
 
 Al incorporar versiones, ejecutar `npm run rehearsals:history:register`: añade referencias y rechaza
 cambios o bajas de versiones ya registradas antes de escribir. Cambiar dificultad, modos o familia

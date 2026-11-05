@@ -83,9 +83,10 @@ su versión publicada; cambiarla requiere otra versión. Los documentos antiguos
 normalizan a `medium`.
 
 Para añadir contenido: incorporar una pregunta válida en su archivo de formato, declarar solo modos
-comprobados y revisar su dificultad y explicación. Corregir contenido exige otra versión. Se
-conservan las anteriores para reproducción. No hay manifiestos ni perfiles que editar: huellas,
-revisión e índices son automáticos.
+comprobados y revisar su dificultad y explicación. Antes de publicar la base inicial en staging, se
+puede corregir su contenido directamente en v1 y actualizar su huella. Después de publicarla, toda
+corrección exige otra versión y se conservan las anteriores para reproducción. No hay manifiestos ni
+perfiles que editar: huellas, revisión e índices son automáticos.
 
 `npm run rehearsals:check` valida el banco y resuelve las preguntas con los proveedores locales reales.
 Exige tres candidatos independientes por posición de las estructuras de BetaVIP y Tabarnia,
