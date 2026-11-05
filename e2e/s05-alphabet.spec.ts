@@ -140,6 +140,9 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
     if (size.height <= 640) {
       await expect(keyboard).toBeHidden();
       await page.getByRole("button", { name: "Mostrar teclado" }).click();
+      const keyboardBounds = await keyboard.boundingBox();
+      expect(keyboardBounds).not.toBeNull();
+      expect(size.height - (keyboardBounds!.y + keyboardBounds!.height)).toBeGreaterThanOrEqual(16);
       expect(
         (await keyboard.getByRole("button", { name: "Q", exact: true }).boundingBox())!.height,
       ).toBe(32);
@@ -149,6 +152,13 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
       await page.getByRole("button", { name: "Ocultar teclado" }).click();
     } else {
       await expect(keyboard).toBeVisible();
+      if (size.width <= 640) {
+        const keyboardBounds = await keyboard.boundingBox();
+        expect(keyboardBounds).not.toBeNull();
+        expect(size.height - (keyboardBounds!.y + keyboardBounds!.height)).toBeGreaterThanOrEqual(
+          16,
+        );
+      }
       expect(
         (await keyboard.getByRole("button", { name: "Q", exact: true }).boundingBox())!.height,
       ).toBe(48);
@@ -229,9 +239,9 @@ test("Alfabeto adapta el editor, el teclado y el tablero al espacio visible", as
       const nativeAction = await page
         .getByRole("button", { name: "Responder", exact: true })
         .boundingBox();
-      return nativeAction!.y + nativeAction!.height;
+      return 328 - (nativeAction!.y + nativeAction!.height);
     })
-    .toBeLessThanOrEqual(328);
+    .toBeGreaterThanOrEqual(16);
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(editor).toHaveValue("arma");
   await expect(editor).toBeFocused();

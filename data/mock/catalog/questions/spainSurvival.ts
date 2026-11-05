@@ -91,7 +91,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "Marca aproximadamente dónde está Santa Cruz de Tenerife.",
       context: null,
-      timeLimitMs: 16000,
+      timeLimitMs: 25000,
       payload: {
         surface: {
           src: "/visuals/spain-survival/canary_islands_map.svg",

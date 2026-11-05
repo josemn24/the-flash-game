@@ -1,6 +1,10 @@
 // @vitest-environment node
-import { readFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 import sharp from "sharp";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
@@ -101,6 +105,53 @@ describe("ranking poster renderer", () => {
     expect(png.subarray(0, 8)).toEqual(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
     expect(metadata).toMatchObject({ format: "png", width: 1080, height: 1920 });
     expect(png).toEqual(repeatedPng);
+  }, 15_000);
+
+  it("draws accents, names and scores with no system fonts available", async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), "ranking-poster-"));
+    const fontConfig = path.join(dir, "fonts.conf");
+    const render = fileURLToPath(new URL("./renderRankingPoster.fixture.ts", import.meta.url));
+    const first = { ...input([entry(1, "Iñaki", 98)]), challengeTitle: "Lógica" };
+    const second = { ...input([entry(1, "Óscar", 24)]), challengeTitle: "Logica" };
+
+    try {
+      // No system font directories or includes. Start a fresh process before Pango initializes.
+      await writeFile(fontConfig, '<?xml version="1.0"?><fontconfig/>');
+      await promisify(execFile)(
+        process.execPath,
+        [
+          path.resolve("node_modules/vite-node/vite-node.mjs"),
+          "--config",
+          "vitest.config.ts",
+          render,
+          dir,
+          JSON.stringify([first, second]),
+        ],
+        {
+          env: { ...process.env, FONTCONFIG_FILE: fontConfig, PANGOCAIRO_BACKEND: "fontconfig" },
+          timeout: 10_000,
+        },
+      );
+
+      const posters = ["0.png", "1.png"].map((filename) => sharp(path.join(dir, filename)));
+      // Each pair has the same character count. Missing glyph boxes would look identical.
+      const regions = {
+        title: { left: 310, top: 240, width: 460, height: 80 },
+        name: { left: 390, top: 540, width: 300, height: 40 },
+        score: { left: 450, top: 584, width: 180, height: 38 },
+      };
+      for (const [label, region] of Object.entries(regions)) {
+        const [before, after] = await Promise.all(
+          posters.map((poster) => poster.clone().extract(region).raw().toBuffer()),
+        );
+        expect(
+          before.equals(after),
+          `Changing the ${label} should change its rendered glyphs`,
+        ).toBe(false);
+      }
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   }, 15_000);
 
   it("resolves only local public avatar proxy URLs in development", () => {

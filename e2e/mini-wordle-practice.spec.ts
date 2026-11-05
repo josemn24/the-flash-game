@@ -63,9 +63,9 @@ test("Mini-Wordle recupera el diccionario y permite teclado propio, físico y na
   await expect
     .poll(async () => {
       const bounds = await dialog.locator("[data-keyboard-dock]").boundingBox();
-      return bounds!.y + bounds!.height;
+      return 328 - (bounds!.y + bounds!.height);
     })
-    .toBeLessThanOrEqual(328);
+    .toBeGreaterThanOrEqual(16);
   await expect(editor).toBeFocused();
   await expect(editor).toHaveValue("LU");
   await expect
