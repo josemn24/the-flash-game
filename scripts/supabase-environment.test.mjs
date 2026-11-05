@@ -10,6 +10,7 @@ import {
   clearEnvironmentArtifacts,
   clearStorage,
   runEnvironmentReset,
+  waitForStorageBucketEmpty,
 } from "./reset-supabase-environment.mjs";
 import {
   bootstrapRoleSql,
@@ -365,13 +366,84 @@ describe("clean Supabase installation", () => {
 
   it("removes physical objects via Storage before deleting buckets", async () => {
     const service = fakeService({ buckets: [{ id: "avatars" }, { id: "question-assets" }] });
-    expect(await clearStorage(service)).toBe(2);
+    const waitForBucketEmpty = vi.fn();
+    expect(await clearStorage(service, { waitForBucketEmpty })).toBe(2);
+    expect(waitForBucketEmpty).toHaveBeenNthCalledWith(1, "avatars");
+    expect(waitForBucketEmpty).toHaveBeenNthCalledWith(2, "question-assets");
     expect(service.events).toEqual([
       "empty:avatars",
       "bucket:avatars",
       "empty:question-assets",
       "bucket:question-assets",
     ]);
+  });
+
+  it("waits for the asynchronous Storage delete queue before deleting a bucket", async () => {
+    const sql = vi
+      .fn()
+      .mockResolvedValueOnce("true")
+      .mockResolvedValueOnce("true")
+      .mockResolvedValueOnce("false");
+    const progress = [];
+    const delay = vi.fn(async () => {});
+
+    await waitForStorageBucketEmpty(sql, "question-assets", {
+      onProgress: async (event) => progress.push(event),
+      delay,
+      now: () => 0,
+      timeoutMs: 10,
+      pollIntervalMs: 5,
+    });
+
+    expect(sql).toHaveBeenCalledTimes(3);
+    expect(sql).toHaveBeenCalledWith(
+      "select exists(select 1 from storage.objects where bucket_id = 'question-assets');",
+    );
+    expect(delay.mock.calls.map(([duration]) => duration)).toEqual([5, 5]);
+    expect(progress).toEqual([
+      { event: "operation_started", operation: "waitForEmpty", bucketId: "question-assets" },
+      {
+        event: "object_check",
+        operation: "waitForEmpty",
+        bucketId: "question-assets",
+        objectsRemain: true,
+      },
+      {
+        event: "object_check",
+        operation: "waitForEmpty",
+        bucketId: "question-assets",
+        objectsRemain: true,
+      },
+      {
+        event: "object_check",
+        operation: "waitForEmpty",
+        bucketId: "question-assets",
+        objectsRemain: false,
+      },
+      { event: "operation_completed", operation: "waitForEmpty", bucketId: "question-assets" },
+    ]);
+  });
+
+  it("times out with the remaining bucket identified if Storage never becomes empty", async () => {
+    let clock = 0;
+    const sql = vi.fn(async () => "true");
+    await expect(
+      waitForStorageBucketEmpty(sql, "question-assets", {
+        timeoutMs: 2_000,
+        pollIntervalMs: 1_000,
+        delay: async (duration) => {
+          clock += duration;
+        },
+        now: () => clock,
+      }),
+    ).rejects.toMatchObject({
+      storageFailure: {
+        operation: "waitForEmpty",
+        bucketId: "question-assets",
+        code: "Timeout",
+      },
+    });
+    expect(sql).toHaveBeenCalledTimes(3);
   });
 
   it("deletes more than one Auth page without skipping users", async () => {
@@ -395,32 +467,138 @@ describe("clean Supabase installation", () => {
     await expect(clearAuth(service)).rejects.toThrow(/sigue devolviendo/);
   });
 
-  it.each(["storage", "auth"])(
-    "stops before PostgreSQL when %s fails and saves completed phases",
-    async (phase) => {
-      const service = fakeService({ buckets: [{ id: "avatars" }], users: [{ id: uuid }] });
-      if (phase === "storage") service.storage.emptyBucket.mockResolvedValue({ error: {} });
-      else service.auth.admin.deleteUser.mockResolvedValue({ error: {} });
+  it.each(["listBuckets", "emptyBucket", "deleteBucket", "verifyBuckets"])(
+    "records Storage operation details when %s fails",
+    async (failedOperation) => {
+      const service = fakeService({
+        buckets: [{ id: "avatars" }, { id: "question-assets" }],
+        users: [{ id: uuid }],
+      });
+      if (failedOperation === "listBuckets")
+        service.storage.listBuckets.mockResolvedValue({
+          data: null,
+          error: { message: "Listing failed", code: "StorageFault", statusCode: 503 },
+        });
+      if (failedOperation === "emptyBucket")
+        service.storage.emptyBucket.mockImplementation(async (id) => ({
+          error:
+            id === "question-assets"
+              ? {
+                  message: "Denied. Authorization: Bearer super-secret-token",
+                  code: "AccessDenied",
+                  statusCode: 403,
+                }
+              : null,
+        }));
+      if (failedOperation === "deleteBucket")
+        service.storage.deleteBucket.mockResolvedValue({
+          error: { message: "Delete failed", code: "StorageFault", statusCode: 409 },
+        });
+      if (failedOperation === "verifyBuckets") {
+        let calls = 0;
+        service.storage.listBuckets.mockImplementation(async () => {
+          calls++;
+          return calls === 1
+            ? { data: [{ id: "avatars" }, { id: "question-assets" }], error: null }
+            : { data: [{ id: "unexpected" }], error: null };
+        });
+      }
+
       const reset = vi.fn();
       const journals = [];
-      await expect(
-        runEnvironmentReset({
-          args: ["--target", "staging"],
-          dependencies: {
-            resolveEnvironment: async () => config,
-            assertPreconditions: async () => {},
-            environmentClient: () => service,
-            resetDatabase: reset,
-            writeJsonSecure: async (_, journal) => journals.push(structuredClone(journal)),
-          },
-        }),
-      ).rejects.toThrow(/interrumpido/);
+      const logs = [];
+      const result = await runEnvironmentReset({
+        args: ["--target", "staging"],
+        dependencies: {
+          resolveEnvironment: async () => config,
+          assertPreconditions: async () => {},
+          environmentClient: () => service,
+          withSql: async (_config, callback) => callback(async () => "false"),
+          resetDatabase: reset,
+          log: (line) => logs.push(line),
+          writeJsonSecure: async (_, journal) => journals.push(structuredClone(journal)),
+        },
+      }).catch((error) => error);
+
+      const failedJournal = journals.at(-1);
+      expect(result).toBeInstanceOf(Error);
+      expect(result.message).toContain(`Reinicio interrumpido en storage (${failedOperation}`);
       expect(reset).not.toHaveBeenCalled();
-      if (phase === "storage") expect(service.auth.admin.listUsers).not.toHaveBeenCalled();
-      expect(journals.at(-1).status).toBe("failed");
-      expect(journals.at(-1).completedSteps).toEqual(phase === "storage" ? [] : ["storage"]);
+      expect(service.auth.admin.listUsers).not.toHaveBeenCalled();
+      expect(failedJournal.status).toBe("failed");
+      expect(failedJournal.completedSteps).toEqual([]);
+      expect(failedJournal.storage).toMatchObject({
+        status: "failed",
+        currentOperation: failedOperation,
+        error: { operation: failedOperation },
+      });
+      expect(logs.some((line) => line.startsWith("Storage:"))).toBe(true);
+
+      if (failedOperation === "emptyBucket") {
+        expect(failedJournal.storage).toMatchObject({
+          currentBucket: "question-assets",
+          bucketProgress: [
+            {
+              id: "avatars",
+              emptyRequested: true,
+              emptyVerified: true,
+              objectsRemain: false,
+              deleted: true,
+            },
+            {
+              id: "question-assets",
+              emptyRequested: false,
+              emptyVerified: false,
+              objectsRemain: null,
+              deleted: false,
+            },
+          ],
+          error: {
+            bucketId: "question-assets",
+            code: "AccessDenied",
+            statusCode: 403,
+          },
+        });
+        expect(failedJournal.storage.error.message).not.toContain("super-secret-token");
+        expect(result.message).not.toContain("super-secret-token");
+      }
+      if (failedOperation === "deleteBucket")
+        expect(failedJournal.storage.bucketProgress[0]).toEqual({
+          id: "avatars",
+          emptyRequested: true,
+          emptyVerified: true,
+          objectsRemain: false,
+          deleted: false,
+        });
+      if (failedOperation === "verifyBuckets")
+        expect(failedJournal.storage.error.message).toContain("unexpected");
     },
   );
+
+  it("keeps completed Storage evidence when Auth fails before PostgreSQL", async () => {
+    const service = fakeService({ buckets: [{ id: "avatars" }], users: [{ id: uuid }] });
+    service.auth.admin.deleteUser.mockResolvedValue({ error: {} });
+    const reset = vi.fn();
+    const journals = [];
+    const result = await runEnvironmentReset({
+      args: ["--target", "staging"],
+      dependencies: {
+        resolveEnvironment: async () => config,
+        assertPreconditions: async () => {},
+        environmentClient: () => service,
+        withSql: async (_config, callback) => callback(async () => "false"),
+        resetDatabase: reset,
+        log: () => {},
+        writeJsonSecure: async (_, journal) => journals.push(structuredClone(journal)),
+      },
+    }).catch((error) => error);
+    expect(result).toBeInstanceOf(Error);
+    expect(result.message).toContain("Reinicio interrumpido en auth");
+    expect(reset).not.toHaveBeenCalled();
+    expect(journals.at(-1).status).toBe("failed");
+    expect(journals.at(-1).completedSteps).toEqual(["storage"]);
+    expect(journals.at(-1).storage).toMatchObject({ status: "complete" });
+  });
 
   it("retires only the old bootstrap artifacts, keeping reset evidence", async () => {
     const directory = await mkdtemp(path.join(os.tmpdir(), "flash-environment-artifacts-"));

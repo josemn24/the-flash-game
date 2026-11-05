@@ -305,6 +305,17 @@ sin seed, diccionarios, usuarios ni salas. También elimina las credenciales com
 manifiestos de escenario antiguos; conserva `output/staging/reset-manifest.json` como evidencia.
 No ejecuta después ningún bootstrap.
 
+Durante la limpieza, la consola indica cada operación de Storage. El manifiesto se actualiza
+progresivamente con la operación actual, el bucket, el progreso de cada bucket y el error
+(código, estado HTTP y mensaje saneado). Si falla Storage, puede haber buckets ya vaciados o
+eliminados: consulta `storage` en el manifiesto y verifica el estado actual en Supabase antes de
+reintentar el reset.
+
+`emptyBucket` inicia el borrado asíncrono. El reset comprueba de forma read-only que ya no queden
+filas de ese bucket en `storage.objects` antes de pedir su eliminación; espera hasta dos minutos.
+Si el borrado no termina dentro de ese límite, se detiene en `waitForEmpty` y no continúa a Auth ni
+a PostgreSQL.
+
 ### Bootstrap de escenarios
 
 Tras el reset, o sobre una base migrada, ejecuta uno o ambos escenarios. Primero comprueba cada uno
