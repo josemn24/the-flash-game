@@ -137,7 +137,7 @@ const SBR_QUESTIONS = [
     slug: "sbr-grand-canyon-progressive",
     type: "progressive-image",
     points: 7,
-    timeLimitMs: 20000,
+    timeLimitMs: 25000,
     publicPayload: {
       category: "Geografía",
       tags: tags(
@@ -171,7 +171,7 @@ const SBR_QUESTIONS = [
     slug: "sbr-grand-canyon-heat-map",
     type: "heat-map",
     points: 7,
-    timeLimitMs: 18000,
+    timeLimitMs: 25000,
     payloadSchemaVersion: 2,
     publicPayload: {
       category: "Geografía",
