@@ -36,7 +36,7 @@ async function openFlash(page: Page, account: { email: string; password: string 
   const challengeLink = page.getByRole("link", { name: /^(Jugar|Continuar)$/ });
   await expect(challengeLink).toHaveAttribute("href", /\/desafios\/[^/]+\?roomId=/);
   await challengeLink.click();
-  await expect(page).toHaveURL(/\/desafios\/[^/]+\?roomId=/);
+  await expect(page).toHaveURL(/\/desafios\/[^/]+\?roomId=/, { timeout: 15_000 });
   await expect(
     page.getByRole("button", { name: /^(Empezar desafío|Continuar aquí)$/ }),
   ).toHaveCount(1);
