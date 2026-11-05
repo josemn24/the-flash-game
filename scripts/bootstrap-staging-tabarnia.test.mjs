@@ -73,7 +73,7 @@ describe("Tabarnia staging bootstrap", () => {
       scenario: "tabarnia",
       projectRef,
       memberCount: 15,
-      challengeCount: 8,
+      challengeCount: 9,
       seasonStartsAt: "2030-11-10T18:00:00.000Z",
     });
     expect(sideEffect).not.toHaveBeenCalled();

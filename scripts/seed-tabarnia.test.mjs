@@ -12,6 +12,7 @@ import {
   TABARNIA_FICTION_ALPHABET,
   tabarniaMultiverseQuestions,
 } from "./fixtures/scenarios/tabarnia-multiverse.mjs";
+import { TABARNIAVERSO_QUESTIONS } from "./fixtures/scenarios/tabarniaverso.mjs";
 
 function accounts() {
   return Object.fromEntries(
@@ -90,10 +91,10 @@ describe("Tabarnia seed", () => {
     }
   });
   it.each([
-    ["10m", 10, 80],
-    ["30m", 30, 240],
-    ["1h", 60, 480],
-    ["90m", 90, 720],
+    ["10m", 10, 90],
+    ["30m", 30, 270],
+    ["1h", 60, 540],
+    ["90m", 90, 810],
   ])(
     "generates matching SQL and manifest for %s without changing game clocks",
     (schedule, minutes, total) => {
@@ -113,7 +114,7 @@ describe("Tabarnia seed", () => {
         seasonDurationMinutes: total,
         seasonStartsAt: "2099-10-20T17:00:20.168Z",
       });
-      expect(data.publications).toHaveLength(8);
+      expect(data.publications).toHaveLength(9);
       expect(data.publications.every((publication) => publication.status === "scheduled")).toBe(
         true,
       );
@@ -161,13 +162,13 @@ describe("Tabarnia seed", () => {
     expect(output).toMatchObject({
       scheduleProfile: "60m",
       scheduleWindowMinutes: 60,
-      seasonDurationMinutes: 480,
+      seasonDurationMinutes: 540,
     });
     expect(output.publications.every((publication) => publication.status === "scheduled")).toBe(
       true,
     );
     expect(dockerSql).toHaveBeenCalledOnce();
-    expect(dockerSql.mock.calls[0][0]).toContain("interval '480 minutes'");
+    expect(dockerSql.mock.calls[0][0]).toContain("interval '540 minutes'");
     expect(writeFixture).toHaveBeenCalledWith(
       "tabarnia",
       expect.objectContaining({ data: output }),
@@ -358,7 +359,97 @@ describe("Tabarnia seed", () => {
     );
   });
 
-  it("generates eight sequential publications in the requested order without history", () => {
+  describe("Tabarniaverso", () => {
+    function correctAnswerFor({ solutionPayload }) {
+      return (
+        solutionPayload.correctAnswer ?? solutionPayload.correctOrder ?? solutionPayload.matches
+      );
+    }
+
+    function evaluate(question, answer = correctAnswerFor(question)) {
+      return supabaseCompetitiveEvaluator.evaluate({
+        receiptId: "00000000-0000-4000-8000-000000000001",
+        questionVersionId: "00000000-0000-4000-8000-000000000002",
+        receivedAt: "2026-11-05T00:00:00Z",
+        questionType: question.type,
+        payloadSchemaVersion: question.payloadSchemaVersion,
+        publicPayload: question.publicPayload,
+        solutionPayload: question.solutionPayload,
+        timeLimitMs: question.timeLimitMs,
+        itemPoints: question.points,
+        itemConfigSchemaVersion: 1,
+        itemConfig: {},
+        mode: "flash",
+        modeConfigSchemaVersion: 1,
+        modeConfig: {},
+        timeUsedMs: 0,
+        timedOut: false,
+        answer,
+      });
+    }
+
+    it("defines the agreed order, formats, answers and weights", () => {
+      expect(
+        TABARNIAVERSO_QUESTIONS.map((question) => [question.type, correctAnswerFor(question)]),
+      ).toEqual([
+        ["multiple-choice", "Patrice Désilets y Jade Raymond"],
+        [
+          "multiple-choice",
+          "Acercarse al orgasmo y reducir o pausar la estimulación para retrasarlo.",
+        ],
+        ["multiple-choice", "Ser macho."],
+        ["estimation", 96],
+        ["multiple-choice", "Betania"],
+        ["multiple-choice", "Miller"],
+        ["true-false", true],
+        ["multiple-choice", "Circuito de Jerez"],
+        ["short-text", "Canberra"],
+        ["multiple-choice", "Dos"],
+        ["multiple-choice", "Pokémon: Catch the Numbers!"],
+        ["ordering", ["Troposfera", "Estratosfera", "Mesosfera", "Termosfera"]],
+        [
+          "matching",
+          { fenrir: "nordica", anubis: "egipcia", cerbero: "griega", quetzalcoatl: "mexica" },
+        ],
+        ["odd-one-out", "el-grito"],
+      ]);
+      expect(
+        TABARNIAVERSO_QUESTIONS.map(({ points, timeLimitMs }) => [points, timeLimitMs]),
+      ).toEqual([[8, 15_000], [8, 15_000], ...Array.from({ length: 12 }, () => [7, 15_000])]);
+    });
+
+    it.each(TABARNIAVERSO_QUESTIONS)("publishes and scores $slug", (question) => {
+      const { points, ...document } = question;
+      expect(() => parseFlashEditorialQuestionDocument(document)).not.toThrow();
+      expect(evaluate(question)).toMatchObject({ status: "correct", points });
+    });
+
+    it("scores the Zelda estimates by distance and cuts off at four points", () => {
+      const question = TABARNIAVERSO_QUESTIONS[3];
+      expect(question.publicPayload).toMatchObject({
+        min: 80,
+        max: 100,
+        step: 1,
+        initialValue: 90,
+        unit: "/100",
+      });
+      for (const answer of [95, 97]) {
+        expect(evaluate(question, answer)).toMatchObject({ status: "partial", points: 5 });
+      }
+      for (const answer of [91, 92, 100]) {
+        expect(evaluate(question, answer)).toMatchObject({ status: "incorrect", points: 0 });
+      }
+    });
+
+    it("normalizes the single accepted spelling of Canberra", () => {
+      const question = TABARNIAVERSO_QUESTIONS[8];
+      expect(question.solutionPayload.acceptedAnswers).toEqual(["Canberra"]);
+      expect(evaluate(question, "canberra")).toMatchObject({ status: "correct", points: 7 });
+      expect(evaluate(question, "Sídney")).toMatchObject({ status: "incorrect", points: 0 });
+    });
+  });
+
+  it("generates nine sequential publications in the requested order without history", () => {
     const sql = buildTabarniaDomainSql({
       accounts: accounts(),
       sbrAssetMetadata: {
@@ -397,6 +488,9 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain(
       "'scheduled', date_trunc('minute', now()) + interval '168 hours', date_trunc('minute', now()) + interval '192 hours'",
     );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '192 hours', date_trunc('minute', now()) + interval '216 hours'",
+    );
     expect(sql).toContain("'superadmin'");
     expect(sql.match(/'owner'/g)).toHaveLength(1);
     expect(sql.match(/'member'/g)).toHaveLength(
@@ -408,6 +502,7 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain("'Queens'");
     expect(sql).toContain("'Flow Free'");
     expect(sql).toContain("'La Biblia'");
+    expect(sql).toContain("'Tabarniaverso'");
     expect(sql).toContain("'Steel Ball Run'");
     expect(sql).toContain("'survival'");
     expect(sql).toContain("'pyramid'");
@@ -506,7 +601,10 @@ describe("Tabarnia seed", () => {
       "'scheduled', date_trunc('minute', now()) + interval '35 minutes', date_trunc('minute', now()) + interval '40 minutes'",
     );
     expect(sql).toContain(
-      "'active', date_trunc('minute', now()), date_trunc('minute', now()) + interval '40 minutes'",
+      "'scheduled', date_trunc('minute', now()) + interval '40 minutes', date_trunc('minute', now()) + interval '45 minutes'",
+    );
+    expect(sql).toContain(
+      "'active', date_trunc('minute', now()), date_trunc('minute', now()) + interval '45 minutes'",
     );
   });
 
@@ -542,7 +640,7 @@ describe("Tabarnia seed", () => {
     expect(output).toMatchObject({
       scheduleProfile: "fast",
       scheduleWindowMinutes: 5,
-      seasonDurationMinutes: 40,
+      seasonDurationMinutes: 45,
     });
     expect(
       output.publications.map((publication) => [
@@ -558,6 +656,7 @@ describe("Tabarnia seed", () => {
       [25, 5],
       [30, 5],
       [35, 5],
+      [40, 5],
     ]);
   });
 
@@ -637,6 +736,7 @@ describe("Tabarnia seed", () => {
       ["alphabet", 16, 100],
       ["time-trial", 7, 100],
       ["pyramid", 7, 100],
+      ["flash", 14, 100],
     ]);
     expect(output.publicationId).toBe(output.publications[0]?.id);
     expect(output.publications.map((publication) => publication.title)).toEqual([
@@ -648,9 +748,11 @@ describe("Tabarnia seed", () => {
       "Multiverso friki",
       "Flow Free",
       "La Biblia",
+      "Tabarniaverso",
     ]);
     expect(output.publications.map((publication) => publication.status)).toEqual([
       "open",
+      "scheduled",
       "scheduled",
       "scheduled",
       "scheduled",

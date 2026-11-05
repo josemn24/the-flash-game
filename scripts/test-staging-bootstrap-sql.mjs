@@ -52,6 +52,7 @@ export async function testStagingBootstrapSql(sql) {
       ]),
     ),
   );
+  const tabarniaverso = data.publications.at(-1);
   const betaVip = stagingBetaVipManifest();
   const spain = await prepareSpainAssets();
   try {
@@ -94,8 +95,31 @@ do $$ begin
   if (select count(*) from public.room_memberships where room_id = '${betaVip.room.id}') <> 1 then
     raise exception 'expected one BetaVIP owner';
   end if;
-  if (select count(*) from public.scheduled_challenges where season_id = '${data.seasonId}') <> 8 then
-    raise exception 'expected eight Tabarnia publications';
+  if (select count(*) from public.scheduled_challenges where season_id = '${data.seasonId}') <> 9 then
+    raise exception 'expected nine Tabarnia publications';
+  end if;
+  if not exists (
+    select 1
+    from public.scheduled_challenges ninth
+    join public.scheduled_challenges eighth
+      on eighth.season_id = ninth.season_id and eighth.number = 8
+    join private.challenge_versions v on v.id = ninth.challenge_version_id
+    where ninth.id = '${tabarniaverso.id}' and ninth.number = 9 and ninth.status = 'scheduled'
+      and ninth.opens_at = eighth.closes_at and ninth.closes_at - ninth.opens_at = interval '24 hours'
+      and v.title = 'Tabarniaverso' and v.mode = 'flash' and v.status = 'published'
+  ) then
+    raise exception 'expected Tabarniaverso as the ninth consecutive publication';
+  end if;
+  if not exists (
+    select 1
+    from private.challenge_items i
+    join private.question_versions q on q.id = i.question_version_id
+    join private.question_version_solutions s on s.question_version_id = q.id
+    where i.challenge_version_id = '${tabarniaverso.challengeVersionId}'
+      and q.time_limit_ms = 15000 and q.status = 'published'
+    having count(*) = 14 and count(distinct i.question_version_id) = 14 and sum(i.points) = 100
+  ) then
+    raise exception 'expected fourteen distinct published Tabarniaverso questions with solutions and 100 points';
   end if;
   if (select count(*) from public.scheduled_challenges where season_id = '${betaVip.seasonId}') <> 5 then
     raise exception 'expected five BetaVIP publications';

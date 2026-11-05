@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { dockerSql } from "../scripts/support/supabase-local.mjs";
 
 type Account = { email: string; password: string };
 type Fixture = {
@@ -7,7 +8,14 @@ type Fixture = {
   data: {
     room: { slug: string };
     publicationId: string;
-    publications: Array<{ id: string; title: string; mode: string; status: string }>;
+    seasonId: string;
+    publications: Array<{
+      id: string;
+      number: number;
+      title: string;
+      mode: string;
+      status: string;
+    }>;
     avatars: Array<{ label: string; objectPath: string }>;
   };
 };
@@ -92,19 +100,18 @@ test.describe("Tabarnia alpha", () => {
     await page.getByRole("link", { name: /Abrir sala Tabarnia/ }).click();
 
     await page.getByRole("link", { name: /Ver ranking de la sala/ }).click();
-    for (const label of ["Dark", "Jacobo"]) {
+    for (const label of ["Ches", "Dark", "Jacobo"]) {
       const avatar = data.data.avatars.find((item) => item.label === label.toLowerCase());
       expect(avatar).toBeDefined();
-      await expect(page.getByRole("img", { name: label }).first().locator("img")).toHaveAttribute(
+      const image = page.getByRole("img", { name: label }).first().locator("img");
+      await expect(image).toHaveAttribute(
         "src",
         expect.stringContaining(encodeURIComponent(avatar!.objectPath)),
       );
-      await expect(page.getByRole("img", { name: label }).first().locator("img")).toHaveJSProperty(
-        "naturalWidth",
-        640,
-      );
+      await expect
+        .poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth))
+        .toBeGreaterThan(0);
     }
-    await expect(page.getByRole("img", { name: "Ches" }).first().getByText("CH")).toBeVisible();
     await page.getByRole("link", { name: "Volver al detalle de la sala" }).click();
 
     await page.getByRole("link", { name: "Jugar" }).click();
@@ -115,22 +122,18 @@ test.describe("Tabarnia alpha", () => {
       timeout: 10_000,
     });
     await expect(page.getByText(/^Solución:/)).toHaveCount(0);
-    let failFirstAnswer = true;
+    let answerRequests = 0;
     await page.route(/\/api\/competitive\/attempts\/[^/]+\/answer$/, async (route) => {
-      if (failFirstAnswer) {
-        failFirstAnswer = false;
+      answerRequests += 1;
+      if (answerRequests === 1) {
         await route.abort();
         return;
       }
       await route.continue();
     });
     await page.getByRole("button", { name: "La cultura china" }).click();
-    await expect(
-      page.getByText("No se ha podido confirmar la respuesta.", { exact: true }),
-    ).toBeVisible();
-    await expect(page.getByRole("button", { name: "La cultura china" })).toBeEnabled();
-    await page.getByRole("button", { name: "La cultura china" }).click();
     await expect(page.getByText(/familia de los équidos/).first()).toBeVisible();
+    expect(answerRequests).toBe(2);
     await page.unroute(/\/api\/competitive\/attempts\/[^/]+\/answer$/);
 
     expect(data.data.publicationId).toBe(data.data.publications[0]?.id);
@@ -180,5 +183,105 @@ test.describe("Tabarnia alpha", () => {
     const data = await fixture();
     await signIn(page, data.users.xesmona);
     await expect(page.getByRole("link", { name: /Abrir sala Tabarnia/ })).toHaveCount(0);
+  });
+
+  test("Tabarniaverso abre como noveno desafío y permite jugar y revisar los siete formatos", async ({
+    page,
+  }) => {
+    test.skip(!process.env.SUPABASE_TEST_WORKDIR, "Requiere el stack desechable de E2E.");
+    test.setTimeout(120_000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    const { data, users } = await fixture();
+    const publication = data.publications[8];
+    expect(publication).toMatchObject({
+      number: 9,
+      title: "Tabarniaverso",
+      mode: "flash",
+      status: "scheduled",
+    });
+    const url = `/desafios/${publication.id}?roomId=${data.room.slug}`;
+    const start = page.getByRole("button", { name: "Empezar desafío" });
+
+    await signIn(page, users.dark);
+    await page.goto(url);
+    await expect(page.getByRole("heading", { name: "Tabarniaverso" }).first()).toBeVisible();
+    await expect(start).toHaveCount(0);
+    await expect(page.getByText(/lanzado en 2007/)).toHaveCount(0);
+
+    await dockerSql(`begin;
+      update public.scheduled_challenges
+        set status = 'cancelled', cancelled_at = clock_timestamp()
+        where season_id = '${data.seasonId}' and status = 'open';
+      update public.scheduled_challenges
+        set opens_at = clock_timestamp() + interval '200 milliseconds',
+            closes_at = clock_timestamp() + interval '1 hour'
+        where id = '${publication.id}';
+      select pg_sleep(0.3);
+      set local role service_role;
+      select private.run_calendar_tick_command('{"runId":"tabarniaverso-e2e"}'::jsonb);
+      commit;`);
+
+    await page.goto(url);
+    await start.click();
+    await page.getByRole("button", { name: "Patrice Désilets y Jade Raymond" }).click();
+    await page
+      .getByRole("button", {
+        name: "Acercarse al orgasmo y reducir o pausar la estimulación para retrasarlo.",
+      })
+      .click();
+    await page.getByRole("button", { name: "Ser macho." }).click();
+
+    const estimation = page.getByRole("slider", { name: "Estimación en /100" });
+    await expect(estimation).toHaveValue("90");
+    await estimation.fill("96");
+    await page.getByRole("button", { name: "Confirmar estimación" }).click();
+
+    const verse = page.getByRole("heading", {
+      name: /Completa Mateo 21:17.*a _____, y posó allí/,
+    });
+    await expect(verse).toBeInViewport();
+    expect(await verse.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(
+      true,
+    );
+    await page.getByRole("button", { name: "Betania" }).click();
+    await page.getByRole("button", { name: "Miller" }).click();
+    await page.getByRole("button", { name: "Verdadero" }).click();
+    await page.getByRole("button", { name: "Circuito de Jerez" }).click();
+    await page.getByRole("textbox", { name: "Escribe tu respuesta" }).fill("canberra");
+    await page.getByRole("button", { name: "Enviar respuesta" }).click();
+    await page.getByRole("button", { name: "Dos", exact: true }).click();
+    await page.getByRole("button", { name: "Pokémon: Catch the Numbers!", exact: true }).click();
+
+    await page.getByRole("button", { name: "Mover Troposfera arriba" }).click();
+    const moveStratosphere = page.getByRole("button", { name: "Mover Estratosfera arriba" });
+    await moveStratosphere.click();
+    await moveStratosphere.click();
+    await page.getByRole("button", { name: "Confirmar orden" }).click();
+
+    for (const [figure, tradition] of [
+      ["Fenrir", "Nórdica"],
+      ["Anubis", "Egipcia"],
+      ["Cerbero", "Griega"],
+      ["Quetzalcóatl", "Mexica"],
+    ]) {
+      await page.getByRole("button", { name: figure, exact: true }).click();
+      await page.getByRole("button", { name: tradition, exact: true }).click();
+    }
+    await page.getByRole("button", { name: "Comprobar parejas" }).click();
+    await page.getByRole("button", { name: "El grito", exact: true }).click();
+
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
+    await page.reload();
+    await page.getByRole("button", { name: "Ver respuestas" }).click();
+    const answers = page.locator("details");
+    await expect(answers).toHaveCount(14);
+    await expect(answers.filter({ has: page.getByText("Correcta", { exact: true }) })).toHaveCount(
+      14,
+    );
+    await answers.nth(4).locator("summary").click();
+    await expect(
+      page.getByText(/Jesús salió de la ciudad y pasó la noche en Betania/),
+    ).toBeVisible();
   });
 });

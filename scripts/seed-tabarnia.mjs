@@ -13,6 +13,10 @@ import { TABARNIA_PYRAMID_LOGIC_CONTENT } from "./fixtures/scenarios/tabarnia-py
 import { TABARNIA_QUEENS_TIME_TRIAL } from "./fixtures/scenarios/tabarnia-time-trial-queens.mjs";
 import { TABARNIA_CONNECT_PAIRS_TIME_TRIAL } from "./fixtures/scenarios/tabarnia-time-trial-connect-pairs.mjs";
 import { SBR_QUESTIONS } from "./fixtures/scenarios/sbr.mjs";
+import {
+  TABARNIAVERSO_QUESTIONS,
+  TABARNIAVERSO_SLUG,
+} from "./fixtures/scenarios/tabarniaverso.mjs";
 import { loadMiniWordleDictionary } from "./load-mini-wordle-dictionary.mjs";
 import {
   normalizeStartAt,
@@ -326,6 +330,7 @@ function challengeId(slug) {
     [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]:
       "challenge-definition:tabarnia-connect-pairs-time-trial",
     "steel-ball-run": "challenge-definition:steel-ball-run",
+    [TABARNIAVERSO_SLUG]: "challenge-definition:tabarniaverso",
   };
   return stableId(labels[slug]);
 }
@@ -340,6 +345,7 @@ function challengeVersionId(slug) {
     [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]:
       "challenge-version:tabarnia-connect-pairs-time-trial-v1",
     "steel-ball-run": "challenge-version:steel-ball-run-v1",
+    [TABARNIAVERSO_SLUG]: "challenge-version:tabarniaverso-v1",
   };
   return stableId(labels[slug]);
 }
@@ -538,7 +544,24 @@ function tabarniaChallenges() {
       modeConfig: {},
       items: bible.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
     },
+    {
+      slug: TABARNIAVERSO_SLUG,
+      definitionSlug: TABARNIAVERSO_SLUG,
+      id: challengeId(TABARNIAVERSO_SLUG),
+      versionId: challengeVersionId(TABARNIAVERSO_SLUG),
+      title: "Tabarniaverso",
+      subtitle: "Catorce preguntas de temas variados",
+      description:
+        "Catorce preguntas contrarreloj sobre videojuegos, cine, ciencia, mitología, pintura y otros temas.",
+      mode: "flash",
+      modeConfig: {},
+      items: TABARNIAVERSO_QUESTIONS.map(({ slug, points }) => ({ questionSlug: slug, points })),
+    },
   ];
+}
+
+export function tabarniaChallengeCount() {
+  return tabarniaChallenges().length;
 }
 
 export function buildTabarniaDomainSql({
@@ -631,6 +654,7 @@ export function buildTabarniaDomainSql({
         ),
       ),
     })),
+    ...TABARNIAVERSO_QUESTIONS,
   ];
   for (const challenge of challenges) {
     challenge.items.forEach((item, index) => {
@@ -894,7 +918,7 @@ export function tabarniaManifest(
 export function validateTabarniaSchedule(schedule = "production", startsAt = null) {
   return scheduleSeason(
     resolveScheduleProfile(schedule),
-    tabarniaChallenges().length,
+    tabarniaChallengeCount(),
     "tabarnia",
     startsAt,
   );

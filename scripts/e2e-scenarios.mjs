@@ -2,7 +2,7 @@ export const E2E_BY_SCENARIO = Object.freeze({
   "product-measurement": ["e2e/product-measurement.spec.ts"],
   rehearsals: ["e2e/rehearsals.spec.ts"],
   betavip: ["e2e/betavip.spec.ts"],
-  tabarnia: ["e2e/tabarnia-time-trial.spec.ts"],
+  tabarnia: ["e2e/tabarnia-alpha.spec.ts", "e2e/tabarnia-time-trial.spec.ts"],
   "pyramid-session-conformance": ["e2e/pyramid-session-conformance.spec.ts"],
   "format-contracts": ["e2e/format-contracts.spec.ts"],
   "format-contracts-pyramid": ["e2e/format-contracts-pyramid.spec.ts"],
