@@ -18,7 +18,7 @@ create table public.scheduled_challenges (
   exclude using gist (
     season_id extensions.gist_uuid_ops with =,
     tstzrange(opens_at, closes_at, '[)') with &&
-  ) where (status <> 'cancelled')
+  ) where (status <> 'cancelled') deferrable initially immediate
 );
 
 create table public.attempts (
@@ -81,6 +81,12 @@ create table private.attempt_answers (
   status text not null check (status in ('correct', 'partial', 'incorrect', 'unanswered', 'timeout')),
   answer jsonb,
   result_details jsonb,
+  review_state jsonb check (review_state is null or (
+    jsonb_typeof(review_state) = 'object' and (
+      (review_state->>'type' = 'connect-pairs' and jsonb_typeof(review_state->'paths') = 'object') or
+      (review_state->>'type' = 'queens' and jsonb_typeof(review_state->'queens') = 'array')
+    )
+  )),
   points integer not null check (points between 0 and 100),
   presented_at timestamptz not null,
   submitted_at timestamptz,

@@ -128,9 +128,9 @@ test.describe("SBR — fixture persistido con mapa privado", () => {
     await waitForQuestion(page, /mangaka es el autor/);
     await page.getByRole("button", { name: "Hirohiko Araki" }).click();
 
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").nth(5).locator("summary").click();
     await expect(page.getByText(/El Gran Cañón está en el norte de Arizona/)).toBeVisible();

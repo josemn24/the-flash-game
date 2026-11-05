@@ -24,7 +24,7 @@ describe("FlashPopRoomDetail", () => {
     expect(markup).toContain("Flash Points");
     expect(markup).toContain("169");
     expect(markup).toContain("#3");
-    expect(markup).toContain("Biblia y religiones abrahámicas");
+    expect(markup).toContain("La Biblia");
     expect(markup).toContain("La Pirámide");
     expect(markup).not.toContain("7 preguntas");
     expect(markup).toContain("Jugar");

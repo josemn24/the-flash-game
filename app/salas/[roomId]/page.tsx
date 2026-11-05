@@ -1,3 +1,4 @@
+import { MeasurementProvider, ProductSignal } from "@/components/product/Measurement.client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopRoomDetail } from "@/components/game/production";
@@ -26,5 +27,10 @@ export default async function RoomPage({ params }: Props) {
   const model = await getRoomDetailPageModel((await params).roomId);
   if (!model) notFound();
 
-  return <FlashPopRoomDetail model={model} />;
+  return (
+    <MeasurementProvider roomId={(await params).roomId}>
+      <ProductSignal type="room_viewed" />
+      <FlashPopRoomDetail model={model} />
+    </MeasurementProvider>
+  );
 }

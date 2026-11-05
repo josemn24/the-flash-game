@@ -3,11 +3,11 @@
 ## Estado y alcance
 
 Las slices verificadas consolidan la integración real de Supabase. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet, F01/F02/F03/F04/F06/F07/F08/F12/F16/F18/F19,
-E01–E06/E10 y el portal privado consolidan la integración real de Supabase y completan el
-recorrido `Auth → home → mis salas → detalle → introducción autorizada → Flash/Narrative/Supervivencia/Pirámide competitivo →
-recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
-introducción, el gameplay Flash/Narrative/Supervivencia/Pirámide, los rankings, el historial común cerrado y la revisión completa consultan o
-mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
+E01–E06/E10 y el portal privado completan el recorrido `Auth → home → mis salas → detalle →
+introducción autorizada → Flash/Alfabeto/Narrative/Supervivencia/Pirámide/Contrarreloj competitivo
+→ recuperación/abandono → rankings → historial/revisión`: la home, el detalle de una sala, su
+introducción, el gameplay de los seis modos, los rankings, el historial común cerrado y la revisión
+completa consultan o mutan mediante fronteras autorizadas. `/admin` ya proporciona el contexto server-side de
 superadministración y las salas activas. S08 añade la primera mutación administrativa: creación
 transaccional de sala, owner y grupo inicial desde el portal. Alphabet ya usa una proyección
 server-only y los comandos competitivos existentes; los ajustes de sala ya tienen gestión parcial de
@@ -15,7 +15,8 @@ membresías (conceder/quitar admin y eliminación lógica por el owner), mientra
 bloqueo/desbloqueo e invitaciones completas siguen pendientes. Supervivencia aporta vidas autoritativas;
 S15 integra Pirámide con niveles, evaluación, finalización y revisión server-side, verificada en el
 stack local. Narrative reutiliza el ciclo genérico de intentos y también usa la lectura y sesión
-server-backed; la edición narrativa avanzada sigue fuera de alcance.
+server-backed; Contrarreloj usa consultas y comandos competitivos server-side. La edición narrativa
+avanzada sigue fuera de alcance.
 
 La dirección vigente es:
 
@@ -126,7 +127,7 @@ intentos e historial admiten `archived` cuando la publicación ya existente refe
 la creación o reprogramación de una publicación vuelve a exigir `published`.
 
 Eventos Mini-Wordle del Flash competitivo
-→ `features/game/useServerFlashSession.ts`
+→ `features/game/useFlashGameSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/mini-wordle/guess`
 → `server/competitive/attempt-api.ts`
 → `infrastructure/supabase/attempts/attemptCommands.ts`
@@ -135,7 +136,7 @@ Eventos Mini-Wordle del Flash competitivo
 → evaluador confiable desde la respuesta final construida por PostgreSQL
 
 Eventos Logic-code del Flash competitivo
-→ `features/game/useServerFlashSession.ts`
+→ `features/game/useFlashGameSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/logic-code/attempt`
 → `server/competitive/attempt-api.ts`
 → `infrastructure/supabase/attempts/attemptCommands.ts`
@@ -144,7 +145,7 @@ Eventos Logic-code del Flash competitivo
 → evaluador confiable desde `submittedCodes` e `incorrectAttempts` reconstruidos por PostgreSQL
 
 Eventos Progressive-clues del Flash competitivo
-→ `features/game/useServerFlashSession.ts`
+→ `features/game/useFlashGameSession.ts`
 → `POST /api/competitive/attempts/[attemptId]/progressive-clues/reveal`
 → `server/competitive/attempt-api.ts`
 → `infrastructure/supabase/attempts/attemptCommands.ts`
@@ -367,9 +368,8 @@ contratos del editor:
 | `/admin/questions/new`                 | `getSuperadminNewQuestionPageModel` + editor vacío       |
 | `/admin/questions/[questionVersionId]` | `getSuperadminQuestionVersionPageModel` + detalle/editor |
 
-No existen rutas de detalle para salas, temporadas o contenido. Los RPCs, comandos, payloads de
-Server Actions y permisos permanecen en sus módulos originales; esta extracción solo cambia la
-composición y la mantenibilidad de la UI.
+El portal dispone de detalle de sala, desafíos y preguntas; temporadas y calendario se
+componen en el detalle de sala. Los RPCs, comandos y permisos conservan sus módulos propios.
 
 ### Criterios de pulido y validación
 
@@ -388,7 +388,7 @@ salas, temporadas, contenido y calendario.
   contextualizado en una sala.
 - Los miembros antiguos pueden figurar en resultados históricos si eran competitivos cuando
   iniciaron el intento, pero ya no pueden leer la sala.
-- El historial exige una membresía activa del lector, incluye publicaciones `flash`, `survival` y `pyramid` `closed` sin
+- El historial exige una membresía activa del lector, incluye publicaciones de los seis modos en estado `closed` sin
   intentos `in_progress` y conserva publicaciones sin participantes. Las filas competitivas excluyen
   `test`, `invalidated` y `cancelled`; los espectadores no aparecen como jugadores.
 - La revisión propia y ajena exige `owner`, `admin` o `member`; `spectator` puede consultar historial y
@@ -424,8 +424,9 @@ formatos ni la evaluación local en rutas mock/práctica. Los recorridos competi
 Alphabet, Supervivencia, Narrative y Pirámide usan proyecciones `Server*Challenge` y lecturas que
 no envían soluciones ni niveles futuros.
 
-`RoomSessionProvider` y el `localStorage` de Pirámide permanecen disponibles solo en recorridos
-mock/práctica. Los modelos
+Los proveedores locales de Flash, Supervivencia, Pirámide, Alfabeto y Contrarreloj mantienen
+la autoridad en memoria en demos y ensayos autorizados; Pirámide ya no conserva su almacenamiento
+anterior en `localStorage`. Los modelos
 Supabase de S06/S07 no fusionan `localResults` ni `RoomSessionProvider`: el servidor es la única
 fuente de los rankings, historial y revisión históricos.
 

@@ -23,6 +23,7 @@ import {
 } from "@/app/admin/season-actions";
 import { utcToLocalDateTime } from "@/lib/zonedDateTime";
 import styles from "./SeasonManagement.module.css";
+import { CalendarChangeDialog } from "./CalendarChangeDialog.client";
 
 const initialState: SeasonActionState = {};
 function newKey() {
@@ -176,10 +177,11 @@ export function DraftSeasonEditor({
       aria-busy={pending}
     >
       <input type="hidden" name="seasonId" value={season.seasonId} readOnly />
+      <input type="hidden" name="expectedUpdatedAt" value={season.updatedAt ?? ""} readOnly />
       <input type="hidden" name="idempotencyKey" defaultValue="" />
       <div className={styles.formHeading}>
         <div>
-          <p className={styles.eyebrow}>Editar borrador</p>
+          <p className={styles.eyebrow}>Editar título</p>
           <h4>{season.title}</h4>
         </div>
       </div>
@@ -194,11 +196,15 @@ export function DraftSeasonEditor({
           <Input {...field} name="title" minLength={3} maxLength={80} defaultValue={season.title} />
         )}
       </FormField>
-      <SeasonDateFields
-        timeZone={room.timeZone}
-        startsAt={season.startsAt}
-        endsAt={season.endsAt}
-        state={state}
+      <input
+        type="hidden"
+        name="startsAtLocal"
+        value={utcToLocalDateTime(season.startsAt, room.timeZone)}
+      />
+      <input
+        type="hidden"
+        name="endsAtLocal"
+        value={utcToLocalDateTime(season.endsAt, room.timeZone)}
       />
       <ReasonField state={state} />
       <ErrorMessage state={state} />
@@ -259,7 +265,13 @@ export function ActivateSeasonForm({ season }: { readonly season: SuperadminPort
   );
 }
 
-function statusLabel(status: SeasonStatus) {
+function statusLabel(status: SeasonStatus, season?: SuperadminPortalSeason) {
+  if (status === "active" && season) {
+    const now = Date.parse(season.evaluatedAt ?? new Date().toISOString());
+    if (now >= Date.parse(season.endsAt)) return "Finalizada";
+    if (now < Date.parse(season.startsAt)) return "Programada";
+    return "En curso";
+  }
   return (
     {
       draft: "Borrador",
@@ -270,7 +282,9 @@ function statusLabel(status: SeasonStatus) {
     } satisfies Record<SeasonStatus, string>
   )[status];
 }
-function statusTone(status: SeasonStatus) {
+function statusTone(status: SeasonStatus, season?: SuperadminPortalSeason) {
+  if (statusLabel(status, season) === "Programada") return "info" as const;
+  if (statusLabel(status, season) === "Finalizada") return "neutral" as const;
   return status === "active"
     ? ("success" as const)
     : status === "cancelled"
@@ -298,8 +312,8 @@ export function SeasonCard({
           <p className={styles.eyebrow}>Temporada</p>
           <h4>{season.title}</h4>
         </div>
-        <Chip variant="status" tone={statusTone(season.status)}>
-          {statusLabel(season.status)}
+        <Chip variant="status" tone={statusTone(season.status, season)}>
+          {statusLabel(season.status, season)}
         </Chip>
       </div>
       <p className={styles.window}>
@@ -307,6 +321,9 @@ export function SeasonCard({
         {" → "}
         {format.format(new Date(season.endsAt))}
       </p>
+      {season.calendarPermissions?.canEditEnd ? (
+        <CalendarChangeDialog room={room} season={season} />
+      ) : null}
       {season.status === "draft" ? (
         <div className={styles.seasonActions}>
           <DraftSeasonEditor room={room} season={season} />

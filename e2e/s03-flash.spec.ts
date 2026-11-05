@@ -1,6 +1,7 @@
 import { loseGameplayConfirmations } from "./support/lost-confirmations";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { dockerSql } from "../scripts/support/supabase-local.mjs";
 
 type Fixture = {
   users: {
@@ -59,12 +60,12 @@ test.describe("S03 — Flash competitivo persistido", () => {
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Marte" }).dblclick();
 
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
     expect(await page.content()).not.toContain("S03_PRIVATE");
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").first().locator("summary").click();
     await expect(page.getByText("Lisboa es la capital de Portugal")).toBeVisible();
@@ -101,7 +102,7 @@ test.describe("S03 — Flash competitivo persistido", () => {
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Venus" }).click();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await expect(page.getByText(/0\/100 puntos/)).toBeVisible();
   });
 
@@ -114,8 +115,12 @@ test.describe("S03 — Flash competitivo persistido", () => {
     const secondContext = await browser.newContext();
     const secondPage = await secondContext.newPage();
     let takeoverRequests = 0;
+    const takeoverBodies: Record<string, unknown>[] = [];
+    let attemptId = "";
     await secondPage.route("**/api/competitive/attempts/*/takeover", async (route) => {
       takeoverRequests++;
+      takeoverBodies.push(route.request().postDataJSON());
+      attemptId = new URL(route.request().url()).pathname.split("/").at(-2)!;
       const response = await route.fetch();
       if (takeoverRequests === 1) {
         await response.body();
@@ -134,6 +139,8 @@ test.describe("S03 — Flash competitivo persistido", () => {
       await expect(secondPage.getByRole("button", { name: "Continuar aquí" })).toBeVisible();
       await secondPage.getByRole("button", { name: "Continuar aquí" }).click();
       await expect.poll(() => takeoverRequests).toBe(2);
+      expect(takeoverBodies[1]).toEqual(takeoverBodies[0]);
+      expect(attemptId).toMatch(/^[a-f0-9]{8}-[a-f0-9-]{27}$/);
       await expect(secondPage.getByRole("heading", { name: /planeta rojo/ })).toBeVisible({
         timeout: 20_000,
       });
@@ -144,7 +151,19 @@ test.describe("S03 — Flash competitivo persistido", () => {
       });
 
       await secondPage.getByRole("button", { name: "Marte" }).click();
-      await expect(secondPage.getByText("Desafío completado")).toBeVisible();
+      await expect(secondPage.locator("#challenge-result-title")).toBeVisible();
+      const { stdout } = await dockerSql(`select jsonb_build_object(
+        'attempts', (select count(*) from public.attempts other where other.player_id=a.player_id and other.scheduled_challenge_id=a.scheduled_challenge_id),
+        'controllers', (select count(*) from private.attempt_sessions where attempt_id=a.id and revoked_at is null),
+        'revokedControllers', (select count(*) from private.attempt_sessions where attempt_id=a.id and revoked_at is not null),
+        'accreditations', (select count(*) from private.flash_point_entries where attempt_id=a.id and entry_type='accreditation'),
+        'score', a.score,
+        'points', (select sum(amount) from private.flash_point_entries where attempt_id=a.id)
+      ) from public.attempts a where a.id='${attemptId}'::uuid;`);
+      const persisted = JSON.parse(stdout.trim());
+      expect(persisted).toMatchObject({ attempts: 1, controllers: 0, accreditations: 1 });
+      expect(persisted.revokedControllers).toBeGreaterThanOrEqual(2);
+      expect(persisted.points).toBe(persisted.score);
     } finally {
       await secondContext.close();
     }
@@ -161,7 +180,7 @@ test.describe("S03 — Flash competitivo persistido", () => {
     });
     await expect(page.getByRole("heading", { name: /planeta rojo/ })).toBeVisible();
     await page.getByRole("button", { name: "Venus" }).click();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await expect(page.getByText(/0\/100 puntos/)).toBeVisible();
   });
 

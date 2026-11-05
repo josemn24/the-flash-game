@@ -1,9 +1,21 @@
 "use client";
 
-import { Avatar, BackLink, BoltIcon, Card, Canvas, Chip } from "@/components/ui";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import {
+  Avatar,
+  BackLink,
+  BoltIcon,
+  Card,
+  Canvas,
+  Chip,
+  CrossIcon,
+  IconButton,
+} from "@/components/ui";
 import { ReviewAnswerList } from "@/components/game/shared";
 import { useRoomSession } from "@/features/rooms/RoomSessionProvider.client";
 import { applyRoomMemberChallengeResult } from "@/features/rooms/localResults";
+import { shouldBypassImageOptimization } from "@/lib/media/imageOptimization";
 import type { AnswerReview, AnswerResult } from "@/types/gameplay";
 import type { RoomMemberDetailModel } from "@/types/view-models/room";
 import styles from "./FlashPopRoomMemberDetail.module.css";
@@ -17,6 +29,7 @@ function toAnswerResult(answer: AnswerReview): AnswerResult {
     points: answer.points ?? 0,
     timeUsed: answer.timeUsed ?? 0,
     details: answer.details,
+    reviewState: answer.reviewState,
   };
 }
 
@@ -58,6 +71,7 @@ function AnswerHistory({
     marker: item.metadata?.alphabetLetter ?? String(index + 1).padStart(2, "0"),
     title: item.title,
     subtitle: item.subtitle,
+    showFullTitleOnExpand: progress?.mode === "flash" || progress?.mode === "survival",
     status: item.status,
     statusLabel:
       progress?.mode === "time-trial"
@@ -99,6 +113,9 @@ function AnswerHistory({
 }
 
 export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailModel }) {
+  const avatarDialogRef = useRef<HTMLDialogElement>(null);
+  const avatarCloseButtonRef = useRef<HTMLButtonElement>(null);
+  const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false);
   const { getCompletion } = useRoomSession();
   const completion =
     model.source === "supabase" || !model.challengeSummary
@@ -121,30 +138,19 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
   const attempt = result?.attempt;
   const hasAttempt = Boolean(attempt);
   const isComplete = Boolean(result?.completed && attempt);
-  const mode =
-    resolvedModel.challengeSummary?.mode ?? resolvedModel.reviewProgress?.mode ?? "flash";
-  const modeLabel =
-    mode === "alphabet"
-      ? "Alfabeto"
-      : mode === "survival"
-        ? "Supervivencia"
-        : mode === "pyramid"
-          ? "Pirámide"
-          : mode === "narrative"
-            ? "Narrativa"
-            : mode === "time-trial"
-              ? "Contrarreloj"
-              : "Flash";
-  const outcomeLabel =
-    resolvedModel.reviewProgress?.mode === "survival"
-      ? resolvedModel.reviewProgress.outcome === "survived"
-        ? "Superado"
-        : "Eliminado"
-      : resolvedModel.reviewProgress?.mode === "pyramid"
-        ? resolvedModel.reviewProgress.outcome === "summit"
-          ? "Cumbre"
-          : "Fallido"
-        : null;
+  const avatarSrc = resolvedModel.member.avatarSrc;
+
+  useEffect(() => {
+    const dialog = avatarDialogRef.current;
+    if (!dialog) return;
+
+    if (avatarSrc && isAvatarDialogOpen) {
+      if (!dialog.open) dialog.showModal();
+      avatarCloseButtonRef.current?.focus({ preventScroll: true });
+    } else if (dialog.open) {
+      dialog.close();
+    }
+  }, [avatarSrc, isAvatarDialogOpen]);
 
   return (
     <Canvas contentClassName={styles.content}>
@@ -154,38 +160,78 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
 
       <div>
         <section className={styles.profile} aria-labelledby="member-detail-title">
-          <Avatar
-            name={resolvedModel.member.name}
-            src={resolvedModel.member.avatarSrc}
-            initials={resolvedModel.member.initials}
-            tone="social"
-            size="lg"
-          />
+          {avatarSrc ? (
+            <button
+              type="button"
+              className={styles.avatarTrigger}
+              aria-label={`Ampliar foto de ${resolvedModel.member.name}`}
+              aria-haspopup="dialog"
+              aria-expanded={isAvatarDialogOpen}
+              onClick={() => setIsAvatarDialogOpen(true)}
+            >
+              <Avatar
+                name={resolvedModel.member.name}
+                src={avatarSrc}
+                initials={resolvedModel.member.initials}
+                tone="social"
+                size="lg"
+              />
+            </button>
+          ) : (
+            <Avatar
+              name={resolvedModel.member.name}
+              initials={resolvedModel.member.initials}
+              tone="social"
+              size="lg"
+            />
+          )}
           <div>
             <p className={styles.eyebrow}>{model.roomTitle}</p>
             <h1 id="member-detail-title">{resolvedModel.member.name}</h1>
-            <p className={styles.profileMeta}>
-              <span role="img" aria-label={`${resolvedModel.member.totalFlashPoints} Flash Points`}>
-                {resolvedModel.member.totalFlashPoints} ⚡
-              </span>{" "}
-              · #{resolvedModel.roomRank} en la sala
-            </p>
           </div>
         </section>
 
-        <Card as="section" className={styles.summary} aria-labelledby="attempt-summary-title">
-          <div className={styles.summaryHeader}>
-            <div>
-              <p className={styles.eyebrow}>
-                {model.source === "supabase" || resolvedModel.challengeSummary?.mode === "alphabet"
-                  ? `Resultado ${modeLabel}`
-                  : "Reto de hoy"}
-              </p>
-              <h2 id="attempt-summary-title">
-                {resolvedModel.challengeSummary?.title ?? "Sin reto disponible"}
-              </h2>
+        {avatarSrc ? (
+          <dialog
+            ref={avatarDialogRef}
+            className={styles.avatarDialog}
+            aria-label={`Foto de perfil de ${resolvedModel.member.name}`}
+            onClose={() => setIsAvatarDialogOpen(false)}
+            onCancel={(event) => {
+              event.preventDefault();
+              setIsAvatarDialogOpen(false);
+            }}
+            onClick={(event) => {
+              if (event.target === event.currentTarget) setIsAvatarDialogOpen(false);
+            }}
+          >
+            <div className={styles.avatarDialogSurface}>
+              <IconButton
+                ref={avatarCloseButtonRef}
+                className={styles.avatarDialogClose}
+                label={`Cerrar foto de ${resolvedModel.member.name}`}
+                onClick={() => setIsAvatarDialogOpen(false)}
+              >
+                <CrossIcon />
+              </IconButton>
+              <div className={styles.avatarDialogImage}>
+                <Image
+                  src={avatarSrc}
+                  alt={`Foto de perfil de ${resolvedModel.member.name}`}
+                  fill
+                  sizes="(max-width: 768px) calc(100vw - 48px), 720px"
+                  className={styles.avatarImage}
+                  unoptimized={shouldBypassImageOptimization(avatarSrc)}
+                />
+              </div>
             </div>
-          </div>
+          </dialog>
+        ) : null}
+
+        <Card as="section" className={styles.summary} aria-labelledby="attempt-summary-title">
+          <h2 id="attempt-summary-title">
+            {resolvedModel.challengeSummary?.title ?? "Sin reto disponible"}
+          </h2>
 
           <div className={styles.stats}>
             <div>
@@ -215,24 +261,6 @@ export function FlashPopRoomMemberDetail({ model }: { model: RoomMemberDetailMod
               <span>jugado</span>
             </div>
           </div>
-
-          {resolvedModel.reviewProgress?.mode === "survival" ? (
-            <div className={styles.detailBadges}>
-              <Chip variant="data">
-                {resolvedModel.reviewProgress.livesRemaining} de{" "}
-                {resolvedModel.reviewProgress.initialLives} vidas
-              </Chip>
-              <Chip variant="data">{outcomeLabel}</Chip>
-            </div>
-          ) : resolvedModel.reviewProgress?.mode === "pyramid" ? (
-            <div className={styles.detailBadges}>
-              <Chip variant="data">
-                {resolvedModel.reviewProgress.levelsCleared} de{" "}
-                {resolvedModel.reviewProgress.totalLevelCount} niveles
-              </Chip>
-              <Chip variant="data">{outcomeLabel}</Chip>
-            </div>
-          ) : null}
 
           {!hasAttempt ? (
             <div className={styles.emptyState}>

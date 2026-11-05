@@ -44,14 +44,14 @@ create function test_support.fail_accreditation() returns trigger language plpgs
 begin raise exception 'injected accreditation failure'; end $$;
 create trigger test_fail_accreditation before insert on private.flash_point_entries for each row execute function test_support.fail_accreditation();
 set local role service_role;
-select throws_ok($$select test_support.run('complete_attempt','{"score":100}')$$,'P0001','injected accreditation failure','Accreditation failure rolls back the whole close');
+select throws_ok($$select test_support.run('complete_attempt','{}')$$,'P0001','injected accreditation failure','Accreditation failure rolls back the whole close');
 reset role;
 select is((select status from public.attempts limit 1),'in_progress','Failed close preserves the active attempt');
 select is((select count(*) from private.attempt_sessions where revoked_at is not null),0::bigint,'Failed close preserves its controller');
 select is((select count(*) from private.flash_point_entries),0::bigint,'Failed close leaves no partial credit');
 drop trigger test_fail_accreditation on private.flash_point_entries;
 set local role service_role;
-select test_support.run('complete_attempt','{"score":100}');
+select test_support.run('complete_attempt','{}');
 select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Lost final confirmation repeats the exact result');
 select is((private.read_completed_attempt((select (state->>'attemptId')::uuid from test_support.runtime))->'result'->>'score')::integer,100,'Final result does not require a controller cookie');
 reset role;

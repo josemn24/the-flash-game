@@ -41,7 +41,7 @@ describe("room member ranking route", () => {
       }),
     });
 
-    expect(element.props.model.member.name).toBe("Dark");
+    expect(element.props.children.props.model.member.name).toBe("Dark");
   });
 
   it("rejects unknown rooms and members", async () => {

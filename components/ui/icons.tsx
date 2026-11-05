@@ -6,9 +6,11 @@ import {
   Bell,
   Check,
   ChevronRight,
+  CircleDashed,
   Clock,
   Crown,
   Eye,
+  FlaskConical,
   Heart,
   Lock,
   MoreHorizontal,
@@ -16,6 +18,7 @@ import {
   Pencil,
   RotateCcw,
   Settings,
+  Star,
   TriangleAlert,
   Trophy,
   UserRoundPlus,
@@ -60,8 +63,16 @@ export function CheckIcon(props: IconProps) {
   return <Check {...baseProps} {...props} />;
 }
 
+export function StarIcon(props: IconProps) {
+  return <Star {...baseProps} {...props} />;
+}
+
 export function CrossIcon(props: IconProps) {
   return <X {...baseProps} {...props} />;
+}
+
+export function PendingIcon(props: IconProps) {
+  return <CircleDashed {...baseProps} {...props} />;
 }
 
 export function CrownIcon(props: IconProps) {
@@ -177,6 +188,10 @@ export function HeartIcon(props: IconProps) {
 
 export function EyeIcon(props: IconProps) {
   return <Eye {...baseProps} {...props} />;
+}
+
+export function FlaskIcon(props: IconProps) {
+  return <FlaskConical {...baseProps} {...props} />;
 }
 
 export function NotebookIcon(props: IconProps) {

@@ -102,14 +102,12 @@ export function EscapeBoard({
         <span className={styles.exit} style={{ top: `${question.grid.exit.row * (100 / 6)}%` }}>
           →
         </span>
-        {blocks.map((block, index) => (
+        {blocks.map((block) => (
           <span
             key={block.id}
             className={`${styles.block} ${
               block.kind === "target" ? styles.target : styles.obstacle
-            } ${styles[`pattern${index % 4}`]} ${
-              animateEscape && block.kind === "target" ? styles.escaping : ""
-            }`}
+            } ${animateEscape && block.kind === "target" ? styles.escaping : ""}`}
             style={blockStyle(question, block)}
             aria-hidden="true"
           >
@@ -324,7 +322,7 @@ export function EscapeQuestion({
           >
             →
           </span>
-          {blocks.map((block, index) => {
+          {blocks.map((block) => {
             const dragging = dragVisual?.blockId === block.id;
             return (
               <button
@@ -332,7 +330,7 @@ export function EscapeQuestion({
                 type="button"
                 className={`${styles.block} ${
                   block.kind === "target" ? styles.target : styles.obstacle
-                } ${styles[`pattern${index % 4}`]} ${selectedId === block.id ? styles.selected : ""}`}
+                } ${selectedId === block.id ? styles.selected : ""}`}
                 style={{
                   ...blockStyle(question, block),
                   transform: dragging

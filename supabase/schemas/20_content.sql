@@ -16,6 +16,7 @@ create table private.question_versions (
   payload_schema_version integer not null default 1 check (payload_schema_version > 0),
   status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
   type text not null check (btrim(type) <> ''),
+  difficulty text not null default 'medium' check (difficulty in ('easy', 'medium', 'hard')),
   time_limit_ms integer not null check (time_limit_ms > 0),
   public_payload jsonb not null check (jsonb_typeof(public_payload) = 'object'),
   created_by_player_id uuid not null references public.players(id) on delete restrict,

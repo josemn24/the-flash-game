@@ -1,5 +1,5 @@
 import type { AnswerValue } from "@/types/contracts";
-import type { AnswerResultDetails, AnswerStatus } from "@/types/gameplay/result";
+import type { AnswerResultDetails, AnswerStatus, ReviewState } from "@/types/gameplay/result";
 
 export type AnswerReview = {
   questionId: string;
@@ -9,6 +9,7 @@ export type AnswerReview = {
   points?: number;
   timeUsed?: number;
   details?: AnswerResultDetails;
+  reviewState?: ReviewState;
 };
 
 export type AlphabetAnswerReview = Pick<

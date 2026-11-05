@@ -299,13 +299,13 @@ export function ServerEscapeQuestion({
           >
             →
           </span>
-          {blocks.map((block, index) => {
+          {blocks.map((block) => {
             const dragging = dragVisual?.blockId === block.id;
             return (
               <button
                 key={block.id}
                 type="button"
-                className={`${styles.block} ${block.kind === "target" ? styles.target : styles.obstacle} ${styles[`pattern${index % 4}`]} ${selectedId === block.id ? styles.selected : ""}`}
+                className={`${styles.block} ${block.kind === "target" ? styles.target : styles.obstacle} ${selectedId === block.id ? styles.selected : ""}`}
                 style={{
                   ...blockStyle(configuration, block),
                   transform: dragging

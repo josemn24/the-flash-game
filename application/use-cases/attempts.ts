@@ -1,3 +1,4 @@
+import { AttemptCommandError } from "@/application/errors/attempts";
 import {
   observePerformance,
   type PerformanceObserver,
@@ -33,6 +34,8 @@ import type {
   RecoverAttemptInput,
   SaveQueensDraftInput,
   SaveQueensDraftResult,
+  SaveConnectPairsDraftInput,
+  SaveConnectPairsDraftResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
   SubmitLogicCodeAttemptInput,
@@ -72,6 +75,7 @@ export type AttemptUseCaseDependencies = {
     | "submitWordHashtagSwap"
     | "submitQueensPlacement"
     | "saveQueensDraft"
+    | "saveConnectPairsDraft"
     | "validateQueensBoard"
     | "revealProgressiveClue"
     | "readEvaluationContext"
@@ -340,6 +344,10 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
     return this.commands.saveQueensDraft(input);
   }
 
+  saveConnectPairsDraft(input: SaveConnectPairsDraftInput): Promise<SaveConnectPairsDraftResult> {
+    return this.commands.saveConnectPairsDraft(input);
+  }
+
   async validateQueensBoard(input: ValidateQueensBoardInput): Promise<ValidateQueensBoardResult> {
     return this.evaluateTerminalCommand(input, await this.commands.validateQueensBoard(input));
   }
@@ -403,8 +411,10 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
         }),
       );
     } catch (error) {
-      const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
-      if (["stale_version", "already_evaluated", "idempotency_conflict"].includes(String(code))) {
+      if (
+        error instanceof AttemptCommandError &&
+        ["stale_version", "already_evaluated", "idempotency_conflict"].includes(error.code)
+      ) {
         const concurrent = await this.commands.readRecordedEvaluation(
           input.receiptId,
           input.sessionToken,

@@ -1,9 +1,10 @@
 "use client";
-import { ServerQueensQuestion } from "@/components/questions/formats/queens/ServerQueensQuestion";
+import { QueensSessionQuestion } from "@/components/questions/formats/queens/QueensSessionQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"queens">) {
   const {
     locked,
+    draftQueens,
     queensState,
     queensStatusVisible,
     queensError,
@@ -11,12 +12,13 @@ export function render(props: CompetitiveInputProps) {
     onQueensValidate,
     onRetryQueensValidation,
   } = props;
-  const question = props.question as Extract<CompetitiveInputProps["question"], { type: "queens" }>;
+  const { question } = props;
   return (
-    <ServerQueensQuestion
+    <QueensSessionQuestion
       key={question.id}
       question={question}
       progress={question.progress}
+      draftQueens={draftQueens}
       locked={locked}
       validationState={queensState}
       validationStatusVisible={queensStatusVisible}

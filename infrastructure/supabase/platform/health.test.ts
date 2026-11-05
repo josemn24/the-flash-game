@@ -62,6 +62,8 @@ describe("readPrivateHealth", () => {
     expect(markerQuery).toContain("member_previews jsonb");
     expect(markerQuery).toContain("private.prepare_attempt_session(uuid)");
     expect(markerQuery).toContain("private.read_completed_attempt(uuid)");
+    expect(markerQuery).toContain("public.run_calendar_tick(jsonb)");
+    expect(markerQuery).toContain("public.expire_stale_attempts(jsonb)");
     expect(markerQuery).toContain("private.read_recorded_evaluation(uuid,text)");
     expect(markerQuery).toContain("private.read_avatar_upload_confirmation(jsonb)");
     expect(markerQuery).toContain("private.claim_archived_avatar_cleanup(jsonb)");
@@ -72,6 +74,22 @@ describe("readPrivateHealth", () => {
     expect(markerQuery).toContain("private.execute_command(text,jsonb)");
     expect(markerQuery).toContain("case when terminal_reason_value = ''permission_revoked''");
     expect(markerQuery).toContain("private.raise_if_session_transferred");
+    expect(markerQuery).toContain("when 'complete' then(.*?)when 'abandon' then");
+    expect(markerQuery).toContain("not like '%''score''%'");
+    for (const operation of [
+      "start",
+      "takeover",
+      "prepare",
+      "activate",
+      "submission",
+      "evaluation",
+      "closure",
+    ]) {
+      expect(markerQuery).toContain(`private.handle_attempt_${operation}(`);
+    }
+    expect(markerQuery).toContain("required.delegation");
+    expect(markerQuery).toContain("select coalesce(sum(answer.points), 0)::integer into points");
+    expect(markerQuery).toContain("not like '%input->>''score''%'");
   });
 
   it("rejects an old expected revision", async () => {

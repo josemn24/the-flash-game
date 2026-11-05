@@ -16,7 +16,7 @@ export const pyramidQuestions = defineQuestionCatalog([
       },
       prompt: "¿Qué número rompe el patrón?",
       context: null,
-      timeLimitMs: 12000,
+      timeLimitMs: 25000,
       payload: {
         items: [
           {
@@ -32,8 +32,8 @@ export const pyramidQuestions = defineQuestionCatalog([
             label: "25",
           },
           {
-            id: "square-27",
-            label: "27",
+            id: "square-29",
+            label: "29",
           },
           {
             id: "square-36",
@@ -44,9 +44,9 @@ export const pyramidQuestions = defineQuestionCatalog([
     },
     privatePayload: {
       solution: {
-        explanation: "9, 16, 25 y 36 son cuadrados perfectos. 27 es el único que no lo es.",
+        explanation: "9, 16, 25 y 36 son cuadrados perfectos. 29 es el único que no lo es.",
         payload: {
-          correctAnswer: "square-27",
+          correctAnswer: "square-29",
         },
       },
       reveals: [],
@@ -67,7 +67,7 @@ export const pyramidQuestions = defineQuestionCatalog([
       },
       prompt: "Completa la secuencia.",
       context: null,
-      timeLimitMs: 18000,
+      timeLimitMs: 25000,
       payload: {
         options: ["26", "28", "30", "32"],
         media: null,
@@ -104,7 +104,7 @@ export const pyramidQuestions = defineQuestionCatalog([
       prompt:
         "Ordena de izquierda a derecha. Luna va inmediatamente después de Sol; Mar está antes que Sol; Nube está después de Luna; Río está antes que Mar.",
       context: null,
-      timeLimitMs: 30000,
+      timeLimitMs: 35000,
       payload: {
         items: ["Sol", "Río", "Nube", "Mar", "Luna"],
         directionLabels: {
@@ -362,7 +362,7 @@ export const pyramidQuestions = defineQuestionCatalog([
       },
       prompt: "Coloca cinco coronas sin repetir fila, columna o región.",
       context: null,
-      timeLimitMs: 60000,
+      timeLimitMs: 45000,
       payload: {
         grid: {
           rows: 5,

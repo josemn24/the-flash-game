@@ -79,10 +79,10 @@ test.describe("F16 — zip competitivo", () => {
     await page.getByRole("button", { name: "Reintentar", exact: true }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").nth(1).locator("summary").click();
     await expect(page.getByText("El camino serpentea por las cinco filas.").first()).toBeVisible();
@@ -96,7 +96,7 @@ test.describe("F16 — zip competitivo", () => {
     await expect(page.getByRole("heading", { name: /Une los números/ })).toBeVisible();
     await page.locator('[role="gridcell"] button').nth(1).click();
     await expect(page.getByText(/2\/25/)).toBeVisible();
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 45_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 45_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").last().locator("summary").click();
     await expect(page.getByText(/Celdas recorridas/)).toBeVisible();

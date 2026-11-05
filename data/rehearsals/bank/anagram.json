@@ -1,0 +1,234 @@
+[
+  {
+    "id": "flash-referencia-q9",
+    "version": 1,
+    "type": "anagram",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ordena las letras para formar la palabra.",
+      "tiles": [
+        {
+          "id": "t0",
+          "value": "T"
+        },
+        {
+          "id": "t1",
+          "value": "E"
+        },
+        {
+          "id": "t2",
+          "value": "N"
+        },
+        {
+          "id": "t3",
+          "value": "A"
+        },
+        {
+          "id": "t4",
+          "value": "L"
+        },
+        {
+          "id": "t5",
+          "value": "P"
+        },
+        {
+          "id": "t6",
+          "value": "A"
+        }
+      ],
+      "hint": "Cuerpo celeste que gira alrededor de una estrella."
+    },
+    "solutionPayload": {
+      "correctAnswer": "PLANETA",
+      "explanation": "Las letras se ordenan como P–L–A–N–E–T–A para formar PLANETA. Un planeta orbita alrededor de una estrella."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "flash-referencia-q9"
+  },
+  {
+    "id": "bank-anagrama-camino",
+    "version": 1,
+    "type": "anagram",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-anagrama-camino",
+    "publicPayload": {
+      "question": "Reconstruye la palabra a partir de su definición: Vía que se recorre para llegar a un lugar.",
+      "tiles": [
+        {
+          "id": "t0",
+          "value": "M"
+        },
+        {
+          "id": "t1",
+          "value": "I"
+        },
+        {
+          "id": "t2",
+          "value": "N"
+        },
+        {
+          "id": "t3",
+          "value": "O"
+        },
+        {
+          "id": "t4",
+          "value": "C"
+        },
+        {
+          "id": "t5",
+          "value": "A"
+        }
+      ],
+      "hint": "Vía que se recorre para llegar a un lugar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "CAMINO",
+      "explanation": "Las letras se ordenan como C–A–M–I–N–O para formar CAMINO. Un camino es una vía por la que se puede transitar."
+    }
+  },
+  {
+    "id": "bank-anagrama-ventana",
+    "version": 1,
+    "type": "anagram",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-anagrama-ventana",
+    "publicPayload": {
+      "question": "Reconstruye la palabra a partir de su definición: Abertura que deja entrar luz en una habitación.",
+      "tiles": [
+        {
+          "id": "t0",
+          "value": "N"
+        },
+        {
+          "id": "t1",
+          "value": "T"
+        },
+        {
+          "id": "t2",
+          "value": "A"
+        },
+        {
+          "id": "t3",
+          "value": "N"
+        },
+        {
+          "id": "t4",
+          "value": "A"
+        },
+        {
+          "id": "t5",
+          "value": "V"
+        },
+        {
+          "id": "t6",
+          "value": "E"
+        }
+      ],
+      "hint": "Abertura que deja entrar luz en una habitación."
+    },
+    "solutionPayload": {
+      "correctAnswer": "VENTANA",
+      "explanation": "Las letras se ordenan como V–E–N–T–A–N–A para formar VENTANA. Una ventana es una abertura de una pared que deja pasar luz y puede permitir ventilación."
+    }
+  },
+  {
+    "id": "bank-anagrama-easy",
+    "version": 1,
+    "type": "anagram",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-anagrama-easy",
+    "publicPayload": {
+      "question": "Ordena las letras según la definición.",
+      "tiles": [
+        {
+          "id": "t0",
+          "value": "O"
+        },
+        {
+          "id": "t1",
+          "value": "S"
+        },
+        {
+          "id": "t2",
+          "value": "L"
+        }
+      ],
+      "hint": "Estrella que ilumina la Tierra."
+    },
+    "solutionPayload": {
+      "correctAnswer": "SOL",
+      "explanation": "S–O–L forma SOL, la estrella de nuestro sistema planetario."
+    }
+  },
+  {
+    "id": "bank-anagrama-hard",
+    "version": 1,
+    "type": "anagram",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-anagrama-hard",
+    "publicPayload": {
+      "question": "Ordena las letras según la definición.",
+      "tiles": [
+        {
+          "id": "t0",
+          "value": "E"
+        },
+        {
+          "id": "t1",
+          "value": "M"
+        },
+        {
+          "id": "t2",
+          "value": "M"
+        },
+        {
+          "id": "t3",
+          "value": "T"
+        },
+        {
+          "id": "t4",
+          "value": "O"
+        },
+        {
+          "id": "t5",
+          "value": "T"
+        },
+        {
+          "id": "t6",
+          "value": "R"
+        },
+        {
+          "id": "t7",
+          "value": "O"
+        },
+        {
+          "id": "t8",
+          "value": "E"
+        },
+        {
+          "id": "t9",
+          "value": "R"
+        }
+      ],
+      "hint": "Instrumento que cuantifica la temperatura; escribe su nombre sin tilde."
+    },
+    "solutionPayload": {
+      "correctAnswer": "TERMOMETRO",
+      "explanation": "T–E–R–M–O–M–E–T–R–O forma TERMÓMETRO. El prefijo termo- alude a temperatura y -metro a medición; las dos emes y dos es deben conservarse."
+    }
+  }
+]

@@ -4,6 +4,7 @@ import type {
   WordHashtagSwap,
   WordHashtagWords,
 } from "@/types/gameplay";
+import { minimumSwapsForSequences } from "@/lib/word-hashtag/minimumSwaps";
 
 export const WORD_HASHTAG_SIZE = 5;
 export const WORD_HASHTAG_ACTIVE_CELLS = Array.from(
@@ -41,6 +42,17 @@ export type WordHashtagMetrics = {
   movesRemaining: number;
   optimalMoves: number;
   solved: boolean;
+};
+
+export type WordHashtagAnalysis =
+  | { kind: "invalid-answer" }
+  | { kind: "invalid-configuration" }
+  | { kind: "analyzed"; metrics: WordHashtagMetrics };
+
+type PreparedWordHashtagConfiguration = {
+  initial: Array<string | null>;
+  solution: Array<string | null>;
+  optimalMoves: number;
 };
 
 export function normalizeWordHashtagWord(value: string) {
@@ -114,35 +126,7 @@ export function calculateMinimumWordHashtagSwaps(
   const target = activeSequence(normalizedBoard(solutionLetters));
   if (initial.length !== target.length || !sameLetters(initial, target))
     return Number.POSITIVE_INFINITY;
-
-  const memo = new Map<string, number>();
-  const visit = (state: string[]): number => {
-    const key = state.join("");
-    const cached = memo.get(key);
-    if (cached !== undefined) return cached;
-
-    const firstMismatch = state.findIndex((letter, index) => letter !== target[index]);
-    if (firstMismatch === -1) return 0;
-
-    let minimum = Number.POSITIVE_INFINITY;
-    for (let candidate = firstMismatch + 1; candidate < state.length; candidate += 1) {
-      if (
-        state[candidate] !== target[firstMismatch] ||
-        state[candidate] === target[candidate] ||
-        state[candidate] === state[firstMismatch]
-      ) {
-        continue;
-      }
-      const next = [...state];
-      [next[firstMismatch], next[candidate]] = [next[candidate], next[firstMismatch]];
-      minimum = Math.min(minimum, 1 + visit(next));
-    }
-
-    memo.set(key, minimum);
-    return minimum;
-  };
-
-  return visit(initial);
+  return minimumSwapsForSequences(initial, target);
 }
 
 function applySwapToBoard(
@@ -190,13 +174,24 @@ export function replayWordHashtagSwaps(
   swaps: WordHashtagSwap[],
 ): WordHashtagReplayResult {
   const solution = buildWordHashtagSolution(question.words);
-  let letters = normalizedBoard(question.initialLetters);
+  const letters = normalizedBoard(question.initialLetters);
   if (!solution || letters.length !== 25) {
     return { valid: false, letters, appliedMoves: 0, errorIndex: 0, solved: false };
   }
 
+  return replaySwaps(solution, letters, question.maxMoves, swaps);
+}
+
+function replaySwaps(
+  solution: Array<string | null>,
+  initial: Array<string | null>,
+  maxMoves: number,
+  swaps: WordHashtagSwap[],
+): WordHashtagReplayResult {
+  let letters = initial;
+
   for (const [index, swap] of swaps.entries()) {
-    if (index >= question.maxMoves) {
+    if (index >= maxMoves) {
       return {
         valid: false,
         letters,
@@ -228,6 +223,12 @@ export function replayWordHashtagSwaps(
 }
 
 export function isValidWordHashtagConfiguration(question: WordHashtagQuestion) {
+  return prepareWordHashtagConfiguration(question) !== null;
+}
+
+function prepareWordHashtagConfiguration(
+  question: WordHashtagQuestion,
+): PreparedWordHashtagConfiguration | null {
   if (
     question.grid.rows !== WORD_HASHTAG_SIZE ||
     question.grid.columns !== WORD_HASHTAG_SIZE ||
@@ -235,22 +236,24 @@ export function isValidWordHashtagConfiguration(question: WordHashtagQuestion) {
     !Number.isInteger(question.maxMoves) ||
     question.maxMoves <= 0
   ) {
-    return false;
+    return null;
   }
 
   const solution = buildWordHashtagSolution(question.words);
-  if (!solution) return false;
+  if (!solution) return null;
   const initial = normalizedBoard(question.initialLetters);
   const validShape = initial.every((letter, cell) =>
     ACTIVE_CELL_SET.has(cell) ? isValidLetter(letter) : letter === null,
   );
-  if (!validShape || boardSolved(initial, solution)) return false;
+  if (!validShape || boardSolved(initial, solution)) return null;
 
   const initialActive = activeSequence(initial);
   const solutionActive = activeSequence(solution);
-  if (!sameLetters(initialActive, solutionActive)) return false;
-  const minimum = calculateMinimumWordHashtagSwaps(initial, solution);
-  return Number.isFinite(minimum) && minimum > 0 && minimum <= question.maxMoves;
+  if (!sameLetters(initialActive, solutionActive)) return null;
+  const optimalMoves = minimumSwapsForSequences(initialActive, solutionActive);
+  if (!Number.isFinite(optimalMoves) || optimalMoves <= 0 || optimalMoves > question.maxMoves)
+    return null;
+  return { initial, solution, optimalMoves };
 }
 
 export function isValidWordHashtagPublicConfiguration(configuration: {
@@ -295,7 +298,12 @@ export function calculateWordHashtagMetrics(
   question: WordHashtagQuestion,
   answer: WordHashtagAnswer,
 ): WordHashtagMetrics {
-  const emptyMetrics = {
+  const analysis = analyzeWordHashtagAnswer(question, answer);
+  return analysis.kind === "analyzed" ? analysis.metrics : emptyMetricsFor(question);
+}
+
+function emptyMetricsFor(question: WordHashtagQuestion): WordHashtagMetrics {
+  return {
     valid: false,
     correctCells: 0,
     totalCells: WORD_HASHTAG_ACTIVE_CELLS.length,
@@ -306,13 +314,19 @@ export function calculateWordHashtagMetrics(
     optimalMoves: 0,
     solved: false,
   };
-  if (!isValidWordHashtagConfiguration(question) || !isWordHashtagAnswer(answer)) {
-    return emptyMetrics;
-  }
+}
 
-  const solution = buildWordHashtagSolution(question.words)!;
-  const replay = replayWordHashtagSwaps(question, answer.swaps);
-  if (!replay.valid) return emptyMetrics;
+export function analyzeWordHashtagAnswer(
+  question: WordHashtagQuestion,
+  answer: unknown,
+): WordHashtagAnalysis {
+  if (!isWordHashtagAnswer(answer)) return { kind: "invalid-answer" };
+  const prepared = prepareWordHashtagConfiguration(question);
+  if (!prepared) return { kind: "invalid-configuration" };
+
+  const { initial, solution, optimalMoves } = prepared;
+  const replay = replaySwaps(solution, initial, question.maxMoves, answer.swaps);
+  if (!replay.valid) return { kind: "analyzed", metrics: emptyMetricsFor(question) };
   const currentWords = getWordHashtagWords(replay.letters);
   const solutionWords = getWordHashtagWords(solution);
   const completedWords = (Object.keys(WORD_CELLS) as Array<keyof WordHashtagWords>).filter(
@@ -320,16 +334,19 @@ export function calculateWordHashtagMetrics(
   ).length;
 
   return {
-    valid: true,
-    correctCells: WORD_HASHTAG_ACTIVE_CELLS.filter(
-      (cell) => replay.letters[cell] === solution[cell],
-    ).length,
-    totalCells: WORD_HASHTAG_ACTIVE_CELLS.length,
-    completedWords,
-    totalWords: 4,
-    movesUsed: replay.appliedMoves,
-    movesRemaining: Math.max(0, question.maxMoves - replay.appliedMoves),
-    optimalMoves: calculateMinimumWordHashtagSwaps(question.initialLetters, solution),
-    solved: replay.solved,
+    kind: "analyzed",
+    metrics: {
+      valid: true,
+      correctCells: WORD_HASHTAG_ACTIVE_CELLS.filter(
+        (cell) => replay.letters[cell] === solution[cell],
+      ).length,
+      totalCells: WORD_HASHTAG_ACTIVE_CELLS.length,
+      completedWords,
+      totalWords: 4,
+      movesUsed: replay.appliedMoves,
+      movesRemaining: Math.max(0, question.maxMoves - replay.appliedMoves),
+      optimalMoves,
+      solved: replay.solved,
+    },
   };
 }

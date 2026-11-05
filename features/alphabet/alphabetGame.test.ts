@@ -16,8 +16,10 @@ function getAlphabetChallenge() {
 }
 
 describe("alphabet answer evaluation", () => {
-  const question = getAlphabetChallenge().entries[9]!.question as ShortTextQuestion;
-  const shortQuestion = getAlphabetChallenge().entries[1]!.question as ShortTextQuestion;
+  const question = getAlphabetChallenge().entries.find((entry) => entry.letter === "J")!
+    .question as ShortTextQuestion;
+  const shortQuestion = getAlphabetChallenge().entries.find((entry) => entry.letter === "B")!
+    .question as ShortTextQuestion;
 
   it("accepts case, accents, plurals and a trailing duplicated letter", () => {
     expect(isAlphabetAnswerCorrect(question, "JIRAFA")).toBe(true);

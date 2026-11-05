@@ -28,6 +28,25 @@ export function ServerFlashPopAlphabetGame({
   terminalReview?: readonly ServerFlashTerminalReview[];
 }) {
   const session = useServerAlphabetSession({ challenge, roomContext, terminalReview });
+  return (
+    <AlphabetGameView challenge={challenge} session={session} returnTo={roomContext.returnTo} />
+  );
+}
+
+type AlphabetSession = ReturnType<typeof useServerAlphabetSession>;
+
+/** Shared Alphabet screen; its composition supplies a remote or in-memory session. */
+export function AlphabetGameView({
+  challenge,
+  session,
+  returnTo,
+  onReplay,
+}: {
+  challenge: ServerAlphabetChallenge;
+  session: AlphabetSession;
+  returnTo: string;
+  onReplay?: () => void;
+}) {
   const isIntro = session.phase === "intro";
   const letters =
     session.progress?.letters ??
@@ -64,7 +83,7 @@ export function ServerFlashPopAlphabetGame({
                 }
               : undefined
           }
-          returnTo={roomContext.returnTo}
+          returnTo={returnTo}
         />
       </motion.div>
     );
@@ -116,7 +135,6 @@ export function ServerFlashPopAlphabetGame({
           model={{
             gameTitle: "Alfabeto",
             statusLabel: "Completado",
-            eyebrow: "Desafío completado",
             title: correct === challenge.entries.length ? "Alfabeto dominado" : "Buen recorrido",
             score: session.score,
             maxScore: challenge.maxScore,
@@ -135,7 +153,7 @@ export function ServerFlashPopAlphabetGame({
           }}
           onReview={session.reviewChallenge ? session.showReview : undefined}
           expired={session.attemptExpired}
-          returnTo={roomContext.returnTo}
+          returnTo={returnTo}
         />
       </motion.div>
     );
@@ -159,7 +177,11 @@ export function ServerFlashPopAlphabetGame({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0, y: -12 }}
       >
-        <AlphabetReviewPresentation entries={entries} onBack={session.showResults} />
+        <AlphabetReviewPresentation
+          entries={entries}
+          onBack={session.showResults}
+          onReplay={onReplay}
+        />
       </motion.div>
     );
   } else {
@@ -172,13 +194,18 @@ export function ServerFlashPopAlphabetGame({
         exit={{ opacity: 0, x: -18 }}
       >
         <AlphabetPlayingPresentation
+          key={challenge.id}
           round={session.progress?.round ?? 1}
-          correctAnswers={session.progress?.correctAnswers ?? 0}
-          totalLetters={challenge.entries.length}
+          currentIndex={session.progress?.currentIndex ?? null}
+          answerVisitKey={
+            session.question && session.questionPresentedAt !== null
+              ? `${session.question.id}:${session.questionPresentedAt}`
+              : null
+          }
           timer={
             <Timer
               duration={challenge.timeLimitMs / 1000}
-              active={!session.locked}
+              active={session.deadlineAt !== null}
               deadlineAt={session.deadlineAt ?? undefined}
               onTimeUp={session.onTimeUp}
               resetKey={challenge.id}
@@ -215,7 +242,13 @@ export function ServerFlashPopAlphabetGame({
         data-gameplay-shell="flash-pop-alphabet"
         data-gameplay-layout={session.phase}
         maxWidth={isIntro ? "none" : "wide"}
-        contentClassName={isIntro ? styles.introCanvasContent : styles.screen}
+        contentClassName={
+          isIntro
+            ? styles.introCanvasContent
+            : session.phase === "playing"
+              ? styles.playingCanvasContent
+              : styles.screen
+        }
       >
         <CompetitiveLifecycleNotice
           error={session.completionRetryScheduled ? undefined : session.lifecycleError}

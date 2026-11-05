@@ -14,7 +14,7 @@ atiende las peticiones de la aplicación y se comunica con Supabase.
 - Ten Docker disponible y la configuración de Supabase en `.env.local`, con las claves del stack
   local y un usuario de prueba.
 - Si necesitas preparar cuentas y desafíos, consulta
-  [`supabase/local-development.md`](../../supabase/local-development.md). Los comandos de setup
+  la [guía de preparación de entornos](supabase-clean-installation.md#qué-necesito-preparar). Los comandos de setup
   reconstruyen la base local: para probar desde el móvil con los datos que ya tienes, basta con
   arrancar los servicios.
 

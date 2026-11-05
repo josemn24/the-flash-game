@@ -254,6 +254,41 @@ function isSupabaseDependency(specifier, importingFile) {
   );
 }
 
+// Context-specific input adapters may share views and algorithms, never each other.
+function inputContext(relative) {
+  const normalized = relative
+    .split(path.sep)
+    .join("/")
+    .replace(/\.(?:tsx?|jsx?)$/, "");
+  if (!normalized.startsWith("features/question-formats/")) return null;
+  const name = normalized.slice("features/question-formats/".length);
+  if (
+    /^formats\/[^/]+\/PracticeInput$/.test(name) ||
+    [
+      "practiceInputTypes",
+      "practiceInputRegistry",
+      "createPracticeInput",
+      "withPracticeTimedResponseStart",
+      "QuestionInput",
+    ].includes(name)
+  )
+    return "practice";
+  if (
+    /^formats\/[^/]+\/input$/.test(name) ||
+    ["competitiveInputTypes", "competitiveInputRegistry", "createCompetitiveInput"].includes(name)
+  )
+    return "competitive";
+  return null;
+}
+function resolvedProjectImport(specifier, file) {
+  const resolved = specifier.startsWith("@/")
+    ? path.resolve(process.cwd(), specifier.slice(2))
+    : specifier.startsWith(".")
+      ? path.resolve(path.dirname(file), specifier)
+      : null;
+  return resolved ? path.relative(process.cwd(), resolved) : null;
+}
+
 function isApplicationForbiddenImport(specifier) {
   return (
     specifier === "server-only" ||
@@ -284,8 +319,109 @@ for (const file of productionFiles) {
   const isRoomAdapter = isRoomSupabaseAdapter(relative);
   const isMockAdapter = isMockInfrastructure(relative);
   const isLocalCompatibility = isExplicitLocalCompatibilityPath(relative);
+  const isLocalSessionProvider =
+    /^features\/game\/session\/providers\/local(?:Pyramid|Flash|Survival|TimeTrial|Alphabet)(?:\/|\.ts$)/.test(
+      relative,
+    );
+  const isLocalSessionShared = relative.startsWith(
+    `features${path.sep}game${path.sep}session${path.sep}providers${path.sep}localShared${path.sep}`,
+  );
+  // Explicit demo shells and the authorized product rehearsal compose local providers.
+  const isLocalSessionDemoComposition = [
+    "components/game/shells/LocalPyramidGameApp.client.tsx",
+    "components/game/shells/RehearsalGameApp.client.tsx",
+    "components/game/shells/LocalFlashGameApp.client.tsx",
+    "components/game/shells/LocalSurvivalGameApp.client.tsx",
+    "components/game/shells/LocalTimeTrialGameApp.client.tsx",
+    "components/game/shells/LocalAlphabetGameApp.client.tsx",
+  ].includes(relative);
+  if (
+    relative.startsWith("data/rehearsals/") &&
+    /@\/(?:data\/mock|infrastructure|server|test-utils)\//.test(source)
+  )
+    violations.push(`${relative} imports non-rehearsal content`);
+  const isPureResolution = relative.startsWith("lib/scoringCore/resolution/");
+
+  if (
+    (isLocalSessionProvider || isLocalSessionShared) &&
+    /\b(?:fetch|XMLHttpRequest|WebSocket)\s*\(/.test(source)
+  ) {
+    violations.push(`${relative} performs I/O inside the local session authority`);
+  }
+
+  const pyramidPublicPresentation = [
+    "components/game/modes/flash-pop/PyramidGameView.tsx",
+    "components/game/modes/flash-pop/FlashPopReview.tsx",
+    "features/game/usePyramidGameSession.ts",
+  ].includes(relative);
+  const remoteSessionComposition =
+    relative === "features/game/session/providers/remote.ts" ||
+    relative === "features/game/session/providers/remoteBootstrap.ts" ||
+    /^components\/game\/modes\/.*\/Server[^/]+\.client\.tsx$/.test(relative);
+  const removedPyramidModule =
+    /^(?:features\/pyramid\/(?:usePyramidSession|pyramidAttempt)|components\/game\/modes\/(?:pyramid\/PyramidGameApp\.client|flash-pop\/FlashPopPyramidGame\.client))$/;
+  if (removedPyramidModule.test(relative.replace(/\.tsx?$/, "")))
+    violations.push(`${relative} reintroduces a retired Pyramid implementation`);
 
   for (const imported of importsIn(source, true)) {
+    const context = inputContext(relative);
+    const target = resolvedProjectImport(imported.specifier, file);
+    if (
+      (isLocalSessionProvider || isLocalSessionShared || isPureResolution) &&
+      (imported.specifier === "server-only" ||
+        /^(?:node:|next(?:\/|$)|react(?:\/|$)|@supabase\/)/.test(imported.specifier) ||
+        (target && /^(?:server|infrastructure|data|test-utils|app|components)\//.test(target)) ||
+        (target && /features\/game\/competitive\/(?:attemptClient|transport)$/.test(target)))
+    ) {
+      violations.push(
+        `${relative} imports an impure local authority dependency ${imported.specifier}`,
+      );
+    }
+    if (
+      target &&
+      /^features\/game\/session\/providers\/local(?:Pyramid|Flash|Survival|TimeTrial|Alphabet|Shared)(?:\/|$)/.test(
+        target,
+      ) &&
+      !isLocalSessionProvider &&
+      !isLocalSessionShared &&
+      !isLocalSessionDemoComposition
+    ) {
+      violations.push(`${relative} selects the local provider before the presentation phase`);
+    }
+    if (
+      relative === "infrastructure/mock/localPyramidDefinition.ts" &&
+      (LEGACY_DATA_SOURCES.has(imported.specifier) ||
+        imported.specifier.startsWith("@/types/practice/"))
+    ) {
+      violations.push(`${relative} adapts legacy practice instead of canonical questions`);
+    }
+    const sessionCore =
+      /^features\/game\/competitive\/(?:core|formats|modes)\//.test(relative) &&
+      relative !== "features/game/competitive/core/useCompetitiveSession.ts";
+    if (
+      sessionCore &&
+      target &&
+      (target.startsWith("types/view-models/") ||
+        /^features\/game\/competitive\/(?:attemptClient|transport)$/.test(target) ||
+        target.startsWith("features/game/session/providers/"))
+    ) {
+      violations.push(`${relative} bypasses the game session port via ${imported.specifier}`);
+    }
+    if (target && removedPyramidModule.test(target.replace(/\.tsx?$/, "")))
+      violations.push(`${relative} imports a retired Pyramid implementation ${imported.specifier}`);
+    if (
+      (pyramidPublicPresentation || remoteSessionComposition) &&
+      target &&
+      (/^(?:data|infrastructure\/mock|test-utils)\//.test(target) ||
+        target === "types/gameplay/local-pyramid" ||
+        /^features\/game\/session\/providers\/local/.test(target))
+    )
+      violations.push(`${relative} imports private local session data ${imported.specifier}`);
+    const targetContext = target ? inputContext(target) : null;
+    if (context && targetContext && context !== targetContext) {
+      violations.push(`${relative} crosses question input contexts via ${imported.specifier}`);
+    }
+
     if (
       isAdministrativeFacade &&
       relative !== `server${path.sep}composition${path.sep}admin.ts` &&
@@ -402,7 +538,11 @@ for (const file of productionFiles) {
     if (
       layer === "infrastructure" &&
       area === "data" &&
-      !relative.startsWith(`infrastructure${path.sep}mock${path.sep}`)
+      !relative.startsWith(`infrastructure${path.sep}mock${path.sep}`) &&
+      !(
+        relative === "infrastructure/rehearsals/bank.ts" &&
+        imported.specifier.startsWith("@/data/rehearsals/")
+      )
     ) {
       violations.push(`${relative} imports mock data outside infrastructure/mock`);
     }
@@ -410,7 +550,11 @@ for (const file of productionFiles) {
     if (
       layer === "infrastructure" &&
       imported.specifier.startsWith("@/data/") &&
-      !imported.specifier.startsWith("@/data/mock/")
+      !imported.specifier.startsWith("@/data/mock/") &&
+      !(
+        relative === "infrastructure/rehearsals/bank.ts" &&
+        imported.specifier.startsWith("@/data/rehearsals/")
+      )
     ) {
       violations.push(`${relative} imports a legacy data projection ${imported.specifier}`);
     }
@@ -438,6 +582,7 @@ const serverFacadeFiles = [
   "server/production-room-data-access.ts",
   "server/production-challenge-data-access.ts",
   "server/production-admin-data-access.ts",
+  "server/production-rehearsal-data-access.ts",
   "server/demo-data-access.ts",
   "server/production-room-members.ts",
 ];
@@ -470,6 +615,7 @@ for (const relative of serverFacadeFiles) {
       "server/production-home-data-access.ts",
       "server/production-room-data-access.ts",
       "server/production-challenge-data-access.ts",
+      "server/production-rehearsal-data-access.ts",
     ].includes(relative) &&
     /@\/infrastructure\//.test(facadeSource)
   ) {
@@ -493,6 +639,7 @@ for (const relative of [
   "server/production-room-data-access.ts",
   "server/production-challenge-data-access.ts",
   "server/production-admin-data-access.ts",
+  "server/production-rehearsal-data-access.ts",
   "server/production-room-members.ts",
 ]) {
   const source = await readFile(path.join(process.cwd(), relative), "utf8");

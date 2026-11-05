@@ -56,6 +56,8 @@ export type PrepareInteractionResult = AttemptCommandResult & {
   readonly questionType: QuestionType;
   readonly payloadSchemaVersion: number;
   readonly publicPayload: JsonValue | null;
+  /** Alphabet-only visual reference, derived server-side from the principal answer. */
+  readonly answerLength?: number | null;
   /** Pyramid preparation only selects/releases the payload; timing starts on activate. */
   readonly presentedAt: UtcIsoDateTime | null;
   readonly deadlineAt: UtcIsoDateTime | null;
@@ -121,6 +123,7 @@ export type SubmitWordHashtagSwapInput = AttemptCommandInput & {
 };
 export type SubmitWordHashtagSwapResult = AttemptCommandResult & {
   readonly challengeItemId: ChallengeItemId;
+  readonly correctCells: readonly number[];
   readonly letters: readonly (string | null)[];
   readonly movesUsed: number;
   readonly movesRemaining: number;
@@ -207,6 +210,14 @@ export type SaveQueensDraftResult = AttemptCommandResult & {
   readonly conflictingQueens: number;
   readonly solved: boolean;
 };
+export type SaveConnectPairsDraftInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly paths: Readonly<Record<string, readonly number[]>>;
+};
+export type SaveConnectPairsDraftResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly reviewState: import("@/types/gameplay/result").ReviewState;
+};
 export type ValidateQueensBoardInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
   readonly queens: readonly number[];
@@ -248,6 +259,7 @@ export type SubmitAnswerResult = AttemptCommandResult & {
   readonly status: AnswerStatus;
   readonly points: number;
   readonly details?: AnswerResultDetails;
+  readonly reviewState?: import("@/types/gameplay/result").ReviewState;
 };
 export type PassInteractionInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
@@ -279,7 +291,13 @@ export type AttemptRecoveryAnswer = {
   readonly points: number;
   readonly timeUsedMs: DurationMs;
   readonly resultDetails?: AnswerResultDetails | null;
+  readonly reviewState?: import("@/types/gameplay/result").ReviewState | null;
 };
+/** Saved projections apply jsonb_strip_nulls, including reconstructed partial answers. */
+export type PersistedAttemptRecoveryAnswer = Omit<AttemptRecoveryAnswer, "answer"> & {
+  readonly answer?: JsonValue;
+};
+
 /** Evaluated terminal hint; it does not imply the attempt has committed completion. */
 export type RecoveryTerminalOutcome = SurvivalAttemptOutcome | PyramidAttemptOutcome | null;
 /** Deliberately excludes question public/solution payloads. */
@@ -319,21 +337,23 @@ export type TimeTrialCompletedAttemptResult = FinishAttemptResult & {
   readonly terminalReason: TimeTrialEndReason;
   readonly timeTrial: TimeTrialResult;
 };
+/** Retain mode/outcome discrimination when replacing the saved answer representation. */
+type WithoutAnswers<T> = T extends unknown ? Omit<T, "answers"> : never;
 /** Persisted completion without controller cookies, assets or solutions. */
 export type SavedAttemptResult = {
   readonly scheduledChallengeId: ScheduledChallengeId;
-  readonly result: FinishAttemptResult & {
+  readonly result: WithoutAnswers<FinishAttemptResult> & {
     readonly status: "completed";
     readonly score: number;
-    readonly answers: readonly AttemptRecoveryAnswer[];
+    readonly answers: readonly PersistedAttemptRecoveryAnswer[];
     readonly initialLives?: number;
   };
 };
 export type SavedAbandonedAttemptResult = {
   readonly scheduledChallengeId: ScheduledChallengeId;
-  readonly result: FinishAttemptResult & {
+  readonly result: WithoutAnswers<FinishAttemptResult> & {
     readonly status: "abandoned";
-    readonly answers?: readonly AttemptRecoveryAnswer[];
+    readonly answers?: readonly PersistedAttemptRecoveryAnswer[];
   };
 };
 export type AcceptInvitationInput = {

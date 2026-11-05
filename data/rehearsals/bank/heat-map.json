@@ -1,0 +1,147 @@
+[
+  {
+    "id": "flash-referencia-q6",
+    "version": 1,
+    "type": "heat-map",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "Marca el centro del círculo naranja.",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Un círculo naranja sobre una cuadrícula",
+        "width": 600,
+        "height": 400
+      },
+      "targetLabel": "Centro del círculo"
+    },
+    "solutionPayload": {
+      "target": {
+        "x": 0.7,
+        "y": 0.3
+      },
+      "fullCreditRadius": 0.04,
+      "toleranceRadius": 0.12,
+      "explanation": "La posición se mide desde la esquina superior izquierda: x = 0.7 del ancho e y = 0.3 del alto. El centro naranja queda al 70 % del ancho y al 30 % del alto."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 18000,
+    "familyId": "flash-referencia-q6"
+  },
+  {
+    "id": "bank-mapa-borde-superior",
+    "version": 1,
+    "type": "heat-map",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-mapa-borde-superior",
+    "publicPayload": {
+      "question": "Señala el punto medio del borde superior de la imagen.",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Lienzo rectangular con una cuadrícula y un círculo naranja",
+        "width": 600,
+        "height": 400
+      },
+      "targetLabel": "Señala el punto medio del borde superior de la imagen."
+    },
+    "solutionPayload": {
+      "target": {
+        "x": 0.5,
+        "y": 0
+      },
+      "fullCreditRadius": 0.04,
+      "toleranceRadius": 0.12,
+      "explanation": "La posición se mide desde la esquina superior izquierda: x = 0.5 del ancho e y = 0 del alto. El borde superior tiene y = 0; el inferior, y = 1; el izquierdo, x = 0."
+    }
+  },
+  {
+    "id": "bank-mapa-esquina-inferior",
+    "version": 1,
+    "type": "heat-map",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-mapa-esquina-inferior",
+    "publicPayload": {
+      "question": "Señala la esquina inferior izquierda de la imagen.",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Lienzo rectangular con una cuadrícula y un círculo naranja",
+        "width": 600,
+        "height": 400
+      },
+      "targetLabel": "Señala la esquina inferior izquierda de la imagen."
+    },
+    "solutionPayload": {
+      "target": {
+        "x": 0,
+        "y": 1
+      },
+      "fullCreditRadius": 0.04,
+      "toleranceRadius": 0.12,
+      "explanation": "La posición se mide desde la esquina superior izquierda: x = 0 del ancho e y = 1 del alto. El borde superior tiene y = 0; el inferior, y = 1; el izquierdo, x = 0."
+    }
+  },
+  {
+    "id": "bank-mapa-medium",
+    "version": 1,
+    "type": "heat-map",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-mapa-medium",
+    "publicPayload": {
+      "question": "Señala el punto a tres cuartos del ancho y a la mitad del alto.",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Lienzo rectangular con cuadrícula",
+        "width": 600,
+        "height": 400
+      },
+      "targetLabel": "Señala el punto a tres cuartos del ancho y a la mitad del alto."
+    },
+    "solutionPayload": {
+      "target": {
+        "x": 0.75,
+        "y": 0.5
+      },
+      "fullCreditRadius": 0.04,
+      "toleranceRadius": 0.1,
+      "explanation": "Tres cuartos equivale a 0,75 del ancho; la mitad del alto equivale a y = 0,5. El punto está en (0,75; 0,5)."
+    }
+  },
+  {
+    "id": "bank-mapa-hard",
+    "version": 1,
+    "type": "heat-map",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-mapa-hard",
+    "publicPayload": {
+      "question": "Señala el punto que divide el segmento de la esquina superior izquierda a la inferior derecha en razón 2:3, empezando desde la primera esquina.",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Lienzo rectangular con cuadrícula",
+        "width": 600,
+        "height": 400
+      },
+      "targetLabel": "Señala el punto que divide el segmento de la esquina superior izquierda a la inferior derecha en razón 2:3, empezando desde la primera esquina."
+    },
+    "solutionPayload": {
+      "target": {
+        "x": 0.4,
+        "y": 0.4
+      },
+      "fullCreditRadius": 0.04,
+      "toleranceRadius": 0.1,
+      "explanation": "La razón 2:3 divide el segmento en cinco partes; el punto está a 2/5 = 0,4 desde el origen. En la diagonal del rectángulo ambas coordenadas normalizadas son 0,4."
+    }
+  }
+]

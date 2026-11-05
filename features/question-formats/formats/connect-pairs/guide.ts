@@ -9,7 +9,8 @@ export const guide = {
   summary: "Unir pares iguales en una cuadrícula sin cruzar rutas y cubriendo el tablero.",
   description: [
     "El jugador traza caminos ortogonales entre extremos con el mismo símbolo. Cada casilla pertenece como máximo a una ruta.",
-    "La v1 usa tableros 5 × 5 con cobertura completa: resolver implica conectar todas las parejas y ocupar todas las casillas.",
+    "La v1 admite tableros cuadrados de 4 × 4 a 8 × 8, de tres parejas hasta tantas como filas, con cobertura completa: resolver implica conectar todas las parejas y ocupar todas las casillas.",
+    "En Contrarreloj puedes rehacer caminos libremente. Resolver un tablero concede su peso completo, sin bonus por velocidad ni puntos parciales; todas las pruebas comparten el reloj.",
   ],
   recommendations: [
     "Puzzles visuales rápidos",
@@ -28,8 +29,8 @@ export const guide = {
     "Completar todas las parejas y cubrir el tablero envía la respuesta automáticamente",
   ],
   authoringTips: [
-    "Usa entre tres y cinco parejas en tablero 5 × 5",
-    "Comprueba que la solución editorial cubre las 25 casillas sin cruces",
+    "Usa entre tres parejas y tantas como filas tenga el tablero",
+    "Comprueba que la solución editorial cubre todas las casillas sin cruces",
     "Asigna símbolos o etiquetas además de color para cada pareja",
   ],
   accessibility: [
@@ -72,7 +73,7 @@ export const guide = {
         timeLimit: 35,
         points: 150,
         explanation:
-          "Cada símbolo se une con su pareja mediante una ruta ortogonal. La solución cubre las 25 casillas sin cruces ni solapamientos.",
+          "Cada símbolo se une con su pareja mediante una ruta ortogonal. La solución cubre todas las casillas sin cruces ni solapamientos.",
       },
     },
   ],

@@ -415,7 +415,8 @@ export function storedEnvelope(value: unknown, index: number) {
       !("positionsByTargetId" in solutionPayload) &&
       !("solution" in solutionPayload) &&
       !("words" in solutionPayload) &&
-      !("referenceSolution" in solutionPayload))
+      !("referenceSolution" in solutionPayload) &&
+      !("paths" in solutionPayload))
   ) {
     throw new FlashEditorialValidationError([`questions[${index}].solutionPayload es inválido.`]);
   }

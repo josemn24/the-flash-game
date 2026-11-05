@@ -1,14 +1,9 @@
 "use client";
 
 import { AnagramQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
-export function PracticeInput({
-  question,
-  locked,
-  onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"anagram">>) {
+export function PracticeInput({ question, locked, onSubmit }: PracticeInputProps<"anagram">) {
   return (
     <AnagramQuestion
       tiles={question.tiles}

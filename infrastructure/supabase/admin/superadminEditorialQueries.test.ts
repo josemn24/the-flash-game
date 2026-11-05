@@ -307,6 +307,33 @@ describe("SupabaseSuperadminEditorialQueries", () => {
     expect(mocks.rpc).toHaveBeenLastCalledWith("create_superadmin_question_draft", { input });
   });
 
+  it("keeps explicit library pagination at one RPC request", async () => {
+    const response = { entries: [libraryEntry], total: 26, page: 2, pageSize: 25 };
+    mocks.rpc.mockResolvedValue({ data: response, error: null });
+    await expect(
+      new SupabaseSuperadminEditorialQueries().getQuestionLibrary({
+        status: "all",
+        page: 2,
+        pageSize: 25,
+      }),
+    ).resolves.toEqual({ ...response, source: "supabase" });
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("get_superadmin_question_library", {
+      input: { status: "all", page: 2, pageSize: 25 },
+    });
+  });
+
+  it("maps authorization denial for both library reads", async () => {
+    mocks.rpc.mockResolvedValue({
+      data: null,
+      error: { code: "42501", message: "not_authorized" },
+    });
+    const queries = new SupabaseSuperadminEditorialQueries();
+    await expect(queries.getQuestionLibrary()).rejects.toBeInstanceOf(SuperadminAccessDeniedError);
+    await expect(queries.getQuestionVersion(questionVersionId)).rejects.toBeInstanceOf(
+      SuperadminAccessDeniedError,
+    );
+  });
+
   it("rejects malformed Supabase payloads instead of falling back", async () => {
     mocks.rpc.mockResolvedValue({ data: { entries: [{ ...entry, document: null }] }, error: null });
 

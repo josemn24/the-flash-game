@@ -9,7 +9,14 @@ export function EditorialModeSettings({
   onGlobalDurationChange,
   onQuestionPointsChange,
   onQuestionMove,
+  onQuestionDifficultyChange,
+  libraryDifficulties,
 }: {
+  readonly onQuestionDifficultyChange?: (
+    index: number,
+    difficulty: "easy" | "medium" | "hard",
+  ) => void;
+  readonly libraryDifficulties?: Readonly<Record<string, "easy" | "medium" | "hard">>;
   readonly fieldId: string;
   readonly document: FlashEditorialDocument | null;
   readonly onModeChange: (mode: FlashEditorialDocument["challenge"]["mode"]) => void;
@@ -42,6 +49,33 @@ export function EditorialModeSettings({
           </Select>
         )}
       </FormField>
+      {parsedDocument.questions.map((question, index) => (
+        <FormField
+          key={index}
+          id={`${fieldId}-difficulty-${index}`}
+          label={`Dificultad de la pregunta ${index + 1}`}
+          density="compact"
+        >
+          {(field) => (
+            <Select
+              {...field}
+              disabled={"source" in question}
+              value={
+                "source" in question
+                  ? (libraryDifficulties?.[question.questionVersionId] ?? "medium")
+                  : (question.difficulty ?? "medium")
+              }
+              onChange={(e) =>
+                onQuestionDifficultyChange?.(index, e.target.value as "easy" | "medium" | "hard")
+              }
+            >
+              <option value="easy">Fácil</option>
+              <option value="medium">Media</option>
+              <option value="hard">Difícil</option>
+            </Select>
+          )}
+        </FormField>
+      ))}
       {parsedDocument.challenge.mode === "survival" ? (
         <FormField
           id={fieldId + "-document-0"}
@@ -95,9 +129,12 @@ export function EditorialModeSettings({
             )}
           </FormField>
           <p className={styles.helper}>
-            Entre 2 y 20 pruebas Queens de 4×4 a 8×8, ordenadas por dificultad creciente. Los
-            tiempos individuales no se aplican. Los pesos deben ser enteros positivos y sumar
-            exactamente 100; guardar y reordenar conservan los pesos.
+            Entre 2 y 20 pruebas de un mismo formato: Queens o Conectar parejas con tableros
+            cuadrados de 4×4 a 8×8; en Conectar parejas puedes mezclar tamaños y usar entre tres
+            parejas y tantas como filas. Ordena las pruebas por dificultad creciente. Puedes rehacer
+            caminos sin penalización; en Queens el tercer error termina el desafío. Los tiempos
+            individuales no se aplican. Los pesos deben ser enteros positivos y sumar exactamente
+            100; guardar y reordenar conservan los pesos.
           </p>
           {parsedDocument.questions.map((question, index) => (
             <div key={"source" in question ? question.questionVersionId : question.slug}>

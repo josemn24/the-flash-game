@@ -322,8 +322,8 @@ describe("question format catalog", () => {
     expect(flashChallenge?.questions.every((question) => question.id.startsWith("sbr-"))).toBe(
       true,
     );
-    expect(alphabetChallenge?.entries).toHaveLength(18);
-    expect(alphabetChallenge?.timeLimit).toBe(135);
+    expect(alphabetChallenge?.entries).toHaveLength(16);
+    expect(alphabetChallenge?.timeLimit).toBe(150);
     expect(survivalChallenge?.questions).toHaveLength(20);
     expect(survivalChallenge?.lives).toBe(3);
     expect(narrativeChallenge?.implementationStatus).toBe("complete");
@@ -558,8 +558,11 @@ describe("question format catalog", () => {
     ).toBe(true);
     expect(challengeDefinitions["connections-challenge-definition"].questionIds).toHaveLength(10);
     const alphabetDefinition = challengeDefinitions["animals-alphabet-definition"];
-    expect(alphabetDefinition.entries).toHaveLength(18);
-    expect(new Set(alphabetDefinition.entries.map((entry) => entry.letter)).size).toBe(18);
+    expect(alphabetDefinition.entries).toHaveLength(16);
+    expect(new Set(alphabetDefinition.entries.map((entry) => entry.letter)).size).toBe(16);
+    expect(alphabetDefinition.entries.map((entry) => entry.letter)).toEqual(
+      Array.from("ABCDEFIJLMOPRSTZ"),
+    );
     const survivalDefinition = challengeDefinitions["spain-survival-definition"];
     expect(survivalDefinition.questionIds).toHaveLength(20);
     expect(survivalDefinition.lives).toBe(3);

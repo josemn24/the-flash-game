@@ -9,6 +9,7 @@ describe("challenge intro model", () => {
   it("explains the shared three-minute Contrarreloj clock and third-error limit", () => {
     const model = buildSafeChallengeIntroModel({
       title: "Escalera de coronas",
+      timeTrialFormat: "queens",
       mode: "time-trial",
       questionCount: 6,
       maxScore: 100,
@@ -16,9 +17,10 @@ describe("challenge intro model", () => {
     });
 
     expect(model.metrics.find((metric) => metric.label === "Tiempo global")?.value).toBe("3 min");
-    expect(model.rules[0].description).toContain("3 min es único para todas las pruebas");
+    expect(model.rules[0].title).toBe("El reloj no se detiene");
+    expect(model.rules[0].description).toContain("todos los tableros");
     expect(model.rules[1].description).toContain(
-      "La tercera validación completa incorrecta de un tablero termina el desafío",
+      "Si fallas los tres intentos, la partida termina.",
     );
   });
 
@@ -60,7 +62,7 @@ describe("challenge intro model", () => {
     expect(alphabet).toBeDefined();
     expect(pyramid).toBeDefined();
     expect(buildChallengeIntroModel(alphabet!).metrics[1].value).toBe("2 min");
-    expect(buildChallengeIntroModel(pyramid!).metrics[1].value).toBe("3 min");
+    expect(buildChallengeIntroModel(pyramid!).metrics[1].value).toBe("4 min");
     expect(
       buildChallengeIntroModel(challenges.find((challenge) => challenge.mode === "narrative")!)
         .metrics[2].value,
@@ -98,4 +100,18 @@ describe("ChallengeIntro", () => {
 
     expect(markup).toContain('href="/salas/tabarnia-room"');
   });
+});
+
+it("explains free path edits and strict recovery for Conectar parejas", () => {
+  const model = buildSafeChallengeIntroModel({
+    title: "Caminos",
+    mode: "time-trial",
+    timeTrialFormat: "connect-pairs",
+    questionCount: 2,
+    maxScore: 100,
+    timeLimitMs: 60000,
+  });
+  expect(model.rules[1].description).toContain("Puedes rehacerlos cuanto quieras.");
+  expect(model.rules[1].description).not.toContain("tercera");
+  expect(model.rules[2].description).toContain("Si lo abandonas sin resolver, termina la partida.");
 });

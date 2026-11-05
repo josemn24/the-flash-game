@@ -73,7 +73,11 @@ export async function assertResetPreconditions(
 
 export async function clearEnvironmentArtifacts(config) {
   assertEnvironmentTarget(config.target);
-  for (const file of ["bootstrap-credentials.json", "bootstrap-manifest.json"])
+  for (const file of [
+    "bootstrap-credentials.json",
+    "bootstrap-manifest.json",
+    "tabarnia-bootstrap-manifest.json",
+  ])
     await rm(path.join(config.artifactDirectory, file), { force: true });
   if (config.target === "local") {
     const entries = await readdir("output/fixtures", { withFileTypes: true }).catch((error) => {
@@ -137,11 +141,11 @@ export async function runEnvironmentReset({
       "Eliminar cuentas de Auth",
       "Reconstruir PostgreSQL con todas las migraciones, sin seed",
       "Comprobar revisión, permisos y ausencia de datos",
-      "Retirar credenciales y manifiestos anteriores",
+      "Retirar credenciales compartidas y manifiestos de escenario anteriores",
     ],
   };
-  if (options.dryRun) return { dryRun: true, ...plan };
   await (dependencies.assertPreconditions ?? assertResetPreconditions)(config, env);
+  if (options.dryRun) return { dryRun: true, ...plan };
   const save = dependencies.writeJsonSecure ?? writeJsonSecure;
   const journalPath = path.join(config.artifactDirectory, "reset-manifest.json");
   const journal = {

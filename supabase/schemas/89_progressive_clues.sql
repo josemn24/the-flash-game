@@ -21,9 +21,6 @@ create table private.progressive_clue_reveal_events (
   unique (id, attempt_id, challenge_item_id, challenge_version_id)
 );
 
-create index progressive_clue_events_item_idx
-  on private.progressive_clue_reveal_events(attempt_id, challenge_item_id, clue_index);
-
 create function private.progressive_clue_effective_penalty(
   configured_penalty integer,
   item_points integer

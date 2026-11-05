@@ -1,0 +1,122 @@
+[
+  {
+    "id": "bank-estimar-angulos",
+    "version": 1,
+    "type": "estimation",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "¿Cuántos grados suman los ángulos interiores de un triángulo plano?",
+      "min": 0,
+      "max": 360,
+      "step": 1,
+      "initialValue": 90,
+      "unit": "grados",
+      "media": null
+    },
+    "solutionPayload": {
+      "correctAnswer": 180,
+      "tolerance": 0,
+      "explanation": "En geometría plana, los tres ángulos interiores de un triángulo suman 180 grados."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-estimar-angulos"
+  },
+  {
+    "id": "betavip-supervivencia-q11",
+    "version": 1,
+    "type": "estimation",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "¿Cuántos números enteros hay desde 1 hasta 1975, ambos incluidos?",
+      "min": 1970,
+      "max": 1995,
+      "step": 1,
+      "initialValue": 1980,
+      "unit": "números",
+      "media": null
+    },
+    "solutionPayload": {
+      "correctAnswer": 1975,
+      "tolerance": 2,
+      "explanation": "Para contar enteros con ambos extremos incluidos se resta el primero al último y se suma uno: 1975 − 1 + 1 = 1975."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 16000,
+    "familyId": "estimation-contar-enteros"
+  },
+  {
+    "id": "flash-referencia-q7",
+    "version": 1,
+    "type": "estimation",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "¿Cuántos números enteros hay desde 1 hasta 15, ambos incluidos?",
+      "min": 10,
+      "max": 60,
+      "step": 1,
+      "initialValue": 30,
+      "unit": "números",
+      "media": null
+    },
+    "solutionPayload": {
+      "correctAnswer": 15,
+      "tolerance": 18,
+      "explanation": "Para contar enteros con ambos extremos incluidos se resta el primero al último y se suma uno: 15 − 1 + 1 = 15."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 22000,
+    "familyId": "estimation-contar-enteros"
+  },
+  {
+    "id": "bank-estimar-semanas",
+    "version": 1,
+    "type": "estimation",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-estimar-semanas",
+    "publicPayload": {
+      "question": "¿Cuántas horas tienen tres días completos?",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "initialValue": 50,
+      "unit": "horas",
+      "media": null
+    },
+    "solutionPayload": {
+      "correctAnswer": 72,
+      "tolerance": 3,
+      "explanation": "Cada día completo tiene 24 horas; tres días suman 3 × 24 = 72 horas."
+    }
+  },
+  {
+    "id": "bank-estimar-deposito",
+    "version": 1,
+    "type": "estimation",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-estimar-deposito",
+    "publicPayload": {
+      "question": "Un depósito de 600 litros está lleno al 75 %. Se consume el 20 % del agua que contiene. ¿Cuántos litros quedan?",
+      "min": 0,
+      "max": 600,
+      "step": 1,
+      "initialValue": 300,
+      "unit": "litros",
+      "media": null
+    },
+    "solutionPayload": {
+      "correctAnswer": 360,
+      "tolerance": 0,
+      "explanation": "Al principio hay 600 × 0,75 = 450 litros. Se consume 450 × 0,20 = 90, de modo que quedan 450 − 90 = 360 litros."
+    }
+  }
+]

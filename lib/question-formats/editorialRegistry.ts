@@ -1,3 +1,4 @@
+import { parseStored as connectPairsParser } from "./connect-pairs/stored";
 import type { FlashEditorialQuestion } from "@/types/contracts/stored-questions";
 import { parseStored as anagramParser } from "./anagram/stored";
 import { parseStored as classificationParser } from "./classification/stored";
@@ -22,6 +23,7 @@ import { parseStored as zipParser } from "./zip/stored";
 import { parseStored as queensParser } from "./queens/stored";
 export const EDITORIAL_FORMAT_PARSERS = {
   queens: queensParser,
+  "connect-pairs": connectPairsParser,
   "word-search": wordSearchParser,
   "word-hashtag": wordHashtagParser,
   zip: zipParser,
@@ -52,5 +54,11 @@ export function parseEditorialQuestion(value: unknown, index: number): FlashEdit
     !Object.hasOwn(EDITORIAL_FORMAT_PARSERS, value.type)
   )
     throw new FlashEditorialValidationError([`questions[${index}] no cumple el contrato Flash.`]);
-  return EDITORIAL_FORMAT_PARSERS[value.type as FlashEditorialQuestion["type"]](value, index);
+  const { difficulty = "medium", ...content } = value;
+  if (!["easy", "medium", "hard"].includes(String(difficulty)))
+    throw new FlashEditorialValidationError([`questions[${index}].difficulty no es válida.`]);
+  return {
+    ...EDITORIAL_FORMAT_PARSERS[value.type as FlashEditorialQuestion["type"]](content, index),
+    difficulty: difficulty as "easy" | "medium" | "hard",
+  };
 }

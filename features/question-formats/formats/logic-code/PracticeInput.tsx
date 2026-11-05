@@ -1,8 +1,7 @@
 "use client";
 
 import { LogicCodeQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -11,12 +10,12 @@ export function PracticeInput({
   codeAttemptCount = 0,
   onProgress,
   onCodeAttempt,
-}: QuestionInputProps<PracticeQuestionOfType<"logic-code">>) {
+}: PracticeInputProps<"logic-code">) {
   return (
     <LogicCodeQuestion
       clues={question.clues}
       codeLength={question.codeLength}
-      initialDraft={typeof initialAnswer === "string" ? initialAnswer : undefined}
+      initialDraft={initialAnswer}
       locked={locked}
       attemptCount={codeAttemptCount}
       onProgress={onProgress}

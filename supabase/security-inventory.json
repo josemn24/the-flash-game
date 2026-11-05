@@ -201,6 +201,24 @@
         "table": ["SELECT"]
       },
       "boundary": "Internal invoker view; service SELECT only. Public ranking functions enforce active room membership and project social fields."
+    },
+    "private.rehearsal_publication_policies": {
+      "kind": "r"
+    },
+    "private.room_measurement_events": {
+      "kind": "r"
+    },
+    "private.room_measurement_participants": {
+      "kind": "r"
+    },
+    "private.room_measurement_publications": {
+      "kind": "r"
+    },
+    "private.room_measurements": {
+      "kind": "r"
+    },
+    "private.room_measurement_ratings": {
+      "kind": "r"
     }
   },
   "functions": {
@@ -338,37 +356,44 @@
     "private.create_question_draft_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.update_question_draft_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.publish_question_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.archive_question_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.question_version_document": {
       "arguments": "target_question_version uuid",
       "securityDefiner": false,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.question_version_detail": {
       "arguments": "target_question_version uuid",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.read_superadmin_question_library": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": []
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.validate_flash_question_document": {
       "arguments": "document jsonb",
@@ -787,6 +812,12 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.save_connect_pairs_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "v"
+    },
     "private.submit_queens_answer": {
       "arguments": "input jsonb",
       "securityDefiner": true,
@@ -806,6 +837,18 @@
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": []
+    },
+    "public.expire_stale_attempts": {
+      "arguments": "input jsonb",
+      "securityDefiner": false,
+      "volatility": "v",
+      "executeRoles": ["service_role"]
+    },
+    "public.run_calendar_tick": {
+      "arguments": "input jsonb",
+      "securityDefiner": false,
+      "volatility": "v",
+      "executeRoles": ["service_role"]
     },
     "public.get_challenge_ranking": {
       "arguments": "target_publication_id uuid",
@@ -1020,32 +1063,38 @@
     "public.create_superadmin_question_draft": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
     },
     "public.update_superadmin_question_draft": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
     },
     "public.publish_superadmin_question": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
     },
     "public.archive_superadmin_question": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
     },
     "public.get_superadmin_question_library": {
       "arguments": "input jsonb",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "s"
     },
     "public.get_superadmin_question_version": {
       "arguments": "question_version_id uuid",
       "securityDefiner": true,
-      "executeRoles": ["authenticated"]
+      "executeRoles": ["authenticated"],
+      "volatility": "s"
     },
     "public.create_superadmin_scheduled_challenge": {
       "arguments": "input jsonb",
@@ -1331,6 +1380,12 @@
       "executeRoles": [],
       "volatility": "v"
     },
+    "private.attempt_review_state": {
+      "arguments": "target_attempt uuid, target_item uuid",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "s"
+    },
     "private.time_trial_progress": {
       "arguments": "target_attempt uuid",
       "securityDefiner": false,
@@ -1352,6 +1407,204 @@
       "arguments": "target_attempt_id uuid",
       "securityDefiner": true,
       "executeRoles": ["authenticated"]
+    },
+    "private.read_alphabet_answer_hint_source": {
+      "arguments": "target_attempt uuid, target_item uuid, session_token text",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "s"
+    },
+    "private.handle_attempt_evaluation": {
+      "arguments": "input jsonb, target_attempt attempts, target_version private.challenge_versions",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_activate": {
+      "arguments": "input jsonb, target_attempt attempts, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_submission": {
+      "arguments": "op text, input jsonb, target_attempt attempts, target_version private.challenge_versions, instant timestamp with time zone, received_at timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_prepare": {
+      "arguments": "target_attempt attempts, target_version private.challenge_versions, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_takeover": {
+      "arguments": "input jsonb, safe_input jsonb, target_attempt attempts, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_closure": {
+      "arguments": "op text, input jsonb, target_attempt attempts, target_schedule scheduled_challenges, target_version private.challenge_versions, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.handle_attempt_start": {
+      "arguments": "input jsonb, safe_input jsonb, actor uuid, cached_result jsonb, is_admin boolean",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.connect_pairs_answer_valid": {
+      "arguments": "public_payload jsonb, answer jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "i"
+    },
+    "private.connect_pairs_draft_valid": {
+      "arguments": "public_payload jsonb, draft jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "i"
+    },
+    "private.is_supported_time_trial_question": {
+      "arguments": "target_question uuid",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.rehearsal_template": {
+      "arguments": "version_id uuid",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.read_player_rehearsal_template": {
+      "arguments": "room_slug text, publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "s"
+    },
+    "private.read_editorial_rehearsal_template": {
+      "arguments": "version_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "s"
+    },
+    "private.set_rehearsal_publication_policy": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "v"
+    },
+    "private.require_measurement_admin": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.sync_room_measurement": {
+      "arguments": "target_measurement_id uuid",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "public.record_room_measurement_event": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
+    },
+    "private.ensure_season_measurement": {
+      "arguments": "target_season_id uuid",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.track_season_measurement": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.track_room_measurement_scope": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "public.get_superadmin_season_measurement": {
+      "arguments": "target_room_id uuid, target_season_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
+    },
+    "public.get_my_season_rating": {
+      "arguments": "target_publication_id uuid",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
+      "volatility": "s"
+    },
+    "public.save_my_season_rating": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
+    },
+    "private.season_calendar_permissions": {
+      "arguments": "season seasons, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.publication_calendar_permissions": {
+      "arguments": "publication scheduled_challenges, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.assert_season_calendar_window": {
+      "arguments": "season seasons, starts_value timestamp with time zone, ends_value timestamp with time zone, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.assert_publication_calendar_window": {
+      "arguments": "publication scheduled_challenges, opens_value timestamp with time zone, closes_value timestamp with time zone, instant timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.assert_calendar_containment": {
+      "arguments": "",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
+    },
+    "private.preview_calendar_change": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "public.preview_superadmin_calendar_change": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
+      "volatility": "s"
+    },
+    "public.apply_superadmin_calendar_change": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["authenticated"],
+      "volatility": "v"
+    },
+    "private.track_calendar_measurement_dates": {
+      "arguments": "",
+      "securityDefiner": true,
+      "executeRoles": [],
+      "volatility": "v"
     }
   }
 }

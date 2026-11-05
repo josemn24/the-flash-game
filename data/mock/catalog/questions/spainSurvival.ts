@@ -16,7 +16,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "El Teide es el pico más alto de España.",
       context: null,
-      timeLimitMs: 11000,
+      timeLimitMs: 12000,
       payload: null,
     },
     privatePayload: {
@@ -96,8 +96,8 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
         surface: {
           src: "/visuals/spain-survival/canary_islands_map.svg",
           alt: "Mapa mudo de las Islas Canarias",
-          width: 1474.6973,
-          height: 655.01733,
+          width: 1475,
+          height: 655,
           fit: "contain",
         },
         targetLabel: "Santa Cruz de Tenerife",
@@ -134,7 +134,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "Relaciona cada alimento con su lugar tradicional de origen.",
       context: null,
-      timeLimitMs: 18000,
+      timeLimitMs: 20000,
       payload: {
         leftItems: [
           {
@@ -196,7 +196,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "Empareja cada ciudad con su monumento.",
       context: null,
-      timeLimitMs: 18000,
+      timeLimitMs: 20000,
       payload: {
         leftItems: [
           {
@@ -258,7 +258,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "Ordena estas ciudades de norte a sur.",
       context: null,
-      timeLimitMs: 16000,
+      timeLimitMs: 22000,
       payload: {
         items: ["Córdoba", "Santander", "Málaga", "Madrid"],
         directionLabels: {
@@ -434,7 +434,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "Identifica el monumento que aparece.",
       context: null,
-      timeLimitMs: 16000,
+      timeLimitMs: 25000,
       payload: {
         surface: {
           src: "/visuals/spain-survival/sagrada-familia.jpg",
@@ -513,7 +513,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "Ordena cronológicamente estos acontecimientos de la historia de España.",
       context: null,
-      timeLimitMs: 20000,
+      timeLimitMs: 22000,
       payload: {
         items: [
           "Aprobación de la Constitución española actual.",
@@ -558,7 +558,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "Ordena estas obras por la fecha de su primera publicación.",
       context: null,
-      timeLimitMs: 18000,
+      timeLimitMs: 22000,
       payload: {
         items: ["Nada", "Lazarillo de Tormes", "La Regenta", "Don Quijote de la Mancha"],
         directionLabels: {
@@ -701,7 +701,7 @@ export const spainSurvivalQuestions = defineQuestionCatalog([
       },
       prompt: "¿Quién pintó esta obra?",
       context: null,
-      timeLimitMs: 16000,
+      timeLimitMs: 25000,
       payload: {
         surface: {
           src: "/visuals/spain-survival/las-meninas-velazquez.jpg",

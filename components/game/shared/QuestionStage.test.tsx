@@ -1,3 +1,5 @@
+import type { PracticeQuestion } from "@/types/gameplay/practice";
+import { practiceInput } from "@/test-utils/practiceInput";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { getChallengeById } from "@/test-utils/mockGameplay";
@@ -9,22 +11,22 @@ import { isDelayedQuestionTimer } from "@/features/game/useQuestionStageTimer";
 
 const noop = () => {};
 
-function stageProps(
-  question: Pick<
-    Parameters<typeof FlashQuestionStage>[0],
-    "question" | "questionNumber" | "totalQuestions" | "locked"
-  >,
-) {
+function stageProps({
+  question,
+  locked,
+  questionNumber,
+  totalQuestions,
+}: {
+  question: PracticeQuestion;
+  locked: boolean;
+  questionNumber: number;
+  totalQuestions: number;
+}) {
   return {
-    ...question,
-    onSubmit: noop,
+    input: practiceInput(question, { locked }),
+    questionNumber,
+    totalQuestions,
     onTimeUp: noop,
-    onCodeAttempt: () => false,
-    onProgress: noop,
-    onIncorrectAttempt: noop,
-    onProgressiveClueReveal: noop,
-    onTimedResponseStart: noop,
-    codeAttemptCount: 0,
   };
 }
 

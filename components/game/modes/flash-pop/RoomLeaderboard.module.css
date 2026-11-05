@@ -113,8 +113,12 @@
   }
 
   .cardRank {
+    display: inline-flex;
     width: 48px;
+    height: 42px;
     flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
     color: var(--ds-color-fg-selected);
     font-family: var(--type-display);
     font-size: 25px;
@@ -122,6 +126,13 @@
     letter-spacing: var(--type-display-strong-tracking);
     line-height: 1;
     text-align: center;
+  }
+
+  .medalImage {
+    display: block;
+    width: auto;
+    height: 32px;
+    object-fit: contain;
   }
 
   .playerCard[data-rank="1"] .cardRank {

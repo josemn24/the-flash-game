@@ -8,9 +8,9 @@
 ## Alcance y prioridades
 
 La clasificación indica prioridad para una primera versión productiva del loop de salas privadas,
-temporadas y desafíos asíncronos. No equivale al estado actual de implementación: hoy la aplicación
-usa mocks en los recorridos aún no migrados; las slices persistidas actuales ya cubren identidad, salas, competición Flash,
-rankings, historial, portal y temporadas reales sobre Supabase local.
+temporadas y desafíos asíncronos. No equivale al estado de implementación: consultar
+[estado actual](status.md) para capacidades disponibles y el [backlog](../implementation-plan.md)
+para trabajo pendiente. Demos y práctica tienen composiciones locales explícitas.
 
 - **V1**: esencial para que exista una competición productiva usable.
 - **Importante**: aporta operación, confianza o completitud, pero puede llegar después del loop
@@ -168,10 +168,10 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
 - **Precondiciones:** temporada adecuada y `ChallengeVersion` publicada; número libre y fechas válidas.
 - **Entrada relevante:** versión, número, `opensAt`, `closesAt` y, si procede, zona horaria de edición.
 - **Flujo principal:** desde el calendario privado, comprobar que la versión Flash está publicada y es compatible; validar orden, fechas y ausencia de solapamiento; crear o reprogramar `ScheduledChallenge`; el calendar tick abre y cierra por la ventana efectiva.
-- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; solo se reprograma o cancela antes de abrir; la cancelación es lógica, auditada y conserva el número, contenido y ventana. Al cerrar la publicación o vencer su deadline, una reconciliación puede abandonar intentos competitivos inactivos durante al menos 15 minutos.
+- **Reglas de negocio:** apertura inclusiva y cierre exclusivo; las fechas se almacenan en UTC; los placeholders no son publicaciones; se preparan publicaciones en borrador y se reprograman o cancelan antes de abrir; una publicación abierta solo admite ampliar su cierre; la cancelación es lógica, auditada y conserva el número, contenido y ventana. Al cerrar la publicación o vencer su deadline, una reconciliación puede abandonar intentos competitivos inactivos durante al menos 15 minutos.
 - **Resultado:** publicación `scheduled`, `open`, `closed` o `cancelled`.
 - **Efectos secundarios:** disponibilidad en sala, historial posterior y rankings derivados; cada escritura administrativa y transición del tick queda auditada.
-- **Errores o impedimentos:** versión no publicada, número duplicado, ventana solapada, fecha inválida, motivo de auditoría ausente o intento de reprogramar/cancelar una publicación abierta, cerrada o ya cancelada.
+- **Errores o impedimentos:** versión no publicada, número duplicado, ventana solapada, fecha inválida, motivo de auditoría ausente o intento de cambiar una apertura alcanzada, acortar una ventana abierta o reabrir una publicación cerrada o cancelada.
 - **Permisos necesarios:** superadmin desde el portal privado durante la beta; responsable/editor
   autorizado cuando se habilite esa superficie. Miembros y espectadores solo consultan.
 
@@ -463,11 +463,9 @@ revocación de invitaciones quedan fuera de la UI pública en esta fase.
   autenticación, soluciones privadas ni filas canónicas innecesarias.
 - Los cambios de intento, respuesta, puntuación y membresía deben ser idempotentes cuando una
   repetición de petición pueda producir duplicados.
-- La implementación actual cubre principalmente CU-05, CU-07 parcialmente, CU-08, CU-12, CU-13,
-  CU-14, CU-15/CU-16 de forma local y las consultas de CU-20 a CU-24 mediante mocks. S12 cubre la
-  programación y ejecución local del calendario Flash; se conserva Vercel Cron, pendiente de validar en staging, y
-  la expiración también se reconcilia bajo demanda. S11 cubre la publicación editorial mínima de Flash y su preview protegido; reemplazar/
-  archivar versiones publicadas y la prueba fantasma interactiva siguen pendientes.
-- La expiración usa un umbral fijo de 15 minutos y no requiere heartbeat, lease ni periodo de gracia
-  del navegador. Siguen pendientes el alcance del editor y la revisión de intentos invalidados. La
-  matriz de permisos de sala y las reglas de invitaciones ya están fijadas.
+- El estado de cada capacidad se consulta en [estado actual](status.md), no se deduce de las
+  etiquetas V1/Importante/Futuro. El [backlog](../implementation-plan.md) mantiene las operaciones
+  pendientes; las entregas cerradas permanecen en el archivo.
+- La expiración usa un umbral de 15 minutos y exige publicación cerrada o deadline vencido;
+  no necesita heartbeat, lease ni periodo de gracia del navegador. Las reglas de invitaciones y
+  permisos están aprobadas, aunque algunas operaciones de gestión todavía necesitan implementación.

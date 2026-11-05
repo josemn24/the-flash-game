@@ -13,8 +13,6 @@ import {
   applyConnectPairsCellSelection,
   calculateConnectPairsMetrics,
   connectPairsRoutePoints,
-  CONNECT_PAIRS_COLUMNS,
-  CONNECT_PAIRS_ROWS,
   getConnectPairsPairColor,
   isRestorableConnectPairsDraft,
   startConnectPairsDrag,
@@ -45,27 +43,22 @@ type DragState = {
 
 const DRAG_THRESHOLD = 6;
 
-function neighborForKey(index: number, key: string) {
-  const row = Math.floor(index / CONNECT_PAIRS_COLUMNS);
-  const column = index % CONNECT_PAIRS_COLUMNS;
-  if (key === "ArrowUp" && row > 0) return index - CONNECT_PAIRS_COLUMNS;
-  if (key === "ArrowDown" && row < CONNECT_PAIRS_ROWS - 1) return index + CONNECT_PAIRS_COLUMNS;
+function neighborForKey(index: number, key: string, grid: { rows: number; columns: number }) {
+  const row = Math.floor(index / grid.columns);
+  const column = index % grid.columns;
+  if (key === "ArrowUp" && row > 0) return index - grid.columns;
+  if (key === "ArrowDown" && row < grid.rows - 1) return index + grid.columns;
   if (key === "ArrowLeft" && column > 0) return index - 1;
-  if (key === "ArrowRight" && column < CONNECT_PAIRS_COLUMNS - 1) return index + 1;
+  if (key === "ArrowRight" && column < grid.columns - 1) return index + 1;
   return null;
 }
 
-function areNeighbors(left: number, right: number) {
+function areNeighbors(left: number, right: number, columns: number) {
   return (
-    neighborForKey(left, "ArrowUp") === right ||
-    neighborForKey(left, "ArrowDown") === right ||
-    neighborForKey(left, "ArrowLeft") === right ||
-    neighborForKey(left, "ArrowRight") === right
+    Math.abs(Math.floor(left / columns) - Math.floor(right / columns)) +
+      Math.abs((left % columns) - (right % columns)) ===
+    1
   );
-}
-
-function hasProgress(paths: Record<string, number[]>) {
-  return Object.values(paths).some((path) => path.length > 1);
 }
 
 export function ConnectPairsQuestion({
@@ -94,9 +87,11 @@ export function ConnectPairsQuestion({
   const activePairIdRef = useRef(activePairId);
   const dragRef = useRef<DragState | null>(null);
   const suppressClickRef = useRef(false);
-  const [announcement, setAnnouncement] = useState("Selecciona un extremo para empezar.");
+  const [announcement, setAnnouncement] = useState("");
+  const [visibleFeedback, setVisibleFeedback] = useState("");
 
   const activePair = question.pairs.find((pair) => pair.id === activePairId) ?? question.pairs[0];
+  const { rows, columns } = question.grid;
   const answer = useMemo(() => ({ paths }), [paths]);
   const metrics = useMemo(() => calculateConnectPairsMetrics(question, answer), [answer, question]);
 
@@ -109,13 +104,18 @@ export function ConnectPairsQuestion({
     setActivePairId(pairId);
   };
 
+  const announce = (message: string, showVisually = false) => {
+    setAnnouncement(message);
+    setVisibleFeedback(showVisually ? message : "");
+  };
+
   const publishPaths = (nextPaths: Record<string, number[]>, message: string) => {
     const nextAnswer = { paths: nextPaths };
     const nextMetrics = calculateConnectPairsMetrics(question, nextAnswer);
     pathsRef.current = nextPaths;
     setPaths(nextPaths);
     onProgress(nextAnswer);
-    setAnnouncement(message);
+    announce(message);
     if (!locked && nextMetrics.exact) onSubmit(nextAnswer);
   };
 
@@ -155,8 +155,8 @@ export function ConnectPairsQuestion({
     }
 
     const lastCell = currentPath.at(-1);
-    if (lastCell === undefined || !areNeighbors(lastCell, cell)) {
-      setAnnouncement("Solo puedes avanzar a una casilla ortogonal adyacente.");
+    if (lastCell === undefined || !areNeighbors(lastCell, cell, columns)) {
+      announce("Solo puedes avanzar a una casilla ortogonal adyacente.", true);
       return;
     }
 
@@ -164,7 +164,7 @@ export function ConnectPairsQuestion({
       (pair) => pair.id !== currentActivePair.id && (currentPaths[pair.id] ?? []).includes(cell),
     );
     if (occupiedByOtherPair) {
-      setAnnouncement("Esa casilla ya pertenece a otra ruta.");
+      announce("Esa casilla ya pertenece a otra ruta.", true);
       return;
     }
 
@@ -172,7 +172,7 @@ export function ConnectPairsQuestion({
       (pair) => pair.id !== currentActivePair.id && pair.endpoints.includes(cell),
     );
     if (otherEndpoint) {
-      setAnnouncement("No puedes usar el extremo de otra pareja.");
+      announce("No puedes usar el extremo de otra pareja.", true);
       return;
     }
 
@@ -195,7 +195,7 @@ export function ConnectPairsQuestion({
       publishPaths(result.paths, result.message);
       return;
     }
-    setAnnouncement(result.message);
+    announce(result.message, true);
   };
 
   const cellAtPoint = (point: Point) => {
@@ -210,9 +210,9 @@ export function ConnectPairsQuestion({
     ) {
       return null;
     }
-    const column = Math.floor(((point.x - rect.left) / rect.width) * CONNECT_PAIRS_COLUMNS);
-    const row = Math.floor(((point.y - rect.top) / rect.height) * CONNECT_PAIRS_ROWS);
-    return row * CONNECT_PAIRS_COLUMNS + column;
+    const column = Math.floor(((point.x - rect.left) / rect.width) * columns);
+    const row = Math.floor(((point.y - rect.top) / rect.height) * rows);
+    return row * columns + column;
   };
 
   const tracePointerSegment = (from: Point, to: Point) => {
@@ -220,8 +220,7 @@ export function ConnectPairsQuestion({
     const drag = dragRef.current;
     if (!board || !drag) return;
     const rect = board.getBoundingClientRect();
-    const sampleDistance =
-      Math.min(rect.width / CONNECT_PAIRS_COLUMNS, rect.height / CONNECT_PAIRS_ROWS) / 2;
+    const sampleDistance = Math.min(rect.width / columns, rect.height / rows) / 2;
     const distance = Math.hypot(to.x - from.x, to.y - from.y);
     const steps = Math.max(1, Math.ceil(distance / sampleDistance));
     let previousCell = drag.lastCell;
@@ -291,7 +290,13 @@ export function ConnectPairsQuestion({
     dragRef.current = null;
     if (cancelled) {
       suppressClickRef.current = false;
-    } else if (drag.moved) {
+    } else {
+      // Pointer capture retargets the native click to the grid. Commit a tap
+      // here, and suppress a subsequent cell click when the browser emits one.
+      if (!drag.moved) {
+        suppressClickRef.current = true;
+        handleCell(drag.startCell);
+      }
       window.setTimeout(() => {
         suppressClickRef.current = false;
       }, 0);
@@ -306,7 +311,7 @@ export function ConnectPairsQuestion({
     const currentPath = pathsRef.current[currentActivePair.id] ?? [];
     const currentCell = currentPath.at(-1);
     if (currentCell === undefined) return;
-    const nextCell = neighborForKey(currentCell, event.key);
+    const nextCell = neighborForKey(currentCell, event.key, question.grid);
     if (nextCell === null) return;
     event.preventDefault();
     extendActivePath(nextCell);
@@ -341,20 +346,20 @@ export function ConnectPairsQuestion({
 
   return (
     <section className={`${styles.root}`} aria-label="Conectar parejas">
-      <div className={styles.header}>
-        <span>Conecta sin cruzar rutas</span>
+      <p className={styles.header}>
         <strong>
-          {metrics.connectedPairs}/{metrics.totalPairs} · {Math.round(metrics.coverageRatio * 100)}{" "}
-          %
+          {metrics.connectedPairs}/{metrics.totalPairs} parejas
         </strong>
-      </div>
+        <span aria-hidden="true">·</span>
+        <span>{Math.round(metrics.coverageRatio * 100)} % cubierto</span>
+      </p>
 
       <div
         ref={boardRef}
         className={styles.board}
-        style={{ gridTemplateColumns: `repeat(${CONNECT_PAIRS_COLUMNS}, minmax(0, 1fr))` }}
+        style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
         role="grid"
-        aria-label="Tablero de Conectar parejas. Arrastra desde un extremo hasta su pareja o usa las flechas."
+        aria-label={`Tablero de Conectar parejas de ${rows}×${columns}. Arrastra desde un extremo hasta su pareja o usa las flechas.`}
         tabIndex={0}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -364,7 +369,7 @@ export function ConnectPairsQuestion({
       >
         <svg
           className={styles.routeOverlay}
-          viewBox={`0 0 ${CONNECT_PAIRS_COLUMNS} ${CONNECT_PAIRS_ROWS}`}
+          viewBox={`0 0 ${columns} ${rows}`}
           preserveAspectRatio="none"
           aria-hidden="true"
         >
@@ -376,18 +381,18 @@ export function ConnectPairsQuestion({
               <polyline
                 key={pair.id}
                 className={styles.routeLine}
-                points={connectPairsRoutePoints(path)}
+                points={connectPairsRoutePoints(path, question.grid)}
                 style={{ "--pair-color": color } as CSSProperties}
               />
             );
           })}
         </svg>
 
-        {Array.from({ length: CONNECT_PAIRS_ROWS * CONNECT_PAIRS_COLUMNS }, (_, cell) => {
+        {Array.from({ length: rows * columns }, (_, cell) => {
           const owner = cellOwners.get(cell);
           const active = owner?.pair.id === activePairId;
-          const row = Math.floor(cell / CONNECT_PAIRS_COLUMNS) + 1;
-          const column = (cell % CONNECT_PAIRS_COLUMNS) + 1;
+          const row = Math.floor(cell / columns) + 1;
+          const column = (cell % columns) + 1;
           return (
             <div
               key={cell}
@@ -433,30 +438,14 @@ export function ConnectPairsQuestion({
         >
           Borrar ruta
         </button>
-        <button
-          type="button"
-          disabled={locked || !hasProgress(paths)}
-          onClick={() => {
-            if (metrics.coveredCells > 0 && metrics.connectedPairs === 0) {
-              setAnnouncement(
-                "Aún no hay parejas conectadas. Toca el extremo final de cada ruta para cerrarla.",
-              );
-              return;
-            }
-            onSubmit(answer);
-          }}
-        >
-          Enviar
-        </button>
       </div>
 
-      <p className={styles.instructions}>
-        Arrastra desde un símbolo hasta su pareja. No cruces ni compartas celdas; también puedes
-        usar clics o las flechas del teclado.
-      </p>
-      <p className={styles.statusText} role="status" aria-live="polite">
-        {announcement}
-      </p>
+      <p className={styles.instructions}>Puedes recortar y rehacer las rutas.</p>
+      {visibleFeedback && (
+        <p className={styles.statusText} aria-hidden="true">
+          {visibleFeedback}
+        </p>
+      )}
     </section>
   );
 }

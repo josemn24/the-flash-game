@@ -1,5 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildTabarniaDomainSql, setupTabarniaDataset, TABARNIA_USERS } from "./seed-tabarnia.mjs";
+import sharp from "sharp";
+import { parseFlashEditorialQuestionDocument } from "../lib/editorial/flashDocument.ts";
+import { supabaseCompetitiveEvaluator } from "../server/evaluation/competitive-evaluator.ts";
+import {
+  buildTabarniaDomainSql,
+  setupTabarniaDataset,
+  tabarniaManifest,
+  TABARNIA_USERS,
+} from "./seed-tabarnia.mjs";
+import {
+  TABARNIA_FICTION_ALPHABET,
+  tabarniaMultiverseQuestions,
+} from "./fixtures/scenarios/tabarnia-multiverse.mjs";
 
 function accounts() {
   return Object.fromEntries(
@@ -23,7 +35,7 @@ function avatarMetadata() {
         width: 640,
         height: 640,
         sha256: "a".repeat(64),
-        mimeType: "image/jpeg",
+        mimeType: user.avatarFile.endsWith(".webp") ? "image/webp" : "image/jpeg",
         extension: user.avatarFile.split(".").pop(),
         filePath: `/tmp/${user.avatarFile}`,
       },
@@ -70,26 +82,146 @@ function spainAssets() {
 }
 
 describe("Tabarnia seed", () => {
+  it("ships avatar files matching their declared image formats", async () => {
+    for (const user of TABARNIA_USERS.filter((user) => user.avatarFile)) {
+      const metadata = await sharp(`public/flash-pop/avatars/${user.avatarFile}`).metadata();
+      const extension = user.avatarFile.split(".").pop();
+      expect(metadata.format, user.avatarFile).toBe(extension === "jpg" ? "jpeg" : extension);
+    }
+  });
+  it.each([
+    ["10m", 10, 80],
+    ["30m", 30, 240],
+    ["1h", 60, 480],
+    ["90m", 90, 720],
+  ])(
+    "generates matching SQL and manifest for %s without changing game clocks",
+    (schedule, minutes, total) => {
+      const input = {
+        accounts: accounts(),
+        sbrAssetMetadata: {},
+        spainAssets: spainAssets(),
+        avatarMetadata: avatarMetadata(),
+      };
+      const startsAt = "2099-10-20T19:00:20.168+02:00";
+      const start = "'2099-10-20T17:00:20.168Z'::timestamptz";
+      const data = tabarniaManifest(input.accounts, input.avatarMetadata, schedule, startsAt);
+      const sql = buildTabarniaDomainSql({ ...input, schedule, startsAt });
+      expect(data).toMatchObject({
+        scheduleProfile: `${minutes}m`,
+        scheduleWindowMinutes: minutes,
+        seasonDurationMinutes: total,
+        seasonStartsAt: "2099-10-20T17:00:20.168Z",
+      });
+      expect(data.publications).toHaveLength(8);
+      expect(data.publications.every((publication) => publication.status === "scheduled")).toBe(
+        true,
+      );
+      for (const [index, publication] of data.publications.entries()) {
+        expect(publication.opensAfterMinutes).toBe(index * minutes);
+        expect(publication.durationMinutes).toBe(minutes);
+        expect(publication.opensAfterHours).toBe((index * minutes) / 60);
+        const opensAt = index === 0 ? start : `${start} + interval '${index * minutes} minutes'`;
+        const closesAt = `${start} + interval '${(index + 1) * minutes} minutes'`;
+        expect(sql).toContain(`'scheduled', ${opensAt}, ${closesAt}`);
+      }
+      expect(sql).toContain(`'active', ${start}, ${start} + interval '${total} minutes'`);
+      const versions = (value) =>
+        value
+          .split("insert into private.challenge_versions")[1]
+          .split("insert into private.challenge_items")[0];
+      expect(versions(sql)).toBe(versions(buildTabarniaDomainSql(input)));
+    },
+  );
+
+  it("propagates a custom duration through the complete mocked Tabarnia setup", async () => {
+    const dockerSql = vi.fn();
+    const writeFixture = vi.fn();
+    const startsAt = "2099-10-20T19:00:20.168+02:00";
+    const output = await setupTabarniaDataset({
+      schedule: "1h",
+      startsAt,
+      dependencies: {
+        localSupabaseConfig: vi.fn(async () => ({
+          url: "http://127.0.0.1:54321",
+          dbContainer: "test-only",
+        })),
+        resetLocalDatabase: vi.fn(),
+        removeFixture: vi.fn(),
+        loadMiniWordleDictionary: vi.fn(),
+        createFixedAuthAccounts: vi.fn(async () => accounts()),
+        getMapMetadata: vi.fn(async () => ({})),
+        getAvatarMetadata: vi.fn(async (user) => avatarMetadata()[user.label]),
+        prepareSpainAssets: vi.fn(async () => ({ assets: spainAssets(), cleanup: vi.fn() })),
+        uploadStorageObject: vi.fn(),
+        dockerSql,
+        writeFixture,
+      },
+    });
+    expect(output).toMatchObject({
+      scheduleProfile: "60m",
+      scheduleWindowMinutes: 60,
+      seasonDurationMinutes: 480,
+    });
+    expect(output.publications.every((publication) => publication.status === "scheduled")).toBe(
+      true,
+    );
+    expect(dockerSql).toHaveBeenCalledOnce();
+    expect(dockerSql.mock.calls[0][0]).toContain("interval '480 minutes'");
+    expect(writeFixture).toHaveBeenCalledWith(
+      "tabarnia",
+      expect.objectContaining({ data: output }),
+    );
+  });
+
+  it.each(["hourly", "0m", "-1h", "1.5h", "150000000000m", "20000000000m"])(
+    "rejects %s before any external Tabarnia operation",
+    async (schedule) => {
+      const dependencies = Object.fromEntries(
+        [
+          "localSupabaseConfig",
+          "resetLocalDatabase",
+          "removeFixture",
+          "loadMiniWordleDictionary",
+          "createFixedAuthAccounts",
+          "getMapMetadata",
+          "getAvatarMetadata",
+          "prepareSpainAssets",
+          "uploadStorageObject",
+          "removeStorageObject",
+          "dockerSql",
+          "writeFixture",
+        ].map((name) => [name, vi.fn()]),
+      );
+      await expect(setupTabarniaDataset({ schedule, dependencies })).rejects.toThrow();
+      for (const dependency of Object.values(dependencies))
+        expect(dependency).not.toHaveBeenCalled();
+    },
+  );
+
   it("defines the fixed cohort and the requested roles", () => {
-    expect(TABARNIA_USERS).toHaveLength(13);
+    expect(TABARNIA_USERS).toHaveLength(16);
     expect(TABARNIA_USERS.filter((user) => user.avatarFile).map((user) => user.avatarFile)).toEqual(
       [
-        "dark.jpeg",
+        "ches.jpg",
+        "dark.webp",
         "palmera.jpeg",
+        "carlos.jpg",
         "kike.jpeg",
+        "javi.jpg",
         "rielbe.jpeg",
+        "alejandro.jpeg",
         "jacobo.jpeg",
-        "lambda.jpg",
+        "lambda.jpeg",
         "jhon3d.jpg",
+        "diego.jpg",
+        "mimi.jpg",
+        "lucas.jpg",
+        "neak.jpeg",
       ],
     );
     expect(TABARNIA_USERS.filter((user) => !user.avatarFile).map((user) => user.label)).toEqual([
       "xesmona",
-      "ches",
-      "carlos",
-      "javi",
-      "alejandro",
-      "diego",
     ]);
     expect(TABARNIA_USERS.find((user) => user.label === "xesmona")).toMatchObject({
       role: "superadmin",
@@ -98,10 +230,135 @@ describe("Tabarnia seed", () => {
       displayName: "Ches",
       role: "owner",
     });
-    expect(TABARNIA_USERS.filter((user) => user.role === "member")).toHaveLength(11);
+    expect(TABARNIA_USERS.filter((user) => user.role === "member")).toHaveLength(14);
   });
 
-  it("generates four sequential publications in the requested order without history", () => {
+  it("defines sixteen affirmative fiction letters with accepted answers", () => {
+    const entries = TABARNIA_FICTION_ALPHABET.entries;
+    expect(entries.map((entry) => entry.letter)).toEqual([
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "I",
+      "J",
+      "L",
+      "M",
+      "O",
+      "P",
+      "R",
+      "S",
+      "T",
+      "Z",
+    ]);
+    expect(new Set(entries.map((entry) => entry.slug)).size).toBe(16);
+    expect(new Set(entries.map((entry) => entry.letter)).size).toBe(16);
+    expect(
+      entries.every((entry) =>
+        entry.correctAnswer.toLocaleUpperCase("es").startsWith(entry.letter),
+      ),
+    ).toBe(true);
+    expect(entries.every((entry) => entry.acceptedAnswers.includes(entry.correctAnswer))).toBe(
+      true,
+    );
+    expect(entries.every((entry) => !/[?？]/u.test(entry.prompt))).toBe(true);
+    expect(TABARNIA_FICTION_ALPHABET.globalTimeLimitMs).toBe(150_000);
+    expect(TABARNIA_FICTION_ALPHABET.questionTimeLimitMs).toBe(120_000);
+  });
+
+  describe("Multiverse solutions", () => {
+    const cases = tabarniaMultiverseQuestions().map(({ points, ...document }, index) => ({
+      letter: TABARNIA_FICTION_ALPHABET.entries[index].letter,
+      points,
+      document,
+    }));
+
+    function evaluationContext(
+      { letter, points, document },
+      answer = document.solutionPayload.correctAnswer,
+    ) {
+      return {
+        receiptId: "00000000-0000-4000-8000-000000000001",
+        questionVersionId: "00000000-0000-4000-8000-000000000002",
+        receivedAt: "2026-10-29T00:00:00Z",
+        questionType: document.type,
+        payloadSchemaVersion: document.payloadSchemaVersion,
+        publicPayload: document.publicPayload,
+        solutionPayload: document.solutionPayload,
+        timeLimitMs: document.timeLimitMs,
+        itemPoints: points,
+        itemConfigSchemaVersion: 1,
+        itemConfig: { letter },
+        mode: "alphabet",
+        modeConfigSchemaVersion: 1,
+        modeConfig: {},
+        timeUsedMs: 0,
+        timedOut: false,
+        answer,
+      };
+    }
+
+    it("generates all sixteen questions in order with their original weights", () => {
+      expect(cases).toHaveLength(16);
+      expect(cases.map(({ document }) => document.slug)).toEqual(
+        TABARNIA_FICTION_ALPHABET.entries.map((entry) => entry.slug),
+      );
+      expect(cases.map(({ points }) => points)).toEqual([7, 7, 7, 7, ...Array(12).fill(6)]);
+      expect(cases.reduce((total, { points }) => total + points, 0)).toBe(100);
+    });
+
+    it.each(cases)("validates the editorial document for letter $letter", ({ document }) => {
+      expect(() => parseFlashEditorialQuestionDocument(document)).not.toThrow();
+    });
+
+    it.each(cases)("awards the full weight for the correct answer to letter $letter", (test) => {
+      expect(supabaseCompetitiveEvaluator.evaluate(evaluationContext(test))).toEqual({
+        status: "correct",
+        points: test.points,
+      });
+    });
+
+    it.each(cases)("rejects an incorrect answer to letter $letter", (test) => {
+      expect(
+        supabaseCompetitiveEvaluator.evaluate(evaluationContext(test, "Respuesta incorrecta")),
+      ).toEqual({ status: "incorrect", points: 0 });
+    });
+
+    it.each([
+      { letter: "A", answer: "Aladdín" },
+      { letter: "A", answer: "Aladín" },
+      { letter: "A", answer: "ALADDIN" },
+      { letter: "C", answer: "CIRI" },
+      { letter: "P", answer: "Pokemon" },
+      { letter: "T", answer: "Tintin" },
+    ])("accepts the original variant $answer for letter $letter", ({ letter, answer }) => {
+      const test = cases.find((test) => test.letter === letter);
+      expect(supabaseCompetitiveEvaluator.evaluate(evaluationContext(test, answer))).toEqual({
+        status: "correct",
+        points: test.points,
+      });
+    });
+
+    it.each([
+      { letter: "A", acceptedAnswers: ["Aladdin", "Aladdín", "Aladín"] },
+      { letter: "C", acceptedAnswers: ["Cien años de soledad", "Cien anos de soledad"] },
+      { letter: "P", acceptedAnswers: ["Pokémon", "Pokemon"] },
+      { letter: "T", acceptedAnswers: ["Tintín", "Tintin"] },
+    ])(
+      "detects the original invalid solution for letter $letter",
+      ({ letter, acceptedAnswers }) => {
+        const test = structuredClone(cases.find((test) => test.letter === letter));
+        test.document.solutionPayload.acceptedAnswers = acceptedAnswers;
+        expect(() => supabaseCompetitiveEvaluator.evaluate(evaluationContext(test))).toThrow(
+          "invalid_question_solution",
+        );
+      },
+    );
+  });
+
+  it("generates eight sequential publications in the requested order without history", () => {
     const sql = buildTabarniaDomainSql({
       accounts: accounts(),
       sbrAssetMetadata: {
@@ -116,15 +373,41 @@ describe("Tabarnia seed", () => {
     });
 
     expect(sql).toContain("'tabarnia'");
-    expect(sql).toContain("'open', now(), now() + interval '24 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '24 hours', now() + interval '48 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '48 hours', now() + interval '72 hours'");
-    expect(sql).toContain("'scheduled', now() + interval '72 hours', now() + interval '96 hours'");
+    expect(sql).toContain(
+      "'open', date_trunc('minute', now()), date_trunc('minute', now()) + interval '24 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '24 hours', date_trunc('minute', now()) + interval '48 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '48 hours', date_trunc('minute', now()) + interval '72 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '72 hours', date_trunc('minute', now()) + interval '96 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '96 hours', date_trunc('minute', now()) + interval '120 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '120 hours', date_trunc('minute', now()) + interval '144 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '144 hours', date_trunc('minute', now()) + interval '168 hours'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '168 hours', date_trunc('minute', now()) + interval '192 hours'",
+    );
     expect(sql).toContain("'superadmin'");
     expect(sql.match(/'owner'/g)).toHaveLength(1);
-    expect(sql.match(/'member'/g)).toHaveLength(11);
-    expect(sql).toContain("'Supervivencia: España'");
-    expect(sql).toContain("'Biblia y religiones abrahámicas'");
+    expect(sql.match(/'member'/g)).toHaveLength(
+      TABARNIA_USERS.filter((user) => user.role === "member").length,
+    );
+    expect(sql).toContain("'España'");
+    expect(sql).toContain("'Multiverso friki'");
+    expect(sql).toContain("'Cumbre lógica'");
+    expect(sql).toContain("'Queens'");
+    expect(sql).toContain("'Flow Free'");
+    expect(sql).toContain("'La Biblia'");
     expect(sql).toContain("'Steel Ball Run'");
     expect(sql).toContain("'survival'");
     expect(sql).toContain("'pyramid'");
@@ -136,17 +419,54 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain("'question-assets'");
     expect(sql).toContain("spain-survival-oak-tree");
     expect(sql).toContain("abrahamic-word-hashtag-references");
+    expect(sql).toContain("pyramid-square-intruder");
+    expect(sql).toContain("pyramid-summit-queens");
+    expect(sql).toContain("tabarnia-queens-time-trial-6");
+    expect(sql).toContain("tabarnia-connect-pairs-time-trial-6");
+    expect(sql).toContain("'time-trial'");
+    expect(sql).toContain('"correctAnswer":"square-29"');
+    expect(sql).toContain('"correctOptionId":"triangle-up"');
     expect(sql).toContain("avatars/00000003-0000-4000-8000-000000000000/");
-    expect(sql.match(/update public\.players set avatar_path/g)).toHaveLength(7);
+    expect(sql.match(/update public\.players set avatar_path/g)).toHaveLength(15);
     expect(sql).not.toContain("insert into public.attempts");
     expect(sql).not.toContain("answer_receipts");
     expect(sql).not.toContain("flash_point_entries");
     expect((sql.match(/insert into private\.question_definitions/g) ?? []).length).toBe(1);
     expect(sql).toContain("'sbr-fire-horse-year'");
     expect(sql).toContain("'sbr-creator'");
+    expect(sql).toContain("'alphabet-fiction-a'");
+    expect(sql).toContain("'alphabet-fiction-z'");
+    expect(sql).toContain("'short-text'");
+    expect(sql).toContain('"correctAnswer":"Aladdin"');
+    expect(sql).toContain('"letter":"A"');
   });
 
-  it("generates four contiguous five-minute publications for the fast schedule", () => {
+  it("builds an idempotent staging SQL transaction without taking over its transaction", () => {
+    const sql = buildTabarniaDomainSql({
+      accounts: accounts(),
+      sbrAssetMetadata: {
+        byteSize: 10,
+        width: 1859,
+        height: 968,
+        sha256: "a".repeat(64),
+        mimeType: "image/png",
+      },
+      spainAssets: spainAssets(),
+      avatarMetadata: avatarMetadata(),
+      conflictSafe: true,
+      wrapTransaction: false,
+    });
+
+    expect(sql).not.toMatch(/^begin;/);
+    expect(sql).not.toContain("commit;");
+    expect(sql.match(/on conflict \(id\) do nothing/gi)?.length).toBeGreaterThanOrEqual(9);
+    expect(sql).toContain("on conflict (room_id, player_id) do nothing");
+    expect(sql).toContain("on conflict (question_version_id) do nothing");
+    expect(sql).toContain("set constraints all deferred");
+    expect(sql).toContain("set constraints all immediate");
+  });
+
+  it("generates eight contiguous five-minute publications for the fast schedule", () => {
     const sql = buildTabarniaDomainSql({
       accounts: accounts(),
       sbrAssetMetadata: {
@@ -161,17 +481,33 @@ describe("Tabarnia seed", () => {
       schedule: "fast",
     });
 
-    expect(sql).toContain("'open', now(), now() + interval '5 minutes'");
     expect(sql).toContain(
-      "'scheduled', now() + interval '5 minutes', now() + interval '10 minutes'",
+      "'open', date_trunc('minute', now()), date_trunc('minute', now()) + interval '5 minutes'",
     );
     expect(sql).toContain(
-      "'scheduled', now() + interval '10 minutes', now() + interval '15 minutes'",
+      "'scheduled', date_trunc('minute', now()) + interval '5 minutes', date_trunc('minute', now()) + interval '10 minutes'",
     );
     expect(sql).toContain(
-      "'scheduled', now() + interval '15 minutes', now() + interval '20 minutes'",
+      "'scheduled', date_trunc('minute', now()) + interval '10 minutes', date_trunc('minute', now()) + interval '15 minutes'",
     );
-    expect(sql).toContain("'active', now(), now() + interval '20 minutes'");
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '15 minutes', date_trunc('minute', now()) + interval '20 minutes'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '20 minutes', date_trunc('minute', now()) + interval '25 minutes'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '25 minutes', date_trunc('minute', now()) + interval '30 minutes'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '30 minutes', date_trunc('minute', now()) + interval '35 minutes'",
+    );
+    expect(sql).toContain(
+      "'scheduled', date_trunc('minute', now()) + interval '35 minutes', date_trunc('minute', now()) + interval '40 minutes'",
+    );
+    expect(sql).toContain(
+      "'active', date_trunc('minute', now()), date_trunc('minute', now()) + interval '40 minutes'",
+    );
   });
 
   it("includes the selected schedule in the Tabarnia manifest", async () => {
@@ -206,7 +542,7 @@ describe("Tabarnia seed", () => {
     expect(output).toMatchObject({
       scheduleProfile: "fast",
       scheduleWindowMinutes: 5,
-      seasonDurationMinutes: 20,
+      seasonDurationMinutes: 40,
     });
     expect(
       output.publications.map((publication) => [
@@ -218,6 +554,10 @@ describe("Tabarnia seed", () => {
       [5, 5],
       [10, 5],
       [15, 5],
+      [20, 5],
+      [25, 5],
+      [30, 5],
+      [35, 5],
     ]);
   });
 
@@ -275,7 +615,7 @@ describe("Tabarnia seed", () => {
     expect(reset.mock.invocationCallOrder[0]).toBeLessThan(
       loadDictionary.mock.invocationCallOrder[0],
     );
-    expect(uploadStorageObject).toHaveBeenCalledTimes(11);
+    expect(uploadStorageObject).toHaveBeenCalledTimes(19);
     expect(uploadStorageObject.mock.calls.every(([, input]) => input.upsert === false)).toBe(true);
     expect(runSql).toHaveBeenCalledOnce();
     expect(saveFixture).toHaveBeenCalledWith(
@@ -289,25 +629,37 @@ describe("Tabarnia seed", () => {
         publication.pointsTotal,
       ]),
     ).toEqual([
-      ["alphabet", 18, 100],
-      ["pyramid", 7, 100],
       ["flash", 16, 100],
+      ["alphabet", 16, 100],
+      ["time-trial", 7, 100],
       ["survival", 20, 100],
+      ["pyramid", 7, 100],
+      ["alphabet", 16, 100],
+      ["time-trial", 7, 100],
+      ["pyramid", 7, 100],
     ]);
     expect(output.publicationId).toBe(output.publications[0]?.id);
     expect(output.publications.map((publication) => publication.title)).toEqual([
-      "Reino de animales",
-      "Biblia y religiones abrahámicas",
       "Steel Ball Run",
-      "Supervivencia: España",
+      "Reino de animales",
+      "Queens",
+      "España",
+      "Cumbre lógica",
+      "Multiverso friki",
+      "Flow Free",
+      "La Biblia",
     ]);
     expect(output.publications.map((publication) => publication.status)).toEqual([
       "open",
       "scheduled",
       "scheduled",
       "scheduled",
+      "scheduled",
+      "scheduled",
+      "scheduled",
+      "scheduled",
     ]);
-    expect(output.avatars).toHaveLength(7);
+    expect(output.avatars).toHaveLength(15);
     expect(output.questionAssets).toHaveLength(3);
     expect(cleanupSpainAssets).toHaveBeenCalledOnce();
   });
@@ -344,7 +696,7 @@ describe("Tabarnia seed", () => {
         },
       }),
     ).rejects.toThrow("Tabarnia SQL failed");
-    expect(removeStorageObject).toHaveBeenCalledTimes(11);
+    expect(removeStorageObject).toHaveBeenCalledTimes(19);
     expect(cleanupSpainAssets).toHaveBeenCalledOnce();
     expect(saveFixture).not.toHaveBeenCalled();
   });

@@ -13,4 +13,10 @@ export type AnswerResult = {
   points: number;
   timeUsed: number;
   details?: AnswerResultDetails;
+  reviewState?: ReviewState;
 };
+
+/** Review-only snapshot of an incomplete board captured by the server at closure. */
+export type ReviewState =
+  | { readonly type: "connect-pairs"; readonly paths: Readonly<Record<string, readonly number[]>> }
+  | { readonly type: "queens"; readonly queens: readonly number[] };

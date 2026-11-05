@@ -43,7 +43,7 @@ begin
   perform test_support.run('prepare_interaction');
   perform pg_sleep(last_ms/1000.0);
   perform test_support.ct_answer_at(began+last_ms*interval '1 millisecond');
-  perform test_support.run('complete_attempt','{"score":0}');
+  perform test_support.run('complete_attempt','{}');
 end;
 $$;
 select test_support.ct_ranked_result('owner',900);

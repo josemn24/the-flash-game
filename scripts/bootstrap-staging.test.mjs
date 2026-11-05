@@ -293,31 +293,32 @@ describe("staging bootstrap", () => {
       ["Ecos de la Antigüedad", "pyramid", "scheduled", 96],
     ]);
     expect(content.survival).toHaveLength(20);
-    expect(content.alphabet).toHaveLength(18);
+    expect(content.alphabet).toHaveLength(16);
     expect(content.pyramid).toHaveLength(7);
     expect(content.antiquity).toHaveLength(7);
-    expect(content.timeTrial).toHaveLength(6);
+    expect(content.timeTrial).toHaveLength(7);
     expect(content.timeTrial.map((item) => item.publicPayload.grid.rows)).toEqual([
-      4, 5, 5, 6, 6, 7,
+      4, 4, 5, 5, 6, 6, 7,
     ]);
-    expect(content.timeTrial.map((item) => item.points)).toEqual([10, 12, 14, 16, 20, 28]);
+    expect(content.timeTrial.map((item) => item.points)).toEqual([12, 13, 13, 14, 15, 16, 17]);
     expect(content.timeTrial.reduce((total, item) => total + item.points, 0)).toBe(100);
     expect(data.timeTrialPublicationId).toBe(data.publications[2].id);
-    expect(data.publications.map((item) => item.questionCount)).toEqual([18, 7, 6, 20, 7]);
+    expect(data.publications.map((item) => item.questionCount)).toEqual([16, 7, 7, 20, 7]);
     expect(data.publications.map((item) => item.pointsTotal)).toEqual([100, 100, 100, 100, 100]);
     const seasonStart = `(select starts_at from public.seasons where id = '${data.seasonId}')`;
     for (const publication of data.publications) {
-      const opensAt = publication.opensAfterHours === 0
-        ? seasonStart
-        : `${seasonStart} + interval '${publication.opensAfterHours} hours'`;
+      const opensAt =
+        publication.opensAfterHours === 0
+          ? seasonStart
+          : `${seasonStart} + interval '${publication.opensAfterHours} hours'`;
       const closesAt = `${seasonStart} + interval '${publication.opensAfterHours + 24} hours'`;
       expect(sql).toContain(
         `('${publication.id}', '${data.seasonId}', '${publication.challengeVersionId}', ${publication.number}, '${publication.status}', ${opensAt}, ${closesAt})`,
       );
     }
-    expect(sql).toContain("now() + interval '120 hours'");
+    expect(sql).toContain("date_trunc('minute', now()) + interval '120 hours'");
     expect(sql).toContain("'time-trial'");
-    expect(sql).toContain("180000");
+    expect(sql).toContain("150000");
     expect(sql).toContain('"title":"Identifica al personaje"');
     expect(sql).toContain("¿Quién gobernó Egipto?");
     expect(sql.toLowerCase()).not.toContain("tabarnia");

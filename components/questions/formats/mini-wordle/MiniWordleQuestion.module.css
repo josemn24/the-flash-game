@@ -1,7 +1,15 @@
 @layer app-formats {
+  .root {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
   .hint {
+    margin: 0;
     border-left: 2px solid var(--ds-color-border-selected);
-    padding-left: 0.75rem;
+    padding-left: var(--space-3);
     color: var(--ds-color-fg-secondary);
     font-size: 0.88rem;
     line-height: 1.45;
@@ -9,15 +17,19 @@
 
   .board {
     --mini-wordle-columns: 4;
+    --mini-wordle-tile-size: var(--keyboard-game-tile-size, clamp(2.4rem, 10vw, 3rem));
+    --mini-wordle-gap: 0.4rem;
+    position: relative;
     display: grid;
-    justify-content: center;
-    gap: 0.45rem;
+    max-width: 100%;
+    gap: var(--mini-wordle-gap);
+    justify-self: center;
   }
 
   .row {
     display: grid;
-    grid-template-columns: repeat(var(--mini-wordle-columns), minmax(2.8rem, 3.4rem));
-    gap: 0.45rem;
+    grid-template-columns: repeat(var(--mini-wordle-columns), var(--mini-wordle-tile-size));
+    gap: var(--mini-wordle-gap);
   }
 
   .tile {
@@ -25,8 +37,9 @@
     display: grid;
     aspect-ratio: 1;
     place-items: center;
-    border: 2px solid rgba(255, 255, 255, 0.15);
-    border-radius: 0.72rem;
+    border: 2px solid var(--ds-color-border-default);
+    border-radius: var(--radius-control);
+    color: var(--ds-color-fg-primary);
     font-family: var(--type-display);
     font-size: 1.35rem;
     font-weight: var(--type-display-strong-weight);
@@ -34,104 +47,94 @@
 
   .tile small {
     position: absolute;
-    right: 0.3rem;
-    bottom: 0.2rem;
+    right: 0.2rem;
+    bottom: 0.15rem;
     font-family: var(--type-mono);
     font-size: 0.58rem;
     line-height: 1;
   }
 
   .empty {
-    background: rgba(255, 255, 255, 0.025);
+    background: var(--ds-color-bg-surface);
   }
 
   .correct {
-    border-color: color-mix(in srgb, var(--ds-color-bg-brand) 72%, transparent);
+    border-color: var(--ds-color-border-success);
+    color: var(--ds-color-fg-on-success);
+    background: var(--ds-color-bg-success);
+  }
+
+  .present {
+    border-color: var(--ds-color-border-brand);
     color: var(--ds-color-fg-on-brand);
     background: var(--ds-color-bg-brand);
   }
 
-  .present {
-    border-color: rgba(53, 232, 255, 0.7);
-    color: var(--ds-color-fg-on-selected);
-    background: var(--ds-color-bg-selected);
-  }
-
   .absent {
-    border-color: rgba(255, 255, 255, 0.18);
     color: var(--ds-color-fg-secondary);
-    background: rgba(255, 255, 255, 0.09);
+    background: var(--ds-color-bg-surface-soft);
   }
 
-  .form {
-    display: grid;
-    gap: 0.55rem;
+  .activeRow .tile {
+    border-color: var(--ds-color-border-strong);
   }
 
-  .form label {
-    color: var(--ds-color-fg-secondary);
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+  .activeRow .cursor {
+    border-color: var(--ds-color-focus-ring);
+    box-shadow: inset 0 -3px var(--ds-color-focus-ring);
   }
 
-  .dictionaryStatus {
-    min-height: 2.75rem;
-    border: 1px solid rgba(53, 232, 255, 0.2);
-    border-radius: 0.8rem;
-    padding: 0.75rem 0.9rem;
-    color: var(--ds-color-fg-secondary);
-    background: rgba(53, 232, 255, 0.05);
-    font-size: 0.82rem;
+  .editor {
+    position: absolute;
+    z-index: 1;
+    top: calc(
+      var(--mini-wordle-active-row) * (var(--mini-wordle-tile-size) + var(--mini-wordle-gap))
+    );
+    left: 0;
+    width: 100%;
+    height: var(--mini-wordle-tile-size);
+    border-radius: var(--radius-control);
+    cursor: text;
   }
 
-  .dictionaryError {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    border: 1px solid rgba(255, 133, 138, 0.32);
-    border-radius: 0.8rem;
-    padding: 0.65rem 0.75rem 0.65rem 0.9rem;
-    color: var(--ds-color-fg-error);
-    background: rgba(255, 93, 100, 0.08);
-    font-size: 0.82rem;
-  }
-
-  .inputRow {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.65rem;
-  }
-
-  .inputRow input {
-    min-width: 0;
-    border: 1px solid rgba(255, 255, 255, 0.17);
-    border-radius: 0.85rem;
-    padding: 0.8rem 1rem;
-    color: var(--ds-color-fg-on-inverse);
-    background: rgba(255, 255, 255, 0.06);
-    font-family: var(--type-display);
-    font-size: 1.1rem;
-    font-weight: var(--type-display-strong-weight);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-  }
-
-  .inputRow input:focus-visible {
-    border-color: var(--ds-color-border-selected);
+  .editor:focus-visible {
     outline: 2px solid var(--ds-color-focus-ring);
-    outline-offset: 2px;
+    outline-offset: 3px;
+  }
+
+  .editor[aria-disabled="true"] {
+    cursor: default;
+  }
+
+  .nativeEditor {
+    min-width: 0;
+    border: 0;
+    padding: 0;
+    color: transparent;
+    background: transparent;
+    caret-color: transparent;
+    font-size: 16px;
+  }
+
+  .nativeEditor::selection {
+    color: transparent;
+    background: transparent;
+  }
+
+  .dockContent,
+  .controls,
+  .answerDock {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-2);
   }
 
   .formMeta {
     display: flex;
-    min-height: 1.3rem;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--space-3);
     color: var(--ds-color-fg-secondary);
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     line-height: 1.35;
   }
 
@@ -140,19 +143,68 @@
     text-align: right;
   }
 
+  .keyboardSwitch {
+    min-height: 44px;
+    justify-self: center;
+    border: 0;
+    padding: var(--space-1) var(--space-2);
+    color: var(--ds-color-fg-selected);
+    background: transparent;
+    font-size: 0.8rem;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .keyboardSwitch:focus-visible {
+    outline: 3px solid var(--ds-color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .keyboardSwitch:disabled {
+    opacity: var(--ds-opacity-disabled);
+    cursor: not-allowed;
+  }
+
+  .dictionaryStatus {
+    margin: 0;
+    color: var(--ds-color-fg-secondary);
+    font-size: 0.82rem;
+  }
+
+  .dictionaryError {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    border: 1px solid var(--ds-color-border-error);
+    border-radius: var(--radius-control);
+    padding: var(--space-3);
+    color: var(--ds-color-fg-error);
+    background: var(--ds-color-bg-error-soft);
+    font-size: 0.82rem;
+  }
+
+  .srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 640px) {
+    .keyboardSwitch {
+      display: none;
+    }
+  }
+
   @media (max-width: 420px) {
-    .row {
-      grid-template-columns: repeat(var(--mini-wordle-columns), minmax(2.55rem, 3rem));
-    }
-
-    .inputRow {
-      grid-template-columns: 1fr;
-    }
-
     .formMeta {
       align-items: flex-start;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: var(--space-1);
     }
 
     .error {
@@ -165,107 +217,15 @@
     }
   }
 
-  .root {
-    display: grid;
-    gap: var(--space-4);
-    margin-top: var(--space-4);
-  }
+  @media (max-height: 700px) {
+    .root {
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
 
-  .root .hint {
-    border-left-color: var(--ds-color-border-selected);
-    color: var(--ds-color-fg-secondary);
-  }
-
-  .root .tile {
-    border-color: rgb(23 23 32 / 16%);
-    color: var(--ds-color-fg-primary);
-    background: var(--ds-color-bg-surface-raised);
-  }
-
-  .root .empty {
-    background: var(--ds-color-bg-surface);
-  }
-
-  .root .correct {
-    border-color: var(--ds-color-border-success);
-    color: var(--ds-color-fg-on-success);
-    background: var(--ds-color-bg-success);
-  }
-
-  .root .present {
-    border-color: var(--ds-color-border-brand);
-    color: var(--ds-color-fg-on-brand);
-    background: var(--ds-color-bg-brand);
-  }
-
-  .root .absent {
-    border-color: var(--ds-color-border-default);
-    color: var(--ds-color-fg-secondary);
-    background: var(--ds-color-bg-surface-soft);
-  }
-
-  .root .form {
-    border: 0;
-    padding: 0;
-    background: transparent;
-  }
-
-  .root .form label {
-    color: var(--ds-color-fg-secondary);
-  }
-
-  .root .dictionaryStatus {
-    border-color: var(--ds-color-border-default);
-    color: var(--ds-color-fg-secondary);
-    background: var(--ds-color-bg-surface-soft);
-  }
-
-  .root .dictionaryError {
-    border-color: color-mix(in srgb, var(--ds-color-border-error) 42%, transparent);
-    color: var(--ds-color-fg-error);
-    background: var(--ds-color-bg-error-soft);
-  }
-
-  .root .inputRow input {
-    border-color: var(--ds-color-border-default);
-    color: var(--ds-color-fg-primary);
-    background: var(--ds-color-bg-surface);
-    caret-color: var(--ds-color-focus-ring);
-  }
-
-  .root .inputRow input:focus-visible {
-    border-color: var(--ds-color-focus-ring);
-    outline: 3px solid var(--ds-color-focus-ring);
-  }
-
-  .root .inputRow button {
-    border-color: var(--ds-color-border-brand);
-    color: var(--ds-color-fg-on-brand);
-    background: var(--ds-color-bg-brand);
-    box-shadow: var(--shadow-control);
-  }
-
-  .root .inputRow button:hover:not(:disabled) {
-    background: var(--ds-color-bg-brand);
-  }
-
-  .root .inputRow button:disabled {
-    border-color: var(--ds-color-border-default);
-    color: var(--ds-color-fg-disabled);
-    background: var(--ds-color-bg-surface-soft);
-    box-shadow: none;
-    opacity: 1;
-  }
-
-  .root .answerRow button:focus-visible {
-    outline: 3px solid var(--ds-color-focus-ring);
-  }
-
-  .root .formMeta {
-    color: var(--ds-color-fg-secondary);
-  }
-
-  .root .error {
-    color: var(--ds-color-fg-error);
+    .board {
+      --mini-wordle-tile-size: var(--keyboard-game-tile-size, 2.4rem);
+      --mini-wordle-gap: 0.3rem;
+    }
   }
 }

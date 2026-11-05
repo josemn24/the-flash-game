@@ -1,9 +1,9 @@
 import type { SessionQuestion } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import type { FormatOutcome } from "./types";
 export function progressiveCluesOutcome(
   question: SessionQuestion,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): FormatOutcome {
   if (question.type !== "progressive-clues") throw new Error("unexpected_question_format");
   const clues = [...question.clues, String(response.clue)];

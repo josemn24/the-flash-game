@@ -1,7 +1,7 @@
 "use client";
 import { ServerMiniWordleQuestion } from "@/components/questions/formats/mini-wordle/ServerMiniWordleQuestion";
-import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+import type { MiniWordleCompetitiveInputProps } from "../../competitiveInputTypes";
+export function render(props: MiniWordleCompetitiveInputProps) {
   const {
     locked,
     submissionState,
@@ -10,12 +10,10 @@ export function render(props: CompetitiveInputProps) {
     onRetrySubmission,
     onMiniWordleGuess,
   } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "mini-wordle" }
-  >;
+  const { question } = props;
   return (
     <ServerMiniWordleQuestion
+      key={question.id}
       question={question}
       progress={question.progress}
       locked={locked}

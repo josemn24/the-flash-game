@@ -8,8 +8,10 @@ import type {
   AnagramTile,
   QuestionMedia,
   QueensGrid,
+  ConnectPairsGrid,
   ZipCheckpoint,
   EscapeBlock,
+  MultipleChoicePromptVisual,
 } from "@/types/contracts";
 import type { PracticeQuestion } from "@/types/gameplay/practice";
 import type { MiniWordleLetterFeedback, MiniWordleWordLength } from "@/types/domain/mini-wordle";
@@ -254,7 +256,10 @@ export type ServerShortTextQuestion = ServerFlashQuestionBase & {
   readonly answerPlaceholder: string | null;
 };
 
-export type ServerAlphabetQuestion = ServerShortTextQuestion & { readonly letter: string };
+export type ServerAlphabetQuestion = ServerShortTextQuestion & {
+  readonly letter: string;
+  readonly answerLength: number | null;
+};
 
 export type ServerAlphabetChallenge = ChallengeBase & {
   mode: "alphabet";
@@ -318,6 +323,7 @@ export type ServerMultipleChoiceQuestion = ServerFlashQuestionBase & {
   readonly type: "multiple-choice";
   readonly options: readonly string[];
   readonly media?: QuestionMedia;
+  readonly promptVisual?: MultipleChoicePromptVisual;
 };
 
 export type ServerTrueFalseQuestion = ServerFlashQuestionBase & {
@@ -430,9 +436,13 @@ export type ServerEscapeQuestion = ServerFlashQuestionBase & {
 
 export type ServerConnectPairsQuestion = ServerFlashQuestionBase & {
   readonly type: "connect-pairs";
-  readonly grid: { readonly rows: 5; readonly columns: 5 };
+  readonly grid: ConnectPairsGrid;
   readonly pairs: readonly ConnectPairsPair[];
   readonly requireFullCoverage: true;
+  readonly progress?: {
+    readonly kind: "connect-pairs";
+    readonly paths: Readonly<Record<string, readonly number[]>>;
+  };
 };
 
 export type ServerMiniWordleProgress = {
@@ -571,6 +581,8 @@ export type SurvivalChallenge = ChallengeBase & {
 export type AlphabetChallengeEntry = {
   letter: string;
   question: PracticeQuestion;
+  /** Editorial weight retained at the legacy mock boundary. */
+  points?: number;
 };
 
 export type AlphabetChallenge = ChallengeBase & {
@@ -618,6 +630,14 @@ export type NarrativeChallenge = ChallengeBase & {
   prologue: NarrativeScene;
   beats: NarrativeBeat[];
 };
+
+export type CompetitiveChallenge =
+  | ServerFlashChallenge
+  | ServerAlphabetChallenge
+  | ServerSurvivalChallenge
+  | ServerPyramidChallenge
+  | ServerNarrativeChallenge
+  | ServerTimeTrialChallenge;
 
 /**
  * @deprecated Contrato gameplay completo del prototipo. En código nuevo combina

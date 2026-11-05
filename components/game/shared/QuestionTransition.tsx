@@ -62,12 +62,14 @@ export function QuestionTransition({
   timedOut,
   isLast,
   status,
+  points,
   eliminated,
   customCopy,
 }: {
   timedOut: boolean;
   isLast: boolean;
   status?: AnswerStatus;
+  points?: number;
   eliminated?: boolean;
   customCopy?: { title: string; body: string; tone?: "success" | "partial" | "danger" };
 }) {
@@ -108,6 +110,12 @@ export function QuestionTransition({
           {copy.title}
         </motion.h1>
         <p className="mt-2 text-sm font-bold text-white/40">{copy.body}</p>
+        {typeof points === "number" ? (
+          <p className="mt-4 text-lg font-black text-white">
+            {points > 0 ? "+" : ""}
+            {points} puntos
+          </p>
+        ) : null}
         <div className="mt-7 flex justify-center gap-1" aria-hidden="true">
           {[0, 1, 2].map((item) => (
             <motion.span

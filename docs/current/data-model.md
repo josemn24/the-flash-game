@@ -2,22 +2,21 @@
 
 ## Estado y alcance
 
-- Estado: modelo de persistencia aprobado; S14/S15/F18/F19 reutilizan tablas existentes. S15 está verificada sobre Supabase local.
-- Fecha: 2026-09-23.
-- Infraestructura prevista: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
+- Estado: modelo de persistencia vigente. Las verificaciones por entorno se consultan en [estado actual](status.md).
+- Fecha del modelo original: 2026-09-23; contraste documental: 2026-11-02.
+- Infraestructura: PostgreSQL mediante Supabase, Supabase Auth y Supabase Storage.
 - Este documento concreta tablas y garantías de almacenamiento; no sustituye al
   [`domain-model.md`](domain/domain-model.md), que sigue siendo la referencia para el
   comportamiento del dominio.
 
 El modelo parte de los casos de uso: identidad, acceso a salas, publicaciones versionadas,
-intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. El prototipo
-actual y los recorridos aún no migrados continúan usando `data/mock/`; S01–S15, D08a/D08b, E01–E06,
-F08, F16, F18, F19 y E10 ya tienen persistencia real verificada en Supabase local. S15 implementa
-Pirámide sobre las tablas existentes y su suite focal local pasa.
+intentos autoritativos, respuestas, acreditación de puntos y consultas derivadas. Los seis modos
+competitivos utilizan persistencia real; las demos, práctica y fixtures usan sus composiciones
+locales explícitas.
 
 El [esquema declarativo](../../supabase/schemas/README.md) implementa las restricciones, RLS y los
-comandos transaccionales competitivos en una base aislada de pruebas. La conexión productiva sigue
-pendiente. `service_role` no tiene DML directo; usa funciones privadas autorizadas y lecturas internas.
+comandos transaccionales competitivos utilizados por la aplicación. La evidencia local y
+las comprobaciones pendientes de staging se detallan en [estado actual](status.md). `service_role` no tiene DML directo; usa funciones privadas autorizadas y lecturas internas.
 El inventario de ACL y las pruebas de objetos futuros acompañan esas declaraciones.
 
 ## 1. Principios
@@ -274,7 +273,7 @@ Snapshot de título, modo, configuración y reglas de una definición.
 - `title text not null`, `subtitle text not null`, `description text not null`.
 - `max_score integer not null default 100`.
 - `mode_config jsonb not null`.
-- `global_time_limit_ms integer null`: positivo y obligatorio solo para Alfabeto publicado.
+- `global_time_limit_ms integer null`: positivo y obligatorio para Alfabeto y Contrarreloj publicados; en Contrarreloj es múltiplo de 1000.
 - `created_by_player_id uuid not null references players(id)`.
 - `published_at timestamptz null`.
 - `created_at`, `updated_at`.
@@ -394,17 +393,18 @@ Raíz persistida de una ejecución competitiva o de prueba.
 
 - `id uuid primary key`.
 - `player_id uuid not null references players(id)`.
-- `scheduled_challenge_id uuid not null references scheduled_challenges(id)`.
+- `scheduled_challenge_id uuid not null`.
+- `challenge_version_id uuid not null`: versión inmutable fijada por la publicación.
 - `attempt_number integer not null`.
 - `kind text not null`: `competitive` o `test`.
 - `status text not null`: `in_progress`, `completed`, `abandoned` o `invalidated`.
 - `outcome text null`: reservado para feedback interno de un modo, no para un estado global
   `passed`/`failed`.
-- `started_at timestamptz not null`, `deadline_at timestamptz null` (solo Alfabeto tiene deadline global).
+- `started_at timestamptz not null`, `deadline_at timestamptz null` (Alfabeto y Contrarreloj tienen deadline global).
 - `completed_at timestamptz null`.
 - `score integer null`.
 - `client_state_schema_version integer not null`.
-- `lock_version integer not null default 1`.
+- `lock_version bigint not null default 1`.
 - `progress_payload jsonb null`.
 - `last_activity_at timestamptz null`.
 - `terminal_reason text null`.
@@ -418,9 +418,10 @@ Constraints y reglas:
   publicación: `unique (player_id, scheduled_challenge_id) where kind = 'competitive'`.
 - Los intentos `test` pueden repetirse, pero siempre quedan fuera de puntos, ranking, historial
   ordinario y actividad social.
-- La publicación determina la sala, temporada y versión. Puede conservarse además un
-  `challenge_version_id` inmutable en la tabla como referencia redundante para consultas y
-  restricciones compuestas; no es una segunda relación conceptual.
+- La publicación determina la sala y temporada. `challenge_version_id` se persiste como columna
+  obligatoria. La FK compuesta `(scheduled_challenge_id, challenge_version_id)` garantiza que
+  corresponde a la versión publicada; la clave única `(id, challenge_version_id)` permite comprobar
+  también la versión de cada respuesta.
 - Un intento abandonado conserva respuestas aceptadas, pero su `progress_payload` recuperable se
   elimina o invalida. `terminal_reason` distingue abandono voluntario, `inactivity_timeout`,
   `permission_revoked` o invalidación administrativa; una desconexión mientras el desafío sigue
@@ -428,11 +429,19 @@ Constraints y reglas:
   `removed`/`banned`, el cierre competitivo y la revocación de sesiones se confirman en la misma
   transacción, sin crear acreditaciones nuevas.
 
-Para F19, `progress_payload` contiene únicamente el tipo, el `challengeItemId` y la secuencia de
-swaps aceptados. La solución de cuatro palabras permanece en `question_version_solutions`; cada swap
-se valida dentro del comando transaccional y el payload se limpia al resolver, agotar movimientos o
+Para F19, `progress_payload` contiene el tipo, el `challengeItemId` y la secuencia de swaps
+aceptados. La solución de cuatro palabras permanece en `question_version_solutions`; cada swap se
+valida dentro del comando transaccional y el payload se limpia al resolver, agotar movimientos o
 cerrar por timeout. La recuperación materializa esa secuencia en la respuesta evaluada, sin conceder
 puntos por una interrupción.
+
+Queens y Conectar parejas también usan `progress_payload` para persistir el último checkpoint
+validado por el servidor de la interacción abierta: las reinas colocadas o las rutas del tablero. El
+comando actualiza la versión de bloqueo y la actividad del intento. Un checkpoint no es una
+recepción ni una respuesta final, y por sí solo no concede puntos. Al cerrar una interacción sin
+respuesta —por timeout o al conciliar una evaluación pendiente— el servidor valida el checkpoint y
+lo copia a `review_state` antes de limpiar el progreso mutable. Esto permite revisar el último estado
+aceptado sin convertirlo en respuesta final ni alterar el estado o la puntuación oficiales.
 
 ### `attempt_sessions`
 
@@ -462,9 +471,8 @@ evaluar la recepción ya guardada y cerrar el intento con la sesión propietaria
 
 `attempt_timing_units` persiste inicio/deadline inmutables por item antes de devolver contenido;
 el scope es pregunta para Flash/Supervivencia/Narrativo, nivel para Pirámide e intento para
-Alfabeto. En Alfabeto todas las unidades comparten el deadline global configurado en
-`challenge_versions.global_time_limit_ms`; las demás modalidades no admiten ese límite global
-en una versión publicada.
+Alfabeto y Contrarreloj. Ambos usan `challenge_versions.global_time_limit_ms` como límite
+global publicado; Pirámide separa preparación y activación del nivel.
 
 `interaction_intervals` conserva cada visita, con una sola abierta por intento. Pasar una letra
 cierra su intervalo; volver crea otro sin cambiar el deadline. La duración suma solo las visitas
@@ -472,11 +480,10 @@ a esa letra, excluyendo transiciones y evaluación. Una interacción preparada q
 se pierda el HTTP que llevaba su payload: la recuperación no puede reabrir ni volver a entregar ese
 intervalo.
 
-La implementación futura de recuperación deberá añadir un motivo de cierre auditable, por ejemplo
-`recovery_interrupted`, distinto de `pass` voluntario. Se usará para cerrar la letra visible de
-Alfabeto sin crear `attempt_answers`; los demás modos registrarán su resultado normal
-`unanswered` cuando corresponda. Es un cambio futuro de constraint/migración, no un estado nuevo de
-`attempt_answers` ni una modificación ya aplicada al esquema ejecutable.
+La recuperación ya utiliza el motivo auditable `recovery_interrupted`, distinto de `pass`
+voluntario, para cerrar el intervalo visible. La consecuencia se aplica según el modo, sin
+reiniciar el reloj ni volver a entregar contenido consumido; ver el
+[contrato de recuperación](competitive-command-recovery.md). No es un nuevo estado de respuesta.
 
 `answer_receipts` guarda payload e instante de recepción PostgreSQL antes de evaluar, presentación,
 instante efectivo limitado por deadline, duración acumulada y timeout. El tiempo cliente es
@@ -491,12 +498,15 @@ actor/clave. Reintentos idénticos recuperan el resultado; contenido diferente p
 Respuesta final a un `challenge_item` concreto.
 
 - `id uuid primary key`.
-- `attempt_id uuid not null references attempts(id)`.
-- `challenge_item_id uuid not null references challenge_items(id)`.
+- `attempt_id uuid not null`.
+- `challenge_item_id uuid not null`.
+- `challenge_version_id uuid not null`.
 - `receipt_id uuid not null`: recepción válida del mismo intento, item y versión.
 - `status text not null`: `correct`, `partial`, `incorrect`, `unanswered` o `timeout`.
 - `answer jsonb null`.
 - `result_details jsonb null`.
+- `review_state jsonb null`: snapshot validado de un checkpoint de Queens o Conectar parejas para
+  conservarlo en la revisión cuando no existe una respuesta final.
 - `points integer not null`.
 - `presented_at timestamptz not null`, `submitted_at timestamptz null`.
 - `time_used_ms bigint not null`.
@@ -508,11 +518,17 @@ Constraints y reglas:
 - `unique (attempt_id, challenge_item_id)` para una respuesta final por elemento.
 - `unique (attempt_id, idempotency_key)` para reintentos seguros de red.
 - `points >= 0`, `time_used_ms >= 0` y `presented_at <= submitted_at` cuando existe envío.
-- La aplicación comprueba que el elemento pertenece a la versión del desafío del intento. Puede
-  reforzarse con una FK compuesta usando `challenge_version_id` en ambas proyecciones o con un
-  trigger; una FK simple sobre los dos UUID no expresa esa invariancia.
-- `answer` es el payload bruto recibido y `result_details` la evaluación concedida. Ninguno se
-  reescribe para ocultar una corrección posterior.
+- `review_state` es nulo o un objeto cuyo `type` es `connect-pairs` y contiene `paths`, o cuyo
+  `type` es `queens` y contiene `queens`; la validación del comando comprueba el checkpoint antes
+  de guardarlo.
+- Las FKs compuestas `(attempt_id, challenge_version_id)` y `(challenge_item_id,
+challenge_version_id)` garantizan que la respuesta y el elemento pertenecen a la misma versión.
+- La FK compuesta de `receipt_id`, `attempt_id`, `challenge_item_id` y `challenge_version_id`
+  garantiza que la respuesta corresponde a la recepción persistida de ese intento, elemento y
+  versión.
+- `answer` es el payload bruto recibido y `result_details` la evaluación concedida. `review_state`
+  conserva por separado el estado aceptado que se muestra en revisión. Ninguno se reescribe para
+  ocultar una corrección posterior; `review_state` no modifica el estado oficial ni la puntuación.
 
 Los intervalos de visita y las recepciones son estado técnico separado de la respuesta final. Los
 eventos adicionales de formatos concretos se validarán en servidor sin abrir DML genérico.
@@ -570,6 +586,28 @@ Registro técnico append-only de acciones sensibles y correcciones.
 Se usa para transferencias de propiedad, invitaciones revocadas, publicaciones canceladas,
 invalidaciones, correcciones y operaciones de superadministración. No es una fuente de verdad para
 rankings ni para la UI; explica cómo cambiaron los hechos.
+
+### Medición privada de temporada
+
+El esquema vigente añade cinco relaciones privadas:
+
+- `room_measurements`: una medición automática por pareja sala/temporada, con fechas de captura y cierre.
+- `room_measurement_participants`: alcance de personas con fecha de incorporación e inicio de historia.
+- `room_measurement_publications`: alcance de publicaciones con sus mismas fechas de contexto.
+- `room_measurement_events`: seis señales comunes, identificador idempotente, persona y publicación,
+  visita/ejecución, fecha del navegador, recepción del servidor y versión de aplicación.
+- `room_measurement_ratings`: revisiones de disfrute 1–5, con identificador idempotente y recepción;
+  el informe selecciona el último valor por persona/publicación.
+
+Las incorporaciones se conservan; una baja posterior no elimina el alcance observado. Las tablas
+tienen RLS y acceso directo revocado. La identidad y el contexto se resuelven en RPC; el informe
+exige superadmin. Intentos, respuestas y puntos mantienen su autoridad competitiva: no se duplican
+como eventos de «partida completada». Los agregados y CSV se calculan al consultar, sin una tabla
+de resultados de estudios ni snapshots históricos automáticos.
+
+Las definiciones exactas están en [medición de temporada](product-measurement.md), y las relaciones
+y funciones en [alcance privado](../../supabase/schemas/s25_room_measurement.sql) y
+[medición automática](../../supabase/schemas/s26_season_measurement.sql).
 
 ## 8. Proyecciones que no se persisten inicialmente
 
@@ -730,9 +768,8 @@ Ejemplos de mapeo:
 - `QuestionVersion` del dominio puede componerse de `question_versions` y
   `question_version_solutions`; el cliente solo recibe `public_payload`.
 - `expired` es una proyección de una publicación cerrada sin intento, no un valor de `attempts`.
-- `attempt_sessions`, `idempotency_key` y una posible referencia redundante a
-  `challenge_version_id` son mecanismos de persistencia. No obligan a añadir entidades públicas
-  al dominio.
+- `attempt_sessions`, `idempotency_key` y la columna obligatoria `challenge_version_id` de
+  `attempts` son mecanismos de persistencia. No obligan a añadir entidades públicas al dominio.
 - `flash_point_entries` registra la acreditación y sus correcciones, pero no crea una moneda o un
   aggregate funcional paralelo a Flash Points.
 
@@ -748,9 +785,9 @@ de dominio.
 ### Referencia directa de la versión en un intento
 
 Conceptualmente la versión se obtiene por `attempt → scheduled_challenge → challenge_version`.
-Persistir también `challenge_version_id` en `attempts` puede simplificar índices y FKs compuestas y
-deja congelada la versión usada. Si se adopta, debe ser inmutable y validarse contra la publicación;
-no se debe permitir que se convierta en una segunda fuente editable.
+La persistencia actual también guarda `challenge_version_id` en `attempts`: la FK compuesta lo
+vincula a la versión de la publicación y permite reforzar las relaciones de respuestas e items sin
+convertirlo en una segunda fuente editable.
 
 ### Libro de puntos frente a total materializado
 
@@ -780,21 +817,16 @@ implementa para Flash `recover_attempt` y `read_attempt_recovery`: un intervalo 
 como `recovery_interrupted`, genera una recepción interna nula y se evalúa como `unanswered` antes de
 autorizar otra preparación. S14 reutiliza ese cierre para Supervivencia y deriva vidas/resultados de
 respuestas evaluadas. S15 reutiliza scope `level` para Pirámide y deriva cima/fallo, score y resultado
-desde las evaluaciones persistidas; está validada en Supabase local. Narrativa sigue pendiente de
-su vertical slice. Siguen abiertas
-la matriz owner/admin y la política de retención/anonimización.
+desde las evaluaciones persistidas. Narrativa y Contrarreloj también usan la autoridad persistida
+con sus reglas de recuperación. La matriz owner/admin está aprobada; su implementación restante
+y la política de retención/anonimización se mantienen en el backlog.
 
-## 14. Evolución desde el repositorio actual
+## 14. Evolución de la persistencia
 
-1. Mantener `data/mock/store.ts` como adaptador que satisface los contratos actuales.
-2. Usar los contratos de comandos de `application/ports/`, ya orientados a operaciones atómicas.
-3. Implementar `infrastructure/supabase/` con consultas y transacciones que cumplan este modelo.
-4. Sustituir progresivamente `demoIdentity`, la evaluación cliente y los snapshots oficiales en
-   memoria por casos de uso server-only.
-5. Mantener los view models y componentes desacoplados de las filas; solo cambiar la composición de
-   `server/`.
-6. Añadir vistas materializadas, eventos o procesos asíncronos únicamente cuando una necesidad de
-   volumen, auditoría o integración lo justifique.
+El adaptador Supabase, la autorización, la evaluación y los relojes competitivos ya están
+integrados. El mock queda para demos, práctica y fixtures; no es fallback de la competición.
 
-La persistencia propuesta es más rica que el store mock porque necesita seguridad, concurrencia e
-histórico, pero no introduce tablas para cada pantalla, modo o endpoint.
+Las ampliaciones deben preservar contratos y hechos aceptados, mantener los view models separados
+de las filas y justificar nuevas tablas, materializaciones o procesos por una necesidad concreta.
+Los pendientes están en el [backlog](../implementation-plan.md); la operación usa el historial y la
+[guía de entornos](supabase-clean-installation.md).

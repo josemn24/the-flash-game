@@ -1,0 +1,232 @@
+[
+  {
+    "id": "bank-intruso-tiempo",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Cuál de estas unidades no mide tiempo?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "Segundo"
+        },
+        {
+          "id": "i1",
+          "label": "Minuto"
+        },
+        {
+          "id": "i2",
+          "label": "Hora"
+        },
+        {
+          "id": "i3",
+          "label": "Litro"
+        },
+        {
+          "id": "i4",
+          "label": "Día"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i3",
+      "explanation": "El litro mide volumen. Las otras unidades miden tiempo."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-intruso-tiempo"
+  },
+  {
+    "id": "betavip-logica-q3",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Selecciona el único número impar.",
+      "items": [
+        {
+          "id": "i0",
+          "label": "2"
+        },
+        {
+          "id": "i1",
+          "label": "4"
+        },
+        {
+          "id": "i2",
+          "label": "6"
+        },
+        {
+          "id": "i3",
+          "label": "8"
+        },
+        {
+          "id": "i4",
+          "label": "9"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i4",
+      "explanation": "El 9 es impar porque 9 = 2 × 4 + 1. Los demás números se dividen entre dos sin resto."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "odd-one-out-paridad"
+  },
+  {
+    "id": "flash-referencia-q2",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Selecciona el único número impar.",
+      "items": [
+        {
+          "id": "i0",
+          "label": "2"
+        },
+        {
+          "id": "i1",
+          "label": "4"
+        },
+        {
+          "id": "i2",
+          "label": "6"
+        },
+        {
+          "id": "i3",
+          "label": "9"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i3",
+      "explanation": "El 9 es impar porque 9 = 2 × 4 + 1. Los demás números se dividen entre dos sin resto."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 14000,
+    "familyId": "odd-one-out-paridad"
+  },
+  {
+    "id": "bank-intruso-geometria",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-intruso-geometria",
+    "publicPayload": {
+      "question": "¿Cuál de estas figuras tiene volumen?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "Círculo"
+        },
+        {
+          "id": "i1",
+          "label": "Triángulo"
+        },
+        {
+          "id": "i2",
+          "label": "Cuadrado"
+        },
+        {
+          "id": "i3",
+          "label": "Rombo"
+        },
+        {
+          "id": "i4",
+          "label": "Esfera"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i4",
+      "explanation": "La esfera ocupa espacio y tiene volumen. Círculo, triángulo, cuadrado y rombo son figuras planas."
+    }
+  },
+  {
+    "id": "bank-intruso-medium",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-intruso-medium",
+    "publicPayload": {
+      "question": "¿Qué número no es un cuadrado perfecto?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "9"
+        },
+        {
+          "id": "i1",
+          "label": "25"
+        },
+        {
+          "id": "i2",
+          "label": "36"
+        },
+        {
+          "id": "i3",
+          "label": "49"
+        },
+        {
+          "id": "i4",
+          "label": "63"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i4",
+      "explanation": "9 = 3², 25 = 5², 36 = 6² y 49 = 7². El 63 queda entre 7² y 8² y no es cuadrado de un entero."
+    }
+  },
+  {
+    "id": "bank-intruso-hard",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-intruso-hard",
+    "publicPayload": {
+      "question": "Selecciona el único número compuesto.",
+      "items": [
+        {
+          "id": "i0",
+          "label": "17"
+        },
+        {
+          "id": "i1",
+          "label": "29"
+        },
+        {
+          "id": "i2",
+          "label": "51"
+        },
+        {
+          "id": "i3",
+          "label": "67"
+        },
+        {
+          "id": "i4",
+          "label": "83"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i2",
+      "explanation": "51 = 3 × 17 es compuesto. Para los demás basta probar los primos hasta su raíz cuadrada: ninguno es divisible por 2, 3, 5 o 7 cuando corresponde."
+    }
+  }
+]

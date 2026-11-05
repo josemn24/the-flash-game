@@ -1,3 +1,4 @@
+import type { SubmitAnswerInput, AttemptRecoverySnapshot } from "@/types/contracts/attempts";
 import {
   competitivePerformanceObserver,
   countCompetitiveDatabaseCall,
@@ -7,7 +8,6 @@ import "server-only";
 import { Pool, type PoolClient } from "pg";
 import {
   decodeAttemptRecoverySnapshot,
-  decodeFinishAttemptResult,
   decodeSavedAttemptResult,
   decodeSavedAbandonedAttemptResult,
 } from "./attemptLifecycleContracts";
@@ -20,30 +20,28 @@ import type {
   StartAttemptCommand,
   TakeOverAttemptCommand,
 } from "@/application/ports/attempt-commands";
-import type {
-  ActivateInteractionResult,
-  PrepareInteractionResult,
-  ReceiveAnswerResult,
-  StartAttemptResult,
-  TakeOverAttemptResult,
-  SubmitAnswerInput,
-  SubmitAnswerResult,
-  FinishAttemptResult,
-  RecoverAttemptResult,
-  AttemptRecoverySnapshot,
-  SubmitMiniWordleGuessResult,
-  SubmitWordSearchSelectionResult,
-  SubmitWordHashtagSwapResult,
-  SubmitLogicCodeAttemptResult,
-  SubmitQueensPlacementResult,
-  SaveQueensDraftResult,
-  ValidateQueensBoardResult,
-  RevealProgressiveClueResult,
-  PassInteractionResult,
-} from "@/types/contracts/attempts";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
-import { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
+import { AttemptCommandError } from "@/application/errors/attempts";
+import { isAttemptErrorCode } from "@/lib/competitiveErrors";
+import type { AttemptErrorCode } from "@/types/contracts/competitive-errors";
+import {
+  attemptSqlDecoders,
+  decodeRecordedEvaluation,
+  decodeEvaluationContext,
+  type AttemptSqlCommandMap,
+  type SqlDecoderContext,
+  decodeAttemptItemValidationContext,
+} from "./attemptCommandContracts";
+import {
+  CompetitiveResponseContractError,
+  fields,
+  identity as responseIdentity,
+  integer,
+  record,
+  requireResponse,
+} from "@/lib/competitiveResponseContract";
+import { countAlphabetAnswerCharacters } from "@/lib/gameplay/alphabetAnswerSlots";
 
 export { AttemptCommandError } from "@/infrastructure/supabase/attempts/attemptCommandError";
 
@@ -85,69 +83,11 @@ async function beginAsServiceRole(client: PoolClient, identity: VerifiedAuthIden
   ]);
 }
 
-function commandCode(error: unknown) {
+function commandCode(error: unknown): AttemptErrorCode {
+  if (error instanceof AttemptCommandError) return error.code;
   const infrastructureCode =
     error && typeof error === "object" && "code" in error ? String(error.code) : "";
   const message = error instanceof Error ? error.message : "";
-  const known = [
-    "not_authorized",
-    "attempt_permission_revoked",
-    "competitive_access_denied",
-    "session_revoked",
-    "session_transferred",
-    "stale_version",
-    "idempotency_conflict",
-    "invalid_command",
-    "attempt_terminal",
-    "interaction_not_presented",
-    "pass_unavailable",
-    "time_trial_terminal",
-    "time_trial_not_terminal",
-    "queens_requires_validation_command",
-    "evaluation_pending",
-    "publication_cancelled",
-    "attempt_not_terminal",
-    "reason_required",
-    "invalid_score",
-    "not_competitive",
-    "incomplete_challenge",
-    "unfinished_interaction",
-    "no_evaluated_answers",
-    "no_pending_item",
-    "deadline_reached",
-    "alphabet_deadline_not_reached",
-    "receipt_not_found",
-    "already_evaluated",
-    "takeover_not_prepared",
-    "attempt_inactivity_expired",
-    "recovery_required",
-    "invalid_mini_wordle_guess",
-    "duplicate_mini_wordle_guess",
-    "mini_wordle_requires_guess_command",
-    "invalid_logic_code",
-    "duplicate_logic_code",
-    "logic_code_requires_attempt_command",
-    "invalid_matching_answer",
-    "invalid_word_search_selection",
-    "word_search_target_already_found",
-    "word_search_requires_selection_command",
-    "invalid_word_hashtag_swap",
-    "word_hashtag_moves_exhausted",
-    "word_hashtag_requires_swap_command",
-    "invalid_queens_placement",
-    "invalid_queens_answer",
-    "queens_answer_incomplete",
-    "queens_answer_overflow",
-    "queens_requires_placement_command",
-    "queens_requires_board_validation",
-    "prefilled_queen_locked",
-    "all_clues_revealed",
-    "progressive_clues_requires_reveal_command",
-    "unsupported_question",
-    "invalid_question_payload",
-    "invalid_attempt_context",
-    "invalid_attempt_lifecycle",
-  ];
   if (
     infrastructureCode === "23514" &&
     error &&
@@ -161,8 +101,7 @@ function commandCode(error: unknown) {
   ) {
     return "invalid_attempt_lifecycle";
   }
-  const domainCode = known.find((candidate) => message.includes(candidate));
-  if (domainCode) return domainCode;
+  if (isAttemptErrorCode(message)) return message;
   if (
     infrastructureCode.startsWith("08") ||
     ["28P01", "28000", "42501"].includes(infrastructureCode) ||
@@ -172,6 +111,29 @@ function commandCode(error: unknown) {
     return "database_unavailable";
   }
   return "command_failed";
+}
+
+function commandError(error: unknown): AttemptCommandError {
+  if (error instanceof AttemptCommandError) return error;
+  if (error instanceof CompetitiveResponseContractError)
+    return new AttemptCommandError("invalid_backend_response", error);
+  const code = commandCode(error);
+  let retryAfterSeconds: number | undefined;
+  if (
+    code === "alphabet_deadline_not_reached" &&
+    error &&
+    typeof error === "object" &&
+    "detail" in error
+  ) {
+    try {
+      const detail = JSON.parse(String(error.detail)) as { retryAfterSeconds?: unknown };
+      const seconds = Number(detail.retryAfterSeconds);
+      if (Number.isSafeInteger(seconds) && seconds > 0) retryAfterSeconds = seconds;
+    } catch {
+      // Invalid database diagnostics must not hide the original error.
+    }
+  }
+  return new AttemptCommandError(code, error, retryAfterSeconds);
 }
 
 async function transaction<T>(
@@ -208,22 +170,25 @@ async function transaction<T>(
       );
     } catch (finalizationError) {
       if (error instanceof AttemptCommandError && error.code === "attempt_inactivity_expired") {
-        throw new AttemptCommandError(commandCode(finalizationError), finalizationError);
+        throw commandError(finalizationError);
       }
       // The original database error is the useful one for the API mapper.
     }
-    throw new AttemptCommandError(commandCode(error), error);
+    throw commandError(error);
   } finally {
     client.release();
   }
 }
 
-export async function callAttemptCommand<T>(
+export async function callAttemptCommand<K extends keyof AttemptSqlCommandMap>(
   identity: VerifiedAuthIdentity,
-  functionName: string,
-  input: object,
-  decode?: (value: unknown) => T,
-): Promise<T> {
+  functionName: K,
+  input: AttemptSqlCommandMap[K]["input"],
+  enrich?: (
+    value: AttemptSqlCommandMap[K]["result"],
+    client: PoolClient,
+  ) => AttemptSqlCommandMap[K]["result"] | Promise<AttemptSqlCommandMap[K]["result"]>,
+): Promise<AttemptSqlCommandMap[K]["result"]> {
   return transaction(identity, async (client) => {
     if ("attemptId" in input && typeof input.attemptId === "string" && input.attemptId.length > 0) {
       await expireStaleAttempt(client, input.attemptId);
@@ -233,8 +198,41 @@ export async function callAttemptCommand<T>(
       [JSON.stringify(input)],
     );
     const response = await refreshTimeTrialReference(client, result.rows[0]?.result);
-    return decode ? decode(response) : (response as T);
+    const context = await readSqlDecoderContext(client, functionName, response, input);
+    const decoded = attemptSqlDecoders[functionName](response, input, ...context);
+    return enrich ? enrich(decoded, client) : decoded;
   });
+}
+
+/** The SQL command has authorized and locked the attempt before this scoped read. */
+async function readSqlDecoderContext<K extends keyof AttemptSqlCommandMap>(
+  client: PoolClient,
+  name: K,
+  response: unknown,
+  input: object,
+): Promise<SqlDecoderContext<K>> {
+  if (name !== "prepare_interaction" && name !== "submit_word_hashtag_swap")
+    return [] as SqlDecoderContext<K>;
+  const row = record(response);
+  responseIdentity(row, input);
+  fields(row, { challengeItemId: (v) => typeof v === "string" && v.length > 0 });
+  const result = await client.query<{ context: unknown }>(
+    `
+    select jsonb_build_object(
+      'challengeItemId', i.id, 'questionType', q.type,
+      'payloadSchemaVersion', q.payload_schema_version, 'timeLimitMs', q.time_limit_ms,
+      'points', i.points, 'mode', cv.mode, 'globalTimeLimitMs', cv.global_time_limit_ms,
+      'publicPayload', q.public_payload
+    ) as context
+    from public.attempts a
+    join private.challenge_versions cv on cv.id = a.challenge_version_id
+    join private.challenge_items i on i.challenge_version_id = cv.id and i.id = $2::uuid
+    join private.question_versions q on q.id = i.question_version_id
+    where a.id = $1::uuid`,
+    [row.attemptId, row.challengeItemId],
+  );
+  const context = decodeAttemptItemValidationContext(result.rows[0]?.context);
+  return [context] as SqlDecoderContext<K>;
 }
 
 /** Idempotent facts retain their original timestamps; the display clock gets a fresh database reference even on replay. */
@@ -258,7 +256,9 @@ async function expireStaleAttempt(client: PoolClient, attemptId: string) {
     "select private.expire_stale_attempts($1::jsonb) as result",
     [JSON.stringify({ runId: `recovery-${attemptId}`, attemptId })],
   );
-  if (result.rows[0]?.result?.abandonedAttempts && result.rows[0].result.abandonedAttempts > 0) {
+  const expired = record(result.rows[0]?.result);
+  fields(expired, { abandonedAttempts: integer }, "expireStaleAttempt");
+  if (Number(expired.abandonedAttempts) > 0) {
     throw new AttemptCommandError("attempt_inactivity_expired");
   }
 }
@@ -297,6 +297,7 @@ export class SupabaseAttemptCommands implements Pick<
   | "submitLogicCodeAttempt"
   | "submitQueensPlacement"
   | "saveQueensDraft"
+  | "saveConnectPairsDraft"
   | "validateQueensBoard"
   | "revealProgressiveClue"
   | "readEvaluationContext"
@@ -310,11 +311,17 @@ export class SupabaseAttemptCommands implements Pick<
   constructor(private readonly identity: VerifiedAuthIdentity) {}
 
   async prepareSession(input: Parameters<AttemptCommands["prepareSession"]>[0]) {
-    await transaction(this.identity, (client) =>
-      client.query("select private.prepare_attempt_session($1::uuid)", [
-        input.scheduledChallengeId,
-      ]),
-    );
+    await transaction(this.identity, async (client) => {
+      const result = await client.query<{ result: unknown }>(
+        "select private.prepare_attempt_session($1::uuid) as result",
+        [input.scheduledChallengeId],
+      );
+      requireResponse(
+        result.rows.length === 1 &&
+          (result.rows[0].result === "" || result.rows[0].result === null),
+        "prepareSession.result",
+      );
+    });
   }
 
   readCompletedAttempt(attemptId: string) {
@@ -322,17 +329,19 @@ export class SupabaseAttemptCommands implements Pick<
       const response = await client.query<{
         result: unknown;
       }>("select private.read_completed_attempt($1::uuid) as result", [attemptId]);
-      return decodeSavedAttemptResult(response.rows[0]?.result);
+      const saved = decodeSavedAttemptResult(response.rows[0]?.result);
+      if (saved) responseIdentity(record(saved.result), { attemptId });
+      return saved;
     });
   }
 
   readRecordedEvaluation(receiptId: AnswerReceiptId, sessionToken: string) {
     return transaction(this.identity, async (client) => {
-      const response = await client.query<{ result: SubmitAnswerResult | null }>(
+      const response = await client.query<{ result: unknown }>(
         "select private.read_recorded_evaluation($1::uuid, $2::text) as result",
         [receiptId, sessionToken],
       );
-      return response.rows[0]?.result ?? null;
+      return decodeRecordedEvaluation(response.rows[0]?.result, receiptId);
     });
   }
 
@@ -341,121 +350,118 @@ export class SupabaseAttemptCommands implements Pick<
       const response = await client.query<{
         result: unknown;
       }>("select private.read_abandoned_attempt($1::uuid) as result", [attemptId]);
-      return decodeSavedAbandonedAttemptResult(response.rows[0]?.result);
+      const saved = decodeSavedAbandonedAttemptResult(response.rows[0]?.result);
+      if (saved) responseIdentity(record(saved.result), { attemptId });
+      return saved;
     });
   }
   start(input: StartAttemptCommand) {
-    return callAttemptCommand<StartAttemptResult>(this.identity, "start_attempt", input);
+    return callAttemptCommand(this.identity, "start_attempt", input);
   }
 
   takeOver(input: TakeOverAttemptCommand) {
-    return callAttemptCommand<TakeOverAttemptResult>(this.identity, "take_over_attempt", input);
+    return callAttemptCommand(this.identity, "take_over_attempt", input);
   }
 
   async prepare(input: Parameters<AttemptCommands["prepare"]>[0]) {
-    return callAttemptCommand<PrepareInteractionResult>(
+    return callAttemptCommand(
       this.identity,
       "prepare_interaction",
       input,
+      async (value, client) => {
+        const prepared = value;
+        const progress = prepared.progress;
+        if (
+          !prepared.publicPayload ||
+          prepared.questionType !== "short-text" ||
+          !progress ||
+          typeof progress !== "object" ||
+          Array.isArray(progress) ||
+          !("kind" in progress) ||
+          progress.kind !== "alphabet"
+        ) {
+          return prepared;
+        }
+        // The source stays inside this transaction; neither the API nor command receipts receive it.
+        const source = await client.query<{ principal_answer: string }>(
+          "select private.read_alphabet_answer_hint_source($1::uuid, $2::uuid, $3::text) as principal_answer",
+          [input.attemptId, prepared.challengeItemId, input.sessionToken],
+        );
+        const principal = source.rows[0]?.principal_answer;
+        requireResponse(typeof principal === "string", "response.answerLength.source");
+        return { ...prepared, answerLength: countAlphabetAnswerCharacters(principal) || null };
+      },
     );
   }
 
   activate(input: Parameters<AttemptCommands["activate"]>[0]) {
-    return callAttemptCommand<ActivateInteractionResult>(
-      this.identity,
-      "activate_interaction",
-      input,
-    );
+    return callAttemptCommand(this.identity, "activate_interaction", input);
   }
 
   receiveAnswer(input: SubmitAnswerInput) {
-    return callAttemptCommand<ReceiveAnswerResult>(this.identity, "receive_answer", input);
+    return callAttemptCommand(this.identity, "receive_answer", input);
   }
 
   pass(input: Parameters<AttemptCommands["pass"]>[0]) {
-    return callAttemptCommand<PassInteractionResult>(this.identity, "pass_interaction", input);
+    return callAttemptCommand(this.identity, "pass_interaction", input);
   }
 
   submitMiniWordleGuess(input: Parameters<AttemptCommands["submitMiniWordleGuess"]>[0]) {
-    return callAttemptCommand<SubmitMiniWordleGuessResult>(
-      this.identity,
-      "submit_mini_wordle_guess",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_mini_wordle_guess", input);
   }
 
   submitWordSearchSelection(input: Parameters<AttemptCommands["submitWordSearchSelection"]>[0]) {
-    return callAttemptCommand<SubmitWordSearchSelectionResult>(
-      this.identity,
-      "submit_word_search_selection",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_word_search_selection", input);
   }
 
   submitWordHashtagSwap(input: Parameters<AttemptCommands["submitWordHashtagSwap"]>[0]) {
-    return callAttemptCommand<SubmitWordHashtagSwapResult>(
-      this.identity,
-      "submit_word_hashtag_swap",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_word_hashtag_swap", input);
   }
 
   submitLogicCodeAttempt(input: Parameters<AttemptCommands["submitLogicCodeAttempt"]>[0]) {
-    return callAttemptCommand<SubmitLogicCodeAttemptResult>(
-      this.identity,
-      "submit_logic_code_attempt",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_logic_code_attempt", input);
   }
 
   submitQueensPlacement(input: Parameters<AttemptCommands["submitQueensPlacement"]>[0]) {
-    return callAttemptCommand<SubmitQueensPlacementResult>(
-      this.identity,
-      "submit_queens_placement",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_queens_placement", input);
   }
 
   saveQueensDraft(input: Parameters<AttemptCommands["saveQueensDraft"]>[0]) {
-    return callAttemptCommand<SaveQueensDraftResult>(this.identity, "save_queens_draft", input);
+    return callAttemptCommand(this.identity, "save_queens_draft", input);
+  }
+
+  saveConnectPairsDraft(input: Parameters<AttemptCommands["saveConnectPairsDraft"]>[0]) {
+    return callAttemptCommand(this.identity, "save_connect_pairs_draft", input);
   }
 
   validateQueensBoard(input: Parameters<AttemptCommands["validateQueensBoard"]>[0]) {
-    return callAttemptCommand<ValidateQueensBoardResult>(
-      this.identity,
-      "submit_queens_answer",
-      input,
-    );
+    return callAttemptCommand(this.identity, "submit_queens_answer", input);
   }
 
   revealProgressiveClue(input: Parameters<AttemptCommands["revealProgressiveClue"]>[0]) {
-    return callAttemptCommand<RevealProgressiveClueResult>(
-      this.identity,
-      "reveal_progressive_clue",
-      input,
-    );
+    return callAttemptCommand(this.identity, "reveal_progressive_clue", input);
   }
 
   readEvaluationContext(receiptId: AnswerReceiptId, sessionToken: string) {
     return transaction<EvaluationContext>(this.identity, async (client) => {
-      const result = await client.query<{ read_evaluation_context: EvaluationContext }>(
+      const result = await client.query<{ read_evaluation_context: unknown }>(
         "select private.read_evaluation_context($1::uuid, $2::text)",
         [receiptId, sessionToken],
       );
-      return result.rows[0]?.read_evaluation_context as EvaluationContext;
+      return decodeEvaluationContext(result.rows[0]?.read_evaluation_context, receiptId);
     });
   }
 
   recordEvaluation(input: RecordEvaluationCommand) {
-    return callAttemptCommand<SubmitAnswerResult>(this.identity, "record_evaluation", input);
+    return callAttemptCommand(this.identity, "record_evaluation", input);
   }
 
   async abandon(input: Parameters<AttemptCommands["abandon"]>[0]) {
-    return callAttemptCommand(this.identity, "abandon_attempt", input, decodeFinishAttemptResult);
+    return callAttemptCommand(this.identity, "abandon_attempt", input);
   }
 
   recover(input: RecoverAttemptCommand) {
-    return callAttemptCommand<RecoverAttemptResult>(this.identity, "recover_attempt", input);
+    return callAttemptCommand(this.identity, "recover_attempt", input);
   }
 
   readAttemptContext(attemptId: string, sessionToken: string) {
@@ -478,32 +484,15 @@ export class SupabaseAttemptCommands implements Pick<
         "select private.read_attempt_recovery($1::uuid, $2::text)",
         [attemptId, sessionToken],
       );
-      return decodeAttemptRecoverySnapshot(result.rows[0]?.read_attempt_recovery);
+      const snapshot = decodeAttemptRecoverySnapshot(result.rows[0]?.read_attempt_recovery);
+      responseIdentity(record(snapshot), { attemptId });
+      return snapshot;
     });
   }
 
   completeFromPersistedAnswers(
     input: Parameters<AttemptCommands["completeFromPersistedAnswers"]>[0],
   ) {
-    return transaction<FinishAttemptResult>(this.identity, async (client) => {
-      await expireStaleAttempt(client, input.attemptId);
-      const scoreResult = await client.query<{ score: number }>(
-        "select coalesce(sum(points), 0)::integer as score from private.attempt_answers where attempt_id = $1::uuid",
-        [input.attemptId],
-      );
-      const score = scoreResult.rows[0]?.score ?? 0;
-      const command = await client.query<{ result: unknown }>(
-        "select private.complete_attempt($1::jsonb) as result",
-        [
-          JSON.stringify({
-            ...input,
-            score,
-          }),
-        ],
-      );
-      return decodeFinishAttemptResult(
-        await refreshTimeTrialReference(client, command.rows[0]?.result),
-      );
-    });
+    return callAttemptCommand(this.identity, "complete_attempt", input);
   }
 }

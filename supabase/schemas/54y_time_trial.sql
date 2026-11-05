@@ -1,6 +1,18 @@
 -- Contrarreloj facts remain private. Public callers only see authorized projections.
 set local check_function_bodies = off;
 
+create function private.is_supported_time_trial_question(target_question uuid) returns boolean
+language sql stable security invoker set search_path = '' as $$
+  select coalesce((select private.is_supported_flash_question(q.id)
+    and q.type in ('queens','connect-pairs') and q.payload_schema_version = 1
+    and (q.type = 'queens' or private.connect_pairs_answer_valid(q.public_payload,
+      jsonb_build_object('paths',s.solution_payload->'paths')))
+    from private.question_versions q join private.question_version_solutions s on s.question_version_id = q.id
+    where q.id = target_question),false)
+$$;
+alter function private.is_supported_time_trial_question(uuid) owner to postgres;
+revoke all on function private.is_supported_time_trial_question(uuid) from public,anon,authenticated,service_role;
+
 create function private.assert_time_trial_content(target_version uuid) returns void
 language plpgsql volatile set search_path = '' as $$
 declare version private.challenge_versions%rowtype;
@@ -16,10 +28,13 @@ begin
       select 1 from private.challenge_items i join private.question_versions q on q.id = i.question_version_id
       where i.challenge_version_id = target_version and (
         i.points <= 0 or i.config_schema_version <> 1 or i.mode_config <> '{}'::jsonb
-        or q.type <> 'queens' or q.payload_schema_version <> 1
-        or not private.is_supported_flash_question(q.id)
+        or q.type not in ('queens','connect-pairs') or q.payload_schema_version <> 1
+        or not private.is_supported_time_trial_question(q.id)
       )
-    ) or (select max(position) from private.challenge_items where challenge_version_id = target_version)
+    ) or (select count(distinct q.type) from private.challenge_items i
+      join private.question_versions q on q.id = i.question_version_id
+      where i.challenge_version_id = target_version) <> 1
+    or (select max(position) from private.challenge_items where challenge_version_id = target_version)
       <> (select count(*) from private.challenge_items where challenge_version_id = target_version) then
     raise exception 'invalid_time_trial_content' using errcode = '22023';
   end if;
@@ -60,27 +75,78 @@ language sql volatile set search_path = '' as $$
   ) from facts
 $$;
 
+create function private.attempt_review_state(target_attempt uuid, target_item uuid) returns jsonb
+language plpgsql stable security definer set search_path = '' as $$
+declare
+  draft jsonb;
+  question_type text;
+  public_payload jsonb;
+  player_queens integer[];
+  prefilled_queens integer[];
+begin
+  select a.progress_payload, q.type, q.public_payload
+    into draft, question_type, public_payload
+  from public.attempts a
+  join private.challenge_items i on i.id = target_item
+    and i.challenge_version_id = a.challenge_version_id
+  join private.question_versions q on q.id = i.question_version_id
+  where a.id = target_attempt
+    and a.progress_payload->>'challengeItemId' = target_item::text;
+  if not found or jsonb_typeof(draft) is distinct from 'object' then return null; end if;
+
+  if question_type = 'connect-pairs' and draft->>'kind' = 'connect-pairs'
+    and jsonb_typeof(draft->'paths') = 'object'
+    and private.connect_pairs_draft_valid(public_payload, jsonb_build_object('paths', draft->'paths'))
+    and exists (select 1 from jsonb_each(draft->'paths') path where jsonb_array_length(path.value) > 0) then
+    return jsonb_build_object('type', 'connect-pairs', 'paths', draft->'paths');
+  end if;
+
+  if question_type = 'queens' and draft->>'kind' = 'queens'
+    and jsonb_typeof(draft->'queens') = 'array'
+    and jsonb_array_length(draft->'queens') <= 64
+    and not exists (
+      select 1 from jsonb_array_elements(draft->'queens') cell
+      where jsonb_typeof(cell) <> 'number'
+        or (cell #>> '{}')::numeric <> trunc((cell #>> '{}')::numeric)
+        or (cell #>> '{}')::integer not between 0 and 63
+    ) then
+    select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
+      into player_queens from jsonb_array_elements_text(draft->'queens') value;
+    select coalesce(array_agg(value::integer order by value::integer), '{}'::integer[])
+      into prefilled_queens from jsonb_array_elements_text(coalesce(public_payload->'prefilledQueens', '[]'::jsonb)) value;
+    if exists (select 1 from unnest(player_queens) cell where not cell = any(prefilled_queens)) then
+      return jsonb_build_object('type', 'queens', 'queens', to_jsonb(player_queens));
+    end if;
+  end if;
+  return null;
+exception when invalid_text_representation or numeric_value_out_of_range or data_exception then
+  return null;
+end;
+$$;
+
 -- Called only after the completion command locks and authorizes the attempt.
 -- Untouched items receive neither a fabricated answer nor a timing interval.
 create function private.close_time_trial_interaction(target_attempt uuid, closed_at timestamptz, reason text) returns void
 language plpgsql volatile set search_path = '' as $$
-declare segment private.interaction_intervals%rowtype; receipt private.answer_receipts%rowtype; version_id uuid;
+declare segment private.interaction_intervals%rowtype; receipt private.answer_receipts%rowtype; version_id uuid; snapshot jsonb;
 begin
   select * into segment from private.interaction_intervals where attempt_id = target_attempt and ended_at is null for update;
   if not found then return; end if;
   select challenge_version_id into version_id from public.attempts where id = target_attempt;
   update private.interaction_intervals set ended_at = greatest(started_at,closed_at), end_reason = reason where id = segment.id;
+  snapshot := private.attempt_review_state(target_attempt, segment.challenge_item_id);
   insert into private.answer_receipts(attempt_id,challenge_item_id,challenge_version_id,answer,received_at,presented_at,effective_submitted_at,time_used_ms,timed_out)
   values(target_attempt,segment.challenge_item_id,version_id,null,clock_timestamp(),segment.started_at,
     greatest(segment.started_at,closed_at),greatest(0,floor(extract(epoch from (closed_at - segment.started_at))*1000))::bigint,true)
   returning * into receipt;
-  insert into private.attempt_answers(attempt_id,challenge_item_id,challenge_version_id,receipt_id,status,answer,points,presented_at,submitted_at,time_used_ms,idempotency_key)
-  values(target_attempt,segment.challenge_item_id,version_id,receipt.id,'unanswered',null,0,receipt.presented_at,receipt.effective_submitted_at,receipt.time_used_ms,'time-trial:timeout:' || receipt.id);
+  insert into private.attempt_answers(attempt_id,challenge_item_id,challenge_version_id,receipt_id,status,answer,review_state,points,presented_at,submitted_at,time_used_ms,idempotency_key)
+  values(target_attempt,segment.challenge_item_id,version_id,receipt.id,'unanswered',null,snapshot,0,receipt.presented_at,receipt.effective_submitted_at,receipt.time_used_ms,'time-trial:timeout:' || receipt.id);
 end;
 $$;
 
 alter function private.assert_time_trial_content(uuid) owner to postgres;
 alter function private.time_trial_progress(uuid) owner to postgres;
+alter function private.attempt_review_state(uuid,uuid) owner to postgres;
 alter function private.close_time_trial_interaction(uuid,timestamptz,text) owner to postgres;
-revoke all on function private.assert_time_trial_content(uuid), private.time_trial_progress(uuid), private.close_time_trial_interaction(uuid,timestamptz,text)
+revoke all on function private.assert_time_trial_content(uuid), private.time_trial_progress(uuid), private.attempt_review_state(uuid,uuid), private.close_time_trial_interaction(uuid,timestamptz,text)
   from public,anon,authenticated,service_role;

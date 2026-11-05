@@ -1,3 +1,5 @@
+import { isTimeTrialFormat } from "@/lib/timeTrial";
+import { reviewStateValue } from "@/lib/competitiveResponseContract";
 import { isValidAttemptLifecycle } from "@/lib/attemptLifecycle";
 import type { GameMode } from "@/types/gameplay/challenge";
 import type { RoomMembershipRole } from "@/types/view-models";
@@ -398,6 +400,9 @@ function hasReviewAnswerFields(row: ReadRow) {
     (row.answer_status === null || answerStatuses.includes(String(row.answer_status))) &&
     isNullableNumber(row.points) &&
     (row.result_details === null || isRecord(row.result_details)) &&
+    (row.review_state === undefined ||
+      row.review_state === null ||
+      reviewStateValue(row.review_state)) &&
     isNullableString(row.presented_at) &&
     isNullableString(row.submitted_at) &&
     isNullableNumber(row.time_used_ms) &&
@@ -410,7 +415,7 @@ function hasReviewModeConfiguration(row: ReadRow) {
 
   if (row.challenge_mode === "time-trial")
     return (
-      row.question_type === "queens" &&
+      isTimeTrialFormat(row.question_type) &&
       typeof row.global_time_limit_ms === "number" &&
       row.global_time_limit_ms > 0 &&
       row.alphabet_letter === null

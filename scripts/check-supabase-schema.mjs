@@ -5,6 +5,13 @@ import { checkInventory } from "./supabase-security-inventory.mjs";
 import { testConcurrentCommands } from "./test-supabase-concurrency.mjs";
 import { testFormatContracts } from "./test-format-contracts.mjs";
 import { testQuestionValidation } from "./test-question-validation.mjs";
+import { testSeasonMeasurementContract } from "./test-season-measurement-contract.mjs";
+import { testCompletionHealthContract } from "./test-completion-health-contract.mjs";
+
+import { testCalendarContract } from "./test-calendar-contract.mjs";
+import { testAttemptContinuationContract } from "./test-attempt-continuation-contract.mjs";
+import { testCheckpointContract } from "./test-checkpoint-contract.mjs";
+import { testStagingBootstrapSql } from "./test-staging-bootstrap-sql.mjs";
 
 const container = process.env.SUPABASE_DB_CONTAINER ?? "supabase_db_the-flash-game";
 const sourceDirectory = process.argv.includes("--migrations")
@@ -46,12 +53,18 @@ try {
   );
   await sql(`begin;\n${statements.join("\n")}\ncommit;`);
   await checkInventory(sql);
+  const stagingBootstrap = await testStagingBootstrapSql(sql);
+  console.log(
+    `Staging SQL bootstraps passed in both orders with repeats (${stagingBootstrap.orders.join("; ")}).`,
+  );
+  await testCompletionHealthContract(sql);
+  await testSeasonMeasurementContract(sql);
   console.log(`Loaded ${files.length} files from ${sourceDirectory}; security inventory verified.`);
   for (const file of (await readdir("supabase/tests"))
     .filter((name) => name.endsWith(".test.sql") && (!requestedTest || name === requestedTest))
     .sort()) {
     let source = await readFile(`supabase/tests/${file}`, "utf8");
-    for (const name of ["command", "pyramid-queens", "time-trial"]) {
+    for (const name of ["command", "pyramid-queens", "time-trial", "question-library"]) {
       if (source.includes(`-- @${name}-fixtures`)) {
         const fixtures = await readFile(`supabase/tests/support/${name}-fixtures.sql`, "utf8");
         source = source.replace(`-- @${name}-fixtures`, () => fixtures);
@@ -72,6 +85,28 @@ try {
   await testFormatContracts(sql);
   await testQuestionValidation(sql);
   await testConcurrentCommands(sql);
+  // Committed race/recovery scenarios each need their own empty fixture namespace.
+  for (const contract of [
+    testCalendarContract,
+    testCheckpointContract,
+    testAttemptContinuationContract,
+  ]) {
+    const contractDatabase = `flash_contract_${randomUUID().replaceAll("-", "")}`;
+    await docker(["createdb", "-U", "postgres", contractDatabase]);
+    try {
+      const contractSql = (input) =>
+        docker(
+          ["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", contractDatabase],
+          input,
+        );
+      await contractSql(await readFile("supabase/tests/support/bootstrap.sql", "utf8"));
+      await contractSql(`begin;\n${statements.join("\n")}\ncommit;`);
+      await contract(contractSql);
+      console.log(`${contract.name}: passed.`);
+    } finally {
+      await docker(["dropdb", "-U", "postgres", "--force", contractDatabase]);
+    }
+  }
   console.log("Concurrent command tests passed (independent PostgreSQL connections).");
 } finally {
   if (created) await docker(["dropdb", "-U", "postgres", "--force", database]);

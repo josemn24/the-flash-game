@@ -5,14 +5,14 @@ import type { CompetitiveEvaluator } from "@/application/ports/competitive-evalu
 import { normalizeCompetitiveEvaluationContext } from "@/infrastructure/supabase/attempts/normalize-competitive-context";
 import { evaluateCompetitiveReceipt } from "@/server/evaluation/evaluate-receipt";
 import { resolveCompetitiveQuestion } from "@/server/evaluation/resolve-competitive-question";
-import { QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS } from "@/lib/queens";
+import { pyramidEvaluation, pyramidNullEvaluation } from "@/lib/scoringCore/pyramid";
 import type { AnswerValue } from "@/types/contracts";
 
 export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
   evaluate(context: EvaluationContext) {
-    if ((context.mode === "pyramid" || context.mode === "time-trial") && context.answer === null) {
+    if (context.mode === "pyramid" && context.answer === null) return pyramidNullEvaluation(null)!;
+    if (context.mode === "time-trial" && context.answer === null)
       return { status: "unanswered", points: 0 };
-    }
 
     const result = evaluateCompetitiveReceipt({
       receipt: {
@@ -30,23 +30,25 @@ export const supabaseCompetitiveEvaluator: CompetitiveEvaluator = {
       incorrectAttempts: context.incorrectAttempts ?? 0,
     });
 
-    if (
-      context.mode === "pyramid" &&
-      !context.timedOut &&
-      result.details?.type === "queens" &&
-      !result.details.solved &&
-      (context.incorrectValidations ?? 0) >= QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS
-    ) {
+    if (context.mode === "pyramid") {
+      const evaluated = pyramidEvaluation(
+        result,
+        context.timedOut,
+        context.incorrectValidations ?? 0,
+      );
       return {
-        status: "incorrect",
-        points: 0,
-        details: { ...result.details, failureReason: "attempts_exhausted" },
+        status: evaluated.status,
+        points: evaluated.points,
+        ...(evaluated.details ? { details: evaluated.details } : {}),
       };
     }
 
     if (context.mode === "time-trial") {
       const correct =
-        !context.timedOut && result.details?.type === "queens" && result.details.solved;
+        !context.timedOut &&
+        (context.questionType === "queens"
+          ? result.details?.type === "queens" && result.details.solved
+          : context.questionType === "connect-pairs" && result.status === "correct");
       return {
         status: correct ? "correct" : context.timedOut ? "unanswered" : "incorrect",
         points: correct ? context.itemPoints : 0,

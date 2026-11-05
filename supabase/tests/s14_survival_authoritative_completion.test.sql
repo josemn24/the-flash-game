@@ -18,7 +18,7 @@ select test_support.run('prepare_interaction');
 select test_support.run('receive_answer', '{"answer":true}'::jsonb);
 select test_support.run('record_evaluation', '{"status":"correct","points":50}'::jsonb);
 
-select test_support.run('complete_attempt', '{"score":0,"outcome":"eliminated"}'::jsonb);
+select test_support.run('complete_attempt', '{"outcome":"eliminated"}'::jsonb);
 select is((select last_result->>'outcome' from test_support.runtime), 'survived',
   'The server derives survival after every question is answered without mistakes');
 select is((select last_result->>'score' from test_support.runtime), '100',

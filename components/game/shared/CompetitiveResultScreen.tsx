@@ -23,6 +23,7 @@ function toAnswerResult(answer: NonNullable<RoomChallengeResult["attempt"]>["ans
     points: answer.points ?? 0,
     timeUsed: answer.timeUsed ?? 0,
     details: answer.details,
+    reviewState: answer.reviewState,
   } satisfies AnswerResult;
 }
 
@@ -42,9 +43,13 @@ export function CompetitiveResultScreen({
   );
   const model = useMemo<ChallengeResultModel>(() => {
     const correct = results.filter(({ status }) => status === "correct").length;
-    const partial = results.filter(({ status }) => status === "partial").length;
+    const partial = results.filter(
+      ({ status, reviewState }) => status === "partial" || !!reviewState,
+    ).length;
     const incorrect = results.filter(({ status }) => status === "incorrect").length;
-    const unanswered = results.filter(({ status }) => status === "unanswered").length;
+    const unanswered = results.filter(
+      ({ status, reviewState }) => status === "unanswered" && !reviewState,
+    ).length;
     const accuracy = calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit));
     const title =
       accuracy >= 80 ? "Sprint brutal." : accuracy >= 50 ? "Buen ritmo." : "Desafío superado.";
@@ -52,7 +57,6 @@ export function CompetitiveResultScreen({
     return {
       gameTitle: challenge.title,
       statusLabel: "Completado",
-      eyebrow: "Desafío completado",
       title,
       subtitle: challenge.subtitle,
       score: result.flashPoints,

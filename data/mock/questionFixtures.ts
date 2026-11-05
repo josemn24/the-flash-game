@@ -23,6 +23,7 @@ export const questionVersions: readonly QuestionVersion[] = publishedQuestionFix
       versionNumber: 1,
       payloadSchemaVersion: CURRENT_QUESTION_PAYLOAD_SCHEMA_VERSION,
       status: "published",
+      difficulty: "medium",
       type: fixture.type,
       publicPayload: fixture.publicPayload,
       solutionPayload: fixture.privatePayload,

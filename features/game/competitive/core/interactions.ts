@@ -3,7 +3,7 @@ import type { AnswerValue } from "@/types/contracts";
 import { supportsServerFlashDraft } from "../formats/generic";
 import { interactionFor, normalizeInteraction } from "../formats/adapter";
 import type { FormatAction } from "../formats/types";
-import type { SessionRuntime } from "./runtime";
+import type { CommandStep, SessionRuntime } from "./runtime";
 import type { createAttemptLifecycle } from "./attemptLifecycle";
 export function createInteractions(
   runtime: SessionRuntime,
@@ -11,11 +11,60 @@ export function createInteractions(
 ) {
   let reserved = false;
   let validating = false;
-  const alphabetTimeout = createAlphabetTimeoutGuard();
+  const globalTimeout = createAlphabetTimeoutGuard();
+  const finalization = runtime.policy.finalization;
   let timeoutItemId: string | null = null;
   let draftRevision = 0;
+  let lastQueensCheckpointAt: number | null = null;
+  let lastConnectPairsCheckpointAt: number | null = null;
+  let firstQueensEditAt: number | null = null;
+  let firstConnectPairsEditAt: number | null = null;
+  let queensCheckpointScheduled = false;
+  let connectPairsCheckpointScheduled = false;
   let latestQueens: { itemId: string; queens: readonly number[]; revision: number } | null = null;
+  let latestConnectPairs: {
+    itemId: string;
+    paths: Readonly<Record<string, readonly number[]>>;
+    revision: number;
+  } | null = null;
   let validationIntent: { itemId: string; queens: readonly number[] } | null = null;
+  const checkpointDelay = (lastCheckpointAt: number | null, firstEditAt: number | null) => {
+    if (lastCheckpointAt === null)
+      return Math.max(0, 300 - (runtime.now() - (firstEditAt ?? runtime.now())));
+    return Math.max(300, 1_000 - (runtime.now() - lastCheckpointAt));
+  };
+  const scheduleQueensCheckpoint = () => {
+    if (queensCheckpointScheduled) return;
+    queensCheckpointScheduled = true;
+    runtime.schedule(
+      "queens-draft",
+      checkpointDelay(lastQueensCheckpointAt, firstQueensEditAt),
+      () => {
+        queensCheckpointScheduled = false;
+        void flushQueens();
+      },
+    );
+  };
+  const scheduleConnectPairsCheckpoint = () => {
+    if (connectPairsCheckpointScheduled) return;
+    connectPairsCheckpointScheduled = true;
+    runtime.schedule(
+      "connect-pairs-draft",
+      checkpointDelay(lastConnectPairsCheckpointAt, firstConnectPairsEditAt),
+      () => {
+        connectPairsCheckpointScheduled = false;
+        void flushConnectPairs();
+      },
+    );
+  };
+  const cancelQueensCheckpoint = () => {
+    runtime.cancel("queens-draft");
+    queensCheckpointScheduled = false;
+  };
+  const cancelConnectPairsCheckpoint = () => {
+    runtime.cancel("connect-pairs-draft");
+    connectPairsCheckpointScheduled = false;
+  };
   const resumeTimeout = async () => {
     if (
       timeoutItemId &&
@@ -27,23 +76,49 @@ export function createInteractions(
       await timeoutAnswer();
     }
   };
-  const interact = async (action: FormatAction, force = false) => {
+  const interact = async (action: FormatAction, force = false, deadline = false) => {
     const state = runtime.state();
     const question = state.question;
     if (
       !question ||
       state.attemptExpired ||
-      state.pendingCommand ||
       (!force && (reserved || state.locked || state.phase !== "playing"))
     )
-      return;
+      return false;
+    const pendingOperation = state.pendingCommand?.operation;
+    const pendingCheckpoint =
+      pendingOperation === "queensDraft" || pendingOperation === "connectPairsDraft";
+    const authoritativeAction =
+      (action.kind === "answer" && question.type === "connect-pairs") ||
+      action.kind === "queens-validation";
+    if (state.pendingCommand && !deadline) {
+      if (pendingCheckpoint && authoritativeAction) {
+        if (action.kind === "answer" && question.type === "connect-pairs") {
+          cancelConnectPairsCheckpoint();
+          latestConnectPairs = null;
+          firstConnectPairsEditAt = null;
+        }
+        if (action.kind === "queens-validation") {
+          cancelQueensCheckpoint();
+          latestQueens = null;
+          firstQueensEditAt = null;
+        }
+      } else {
+        return false;
+      }
+    }
+    if (state.pendingCommand && (!pendingCheckpoint || (!deadline && !authoritativeAction)))
+      return false;
+    // An overtaken flush must not restore its old board after validation returns.
+    if (authoritativeAction || deadline) draftRevision++;
     const spec = interactionFor(runtime.challenge, question, action);
     reserved = true;
     if (action.kind === "answer") runtime.commit({ type: "draft", answer: action.answer });
     try {
-      await runtime.run(spec.operation, spec.data, {
+      const step: CommandStep = {
         channel: spec.channel,
         accept: (response, command) => {
+          if (command.operation === "queensValidation") validationIntent = null;
           const outcome = normalizeInteraction(
             runtime.state().question ?? question,
             command,
@@ -57,6 +132,8 @@ export function createInteractions(
               message: outcome.message,
             });
           else {
+            cancelConnectPairsCheckpoint();
+            latestConnectPairs = null;
             timeoutItemId = null;
             validationIntent = null;
             const reveal =
@@ -72,11 +149,8 @@ export function createInteractions(
           }
         },
         after: async () => {
-          if (
-            ["alphabet", "time-trial"].includes(runtime.challenge.mode) &&
-            lifecycle.finalizationRequested()
-          )
-            await lifecycle.finalizeAlphabet();
+          if (finalization.onProgress(lifecycle.finalizationRequested()) === "finalize")
+            await lifecycle.finalizeGlobalClock();
           else if (
             runtime.state().phase === "transition" ||
             runtime.state().phase === "answer-reveal"
@@ -84,26 +158,34 @@ export function createInteractions(
             await lifecycle.afterAnswer();
           else await resumeTimeout();
         },
-      });
+      };
+      const accepted = deadline
+        ? await runtime.runDeadline(spec.operation, spec.data, step)
+        : pendingCheckpoint && authoritativeAction
+          ? await runtime.runOvertakingDraft(spec.operation, spec.data, step)
+          : await runtime.run(spec.operation, spec.data, step);
+      return accepted;
     } finally {
       reserved = false;
       await resumeTimeout();
     }
   };
   const flushQueens = async () => {
-    runtime.cancel("queens-draft");
+    cancelQueensCheckpoint();
     const state = runtime.state();
+    if (state.pendingCommand) return;
     if (state.question?.type !== "queens" || !latestQueens) return;
     const draft = latestQueens;
     latestQueens = null;
     if (draft.itemId !== state.question.id) return;
     const { queens } = draft;
     const question = state.question;
+    lastQueensCheckpointAt = runtime.now();
+    firstQueensEditAt = null;
     const accepted = await runtime.run(
       "queensDraft",
       { challengeItemId: question.id, queens },
       {
-        channel: "queens",
         accept: (response, command) => {
           const outcome = normalizeInteraction(
             runtime.state().question ?? question,
@@ -111,19 +193,15 @@ export function createInteractions(
             response,
           );
           if (outcome.kind === "progress")
-            runtime.commit({ type: "progress", question: outcome.question });
+            runtime.commit({
+              type: "progress",
+              question: outcome.question,
+              keepLocked: validationIntent !== null,
+            });
         },
         after: async () => {
-          await flushQueens();
           await resumeTimeout();
-          if (
-            validationIntent &&
-            !validating &&
-            runtime.state().phase === "playing" &&
-            runtime.state().question?.id === validationIntent.itemId
-          ) {
-            await validateQueensBoard(validationIntent.queens);
-          }
+          if (latestQueens && !validationIntent) scheduleQueensCheckpoint();
         },
       },
     );
@@ -137,53 +215,120 @@ export function createInteractions(
     if (
       !accepted &&
       !ownsDraft &&
+      runtime.state().pendingCommand?.operation === "queensDraft" &&
       draft.revision === draftRevision &&
       runtime.state().question?.id === draft.itemId
-    )
+    ) {
       latestQueens = draft;
+      scheduleQueensCheckpoint();
+    }
+  };
+  const flushConnectPairs = async () => {
+    cancelConnectPairsCheckpoint();
+    const state = runtime.state();
+    if (state.pendingCommand) return;
+    if (
+      state.question?.type !== "connect-pairs" ||
+      state.phase !== "playing" ||
+      state.locked ||
+      !latestConnectPairs
+    )
+      return;
+    const draft = latestConnectPairs;
+    latestConnectPairs = null;
+    if (draft.itemId !== state.question.id) return;
+    const { paths } = draft;
+    const question = state.question;
+    lastConnectPairsCheckpointAt = runtime.now();
+    firstConnectPairsEditAt = null;
+    const accepted = await runtime.run(
+      "connectPairsDraft",
+      { challengeItemId: question.id, paths },
+      {
+        accept: (response, command) => {
+          const outcome = normalizeInteraction(
+            runtime.state().question ?? question,
+            command,
+            response,
+          );
+          if (outcome.kind === "progress")
+            runtime.commit({ type: "progress", question: outcome.question });
+        },
+        after: async () => {
+          await resumeTimeout();
+          if (latestConnectPairs) scheduleConnectPairsCheckpoint();
+        },
+      },
+    );
+    const pending = runtime.state().pendingCommand;
+    const ownsDraft =
+      pending?.operation === "connectPairsDraft" &&
+      pending.input.challengeItemId === draft.itemId &&
+      JSON.stringify(pending.input.paths) === JSON.stringify(paths);
+    if (
+      !accepted &&
+      !ownsDraft &&
+      runtime.state().pendingCommand?.operation === "connectPairsDraft" &&
+      draft.revision === draftRevision &&
+      runtime.state().question?.id === draft.itemId
+    ) {
+      latestConnectPairs = draft;
+      scheduleConnectPairsCheckpoint();
+    }
   };
   const timeoutAnswer = async () => {
     const state = runtime.state();
     if (
       !state.question ||
-      state.pendingCommand ||
+      (state.pendingCommand &&
+        state.pendingCommand.operation !== "queensDraft" &&
+        state.pendingCommand.operation !== "connectPairsDraft") ||
       (runtime.challenge.mode === "narrative" && state.questionDeadlineAt === null)
     )
       return;
     validationIntent = null;
-    await flushQueens();
+    cancelQueensCheckpoint();
+    cancelConnectPairsCheckpoint();
+    latestQueens = null;
+    latestConnectPairs = null;
+    firstQueensEditAt = null;
+    firstConnectPairsEditAt = null;
     if (runtime.state().question?.id !== state.question.id) return;
     const draft = runtime.state().pendingAnswer;
     await interact(
       { kind: "answer", answer: supportsServerFlashDraft(state.question.type) ? draft : null },
       true,
+      true,
     );
   };
   const onTimeUp = async (expectedItemId?: string) => {
     const state = runtime.state();
-    if (runtime.challenge.mode === "time-trial") {
-      if (!alphabetTimeout.claim()) return;
-      await lifecycle.finalizeAlphabet();
+    const decision = finalization.onTimeout(state);
+    if (decision === "ignore") return;
+    if (decision === "finalize") {
+      if (!globalTimeout.claim()) return;
+      draftRevision++;
+      cancelQueensCheckpoint();
+      cancelConnectPairsCheckpoint();
+      latestQueens = null;
+      latestConnectPairs = null;
+      firstQueensEditAt = null;
+      firstConnectPairsEditAt = null;
+      await lifecycle.finalizeGlobalClock();
       return;
     }
     if (!state.question || (state.phase !== "playing" && state.phase !== "checking")) return;
-    if (
-      runtime.challenge.mode !== "alphabet" &&
-      expectedItemId &&
-      state.question.id !== expectedItemId
-    )
-      return;
+    if (expectedItemId && state.question.id !== expectedItemId) return;
     if (
       runtime.challenge.mode === "narrative" &&
       (runtime.state().phase !== "playing" || runtime.state().questionDeadlineAt === null)
     )
       return;
-    if (runtime.challenge.mode === "alphabet") {
-      if (!alphabetTimeout.claim()) return;
-      await lifecycle.finalizeAlphabet();
-      return;
-    }
-    if (reserved || runtime.state().pendingCommand) {
+    const pending = runtime.state().pendingCommand;
+    if (
+      reserved ||
+      (pending && pending.operation !== "queensDraft" && pending.operation !== "connectPairsDraft")
+    ) {
       timeoutItemId = runtime.state().question?.id ?? null;
       return;
     }
@@ -191,17 +336,31 @@ export function createInteractions(
   };
   const validateQueensBoard = async (queens: readonly number[]) => {
     if (reserved || validating) return;
-    const question = runtime.state().question;
-    if (question?.type !== "queens") return;
+    const state = runtime.state();
+    const question = state.question;
+    if (
+      question?.type !== "queens" ||
+      state.phase !== "playing" ||
+      state.attemptExpired ||
+      (state.locked && !validationIntent && state.pendingCommand?.operation !== "queensDraft")
+    )
+      return;
     validationIntent = { itemId: question.id, queens: [...queens] };
+    // Reserve the board before awaiting draft persistence, not only the validation request.
+    runtime.commit({ type: "queens_validation_requested" });
     validating = true;
     try {
-      latestQueens = { itemId: question.id, queens: [...queens], revision: ++draftRevision };
-      await flushQueens();
-      if (runtime.state().pendingCommand) return;
-      validationIntent = null;
-      if (runtime.state().question?.id === question.id)
-        await interact({ kind: "queens-validation", queens });
+      cancelQueensCheckpoint();
+      latestQueens = null;
+      firstQueensEditAt = null;
+      if (
+        runtime.state().question?.id === question.id &&
+        runtime.state().phase === "playing" &&
+        !runtime.state().attemptExpired
+      ) {
+        const accepted = await interact({ kind: "queens-validation", queens }, true);
+        if (!accepted && !runtime.state().pendingCommand) validationIntent = null;
+      }
     } finally {
       validating = false;
     }
@@ -220,20 +379,32 @@ export function createInteractions(
       const state = runtime.state();
       if (state.question && supportsServerFlashDraft(state.question.type) && !state.locked)
         runtime.commit({ type: "draft", answer });
+      if (state.question?.type === "connect-pairs" && !state.locked) {
+        const paths = (answer as { paths?: Readonly<Record<string, readonly number[]>> }).paths;
+        if (!paths || typeof paths !== "object" || Array.isArray(paths)) return;
+        latestConnectPairs = {
+          itemId: state.question.id,
+          paths: structuredClone(paths),
+          revision: ++draftRevision,
+        };
+        firstConnectPairsEditAt ??= runtime.now();
+        runtime.commit({ type: "draft", answer });
+        scheduleConnectPairsCheckpoint();
+      }
     },
     updateQueensDraft: (queens: readonly number[]) => {
       const state = runtime.state();
       if (
         state.question?.type !== "queens" ||
+        validationIntent !== null ||
         (state.pendingCommand && state.pendingCommand.operation !== "queensDraft") ||
         (state.locked && state.pendingCommand?.operation !== "queensDraft")
       )
         return;
       latestQueens = { itemId: state.question.id, queens: [...queens], revision: ++draftRevision };
+      firstQueensEditAt ??= runtime.now();
       runtime.commit({ type: "draft", answer: { queens: [...queens], marks: [] } });
-      runtime.schedule("queens-draft", 300, () => {
-        void flushQueens();
-      });
+      scheduleQueensCheckpoint();
     },
     validateQueensBoard,
     onTimeUp,
@@ -256,7 +427,8 @@ export function createInteractions(
             accept: () =>
               runtime.commit({ type: "phase", phase: "preparing", clearQuestion: true }),
             after: async () => {
-              if (lifecycle.finalizationRequested()) await lifecycle.finalizeAlphabet();
+              if (finalization.onProgress(lifecycle.finalizationRequested()) === "finalize")
+                await lifecycle.finalizeGlobalClock();
               else await lifecycle.prepare();
             },
           },

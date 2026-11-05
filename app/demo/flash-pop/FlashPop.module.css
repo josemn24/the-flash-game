@@ -244,6 +244,11 @@
     margin-bottom: 16px;
   }
 
+  .timeTrialLinks {
+    display: grid;
+    gap: 10px;
+  }
+
   .cardHeading {
     justify-content: space-between;
     gap: var(--space-4);

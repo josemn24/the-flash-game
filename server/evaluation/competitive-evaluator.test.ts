@@ -1,3 +1,4 @@
+import { guide as connectGuide } from "@/features/question-formats/formats/connect-pairs/guide";
 import { describe, expect, it } from "vitest";
 import type { EvaluationContext } from "@/application/ports/attempt-commands";
 import { normalizeCompetitiveEvaluationContext } from "@/infrastructure/supabase/attempts/normalize-competitive-context";
@@ -230,6 +231,29 @@ describe("competitive Pyramid Queens evaluation", () => {
       ).toMatchObject({ status: "correct", points: 100 - failures * 5 });
     },
   );
+  it.each([
+    { failures: 0, points: 14 },
+    { failures: 1, points: 13 },
+    { failures: 2, points: 12 },
+  ])("PYR-05: uses the level weight after $failures failed validations", ({ failures, points }) => {
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(
+        queensContext({
+          itemPoints: 14,
+          answer: { queens: solution, marks: [] },
+          incorrectAttempts: failures,
+          incorrectValidations: failures,
+        }),
+      ),
+    ).toMatchObject({ status: "correct", points });
+  });
+  it("PYR-08: treats an interrupted level with no accepted answer as unanswered", () => {
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(
+        queensContext({ answer: null, timedOut: false, incorrectAttempts: 2 }),
+      ),
+    ).toEqual({ status: "unanswered", points: 0 });
+  });
   it.each(["flash", "survival", "narrative"] as const)(
     "leaves %s Queens scoring unchanged",
     (mode) => {
@@ -272,5 +296,55 @@ describe("competitive Pyramid Queens evaluation", () => {
         }),
       ),
     ).toMatchObject({ status: "unanswered", points: 0 });
+  });
+});
+
+describe("Contrarreloj Conectar parejas evaluation", () => {
+  const board = connectGuide.examples[0].question;
+  function connectContext(overrides: Partial<EvaluationContext> = {}): EvaluationContext {
+    return context({
+      mode: "time-trial",
+      modeConfig: {},
+      questionType: "connect-pairs",
+      payloadSchemaVersion: 1,
+      timeLimitMs: 1000 as EvaluationContext["timeLimitMs"],
+      timeUsedMs: 90000 as EvaluationContext["timeUsedMs"],
+      publicPayload: {
+        question: board.question,
+        grid: board.grid,
+        pairs: board.pairs,
+        requireFullCoverage: true,
+      },
+      solutionPayload: { paths: board.solutionPaths },
+      answer: { paths: board.solutionPaths },
+      itemPoints: 30,
+      ...overrides,
+    });
+  }
+  it("awards the full weight despite the individual time or path orientation", () => {
+    expect(supabaseCompetitiveEvaluator.evaluate(connectContext())).toMatchObject({
+      status: "correct",
+      points: 30,
+    });
+    const reversed = Object.fromEntries(
+      Object.entries(board.solutionPaths).map(([id, path]) => [id, [...path].reverse()]),
+    );
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(connectContext({ answer: { paths: reversed } })),
+    ).toMatchObject({ status: "correct", points: 30 });
+  });
+  it("never grants partial or timed-out points", () => {
+    expect(
+      supabaseCompetitiveEvaluator.evaluate(
+        connectContext({ answer: { paths: { a: [0, 1, 2, 3, 4] } } }),
+      ),
+    ).toMatchObject({ status: "incorrect", points: 0 });
+    expect(supabaseCompetitiveEvaluator.evaluate(connectContext({ timedOut: true }))).toMatchObject(
+      { status: "unanswered", points: 0 },
+    );
+    expect(supabaseCompetitiveEvaluator.evaluate(connectContext({ answer: null }))).toEqual({
+      status: "unanswered",
+      points: 0,
+    });
   });
 });

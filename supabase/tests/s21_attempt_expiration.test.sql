@@ -29,8 +29,14 @@ where id = test_support.id('sc-flash');
 
 set local role service_role;
 
-select is((private.expire_stale_attempts(jsonb_build_object(
-  'runId', 's21-closed-run', 'attemptId', test_support.id('s21-closed-attempt')
+select is((public.expire_stale_attempts(jsonb_build_object(
+  'runId', 's21-other-room-run', 'roomSlug', 'commands-fast'
+))->>'abandonedAttempts')::integer, 0, 'Room-scoped expiration ignores another room');
+select is((select status from public.attempts where id = test_support.id('s21-closed-attempt')), 'in_progress',
+  'Other-room expiration leaves the stale attempt untouched');
+
+select is((public.expire_stale_attempts(jsonb_build_object(
+  'runId', 's21-closed-run', 'roomSlug', 'commands-flash'
 ))->>'abandonedAttempts')::integer, 1,
   'A stale attempt is abandoned after publication closure');
 select is((select status from public.attempts where id = test_support.id('s21-closed-attempt')), 'abandoned',
@@ -43,7 +49,7 @@ select is((select count(*) from private.attempt_sessions where attempt_id = test
   'Automatic abandonment revokes the controlling session');
 select is((select count(*) from private.audit_log where entity_id = test_support.id('s21-closed-attempt') and action = 'expire_stale_attempt'), 1::bigint,
   'Automatic abandonment writes an audit event');
-select is((private.expire_stale_attempts(jsonb_build_object(
+select is((public.expire_stale_attempts(jsonb_build_object(
   'runId', 's21-closed-run-repeat', 'attemptId', test_support.id('s21-closed-attempt')
 ))->>'abandonedAttempts')::integer, 0,
   'Repeated expiration is idempotent');
@@ -61,7 +67,7 @@ insert into public.attempts(
   test_support.id('cv-fast'), 'competitive', 1, now() - interval '16 minutes'
 );
 set local role service_role;
-select is((private.expire_stale_attempts(jsonb_build_object(
+select is((public.expire_stale_attempts(jsonb_build_object(
   'runId', 's21-open-run', 'attemptId', test_support.id('s21-open-attempt')
 ))->>'abandonedAttempts')::integer, 0,
   'Inactivity alone does not abandon an attempt in an open publication');
@@ -78,7 +84,7 @@ insert into public.attempts(
 );
 set local role service_role;
 select pg_sleep(1.1);
-select is((private.expire_stale_attempts(jsonb_build_object(
+select is((public.expire_stale_attempts(jsonb_build_object(
   'runId', 's21-deadline-run', 'attemptId', test_support.id('s21-deadline-attempt')
 ))->>'abandonedAttempts')::integer, 1,
   'A deadline-expired competitive attempt is abandoned');
@@ -92,7 +98,7 @@ insert into public.attempts(
   test_support.id('cv-fast'), 'test', 1, now() - interval '16 minutes'
 );
 set local role service_role;
-select is((private.expire_stale_attempts(jsonb_build_object(
+select is((public.expire_stale_attempts(jsonb_build_object(
   'runId', 's21-test-run', 'attemptId', test_support.id('s21-test-attempt')
 ))->>'abandonedAttempts')::integer, 0,
   'Test attempts are never automatically abandoned');

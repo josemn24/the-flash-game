@@ -67,7 +67,7 @@ begin
     end if;
     perform pg_sleep(0.12);
   end if;
-  response := test_support.run('complete_attempt', '{"score":0}');
+  response := test_support.run('complete_attempt', '{}');
   return next is(response->>'status', 'completed', label || ' completes');
   return next is(jsonb_array_length(response->'answers'), item_count, label || ' returns every answer');
   return next is((select count(*) from private.attempt_answers aa where aa.attempt_id = target_attempt
@@ -119,7 +119,7 @@ select throws_ok($$select test_support.run('pass_interaction')$$,
 select is((select count(*) from private.interaction_intervals
   where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)
     and ended_at is null), 1::bigint, 'A rejected late pass leaves the active interval for timeout completion');
-select test_support.run('complete_attempt', '{"score":0}');
+select test_support.run('complete_attempt', '{}');
 select is((select count(*) from private.attempt_answers
   where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)
     and status = 'unanswered'), 2::bigint, 'Completion records the active and unvisited letters as unanswered');
@@ -132,7 +132,7 @@ select is((select count(*) from private.interaction_intervals
 
 select test_support.as_actor('member');
 select test_support.run('start_attempt', jsonb_build_object('scheduledChallengeId',test_support.id('sc-alphabet'),'sessionToken',repeat('m',40)));
-select throws_ok($$select test_support.run('complete_attempt','{"score":0}')$$,
+select throws_ok($$select test_support.run('complete_attempt','{}')$$,
   '55000', 'alphabet_deadline_not_reached', 'Pending letters cannot be closed before the server deadline');
 select is((select count(*) from private.attempt_answers where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),
   0::bigint, 'Early closure leaves no partial results');
@@ -142,9 +142,9 @@ select test_support.run('start_attempt', jsonb_build_object('scheduledChallengeI
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer','{"answer":true}');
 select pg_sleep(0.12);
-select throws_ok($$select test_support.run('complete_attempt','{"score":0}')$$,
+select throws_ok($$select test_support.run('complete_attempt','{}')$$,
   '55000','unfinished_interaction','An unevaluated receipt must not be overwritten');
-select test_support.run('complete_attempt', jsonb_build_object('score',0,'pendingEvaluation',jsonb_build_object(
+select test_support.run('complete_attempt', jsonb_build_object('pendingEvaluation',jsonb_build_object(
   'receiptId',(select state->>'receiptId' from test_support.runtime),'status','correct','points',50)));
 select is((select (last_result->>'score')::integer from test_support.runtime),50,'Atomic closure retains an on-time pending receipt');
 select is((select last_result->'answers'->0->'answer' from test_support.runtime),'true'::jsonb,'Received answer is preserved');
@@ -156,7 +156,7 @@ create function test_support.fail_alphabet_entry() returns trigger language plpg
 begin raise exception 'entry_failure'; end; $$;
 create trigger test_fail_alphabet_entry before insert on private.flash_point_entries
   for each row execute function test_support.fail_alphabet_entry();
-select throws_ok($$select test_support.run('complete_attempt','{"score":0}')$$,
+select throws_ok($$select test_support.run('complete_attempt','{}')$$,
   'P0001','entry_failure','A failed accreditation rolls back the complete operation');
 drop trigger test_fail_alphabet_entry on private.flash_point_entries;
 select is((select count(*) from private.answer_receipts where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),
@@ -165,8 +165,42 @@ select is((select status from public.attempts where id=(select (state->>'attempt
   'in_progress','Rollback preserves the active attempt');
 select ok(exists(select 1 from private.attempt_sessions where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)
   and revoked_at is null),'Rollback preserves the session');
-select test_support.run('complete_attempt','{"score":0}');
+select test_support.run('complete_attempt','{}');
 select is((select (last_result->>'score')::integer from test_support.runtime),0,'An entirely unvisited Alphabet completes with zero points');
+
+select test_support.run('start_attempt', jsonb_build_object('scheduledChallengeId',test_support.alphabet_publication('pending-rollback',2),'sessionToken',repeat('p',40)));
+select test_support.run('prepare_interaction');
+select test_support.run('receive_answer','{"answer":"accepted before deadline"}');
+select pg_sleep(0.12);
+create table test_support.before_pending_completion as select
+  (select to_jsonb(a) from public.attempts a where id=(select (state->>'attemptId')::uuid from test_support.runtime)) attempt,
+  (select count(*) from private.audit_log) audits,
+  (select count(*) from private.command_requests) commands;
+create trigger test_fail_alphabet_entry before insert on private.flash_point_entries
+  for each row execute function test_support.fail_alphabet_entry();
+select throws_ok($$select test_support.run('complete_attempt',jsonb_build_object('pendingEvaluation',jsonb_build_object(
+  'receiptId',(select state->>'receiptId' from test_support.runtime),'status','correct','points',37)))$$,
+  'P0001','entry_failure','Failed credit rolls back a pending evaluation and synthetic timeouts');
+drop trigger test_fail_alphabet_entry on private.flash_point_entries;
+select is((select to_jsonb(a) from public.attempts a where id=(select (state->>'attemptId')::uuid from test_support.runtime)),
+  (select attempt from test_support.before_pending_completion),'Failed pending closure restores attempt and version');
+select is((select count(*) from private.attempt_answers where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),
+  0::bigint,'Failed pending closure removes both incorporated evaluations');
+select is((select count(*) from private.answer_receipts where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),
+  1::bigint,'Failed pending closure retains only the original receipt');
+select is((select answer from private.answer_receipts where id=(select (state->>'receiptId')::uuid from test_support.runtime)),
+  '"accepted before deadline"'::jsonb,'Failed pending closure preserves the accepted payload');
+select is((select count(*) from private.flash_point_entries where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),
+  0::bigint,'Failed pending closure leaves no credit');
+select is((select count(*) from private.audit_log),(select audits from test_support.before_pending_completion),'Failed pending closure creates no audit');
+select is((select count(*) from private.command_requests),(select commands from test_support.before_pending_completion),'Failed pending closure stores no confirmation');
+select ok(exists(select 1 from private.attempt_sessions where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)
+  and revoked_at is null),'Failed pending closure preserves its controller');
+select test_support.run('complete_attempt',jsonb_build_object('pendingEvaluation',jsonb_build_object(
+  'receiptId',(select state->>'receiptId' from test_support.runtime),'status','correct','points',37)));
+select is((select (last_result->>'score')::integer from test_support.runtime),37,'Retry sums the incorporated pending result');
+select is((select amount from private.flash_point_entries where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)),
+  37,'Retry credits the same total');
 
 select * from finish();
 rollback;

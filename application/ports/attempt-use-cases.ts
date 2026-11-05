@@ -13,6 +13,8 @@ import type {
   RecoverAttemptResult,
   SaveQueensDraftInput,
   SaveQueensDraftResult,
+  SaveConnectPairsDraftInput,
+  SaveConnectPairsDraftResult,
   StartAttemptInput,
   StartAttemptResult,
   TakeOverAttemptInput,
@@ -95,6 +97,7 @@ export interface AttemptUseCases {
   submitWordHashtagSwap(input: SubmitWordHashtagSwapInput): Promise<SubmitWordHashtagSwapResult>;
   submitQueensPlacement(input: SubmitQueensPlacementInput): Promise<SubmitQueensPlacementResult>;
   saveQueensDraft(input: SaveQueensDraftInput): Promise<SaveQueensDraftResult>;
+  saveConnectPairsDraft(input: SaveConnectPairsDraftInput): Promise<SaveConnectPairsDraftResult>;
   validateQueensBoard(input: ValidateQueensBoardInput): Promise<ValidateQueensBoardResult>;
   revealProgressiveClue(input: RevealProgressiveClueInput): Promise<RevealProgressiveClueResult>;
 }

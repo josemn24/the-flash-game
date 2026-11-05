@@ -1,8 +1,18 @@
 export const E2E_BY_SCENARIO = Object.freeze({
+  "product-measurement": ["e2e/product-measurement.spec.ts"],
+  rehearsals: ["e2e/rehearsals.spec.ts"],
+  betavip: ["e2e/betavip.spec.ts"],
+  tabarnia: ["e2e/tabarnia-time-trial.spec.ts"],
+  "pyramid-session-conformance": ["e2e/pyramid-session-conformance.spec.ts"],
   "format-contracts": ["e2e/format-contracts.spec.ts"],
   "format-contracts-pyramid": ["e2e/format-contracts-pyramid.spec.ts"],
   "pyramid-queens": ["e2e/pyramid-queens.spec.ts"],
-  "time-trial": ["e2e/time-trial.spec.ts"],
+  "time-trial": ["e2e/time-trial.spec.ts", "e2e/time-trial-session-conformance.spec.ts"],
+  "time-trial-connect-pairs": [
+    "e2e/time-trial-connect-pairs.spec.ts",
+    "e2e/time-trial-connect-pairs-session-conformance.spec.ts",
+  ],
+  "time-trial-timeout-conformance": ["e2e/time-trial-timeout-conformance.spec.ts"],
   portal: [
     "e2e/admin-portal.spec.ts",
     "e2e/auth-login.spec.ts",
@@ -13,7 +23,7 @@ export const E2E_BY_SCENARIO = Object.freeze({
   s03: ["e2e/s03-flash.spec.ts"],
   narrative: ["e2e/narrative.spec.ts"],
   "narrative-interactive": ["e2e/narrative-interactive.spec.ts"],
-  s05: ["e2e/s05-alphabet.spec.ts"],
+  s05: ["e2e/s05-alphabet.spec.ts", "e2e/alphabet-session-conformance.spec.ts"],
   e01: ["e2e/e01-mini-wordle.spec.ts"],
   e02: ["e2e/e02-logic-code.spec.ts"],
   e03: ["e2e/e03-progressive-clues.spec.ts"],
@@ -35,7 +45,11 @@ export const E2E_BY_SCENARIO = Object.freeze({
   s14: ["e2e/s14-survival.spec.ts"],
   s15: ["e2e/s15-pyramid.spec.ts"],
   s17: ["e2e/s17-editorial-versioning.spec.ts"],
-  sbr: ["e2e/sbr-persisted.spec.ts"],
+  sbr: [
+    "e2e/sbr-persisted.spec.ts",
+    "e2e/flash-session-conformance.spec.ts",
+    "e2e/survival-session-conformance.spec.ts",
+  ],
 });
 
 export const E2E_SCENARIO_BY_SPEC = new Map(
@@ -45,6 +59,7 @@ export const E2E_SCENARIO_BY_SPEC = new Map(
 );
 
 export const PILOT_E2E_BY_SCENARIO = Object.freeze({
+  "product-measurement": E2E_BY_SCENARIO["product-measurement"],
   portal: E2E_BY_SCENARIO.portal,
   s02: E2E_BY_SCENARIO.s02,
   s03: E2E_BY_SCENARIO.s03,
@@ -52,6 +67,8 @@ export const PILOT_E2E_BY_SCENARIO = Object.freeze({
   "narrative-interactive": E2E_BY_SCENARIO["narrative-interactive"],
   s05: E2E_BY_SCENARIO.s05,
   "time-trial": E2E_BY_SCENARIO["time-trial"],
+  "time-trial-connect-pairs": E2E_BY_SCENARIO["time-trial-connect-pairs"],
+  "time-trial-timeout-conformance": E2E_BY_SCENARIO["time-trial-timeout-conformance"],
   e01: E2E_BY_SCENARIO.e01,
   e02: E2E_BY_SCENARIO.e02,
   e03: E2E_BY_SCENARIO.e03,

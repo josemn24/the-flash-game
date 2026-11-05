@@ -13,6 +13,18 @@ describe("E2E scenario bootstrap map", () => {
     expect(normalizeSpecPath(".\\e2e\\s03-flash.spec.ts")).toBe("e2e/s03-flash.spec.ts");
   });
 
+  it("prepares room time trials instead of running against existing local fixtures", () => {
+    expect(
+      groupSpecsByScenario(["e2e/betavip.spec.ts", "e2e/tabarnia-time-trial.spec.ts"]),
+    ).toEqual({
+      groups: new Map([
+        ["betavip", ["e2e/betavip.spec.ts"]],
+        ["tabarnia", ["e2e/tabarnia-time-trial.spec.ts"]],
+      ]),
+      unprepared: [],
+    });
+  });
+
   it("separates Playwright controls and groups specs by isolated fixture", () => {
     const args = ["--grep", "happy path", "e2e/s03-flash.spec.ts", "e2e/s04-recovery.spec.ts"];
     expect(splitPlaywrightArgs(args)).toEqual({

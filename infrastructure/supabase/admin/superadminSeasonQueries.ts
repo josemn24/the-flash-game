@@ -55,6 +55,10 @@ function commandErrorCode(error: { code?: string; message?: string }) {
     "active_season_exists",
     "season_already_active",
     "invalid_season_dates",
+    "season_start_locked",
+    "schedule_conflict",
+    "season_finished",
+    "schedule_outside_season",
     "idempotency_conflict",
   ];
   return (

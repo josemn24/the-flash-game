@@ -192,6 +192,13 @@ describe("competitive HTTP contract", () => {
     });
   });
 
+  it("maps incomplete Connect pairs to a recoverable 422", () => {
+    expect(mapAttemptError(new AttemptCommandError("invalid_connect_pairs_answer"))).toMatchObject({
+      code: "invalid_connect_pairs_answer",
+      status: 422,
+    });
+  });
+
   it("maps Queens overflow to a definitive bad request", () => {
     expect(mapAttemptError(new AttemptCommandError("queens_answer_overflow"))).toMatchObject({
       code: "queens_answer_overflow",
@@ -233,9 +240,7 @@ describe("competitive HTTP contract", () => {
   });
 
   it("returns the authoritative retry delay when Alphabet's deadline has not been reached", () => {
-    const error = new AttemptCommandError("alphabet_deadline_not_reached", {
-      detail: '{"retryAfterSeconds":3}',
-    });
+    const error = new AttemptCommandError("alphabet_deadline_not_reached", undefined, 3);
     const response = errorResponse(error, "deadline-test", "competitive.attempt.complete");
     expect(response.status).toBe(409);
     expect(response.headers.get("Retry-After")).toBe("3");

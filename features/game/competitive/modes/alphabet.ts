@@ -1,7 +1,9 @@
 import type { ServerAlphabetChallenge } from "@/types/gameplay/challenge";
 import type { ModePolicy } from "./policy";
+import { alphabetFinalization } from "./finalization";
 export function alphabetPolicy(challenge: ServerAlphabetChallenge): ModePolicy {
   return {
+    finalization: alphabetFinalization,
     initialPhase: "countdown",
     sequence: [],
     position: (id) => challenge.entries.findIndex((entry) => entry.id === id),

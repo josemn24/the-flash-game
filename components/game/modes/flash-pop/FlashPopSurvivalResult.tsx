@@ -38,7 +38,6 @@ export function FlashPopSurvivalResult({
       model={{
         gameTitle: "Supervivencia",
         statusLabel: survived ? "Completado" : "Partida terminada",
-        eyebrow: "Supervivencia: España",
         title: survived ? "Has sobrevivido" : eliminated ? "Sin vidas" : "Buen intento",
         subtitle: survived
           ? `Has completado los ${challenge.questions.length} retos.`

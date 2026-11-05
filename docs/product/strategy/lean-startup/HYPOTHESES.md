@@ -24,7 +24,7 @@ Se mantiene como `Problema` por continuidad documental, aunque el comportamiento
 
 **Segmento**
 
-Tabarnia: cohorte prevista de once amistades a quienes Jose puede invitar éticamente a una sala privada de la primera alpha. La cohorte debe fijarse antes de ejecutar.
+Tabarnia: cohorte de 14 amistades invitadas por Jose a una sala privada. Se fija la lista antes de enviar invitaciones; deben registrarse los 14 envíos antes de abrir la temporada. Cuentas de pruebas y organizador en su función operativa quedan fuera de la medición.
 
 **Problema**
 
@@ -32,7 +32,13 @@ Confirmar si este grupo encuentra valor suficiente en una actividad competitiva 
 
 **Comportamiento esperado**
 
-Tras aceptar participar en la alpha, las personas juegan voluntariamente al menos cinco de los nueve desafíos disponibles durante 24 horas cada dos días. La consulta o reacción al ranking se registra como métrica auxiliar, no como criterio de clasificación de esta hipótesis.
+Al menos ocho de las 14 personas invitadas completan voluntariamente seis o más de los nueve desafíos diarios, incluidos dos de los desafíos siete, ocho y nueve. Cada publicación tiene una ventana de 24 horas y un intento oficial. Quienes rechazan, no acceden o dejan de jugar siguen en el denominador; no se condiciona la métrica a aceptar la invitación.
+
+El [contrato de CYCLE-001](cycles/CYCLE-001.md#7-contrato-de-medición), versión `tabarnia-daily-v2`, define finalización, corte, deduplicación, fuentes y tratamiento de datos faltantes. Una derrota reglamentaria cuenta como finalización; ensayo o abandono no. Ranking, disfrute y costes son contexto. Los criterios se evaluarán posteriormente con datos comunes de temporada y el expediente privado de invitaciones, incidencias y feedback. No hay un motor de evaluación Lean en la aplicación. La preparación del análisis y del entorno objetivo sigue pendiente, sin recogida de datos reales iniciada; HYP-001 permanece `Priorizada`.
+
+«Personas que vuelven» en el portal significa iniciar dos publicaciones distintas y no equivale
+a la participación sostenida de esta hipótesis. La cobertura temporal y la reconstrucción del corte
+deben verificarse con las fuentes detalladas; los CSV comunes por sí solos no completan ese análisis.
 
 **Base de la hipótesis**
 
@@ -46,8 +52,7 @@ Tras aceptar participar en la alpha, las personas juegan voluntariamente al meno
 
 ### Afirmaciones documentadas
 
-- El loop previsto es sala privada → temporada → desafíos periódicos → ranking de temporada. Fuente:
-  `../../archive/salas-y-temporadas.md`.
+- El loop previsto es sala privada → temporada → desafíos periódicos → ranking de temporada. Fuente histórica: [salas y temporadas](../../../archive/salas-y-temporadas.md).
 
 ### Inferencias
 
@@ -59,11 +64,15 @@ Tras aceptar participar en la alpha, las personas juegan voluntariamente al meno
 
 **Evidencia que podría apoyarla**
 
-- Al menos seis de las once personas invitadas completan cinco o más desafíos.
+- Ocho o más personas cumplen la definición de participación sostenida de CYCLE-001.
 
 **Evidencia que podría debilitarla**
 
-- Tres o menos personas invitadas completan cinco o más desafíos.
+- Cuatro o menos personas cumplen esa definición.
+
+**Resultado inconcluso**
+
+Entre cinco y siete personas cumplen la definición, o problemas de calidad del experimento impiden clasificarlo según el contrato. Los umbrales se fijan antes de observar resultados; no prueban demanda fuera de esta cohorte ni sostenibilidad a largo plazo.
 
 **Decisión que permitirá tomar**
 
@@ -136,7 +145,7 @@ Estas hipótesis amplían el mapa de incertidumbres del proyecto, pero no son hi
 - **Tipo:** Técnica
 - **Estado:** Borrador
 - **Hipótesis candidata:** el vehículo mínimo puede permitir el acceso privado, ejecutar los desafíos y registrar participación, resultados y ranking con fiabilidad suficiente para aprender.
-- **Desconocido actual:** si la implementación prevista funcionará sin incidencias relevantes; la PoC actual no dispone de estas capacidades.
+- **Desconocido actual:** si las capacidades competitivas y la captura común por temporada ya implementadas funcionarán sin incidencias relevantes en el entorno y dispositivos usados por Tabarnia. Siguen pendientes la verificación del entorno objetivo y el ensayo del análisis externo, incluida su cobertura temporal. La evidencia local no acredita ese recorrido real.
 - **Ciclo relacionado:** CYCLE-001 la trata como condición de calidad del experimento, no como hipótesis principal.
 
 ### HYP-007 — Cumplimiento y expectativas sobre datos y resultados

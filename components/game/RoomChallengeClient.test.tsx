@@ -1,84 +1,88 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
-import { legacyChallenges } from "@/data/mock/legacyChallengeAdapter";
-import type { GameRoomContext } from "@/types/view-models/room";
-import { RoomChallengeClient, resolveGameplayPersistence } from "./RoomChallengeClient.client";
+import { describe, expect, it, vi } from "vitest";
+import {
+  competitiveFlash,
+  competitiveRoomContext,
+  socialSnapshot,
+} from "@/test-utils/competitiveGameplay";
+import type { CompetitiveGameAppProps } from "./shells/gameAppTypes";
+import { RoomChallengeClient } from "./RoomChallengeClient.client";
 
-const challenge = legacyChallenges[0]!;
-const socialSnapshot = {
-  currentPlayer: { id: "player", displayName: "Kike", initials: "KI", tone: "social" as const },
-  players: [],
-  peers: [],
-};
+vi.mock("./shells/GameApp", () => ({
+  GameApp: (props: CompetitiveGameAppProps) => (
+    <div
+      data-persistence={props.persistence}
+      data-attempt={props.roomContext.attemptStatus}
+      data-review={props.terminalReview?.length ?? 0}
+    >
+      Partida competitiva
+    </div>
+  ),
+}));
+
+const base = { challenge: competitiveFlash, roomContext: competitiveRoomContext, socialSnapshot };
 
 describe("RoomChallengeClient", () => {
-  it("forces server persistence whenever a competitive room context exists", () => {
-    const roomContext = {
-      roomId: "room",
-      roomTitle: "Room",
-      returnTo: "/salas/room",
-      memberId: "member",
-      availabilityStatus: "available",
-      attemptStatus: "available",
-    } satisfies GameRoomContext;
-
-    expect(resolveGameplayPersistence(roomContext, "mock")).toBe("server");
-    expect(resolveGameplayPersistence(undefined, "mock")).toBe("mock");
-  });
-
-  it("does not mount a competitive game for a completed attempt", () => {
+  it.each(["available", "inProgress"] as const)(
+    "mounts only server gameplay for %s",
+    (attemptStatus) => {
+      const markup = renderToStaticMarkup(
+        <RoomChallengeClient {...base} roomContext={{ ...base.roomContext, attemptStatus }} />,
+      );
+      expect(markup).toContain('data-persistence="server"');
+      expect(markup).toContain(`data-attempt="${attemptStatus}"`);
+    },
+  );
+  it.each(["expired", "locked"] as const)(
+    "does not start an unavailable challenge: %s",
+    (availabilityStatus) => {
+      const markup = renderToStaticMarkup(
+        <RoomChallengeClient {...base} roomContext={{ ...base.roomContext, availabilityStatus }} />,
+      );
+      expect(markup).not.toContain("Partida competitiva");
+      expect(markup).toContain(
+        availabilityStatus === "expired" ? "Desafío cerrado" : "Desafío no disponible",
+      );
+    },
+  );
+  it("recovers an in-progress attempt even after the publication closes", () => {
     const markup = renderToStaticMarkup(
       <RoomChallengeClient
-        challenge={challenge}
+        {...base}
         roomContext={{
-          roomId: "tabarnia-room",
-          roomTitle: "Tabarnia",
-          returnTo: "/salas/tabarnia-room",
-          memberId: "player",
-          availabilityStatus: "available",
-          attemptStatus: "completed",
-          result: {
-            flashPoints: 80,
-            completed: true,
-            attempt: {
-              challengeId: challenge.id,
-              startedAt: "2026-09-13T09:59:00.000Z",
-              playedAt: "2026-09-13T10:00:00.000Z",
-              flashPoints: 80,
-              completed: true,
-              durationMs: 60_000,
-              answers: [],
-            },
-          },
-        }}
-        socialSnapshot={socialSnapshot}
-      />,
-    );
-
-    expect(markup).toContain("Desafío completado");
-    expect(markup).toContain("80 de 100 puntos");
-    expect(markup).not.toContain("Empezar desafío");
-    expect(markup).not.toContain("Volver a jugar");
-  });
-
-  it("does not create an attempt for a closed challenge that was never started", () => {
-    const markup = renderToStaticMarkup(
-      <RoomChallengeClient
-        challenge={challenge}
-        roomContext={{
-          roomId: "tabarnia-room",
-          roomTitle: "Tabarnia",
-          returnTo: "/salas/tabarnia-room",
-          memberId: "player",
+          ...base.roomContext,
           availabilityStatus: "expired",
-          attemptStatus: "available",
+          attemptStatus: "inProgress",
         }}
-        socialSnapshot={socialSnapshot}
       />,
     );
-
-    expect(markup).toContain("Desafío cerrado");
-    expect(markup).toContain("No se creó ningún intento competitivo");
-    expect(markup).not.toContain("Empezar desafío");
+    expect(markup).toContain('data-attempt="inProgress"');
+  });
+  it.each(["completed", "notCompleted"] as const)(
+    "shows consumed %s attempts without starting another game",
+    (attemptStatus) => {
+      const markup = renderToStaticMarkup(
+        <RoomChallengeClient {...base} roomContext={{ ...base.roomContext, attemptStatus }} />,
+      );
+      expect(markup).not.toContain("Partida competitiva");
+      expect(markup).toContain(
+        attemptStatus === "completed" ? "Desafío completado" : "Intento no completado",
+      );
+    },
+  );
+  it("delegates a completed result and its authorized review to the server shell", () => {
+    const markup = renderToStaticMarkup(
+      <RoomChallengeClient
+        {...base}
+        roomContext={{
+          ...base.roomContext,
+          attemptStatus: "completed",
+          result: { completed: true, flashPoints: 80 },
+        }}
+        terminalReview={[{ challengeItemId: "item", publicPayload: {}, solutionPayload: {} }]}
+      />,
+    );
+    expect(markup).toContain('data-attempt="completed"');
+    expect(markup).toContain('data-review="1"');
   });
 });

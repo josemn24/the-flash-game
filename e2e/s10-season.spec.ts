@@ -46,8 +46,6 @@ test.describe("S10 — preparar y activar una temporada", () => {
     const seasonCard = roomSection.getByRole("article").filter({ hasText: "Temporada S10" });
     const editForm = seasonCard.locator("form").first();
     await editForm.getByLabel("Título").fill("Temporada S10 editada");
-    await editForm.getByLabel(/Inicio/).fill("2030-09-20T12:30");
-    await editForm.getByLabel(/Fin/).fill("2030-09-27T12:30");
     await editForm.getByLabel("Motivo de auditoría").fill("Ajustar temporada S10");
     await editForm.getByRole("button", { name: "Guardar cambios" }).click();
     await expect(page).toHaveURL(/\/admin\/rooms\/[^/?]+\?tab=seasons&season=updated$/);
@@ -65,7 +63,19 @@ test.describe("S10 — preparar y activar una temporada", () => {
     await expect(
       page.getByRole("status").filter({ hasText: "Temporada activada correctamente" }),
     ).toBeVisible();
-    await expect(page.getByText("Activa").last()).toBeVisible();
+    await expect(editedCard.getByText("Programada", { exact: true })).toBeVisible();
+    await editedCard.getByRole("button", { name: "Reprogramar calendario" }).click();
+    const calendarDialog = page.getByRole("dialog");
+    await calendarDialog.getByLabel("Inicio", { exact: true }).fill("2030-09-21T12:30");
+    await calendarDialog.getByLabel("Fin", { exact: true }).fill("2030-09-28T12:30");
+    await calendarDialog
+      .getByLabel("Motivo del cambio")
+      .fill("Reprogramar temporada publicada futura");
+    await calendarDialog.getByRole("button", { name: "Revisar cambios" }).click();
+    await expect(calendarDialog.getByRole("heading", { name: "Vista previa" })).toBeVisible();
+    await calendarDialog.getByRole("button", { name: "Guardar calendario" }).click();
+    await expect(calendarDialog).not.toBeVisible();
+    await expect(editedCard).toContainText("21 sept 2030");
     expect(await roomSection.count()).toBe(1);
   });
 

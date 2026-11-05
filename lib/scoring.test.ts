@@ -1828,6 +1828,37 @@ describe("question evaluation", () => {
     expect(result.details).toEqual({ type: "estimation", difference: 100, proximity: 0.5 });
   });
 
+  it("marks estimates at or beyond the tolerance as incorrect while retaining proximity details", () => {
+    const question = QUESTION_FORMAT_CATALOG.estimation.examples[0].question;
+    for (const answer of [question.correctAnswer - question.tolerance, question.min]) {
+      expect(evaluateAnswer({ question, answer, timeUsed: 0 })).toMatchObject({
+        status: "incorrect",
+        isCorrect: false,
+        points: 0,
+        details: { type: "estimation", proximity: 0 },
+      });
+    }
+  });
+
+  it("keeps a positive-proximity estimate partial when its rounded score is zero", () => {
+    const question = {
+      ...QUESTION_FORMAT_CATALOG.estimation.examples[0].question,
+      points: 1,
+    };
+    const answer = question.correctAnswer - question.tolerance + question.step;
+    const result = evaluateAnswer({ question, answer, timeUsed: question.timeLimit });
+
+    expect(result).toMatchObject({
+      status: "partial",
+      isCorrect: false,
+      points: 0,
+      details: { type: "estimation" },
+    });
+    expect(result.details?.type).toBe("estimation");
+    if (result.details?.type !== "estimation") throw new Error("expected estimation details");
+    expect(result.details.proximity).toBeCloseTo(question.step / question.tolerance);
+  });
+
   it("rejects estimation answers outside the published range or step grid", () => {
     const question = QUESTION_FORMAT_CATALOG.estimation.examples[0].question;
     expect(
@@ -1858,7 +1889,7 @@ describe("question evaluation", () => {
     expect(
       evaluateAnswer({ question, answer: question.correctAnswer - question.step, timeUsed: 0 }),
     ).toMatchObject({
-      status: "partial",
+      status: "incorrect",
       points: 0,
     });
   });

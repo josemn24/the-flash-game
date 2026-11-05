@@ -2,9 +2,8 @@
 
 ## Propósito
 
-Esta carpeta contiene las reglas de dominio acordadas para evolucionar The Flash desde el prototipo
-frontend actual hacia un producto persistido con Supabase. Describe el comportamiento esperado del
-producto antes de concretarlo en tipos TypeScript, tablas SQL, políticas RLS o endpoints.
+Esta carpeta contiene las reglas de dominio acordadas para mantener The Flash como producto persistido con Supabase. Distingue las reglas
+del dominio de los tipos TypeScript, tablas SQL, políticas RLS y endpoints que las implementan.
 
 Estas decisiones son la fuente de verdad para el trabajo nuevo relacionado con usuarios, salas,
 temporadas, publicaciones, intentos, puntuaciones, rankings e historial.
@@ -13,15 +12,15 @@ temporadas, publicaciones, intentos, puntuaciones, rankings e historial.
 
 - Estado: modelo aprobado y fases 3 y 4 cerradas.
 - Versión: 1.
-- Fecha de la última revisión: 2026-09-16.
+- Fecha del modelo original: 2026-09-16; contraste documental: 2026-10-24.
 - Alcance técnico actual: reglas, tipos TypeScript, fixtures canónicos, store normalizado y capa de
   consultas asíncrona server-only. Las slices S01–S14, D08a/D08b, E01–E06, F08, F16, F18 y E10 ya tienen integración real documentada en
   `data-access.md` y `supabase/README.md`; esta carpeta conserva las reglas de dominio y no sustituye
   la documentación del backend ni del esquema SQL.
-- Persistencia: PostgreSQL y autenticación mediante Supabase; Storage y el resto de capacidades se
-  incorporan por slices posteriores.
-- Contrarreloj: primera versión competitiva Queens implementada. Su especificación
-  distingue acuerdos, propuestas y decisiones abiertas; no amplía todavía los tipos ni el esquema.
+- Persistencia: PostgreSQL, autenticación y Storage mediante Supabase. El
+  [estado actual](../status.md) enumera las capacidades y las ampliaciones pendientes.
+- Contrarreloj: Queens y Conectar parejas competitivos implementados; secuencias homogéneas,
+  reloj global y recuperación estricta.
 
 En la beta cerrada, la interfaz pública consulta y ejecuta competición sobre salas ya provisionadas.
 La creación de salas, el provisioning directo de miembros, la preparación de temporadas y la
@@ -63,12 +62,12 @@ son fuentes de verdad independientes en la primera versión.
    controles de integridad.
 8. [`data-access.md`](data-access.md): contratos de consultas, composición server-only,
    autorización mock, DTOs y fronteras de dependencia.
-9. [`mode-contracts.md`](mode-contracts.md): contrato funcional recomendado de inicio, tiempo,
+9. [`mode-contracts.md`](mode-contracts.md): contrato funcional vigente de inicio, tiempo,
    finalización, reanudación, revisión y replay para cada modo de juego.
-10. [`../data-model.md`](../data-model.md): propuesta de persistencia relacional y sus garantías;
+10. [`../data-model.md`](../data-model.md): modelo de persistencia relacional y sus garantías;
     no sustituye al modelo conceptual de esta carpeta.
 11. [`contrarreloj.md`](contrarreloj.md): contrato funcional y recorrido E2E del modo competitivo
-    Contrarreloj, con reglas cerradas para Queens.
+    Contrarreloj, con reglas cerradas para Queens y Conectar parejas.
 
 Los casos de uso transversales del producto están en [`../use-cases.md`](../use-cases.md).
 

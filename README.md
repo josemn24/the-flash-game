@@ -1,7 +1,7 @@
 # The Flash
 
 The Flash es un juego de preguntas diseñado como un sprint contra el reloj. La versión actual
-combina una experiencia de práctica local con recorridos competitivos persistidos de Flash y Narrative sobre Supabase,
+combina una experiencia de práctica local con seis modos competitivos persistidos sobre Supabase,
 además de consultar resultados detallados, revisar respuestas y explorar una biblioteca interactiva
 de 31 formatos.
 
@@ -13,14 +13,19 @@ se utilizan en local o staging y no definen un entorno remoto adicional.
 ## Qué incluye
 
 - Una sala demo mock y escenarios Supabase locales con temporada activa, desafíos y publicaciones.
+- Contrarreloj con secuencias de Queens o Conectar parejas de 4×4 a 8×8, reloj global y puntos por tablero resuelto.
 - Treinta y un formatos: elección múltiple, encontrar el intruso, emparejar conceptos, conectar parejas, verdadero o falso, respuesta corta, ordenar, clasificar, código lógico, estimación, adivinanzas por pistas, mapa de calor, etiquetar imagen, memoria relámpago, memoria de parejas, Simon, matrices lógicas, mini-sudoku, mini-nonograma, Queens, rompecabezas deslizante, Escape, reconstrucción del error, anagramas, Hashtag de palabras, Mini-Wordle, sopa de letras, imagen progresivamente revelada, laberinto contrarreloj, Zip y Tuberías.
 - Mapa de calor con coordenadas normalizadas, marcador corregible, control por puntero o teclado, confirmación explícita y puntuación por precisión y velocidad.
 - Etiquetado de imágenes en dos variantes: asociar varias etiquetas con crédito parcial o identificar una única zona mediante elección o texto libre.
 - Preguntas con imágenes o ilustraciones integradas en elección múltiple, encontrar el intruso y estimación.
-- Temporizador individual y avance automático al agotarse el tiempo.
+- Tiempo por pregunta o reloj global según el modo, con cierre temporal automático.
 - Puntuación que premia las respuestas rápidas y aplica penalizaciones según el formato.
 - Resultados con precisión, aciertos, fallos, preguntas sin contestar y tiempo total.
-- Revisión completa de respuestas y opción de repetición.
+- Revisión de respuestas; repetición en práctica y ensayos, sin replay competitivo.
+- Medición automática por temporada: actividad, participación, disfrute opcional y cuatro CSV
+  privados para superadmin. Las definiciones y los límites están en la
+  [guía de medición](docs/current/product-measurement.md); los objetivos de cada estudio se analizan
+  fuera de la aplicación.
 - Biblioteca con reglas, recomendaciones, accesibilidad y puntuación de cada formato.
 - Uno o varios ejemplos jugables y cronometrados desde cada ficha de formato.
 - Diseño responsive, accesible y completamente en español.
@@ -33,22 +38,10 @@ se utilizan en local o staging y no definen un entorno remoto adicional.
 - Motion para transiciones y microinteracciones.
 - Supabase Auth, RPCs autorizadas y PostgreSQL para los recorridos competitivos implementados.
 
-La aplicación combina dos contextos explícitos: práctica y previews respaldados por un store mock, y
-recorridos competitivos persistidos en Supabase. Las rutas competitivas no tienen fallback al mock. S01–S15, S17a, S18b parcial, D08a/D08b, S05-Alphabet,
-F01/F02/F03/F04/F06/F07/F12 y E01–E06/E10 conectan Auth, provisioning de jugador,
-lecturas de salas, el intento Flash de 2 a 20 preguntas, su evaluación server-side, recuperación y
-los rankings de temporada/publicación actual, el historial común de Flash/Supervivencia/Narrative/Pirámide y la revisión completa después de volver. El
-portal privado `/admin` ya permite a superadmins consultar su contexto, crear salas activas con un
-owner explícito y un grupo inicial opcional, y preparar/editar/activar temporadas. Estas operaciones
-son transaccionales, idempotentes y auditadas.
-La beta cerrada se operará mediante un portal privado de superadmin: la UI pública no crea salas,
-gestiona invitaciones ni prepara temporadas. El superadmin añadirá directamente a los usuarios
-autenticados a las salas; la publicación mínima de contenido, la programación y la ejecución del
-calendario podrán formar parte de ese portal. La gestión posterior de miembros es parcial: el owner
-puede conceder/quitar admin y eliminar lógicamente miembros; transferencia, bloqueo/desbloqueo e
-invitaciones completas siguen pendientes. Narrative reutiliza el ciclo genérico de intentos y mantiene
-las escenas públicas en `challenge_versions.mode_config`; parte del ciclo de Storage y la edición
-narrativa avanzada siguen pendientes.
+La aplicación combina competición persistida en Supabase con práctica, demos y ensayos locales.
+Las rutas competitivas no tienen fallback al mock. El [estado actual](docs/current/status.md)
+centraliza las capacidades de los seis modos, los formatos, el portal y los límites por entorno;
+el [backlog](docs/implementation-plan.md) distingue el trabajo todavía pendiente.
 
 El historial de cambios por versión está disponible en [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -82,33 +75,39 @@ Para probar desde un móvil u otro equipo de la red local, consulta la
 
 ## Comandos disponibles
 
-| Comando                              | Descripción                                                                                              |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                        | Inicia el servidor de desarrollo.                                                                        |
-| `npm run lint`                       | Comprueba la calidad estática del código.                                                                |
-| `npm run typecheck`                  | Valida todos los contratos TypeScript sin emitir código.                                                 |
-| `npm run type-architecture`          | Comprueba las dependencias entre las capas de tipos.                                                     |
-| `npm run mock-data:check`            | Valida fixtures, adaptadores y límites del almacén mock local.                                           |
-| `npm test`                           | Ejecuta los tests unitarios con Vitest.                                                                  |
-| `npm run build`                      | Genera la compilación optimizada de producción.                                                          |
-| `npm run start`                      | Sirve localmente una compilación de producción.                                                          |
-| `npm run supabase:start`             | Inicia el stack local de Supabase.                                                                       |
-| `npm run supabase:status`            | Muestra el estado del stack local de Supabase.                                                           |
-| `npm run supabase:browser:setup`     | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                 |
-| `npm run supabase:tabarnia:setup`    | Reinicia Supabase local y prepara la alpha jugable de Tabarnia con cuatro desafíos y sus siete avatares. |
-| `npm run supabase:betavip:setup`     | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «La vuelta al mundo» salvo que se indique un inicio futuro. |
-| `npm run supabase:local:bootstrap`   | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.    |
-| `npm run supabase:staging:bootstrap` | Prepara el staging remoto con Xesmona, Ches, BetaVIP, buckets y el asset inicial.                        |
-| `npm run supabase:schema:test`       | Verifica esquema, RLS, comandos y concurrencia.                                                          |
-| `npm run schema:revision:check`      | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                |
-| `npm run dictionary:generate`        | Regenera el vocabulario español de Mini-Wordle.                                                          |
-| `npm run dictionary:check`           | Comprueba que el vocabulario versionado esté actualizado.                                                |
-| `npm run format:check`               | Comprueba el formato con Prettier.                                                                       |
+| Comando                                                  | Descripción                                                                                                                  |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                                            | Inicia el servidor de desarrollo.                                                                                            |
+| `npm run lint`                                           | Comprueba la calidad estática del código.                                                                                    |
+| `npm run typecheck`                                      | Valida todos los contratos TypeScript sin emitir código.                                                                     |
+| `npm run type-architecture`                              | Comprueba las dependencias entre las capas de tipos.                                                                         |
+| `npm run mock-data:check`                                | Valida fixtures, adaptadores y límites del almacén mock local.                                                               |
+| `npm test`                                               | Ejecuta los tests unitarios con Vitest.                                                                                      |
+| `npm run build`                                          | Genera la compilación optimizada de producción.                                                                              |
+| `npm run start`                                          | Sirve localmente una compilación de producción.                                                                              |
+| `npm run supabase:start`                                 | Inicia el stack local de Supabase.                                                                                           |
+| `npm run supabase:status`                                | Muestra el estado del stack local de Supabase.                                                                               |
+| `npm run supabase:browser:setup`                         | Reinicia Supabase local y prepara cuentas y datos para pruebas manuales.                                                     |
+| `npm run supabase:tabarnia:setup`                        | Reinicia Supabase local y prepara el escenario técnico de Tabarnia con ocho desafíos y sus siete avatares.                   |
+| `npm run supabase:betavip:setup`                         | Reinicia Supabase local y crea Tabarnia y BetaVIP; abre primero «Circuito de parejas» salvo que se indique un inicio futuro. |
+| `npm run supabase:local:bootstrap`                       | Prepara el perfil mínimo local con superadmin, diccionarios y buckets vacíos; exige `--target local`.                        |
+| `npm run supabase:staging:bootstrap:betavip`             | Prepara BetaVIP en staging y comparte Xesmona y Ches con los demás escenarios.                                               |
+| `npm run supabase:staging:bootstrap:tabarnia`            | Prepara Tabarnia en staging con ocho desafíos, quince miembros y cuentas de prueba propias.                                  |
+| `npm run supabase:environment:reset -- --target staging` | Reconstruye staging sin cargar diccionarios ni crear cuentas, salas o desafíos.                                              |
+| `npm run supabase:schema:test`                           | Verifica esquema, RLS, comandos y concurrencia.                                                                              |
+| `npm run schema:revision:check`                          | Comprueba que migración, health check, `.env.example` y el piloto usan la misma revisión.                                    |
+| `npm run dictionary:generate`                            | Regenera el vocabulario español de Mini-Wordle.                                                                              |
+| `npm run dictionary:check`                               | Comprueba que el vocabulario versionado esté actualizado.                                                                    |
+| `npm run format:check`                                   | Comprueba el formato con Prettier.                                                                                           |
 
 La [guía de preparación](docs/current/supabase-clean-installation.md#qué-necesito-preparar) reúne
 los requisitos, comandos, efectos destructivos y archivos de cada recorrido. El
 [escenario conjunto Tabarnia y BetaVIP](docs/current/supabase-clean-installation.md#escenario-local-con-tabarnia-y-betavip)
 incluye sus cuentas, publicaciones y la secuencia específica de integración y E2E.
+
+El seed de Tabarnia es un escenario técnico de ocho desafíos. No prepara la cohorte de 14
+invitaciones ni las nueve publicaciones del [estudio Lean](docs/product/strategy/lean-startup/cycles/CYCLE-001.md).
+La preparación de ese estudio y su análisis siguen pendientes, según el contrato y el estado Lean.
 
 Para recorrer las temporadas locales sin esperar un día entre publicaciones, ambos seeds admiten un
 perfil rápido opcional:
@@ -116,13 +115,23 @@ perfil rápido opcional:
 ```bash
 npm run supabase:tabarnia:setup -- --schedule fast
 npm run supabase:betavip:setup -- --schedule fast
+npm run supabase:tabarnia:setup -- --schedule 10m
+npm run supabase:betavip:setup -- --schedule 30m
+npm run supabase:betavip:setup -- --schedule 1h
 ```
 
 El perfil predeterminado `production` conserva las ventanas de 24 horas. `fast` usa ventanas reales
-de cinco minutos: Tabarnia recorre sus cuatro desafíos en 20 minutos y BetaVIP sus cinco en 25 minutos. Se acorta
+de cinco minutos: Tabarnia recorre sus ocho desafíos en 40 minutos y BetaVIP sus seis en 30 minutos. Se acorta
 únicamente la ventana de publicación; los límites internos de preguntas,
 vidas, puntuación y deadlines no cambian. El manifiesto generado incluye `scheduleProfile` y la
 duración de la ventana para identificar el perfil utilizado.
+
+También se admite un entero positivo seguido de `m` o `h`: `10m`, `30m`, `1h`, `90m`, etc.
+Con duraciones personalizadas, cada desafío abre al cerrar el anterior y la temporada termina
+con el último: ocho horas en Tabarnia y seis en BetaVIP para `1h`. `1h` y `60m` se normalizan
+al mismo perfil `60m`. Consulta la [guía de duraciones](docs/current/supabase-clean-installation.md#duración-de-los-desafíos)
+para ver ejemplos y los totales de cada sala. Esta opción se aplica a los setups locales;
+el bootstrap de staging conserva su calendario actual.
 
 | Dataset             | `production` | `fast`    |
 | ------------------- | ------------ | --------- |
@@ -130,11 +139,16 @@ duración de la ventana para identificar el perfil utilizado.
 | Tabarnia, desafío 2 | 24–48 h      | 5–10 min  |
 | Tabarnia, desafío 3 | 48–72 h      | 10–15 min |
 | Tabarnia, desafío 4 | 72–96 h      | 15–20 min |
+| Tabarnia, desafío 5 | 96–120 h     | 20–25 min |
+| Tabarnia, desafío 6 | 120–144 h    | 25–30 min |
+| Tabarnia, desafío 7 | 144–168 h    | 30–35 min |
+| Tabarnia, desafío 8 | 168–192 h    | 35–40 min |
 | BetaVIP, desafío 1  | 0–24 h       | 0–5 min   |
 | BetaVIP, desafío 2  | 24–48 h      | 5–10 min  |
 | BetaVIP, desafío 3  | 48–72 h      | 10–15 min |
 | BetaVIP, desafío 4  | 72–96 h      | 15–20 min |
 | BetaVIP, desafío 5  | 96–120 h     | 20–25 min |
+| BetaVIP, desafío 6  | 120–144 h    | 25–30 min |
 
 El seed no ejecuta automáticamente el calendario. Tras alcanzar cada límite temporal, ejecuta el
 tick local con `npm run calendar:tick` mientras la aplicación y Supabase estén activos.
@@ -146,10 +160,11 @@ Los setups de Tabarnia y BetaVIP aceptan `--starts-at <fecha-hora-ISO-8601>` par
 futuro de la temporada. Incluye la zona horaria, por ejemplo para las 19:00 en Madrid:
 
 ```bash
-npm run supabase:betavip:setup -- --starts-at "2026-10-20T19:00:00+02:00"
+npm run supabase:betavip:setup -- --schedule 30m --starts-at "2030-10-20T19:00:00+02:00"
 ```
 
-El mismo parámetro funciona con Tabarnia y el bootstrap de staging. Si se omite, el inicio sigue
+Elige una fecha futura. `--starts-at` funciona también con Tabarnia y el bootstrap de staging;
+`--schedule` solo se aplica a los setups locales. Si se omite el inicio, sigue
 siendo inmediato. En staging, una ejecución posterior conserva la temporada existente y rechaza
 una fecha distinta; para reprogramarla hay que preparar una base vacía siguiendo el procedimiento
 de reinstalación.
@@ -169,11 +184,10 @@ ejecución única. El ranking puede leerse sin tick cuando la ventana temporal e
 el tick sigue siendo necesario para persistir aperturas, cierres, finalización de temporada y
 expiración de intentos.
 
-Para staging, elegir entre el
-[bootstrap sobre una base migrada](docs/current/supabase-clean-installation.md#bootstrap-sobre-una-base-migrada)
-y una [reinstalación completa](docs/current/supabase-clean-installation.md#reinstalación-completa).
-La guía conserva las confirmaciones de reset y el manejo de credenciales. La ejecución registrada
-es local; la preparación y validación remotas de staging siguen pendientes.
+Para staging, el [reset](docs/current/supabase-clean-installation.md#reset-solamente) y los
+[bootstraps de BetaVIP y Tabarnia](docs/current/supabase-clean-installation.md#bootstrap-de-escenarios)
+son comandos separados. La guía conserva las confirmaciones de reset y el manejo de credenciales.
+La ejecución registrada es local; la preparación y validación remotas de staging siguen pendientes.
 
 ## Estructura principal
 
@@ -251,32 +265,28 @@ publicaciones, intentos, rankings y límites de seguridad, se mantienen en
 
 ## Alcance
 
-Esta versión valida la experiencia individual y social mock dentro de una sala local y un recorrido
-competitivo real acotado. Las slices persistidas actuales cubren autenticación, perfil, lecturas autorizadas de salas, un
-Flash competitivo persistido con recuperación, rankings actuales, historial cerrado y revisión;
-E01–E05/E10 y F* amplían ese Flash con eventos autoritativos y payloads versionados para los formatos habilitados.
-histórica autorizada. Incluye el portal privado de `/admin` para consultar el contexto, crear salas
-iniciales y preparar/activar temporadas; incluye una gestión parcial de miembros desde ajustes para
-el owner (conceder/quitar admin y eliminación lógica), pero todavía no incluye la transferencia de propiedad,
-bloqueo/desbloqueo ni invitaciones completas,
-contenido, otros modos ni Storage. La
-UI pública no incluye creación de salas, gestión de invitaciones ni configuración de temporadas;
-durante la beta esas tareas, incluido el alta directa de miembros, corresponden al superadmin. La
-revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` puede leer historial y
-rankings, pero no soluciones ajenas.
+La aplicación persiste en Supabase sus seis modos competitivos, junto con identidad, salas,
+temporadas, calendario, contenido versionado, resultados, revisión autorizada y medición. El portal
+privado de `/admin` incluye gestión de salas y temporadas, calendario, contenido editorial e
+inspección de intentos. Supabase Storage sirve avatares y recursos visuales privados.
 
-Las publicaciones mock apuntan a versiones de definiciones reusables y cada definición resuelve su
-contenido desde `questionsById`. Los formatos que todavía no aparecen en publicaciones, incluidos
-Conectar parejas, Memoria de parejas, Mini-Wordle, imagen progresivamente revelada y laberinto
-contrarreloj, siguen disponibles en el modelo nativo y en la biblioteca interactiva.
+La UI pública no crea salas ni gestiona invitaciones o temporadas. El owner puede conceder y retirar
+el rol de admin y eliminar miembros lógicamente; la transferencia de propiedad, el bloqueo de
+miembros y el ciclo completo de invitaciones siguen pendientes. El inventario de capacidades y
+límites por modo está en [estado actual](docs/current/status.md); el trabajo pendiente está en el
+[backlog técnico](docs/implementation-plan.md).
 
-Mini-Wordle carga bajo demanda un vocabulario español de cuatro letras generado offline desde Hunspell. El recurso está versionado en el repositorio, no requiere backend y el cronómetro no comienza hasta que está disponible. Consulta [la documentación del diccionario](docs/content/guidelines/mini-wordle-dictionary.md) para regeneración, métricas y licencia.
+Las publicaciones mock relacionan desafíos con preguntas del catálogo local; son escenarios y no
+un registro de admisión competitiva. Esa admisión se define por el [registro de capacidades](lib/question-formats/definitions.ts)
+y depende del modo y formato publicados.
+
+Mini-Wordle carga bajo demanda vocabularios españoles de cuatro y cinco letras generados offline desde Hunspell. El recurso está versionado en el repositorio, no requiere backend y el cronómetro no comienza hasta que está disponible. Consulta [la documentación del diccionario](docs/content/guidelines/mini-wordle-dictionary.md) para regeneración, configuración y licencia.
 
 La imagen progresiva espera a que el activo visual esté listo antes de iniciar el cronómetro. El desenfoque desaparece automáticamente, se puede responder en cualquier momento y un único fallo termina la ronda.
 
 El laberinto contrarreloj usa una cuadrícula ortogonal controlada mediante cruceta o flechas. Conserva el recorrido para la revisión, finaliza al alcanzar la salida y no penaliza los movimientos adicionales.
 
-Conectar parejas usa una cuadrícula 5 × 5 con rutas ortogonales entre símbolos iguales. Conserva rutas parciales en timeout, concede crédito por parejas conectadas y cobertura, y exige cubrir todo el tablero para resolver.
+Conectar parejas admite cuadrículas cuadradas de 4 × 4 a 8 × 8, con entre tres parejas y tantas como filas. Las rutas ortogonales unen símbolos iguales sin solapamientos y deben cubrir todo el tablero para resolver. En práctica local, conserva rutas parciales y concede crédito por parejas conectadas y cobertura. En Contrarreloj competitivo, solo un tablero completo se valida y concede su peso; el último checkpoint aceptado por el servidor puede aparecer en la revisión tras un timeout, sin cambiar la respuesta oficial ni sus puntos. Consulta el [contrato de Contrarreloj](docs/current/domain/contrarreloj.md).
 
 Memoria de parejas usa losetas ocultas en una cuadrícula compacta con símbolos, emojis o imágenes y etiqueta accesible. Conserva el historial de intentos para la revisión, concede crédito por cada pareja encontrada y resta un 10 % de los puntos base por cada fallo.
 

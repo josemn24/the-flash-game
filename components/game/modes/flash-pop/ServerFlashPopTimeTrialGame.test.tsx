@@ -1,3 +1,4 @@
+import { guide as connectGuide } from "@/features/question-formats/formats/connect-pairs/guide";
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { act, cleanup, render, screen } from "@testing-library/react";
@@ -133,15 +134,45 @@ it("renders Queens in the shared question stage and shows only the global timer"
 
   render(<ServerFlashPopTimeTrialGame challenge={challenge} roomContext={context} />);
 
-  expect(
-    screen.getByRole("heading", {
-      name: "Coloca una corona por fila, columna y región",
-    }),
-  ).toBeTruthy();
-  expect(screen.getByText("Las coronas no pueden tocarse entre sí.")).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Queens" })).toBeTruthy();
+  expect(screen.getByRole("list", { name: "Reglas de Queens" })).toBeTruthy();
+  expect(screen.queryByText("Las coronas no pueden tocarse entre sí.")).toBeNull();
   expect(screen.queryByRole("button", { name: "Abandonar" })).toBeNull();
   expect(screen.getByRole("grid", { name: "Tablero Queens de 4 por 4" })).toBeTruthy();
   expect(screen.getAllByRole("timer")).toHaveLength(1);
+});
+
+it("shows a provisional final Queens board while the server confirms timeout closure", () => {
+  vi.mocked(useCompetitiveSession).mockImplementation(
+    () =>
+      ({
+        phase: "finalizing",
+        results: [],
+        deadlineAt: Date.now() - 1000,
+        questionIndex: 1,
+        question,
+        pendingAnswer: { queens: [0, 4, 9], marks: [] },
+        timeTrial: { solvedCount: 1, points: 30 },
+        locked: true,
+        busy: false,
+        queensState: "idle",
+        queensStatusVisible: false,
+        updateQueensDraft: vi.fn(),
+        validateQueensBoard: vi.fn(),
+        retryQueensValidation: vi.fn(),
+        abandon: vi.fn(),
+        onTimeUp: vi.fn(),
+        retryLifecycle: vi.fn(),
+      }) as unknown as ReturnType<typeof useCompetitiveSession>,
+  );
+
+  render(<ServerFlashPopTimeTrialGame challenge={challenge} roomContext={context} />);
+
+  expect(screen.getByRole("heading", { name: "Resultado provisional" })).toBeTruthy();
+  expect(screen.getByText("Guardando resultado en el servidor…")).toBeTruthy();
+  expect(screen.getByText("1/2 pruebas resueltas · 30 puntos")).toBeTruthy();
+  expect(screen.getByRole("gridcell", { name: /Fila 2, columna 1.*corona/ })).toBeTruthy();
+  expect(screen.queryByRole("timer")).toBeNull();
 });
 
 it("uses the Pyramid review layout with Contrarreloj progress labels", () => {
@@ -168,4 +199,35 @@ it("uses the Pyramid review layout with Contrarreloj progress labels", () => {
   expect(panel?.firstElementChild).toBe(
     screen.getByRole("button", { name: "Volver al resultado" }),
   );
+});
+
+it("renders Conectar parejas with the global clock and no Queens error counter", () => {
+  const board = connectGuide.examples[0].question;
+  const connectionChallenge: ServerTimeTrialChallenge = {
+    ...challenge,
+    slots: challenge.slots.map((slot) => ({ ...slot, questionType: "connect-pairs" })),
+  };
+  vi.mocked(useCompetitiveSession).mockImplementation(
+    () =>
+      ({
+        phase: "playing",
+        results: [],
+        deadlineAt: Date.now() + 10000,
+        questionIndex: 0,
+        busy: false,
+        locked: false,
+        question: { ...board, points: 30, solutionPaths: undefined },
+        pendingAnswer: null,
+        updateDraft: vi.fn(),
+        submit: vi.fn(),
+        onTimeUp: vi.fn(),
+        retryLifecycle: vi.fn(),
+      }) as unknown as ReturnType<typeof useCompetitiveSession>,
+  );
+  render(<ServerFlashPopTimeTrialGame challenge={connectionChallenge} roomContext={context} />);
+  expect(screen.getByRole("heading", { name: "Conectar parejas" })).toBeTruthy();
+  expect(screen.getByRole("list", { name: "Reglas de Conectar parejas" })).toBeTruthy();
+  expect(screen.getByRole("grid", { name: /Tablero de Conectar parejas/ })).toBeTruthy();
+  expect(screen.getAllByRole("timer")).toHaveLength(1);
+  expect(screen.queryByText(/intentos restantes/)).toBeNull();
 });

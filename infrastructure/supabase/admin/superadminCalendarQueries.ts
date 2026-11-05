@@ -1,7 +1,6 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { Pool, type PoolClient } from "pg";
 import type {
   CalendarTickRunner,
   CancelScheduledChallengeInput,
@@ -14,8 +13,9 @@ import {
   SuperadminAccessDeniedError,
   SuperadminCalendarCommandError,
 } from "@/application/administration/errors";
-import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 import { createClient } from "@/infrastructure/supabase/auth/server-client";
+import { createServiceClient } from "@/infrastructure/supabase/auth/service-client";
+import { serviceRpcError } from "@/infrastructure/supabase/serviceRpcError";
 import type { PublicFunctionArgs, RawRpcResponse } from "@/infrastructure/supabase/rpcTypes";
 import { isValidTimeZone } from "@/lib/zonedDateTime";
 import type {
@@ -153,6 +153,12 @@ function commandCode(error: { code?: string; message?: string }) {
     "content_not_published",
     "unsupported_content",
     "invalid_schedule_dates",
+    "season_finished",
+    "season_start_locked",
+    "schedule_finished",
+    "opening_reached",
+    "competitive_attempt_exists",
+    "schedule_outside_season",
     "schedule_not_found",
     "schedule_not_cancellable",
     "schedule_not_editable",
@@ -227,46 +233,21 @@ export class SupabaseSuperadminCalendarQueries
   }
 
   async runCalendarTick() {
-    let connectionString: string;
     try {
-      connectionString = getSupabaseDatabaseUrl();
+      const { data, error, status } = await Promise.resolve(
+        createServiceClient().rpc("run_calendar_tick", { input: { runId: randomUUID() } }),
+      ).catch((error: unknown) => {
+        throw serviceRpcError(error);
+      });
+      if (error) throw serviceRpcError(error, status);
+      if (!isTickResult(data)) throw new SuperadminCalendarCommandError("invalid_response");
+      return { ...data, source: "supabase" as const };
     } catch (error) {
-      throw new SuperadminCalendarCommandError("database_unavailable", error);
-    }
-    const pool = new Pool({
-      connectionString,
-      max: 1,
-      idleTimeoutMillis: 10_000,
-      connectionTimeoutMillis: 5_000,
-      application_name: "the-flash-game-calendar-tick",
-    });
-    let client: PoolClient | undefined;
-    try {
-      client = await pool.connect();
-      await client.query("BEGIN");
-      await client.query("SET LOCAL ROLE service_role");
-      const result = await client.query<{ result: unknown }>(
-        "select private.run_calendar_tick_command($1::jsonb) as result",
-        [JSON.stringify({ runId: randomUUID() })],
-      );
-      await client.query("COMMIT");
-      if (!isTickResult(result.rows[0]?.result))
-        throw new SuperadminCalendarCommandError("invalid_response");
-      return { ...result.rows[0].result, source: "supabase" as const };
-    } catch (error) {
-      try {
-        await client?.query("ROLLBACK");
-      } catch {
-        /* preserve the original failure */
-      }
       if (error instanceof SuperadminCalendarCommandError) throw error;
       throw new SuperadminCalendarCommandError(
         commandCode(error as { code?: string; message?: string }),
         error,
       );
-    } finally {
-      client?.release();
-      await pool.end();
     }
   }
 }

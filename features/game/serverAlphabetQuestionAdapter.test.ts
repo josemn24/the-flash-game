@@ -29,6 +29,26 @@ const challenge = {
 };
 
 describe("server Alphabet question adapter", () => {
+  it.each([undefined, null, 1, 12])("reads a compatible top-level length %s", (answerLength) => {
+    const question = questionFromAlphabetPayload(
+      "a",
+      "A",
+      { question: "Islas" },
+      30000,
+      50,
+      answerLength,
+    );
+    expect(question.answerLength).toBe(answerLength ?? null);
+    expect(JSON.stringify(question)).not.toContain("archipiélago");
+  });
+  it.each([0, -1, 1.5, "12", NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])(
+    "rejects invalid length %s",
+    (answerLength) => {
+      expect(() =>
+        questionFromAlphabetPayload("a", "A", { question: "Islas" }, 30000, 50, answerLength),
+      ).toThrow(ServerAlphabetQuestionError);
+    },
+  );
   it("accepts the public payload without requiring the solution", () => {
     expect(
       questionFromAlphabetPayload(

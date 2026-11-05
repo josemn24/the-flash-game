@@ -70,6 +70,11 @@ export function AdminRoomDetail({
         ))}
       </nav>
 
+      <div className="my-3">
+        <Link className="underline" href={`/admin/rooms/${model.room.roomId}/measurement`}>
+          Medición de temporada
+        </Link>
+      </div>
       {notice ? (
         <AdminNotice title={notice} description="El contexto de la sala se ha actualizado." />
       ) : null}
@@ -92,7 +97,7 @@ export function AdminRoomDetail({
               <p>
                 {season
                   ? dateRange(season.startsAt, season.endsAt, model.room.timeZone)
-                  : "Crea y activa una temporada para programar desafíos."}
+                  : "Prepara una temporada y su calendario antes de publicarla."}
               </p>
               <ButtonLink
                 href={`/admin/rooms/${model.room.roomId}?tab=seasons`}

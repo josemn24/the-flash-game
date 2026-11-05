@@ -35,13 +35,13 @@ describe("room ranking route", () => {
     expect(markup).toContain("Jackobo");
     expect(markup).toContain("Rielbe");
     expect(markup).toContain("Palmera");
-    expect(markup).toContain("242");
+    expect(markup).toContain("232");
     expect(markup).toContain("Kike");
     expect(markup).not.toContain(">Tú<");
     expect(markup).toContain('href="/salas/tabarnia-room"');
     expect(markup).not.toContain("Ranking de hoy");
     expect(markup).not.toContain("Clasificación de la sala");
-    expect(markup).toContain('aria-label="242 Flash Points"');
+    expect(markup).toContain('aria-label="232 Flash Points"');
   });
 
   it("renders a final classification after the season closes", async () => {
@@ -57,7 +57,7 @@ describe("room ranking route", () => {
     expect(markup).toContain("Clasificación final");
     expect(markup).toContain(model.season.title);
     expect(markup).toContain("Finalizada");
-    expect(markup).toContain('aria-label="242 Flash Points"');
+    expect(markup).toContain('aria-label="232 Flash Points"');
     await expect(generateMetadata({ params })).resolves.toMatchObject({
       title: "Clasificación final de Tabarnia — The Flash",
     });

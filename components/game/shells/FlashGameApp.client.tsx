@@ -1,5 +1,7 @@
 "use client";
 
+import { createPracticeInput } from "@/features/question-formats/createPracticeInput";
+
 import { useMemo } from "react";
 import { AnimatePresence, MotionConfig } from "motion/react";
 import { FlashQuestionStage } from "@/components/game/shared";
@@ -22,6 +24,18 @@ export function FlashGameApp({
 }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
   const session = useGameSession(scoredChallenge);
+  const input = createPracticeInput({
+    question: session.question,
+    locked: session.locked,
+    codeAttemptCount: session.codeAttempts.length,
+    onSubmit: session.submitAnswer,
+    onCodeAttempt: session.handleCodeAttempt,
+    onProgress: session.handleAnswerProgress,
+    onIncorrectAttempt: session.handleIncorrectAttempt,
+    onProgressiveClueReveal: session.handleProgressiveClueReveal,
+    onTimedResponseStart: session.handleTimedResponseStart,
+  });
+  const latestResult = session.results.at(-1);
 
   return (
     <MotionConfig reducedMotion="user">
@@ -37,21 +51,13 @@ export function FlashGameApp({
                 returnTo={roomContext?.returnTo}
               />
             )}
-            {session.phase === "playing" && session.question && (
+            {session.phase === "playing" && session.question && input && (
               <FlashQuestionStage
                 key={session.question.id}
-                question={session.question}
+                input={input}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
-                locked={session.locked}
-                codeAttemptCount={session.codeAttempts.length}
-                onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                onCodeAttempt={session.handleCodeAttempt}
-                onProgress={session.handleAnswerProgress}
-                onIncorrectAttempt={session.handleIncorrectAttempt}
-                onProgressiveClueReveal={session.handleProgressiveClueReveal}
-                onTimedResponseStart={session.handleTimedResponseStart}
               />
             )}
             {session.phase === "transition" && (
@@ -59,6 +65,10 @@ export function FlashGameApp({
                 key={`transition-${session.questionIndex}`}
                 timedOut={session.lastTimedOut}
                 isLast={session.questionIndex === scoredChallenge.questions.length - 1}
+                status={latestResult?.status}
+                points={
+                  latestResult?.details?.type === "estimation" ? latestResult.points : undefined
+                }
               />
             )}
             {session.phase === "results" && (

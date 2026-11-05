@@ -60,7 +60,7 @@ select throws_ok($$select test_support.run('receive_answer','{"answer":true,"ses
 select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Replay of takeover returns the cached result');
 select lives_ok($$select test_support.run('receive_answer','{"answer":true}')$$,'New controller continues the same interaction');
 select lives_ok($$select test_support.run('record_evaluation','{"status":"correct","points":50}')$$,'Second answer evaluated');
-select lives_ok($$select test_support.run('complete_attempt','{"score":100}')$$,'Completion credits and revokes atomically');
+select lives_ok($$select test_support.run('complete_attempt','{}')$$,'Completion credits and revokes atomically');
 select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Completion retry works after session revocation');
 reset role;
 select is((select count(*) from private.flash_point_entries),1::bigint,'Exactly one accreditation');

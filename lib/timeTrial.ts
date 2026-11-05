@@ -1,4 +1,17 @@
 import type { TimeTrialProgress, TimeTrialResult } from "@/types/domain/time-trial";
+import type { TimeTrialFormat } from "@/types/domain/time-trial";
+
+export function isTimeTrialFormat(value: unknown): value is TimeTrialFormat {
+  return value === "queens" || value === "connect-pairs";
+}
+
+/** Derive the format from metadata rather than duplicating persisted configuration. */
+export function timeTrialFormat(types: readonly unknown[]): TimeTrialFormat {
+  const first = types[0];
+  if (!isTimeTrialFormat(first) || types.some((type) => type !== first))
+    throw new Error("Invalid Contrarreloj format sequence");
+  return first;
+}
 
 export const TIME_TRIAL_MAX_INCORRECT_VALIDATIONS = 3;
 export const TIME_TRIAL_END_LABELS = {

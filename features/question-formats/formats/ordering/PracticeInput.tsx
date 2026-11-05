@@ -1,8 +1,7 @@
 "use client";
 
 import { OrderingQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -10,16 +9,12 @@ export function PracticeInput({
   initialAnswer,
   onProgress,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"ordering">>) {
+}: PracticeInputProps<"ordering">) {
   return (
     <OrderingQuestion
       items={question.items}
       directionLabels={question.directionLabels}
-      initialItems={
-        Array.isArray(initialAnswer) && initialAnswer.every((item) => typeof item === "string")
-          ? initialAnswer
-          : undefined
-      }
+      initialItems={initialAnswer}
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}

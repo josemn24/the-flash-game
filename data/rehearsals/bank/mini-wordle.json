@@ -1,0 +1,107 @@
+[
+  {
+    "id": "betavip-antiguedad-q3",
+    "version": 1,
+    "type": "mini-wordle",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Descubre una palabra relacionada con la naturaleza.",
+      "wordLength": 5,
+      "maxAttempts": 6
+    },
+    "solutionPayload": {
+      "correctAnswer": "ARBOL",
+      "additionalGuesses": [],
+      "dictionaryId": "es-general-5.v1",
+      "explanation": "ÁRBOL tiene cinco letras y nombra una planta de tronco leñoso. La tilde se normaliza para el tablero; cada color comprueba letra y posición."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 55000,
+    "familyId": "betavip-antiguedad-q3"
+  },
+  {
+    "id": "bank-wordle-playa",
+    "version": 1,
+    "type": "mini-wordle",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-wordle-playa",
+    "publicPayload": {
+      "question": "Descubre un lugar con arena junto al mar.",
+      "wordLength": 5,
+      "maxAttempts": 6
+    },
+    "solutionPayload": {
+      "correctAnswer": "PLAYA",
+      "additionalGuesses": [],
+      "dictionaryId": "es-general-5.v1",
+      "explanation": "PLAYA tiene cinco letras y designa la ribera de arena o piedras junto al agua; coincide con la pista de arena y mar."
+    }
+  },
+  {
+    "id": "bank-wordle-nieve",
+    "version": 1,
+    "type": "mini-wordle",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-wordle-nieve",
+    "publicPayload": {
+      "question": "Descubre una forma de precipitación propia del frío.",
+      "wordLength": 5,
+      "maxAttempts": 6
+    },
+    "solutionPayload": {
+      "correctAnswer": "NIEVE",
+      "additionalGuesses": [],
+      "dictionaryId": "es-general-5.v1",
+      "explanation": "NIEVE tiene cinco letras y es precipitación formada por cristales de hielo; la pista del frío permite identificarla."
+    }
+  },
+  {
+    "id": "bank-wordle-easy",
+    "version": 1,
+    "type": "mini-wordle",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-wordle-easy",
+    "publicPayload": {
+      "question": "Objeto de cinco letras con mina de grafito que sirve para escribir.",
+      "wordLength": 5,
+      "maxAttempts": 8
+    },
+    "solutionPayload": {
+      "correctAnswer": "LAPIZ",
+      "additionalGuesses": [],
+      "dictionaryId": "es-general-5.v1",
+      "explanation": "LÁPIZ tiene cinco letras y su mina de grafito deja un trazo sobre el papel. El tablero normaliza la tilde; la definición es directa y hay ocho intentos."
+    }
+  },
+  {
+    "id": "bank-wordle-hard",
+    "version": 1,
+    "type": "mini-wordle",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-wordle-hard",
+    "publicPayload": {
+      "question": "Palabra de cinco letras: corteza amarga de un árbol del género Cinchona.",
+      "wordLength": 5,
+      "maxAttempts": 3
+    },
+    "solutionPayload": {
+      "correctAnswer": "QUINA",
+      "additionalGuesses": [],
+      "dictionaryId": "es-general-5.v1",
+      "explanation": "QUINA nombra la corteza de árboles del género Cinchona. La combinación QU y el vocabulario específico exigen más discriminación con solo tres intentos."
+    }
+  }
+]

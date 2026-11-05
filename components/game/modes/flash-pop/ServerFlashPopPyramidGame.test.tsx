@@ -1,13 +1,19 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ServerFlashPopPyramidGame } from "./ServerFlashPopPyramidGame.client";
+import { createCompetitiveInput } from "@/features/question-formats/createCompetitiveInput";
+import { competitiveInputSource } from "@/test-utils/competitiveInput";
 import { initialSessionState } from "@/features/game/competitive/core/sessionReducer";
 import { questionFromPayload } from "@/features/game/serverFlashQuestionAdapter";
 import type { GameRoomContext } from "@/types/view-models/room";
 import type { ServerPyramidChallenge } from "@/types/gameplay/challenge";
 
-const { useSession } = vi.hoisted(() => ({ useSession: vi.fn() }));
-vi.mock("@/features/game/useServerFlashSession", () => ({ useServerFlashSession: useSession }));
+const { useSession, useRouter } = vi.hoisted(() => ({
+  useSession: vi.fn(),
+  useRouter: vi.fn(() => ({ refresh: vi.fn() })),
+}));
+vi.mock("@/features/game/usePyramidGameSession", () => ({ usePyramidGameSession: useSession }));
+vi.mock("next/navigation", () => ({ useRouter }));
 
 const challenge: ServerPyramidChallenge = {
   id: "challenge-1",
@@ -78,6 +84,7 @@ describe("Pyramid question loading", () => {
     useSession.mockReturnValue({
       ...initialSessionState("playing"),
       question,
+      questionInput: createCompetitiveInput(competitiveInputSource({ question })),
       questionPresentedAt: Date.now(),
       questionDeadlineAt: Date.now() + 30_000,
       retryLifecycle: vi.fn(),
@@ -103,5 +110,26 @@ describe("Pyramid question loading", () => {
     expect(markup).toContain("Reintentar partida");
     expect(markup).not.toContain(question.question);
     expect(markup).not.toContain('role="timer"');
+  });
+
+  it("shows a zero-proximity estimation as failed with zero points", () => {
+    useSession.mockReturnValue({
+      ...initialSessionState("transition"),
+      questionIndex: 0,
+      lastResult: {
+        questionId: "level-1",
+        answer: 18,
+        status: "incorrect",
+        isCorrect: false,
+        points: 0,
+        timeUsed: 6,
+        details: { type: "estimation", difference: 18, proximity: 0 },
+      },
+      retryLifecycle: vi.fn(),
+    });
+    const markup = renderGame();
+
+    expect(markup).toContain("Respuesta fallada");
+    expect(markup).toContain("0 puntos");
   });
 });

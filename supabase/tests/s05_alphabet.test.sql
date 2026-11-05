@@ -133,7 +133,7 @@ select test_support.run('record_evaluation', '{"status":"correct","points":50}')
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer', '{"answer":"Lovelace"}');
 select test_support.run('record_evaluation', '{"status":"correct","points":50}');
-select test_support.run('complete_attempt', '{"score":100}');
+select test_support.run('complete_attempt', '{}');
 select is((select count(*) from public.get_my_alphabet_result((select (state->>'attemptId')::uuid from test_support.runtime))), 2::bigint,
   'La revisión terminal devuelve las dos respuestas');
 select ok((select count(*) from public.get_my_alphabet_result((select (state->>'attemptId')::uuid from test_support.runtime) ) where solution_payload ? 'correctAnswer') = 2,

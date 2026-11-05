@@ -6,11 +6,25 @@ select no_plan();
 
 create temp table s15_attempts(label text primary key, attempt_id uuid not null);
 grant select, insert on s15_attempts to service_role, authenticated;
+create temp table s15_activation_reference(presented_at timestamptz, deadline_at timestamptz);
+grant select, insert on s15_activation_reference to service_role;
 
 select test_support.as_actor('member2');
 set local role service_role;
 select test_support.run('start_attempt', jsonb_build_object(
   'scheduledChallengeId', test_support.id('sc-pyramid'), 'sessionToken', repeat('r', 40)));
+select test_support.run('prepare_interaction');
+-- PYR-02/PYR-08: an authorized preparation is not an active timed level.
+select is((select last_result->>'presentedAt' from test_support.runtime), null::text,
+  'Prepared Pyramid content has no presentation timestamp');
+select is((select last_result->>'deadlineAt' from test_support.runtime), null::text,
+  'Prepared Pyramid content has no deadline');
+select ok((select last_result ? 'publicPayload' and not (last_result ? 'solutionPayload')
+  from test_support.runtime), 'Preparation delivers public content without its private solution');
+select test_support.run('recover_attempt');
+select is(private.read_attempt_recovery(
+  (select (state->>'attemptId')::uuid from test_support.runtime), repeat('r', 40))->>'pendingReceiptId',
+  null::text, 'Recovery before activation creates no unanswered receipt');
 select test_support.run('prepare_interaction');
 reset role;
 select is((select count(*) from private.attempt_timing_units
@@ -20,12 +34,26 @@ select throws_ok($$select test_support.run('receive_answer','{"answer":true}')$$
   '55000', 'interaction_not_presented', 'Answers are rejected before Pyramid activation');
 set local role service_role;
 select test_support.run('activate_interaction');
+insert into s15_activation_reference
+select (last_result->>'presentedAt')::timestamptz, (last_result->>'deadlineAt')::timestamptz
+from test_support.runtime;
+select is(test_support.repeat_last(), (select last_result from test_support.runtime),
+  'Replaying activation preserves its original response');
+select test_support.run('activate_interaction');
+select is((select (last_result->>'presentedAt')::timestamptz from test_support.runtime),
+  (select presented_at from s15_activation_reference), 'A new activation command does not restart presentation');
+select is((select (last_result->>'deadlineAt')::timestamptz from test_support.runtime),
+  (select deadline_at from s15_activation_reference), 'A new activation command does not extend the level deadline');
 insert into s15_attempts values ('interrupted-level',
   (select (state->>'attemptId')::uuid from test_support.runtime));
 reset role;
 select is((select scope from private.attempt_timing_units
   where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)), 'level',
   'The first Pyramid checkpoint uses a level clock');
+select is((select deadline_at - started_at from private.attempt_timing_units
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)),
+  (select time_limit_ms * interval '1 millisecond' from private.question_versions
+    where id = test_support.id('qv-pyramid-1')), 'The activated level receives its full published duration');
 select is((select deadline_at from public.attempts
   where id = (select (state->>'attemptId')::uuid from test_support.runtime)), null::timestamptz,
   'Pyramid has no global attempt deadline');
@@ -40,12 +68,15 @@ select is((select points from private.attempt_answers
   'A Pyramid failed level cannot retain evaluator points');
 select throws_ok($$select test_support.run('prepare_interaction')$$,
   '55000', 'pyramid_level_failed', 'The attempt cannot continue after a failed level');
-select is((test_support.run('complete_attempt', '{"score":100,"outcome":"summit"}')->>'outcome'),
+select is((test_support.run('complete_attempt', '{"outcome":"summit"}')->>'outcome'),
   'failed', 'The server derives failed and ignores a falsified summit outcome');
 reset role;
 select is((select score from public.attempts
   where id = (select attempt_id from s15_attempts where label = 'interrupted-level')), 0,
   'An unanswered interrupted level credits zero');
+select is((select status from public.attempts
+  where id = (select attempt_id from s15_attempts where label = 'interrupted-level')), 'completed',
+  'A failed ascent is completed rather than abandoned');
 select is((select count(*) from private.flash_point_entries
   where attempt_id = (select attempt_id from s15_attempts where label = 'interrupted-level')
     and entry_type = 'accreditation'), 1::bigint, 'Failure is accredited exactly once');
@@ -63,7 +94,7 @@ select throws_ok($$select test_support.run('receive_answer', jsonb_build_object(
   '55000', 'interaction_not_presented', 'The caller cannot skip to a later level');
 select test_support.run('receive_answer', '{"answer":"A"}');
 select test_support.run('record_evaluation', '{"status":"correct","points":14}');
-select throws_ok($$select test_support.run('complete_attempt', '{"score":100,"outcome":"summit"}')$$,
+select throws_ok($$select test_support.run('complete_attempt', '{"outcome":"summit"}')$$,
   '55000', 'pyramid_not_terminal', 'A correct early checkpoint cannot be closed as a summit');
 select test_support.run('recover_attempt');
 select is(private.read_attempt_recovery(
@@ -96,19 +127,22 @@ begin
   end loop;
 end;
 $$;
-select is((test_support.run('complete_attempt', '{"score":0,"outcome":"failed"}')->>'outcome'),
+select is((test_support.run('complete_attempt', '{"outcome":"failed"}')->>'outcome'),
   'summit', 'Seven successful levels derive summit after the publication closes');
 select is((select score from public.attempts
   where id = (select attempt_id from s15_attempts where label = 'summit')), 100,
   'The persisted score is the sum of reached successful evaluations');
 select is(test_support.repeat_last(), (select last_result from test_support.runtime),
   'The Pyramid finalization command is idempotent');
-select throws_ok($$select test_support.run('complete_attempt', '{"score":100}')$$,
+select throws_ok($$select test_support.run('complete_attempt', '{}')$$,
   '42501', 'session_revoked', 'A second terminal command cannot accredit the attempt again');
 reset role;
 select is((select outcome from public.attempts
   where id = (select attempt_id from s15_attempts where label = 'summit')), 'summit',
   'The completed attempt persists its server-derived summit outcome');
+select is((select status from public.attempts
+  where id = (select attempt_id from s15_attempts where label = 'summit')), 'completed',
+  'A summit is completed after the publication closes');
 select is((select count(*) from private.flash_point_entries
   where attempt_id = (select attempt_id from s15_attempts where label = 'summit')
     and entry_type = 'accreditation'), 1::bigint, 'A summit posts exactly one ranking credit');

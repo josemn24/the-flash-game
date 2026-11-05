@@ -43,6 +43,10 @@ const specs = requested.length
       "format-contracts-pyramid",
       "pyramid-queens",
       "time-trial",
+      "time-trial-session-conformance",
+      "time-trial-connect-pairs",
+      "time-trial-connect-pairs-session-conformance",
+      "time-trial-timeout-conformance",
       "s03",
       "s04",
       "s05",
@@ -65,16 +69,26 @@ const specs = requested.length
       "s15",
       "s11",
       "s17",
+      "product-measurement",
     ].flatMap((scenario) => E2E_BY_SCENARIO[scenario]);
 const savedFixtures = new Map();
+const absentFixtures = new Set();
 const savedTypeConfig = await readFile("tsconfig.json", "utf8");
 const savedNextEnv = await readFile("next-env.d.ts", "utf8");
-for (const scenario of new Set(specs.map(scenarioForSpec).filter(Boolean))) {
+for (const scenario of new Set(
+  specs
+    .map(scenarioForSpec)
+    .filter(Boolean)
+    .flatMap((s) =>
+      ["rehearsals", "betavip", "tabarnia"].includes(s) ? ["tabarnia", "betavip"] : [s],
+    ),
+)) {
   const fixturePath = path.join("output", "fixtures", `${scenario}.json`);
   try {
     savedFixtures.set(fixturePath, await readFile(fixturePath));
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
+    absentFixtures.add(fixturePath);
   }
 }
 try {
@@ -95,6 +109,7 @@ try {
   console.error(error.message);
   process.exitCode = 1;
 } finally {
+  for (const fixturePath of absentFixtures) await rm(fixturePath, { force: true });
   for (const [fixturePath, content] of savedFixtures)
     await writeFile(fixturePath, content, { mode: 0o600 });
   try {

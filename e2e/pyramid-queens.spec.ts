@@ -1,3 +1,4 @@
+import { placeQueensCrown } from "./support/queens";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -10,15 +11,28 @@ async function startQueens(page: Page, player: "alice" | "bob" | "carol" | "dave
   await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
   await page.getByRole("link", { name: /Abrir sala Sala pyramid-queens/ }).click();
   await page.getByRole("link", { name: "Jugar" }).click();
+  await expect(page.getByRole("heading", { name: "Capital de Portugal 1" })).toHaveCount(0);
+  await expect(page.getByRole("timer")).toHaveCount(0);
   await page.getByRole("button", { name: "Empezar desafío" }).click();
+  await expect(page.getByRole("heading", { name: "Briefing 1" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Lisboa" })).toHaveCount(0);
+  await expect(page.getByRole("timer")).toHaveCount(0);
   await page.getByRole("button", { name: "Empezar nivel" }).click();
   await page.getByRole("button", { name: "Lisboa" }).click();
   await expect(page.getByRole("heading", { name: "Briefing 2" })).toBeVisible();
+  await expect(page.getByRole("gridcell")).toHaveCount(0);
+  await expect(page.getByRole("timer")).toHaveCount(0);
   await page.getByRole("button", { name: "Empezar nivel" }).click();
   await expect(page.getByRole("heading", { name: "Coloca las cinco coronas" })).toBeVisible();
-  await expect(page.getByText("3 intentos restantes", { exact: true })).toBeVisible();
-  await expect(page.getByText(/Tres fallos terminan la partida/)).toBeVisible();
-  await expect(page.getByText("1/5 coronas")).toBeVisible();
+  await expect(
+    page.getByLabel("3 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Se valida al completar las 5 coronas y dejar de editar un instante.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("1/5");
 }
 
 function cell(page: Page, index: number) {
@@ -28,8 +42,10 @@ function cell(page: Page, index: number) {
 }
 
 async function wrongBoard(page: Page) {
-  for (const index of [0, 5, 14, 20]) await cell(page, index).click();
-  await expect(page.getByText("2 intentos restantes", { exact: true })).toBeVisible();
+  for (const index of [0, 5, 14, 20]) await placeQueensCrown(cell(page, index));
+  await expect(
+    page.getByLabel("2 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
 }
 
 test("el tercer fallo termina el ascenso; perder la confirmación no descuenta otro intento", async ({
@@ -60,33 +76,38 @@ test("el tercer fallo termina el ascenso; perder la confirmación no descuenta o
     } else await route.fulfill({ response });
   });
   try {
-    for (const index of [0, 5, 14, 20]) await cell(page, index).click();
+    for (const index of [0, 5, 14, 20]) await placeQueensCrown(cell(page, index));
     await expect.poll(() => requests.length).toBe(1);
     await expect(cell(page, 20)).toBeDisabled();
-    await expect(page.getByText("3 intentos restantes", { exact: true })).toBeVisible();
+    await expect(
+      page.getByLabel("3 de 3 intentos restantes en este tablero", { exact: true }),
+    ).toBeVisible();
   } finally {
     releaseFirst();
   }
-  await expect(page.getByText("2 intentos restantes", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("2 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
   await expect(cell(page, 20)).toBeEnabled();
   await cell(page, 20).click();
-  await cell(page, 24).click();
+  await placeQueensCrown(cell(page, 24));
   await expect(
-    page.getByText("1 intento restante · Último intento", { exact: true }),
+    page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
   ).toBeVisible();
   await cell(page, 24).click();
-  await cell(page, 21).click();
+  await placeQueensCrown(cell(page, 21));
   await expect(
     page.getByRole("button", { name: "Reintentar validación", exact: true }),
   ).toBeVisible();
   await expect(
-    page.getByText("1 intento restante · Último intento", { exact: true }),
+    page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Reintentar validación", exact: true }).click();
   await expect(
     page.getByText("Has agotado los tres intentos. El ascenso termina en este nivel."),
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Jugar de nuevo", exact: true })).toHaveCount(0);
   expect(requests).toHaveLength(5);
   expect(requests[3]).toEqual(requests[2]);
   expect(requests[4]).toEqual(requests[2]);
@@ -103,6 +124,20 @@ test("el tercer fallo termina el ascenso; perder la confirmación no descuenta o
   const review = page.locator("details").filter({ hasText: /^02Nivel 2/ });
   await review.locator("summary").click();
   await expect(review.getByText(/Has agotado los tres intentos/)).toBeVisible();
+  // PYR-10: the full seven-level history does not reveal unreached questions.
+  await expect(page.locator("details")).toHaveCount(7);
+  await expect(page.locator("summary").getByText("No alcanzado", { exact: true })).toHaveCount(5);
+  const unreached = page.locator("details").filter({ hasText: /^03Nivel 3/ });
+  await unreached.locator("summary").click();
+  await expect(
+    unreached.getByText("No alcanzado: el ascenso terminó en un nivel anterior."),
+  ).toBeVisible();
+  await expect(unreached.getByRole("button", { name: "Lisboa" })).toHaveCount(0);
+  await expect(unreached.getByText("Capital de Portugal 3", { exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Jugar de nuevo", exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Empezar desafío", exact: true })).toHaveCount(0);
 });
 
 for (const [player, failures] of [
@@ -117,9 +152,9 @@ for (const [player, failures] of [
       await wrongBoard(page);
       if (failures === 2) {
         await cell(page, 20).click();
-        await cell(page, 24).click();
+        await placeQueensCrown(cell(page, 24));
         await expect(
-          page.getByText("1 intento restante · Último intento", { exact: true }),
+          page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
         ).toBeVisible();
       }
       for (const index of [0, 5, 14, failures === 2 ? 24 : 20]) await cell(page, index).click();
@@ -127,7 +162,7 @@ for (const [player, failures] of [
     const response = page.waitForResponse(
       (response) => response.url().includes("/queens/validate") && response.ok(),
     );
-    for (const index of [9, 10, 18, 21]) await cell(page, index).click();
+    for (const index of [9, 10, 18, 21]) await placeQueensCrown(cell(page, index));
     const result = await (await response).json();
     expect(result).toMatchObject({
       correct: true,

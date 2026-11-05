@@ -1,3 +1,4 @@
+import { MeasurementProvider, ProductSignal } from "@/components/product/Measurement.client";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { FlashPopRoomRanking } from "@/components/game/production";
@@ -29,5 +30,10 @@ export default async function RoomRankingPage({ params }: Props) {
     notFound();
   }
 
-  return <FlashPopRoomRanking {...room} />;
+  return (
+    <MeasurementProvider roomId={roomId}>
+      <ProductSignal type="ranking_viewed" />
+      <FlashPopRoomRanking {...room} />
+    </MeasurementProvider>
+  );
 }

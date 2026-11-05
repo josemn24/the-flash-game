@@ -133,7 +133,7 @@ begin
     or not input ?& array['idempotencyKey','seasonId','title','startsAt','endsAt','reason']
     or exists (
       select 1 from jsonb_object_keys(input) key_name
-      where key_name <> all(array['idempotencyKey','seasonId','title','startsAt','endsAt','reason'])
+      where key_name <> all(array['idempotencyKey','seasonId','title','startsAt','endsAt','reason','expectedUpdatedAt'])
     )
     or exists (
       select 1 from unnest(array['idempotencyKey','seasonId','title','startsAt','endsAt','reason']) key_name
@@ -170,6 +170,7 @@ begin
     'endsAt', ends_at_value,
     'reason', reason_value
   );
+  if input ? 'expectedUpdatedAt' then safe_input:=safe_input||jsonb_build_object('expectedUpdatedAt',(input->>'expectedUpdatedAt')::timestamptz); end if;
   perform pg_advisory_xact_lock(hashtextextended('superadmin-season-command:' || actor || ':' || key, 0));
   select * into cached
   from private.command_requests request
@@ -185,18 +186,19 @@ begin
   into season_row
   from public.seasons season
   join public.rooms room on room.id = season.room_id
-  where season.id = season_id_value
-  for update of season, room;
+  where season.id = season_id_value;
   if not found then
     raise exception 'season_not_found' using errcode = '22023';
   end if;
+  perform 1 from public.rooms room where room.id=season_row.room_id for update;
+  select * into season_row from public.seasons where id=season_id_value for update;
+  if input ? 'expectedUpdatedAt' and (input->>'expectedUpdatedAt')::timestamptz is distinct from season_row.updated_at then raise exception 'schedule_conflict' using errcode='40001'; end if;
   select room.status into room_status from public.rooms room where room.id = season_row.room_id;
   if room_status <> 'active' then
     raise exception 'room_not_found' using errcode = '22023';
   end if;
-  if season_row.status <> 'draft' then
-    raise exception 'season_not_draft' using errcode = '55000';
-  end if;
+  if season_row.status<>'draft' and title_value<>season_row.title then raise exception 'season_not_draft' using errcode='55000'; end if;
+  perform private.assert_season_calendar_window(season_row,starts_at_value,ends_at_value,clock_timestamp());
 
   before_payload := jsonb_build_object(
     'seasonId', season_row.id,
@@ -208,7 +210,7 @@ begin
   );
   update public.seasons
   set title = title_value, starts_at = starts_at_value, ends_at = ends_at_value
-  where id = season_id_value
+  where id = season_id_value and (title,starts_at,ends_at) is distinct from (title_value,starts_at_value,ends_at_value)
   returning jsonb_build_object(
     'seasonId', id,
     'roomId', room_id,
@@ -217,6 +219,11 @@ begin
     'startsAt', starts_at,
     'endsAt', ends_at
   ) into result;
+  if not found then
+    result:=before_payload;
+    insert into private.command_requests(actor_id,idempotency_key,operation,input,result) values(actor,key,'update_season',safe_input,result);
+    return result;
+  end if;
 
   insert into private.audit_log(
     actor_player_id, action, entity_type, entity_id, reason, request_id,
@@ -297,11 +304,12 @@ begin
   into season_row
   from public.seasons season
   join public.rooms room on room.id = season.room_id
-  where season.id = season_id_value
-  for update of season, room;
+  where season.id = season_id_value;
   if not found then
     raise exception 'season_not_found' using errcode = '22023';
   end if;
+  perform 1 from public.rooms room where room.id=season_row.room_id for update;
+  select * into season_row from public.seasons where id=season_id_value for update;
   select room.status into room_status from public.rooms room where room.id = season_row.room_id;
   if room_status <> 'active' then
     raise exception 'room_not_found' using errcode = '22023';

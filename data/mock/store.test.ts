@@ -55,7 +55,7 @@ describe("normalized mock domain store", () => {
     expect(mockDomainStore.roomInvitations).toEqual([]);
     expect(mockDomainStore.scheduledChallenges).toHaveLength(6);
     expect(mockDomainStore.attempts).toHaveLength(23);
-    expect(mockDomainStore.attemptAnswers).toHaveLength(322);
+    expect(mockDomainStore.attemptAnswers).toHaveLength(312);
     expect(mockDomainStore.attempts.every((attempt) => attempt.attemptNumber === 1)).toBe(true);
     const unscheduledDefinition = mockDomainStore.challengeDefinitions.find(
       ({ slug }) => slug === "connections-challenge-definition",
@@ -92,6 +92,21 @@ describe("normalized mock domain store", () => {
         solutionPayload: fixture.privatePayload,
       });
     }
+  });
+
+  it("shows iron and carbon as option B in the mock Steel Ball Run catalog", () => {
+    const question = publishedQuestionFixtures.find(({ slug }) => slug === "sbr-steel-composition");
+
+    expect(question).toMatchObject({
+      publicPayload: {
+        payload: {
+          options: ["Cobre y estaño", "Hierro y carbono", "Oro y plata", "Sodio y cloro"],
+        },
+      },
+      privatePayload: {
+        solution: { payload: { correctAnswer: "Hierro y carbono" } },
+      },
+    });
   });
 
   it("round-trips representative data for all 31 formats", () => {
@@ -152,8 +167,8 @@ describe("normalized mock domain store", () => {
         entry.flashPoints,
       ]),
     ).toEqual([
-      ["Dark", 242],
-      ["Jackobo", 225],
+      ["Dark", 232],
+      ["Jackobo", 220],
       ["Kike", 169],
       ["Rielbe", 158],
       ["Palmera", 98],

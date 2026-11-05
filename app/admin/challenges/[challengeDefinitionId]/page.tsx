@@ -1,3 +1,5 @@
+import { RehearsalManagement } from "@/components/admin/RehearsalManagement.client";
+import { getEditorialRehearsal } from "@/server/production-rehearsal-data-access";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdminNotice, AdminShell, EditorialManagement } from "@/components/admin";
@@ -44,6 +46,16 @@ export default async function AdminChallengeDetailPage({
           : query.editorial === "archived"
             ? "Versión editorial archivada."
             : null;
+  const rehearsalVersions = (
+    await Promise.all(
+      page.editorial.entries
+        .filter((entry) => entry.mode !== "narrative")
+        .map(async (entry) => {
+          const rehearsal = await getEditorialRehearsal(entry.challengeVersionId);
+          return rehearsal ? { ...rehearsal, versionNumber: entry.versionNumber } : null;
+        }),
+    )
+  ).filter((entry) => entry !== null);
   const hasDraft = page.editorial.entries.some((entry) => entry.status === "draft");
   return (
     <AdminShell
@@ -63,6 +75,7 @@ export default async function AdminChallengeDetailPage({
           Crear nuevo desafío
         </ButtonLink>
       ) : null}
+      <RehearsalManagement versions={rehearsalVersions} />
       <EditorialManagement
         context={page.editorial}
         questionLibrary={page.questionLibrary}

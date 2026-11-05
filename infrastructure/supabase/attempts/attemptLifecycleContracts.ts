@@ -1,3 +1,15 @@
+import { checkedTimeTrial } from "@/lib/competitiveResponseContract";
+import {
+  answerRows,
+  boolean,
+  date,
+  integer,
+  isRecord as responseRecord,
+  nullable,
+  optionalFields,
+  text,
+} from "@/lib/competitiveResponseContract";
+import { readTimeTrialProgress } from "@/lib/timeTrial";
 import {
   assertAttemptLifecycle,
   InvalidAttemptLifecycleError,
@@ -27,7 +39,7 @@ function hasCommandIdentity(value: Record<string, unknown>) {
 }
 
 /** PostgreSQL JSON is untrusted until its mode/status/outcome contract is checked. */
-export function decodeFinishAttemptResult(value: unknown): FinishAttemptResult {
+function decodeTerminalResult(value: unknown, allowOmittedNullAnswers = false) {
   requireContract(isRecord(value) && hasCommandIdentity(value));
   const row: Record<string, unknown> = value;
   assertAttemptLifecycle(value);
@@ -37,14 +49,23 @@ export function decodeFinishAttemptResult(value: unknown): FinishAttemptResult {
       ? row.score === null
       : Number.isInteger(row.score) && Number(row.score) >= 0 && Number(row.score) <= 100,
   );
-  return value as FinishAttemptResult;
+  if (row.answers !== undefined) answerRows(row.answers, allowOmittedNullAnswers);
+  if (row.timeTrial != null) checkedTimeTrial(readTimeTrialProgress, row.timeTrial);
+  optionalFields(row, { terminalReason: nullable(text), livesRemaining: nullable(integer) });
+  return value;
+}
+
+export function decodeFinishAttemptResult(value: unknown): FinishAttemptResult {
+  return decodeTerminalResult(value) as FinishAttemptResult;
 }
 
 export function decodeSavedAttemptResult(value: unknown): SavedAttemptResult | null {
   if (value === null) return null;
   requireContract(isRecord(value) && typeof value.scheduledChallengeId === "string");
-  const result = decodeFinishAttemptResult(value.result);
-  requireContract(result.status === "completed" && Array.isArray(result.answers));
+  const result = decodeTerminalResult(value.result, true);
+  requireContract(
+    result.status === "completed" && "answers" in result && Array.isArray(result.answers),
+  );
   return value as SavedAttemptResult;
 }
 
@@ -53,7 +74,7 @@ export function decodeSavedAbandonedAttemptResult(
 ): SavedAbandonedAttemptResult | null {
   if (value === null) return null;
   requireContract(isRecord(value) && typeof value.scheduledChallengeId === "string");
-  const result = decodeFinishAttemptResult(value.result);
+  const result = decodeTerminalResult(value.result, true);
   requireContract(result.status === "abandoned");
   return value as SavedAbandonedAttemptResult;
 }
@@ -72,5 +93,22 @@ export function decodeAttemptRecoverySnapshot(value: unknown): AttemptRecoverySn
     row.terminalOutcome === undefined ||
       isValidTerminalOutcomeHint(value.challengeMode, row.terminalOutcome),
   );
+  answerRows(row.answers);
+  optionalFields(row, {
+    deadlineReached: boolean,
+    hasOpenInteraction: boolean,
+    deadlineAt: nullable(date),
+    pendingReceiptId: nullable(text),
+    initialLives: nullable(integer),
+    livesRemaining: nullable(integer),
+  });
+  if (row.narrativeCursor != null) {
+    requireContract(responseRecord(row.narrativeCursor));
+    requireContract(
+      nullable(text)(row.narrativeCursor.currentChallengeItemId) &&
+        nullable(text)(row.narrativeCursor.nextChallengeItemId),
+    );
+  }
+  if (row.timeTrial != null) checkedTimeTrial(readTimeTrialProgress, row.timeTrial);
   return value as AttemptRecoverySnapshot;
 }

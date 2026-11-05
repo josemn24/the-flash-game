@@ -16,6 +16,8 @@ const healthSource = readFileSync(
   "utf8",
 );
 const pilotSource = readFileSync(path.join(root, "scripts", "verify-pilot.mjs"), "utf8");
+const playwrightSource = readFileSync(path.join(root, "playwright.config.ts"), "utf8");
+const documentation = readFileSync(path.join(root, "docs", "current", "status.md"), "utf8");
 
 function requiredValue(source, pattern, label) {
   const value = source.match(pattern)?.[1];
@@ -39,6 +41,16 @@ const values = {
     pilotSource,
     /EXPECTED_SCHEMA_REVISION:\s*(?:\n\s*)?process\.env\.EXPECTED_SCHEMA_REVISION\s*\|\|\s*["']([^"']+)["']/,
     "valor por defecto de verify-pilot",
+  ),
+  playwright: requiredValue(
+    playwrightSource,
+    /EXPECTED_SCHEMA_REVISION:\s*(?:\n\s*)?process\.env\.EXPECTED_SCHEMA_REVISION\s*\|\|\s*["']([^"']+)["']/,
+    "valor por defecto de Playwright",
+  ),
+  documentation: requiredValue(
+    documentation,
+    /Revisión canónica del repositorio:\s*`([^`]+)`/,
+    "revisión canónica en docs/current/status.md",
   ),
 };
 

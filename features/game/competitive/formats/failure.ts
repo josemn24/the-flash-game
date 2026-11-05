@@ -1,6 +1,14 @@
+import type { GameSessionErrorCode } from "@/types/contracts/competitive-errors";
+import type { FailureAction } from "../core/commandRecoveryPolicy";
 import type { Feedback, FeedbackChannel, Operation } from "../core/sessionReducer";
 
-const rejectedInput: Record<string, string> = {
+const rejectedInput: Partial<Record<GameSessionErrorCode, string>> = {
+  request_predates_presentation:
+    "La pregunta aún no estaba preparada. Vuelve a enviar tu respuesta.",
+  duplicate_queens_placement: "Esa casilla ya tiene una corona.",
+  invalid_queens_placement: "No puedes colocar una corona en esa casilla.",
+  prefilled_queen_locked: "Esa corona forma parte del tablero inicial.",
+  invalid_answer: "La respuesta no es válida. Puedes corregirla.",
   attempt_permission_revoked:
     "Esta partida se cerró porque ya no tienes permiso para competir en esta sala.",
   takeover_not_prepared:
@@ -18,6 +26,8 @@ const rejectedInput: Record<string, string> = {
   invalid_queens_answer:
     "La configuración de Queens no es válida. Revisa las coronas y las casillas.",
   invalid_matching_answer: "La respuesta de parejas no es válida. Revisa todas las asociaciones.",
+  invalid_connect_pairs_answer:
+    "Conecta todas las parejas sin cruces y cubre el tablero completo. Puedes rehacer los caminos.",
 };
 const uncertainInput: Partial<Record<Operation, string>> = {
   answer: "No hemos podido confirmar tu respuesta.",
@@ -32,25 +42,45 @@ const uncertainInput: Partial<Record<Operation, string>> = {
 /** Keeps each existing format renderer's feedback contract. */
 export function formatFailure(
   operation: Operation,
-  code: string | undefined,
+  code: GameSessionErrorCode | undefined,
+  action: FailureAction,
   channel?: FeedbackChannel,
 ) {
   const rejection = code ? rejectedInput[code] : undefined;
-  const definitive = Boolean(rejection);
+  const definitive = action.type === "command-failed" && action.definitive;
+  const retry = action.type === "command-failed" ? action.retry : undefined;
   const message =
-    rejection ??
-    uncertainInput[operation] ??
-    "No hemos podido confirmar la operación. Puedes reintentarlo.";
+    action.type === "reload-projection"
+      ? !action.automatic
+        ? "La operación se ha rechazado. Recarga la partida para continuar desde el estado guardado."
+        : operation === "start" && code === "attempt_session_missing"
+          ? "Recarga la página para preparar la sesión antes de empezar."
+          : "Comprobando el resultado guardado. Puedes volver a cargarlo."
+      : retry?.retryable && retry.delayMs === undefined
+        ? "No hemos podido confirmar la operación"
+        : code === "alphabet_deadline_not_reached" || code === "time_trial_not_terminal"
+          ? "Esperando a que termine el tiempo de la partida."
+          : retry?.seconds !== undefined
+            ? `Demasiadas solicitudes. Espera ${retry.seconds} ${retry.seconds === 1 ? "segundo" : "segundos"} antes de volver a intentarlo.`
+            : (rejection ??
+              uncertainInput[operation] ??
+              "No hemos podido confirmar la operación. Puedes reintentarlo.");
   const feedback: Feedback | undefined = channel
     ? {
-        channel: code === "invalid_matching_answer" ? "submission" : channel,
+        channel:
+          code === "invalid_matching_answer" || code === "invalid_connect_pairs_answer"
+            ? "submission"
+            : channel,
         state:
-          definitive && code !== "invalid_word_hashtag_swap" && code !== "invalid_matching_answer"
+          definitive &&
+          code !== "invalid_word_hashtag_swap" &&
+          code !== "invalid_matching_answer" &&
+          code !== "invalid_connect_pairs_answer"
             ? "idle"
             : "error",
         visible: true,
         message,
       }
     : undefined;
-  return { definitive, message, feedback };
+  return { message, feedback };
 }

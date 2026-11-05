@@ -98,15 +98,9 @@ composición no forma parte de los puertos públicos de aplicación.
 Consulta
 [`data-access.md`](data-access.md) para la composición, autorización y DTOs.
 
-S01 cubre Auth, provisioning de jugador y nombre; S02 cubre home, salas, detalle e introducción;
-S03 cubre el Flash competitivo de dos preguntas; S04 cubre recuperación, sesión exclusiva y
-abandono; S06 consulta los rankings reales de temporada y de la publicación abierta; S07 consulta
-historial común y revisión autorizada de los cinco modos, incluido Alfabeto con todas sus letras.
-Las lecturas mock aplican los mismos límites temporales con `QueryContext.now`; las pruebas fijan
-el reloj para distinguir el reto actual de una ventana vencida sin tick. S08–S12 añaden portal
-privado, temporadas, publicación editorial Flash mínima y calendario local; Storage y la edición
-narrativa avanzada siguen fuera de esta fase. La beta provisionará miembros
-directamente desde ese portal, sin flujo público de invitaciones.
+Las capacidades persistidas están en [estado actual](../status.md). El mock conserva escenarios
+para probar permisos, estados y límites temporales mediante `QueryContext.now`; sus fechas y
+resultados son fixtures técnicos, no el calendario real ni evidencia de despliegue.
 
 Como compatibilidad de la práctica y de previews, `PlayableChallengePageModel` todavía puede llevar
 las soluciones al cliente y puntuar localmente. El recorrido competitivo migrado separa contenido

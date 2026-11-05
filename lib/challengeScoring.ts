@@ -1,8 +1,4 @@
-import type {
-  FlashChallenge,
-  PyramidChallenge,
-  SurvivalChallenge,
-} from "@/types/gameplay/challenge";
+import type { FlashChallenge, SurvivalChallenge } from "@/types/gameplay/challenge";
 import type { PracticeQuestion } from "@/types/gameplay/practice";
 import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 
@@ -99,20 +95,4 @@ export function withChallengeScoring<T extends FlashChallenge | SurvivalChalleng
       withChallengeQuestionPoints(question, pointValues[index] ?? 0),
     ),
   } as T;
-}
-
-export function withPyramidScoring(challenge: PyramidChallenge): PyramidChallenge {
-  const questionIds = challenge.levels.map((level) => level.question.id);
-  const pointValues = getConfiguredChallengeQuestionPointValues(
-    questionIds,
-    challenge.questionPoints,
-  );
-
-  return {
-    ...challenge,
-    levels: challenge.levels.map((level, index) => ({
-      ...level,
-      question: withChallengeQuestionPoints(level.question, pointValues[index] ?? 0),
-    })),
-  };
 }

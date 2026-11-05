@@ -8,6 +8,16 @@ actualizar esa sección y enlazar la entrada con su pull request o commit de ori
 
 ## [Unreleased]
 
+### Añadido
+
+- Contrarreloj admite secuencias de Conectar parejas de 4×4 a 8×8, con edición libre de caminos, reloj global,
+  validación del servidor, editor y revisión. Queens conserva sus reglas. Las migraciones
+  `20261016144218_time_trial_connect_pairs` y `20261016193510_connect_pairs_variable_square_boards`
+  incorporan el formato y sus tamaños variables; el entorno debe usar la revisión canónica vigente.
+
+- Se generan pruebas alternativas antes de competir para cinco modos, con banco versionado,
+  dificultad y recetas reproducibles. Véase [ensayos](docs/current/rehearsals.md).
+
 ### Mejorado
 
 - Se ha refinado el feedback visual de las respuestas y sus estados de acierto o error. ([`053bb0f`][commit-053bb0f])
@@ -15,6 +25,14 @@ actualizar esa sección y enlazar la entrada con su pull request o commit de ori
 - Se han añadido esqueletos de carga y un indicador visual para los enlaces pendientes. ([`0a7daf3`][commit-0a7daf3])
 - Se ha mejorado la experiencia de Queens para tableros de tamaño variable. ([`8c90ae4`][commit-8c90ae4], [`3729f54`][commit-3729f54])
 - Se ha incorporado una navegación hacia atrás más coherente durante el recorrido. ([`19331a3`][commit-19331a3])
+
+- Conectar parejas conserva el envío automático y retira el botón de envío manual; no cambia
+  la evaluación parcial ni el timeout del backend.
+
+### Documentación
+
+- Se alinean las referencias vigentes, se archivan informes y planes anteriores y se amplían
+  las comprobaciones de enlaces y revisión canónica.
 
 ### Operación
 

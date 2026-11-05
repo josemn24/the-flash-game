@@ -1,0 +1,2396 @@
+[
+  {
+    "template": {
+      "challengeVersionId": "betavip-cumbre-logica-ii",
+      "title": "Cumbre lógica II",
+      "mode": "pyramid",
+      "globalTimeLimitMs": null,
+      "modeConfig": {},
+      "questions": [
+        {
+          "type": "zip",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 30000,
+          "points": 13,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 5,
+            "columns": 5,
+            "checkpoints": 6
+          }
+        },
+        {
+          "type": "logic-matrix",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 35000,
+          "points": 12,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "cells": 9,
+            "missing": 1,
+            "pieces": 11,
+            "options": 4,
+            "showPieceLabels": false
+          }
+        },
+        {
+          "type": "odd-one-out",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 30000,
+          "points": 10,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 5
+          }
+        },
+        {
+          "type": "connect-pairs",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 45000,
+          "points": 14,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 5,
+            "columns": 5,
+            "pairs": 4,
+            "requireFullCoverage": true
+          }
+        },
+        {
+          "type": "escape",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 45000,
+          "points": 15,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 6,
+            "columns": 6,
+            "exitSide": "right",
+            "blocks": [
+              "obstacle:horizontal:2",
+              "obstacle:horizontal:3",
+              "obstacle:horizontal:3",
+              "obstacle:vertical:2",
+              "obstacle:vertical:2",
+              "obstacle:vertical:3",
+              "target:horizontal:2"
+            ]
+          }
+        },
+        {
+          "type": "logic-code",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 17,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "codeLength": 3,
+            "clues": 4
+          }
+        },
+        {
+          "type": "queens",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 19,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 5,
+            "columns": 5,
+            "prefilled": 1
+          }
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-05198e38ea4a5e0c62d48bddc1bfa12b",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "762e1a35b30b1ee5f968c63f5faa368cabca62f4a734bfc5ce371bfc66f961c7",
+      "challengeVersionId": "betavip-cumbre-logica-ii",
+      "questions": [
+        {
+          "id": "bank-zip-1",
+          "version": 1,
+          "contentHash": "dcee04a7e0243cb0ab60bb062aaa8a063dbb0432ea54bc1d0e208f2d3427fffd"
+        },
+        {
+          "id": "bank-matrix-2",
+          "version": 1,
+          "contentHash": "3cc9863ccba87187216f540cd980f45e470738e955625cf77c27bed42634e468"
+        },
+        {
+          "id": "bank-intruso-medium",
+          "version": 1,
+          "contentHash": "4a4eb6a4d2750b1c321d91a00a7a782a1dd1e32ce292742f5f468c9178742940"
+        },
+        {
+          "id": "betavip-logica-q4",
+          "version": 1,
+          "contentHash": "629fd9b429ea0b1e761c30dd6f69ab6ebcef82e7d051227f95960607dbefbdb9"
+        },
+        {
+          "id": "bank-escape-cadena",
+          "version": 1,
+          "contentHash": "77a5e56fd1779fd306ee5f349c517ca6affae671c2237aef633b5235bcbf568e"
+        },
+        {
+          "id": "betavip-logica-q6",
+          "version": 1,
+          "contentHash": "c7449390805aa6c22a8b99386bfe4ff902cd2eddc64f6c11fa084fe6bf1ff03d"
+        },
+        {
+          "id": "betavip-logica-q7",
+          "version": 1,
+          "contentHash": "e0f8f3e1e27002d1fb29da5c4f2dabdd7ba343a5dd1461bbb18c36342b5e0c5b"
+        }
+      ]
+    },
+    "definitionHash": "e746230f0e4d83df4a9032c7ab455a43ad9486b41eadb0e71bc6c65f47f9dcc1"
+  },
+  {
+    "template": {
+      "challengeVersionId": "betavip-ecos-de-la-antiguedad",
+      "title": "Ecos de la Antigüedad",
+      "mode": "pyramid",
+      "globalTimeLimitMs": null,
+      "modeConfig": {},
+      "questions": [
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 18000,
+          "points": 10,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "left": 4,
+            "right": 4
+          }
+        },
+        {
+          "type": "progressive-clues",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 35000,
+          "points": 12,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "clues": 3,
+            "penalty": 20
+          }
+        },
+        {
+          "type": "mini-wordle",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 55000,
+          "points": 14,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "wordLength": 5,
+            "maxAttempts": 6
+          }
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 30000,
+          "points": 13,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 4
+          }
+        },
+        {
+          "type": "word-search",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 15,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 10,
+            "columns": 10,
+            "targets": 5,
+            "wordLengths": [5, 6, 7, 8, 10]
+          }
+        },
+        {
+          "type": "classification",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 50000,
+          "points": 17,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 8,
+            "categories": 4
+          }
+        },
+        {
+          "type": "word-hashtag",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 45000,
+          "points": 19,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 5,
+            "columns": 5,
+            "maxMoves": 7
+          }
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-aa6faa8bea2d53992743ac395d02b488",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "0fa8f6b017eff1382665d2890a6d92f5d0dec256df897686f8f66d6ff0bc1b38",
+      "challengeVersionId": "betavip-ecos-de-la-antiguedad",
+      "questions": [
+        {
+          "id": "bank-emparejar-instrumentos",
+          "version": 1,
+          "contentHash": "ccf1f7dc9a337f90700c3dd8147422e7d7ac707c80c78c625b338e7fe3f850d7"
+        },
+        {
+          "id": "bank-pistas-medium",
+          "version": 1,
+          "contentHash": "11d4c4c3b14d02fff85e55b60ad9eadfe63faefbe65402bc339584ca585a351e"
+        },
+        {
+          "id": "bank-wordle-playa",
+          "version": 1,
+          "contentHash": "1ab9185ef499e2297948611613e14b7abd40a83d152344074b6fed799f08490b"
+        },
+        {
+          "id": "bank-ordenar-masa",
+          "version": 1,
+          "contentHash": "e4e8eee0040fe62377ea056fd7b93e336b8cccd7b85b3c351aa29c29c5c4c67a"
+        },
+        {
+          "id": "bank-sopa-1",
+          "version": 1,
+          "contentHash": "8478b953176ee59b53c2435acb3b56f197cd3285914efddfb519356de319be43"
+        },
+        {
+          "id": "bank-clasificar-instrumentos",
+          "version": 1,
+          "contentHash": "605c9cc3bb94470f5d2ac694b6e669ac28c5e866f00d24231c046b909f43cda9"
+        },
+        {
+          "id": "bank-hashtag-1",
+          "version": 1,
+          "contentHash": "9863846de13f6ae484f85b0791a7cb9723511bda47f3952406f14386a50c0d68"
+        }
+      ]
+    },
+    "definitionHash": "73bbdb3fa29cbe8d6a51ac7189175bda4117d8360b15dc346e834e812ff754dc"
+  },
+  {
+    "template": {
+      "challengeVersionId": "betavip-escalera-de-coronas",
+      "title": "Escalera de coronas",
+      "mode": "time-trial",
+      "globalTimeLimitMs": 150000,
+      "modeConfig": {},
+      "questions": [
+        {
+          "type": "queens",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 12,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 4,
+            "columns": 4,
+            "prefilled": 1
+          }
+        },
+        {
+          "type": "queens",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 14,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 5,
+            "columns": 5,
+            "prefilled": 2
+          }
+        },
+        {
+          "type": "queens",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 16,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 5,
+            "columns": 5,
+            "prefilled": 1
+          }
+        },
+        {
+          "type": "queens",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 18,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 6,
+            "columns": 6,
+            "prefilled": 3
+          }
+        },
+        {
+          "type": "queens",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 19,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 6,
+            "columns": 6,
+            "prefilled": 2
+          }
+        },
+        {
+          "type": "queens",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 21,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 7,
+            "columns": 7,
+            "prefilled": 2
+          }
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-9cf447d47f212d4ce591e68c2365a7bb",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "2d74ed11645bbb0f6cbfed73940fab1cea24fbb6f68e2725b9b90fbba05433f9",
+      "challengeVersionId": "betavip-escalera-de-coronas",
+      "questions": [
+        {
+          "id": "betavip-logica-q7",
+          "version": 1,
+          "contentHash": "e0f8f3e1e27002d1fb29da5c4f2dabdd7ba343a5dd1461bbb18c36342b5e0c5b"
+        },
+        {
+          "id": "betavip-queens-q2",
+          "version": 1,
+          "contentHash": "53c483027f1c4f2412061d660fa4223bfa3fa8436a0c4f7b22a0a5da458ce38f"
+        },
+        {
+          "id": "betavip-queens-q3",
+          "version": 1,
+          "contentHash": "ca3d1258bbbebc3c640efb5ca863de8378ff92772f7efe30079cf98ea1222bf6"
+        },
+        {
+          "id": "betavip-queens-q1",
+          "version": 1,
+          "contentHash": "77dcd9bc57a750dacac42452117b3132f31437372f2f70184d29d6d271d6f628"
+        },
+        {
+          "id": "betavip-queens-q4",
+          "version": 1,
+          "contentHash": "47bba70670fb3c955ebfe692b8818783524199a1996118156acfe0cf5d9a50e2"
+        },
+        {
+          "id": "betavip-queens-q5",
+          "version": 1,
+          "contentHash": "f50084c89f295a8075914b6ec91ea9f92cca0175f1740e89ab30ca54d3a06bac"
+        }
+      ]
+    },
+    "definitionHash": "d5e7aec443a21d209698294562133486041d7a2bbe4b24e15cfe1cca9f4760ef"
+  },
+  {
+    "template": {
+      "challengeVersionId": "betavip-circuito-de-parejas",
+      "title": "Circuito de parejas",
+      "mode": "time-trial",
+      "globalTimeLimitMs": 150000,
+      "modeConfig": {},
+      "questions": [
+        {
+          "type": "connect-pairs",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 12,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 4,
+            "columns": 4,
+            "pairs": 3,
+            "requireFullCoverage": true
+          }
+        },
+        {
+          "type": "connect-pairs",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 14,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 5,
+            "columns": 5,
+            "pairs": 5,
+            "requireFullCoverage": true
+          }
+        },
+        {
+          "type": "connect-pairs",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 16,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 5,
+            "columns": 5,
+            "pairs": 4,
+            "requireFullCoverage": true
+          }
+        },
+        {
+          "type": "connect-pairs",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 18,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 6,
+            "columns": 6,
+            "pairs": 6,
+            "requireFullCoverage": true
+          }
+        },
+        {
+          "type": "connect-pairs",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 19,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 6,
+            "columns": 6,
+            "pairs": 5,
+            "requireFullCoverage": true
+          }
+        },
+        {
+          "type": "connect-pairs",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 60000,
+          "points": 21,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 7,
+            "columns": 7,
+            "pairs": 7,
+            "requireFullCoverage": true
+          }
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-6854b56bb958f16271a5024f228bf828",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "0543e581c31f4e2b67c723e8ef6265a988fe33d7716561e8eec4ef18eb83a2b0",
+      "challengeVersionId": "betavip-circuito-de-parejas",
+      "questions": [
+        {
+          "id": "betavip-parejas-q2",
+          "version": 1,
+          "contentHash": "b366864939939eec9600ae0edb0f46a4875faeee9bb3bbb0d88321902374050b"
+        },
+        {
+          "id": "betavip-logica-q4",
+          "version": 1,
+          "contentHash": "629fd9b429ea0b1e761c30dd6f69ab6ebcef82e7d051227f95960607dbefbdb9"
+        },
+        {
+          "id": "betavip-parejas-q1",
+          "version": 1,
+          "contentHash": "32ef02cdde28972515740ac44d1e99354d6082de0d8cfd9d9bf1bf84e41cbef9"
+        },
+        {
+          "id": "betavip-parejas-q4",
+          "version": 1,
+          "contentHash": "a491d9408189d0b280a7b8e9e869bb00180da160afcddf82761999515216a0cc"
+        },
+        {
+          "id": "betavip-parejas-q6",
+          "version": 1,
+          "contentHash": "a3fe005dd81398168f28af386a42cff16ad364938d42656f30d20f642802e3bb"
+        },
+        {
+          "id": "betavip-parejas-q5",
+          "version": 1,
+          "contentHash": "f94b4d4ec19fe234d8ca0c07d409292cd1ad406f988ba4c72f41cba495622602"
+        }
+      ]
+    },
+    "definitionHash": "46e538ae12ab9aa16947445c69168902f8d0ce6b3597f0a79a8e63c340810850"
+  },
+  {
+    "template": {
+      "challengeVersionId": "betavip-pop-culture-survival",
+      "title": "Supervivencia: Cultura pop",
+      "mode": "survival",
+      "globalTimeLimitMs": null,
+      "modeConfig": {
+        "lives": 3
+      },
+      "questions": [
+        {
+          "type": "true-false",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 12000,
+          "points": 4,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {}
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 14000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "progressive-image",
+          "payloadSchemaVersion": 2,
+          "timeLimitMs": 20000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "revealDurationMs": 5000
+          }
+        },
+        {
+          "type": "true-false",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 12000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {}
+        },
+        {
+          "type": "progressive-clues",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 25000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "clues": 3,
+            "penalty": 30
+          }
+        },
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 18000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "left": 3,
+            "right": 3
+          }
+        },
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 18000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "left": 3,
+            "right": 3
+          }
+        },
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 18000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "left": 3,
+            "right": 3
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 14000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "progressive-clues",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 25000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "clues": 3,
+            "penalty": 30
+          }
+        },
+        {
+          "type": "estimation",
+          "payloadSchemaVersion": 2,
+          "timeLimitMs": 16000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "min": 1970,
+            "max": 1995,
+            "step": 1,
+            "initialValue": 1980,
+            "media": false
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 14000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 20000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 4
+          }
+        },
+        {
+          "type": "progressive-clues",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 25000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "clues": 3,
+            "penalty": 30
+          }
+        },
+        {
+          "type": "true-false",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 12000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {}
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 20000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 4
+          }
+        },
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 18000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "left": 3,
+            "right": 3
+          }
+        },
+        {
+          "type": "progressive-clues",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 25000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "clues": 3,
+            "penalty": 30
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 14000,
+          "points": 5,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 20000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 4
+          }
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-07bb82bacdd2a5662aad91cc262666f7",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "17e9f677061d1b7c588591348a6ef00e6adfbeb2e74515b67054cb416ab0137c",
+      "challengeVersionId": "betavip-pop-culture-survival",
+      "questions": [
+        {
+          "id": "bank-vf-sonido",
+          "version": 1,
+          "contentHash": "ad01390b51734e5806d847cb65835aecb6db8899d4e3a9ad07e3062eb9bd72dd"
+        },
+        {
+          "id": "bank-eleccion-descuento",
+          "version": 1,
+          "contentHash": "4e5cdebc406b38a717300c4861bdf9d57a6951af1690d8735655e1f9c8537da6"
+        },
+        {
+          "id": "betavip-supervivencia-q3",
+          "version": 1,
+          "contentHash": "18f24bee5c3cf577384c100a3b5ad3479557b185f0c04ec24411f9258cdeecbd"
+        },
+        {
+          "id": "betavip-supervivencia-q1",
+          "version": 1,
+          "contentHash": "d0ffb4ea38263a0bb07dada2703ff217903a3a489e6baa52caa8543cee1869e1"
+        },
+        {
+          "id": "bank-pistas-medium",
+          "version": 1,
+          "contentHash": "11d4c4c3b14d02fff85e55b60ad9eadfe63faefbe65402bc339584ca585a351e"
+        },
+        {
+          "id": "bank-emparejar-materiales",
+          "version": 1,
+          "contentHash": "ace03f456e5d5c4c68b5bcd7beadcd9dd99b7e6a639e49a7da3dd47380734588"
+        },
+        {
+          "id": "bank-emparejar-instrumentos",
+          "version": 1,
+          "contentHash": "ccf1f7dc9a337f90700c3dd8147422e7d7ac707c80c78c625b338e7fe3f850d7"
+        },
+        {
+          "id": "betavip-supervivencia-q8",
+          "version": 1,
+          "contentHash": "fe7321e26fe50a3e9a422add9f16ee1f3dd5656a55d5d0fd2488351d7f045a78"
+        },
+        {
+          "id": "betavip-supervivencia-q12",
+          "version": 1,
+          "contentHash": "3120cf0c9d0ed83e6093fa693f66cbe50d407d220789ab5285f7f51b5600e838"
+        },
+        {
+          "id": "betavip-supervivencia-q14",
+          "version": 1,
+          "contentHash": "3b912795d719db49580718b50622d9692eb12f4f95bc6cfac861dea822b22e2e"
+        },
+        {
+          "id": "bank-estimar-angulos",
+          "version": 1,
+          "contentHash": "c593d3949ace49d78140bf8fb25a2f5072918f3cfe0d0e7dbb432b6d4d511692"
+        },
+        {
+          "id": "bank-eleccion-raiz",
+          "version": 1,
+          "contentHash": "9083d4c414186f8febaa6fc9d9a8dcdb7a420d1e8132c066fb1ef1f0ed25022c"
+        },
+        {
+          "id": "bank-ordenar-masa",
+          "version": 1,
+          "contentHash": "e4e8eee0040fe62377ea056fd7b93e336b8cccd7b85b3c351aa29c29c5c4c67a"
+        },
+        {
+          "id": "betavip-supervivencia-q18",
+          "version": 1,
+          "contentHash": "5ac7663e8a2877e9800641626e3a0bc8d25017574c270999e79d5c442065fdff"
+        },
+        {
+          "id": "bank-vf-luna",
+          "version": 1,
+          "contentHash": "fe8f5da2456bddf49b70f669a15ab001954ec19fe7472adde9c2d684cc78b005"
+        },
+        {
+          "id": "bank-ordenar-ciclo-agua",
+          "version": 1,
+          "contentHash": "0387e466140c8c15867605dd582fb7eeb5fa46c1993c1f056181539b326cabba"
+        },
+        {
+          "id": "betavip-antiguedad-q1",
+          "version": 1,
+          "contentHash": "a258a1182c4b75eba342896d01e3c026cfc902a0e8fce218ad8a6e25bca94a6c"
+        },
+        {
+          "id": "betavip-supervivencia-q10",
+          "version": 1,
+          "contentHash": "a67fadf7ed04e7ff4bef23a60baad52a3f6afc03dd07ef3c373e173a685e9a85"
+        },
+        {
+          "id": "flash-referencia-q1",
+          "version": 1,
+          "contentHash": "fc94b4bd6eccad1f9982c7f5335fe24f57fb47600dd48d73d42743295224672c"
+        },
+        {
+          "id": "betavip-supervivencia-q20",
+          "version": 1,
+          "contentHash": "8ea2502c5adf58d732ca3bacf0ed717e6c9c851cf50e6197778f92a220e46c1b"
+        }
+      ]
+    },
+    "definitionHash": "73ddd49067e533f3874fdbb7a06200a2949913b1d368b814a5b0a5d5316dfd9c"
+  },
+  {
+    "template": {
+      "challengeVersionId": "betavip-la-vuelta-al-mundo",
+      "title": "La vuelta al mundo",
+      "mode": "alphabet",
+      "globalTimeLimitMs": 150000,
+      "modeConfig": {},
+      "questions": [
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 7,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "A"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 7,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "B"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 7,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "C"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 7,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "D"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "E"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "F"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "I"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "J"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "L"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "M"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "O"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "P"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "R"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "S"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "T"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 120000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {
+            "letter": "Z"
+          },
+          "mechanics": {}
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-cfef9efe34b548df462a99da80f197f7",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "1d42ddde7c8f0a01f3b23382a63d1e45c04b848b00f39a050a9aea2e5ca53074",
+      "challengeVersionId": "betavip-la-vuelta-al-mundo",
+      "questions": [
+        {
+          "id": "bank-alfabeto-a-medium",
+          "version": 1,
+          "contentHash": "1834e117c165e9c8587c6d538b4be4707e0ffda44badefba723b2953f559a28c"
+        },
+        {
+          "id": "bank-alfabeto-b-medium",
+          "version": 1,
+          "contentHash": "04e3c6c2cb0d86a073b2abc282db53a7e541d061cf49a95995201291f7f45a2b"
+        },
+        {
+          "id": "bank-alfabeto-c-medium",
+          "version": 1,
+          "contentHash": "0d722caf3a1233a3c1ec15af5d58f9aa466ef1179c1ae0b72648c8e4adf1915c"
+        },
+        {
+          "id": "bank-alfabeto-d-medium",
+          "version": 1,
+          "contentHash": "1285e42addb5cd27afc8dd4f497583d3cc51ac2d42a6087788bc0e49f5f6ef0d"
+        },
+        {
+          "id": "bank-alfabeto-e-medium",
+          "version": 1,
+          "contentHash": "08e0ca9fd4061a45bd1b9d41f02159cae84d914770f01c4778f641c2cfde550d"
+        },
+        {
+          "id": "bank-alfabeto-f-medium",
+          "version": 1,
+          "contentHash": "7dde9fc489529a72c55064aaec9762cb44e0ecd96d308b02b717b710e5c504b3"
+        },
+        {
+          "id": "bank-alfabeto-i-medium",
+          "version": 1,
+          "contentHash": "c33dc85cdea470e58bc97245470c5f5a4a59ebed3d41cdf9338583f3e622515f"
+        },
+        {
+          "id": "bank-alfabeto-j-medium",
+          "version": 1,
+          "contentHash": "b89dc7568ee1889bc58c780593225386f2f3a6641f1918a41b8e5ffd0299db66"
+        },
+        {
+          "id": "bank-alfabeto-l-medium",
+          "version": 1,
+          "contentHash": "3fad43de9cd36d3a95248b07ce0665d2f57ea81c8c108313a69e4acb53969fda"
+        },
+        {
+          "id": "bank-alfabeto-m-medium",
+          "version": 1,
+          "contentHash": "2079c51cad1da8e2b6c1d1ffb2512ba3b1078056354365dbd7ac6fd0e9d82b61"
+        },
+        {
+          "id": "bank-alfabeto-o-medium",
+          "version": 1,
+          "contentHash": "d4dc2564ab0df58c0178f566e38b03c351a18b1b3a2332e1ee7fd54b77a062da"
+        },
+        {
+          "id": "bank-alfabeto-p-medium",
+          "version": 1,
+          "contentHash": "ab3928bca862f9a6626b48d1d84c1aae78115a76ca42c673c9e818dbb57f97a9"
+        },
+        {
+          "id": "bank-alfabeto-r-medium",
+          "version": 1,
+          "contentHash": "a3fbe4d7c25caddae1261f3c0ebcf58777e35b004a97fc9dd2e4393ce44ed9a1"
+        },
+        {
+          "id": "bank-alfabeto-s-medium",
+          "version": 1,
+          "contentHash": "52904d56d732f12e186c3d4494ce2db8d8c6fd9809434c4edb060cc80fc6feca"
+        },
+        {
+          "id": "bank-alfabeto-t-medium",
+          "version": 1,
+          "contentHash": "dc09f38ee6fedd699352013645ea68eca1fe204c699610db5328f73a37c45dc8"
+        },
+        {
+          "id": "bank-alfabeto-z-medium",
+          "version": 1,
+          "contentHash": "88c9721d53abf5cd8fbe2278fb6dc4d84abb9486d7b5f447390976114712ecaf"
+        }
+      ]
+    },
+    "definitionHash": "4d1839967d96abe31a2664bac86af00277440d5d1bfc91c5034d04501d03e9a0"
+  },
+  {
+    "template": {
+      "challengeVersionId": "sbr",
+      "title": "Flash de Tabarnia",
+      "mode": "flash",
+      "globalTimeLimitMs": null,
+      "modeConfig": {},
+      "questions": [
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 18000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": true,
+            "visual": false
+          }
+        },
+        {
+          "type": "odd-one-out",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 14000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 4
+          }
+        },
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 22000,
+          "points": 7,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "left": 4,
+            "right": 4
+          }
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 26000,
+          "points": 7,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 4
+          }
+        },
+        {
+          "type": "progressive-image",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 20000,
+          "points": 7,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "revealDurationMs": 11
+          }
+        },
+        {
+          "type": "heat-map",
+          "payloadSchemaVersion": 2,
+          "timeLimitMs": 18000,
+          "points": 7,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "width": 1859,
+            "height": 968
+          }
+        },
+        {
+          "type": "estimation",
+          "payloadSchemaVersion": 2,
+          "timeLimitMs": 22000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "min": 10,
+            "max": 60,
+            "step": 1,
+            "initialValue": 30,
+            "media": false
+          }
+        },
+        {
+          "type": "classification",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 22000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 5,
+            "categories": 2
+          }
+        },
+        {
+          "type": "anagram",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 30000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "tiles": 7
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 16000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "true-false",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 12000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {}
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 16000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 20000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "items": 3
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 20000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "true-false",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 12000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {}
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "timeLimitMs": 14000,
+          "points": 6,
+          "difficulty": "medium",
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-7997690f2d299584bbdbd7420f4ca07a",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "c64149a08c2fa9dc2193d1706902c08ccb6a8f871d190b40a7b0bb8b0b9eecbd",
+      "challengeVersionId": "sbr",
+      "questions": [
+        {
+          "id": "bank-eleccion-descuento",
+          "version": 1,
+          "contentHash": "4e5cdebc406b38a717300c4861bdf9d57a6951af1690d8735655e1f9c8537da6"
+        },
+        {
+          "id": "bank-intruso-medium",
+          "version": 1,
+          "contentHash": "4a4eb6a4d2750b1c321d91a00a7a782a1dd1e32ce292742f5f468c9178742940"
+        },
+        {
+          "id": "bank-emparejar-instrumentos",
+          "version": 1,
+          "contentHash": "ccf1f7dc9a337f90700c3dd8147422e7d7ac707c80c78c625b338e7fe3f850d7"
+        },
+        {
+          "id": "bank-ordenar-masa",
+          "version": 1,
+          "contentHash": "e4e8eee0040fe62377ea056fd7b93e336b8cccd7b85b3c351aa29c29c5c4c67a"
+        },
+        {
+          "id": "betavip-supervivencia-q3",
+          "version": 1,
+          "contentHash": "18f24bee5c3cf577384c100a3b5ad3479557b185f0c04ec24411f9258cdeecbd"
+        },
+        {
+          "id": "bank-mapa-medium",
+          "version": 1,
+          "contentHash": "932154aaf0441d183238d2a4fba5f7939865ca25a8652bc0c4e64e52e94ad115"
+        },
+        {
+          "id": "bank-estimar-angulos",
+          "version": 1,
+          "contentHash": "c593d3949ace49d78140bf8fb25a2f5072918f3cfe0d0e7dbb432b6d4d511692"
+        },
+        {
+          "id": "bank-clasificar-instrumentos",
+          "version": 1,
+          "contentHash": "605c9cc3bb94470f5d2ac694b6e669ac28c5e866f00d24231c046b909f43cda9"
+        },
+        {
+          "id": "bank-anagrama-ventana",
+          "version": 1,
+          "contentHash": "dc3a7159f998c2433b5d5a7826c7a67115a6eff717cf48f4c8a299ba87da6cd6"
+        },
+        {
+          "id": "betavip-supervivencia-q12",
+          "version": 1,
+          "contentHash": "3120cf0c9d0ed83e6093fa693f66cbe50d407d220789ab5285f7f51b5600e838"
+        },
+        {
+          "id": "bank-vf-sonido",
+          "version": 1,
+          "contentHash": "ad01390b51734e5806d847cb65835aecb6db8899d4e3a9ad07e3062eb9bd72dd"
+        },
+        {
+          "id": "flash-referencia-q1",
+          "version": 1,
+          "contentHash": "fc94b4bd6eccad1f9982c7f5335fe24f57fb47600dd48d73d42743295224672c"
+        },
+        {
+          "id": "bank-ordenar-ciclo-agua",
+          "version": 1,
+          "contentHash": "0387e466140c8c15867605dd582fb7eeb5fa46c1993c1f056181539b326cabba"
+        },
+        {
+          "id": "bank-eleccion-raiz",
+          "version": 1,
+          "contentHash": "9083d4c414186f8febaa6fc9d9a8dcdb7a420d1e8132c066fb1ef1f0ed25022c"
+        },
+        {
+          "id": "betavip-supervivencia-q4",
+          "version": 1,
+          "contentHash": "a120e0c6677b3c931c0aa4b38bf296ecca3750657adc401f157a5631b37edd02"
+        },
+        {
+          "id": "flash-referencia-q14",
+          "version": 1,
+          "contentHash": "c19c0485c3d67b37accf6d5dd79a598f33ca610e5730df86a04d8c3f98b4f3e9"
+        }
+      ]
+    },
+    "definitionHash": "2ea08a6c0815551261a38ac5057da38a2fd9a741eb4623cef0695afee9ca9b27"
+  },
+  {
+    "template": {
+      "challengeVersionId": "spain-survival-definition",
+      "title": "España",
+      "mode": "survival",
+      "globalTimeLimitMs": null,
+      "modeConfig": {
+        "lives": 3
+      },
+      "questions": [
+        {
+          "type": "true-false",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 12000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {}
+        },
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 20000,
+          "points": 4,
+          "modeConfig": {},
+          "mechanics": {
+            "left": 3,
+            "right": 3
+          }
+        },
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 20000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "left": 3,
+            "right": 3
+          }
+        },
+        {
+          "type": "progressive-clues",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 25000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "clues": 3,
+            "penalty": 30
+          }
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 22000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "items": 4
+          }
+        },
+        {
+          "type": "progressive-image",
+          "payloadSchemaVersion": 2,
+          "difficulty": "medium",
+          "timeLimitMs": 25000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "revealDurationMs": 7000
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 14000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "heat-map",
+          "payloadSchemaVersion": 2,
+          "difficulty": "medium",
+          "timeLimitMs": 16000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "width": 1474.6973,
+            "height": 655.01733
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 14000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 20000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "left": 4,
+            "right": 4
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 14000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "estimation",
+          "payloadSchemaVersion": 2,
+          "difficulty": "medium",
+          "timeLimitMs": 16000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "min": 300000,
+            "max": 700000,
+            "step": 10000,
+            "initialValue": 450000,
+            "media": false
+          }
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 22000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "items": 4
+          }
+        },
+        {
+          "type": "progressive-image",
+          "payloadSchemaVersion": 2,
+          "difficulty": "medium",
+          "timeLimitMs": 25000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "revealDurationMs": 7000
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 30000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": true
+          }
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 22000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "items": 4
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 14000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 30000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 14000,
+          "points": 5,
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        },
+        {
+          "type": "multiple-choice",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 14000,
+          "points": 6,
+          "modeConfig": {},
+          "mechanics": {
+            "options": 4,
+            "media": false,
+            "visual": false
+          }
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-1169de9927ffd84f92a773336956c0da",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "e00c2d60ec07014d75ae46c510e7d1c6ddef498d9111b9e9a2a71e506c40912c",
+      "challengeVersionId": "spain-survival-definition",
+      "questions": [
+        {
+          "id": "bank-vf-sonido",
+          "version": 1,
+          "contentHash": "ad01390b51734e5806d847cb65835aecb6db8899d4e3a9ad07e3062eb9bd72dd"
+        },
+        {
+          "id": "bank-emparejar-instrumentos",
+          "version": 1,
+          "contentHash": "ccf1f7dc9a337f90700c3dd8147422e7d7ac707c80c78c625b338e7fe3f850d7"
+        },
+        {
+          "id": "betavip-supervivencia-q17",
+          "version": 1,
+          "contentHash": "5395c5df7bc2af0296b980fd2ebef97448018f0bfb594ee8192cb9761fc062c0"
+        },
+        {
+          "id": "bank-pistas-medium",
+          "version": 1,
+          "contentHash": "11d4c4c3b14d02fff85e55b60ad9eadfe63faefbe65402bc339584ca585a351e"
+        },
+        {
+          "id": "bank-ordenar-masa",
+          "version": 1,
+          "contentHash": "e4e8eee0040fe62377ea056fd7b93e336b8cccd7b85b3c351aa29c29c5c4c67a"
+        },
+        {
+          "id": "flash-referencia-q5",
+          "version": 1,
+          "contentHash": "5e9e643a36383ff5b3800d26ccc786a9fff8a0d46e39e0e3b4e7f8266ce112db"
+        },
+        {
+          "id": "bank-eleccion-descuento",
+          "version": 1,
+          "contentHash": "4e5cdebc406b38a717300c4861bdf9d57a6951af1690d8735655e1f9c8537da6"
+        },
+        {
+          "id": "bank-mapa-medium",
+          "version": 1,
+          "contentHash": "932154aaf0441d183238d2a4fba5f7939865ca25a8652bc0c4e64e52e94ad115"
+        },
+        {
+          "id": "flash-referencia-q1",
+          "version": 1,
+          "contentHash": "fc94b4bd6eccad1f9982c7f5335fe24f57fb47600dd48d73d42743295224672c"
+        },
+        {
+          "id": "bank-emparejar-materiales",
+          "version": 1,
+          "contentHash": "ace03f456e5d5c4c68b5bcd7beadcd9dd99b7e6a639e49a7da3dd47380734588"
+        },
+        {
+          "id": "betavip-supervivencia-q12",
+          "version": 1,
+          "contentHash": "3120cf0c9d0ed83e6093fa693f66cbe50d407d220789ab5285f7f51b5600e838"
+        },
+        {
+          "id": "bank-estimar-angulos",
+          "version": 1,
+          "contentHash": "c593d3949ace49d78140bf8fb25a2f5072918f3cfe0d0e7dbb432b6d4d511692"
+        },
+        {
+          "id": "bank-ordenar-ciclo-agua",
+          "version": 1,
+          "contentHash": "0387e466140c8c15867605dd582fb7eeb5fa46c1993c1f056181539b326cabba"
+        },
+        {
+          "id": "bank-imagen-cuadrado",
+          "version": 1,
+          "contentHash": "45cb394ae2c70cc90e0749a2a985cfc044e058a9520c3230a225306e91c382af"
+        },
+        {
+          "id": "bank-eleccion-raiz",
+          "version": 1,
+          "contentHash": "9083d4c414186f8febaa6fc9d9a8dcdb7a420d1e8132c066fb1ef1f0ed25022c"
+        },
+        {
+          "id": "betavip-supervivencia-q20",
+          "version": 1,
+          "contentHash": "8ea2502c5adf58d732ca3bacf0ed717e6c9c851cf50e6197778f92a220e46c1b"
+        },
+        {
+          "id": "flash-referencia-q16",
+          "version": 1,
+          "contentHash": "667acb9f1d7e33aa8d8d82b7a36082d1c8b19f687068afde65e422caac054da1"
+        },
+        {
+          "id": "flash-referencia-q14",
+          "version": 1,
+          "contentHash": "c19c0485c3d67b37accf6d5dd79a598f33ca610e5730df86a04d8c3f98b4f3e9"
+        },
+        {
+          "id": "betavip-supervivencia-q2",
+          "version": 1,
+          "contentHash": "9509e0d2ba8e94ca1bc20d3a7c2614d7d34cdd93c4c133ca810037f9c5647eb7"
+        },
+        {
+          "id": "betavip-supervivencia-q19",
+          "version": 1,
+          "contentHash": "f7f0d9191bc0809ce38ab67eb149ad9d17a0bf259c0983bafdc05a5169696967"
+        }
+      ]
+    },
+    "definitionHash": "fb236c5f73e7ed0d080dc4cf99c9e385fb8f4b48c5d2f2c75c85d346cbc51a14"
+  },
+  {
+    "template": {
+      "challengeVersionId": "pyramid-abrahamic-definition",
+      "title": "La Biblia",
+      "mode": "pyramid",
+      "globalTimeLimitMs": null,
+      "modeConfig": {
+        "attemptSchemaVersion": 1
+      },
+      "questions": [
+        {
+          "type": "matching",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 18000,
+          "points": 13,
+          "modeConfig": {
+            "levelId": "entrance",
+            "label": "Entrada",
+            "briefing": {
+              "title": "Relaciona las figuras",
+              "format": "Emparejamiento",
+              "description": "Asocia cada personaje bíblico con una referencia ampliamente reconocida."
+            }
+          },
+          "mechanics": {
+            "left": 4,
+            "right": 4
+          }
+        },
+        {
+          "type": "progressive-clues",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 35000,
+          "points": 14,
+          "modeConfig": {
+            "levelId": "patriarch",
+            "label": "Adivinanza",
+            "briefing": {
+              "title": "Sigue las pistas",
+              "format": "Adivinanza por pistas",
+              "description": "Identifica una figura bíblica"
+            }
+          },
+          "mechanics": {
+            "clues": 4,
+            "penalty": 14
+          }
+        },
+        {
+          "type": "ordering",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 30000,
+          "points": 14,
+          "modeConfig": {
+            "levelId": "torah",
+            "label": "Secuencia",
+            "briefing": {
+              "title": "Ordena los libros",
+              "format": "Ordenación",
+              "description": "Reconstruye el orden tradicional de los siguientes libros"
+            }
+          },
+          "mechanics": {
+            "items": 5
+          }
+        },
+        {
+          "type": "mini-wordle",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 60000,
+          "points": 14,
+          "modeConfig": {
+            "levelId": "name",
+            "label": "Nombre",
+            "briefing": {
+              "title": "Descifra el nombre",
+              "format": "Mini-Wordle",
+              "description": "Encuentra un personaje bíblico de cinco letras antes de agotar los intentos."
+            }
+          },
+          "mechanics": {
+            "wordLength": 5,
+            "maxAttempts": 6
+          }
+        },
+        {
+          "type": "word-search",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 60000,
+          "points": 15,
+          "modeConfig": {
+            "levelId": "search",
+            "label": "Búsqueda",
+            "briefing": {
+              "title": "Busca los personajes",
+              "format": "Sopa de letras",
+              "description": "Localiza los seis nombres ocultos en la cuadrícula."
+            }
+          },
+          "mechanics": {
+            "rows": 8,
+            "columns": 8,
+            "targets": 6,
+            "wordLengths": [5, 5, 5, 5, 5, 5]
+          }
+        },
+        {
+          "type": "classification",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 50000,
+          "points": 15,
+          "modeConfig": {
+            "levelId": "traditions",
+            "label": "Tradiciones",
+            "briefing": {
+              "title": "Traza el mapa",
+              "format": "Clasificación",
+              "description": "Distingue los elementos asociados principalmente a cada tradición."
+            }
+          },
+          "mechanics": {
+            "items": 9,
+            "categories": 3
+          }
+        },
+        {
+          "type": "word-hashtag",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 45000,
+          "points": 15,
+          "modeConfig": {
+            "levelId": "summit",
+            "label": "Cima",
+            "briefing": {
+              "title": "Conquista la cima",
+              "format": "Hashtag de palabras",
+              "description": "Completa cuatro referencias cruzadas con el menor número de movimientos."
+            }
+          },
+          "mechanics": {
+            "rows": 5,
+            "columns": 5,
+            "maxMoves": 7
+          }
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-54ae3b3fbdb25ea1e0a10377a1c077aa",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "6cea7990fcc6fe44e05e82492ec765e246b81fa545937f9f4412db3bb927a38f",
+      "challengeVersionId": "pyramid-abrahamic-definition",
+      "questions": [
+        {
+          "id": "bank-emparejar-instrumentos",
+          "version": 1,
+          "contentHash": "ccf1f7dc9a337f90700c3dd8147422e7d7ac707c80c78c625b338e7fe3f850d7"
+        },
+        {
+          "id": "bank-pistas-medium",
+          "version": 1,
+          "contentHash": "11d4c4c3b14d02fff85e55b60ad9eadfe63faefbe65402bc339584ca585a351e"
+        },
+        {
+          "id": "bank-ordenar-ciclo-agua",
+          "version": 1,
+          "contentHash": "0387e466140c8c15867605dd582fb7eeb5fa46c1993c1f056181539b326cabba"
+        },
+        {
+          "id": "bank-wordle-playa",
+          "version": 1,
+          "contentHash": "1ab9185ef499e2297948611613e14b7abd40a83d152344074b6fed799f08490b"
+        },
+        {
+          "id": "bank-sopa-2",
+          "version": 1,
+          "contentHash": "a05a039321bb918918ac9e7682897385dee019904d49252067a854b76b91ffb6"
+        },
+        {
+          "id": "bank-clasificar-instrumentos",
+          "version": 1,
+          "contentHash": "605c9cc3bb94470f5d2ac694b6e669ac28c5e866f00d24231c046b909f43cda9"
+        },
+        {
+          "id": "betavip-antiguedad-q7",
+          "version": 1,
+          "contentHash": "d3412ac1ea72f6d19bc37e518cf9de877a5690de068cdb15b37a056bda790ce7"
+        }
+      ]
+    },
+    "definitionHash": "2d4bf4aa3adaa41f4149dfd252e7fead8ab6a632e3d783aeb4032e864d9a7a8b"
+  },
+  {
+    "template": {
+      "challengeVersionId": "animals-alphabet-definition",
+      "title": "Reino de animales",
+      "mode": "alphabet",
+      "globalTimeLimitMs": 150000,
+      "modeConfig": {},
+      "questions": [
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 7,
+          "modeConfig": {
+            "letter": "A"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 7,
+          "modeConfig": {
+            "letter": "B"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 7,
+          "modeConfig": {
+            "letter": "C"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 7,
+          "modeConfig": {
+            "letter": "D"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "E"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "F"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "I"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "J"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "L"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "M"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "O"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "P"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "R"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "S"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "T"
+          },
+          "mechanics": {}
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 120000,
+          "points": 6,
+          "modeConfig": {
+            "letter": "Z"
+          },
+          "mechanics": {}
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-24144662f6819c73801f76d6423ee42c",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "861796e49524602be71c4755505c104e074073e42001cf410193b739889e3327",
+      "templateHash": "de78f427cc99849ee0bb4aca10bfb23c17a74e4bdb22fddc94bfd680ccf1f54f",
+      "challengeVersionId": "animals-alphabet-definition",
+      "questions": [
+        {
+          "id": "bank-alfabeto-a-medium",
+          "version": 1,
+          "contentHash": "1834e117c165e9c8587c6d538b4be4707e0ffda44badefba723b2953f559a28c"
+        },
+        {
+          "id": "bank-alfabeto-b-medium",
+          "version": 1,
+          "contentHash": "04e3c6c2cb0d86a073b2abc282db53a7e541d061cf49a95995201291f7f45a2b"
+        },
+        {
+          "id": "bank-alfabeto-c-medium",
+          "version": 1,
+          "contentHash": "0d722caf3a1233a3c1ec15af5d58f9aa466ef1179c1ae0b72648c8e4adf1915c"
+        },
+        {
+          "id": "bank-alfabeto-d-medium",
+          "version": 1,
+          "contentHash": "1285e42addb5cd27afc8dd4f497583d3cc51ac2d42a6087788bc0e49f5f6ef0d"
+        },
+        {
+          "id": "bank-alfabeto-e-medium",
+          "version": 1,
+          "contentHash": "08e0ca9fd4061a45bd1b9d41f02159cae84d914770f01c4778f641c2cfde550d"
+        },
+        {
+          "id": "bank-alfabeto-f-medium",
+          "version": 1,
+          "contentHash": "7dde9fc489529a72c55064aaec9762cb44e0ecd96d308b02b717b710e5c504b3"
+        },
+        {
+          "id": "bank-alfabeto-i-medium",
+          "version": 1,
+          "contentHash": "c33dc85cdea470e58bc97245470c5f5a4a59ebed3d41cdf9338583f3e622515f"
+        },
+        {
+          "id": "bank-alfabeto-j-medium",
+          "version": 1,
+          "contentHash": "b89dc7568ee1889bc58c780593225386f2f3a6641f1918a41b8e5ffd0299db66"
+        },
+        {
+          "id": "bank-alfabeto-l-medium",
+          "version": 1,
+          "contentHash": "3fad43de9cd36d3a95248b07ce0665d2f57ea81c8c108313a69e4acb53969fda"
+        },
+        {
+          "id": "bank-alfabeto-m-medium",
+          "version": 1,
+          "contentHash": "2079c51cad1da8e2b6c1d1ffb2512ba3b1078056354365dbd7ac6fd0e9d82b61"
+        },
+        {
+          "id": "bank-alfabeto-o-medium",
+          "version": 1,
+          "contentHash": "d4dc2564ab0df58c0178f566e38b03c351a18b1b3a2332e1ee7fd54b77a062da"
+        },
+        {
+          "id": "bank-alfabeto-p-medium",
+          "version": 1,
+          "contentHash": "ab3928bca862f9a6626b48d1d84c1aae78115a76ca42c673c9e818dbb57f97a9"
+        },
+        {
+          "id": "bank-alfabeto-r-medium",
+          "version": 1,
+          "contentHash": "a3fbe4d7c25caddae1261f3c0ebcf58777e35b004a97fc9dd2e4393ce44ed9a1"
+        },
+        {
+          "id": "bank-alfabeto-s-medium",
+          "version": 1,
+          "contentHash": "52904d56d732f12e186c3d4494ce2db8d8c6fd9809434c4edb060cc80fc6feca"
+        },
+        {
+          "id": "bank-alfabeto-t-medium",
+          "version": 1,
+          "contentHash": "dc09f38ee6fedd699352013645ea68eca1fe204c699610db5328f73a37c45dc8"
+        },
+        {
+          "id": "bank-alfabeto-z-medium",
+          "version": 1,
+          "contentHash": "88c9721d53abf5cd8fbe2278fb6dc4d84abb9486d7b5f447390976114712ecaf"
+        }
+      ]
+    },
+    "definitionHash": "a2305209c823a62287b6f07c987ac2fc293ea91fb13a1d42b9454482f14e56c1"
+  },
+  {
+    "template": {
+      "challengeVersionId": "bank-test:betavip-antiguedad-q5:flash",
+      "title": "Prueba de contrato",
+      "mode": "flash",
+      "globalTimeLimitMs": null,
+      "modeConfig": {},
+      "questions": [
+        {
+          "type": "word-search",
+          "payloadSchemaVersion": 1,
+          "difficulty": "medium",
+          "timeLimitMs": 60000,
+          "points": 50,
+          "modeConfig": {},
+          "mechanics": {
+            "rows": 10,
+            "columns": 10,
+            "targets": 5,
+            "wordLengths": [5, 6, 7, 8, 10]
+          }
+        },
+        {
+          "type": "short-text",
+          "payloadSchemaVersion": 1,
+          "difficulty": "easy",
+          "timeLimitMs": 60000,
+          "points": 50,
+          "modeConfig": {},
+          "mechanics": {}
+        }
+      ]
+    },
+    "recipe": {
+      "sessionId": "rehearsal-d15bffb820e3d2ac8ce6207930ed68f7",
+      "seed": "v1-baseline",
+      "generatorVersion": 1,
+      "bankRevision": "cca1360763671d16ea1986aa26734854228127802c32212675fcc73f6f38b91c",
+      "templateHash": "3f010960862fc8e702931bee9d941fbb5709c2e8ed22a65a15ecd5fbfb69e6ba",
+      "challengeVersionId": "bank-test:betavip-antiguedad-q5:flash",
+      "questions": [
+        {
+          "id": "betavip-antiguedad-q5",
+          "version": 1,
+          "contentHash": "6c85fbc7610c3620279337cacf9f8c1192533f44c0432202ec286a73cefd8c58"
+        },
+        {
+          "id": "bank-alfabeto-a-2",
+          "version": 1,
+          "contentHash": "f2192f3ba4d8b08ce23881881ddf335f73083fb0d8be8aba23ba287016316d45"
+        }
+      ]
+    },
+    "definitionHash": "f6c82d748f6a1e6e52a055615fef0b1c3f61ce36f34bdbf66040634c7c2e9d53"
+  }
+]

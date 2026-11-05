@@ -1,0 +1,338 @@
+[
+  {
+    "id": "betavip-antiguedad-q2",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué objeto describen estas pistas?",
+      "clues": [
+        "Es un instrumento musical.",
+        "Se toca con los dedos.",
+        "Suele tener seis cuerdas."
+      ],
+      "cluePenalty": 20
+    },
+    "solutionPayload": {
+      "correctAnswer": "guitarra",
+      "acceptedAnswers": ["guitarra"],
+      "explanation": "La guitarra es un instrumento musical de cuerda; sus cuerdas vibran al pulsarlas y habitualmente tiene seis."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 35000,
+    "familyId": "progressive-clues-577310512452b39514dd"
+  },
+  {
+    "id": "betavip-supervivencia-q10",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué objeto describen estas pistas?",
+      "clues": ["Ayuda a orientarse.", "Puede llevar una aguja.", "Señala el norte."],
+      "cluePenalty": 30
+    },
+    "solutionPayload": {
+      "correctAnswer": "brújula",
+      "acceptedAnswers": ["brújula"],
+      "explanation": "La brújula orienta mediante una aguja imantada que se alinea aproximadamente con el campo magnético terrestre e indica el norte."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 25000,
+    "familyId": "progressive-clues-ff436ad15054dd4d6880"
+  },
+  {
+    "id": "betavip-supervivencia-q14",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué objeto describen estas pistas?",
+      "clues": [
+        "Sirve para medir.",
+        "Puede utilizarse en casa o en un laboratorio.",
+        "Indica la temperatura."
+      ],
+      "cluePenalty": 30
+    },
+    "solutionPayload": {
+      "correctAnswer": "termómetro",
+      "acceptedAnswers": ["termómetro"],
+      "explanation": "El termómetro mide temperatura; esa es la magnitud que une las pistas sobre su uso doméstico y de laboratorio."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 25000,
+    "familyId": "progressive-clues-c1a992035b9eb4f795bb"
+  },
+  {
+    "id": "betavip-supervivencia-q18",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "¿Qué objeto describen estas pistas?",
+      "clues": ["Sirve para desplazarse.", "Tiene dos ruedas.", "Se mueve al pedalear."],
+      "cluePenalty": 30
+    },
+    "solutionPayload": {
+      "correctAnswer": "bicicleta",
+      "acceptedAnswers": ["bicicleta", "bici"],
+      "explanation": "Las dos ruedas y los pedales identifican la bicicleta: el pedaleo transmite movimiento a una rueda para desplazarse."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 25000,
+    "familyId": "progressive-clues-cf05668ac3be6c8edd8e"
+  },
+  {
+    "id": "bank-pistas-medium",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-medium",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Puede separar colores.",
+        "Desvía la luz al atravesarlo.",
+        "Un ejemplo tiene dos bases triangulares y tres caras laterales."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "prisma",
+      "acceptedAnswers": ["prisma"],
+      "explanation": "Un prisma transparente refracta la luz. Como la desviación depende de la longitud de onda, puede separar la luz blanca en colores; el prisma triangular tiene las caras descritas."
+    }
+  },
+  {
+    "id": "bank-pistas-hard",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-hard",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Conservo rastros de una escritura anterior.",
+        "Mi soporte se reutilizó después de borrar lo escrito.",
+        "Soy un manuscrito cuyo texto antiguo puede recuperarse."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "palimpsesto",
+      "acceptedAnswers": ["palimpsesto"],
+      "explanation": "Un palimpsesto es un manuscrito reutilizado: se borró una escritura y se escribió otra encima. Los restos de la primera permiten identificarlo."
+    }
+  },
+  {
+    "id": "bank-pistas-caleidoscopio",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-caleidoscopio",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Mis imágenes cambian al moverme, aunque mis piezas sean las mismas.",
+        "Varios espejos multiplican pequeñas piezas de colores y crean figuras simétricas.",
+        "Soy un tubo por el que se mira mientras se gira para observar esos patrones."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "caleidoscopio",
+      "acceptedAnswers": ["caleidoscopio", "calidoscopio"],
+      "explanation": "El caleidoscopio combina espejos y pequeñas piezas de colores. Las reflexiones producen figuras simétricas; al girar el tubo se redistribuyen las piezas y cambia la imagen observada."
+    }
+  },
+  {
+    "id": "bank-pistas-sismografo",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-sismografo",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Convierto movimientos que a veces pasan inadvertidos en un registro que puede estudiarse.",
+        "Observo las vibraciones del suelo, incluidas las que producen los terremotos.",
+        "El instrumento que soy produce un registro llamado sismograma."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "sismógrafo",
+      "acceptedAnswers": ["sismógrafo"],
+      "explanation": "El sismógrafo registra las oscilaciones del terreno. Su registro, el sismograma, permite estudiar cómo varían esas vibraciones con el tiempo; no se limita a indicar que ha ocurrido un terremoto."
+    }
+  },
+  {
+    "id": "bank-pistas-telegrafo",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-telegrafo",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Transmito mensajes mediante señales codificadas en lugar de transportar la voz.",
+        "En mi versión eléctrica, las señales pueden viajar por un cable hasta otra estación.",
+        "Soy el aparato de comunicación asociado al envío de puntos y rayas del código Morse."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "telégrafo",
+      "acceptedAnswers": ["telégrafo", "telégrafo eléctrico"],
+      "explanation": "El telégrafo comunica mensajes mediante señales codificadas. En la telegrafía eléctrica asociada al código Morse, se distinguen impulsos cortos y largos; esos puntos y rayas representan letras y otros signos."
+    }
+  },
+  {
+    "id": "bank-pistas-invernadero",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-invernadero",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Permito modificar las condiciones del ambiente en el que crecen seres vivos.",
+        "Mi cubierta deja pasar luz y protege los cultivos del ambiente exterior.",
+        "Soy un recinto de vidrio o plástico utilizado para cultivar plantas."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "invernadero",
+      "acceptedAnswers": ["invernadero"],
+      "explanation": "El invernadero protege plantas dentro de un recinto con cubierta transparente o translúcida. Permite aprovechar la luz y regular condiciones como la temperatura o la ventilación para el cultivo."
+    }
+  },
+  {
+    "id": "bank-pistas-bumeran",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-bumeran",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Mi vuelo depende del giro que llevo y de cómo atravieso el aire.",
+        "Mi forma tradicional tiene dos brazos en ángulo y se lanza con la mano.",
+        "En mis variantes de retorno, una trayectoria curva puede llevarme de vuelta al lanzador."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "bumerán",
+      "acceptedAnswers": ["bumerán", "boomerang"],
+      "explanation": "El bumerán se lanza con giro y su forma influye en la trayectoria. Algunas variantes pueden regresar hacia el punto de lanzamiento; no todos los bumeranes están diseñados para retornar. También se admite la grafía boomerang."
+    }
+  },
+  {
+    "id": "bank-pistas-anastilosis",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-anastilosis",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Recupero una disposición antigua reuniendo elementos que habían quedado separados.",
+        "En la conservación arquitectónica, trabajo con piezas originales conservadas de un monumento.",
+        "Soy la técnica de volver a montar elementos originales desmembrados, como los bloques de una columna caída."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "anastilosis",
+      "acceptedAnswers": ["anastilosis"],
+      "explanation": "La anastilosis recompone una estructura con elementos originales que se habían separado. Su rasgo distintivo es reunir las piezas conservadas en su disposición documentada; no consiste en fabricar una réplica nueva del monumento."
+    }
+  },
+  {
+    "id": "bank-pistas-ostracon",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-ostracon",
+    "publicPayload": {
+      "question": "Identifica el término descrito por las pistas.",
+      "clues": [
+        "Una rotura pudo darme una segunda vida como portador de palabras.",
+        "En la Antigüedad podía sustituir a un soporte de escritura más costoso.",
+        "Soy un fragmento de un recipiente cerámico reutilizado para escribir sobre él."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "ostracón",
+      "acceptedAnswers": ["ostracón"],
+      "explanation": "Un ostracón aprovecha un trozo de cerámica como soporte para escribir. Un recipiente roto podía reutilizarse para cartas, cuentas u otros textos; el fragmento conserva así información escrita además de su uso material anterior."
+    }
+  },
+  {
+    "id": "bank-pistas-filosofia-socrates",
+    "version": 1,
+    "type": "progressive-clues",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-pistas-filosofia-socrates",
+    "publicPayload": {
+      "category": "Filosofía",
+      "tags": {
+        "domains": ["philosophy", "history"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "comprehension"],
+        "formatSkills": ["recall", "interpretation"],
+        "lifeSkills": []
+      },
+      "question": "¿Qué filósofo describen estas pistas?",
+      "clues": [
+        "Vivió en Atenas durante el siglo V a. C.",
+        "No dejó obras escritas; lo conocemos principalmente mediante testimonios como los de Platón y Jenofonte.",
+        "Fue juzgado y condenado a muerte en Atenas en el año 399 a. C."
+      ],
+      "cluePenalty": 25
+    },
+    "solutionPayload": {
+      "correctAnswer": "Sócrates",
+      "acceptedAnswers": ["Sócrates"],
+      "explanation": "Sócrates vivió en Atenas en el siglo V a. C. y no dejó obras escritas; Platón y Jenofonte son fuentes principales para conocerlo. Su juicio y condena a muerte tuvieron lugar en Atenas en 399 a. C., lo que concreta la identificación de la última pista."
+    }
+  }
+]

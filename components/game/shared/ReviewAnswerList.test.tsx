@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 import { getChallengeById, questionsById } from "@/test-utils/mockGameplay";
 import {
   buildReviewAnswerEntries,
@@ -9,6 +10,34 @@ import {
 import type { AnswerResult } from "@/types/gameplay";
 
 describe("ReviewAnswerList", () => {
+  it.each(["tabarnia-flash-01", "tabarnia-challenge-03"])(
+    "builds question cards for the legacy demo %s without losing unanswered entries",
+    (challengeId) => {
+      const challenge = getChallengeById(challengeId);
+      if (challenge?.mode !== "flash" && challenge?.mode !== "survival")
+        throw new Error("Expected Flash or Survival challenge");
+      const question = challenge.questions[0];
+      const result: AnswerResult = {
+        questionId: question.id,
+        answer: null,
+        status: "unanswered",
+        isCorrect: false,
+        points: 0,
+        timeUsed: 4,
+      };
+      const entries = buildReviewAnswerEntries(challenge, [result]);
+      expect(entries).toHaveLength(challenge.questions.length);
+      expect(entries[0]).toMatchObject({
+        title: question.question,
+        subtitle: `${question.type === "multiple-choice" ? "Elección" : "V/F"} · ${question.category}`,
+        showFullTitleOnExpand: true,
+        result,
+      });
+      expect(entries[1].result).toBeUndefined();
+      expect(entries[1].showFullTitleOnExpand).toBe(true);
+    },
+  );
+
   it("normalizes every challenge question and marks unreachable pyramid levels as locked", () => {
     const challenge = getChallengeById("tabarnia-challenge-05");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
@@ -27,6 +56,95 @@ describe("ReviewAnswerList", () => {
     expect(entries[0].result).toEqual(firstResult);
     expect(entries[1].status).toBe("locked");
     expect(entries[1].lockedMessage).toContain("No alcanzado");
+  });
+
+  it("labels a saved timeout board as a draft while keeping the scored result unanswered", () => {
+    const question = questionsById["pyramid-connect-pairs-trap"];
+    if (question.type !== "connect-pairs") throw new Error("Expected Connect Pairs question");
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "04",
+            status: "unanswered",
+            statusLabel: "Sin responder",
+            result: {
+              questionId: question.id,
+              answer: null,
+              status: "unanswered",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 46.3,
+              reviewState: { type: "connect-pairs", paths: { circle: [0, 1, 2] } },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain("reviewAnswer_partial");
+    expect(markup).toContain(">Borrador<");
+    expect(markup).toContain("Borrador guardado · sin envío final");
+    expect(markup).toContain("0 puntos");
+  });
+
+  it("keeps the no-answer label when a Connect Pairs result has no saved draft", () => {
+    const question = questionsById["pyramid-connect-pairs-trap"];
+    if (question.type !== "connect-pairs") throw new Error("Expected Connect Pairs question");
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "04",
+            status: "unanswered",
+            statusLabel: "Sin responder",
+            result: {
+              questionId: question.id,
+              answer: null,
+              status: "unanswered",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 46.3,
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain(">Sin responder<");
+    expect(markup).not.toContain(">Borrador<");
+  });
+
+  it("does not relabel a saved Queens draft as a Connect Pairs draft", () => {
+    const question = questionsById["pyramid-summit-queens"];
+    if (question.type !== "queens") throw new Error("Expected Queens question");
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "07",
+            result: {
+              questionId: question.id,
+              answer: null,
+              status: "unanswered",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 46.3,
+              reviewState: { type: "queens", queens: [0] },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain(">Parcial<");
+    expect(markup).not.toContain(">Borrador<");
   });
 
   it("uses the common history card structure for statuses and long answers", () => {
@@ -94,6 +212,41 @@ describe("ReviewAnswerList", () => {
 
     expect(markup).toContain("Punto sobre la imagen");
     expect(markup).not.toContain(">Sin respuesta<");
+  });
+
+  it("shows a zero-proximity estimate as incorrect with its distance and zero points", () => {
+    const question = QUESTION_FORMAT_CATALOG.estimation.examples[0].question;
+    const answer = question.correctAnswer - question.tolerance;
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "07",
+            result: {
+              questionId: question.id,
+              answer,
+              status: "incorrect",
+              isCorrect: false,
+              points: 0,
+              timeUsed: 6,
+              details: {
+                type: "estimation",
+                difference: question.tolerance,
+                proximity: 0,
+              },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain("reviewAnswer_incorrect");
+    expect(markup).toContain("Incorrecta");
+    expect(markup).toContain("Cercanía: 0%");
+    expect(markup).toContain("0 puntos");
+    expect(markup).toContain(`${question.tolerance} ${question.unit}`);
   });
 
   it("flattens narrative questions without including scene steps", () => {

@@ -1,8 +1,8 @@
 # Fronteras y arquitectura de la aplicación
 
-> Estado: vigente. Arquitectura de transición con S01–S14, D08a/D08b, E01–E06, F08, F16, F18, F19 y E10 implementadas sobre Supabase local; el
-> resto del producto migrándose progresivamente desde el prototipo mock. Complementa la guía específica de [Server y Client Components](architecture/server-client-architecture.md)
-> y no prescribe un endpoint por cada caso de uso.
+> Estado: vigente. Fronteras de la implementación actual; las capacidades y los límites por entorno
+> están centralizados en [estado actual](status.md). Complementa la guía de
+> [Server y Client Components](architecture/server-client-architecture.md).
 
 ## 1. Arquitectura propuesta
 
@@ -91,6 +91,20 @@ al superadmin, y los tres comandos Flash de borrador/publicación aplican valida
 idempotencia, concurrencia optimista y auditoría. El contenido publicado queda inmutable; calendario,
 intentos y puntos siguen siendo responsabilidades de slices posteriores.
 
+### Medición automática por temporada
+
+La medición común sigue las mismas fronteras: `components/product/Measurement.client.tsx` y
+`features/product/transport.ts` envían seis señales a `/api/product/events`; los casos de uso y
+los adaptadores llaman a RPC autorizadas. Las partidas oficiales proceden de intentos persistidos,
+y el disfrute usa un registro independiente con revisiones. La captura de navegación tiene cuota
+propia, un único reintento en memoria y posible descarte; no forma parte de una transacción del juego.
+
+La consulta superadmin combina las fuentes privadas; `lib/seasonMeasurement.ts` calcula el informe
+y los CSV actuales. Los criterios de éxito de un estudio y su cohorte externa se evalúan después,
+sin configurar la captura ni bloquear temporadas. La [guía de medición](product-measurement.md)
+centraliza fórmulas, ventanas, permisos y límites de reproducibilidad; las migraciones experimentales
+anteriores y su retirada en la revisión `20261025120000` permanecen en Git; la inicial vigente crea directamente el modelo actual.
+
 ## 2. Responsabilidades por capa
 
 ### 2.1 UI y presentación
@@ -120,10 +134,12 @@ si no necesitan interacción.
 
 ### Sesiones competitivas en el navegador
 
-Las fachadas `useServerFlashSession`, `useServerNarrativeSession` y
-`useServerAlphabetSession` conservan los contratos de las pantallas y se suscriben al mismo
-núcleo en `features/game/competitive/`. Flash, Supervivencia, Pirámide, Narrative y Alfabeto
-comparten este flujo; práctica y mock mantienen sus controladores actuales.
+Las fachadas de modo se suscriben al mismo núcleo en `features/game/competitive/`. Flash usa
+`useFlashGameSession` y Supervivencia `useSurvivalGameSession` para adaptar la sesión compartida a
+su vista y permitir inyectar autoridad remota o local; Pirámide también comparte su presentación
+entre autoridades. Narrativa y Alfabeto conservan sus adaptadores específicos. Los seis modos
+mantienen sus políticas y progresiones competitivas. Pirámide usa el mismo controlador y vista
+en todas sus entradas jugables; los controles didácticos de la biblioteca permanecen separados.
 
 ```text
 Pantalla → fachada del modo → useCompetitiveSession
@@ -131,21 +147,38 @@ Pantalla → fachada del modo → useCompetitiveSession
                                   ├── core/sessionReducer: snapshot único y commit(event)
                                   ├── core/commandExecutor: cola y comando pendiente original
                                   ├── core/attemptLifecycle: inicio, recuperación, preparación, activación, cierre
+                                  ├── core/commandRecoveryPolicy: clasificación y presupuesto de reintentos
                                   ├── core/advance: feedback y siguiente paso
                                   ├── modes: secuencia, presentación y cursor recuperado
                                   └── formats: comando, progreso y resultado normalizado
-                                          → attemptClient → Route Handler existente
+                                          → GameSessionProvider
+                                              → remote → attemptClient → Route Handler existente
 ```
 
 El motor actualiza el snapshot utilizado por las operaciones asíncronas y notifica a React
-mediante un único `commit(event)` y `useSyncExternalStore`. No hay una copia de `lockVersion`
+mediante un único `commit(event)` y `useSyncExternalStore`. No hay una copia de `revision`
 en cada modo o formato. El reducer deduplica resultados por interacción y guarda intento,
 interacción, deadlines recibidos, resultados, comando pendiente y error de lifecycle.
 
+`run`, `retry` y `takeOver` comparten `afterCommand`. Este coordinador conserva el origen de la
+operación y consulta el snapshot actual entre efectos: `step.after` puede ejecutar otros comandos.
+Las políticas puras de finalización por modo deciden si continuar, cerrar o reconciliar antes de
+cerrar; `finalizeGlobalClock` conserva la intención de cierre y espera al comando pendiente.
+Alfabeto y Contrarreloj mantienen sus diferencias de timeout y recuperación. Los otros cuatro
+modos tienen una política neutra de cierre global; su progresión permanece en las políticas existentes.
+
+La clasificación común de fallos y el cálculo de esperas viven en `commandRecoveryPolicy`.
+El motor conserva los efectos, contadores y temporizadores; el proveedor sigue normalizando el
+transporte y `formatFailure` conserva el feedback de formatos. La confirmación de abandono
+permanece dentro del motor. Estas extracciones no añaden otro almacén ni cambian contratos HTTP.
+
 La cola resuelve la versión al enviar un comando nuevo. Desde ese momento conserva operación,
 intento/interacción, payload, versión y clave idempotente; un reintento reutiliza el comando
-completo. Los borradores Queens pasan por esa misma cola antes de validar o expirar. Los
-adaptadores se seleccionan mediante el catálogo de capacidades por modo/formato y producen
+completo. Queens y Conectar parejas agrupan checkpoints sin bloquear la edición. Una validación,
+respuesta completa o cierre por tiempo puede adelantar el checkpoint: la cola continúa desde esa
+operación definitiva y retira las tareas pendientes de la generación anterior. Cada ejecución es
+propietaria de sus reintentos y temporizadores; una respuesta tardía no modifica el nuevo estado.
+Los adaptadores se seleccionan mediante el catálogo de capacidades por modo/formato y producen
 progreso intermedio o una respuesta evaluada, sin gestionar recuperación ni cierre.
 
 Una respuesta aceptada inicia una espera de feedback; después, la política determina escena,
@@ -175,6 +208,34 @@ proyecto no se reinicia.
 El servidor de pruebas usa un `distDir` propio para convivir con `next dev`; elimina su salida y
 los paths de tipos generados al terminar. `E2E_INTEGRATION_SCENARIOS=s05,s07,s12` ejecuta también
 las integraciones de esos escenarios sobre el mismo stack antes de sus pruebas de navegador.
+
+### Evolución de Pirámide: contrato y proveedores
+
+El [contrato de referencia de Pirámide](pyramid-session-contract.md) y su matriz de pruebas
+caracterizan el recorrido competitivo antes de introducir un proveedor local. La fase 0 añadió
+documentación y pruebas; la [fase 1](game-session-providers.md) introduce el puerto y su adaptador
+remoto sobre ese mismo motor, sin cambiar las reglas, los endpoints ni el esquema.
+
+El motor consume `GameSessionProvider` y un estado inicial independiente de `GameRoomContext`.
+El hook competitivo compone el adaptador remoto, que traduce identidad/revisión, respuestas y
+fallos del transporte. El controlador conserva comandos pendientes, reintentos y transiciones;
+el backend conserva la autoridad sobre contenido, progreso, plazos, evaluación y cierre. La
+revisión terminal viaja separada de la actualización pública. Proveedor y reloj son inyectables.
+
+La [autoridad local](local-pyramid-session.md) comparte los resolutores y reglas puras con el
+servidor y contrasta sus 21 formatos mediante autenticación, HTTP y Supabase temporal. La fase 6,
+[completada el 2026-10-19](../archive/reports/qa-through-2026-10-21.md#cierre-de-la-fase-6--2026-10-19), consolidó todas las composiciones
+de Pirámide sobre `usePyramidGameSession` y `PyramidGameView`.
+`MockGameApp` recibe `LocalPyramidDefinition` para este modo y selecciona `LocalPyramidGameApp`;
+la composición competitiva selecciona el proveedor remoto. Las definiciones privadas se quedan
+en la composición local y el proveedor; la vista solo recibe metadatos y estado público.
+
+Cada ejecución local mantiene su autoridad en memoria. Replay, cambio de desafío o versión y
+recarga completa inician otra ejecución. Los diccionarios públicos de Mini-Wordle se cargan antes
+de construir el proveedor, sin iniciar el reloj. La confirmación terminal local puede emitir
+`onComplete` una sola vez por ejecución; la revisión no lo repite. Se retiraron el controlador,
+las presentaciones y el almacenamiento de partidas de Pirámide anteriores. La práctica didáctica
+de formatos sigue separada, y el ensayo continúa limitado a los identificadores demo autorizados.
 
 ### 2.2 Entrada al backend
 
@@ -289,9 +350,9 @@ El puerto expone operaciones del comportamiento —por ejemplo `createOrGetAttem
 de lecturas y escrituras desde la aplicación.
 
 La frontera concreta está en [attempt-commands.ts](../../application/ports/attempt-commands.ts):
-inicio/recuperación con sesión exclusiva, preparación, recepción, evaluación, cierre, invitaciones
-y correcciones. La [transferencia explícita](../decisions/adr/0006-explicit-attempt-control-transfer.md)
-está aprobada y pendiente de implementar; el comando permanece deshabilitado en el runtime.
+inicio/recuperación con sesión exclusiva, preparación, recepción, evaluación, cierre y transferencia.
+La [transferencia explícita](../decisions/adr/0006-explicit-attempt-control-transfer.md) está implementada
+en cliente, API y PostgreSQL. Invitaciones y correcciones administrativas tienen fronteras propias.
 La recuperación debe ser una operación de dominio: reconcilia una recepción pendiente o
 resuelve atómicamente el intervalo abierto antes de devolver otro payload; no es una rehidratación
 ciega de un snapshot de cliente.
@@ -676,50 +737,19 @@ deben vivir en el servidor.
 
 ## 8. Riesgos y cuestiones abiertas
 
-- La matriz de permisos de `owner` frente a `admin` está cerrada: `admin` no gestiona `owner`,
-  solo `owner` concede `admin` y `superadmin` audita sus acciones directas sobre salas. El alcance
-  editorial del rol `editor` aún no está cerrado.
-- La transferencia de control entre dispositivos está implementada según ADR-0006 en PostgreSQL, API
-  y runtime; queda validación multi-dispositivo en staging. La expiración por
-  inactividad ya está definida: 15 minutos sin actividad, solo tras cierre o deadline, con `abandoned`
-  sin puntos; no requiere heartbeat ni lease del navegador.
-- Debe definirse un contrato de errores estable para distinguir no autorizado, no disponible,
-  conflicto obsoleto y validación inválida sin filtrar información.
-- Supabase RLS debe diseñarse junto con las políticas de aplicación; no conviene asumir que una capa
-  sustituye a la otra.
-- El envío de respuestas, checkpoints y señales de abandono necesita límites de frecuencia y una
-  estrategia para reintentos de red.
-- Finalización/acreditación atómica y lecturas de los dos rankings están implementadas y probadas en
-  SQL/adapter; S06 lee rankings bajo demanda y no materializa tablas adicionales.
-- S07 implementa el historial común de los cinco modos (Flash, Alfabeto, Supervivencia, Narrativa y Pirámide),
-  con cierre efectivo por timestamps de publicación/temporada y sin intentos `in_progress`, el ranking
-  histórico y la revisión propia/ajena autorizada sin tablas materializadas ni recalcular puntos.
-- La revisión ajena completa se limita a `owner`, `admin` y `member`; `spectator` conserva el acceso a
-  historial/rankings, pero no recibe respuestas ni soluciones. La revisión propia terminal se permite
-  durante la ventana abierta; la ajena exige cierre efectivo. Alfabeto conserva el reloj global, el
-  orden original de las letras y todos los huecos sin responder.
-- `results_locked_at`, el takeover y la revisión administrativa de invalidados quedan fuera de S07.
-  La expiración por inactividad se implementa en la reconciliación del calendario y bajo demanda,
-  con cierre efectivo sin depender de que el tick haya persistido `closed`.
-- Invalidación y corrección exigen superadmin, motivo y auditoría. La revisión de intentos
-  `invalidated`, inspección global y moderación siguen pendientes de política administrativa.
-- La anonimización debe coordinar identidad, avatar, actividad social y retención histórica.
-- Los medios y avatares requieren políticas de acceso, límites de tamaño y limpieza de objetos.
-- La aplicación debe conservar una experiencia útil si un servicio externo está temporalmente
-  indisponible, especialmente Storage, correo o autenticación.
+El [estado actual](status.md) centraliza las capacidades implementadas y el
+[backlog](../implementation-plan.md) mantiene el trabajo pendiente.
 
-Estas cuestiones no bloquean la migración inicial del mock a contratos de aplicación, pero sí deben
-resolverse antes de declarar competitiva la persistencia real.
+- Verificar en staging la transferencia entre dispositivos, las interrupciones y el recorrido de
+  despliegue completo; la implementación local ya existe.
+- Completar las operaciones de membresía, invitaciones, cancelación y retención siguiendo las
+  decisiones aprobadas; coordinar sus efectos sobre intentos, puntuación e histórico.
+- Definir consolidación de resultados y tratamiento administrativo de incidencias sin reescribir
+  hechos aceptados. La inspección y los ajustes existentes no cierran toda esa política.
+- Extender límites de frecuencia, observabilidad y presupuestos de peticiones a las categorías
+  pendientes; el motor competitivo ya conserva los comandos inciertos y limita sus reintentos.
+- Mantener las fronteras de contenido privado y autorización al ampliar formatos o medios.
 
-## Secuencia de evolución recomendada
-
-1. Mantener las consultas actuales y extraer casos de uso de lectura solo donde ya exista una regla
-   de autorización o composición relevante.
-2. Añadir casos de uso de `start`, `resume`, `submit answer`, `complete` y `abandon` con puertos
-   mock y tests de aplicación.
-3. Añadir Server Actions/Route Handlers finos que llamen a esos casos de uso y sustituir
-   gradualmente `demoIdentity` por la sesión real.
-4. Implementar el adaptador Supabase con transacciones, unicidad, RLS y control de concurrencia.
-5. Separar soluciones del DTO competitivo y trasladar evaluación, tiempo y acreditación al servidor.
-6. Mantener Vercel Cron y la reconciliación bajo demanda para expiración de inactividad, notificaciones
-   y limpieza cuando los requisitos estén cerrados.
+Toda ampliación debe conservar la autoridad del servidor, el único controlador, los relojes
+persistidos y los hechos aceptados; cerrar cada recorrido con pruebas de fallo y actualización de
+su contrato. No introducir un fallback competitivo al mock.

@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { rm, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it } from "vitest";
@@ -170,6 +170,72 @@ describe("type architecture boundary checker", () => {
       "app/demo/__architecture-production-surface-test__.ts",
       'import { RoomChallengeClient } from "@/components/game/production";\n\nvoid RoomChallengeClient;\n',
       "app/demo/__architecture-production-surface-test__.ts imports a non-demo game barrel from a demo route",
+    );
+  });
+});
+
+describe("question input context boundaries", () => {
+  it.each([
+    [
+      "PracticeInput",
+      'import type { CompetitiveInput } from "@/features/question-formats/competitiveInputTypes";',
+    ],
+    ["PracticeInput", 'export { render } from "../mini-wordle/input";'],
+    ["input", 'import type { PracticeInput } from "../../practiceInputTypes";'],
+    ["input", 'const renderer = import("../mini-wordle/PracticeInput");'],
+  ])("rejects %s importing another input context", async (adapter, source) => {
+    const directory = "features/question-formats/formats/__architecture-context-test__";
+    await mkdir(directory, { recursive: true });
+    try {
+      await expectCheckerFailure(
+        `${directory}/${adapter}.tsx`,
+        source,
+        "crosses question input contexts",
+      );
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  it("allows both contexts to use a neutral view and shared algorithms", async () => {
+    const directory = "features/question-formats/formats/__architecture-context-test__";
+    await mkdir(directory, { recursive: true });
+    try {
+      for (const adapter of ["PracticeInput", "input"]) {
+        await writeFile(
+          `${directory}/${adapter}.tsx`,
+          'export { ShortTextInput } from "../short-text/ShortTextInput";\nexport { normalizeMiniWordleWord } from "@/lib/miniWordle";\n',
+        );
+      }
+      await expect(runChecker()).resolves.toMatchObject({
+        stdout: expect.stringContaining("Type architecture OK"),
+      });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("shared Pyramid session boundaries", () => {
+  it("rejects references to the retired controller", async () => {
+    await expectCheckerFailure(
+      "features/__architecture-pyramid-retired-test__.ts",
+      'import { usePyramidSession } from "@/features/pyramid/usePyramidSession";\nvoid usePyramidSession;',
+      "imports a retired Pyramid implementation",
+    );
+  });
+  it("rejects a recreated legacy controller file", async () => {
+    await expectCheckerFailure(
+      "features/pyramid/usePyramidSession.ts",
+      "export const usePyramidSession = () => null;",
+      "reintroduces a retired Pyramid implementation",
+    );
+  });
+  it("rejects private local definitions in a remote composition", async () => {
+    await expectCheckerFailure(
+      "components/game/modes/flash-pop/ServerArchitecturePyramid.client.tsx",
+      'import type { LocalPyramidDefinition } from "@/types/gameplay/local-pyramid";\nexport type Input = LocalPyramidDefinition;',
+      "imports private local session data",
     );
   });
 });

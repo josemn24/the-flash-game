@@ -1,7 +1,7 @@
 "use client";
 import { ServerEscapeQuestion } from "@/components/questions/formats/escape/ServerEscapeQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"escape">) {
   const {
     locked,
     submissionState,
@@ -11,7 +11,7 @@ export function render(props: CompetitiveInputProps) {
     onSubmit,
     onProgress,
   } = props;
-  const question = props.question as Extract<CompetitiveInputProps["question"], { type: "escape" }>;
+  const { question } = props;
   return (
     <ServerEscapeQuestion
       question={question}

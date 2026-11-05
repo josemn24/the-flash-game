@@ -35,6 +35,10 @@ function queensDetails(incorrectAttempts: number): AnswerResultDetails {
   };
 }
 
+function zeroProximityEstimationDetails(): AnswerResultDetails {
+  return { type: "estimation", difference: 18, proximity: 0 };
+}
+
 describe("survival rules", () => {
   it("consumes lives for incorrect or unanswered results", () => {
     expect(isSurvivalMistake(result("correct"))).toBe(false);
@@ -56,6 +60,12 @@ describe("survival rules", () => {
     expect(getSurvivalLivesAfterResult(3, result("incorrect"))).toBe(2);
     expect(getSurvivalLivesAfterResult(1, result("unanswered"))).toBe(0);
     expect(getSurvivalLivesAfterResult(0, result("incorrect"))).toBe(0);
+  });
+
+  it("counts an estimation with zero proximity as a mistake", () => {
+    const failedEstimate = result("incorrect", zeroProximityEstimationDetails());
+    expect(isSurvivalMistake(failedEstimate)).toBe(true);
+    expect(getSurvivalLivesAfterResult(2, failedEstimate)).toBe(1);
   });
 
   it("preserves lives for clean matching answers", () => {

@@ -1,8 +1,10 @@
+"use client";
 import type { ReactNode } from "react";
 import { BackButton, MotionButton, RotateIcon } from "@/components/ui";
 import type { ReviewAnswerEntry } from "./ReviewAnswerList";
 import { ReviewAnswerList } from "./ReviewAnswerList";
 import styles from "./ReviewAnswers.module.css";
+import { useRehearsalPresentation } from "./RehearsalPresentation";
 
 export function ReviewAnswerPanel({
   entries,
@@ -35,6 +37,8 @@ export function ReviewAnswerPanel({
   extraActions?: ReactNode;
   initialOpenId?: string;
 }) {
+  const practice = useRehearsalPresentation();
+  const replay = practice ? undefined : onReplay;
   const progressPercent = progress
     ? progress.max > 0
       ? Math.max(0, Math.min(100, (progress.value / progress.max) * 100))
@@ -79,15 +83,15 @@ export function ReviewAnswerPanel({
 
       <ReviewAnswerList entries={entries} initialOpenId={initialOpenId} />
 
-      {(onBack && !backAtTop) || onReplay || extraActions ? (
+      {(onBack && !backAtTop) || replay || extraActions ? (
         <div className={styles.reviewPanelActions}>
           {onBack && !backAtTop ? (
             <MotionButton variant="secondary" onClick={onBack} whileTap={{ scale: 0.98 }}>
               {backLabel}
             </MotionButton>
           ) : null}
-          {onReplay ? (
-            <MotionButton onClick={onReplay} whileTap={{ scale: 0.98 }}>
+          {replay ? (
+            <MotionButton onClick={replay} whileTap={{ scale: 0.98 }}>
               <RotateIcon className="h-5 w-5" />
               {replayLabel}
             </MotionButton>

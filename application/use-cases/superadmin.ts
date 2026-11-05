@@ -5,6 +5,7 @@ import {
   SuperadminEditorialCommandError,
   SuperadminUserCommandError,
 } from "@/application/administration/errors";
+import { readCompleteQuestionLibrary } from "@/application/administration/read-complete-question-library";
 import type {
   AdminRateLimiter,
   SuperadminAccess,
@@ -180,7 +181,9 @@ export class ApplicationSuperadminReads {
     return {
       operator: access.context.operator,
       editorial: { entries: [], source: "supabase" as const },
-      questionLibrary: await this.dependencies.editorial.getQuestionLibrary({ status: "all" }),
+      questionLibrary: await readCompleteQuestionLibrary(this.dependencies.editorial, {
+        status: "all",
+      }),
     };
   }
 
@@ -191,7 +194,7 @@ export class ApplicationSuperadminReads {
     const access = await this.dependencies.access.requireAccess();
     const [detail, questionLibrary, comparison] = await Promise.all([
       this.dependencies.editorial.getChallengeDetail(challengeDefinitionId),
-      this.dependencies.editorial.getQuestionLibrary({ status: "all" }),
+      readCompleteQuestionLibrary(this.dependencies.editorial, { status: "all" }),
       comparisonIds
         ? this.dependencies.editorial.getChallengeVersionComparison(
             comparisonIds[0],
@@ -279,6 +282,14 @@ export class ApplicationSuperadminReads {
     return {
       operator: access.context.operator,
       library: await this.dependencies.editorial.getQuestionLibrary(filters),
+    };
+  }
+
+  async getCompleteQuestionLibrary(filters?: Omit<QuestionLibraryFilters, "page" | "pageSize">) {
+    const access = await this.dependencies.access.requireAccess();
+    return {
+      operator: access.context.operator,
+      library: await readCompleteQuestionLibrary(this.dependencies.editorial, filters),
     };
   }
 

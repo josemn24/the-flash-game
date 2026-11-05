@@ -1,0 +1,114 @@
+[
+  {
+    "id": "betavip-logica-q6",
+    "version": 1,
+    "type": "logic-code",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Descifra el código de tres cifras.",
+      "codeLength": 3,
+      "clues": [
+        {
+          "code": "685",
+          "hint": "Exactamente una cifra pertenece al código y está en la posición correcta."
+        },
+        {
+          "code": "627",
+          "hint": "Exactamente una cifra pertenece al código, pero está en otra posición."
+        },
+        {
+          "code": "516",
+          "hint": "Exactamente dos cifras pertenecen al código y ambas están en otras posiciones."
+        },
+        {
+          "code": "938",
+          "hint": "Ninguna cifra pertenece al código."
+        },
+        {
+          "code": "981",
+          "hint": "Exactamente una cifra pertenece al código, pero está en otra posición."
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "175",
+      "explanation": "938 descarta 9, 3 y 8. En 981, la única cifra posible es 1, que no va al final. La pista 516 indica que 1 y otra cifra entre 5 y 6 pertenecen al código, ambas mal colocadas. Como 1 tampoco puede ir en el centro, va primero. En 685, 8 está descartado y 6 no puede ocupar el primer lugar, así que el 5 está bien colocado al final y el 6 no pertenece al código. Por tanto, 516 confirma que el 1 y el 5 son las dos cifras correctas de esa pista. En 627, como 6 está descartado, solo una de 2 y 7 pertenece y está mal colocada: el 2 no puede estar en el centro porque allí aparece en la pista, así que el 7 va en el centro. El código es 175."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "betavip-logica-q6"
+  },
+  {
+    "id": "bank-codigo-cuadrados",
+    "version": 1,
+    "type": "logic-code",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-codigo-cuadrados",
+    "publicPayload": {
+      "question": "Descifra el código de tres cifras.",
+      "codeLength": 3,
+      "clues": [
+        {
+          "code": "682",
+          "hint": "Exactamente una cifra pertenece al código y está en la posición correcta."
+        },
+        {
+          "code": "614",
+          "hint": "Exactamente una cifra pertenece al código, pero está en otra posición."
+        },
+        {
+          "code": "206",
+          "hint": "Exactamente dos cifras pertenecen al código y ambas están en otras posiciones."
+        },
+        {
+          "code": "738",
+          "hint": "Ninguna cifra pertenece al código."
+        },
+        {
+          "code": "780",
+          "hint": "Exactamente una cifra pertenece al código, pero está en otra posición."
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "042",
+      "explanation": "738 descarta 7, 3 y 8. En 780, la única cifra posible es 0, pero no va al final. En 206, 0 y 2 pertenecen al código, ambos mal colocados; así, 0 va primero. Como 6 está descartado, la pista 682 coloca el 2 al final. La pista 614 deja el 4 en el centro. El código es 042."
+    }
+  },
+  {
+    "id": "bank-codigo-aritmetico",
+    "version": 1,
+    "type": "logic-code",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-codigo-aritmetico",
+    "publicPayload": {
+      "question": "Abre la caja usando las tres pistas numéricas: codigo aritmetico.",
+      "codeLength": 3,
+      "clues": [
+        {
+          "code": "800",
+          "hint": "La primera cifra es el doble de cuatro."
+        },
+        {
+          "code": "020",
+          "hint": "La cifra central es el único primo par."
+        },
+        {
+          "code": "006",
+          "hint": "La última cifra es el triple de dos."
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "826",
+      "explanation": "La primera cifra es 2 × 4 = 8; la central es 2, el único número primo par; la última es 3 × 2 = 6. Juntas forman 826."
+    }
+  }
+]

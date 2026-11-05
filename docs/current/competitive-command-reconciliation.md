@@ -4,7 +4,7 @@
 
 Fecha: 2026-10-09. Revisión incremental original:
 `20261009190015_competitive_command_reconciliation`. Ahora forma parte de
-`20261011180045_initial_schema`; el historial anterior permanece en Git.
+`20261103090247_initial_schema`; el historial anterior permanece en Git.
 
 ## Comportamiento resultante
 
@@ -48,7 +48,7 @@ comparar `request_id` únicamente por igualdad con `runId`.
 ## Baseline y límites
 
 La migración incremental original (`20261009190015_competitive_command_reconciliation.sql`) quedó
-consolidada en el [baseline activo](../../supabase/migrations/20261011180045_initial_schema.sql),
+consolidada en el [baseline activo](../../supabase/migrations/20261103090247_initial_schema.sql),
 generado desde los schemas declarativos. Su SQL anterior sigue disponible en Git. En la revisión
 original se retiró el `DROP FUNCTION` que el generador proponía para el cambio de lenguaje de
 `take_over_attempt`.
@@ -56,7 +56,7 @@ original se retiró el `DROP FUNCTION` que el generador proponía para el cambio
 La migración abre una transacción, reemplaza once funciones y actualiza el dispatcher antes
 de la fachada de transferencia. Utiliza `CREATE OR REPLACE` para conservar OIDs, dependencias,
 propietarios y ACL. El único cambio de atributo es el lenguaje de la fachada, de PL/pgSQL a SQL.
-Las otras tres diferencias de la [auditoría original](supabase-function-drift-audit.md) eran de
+Las otras tres diferencias de la [auditoría original](../archive/reports/supabase-function-drift-audit-2026-10-09.md) eran de
 texto; se alineó el esquema con los cuerpos existentes para evitar reemplazos innecesarios.
 
 No se añaden ni eliminan funciones, tablas o columnas. Las 217 funciones conservan sus firmas

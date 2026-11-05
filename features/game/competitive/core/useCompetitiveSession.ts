@@ -1,20 +1,26 @@
 "use client";
+
+import { sessionValidationContext } from "../../session/sessionResult";
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { CompetitiveSessionEngine, type SessionOptions } from "./sessionEngine";
 import type { FeedbackChannel } from "./sessionReducer";
-export function useCompetitiveSession(options: Omit<SessionOptions, "client" | "refresh">) {
-  const router = useRouter();
-  const { challenge, roomContext, terminalReview } = options;
+import type { GameRoomContext } from "@/types/view-models/room";
+import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
+import { createRemoteGameSessionProvider } from "../../session/providers/remote";
+import { remoteSessionBootstrap } from "../../session/providers/remoteBootstrap";
+
+type CompetitiveSessionOptions = Pick<SessionOptions, "challenge"> & {
+  roomContext: GameRoomContext;
+  terminalReview?: readonly ServerFlashTerminalReview[];
+};
+
+/** Shared React adapter for a session with an explicitly composed runtime. */
+export function useCompetitiveSessionWithProvider(options: SessionOptions) {
+  const { challenge, initialSession, provider, clock, refresh } = options;
   const engine = useMemo(
-    () =>
-      new CompetitiveSessionEngine({
-        challenge,
-        roomContext,
-        terminalReview,
-        refresh: () => router.refresh(),
-      }),
-    [challenge, roomContext, terminalReview, router],
+    () => new CompetitiveSessionEngine({ challenge, initialSession, provider, clock, refresh }),
+    [challenge, initialSession, provider, clock, refresh],
   );
   const state = useSyncExternalStore(engine.subscribe, engine.getSnapshot, engine.getSnapshot);
   useEffect(() => engine.connect(), [engine]);
@@ -81,4 +87,24 @@ export function useCompetitiveSession(options: Omit<SessionOptions, "client" | "
     showReview: engine.showReview,
     showResults: engine.showResults,
   };
+}
+
+export function useCompetitiveSession(options: CompetitiveSessionOptions) {
+  const router = useRouter();
+  const { challenge, roomContext, terminalReview } = options;
+  const provider = useMemo(
+    () => createRemoteGameSessionProvider({ context: sessionValidationContext(challenge) }),
+    [challenge],
+  );
+  const initialSession = useMemo(
+    () => remoteSessionBootstrap(roomContext, terminalReview),
+    [roomContext, terminalReview],
+  );
+  const refresh = useMemo(() => () => router.refresh(), [router]);
+  return useCompetitiveSessionWithProvider({
+    challenge,
+    initialSession,
+    provider,
+    refresh,
+  });
 }

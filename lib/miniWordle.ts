@@ -46,6 +46,12 @@ export function normalizeMiniWordleWord(value: string) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+export function normalizeMiniWordleDraft(value: string, wordLength: MiniWordleWordLength) {
+  return normalizeMiniWordleWord(value)
+    .replace(/[^A-ZÑ]/g, "")
+    .slice(0, wordLength);
+}
+
 export function isValidMiniWordleWord(
   value: string,
   wordLength: MiniWordleWordLength = DEFAULT_MINI_WORDLE_WORD_LENGTH,

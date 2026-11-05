@@ -30,6 +30,29 @@ describe("design system availability before authentication", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
     expect(mocks.updateSession).not.toHaveBeenCalled();
   });
+  it("serves the approved local Pyramid rehearsal without contacting authentication", async () => {
+    const response = await proxy(
+      new NextRequest("http://localhost/demo/flash-pop/desafios/tabarnia-challenge-05"),
+    );
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+    expect(mocks.updateSession).not.toHaveBeenCalled();
+  });
+  it("serves the approved local Flash rehearsal without contacting authentication", async () => {
+    const response = await proxy(
+      new NextRequest("http://localhost/demo/flash-pop/desafios/tabarnia-flash-01"),
+    );
+    expect(response.headers.get("x-middleware-next")).toBe("1");
+    expect(mocks.updateSession).not.toHaveBeenCalled();
+  });
+  it("returns 404 for other demo challenge identifiers before authentication", async () => {
+    const response = await proxy(
+      new NextRequest("http://localhost/demo/flash-pop/desafios/tabarnia-challenge-06"),
+    );
+    expect(response.status).toBe(404);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    expect(mocks.updateSession).not.toHaveBeenCalled();
+  });
   it.each(["production", "test"])("hides the catalogue in %s", async (environment) => {
     vi.stubEnv("NODE_ENV", environment);
     for (const path of [
@@ -59,13 +82,18 @@ describe("design system availability before authentication", () => {
     expect(await response.text()).toBe("Not Found");
     expect(mocks.updateSession).not.toHaveBeenCalled();
   });
-  it.each(["/", "/admin", "/salas/demo", "/design-system-extra", "/demo/flash-pop/ui-kit-extra"])(
-    "preserves authentication for other routes: %s",
-    async (path) => {
-      const authenticated = NextResponse.next();
-      mocks.updateSession.mockResolvedValueOnce(authenticated);
-      expect(await proxy(new NextRequest(`http://localhost${path}`))).toBe(authenticated);
-      expect(mocks.updateSession).toHaveBeenCalledOnce();
-    },
-  );
+  it.each([
+    "/",
+    "/admin",
+    "/salas/demo",
+    "/desafios/tabarnia-challenge-05",
+    "/desafios/tabarnia-flash-01",
+    "/design-system-extra",
+    "/demo/flash-pop/ui-kit-extra",
+  ])("preserves authentication for other routes: %s", async (path) => {
+    const authenticated = NextResponse.next();
+    mocks.updateSession.mockResolvedValueOnce(authenticated);
+    expect(await proxy(new NextRequest(`http://localhost${path}`))).toBe(authenticated);
+    expect(mocks.updateSession).toHaveBeenCalledOnce();
+  });
 });

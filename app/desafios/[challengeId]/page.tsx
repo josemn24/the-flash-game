@@ -1,3 +1,5 @@
+import { MeasurementProvider } from "@/components/product/Measurement.client";
+import { getRehearsalAvailability } from "@/server/production-rehearsal-data-access";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RoomChallengeClient } from "@/components/game/production";
@@ -41,19 +43,27 @@ export default async function ChallengePage({ params, searchParams }: Props) {
   const { challengeId } = await params;
   const roomId = await getRoomId(searchParams);
   const model = await getPlayableChallengePageModel(challengeId, roomId ?? null);
+  const rehearsal = roomId ? await getRehearsalAvailability(roomId, challengeId) : undefined;
   if (model) {
     return (
-      <RoomChallengeClient
-        challenge={model.challenge}
-        roomContext={model.roomContext}
-        socialSnapshot={model.socialSnapshot}
-        terminalReview={"terminalReview" in model ? model.terminalReview : undefined}
-      />
+      <MeasurementProvider roomId={roomId!} publicationId={challengeId}>
+        <RoomChallengeClient
+          rehearsal={rehearsal}
+          challenge={model.challenge}
+          roomContext={model.roomContext}
+          socialSnapshot={model.socialSnapshot}
+          terminalReview={"terminalReview" in model ? model.terminalReview : undefined}
+        />
+      </MeasurementProvider>
     );
   }
 
   const introduction = roomId ? await getRoomIntroductionPageModel(roomId, challengeId) : null;
   if (!introduction) notFound();
 
-  return <RoomChallengeIntroduction model={introduction} />;
+  return (
+    <MeasurementProvider roomId={roomId!} publicationId={challengeId}>
+      <RoomChallengeIntroduction model={introduction} rehearsal={rehearsal} />
+    </MeasurementProvider>
+  );
 }

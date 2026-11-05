@@ -100,10 +100,10 @@ test.describe("F18 — escape competitivo", () => {
     await page.getByRole("button", { name: "Reintentar", exact: true }).click();
     expect(requestBodies).toHaveLength(2);
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").nth(1).locator("summary").click();
     await expect(page.getByText("Bloque liberado").first()).toBeVisible();
@@ -117,7 +117,7 @@ test.describe("F18 — escape competitivo", () => {
     await expect(page.getByRole("heading", { name: /Mueve los bloques/ })).toBeVisible();
     await page.getByRole("button", { name: /bloque C/ }).press("ArrowLeft");
     await expect(page.getByText(/1 movimiento/)).toBeVisible();
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 45_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 45_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").last().locator("summary").click();
     await expect(page.getByText(/Movimientos/)).toBeVisible();

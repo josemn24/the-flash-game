@@ -48,3 +48,10 @@ create index entries_creator_idx on private.flash_point_entries (created_by_play
 create index audit_entity_time_idx on private.audit_log (entity_type, entity_id, created_at);
 create index audit_actor_time_idx on private.audit_log (actor_player_id, created_at);
 -- No speculative JSONB GIN indexes: the initial queries use structured columns.
+
+-- Question library lookups and exact version reuse within a challenge.
+create unique index if not exists challenge_items_question_version_unique_idx
+  on private.challenge_items (challenge_version_id, question_version_id);
+
+create index if not exists question_versions_library_idx
+  on private.question_versions (status, type, updated_at desc, id);

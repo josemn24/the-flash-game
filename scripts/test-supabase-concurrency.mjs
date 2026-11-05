@@ -1,3 +1,5 @@
+import { sessionFixture } from "./fixtures/scenarios/competitive-session-fixture.mjs";
+import { connectPairsQuestions } from "./fixtures/scenarios/time-trial-connect-pairs.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createHash, randomUUID } from "node:crypto";
@@ -69,6 +71,45 @@ export async function testConcurrentCommands(sql) {
     assert.equal(outcomes.filter((r) => r.status === "fulfilled").length, 1, message);
     assert.equal(outcomes.filter((r) => r.status === "rejected").length, 1, message);
   };
+
+  // Reuse the independent-connection barrier with a JSON result adapter for the boolean RPC.
+  await sql(`create function test_support.record_observation(input jsonb) returns jsonb
+    language sql as $$ select jsonb_build_object('recorded',public.record_room_measurement_event(input)) $$;
+    grant execute on function test_support.record_observation(jsonb) to authenticated;`);
+  for (const type of ["rehearsal_started", "rehearsal_completed"]) {
+    const observation = {
+      eventId: id(`concurrent-${type}-one`),
+      visitId: id("concurrent-rehearsal-run"),
+      roomId: "commands-flash",
+      publicationId: id("sc-flash"),
+      type,
+      occurredAt: new Date().toISOString(),
+      appVersion: "concurrent-measurement",
+    };
+    const outcomes = await race(
+      "member",
+      "member",
+      "record_observation",
+      observation,
+      { ...observation, eventId: id(`concurrent-${type}-two`) },
+      { role: "authenticated", schema: "test_support" },
+    );
+    assert.equal(
+      outcomes.filter((r) => r.status === "fulfilled" && r.value.recorded).length,
+      2,
+      "Concurrent observations of one execution both succeed",
+    );
+    assert.equal(
+      (
+        await sql(`select count(*) from private.room_measurement_events
+      where player_id=${quote(id("member"))} and publication_id=${quote(id("sc-flash"))}
+        and visit_id=${quote(observation.visitId)} and type=${quote(type)};`)
+      ).trim(),
+      "1",
+      "Concurrent retries insert only one observation per execution and signal",
+    );
+  }
+  console.log("Concurrent rehearsal measurement deduplication passed.");
 
   const seasonRaceRoom = id("season-race-room");
   const seasonRaceOne = id("season-race-one");
@@ -395,6 +436,78 @@ export async function testConcurrentCommands(sql) {
   );
   assert.equal((await sql("select count(*) from private.answer_receipts;")).trim(), "1");
 
+  // Finalization and the last evaluation share the attempt lock and version boundary.
+  const firstEvaluation = evaluations.find((result) => result.status === "fulfilled").value;
+  const lastPrepared = await run("owner", "prepare_interaction", {
+    attemptId: a.attemptId,
+    lockVersion: firstEvaluation.lockVersion,
+    sessionToken: response.sessionToken,
+    idempotencyKey: "final-answer-prepare",
+  });
+  const lastReceipt = await run("owner", "receive_answer", {
+    attemptId: a.attemptId,
+    lockVersion: lastPrepared.lockVersion,
+    sessionToken: response.sessionToken,
+    challengeItemId: lastPrepared.challengeItemId,
+    answer: true,
+    idempotencyKey: "final-answer-receive",
+  });
+  const completion = {
+    attemptId: a.attemptId,
+    lockVersion: lastReceipt.lockVersion,
+    sessionToken: response.sessionToken,
+    idempotencyKey: "final-answer-complete",
+  };
+  await assert.rejects(run("owner", "complete_attempt", completion), /unfinished_interaction/);
+  const lastEvaluation = await invoke(
+    "owner",
+    "record_evaluation",
+    {
+      ...completion,
+      receiptId: lastReceipt.receiptId,
+      status: "correct",
+      points: 19,
+      idempotencyKey: "final-answer-evaluate",
+    },
+    true,
+  );
+  const staleCompletion = await invoke("owner", "complete_attempt", {
+    ...completion,
+    idempotencyKey: "final-answer-stale-complete",
+  });
+  await assert.rejects(
+    staleCompletion.done,
+    /stale_version/,
+    "The closure waits for the last evaluation and rejects its old version",
+  );
+  const lastEvaluated = await lastEvaluation.done;
+  const currentCompletion = { ...completion, lockVersion: lastReceipt.lockVersion + 1 };
+  const closingAfterEvaluation = await invoke("owner", "complete_attempt", currentCompletion, true);
+  const duplicateCompletion = await invoke("owner", "complete_attempt", currentCompletion);
+  const [closed, duplicateClosed] = await Promise.allSettled([
+    closingAfterEvaluation.done,
+    duplicateCompletion.done,
+  ]);
+  assert.equal(lastEvaluated.lockVersion, currentCompletion.lockVersion);
+  assert.equal(closed.status, "fulfilled");
+  assert.equal(duplicateClosed.status, "fulfilled");
+  assert.equal(closed.value.score, 69, "Completion includes the last committed evaluation");
+  assert.deepEqual(closed.value, duplicateClosed.value);
+  assert.deepEqual(
+    await run("owner", "complete_attempt", currentCompletion),
+    closed.value,
+    "Lost final confirmation recovers the original total",
+  );
+  assert.equal(
+    (
+      await sql(`select score, (select sum(points) from private.attempt_answers where attempt_id=a.id),
+    (select sum(amount) from private.flash_point_entries where attempt_id=a.id and entry_type='accreditation'),
+    (select count(*) from private.flash_point_entries where attempt_id=a.id and entry_type='accreditation')
+    from public.attempts a where id=${quote(a.attemptId)};`)
+    ).trim(),
+    "69|69|69|1",
+  );
+
   // Early termination is allowed for survival, and the trusted evaluator determines its outcome.
   const b = await run("member", "start_attempt", {
     scheduledChallengeId: id("sc-survival"),
@@ -431,7 +544,6 @@ export async function testConcurrentCommands(sql) {
       attemptId: b.attemptId,
       lockVersion: e.lockVersion,
       sessionToken: "g".repeat(40),
-      score: 0,
       outcome: "eliminated",
       idempotencyKey: "survival-complete",
     },
@@ -495,7 +607,6 @@ export async function testConcurrentCommands(sql) {
     attemptId: alphabetStart.attemptId,
     sessionToken: alphabetToken,
     lockVersion: alphabetPrepare.lockVersion,
-    score: 0,
     idempotencyKey: "alphabet-race-stale-close",
   });
   const alphabetOutcomes = await Promise.allSettled([receiving.done, closing.done]);
@@ -509,7 +620,6 @@ export async function testConcurrentCommands(sql) {
     attemptId: alphabetStart.attemptId,
     sessionToken: alphabetToken,
     lockVersion: alphabetReceipt.lockVersion,
-    score: 0,
     idempotencyKey: "alphabet-race-final-close",
     pendingEvaluation: {
       receiptId: alphabetReceipt.receiptId,
@@ -754,7 +864,6 @@ export async function testConcurrentCommands(sql) {
     sessionToken: queensInput.sessionToken,
     lockVersion: evaluatedQueens.lockVersion,
     idempotencyKey: "queens-final-completion",
-    score: 0,
     outcome: "failed",
   };
   const completionRace = await race(
@@ -897,4 +1006,61 @@ export async function testConcurrentCommands(sql) {
     "A blocked late validation consumes no opportunity and accepts no receipt",
   );
   console.log("Contrarreloj post-lock deadline race passed.");
+  const cpSession = "concurrent-connect-pairs-session-token";
+  const cpRace = sessionFixture({
+    id: "cp-deadline-race",
+    mode: "time-trial",
+    title: "CP deadline race",
+    globalTimeLimitMs: 1000,
+    questions: connectPairsQuestions,
+  });
+  await sql(
+    cpRace.buildDomainSql({
+      accounts: { alice: { playerId: id("owner") } },
+      sqlString: quote,
+      sqlUuid: (label) => quote(id(`cp-race-${label}`)),
+    }),
+  );
+  const cpStarted = await run("owner", "start_attempt", {
+    scheduledChallengeId: id("cp-race-publication"),
+    sessionToken: cpSession,
+    idempotencyKey: "cp-race-start",
+  });
+  const cpPrepared = await invoke(
+    "owner",
+    "prepare_interaction",
+    {
+      attemptId: cpStarted.attemptId,
+      sessionToken: cpSession,
+      lockVersion: cpStarted.lockVersion,
+      idempotencyKey: "cp-race-prepare",
+    },
+    true,
+  );
+  const cpBlocked = await invoke("owner", "receive_answer", {
+    attemptId: cpStarted.attemptId,
+    sessionToken: cpSession,
+    lockVersion: cpStarted.lockVersion + 2,
+    challengeItemId: id("cp-race-item-0"),
+    answer: { paths: connectPairsQuestions[0].solution.paths },
+    idempotencyKey: "cp-race-answer",
+  });
+  const cpOutcomes = await Promise.allSettled([cpPrepared.done, cpBlocked.done]);
+  assert.equal(cpOutcomes[0].status, "fulfilled");
+  assert.equal(cpOutcomes[1].status, "rejected");
+  assert.match(
+    cpOutcomes[1].reason.message,
+    /deadline_reached/,
+    "Complete routes received after acquiring the lock cannot predate the deadline",
+  );
+  assert.equal(
+    (
+      await sql(
+        `select count(*) from private.answer_receipts where attempt_id=${quote(cpStarted.attemptId)};`,
+      )
+    ).trim(),
+    "0",
+    "A blocked late Connect pairs answer creates no receipt",
+  );
+  console.log("Conectar parejas post-lock deadline race passed.");
 }

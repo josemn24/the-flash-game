@@ -1,9 +1,7 @@
 "use client";
 
 import { ErrorReconstructionQuestionInput } from "@/components/questions";
-import { isErrorReconstructionAnswer } from "@/lib/scoring";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -11,15 +9,11 @@ export function PracticeInput({
   initialAnswer,
   onProgress,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"error-reconstruction">>) {
+}: PracticeInputProps<"error-reconstruction">) {
   return (
     <ErrorReconstructionQuestionInput
       question={question}
-      initialAnswer={
-        initialAnswer !== undefined && isErrorReconstructionAnswer(initialAnswer)
-          ? initialAnswer
-          : undefined
-      }
+      initialAnswer={initialAnswer}
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}

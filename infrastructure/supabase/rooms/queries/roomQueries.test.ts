@@ -807,6 +807,51 @@ describe("Supabase history and review capabilities S07", () => {
     });
   });
 
+  it.each([
+    { mode: "flash", view: "current" },
+    { mode: "flash", view: "historical" },
+    { mode: "survival", view: "current" },
+    { mode: "survival", view: "historical" },
+  ])("projects question titles for $view $mode member results", async ({ mode, view }) => {
+    const publicationId =
+      view === "current" ? roomRow.publication_id : historyRows[0].publication_id;
+    const rows = reviewRows.map((row) => ({
+      ...row,
+      publication_id: publicationId,
+      publication_status: view === "current" ? "open" : "closed",
+      challenge_mode: mode,
+      initial_lives: mode === "survival" ? 3 : null,
+      attempt_outcome: mode === "survival" ? "eliminated" : null,
+    }));
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (name: string) => ({
+        data:
+          name === "get_room_member_review"
+            ? rows
+            : name === "get_room_detail"
+              ? [{ ...roomRow, challenge_mode: mode }]
+              : name === "get_room_history"
+                ? [{ ...historyRows[0], publication_id: publicationId, challenge_mode: mode }]
+                : name === "get_season_ranking"
+                  ? seasonRows
+                  : challengeRows,
+        error: null,
+      })),
+    });
+    const model = await createRoomReadCapabilities().getMemberDetail(
+      "s06-main",
+      viewer.id,
+      queryContext,
+      view === "historical" ? publicationId : undefined,
+    );
+    expect(model?.reviewProgress?.mode).toBe(mode);
+    expect(model?.reviewItems[0]).toMatchObject({
+      title: "¿Capital?",
+      subtitle: "Elección · Cultura",
+      result: { status: "correct", points: 50, timeUsed: 0.9 },
+    });
+  });
+
   it("groups historical rows and keeps empty publications", async () => {
     mocks.createClient.mockResolvedValue({
       rpc: vi.fn(async (functionName: string) =>
@@ -829,6 +874,28 @@ describe("Supabase history and review capabilities S07", () => {
       maxScore: 100,
     });
     expect(model?.source).toBe("supabase");
+  });
+
+  it.each([
+    ["owner", true],
+    ["admin", true],
+    ["member", false],
+    ["spectator", false],
+  ] as const)("grants ranking poster export to %s: %s", async (role, canExport) => {
+    mocks.createClient.mockResolvedValue({
+      rpc: vi.fn(async (functionName: string) =>
+        functionName === "get_room_history"
+          ? { data: [{ ...historyRows[0], viewer_role: role }], error: null }
+          : { data: [], error: null },
+      ),
+    });
+    const model = await createRoomReadCapabilities().getHistoryDetail(
+      "s06-main",
+      historyRows[0].publication_id,
+      queryContext,
+    );
+
+    expect(model?.canExportRankingPoster).toBe(canExport);
   });
 
   it("reconstructs a persisted completed review without local session data", async () => {

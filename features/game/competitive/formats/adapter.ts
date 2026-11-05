@@ -4,7 +4,7 @@ import {
 } from "@/features/question-formats/capabilities";
 import type { PendingCommand, SessionQuestion } from "../core/sessionReducer";
 import type { CompetitiveChallenge } from "../modes/policy";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { logicCodeOutcome } from "./logicCode";
 import { miniWordleOutcome } from "./miniWordle";
 import { progressiveCluesOutcome } from "./progressiveClues";
@@ -18,7 +18,7 @@ type InteractionAdapter = {
   normalize: (
     question: SessionQuestion,
     command: PendingCommand,
-    response: CompetitiveJsonObject,
+    response: AuthoritativeSessionUpdate,
   ) => FormatOutcome;
 };
 const genericAdapter: InteractionAdapter = {
@@ -27,10 +27,11 @@ const genericAdapter: InteractionAdapter = {
     return {
       operation: "answer",
       data: { challengeItemId: question.id, answer: action.answer },
-      channel: "answerVerification",
+      channel: question.type === "connect-pairs" ? "submission" : "answerVerification",
     };
   },
   normalize(question, command, response) {
+    if (command.operation === "connectPairsDraft") return { kind: "progress", question };
     if (command.operation !== "answer") throw new Error("unexpected_interaction_command");
     return evaluated(question, command.input.answer, response);
   },
@@ -138,6 +139,7 @@ export function interactionFor(
 }
 const adapterByOperation: Partial<Record<PendingCommand["operation"], CompetitiveAdapterKey>> = {
   answer: "generic",
+  connectPairsDraft: "generic",
   miniWordleGuess: "mini-wordle",
   logicCodeAttempt: "logic-code",
   wordHashtagSwap: "word-hashtag",
@@ -149,7 +151,7 @@ const adapterByOperation: Partial<Record<PendingCommand["operation"], Competitiv
 export function normalizeInteraction(
   question: SessionQuestion,
   command: PendingCommand,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): FormatOutcome {
   const key = adapterByOperation[command.operation];
   if (!key) throw new Error("unexpected_interaction_command");

@@ -102,7 +102,7 @@ begin
               'mode', version.mode,
               'configSchemaVersion', version.config_schema_version,
               'modeConfig', version.mode_config
-            ),
+            ) || case when version.mode in ('alphabet','time-trial') then jsonb_build_object('globalTimeLimitMs', version.global_time_limit_ms) else '{}'::jsonb end,
             'questions', coalesce((
               select jsonb_agg(
                 case when question.status <> 'draft' then jsonb_build_object(
@@ -116,6 +116,7 @@ begin
                   'type', question.type,
                   'payloadSchemaVersion', question.payload_schema_version,
                   'timeLimitMs', question.time_limit_ms,
+        'difficulty', question.difficulty,
                   'points', item.points,
                   'publicPayload', question.public_payload,
                   'solutionPayload', solution.solution_payload

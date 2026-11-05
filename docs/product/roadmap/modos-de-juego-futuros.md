@@ -6,13 +6,22 @@
 
 Este documento recoge modos de juego candidatos para The Flash. No describe alcance comprometido ni sustituye al catálogo de formatos: un **formato** define el tipo de reto individual, mientras que un **modo** define el contexto de partida, el ritmo, la progresión, la presión y la motivación principal.
 
-Este documento describe modos como plantillas de reglas para desafíos. La estructura de salas, temporadas, calendario de desafíos y rankings se documenta en `salas-y-temporadas.md`.
+Este documento describe modos como plantillas de reglas para desafíos. El comportamiento vigente de salas, temporadas y rankings está en el
+[modelo de dominio](../../current/domain/domain-model.md). El [contexto anterior](../../archive/salas-y-temporadas.md) es histórico.
 
-La intención es validar qué hace que distintos perfiles quieran repetir: velocidad, superación personal, riesgo, cooperación, estrategia, narrativa, conocimiento o juego social. La primera validación debería usar el contenido y los formatos ya disponibles antes de construir sistemas con backend, salas, persistencia o evaluación avanzada.
+La intención es validar qué hace que distintos perfiles quieran repetir: velocidad, superación personal, riesgo, cooperación, estrategia, narrativa, conocimiento o juego social. Las candidatas deben contrastarse usando las capacidades ya disponibles; el repositorio ya implementa backend, salas, persistencia y evaluación autoritativa. El experimento Lean activo decide qué aprendizaje falta.
 
 Un modo no pertenece necesariamente a una sola categoría social. Supervivencia puede ser individual o competitiva, Constructor puede ser cooperativo o competitivo, y Detective puede funcionar solo, en grupo o por equipos. Por eso conviene clasificarlos por dimensiones, no como una lista rígida.
 
 La dirección principal para una primera versión multijugador es usar estos modos como desafíos asíncronos dentro de salas y temporadas. En ese contexto, **todos contra todos** debería ser la relación base; el duelo puede tratarse como una sala de dos jugadores, y equipos debería quedar como variante posterior porque exige repartir grupos de forma equilibrada.
+
+## Relación con los modos disponibles
+
+Flash, Alfabeto, Supervivencia, Narrativa, Pirámide y Contrarreloj ya están implementados.
+Sus [contratos vigentes](../../current/domain/mode-contracts.md) y el
+[estado actual](../../current/status.md) fijan reglas, permisos y ranking. Las variantes sociales,
+ritmos en tiempo real y nuevas mecánicas de este documento siguen siendo propuestas.
+No cambiar el ranking actual para acomodar una descripción exploratoria.
 
 ## Criterios de validación
 
@@ -41,7 +50,7 @@ La prioridad temporal queda así:
 1. **Asíncrono:** modalidad inicial; cada jugador completa la sala cuando pueda dentro de una ventana o invitación.
 2. **Tiempo real:** evolución posterior; añade sincronización, presencia, latencia, desconexiones y estado compartido en vivo.
 
-Por tanto, `asíncrono` no debería tratarse como un modo de juego independiente. Es una modalidad temporal aplicable a Flash, Supervivencia, Cadena, La Pirámide, Alfabeto, Apuesta de confianza, Predicción, Narrativo y otros modos. La organización completa de salas, temporadas y rankings se mantiene en `salas-y-temporadas.md`.
+Por tanto, `asíncrono` no debería tratarse como un modo de juego independiente. Es una modalidad temporal aplicable a Flash, Supervivencia, Cadena, La Pirámide, Alfabeto, Apuesta de confianza, Predicción, Narrativo y otros modos. La organización vigente se mantiene en el [modelo de dominio](../../current/domain/domain-model.md).
 
 ## Dimensiones de clasificación
 
@@ -94,19 +103,20 @@ Todos deberían validarse primero en modalidad asíncrona. Estos modos pueden re
 
 ### Flash
 
-Partida individual rápida con preguntas cronometradas, puntuación por acierto y bonus por velocidad. Es el modo actual y la referencia contra la que comparar cualquier alternativa.
+Partida individual rápida con preguntas cronometradas, puntuación por acierto y bonus por velocidad. Es uno de los seis modos implementados y una referencia para comparar alternativas.
 
 - **Motivación principal:** velocidad, reflejos y repetición.
 - **Relación entre jugadores:** solo / todos contra todos.
 - **Ritmo:** asíncrono / tiempo real.
 - **Cómo funciona:** el jugador completa una etapa con un límite por pregunta; responde, avanza y recibe resultado al final.
 - **Encaje con The Flash:** concentra la identidad del producto en rondas breves, presión temporal y comparación clara.
-- **V1 validable:** usarlo como modo base de sala asíncrona todos contra todos, con ranking individual por puntos, precisión y tiempo.
+- **Estado implementado:** sala asíncrona, intento único y ranking por puntos, duración efectiva y comienzo del intento. Las variantes sociales requieren alcance propio.
 - **Riesgos:** puede percibirse como trivia rápida si no se combina con formatos visuales, memoria, lógica y retos especiales.
 
 ### Contrarreloj
 
-Modo independiente con reglas acordadas y pendiente de implementación. El jugador resuelve una
+Modo independiente implementado para Queens y Conectar parejas con tableros cuadrados de 4×4 a 8×8.
+El jugador resuelve una
 secuencia finita de pruebas del mismo formato, con dificultad creciente y un único reloj global.
 Cada acierto concede puntos y permite avanzar; el fallo definitivo o el reloj agotado terminan la
 partida conservando los puntos. Resolver toda la secuencia detiene el reloj y concede 100 Flash Points.
@@ -114,7 +124,8 @@ partida conservando los puntos. Resolver toda la secuencia detiene el reloj y co
 - **Motivación principal:** razonamiento, superación y gestión del tiempo.
 - **Relación entre jugadores:** solo / todos contra todos, con la misma secuencia para cada participante.
 - **Ritmo inicial:** asíncrono dentro de salas y temporadas.
-- **Formatos candidatos:** Queens, Escape, Conectar parejas, Mini-Wordle y Hashtag de palabras;
+- **Formatos actuales:** Queens y Conectar parejas, en desafíos de un solo formato.
+- **Formatos candidatos:** Escape, Mini-Wordle y Hashtag de palabras;
   cada combinación requiere verificación competitiva específica.
 - **Comparación:** más pruebas resueltas; a igualdad, menor tiempo global hasta el último acierto.
   Los puntos acreditados se suman al ranking de temporada de la sala.
@@ -135,7 +146,7 @@ El jugador empieza con varias vidas. Cada fallo consume una vida y la partida co
 - **Ritmo:** asíncrono / tiempo real.
 - **Cómo funciona:** cada acierto permite avanzar; los errores restan vidas; la dificultad puede subir por rondas, tiempo disponible o valor de las preguntas.
 - **Encaje con The Flash:** usa la presión temporal actual y añade una meta muy fácil de entender: aguantar más que antes.
-- **V1 validable:** sala asíncrona todos contra todos con tres vidas por jugador; gana mejor puntuación o quien sobreviva más tiempo.
+- **Estado implementado:** vidas configuradas por desafío y ranking común por puntos, duración efectiva y comienzo. La duración de supervivencia no es otro desempate competitivo.
 - **Riesgos:** si los errores por desconocimiento eliminan demasiado rápido, puede frustrar; necesita calibrar dificultad y duración.
 
 ### Cadena
@@ -154,14 +165,15 @@ Los aciertos consecutivos aumentan un multiplicador, una recompensa o una barra 
 
 La partida empieza con pruebas relativamente accesibles y asciende por niveles cada vez más exigentes. La cima queda reservada para preguntas que, en teoría, solo un porcentaje pequeño de jugadores puede resolver.
 
-La primera implementación jugable es el Desafío 05, **«La Pirámide: Cumbre lógica»**: un prototipo rejugable de siete niveles de lógica y eliminación ante el primer resultado que no sea completamente correcto.
+Pirámide integra competición persistida y ensayo local con siete niveles. El antiguo Desafío 05,
+**«Cumbre lógica»**, permanece como contenido de demo; no define reintentos oficiales.
 
 - **Motivación principal:** progresión, superación, dificultad creciente y logro visible.
 - **Relación entre jugadores:** solo / todos contra todos.
 - **Ritmo:** asíncrono / tiempo real.
 - **Cómo funciona:** el jugador avanza por una escalera de niveles; cada nivel contiene una prueba calibrada para ser más difícil que la anterior; solo un acierto completo permite subir y cualquier respuesta parcial, incorrecta o sin contestar termina el ascenso.
 - **Encaje con The Flash:** da una fantasía muy clara de ascenso y crea una métrica fácil de compartir: hasta qué nivel llegó cada jugador. Se diferencia de Supervivencia porque no premia aguantar una secuencia larga, sino superar una ruta curada hacia una cima.
-- **V1 implementada:** prototipo sin límite de partidas con una pirámide de siete niveles. El contrato de ranking ordena por niveles superados, puntos y menor tiempo; el ranking compartido queda pendiente de backend.
+- **Estado implementado:** intento competitivo único, siete niveles, evaluación y cierre autoritativos, historial y ranking común por puntos, duración efectiva y comienzo del intento. Ver el [contrato de Pirámide](../../current/pyramid-session-contract.md).
 - **Variantes:** margen de uno o dos fallos, rutas segura/difícil, pirámides temáticas, evento especial con pregunta final de élite o calibración por percentiles cuando haya datos suficientes.
 - **Riesgos:** exige calibrar muy bien la dificultad; si la pendiente es irregular, el modo puede sentirse injusto o aleatorio. La pregunta final debe parecer exigente, no arbitraria.
 
@@ -174,7 +186,7 @@ El jugador recorre letras del alfabeto y responde una definición asociada a cad
 - **Ritmo:** asíncrono / tiempo real.
 - **Cómo funciona:** cada letra tiene una definición cuya respuesta empieza por esa letra, la contiene o se asocia editorialmente a ella; el jugador avanza por el alfabeto, marca letras resueltas, falla o pasa, y puede completar varias vueltas hasta agotar el tiempo o cerrar todas las letras.
 - **Encaje con The Flash:** aporta un modo reconocible, estratégico y televisivo sin abandonar la presión temporal; obliga a decidir cuándo insistir, cuándo pasar y cómo administrar las letras pendientes.
-- **V1 validable:** mini alfabeto temático de ocho a doce letras con respuesta corta, botón de pasar, estado por letra y ranking por aciertos, errores y tiempo utilizado.
+- **Estado implementado:** respuesta corta, pase, vueltas y reloj global; ranking común por puntos, duración efectiva y comienzo. Un mini rosco temático es una elección editorial.
 - **Variantes:** rosco completo, mini rosco, alfabeto temático, letras con respuesta que empieza por la letra, letras con respuesta que contiene la letra, bloqueo por error o vueltas con dificultad creciente.
 - **Riesgos:** requiere contenido editorial muy cuidado para evitar ambigüedades; un alfabeto completo puede ser demasiado largo para sesiones rápidas si no se ajusta el tiempo o el número de letras.
 
@@ -235,7 +247,7 @@ Las preguntas forman parte de una misión, historia o escenario. El contexto da 
 - **Ritmo:** asíncrono / episódico.
 - **Cómo funciona:** cada ronda representa una escena, punto de control o decisión dentro de una historia; los aciertos desbloquean avances, pistas o desenlaces.
 - **Encaje con The Flash:** puede funcionar como historia compartida competitiva: todos recorren la misma misión, pero puntúan individualmente por acierto, progreso y velocidad.
-- **V1 validable:** sala asíncrona todos contra todos con una misión lineal de cuatro o cinco minutos, tres movimientos, ocho pruebas y un cuaderno de campo que alimenta el cierre; el ranking combina pruebas resueltas, puntos y tiempo.
+- **Estado implementado:** escenas, preguntas temporizadas y finalización persistida; ranking común por puntos, duración efectiva y comienzo. La misión de tres movimientos es una propuesta editorial, no un contrato alternativo de ranking.
 - **Riesgos:** requiere contenido editorial más cuidado; demasiado texto puede chocar con el ritmo rápido.
 
 ### Detective

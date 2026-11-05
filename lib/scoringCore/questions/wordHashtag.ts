@@ -2,13 +2,13 @@ import type {
   AnswerResultDetails,
   ResolvedAnswerValue,
   ResolvedQuestion,
-  WordHashtagAnswer,
   WordHashtagQuestion,
 } from "@/types/gameplay/scoring";
 import {
+  analyzeWordHashtagAnswer,
   calculateWordHashtagMetrics,
-  isValidWordHashtagConfiguration,
   isWordHashtagAnswer,
+  type WordHashtagMetrics,
 } from "@/lib/wordHashtag";
 import { calculateSpeedMultiplier } from "@/lib/scoringCore/shared";
 import type {
@@ -23,8 +23,7 @@ function asQuestion(question: ResolvedQuestion) {
   return question as WordHashtagQuestion;
 }
 
-function detailsFor(question: WordHashtagQuestion, answer: WordHashtagAnswer): AnswerResultDetails {
-  const metrics = calculateWordHashtagMetrics(question, answer);
+function detailsFor(metrics: WordHashtagMetrics): AnswerResultDetails {
   return {
     type: "word-hashtag",
     correctCells: metrics.correctCells,
@@ -39,12 +38,8 @@ function detailsFor(question: WordHashtagQuestion, answer: WordHashtagAnswer): A
 }
 
 function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
-  const hashtagQuestion = asQuestion(question);
-  return (
-    isWordHashtagAnswer(answer) &&
-    isValidWordHashtagConfiguration(hashtagQuestion) &&
-    calculateWordHashtagMetrics(hashtagQuestion, answer).solved
-  );
+  const analysis = analyzeWordHashtagAnswer(asQuestion(question), answer);
+  return analysis.kind === "analyzed" && analysis.metrics.solved;
 }
 
 export function evaluateWordHashtag({
@@ -53,12 +48,13 @@ export function evaluateWordHashtag({
   timeUsed,
 }: EvaluationContext): InternalEvaluation {
   const hashtagQuestion = asQuestion(question);
-  if (!isWordHashtagAnswer(answer) || !isValidWordHashtagConfiguration(hashtagQuestion)) {
+  const analysis = analyzeWordHashtagAnswer(hashtagQuestion, answer);
+  if (analysis.kind !== "analyzed") {
     return { isCorrect: false, status: "incorrect", points: 0 };
   }
 
-  const metrics = calculateWordHashtagMetrics(hashtagQuestion, answer);
-  const details = detailsFor(hashtagQuestion, answer);
+  const { metrics } = analysis;
+  const details = detailsFor(metrics);
   if (!metrics.valid || !metrics.solved) {
     return { isCorrect: false, status: "incorrect", points: 0, details };
   }
@@ -82,7 +78,8 @@ export const scoring = {
   policy: "movement-penalty",
   timeoutPolicy: {
     answerSource: "draft",
-    unansweredDetails: (question) => detailsFor(question as WordHashtagQuestion, { swaps: [] }),
+    unansweredDetails: (question) =>
+      detailsFor(calculateWordHashtagMetrics(asQuestion(question), { swaps: [] })),
     status: () => "unanswered",
   },
   isAnswer: isWordHashtagAnswer,

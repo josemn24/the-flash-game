@@ -64,6 +64,7 @@ export async function POST(
         status: evaluated.status,
         points: evaluated.points,
         ...(evaluated.details ? { details: evaluated.details } : {}),
+        ...(evaluated.reviewState ? { reviewState: evaluated.reviewState } : {}),
         timedOut: received.timedOut,
         timeUsedMs: received.timeUsedMs,
       },

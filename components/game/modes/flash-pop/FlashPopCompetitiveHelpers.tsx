@@ -12,6 +12,7 @@ import {
   getAnswerResultAccuracyUnit,
 } from "@/features/game/resultSummary";
 import { CHALLENGE_MAX_SCORE } from "@/lib/challengeScoring";
+import { getQuestionReviewCardContent } from "@/lib/gameplay/questionReviewCardContent";
 import type { AnswerResult, FlashChallenge } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";
 import styles from "./FlashPopFlashGame.module.css";
@@ -25,7 +26,9 @@ export function Transition({
   timedOut: boolean;
   isLast: boolean;
 }) {
-  const status = result?.status ?? (timedOut ? "unanswered" : "incorrect");
+  const status = result?.reviewState
+    ? "partial"
+    : (result?.status ?? (timedOut ? "unanswered" : "incorrect"));
   const { title, body } = getFlashPopFeedbackCopy({ status, timedOut, isLast });
 
   return (
@@ -33,15 +36,24 @@ export function Transition({
       status={status}
       title={title}
       body={body}
-      points={status === "correct" || status === "partial" ? result?.points : undefined}
+      points={
+        result?.details?.type === "estimation" || status === "correct" || status === "partial"
+          ? result?.points
+          : undefined
+      }
     />
   );
 }
 
 export function buildResultModel(results: AnswerResult[], score: number): ChallengeResultModel {
   const correct = results.filter((result) => result.status === "correct").length;
+  const partial = results.filter(
+    (result) => result.status === "partial" || result.reviewState,
+  ).length;
   const incorrect = results.filter((result) => result.status === "incorrect").length;
-  const unanswered = results.filter((result) => result.status === "unanswered").length;
+  const unanswered = results.filter(
+    (result) => result.status === "unanswered" && !result.reviewState,
+  ).length;
   const accuracy = calculateResultAccuracy(results.map(getAnswerResultAccuracyUnit));
   const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
   const message =
@@ -50,7 +62,6 @@ export function buildResultModel(results: AnswerResult[], score: number): Challe
   return {
     gameTitle: "Flash",
     statusLabel: "Completado",
-    eyebrow: "Desafío completado",
     title: message,
     score,
     maxScore: CHALLENGE_MAX_SCORE,
@@ -59,6 +70,9 @@ export function buildResultModel(results: AnswerResult[], score: number): Challe
     totalTime,
     metrics: [
       { icon: <CheckIcon />, label: "Correctas", value: correct, tone: "success" },
+      ...(partial > 0
+        ? [{ icon: <span>≈</span>, label: "Parciales", value: partial, tone: "social" as const }]
+        : []),
       { icon: <CrossIcon />, label: "Falladas", value: incorrect, tone: "danger" },
       { icon: <ClockIcon />, label: "Sin contestar", value: unanswered },
     ],
@@ -90,6 +104,9 @@ export function ReviewStage({
     question,
     result: resultByQuestionId.get(question.id),
     marker: String(index + 1).padStart(2, "0"),
+    ...(presentation === "flash" || presentation === "survival"
+      ? { ...getQuestionReviewCardContent(question), showFullTitleOnExpand: true }
+      : {}),
   }));
   const total = totalQuestionCount ?? challenge.questions.length;
   const reached = Math.min(results.length, total);

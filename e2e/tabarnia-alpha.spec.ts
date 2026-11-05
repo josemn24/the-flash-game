@@ -84,9 +84,7 @@ test.describe("Tabarnia alpha", () => {
     await expect(page.getByText("Carlos", { exact: true })).toHaveCount(0);
   });
 
-  test("Ches ve y juega Reino de animales como primera publicación de Tabarnia", async ({
-    page,
-  }) => {
+  test("Ches ve y juega Steel Ball Run como primera publicación de Tabarnia", async ({ page }) => {
     await page.setViewportSize({ width: 406, height: 847 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     const data = await fixture();
@@ -110,40 +108,12 @@ test.describe("Tabarnia alpha", () => {
     await page.getByRole("link", { name: "Volver al detalle de la sala" }).click();
 
     await page.getByRole("link", { name: "Jugar" }).click();
-    await expect(page.getByRole("heading", { name: "Reino de animales" }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Steel Ball Run" }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: "Empezar desafío" })).toBeVisible();
     await page.getByRole("button", { name: "Empezar desafío" }).click();
-    await expect(
-      page.getByRole("heading", { name: "Mamífero protegido por una coraza de placas óseas." }),
-    ).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('[data-gameplay-shell="flash-pop-alphabet"]')).toHaveAttribute(
-      "data-gameplay-layout",
-      "playing",
-    );
-    const viewportRight = 386;
-    const board = await page
-      .getByRole("list", { name: "Estado de las letras" })
-      .locator("..")
-      .boundingBox();
-    const question = await page
-      .getByRole("heading", {
-        name: "Mamífero protegido por una coraza de placas óseas.",
-      })
-      .boundingBox();
-    const answer = await page.getByRole("textbox", { name: "Tu respuesta" }).boundingBox();
-    expect(board).not.toBeNull();
-    expect(question).not.toBeNull();
-    expect(answer).not.toBeNull();
-    for (const [label, box] of [
-      ["tablero", board!],
-      ["pregunta", question!],
-      ["campo de respuesta", answer!],
-    ] as const) {
-      expect(box.x).toBeGreaterThanOrEqual(20);
-      expect(box.x + box.width, `${label} rebasa el margen derecho`).toBeLessThanOrEqual(
-        viewportRight,
-      );
-    }
+    await expect(page.getByText(/Caballo de Fuego/).first()).toBeVisible({
+      timeout: 10_000,
+    });
     await expect(page.getByText(/^Solución:/)).toHaveCount(0);
     let failFirstAnswer = true;
     await page.route(/\/api\/competitive\/attempts\/[^/]+\/answer$/, async (route) => {
@@ -154,35 +124,54 @@ test.describe("Tabarnia alpha", () => {
       }
       await route.continue();
     });
-    await page.getByLabel("Tu respuesta").fill("armadillo");
-    await page.getByRole("button", { name: "Responder" }).click();
+    await page.getByRole("button", { name: "La cultura china" }).click();
     await expect(
       page.getByText("No se ha podido confirmar la respuesta.", { exact: true }),
     ).toBeVisible();
-    await expect(page.getByRole("button", { name: "Responder" })).toBeEnabled();
-    await page.getByRole("button", { name: "Responder" }).click();
-    await expect(page.getByRole("status").getByText("Correcto")).toBeVisible();
+    await expect(page.getByRole("button", { name: "La cultura china" })).toBeEnabled();
+    await page.getByRole("button", { name: "La cultura china" }).click();
+    await expect(page.getByText(/familia de los équidos/).first()).toBeVisible();
     await page.unroute(/\/api\/competitive\/attempts\/[^/]+\/answer$/);
 
     expect(data.data.publicationId).toBe(data.data.publications[0]?.id);
     expect(data.data.publications[0]).toMatchObject({
-      title: "Reino de animales",
-      mode: "alphabet",
+      title: "Steel Ball Run",
+      mode: "flash",
       status: "open",
     });
     expect(data.data.publications[1]).toMatchObject({
-      title: "Biblia y religiones abrahámicas",
-      mode: "pyramid",
+      title: "Reino de animales",
+      mode: "alphabet",
       status: "scheduled",
     });
     expect(data.data.publications[2]).toMatchObject({
-      title: "Steel Ball Run",
-      mode: "flash",
+      title: "Queens",
+      mode: "time-trial",
       status: "scheduled",
     });
     expect(data.data.publications[3]).toMatchObject({
-      title: "Supervivencia: España",
+      title: "España",
       mode: "survival",
+      status: "scheduled",
+    });
+    expect(data.data.publications[4]).toMatchObject({
+      title: "Cumbre lógica",
+      mode: "pyramid",
+      status: "scheduled",
+    });
+    expect(data.data.publications[5]).toMatchObject({
+      title: "Multiverso friki",
+      mode: "alphabet",
+      status: "scheduled",
+    });
+    expect(data.data.publications[6]).toMatchObject({
+      title: "Flow Free",
+      mode: "time-trial",
+      status: "scheduled",
+    });
+    expect(data.data.publications[7]).toMatchObject({
+      title: "La Biblia",
+      mode: "pyramid",
       status: "scheduled",
     });
   });

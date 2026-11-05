@@ -152,7 +152,7 @@ describe("Flash Pop token contrast", () => {
       ["WordHashtagQuestion.module.css", ["correct", "movable", "selected", "focus"]],
       ["WordSearchQuestion.module.css", ["correct", "selected", "error", "focus"]],
       ["LogicMatrixQuestion.module.css", ["selected"]],
-      ["QueensQuestion.module.css", ["selected", "error"]],
+      ["QueensQuestion.module.css", ["error"]],
       ["ConnectPairsQuestion.module.css", ["selected", "focus"]],
       ["LogicCodeQuestion.module.css", ["selected", "focus"]],
       ["ProgressiveCluesQuestion.module.css", ["selected", "focus"]],

@@ -808,7 +808,7 @@ export const steelBallRunQuestions = defineQuestionCatalog([
       context: null,
       timeLimitMs: 16000,
       payload: {
-        options: ["Hierro y carbono", "Cobre y estaño", "Oro y plata", "Sodio y cloro"],
+        options: ["Cobre y estaño", "Hierro y carbono", "Oro y plata", "Sodio y cloro"],
         media: null,
         promptVisual: null,
       },

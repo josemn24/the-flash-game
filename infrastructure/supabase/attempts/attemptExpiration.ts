@@ -1,8 +1,8 @@
 import "server-only";
 
 import { randomUUID } from "node:crypto";
-import { Pool, type PoolClient } from "pg";
-import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
+import { createServiceClient } from "@/infrastructure/supabase/auth/service-client";
+import { serviceRpcError } from "@/infrastructure/supabase/serviceRpcError";
 
 export type AttemptExpirationResult = {
   readonly runId: string;
@@ -30,57 +30,18 @@ function isExpirationResult(value: unknown): value is AttemptExpirationResult {
   );
 }
 
-function databaseUrl() {
-  try {
-    return getSupabaseDatabaseUrl();
-  } catch (error) {
-    throw new Error("database_unavailable", { cause: error });
-  }
-}
-
-const poolKey = Symbol.for("the-flash-game.attempt-expiration-pool");
-const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-
-function getPool() {
-  if (!globalPool[poolKey]) {
-    globalPool[poolKey] = new Pool({
-      connectionString: databaseUrl(),
-      max: 2,
-      idleTimeoutMillis: 10_000,
-      connectionTimeoutMillis: 5_000,
-      application_name: "the-flash-game-attempt-expiration",
-    });
-  }
-  return globalPool[poolKey]!;
-}
-
-async function runExpiration(input: object): Promise<AttemptExpirationResult> {
-  let client: PoolClient | undefined;
-  try {
-    client = await getPool().connect();
-    await client.query("BEGIN");
-    await client.query("SET LOCAL statement_timeout = '5000ms'");
-    await client.query("SET LOCAL idle_in_transaction_session_timeout = '10000ms'");
-    await client.query("SET LOCAL ROLE service_role");
-    const result = await client.query<{ result: unknown }>(
-      "select private.expire_stale_attempts($1::jsonb) as result",
-      [JSON.stringify(input)],
-    );
-    await client.query("COMMIT");
-    if (!isExpirationResult(result.rows[0]?.result)) {
-      throw new Error("invalid_response");
-    }
-    return result.rows[0].result;
-  } catch (error) {
-    try {
-      await client?.query("ROLLBACK");
-    } catch {
-      // Preserve the original database error.
-    }
-    throw error;
-  } finally {
-    client?.release();
-  }
+async function runExpiration(input: {
+  runId: string;
+  roomSlug: string;
+}): Promise<AttemptExpirationResult> {
+  const { data, error, status } = await Promise.resolve(
+    createServiceClient().rpc("expire_stale_attempts", { input }),
+  ).catch((error: unknown) => {
+    throw serviceRpcError(error);
+  });
+  if (error) throw serviceRpcError(error, status);
+  if (!isExpirationResult(data)) throw new Error("invalid_response");
+  return data;
 }
 
 export class SupabaseAttemptExpiration implements AttemptExpirationQueries {

@@ -306,6 +306,7 @@ language sql stable set search_path = '' as $$
           'type', question.type,
           'payloadSchemaVersion', question.payload_schema_version,
           'timeLimitMs', question.time_limit_ms,
+        'difficulty', question.difficulty,
           'points', item.points,
           'modeConfig', item.mode_config,
           'publicPayload', question.public_payload

@@ -85,6 +85,7 @@ export function reconstructLegacyChallenge(scheduledChallengeId: ScheduledChalle
       entries: resolvedItems.map(({ item, question }) => ({
         letter: String(objectConfig(item.modeConfig).letter ?? ""),
         question,
+        points: item.points,
       })),
     };
   }

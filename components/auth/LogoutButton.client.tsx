@@ -17,6 +17,7 @@ export function LogoutButton() {
           setMessage("No se ha podido cerrar la sesión.");
           return;
         }
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- Discard authenticated in-memory state after sign-out.
         window.location.assign("/");
       } catch {
         setMessage("No se ha podido cerrar la sesión.");

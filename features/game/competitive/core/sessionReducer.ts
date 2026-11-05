@@ -9,7 +9,7 @@ import type {
   ServerAlphabetQuestion,
   ServerFlashQuestion,
 } from "@/types/gameplay/challenge";
-import type { CompetitiveAttemptClient } from "../attemptClient";
+import type { GameSessionCommand, GameSessionOperation } from "@/types/contracts/game-session";
 
 export type SessionPhase =
   | "intro"
@@ -25,23 +25,18 @@ export type SessionPhase =
   | "transition"
   | "results"
   | "review";
-export type Attempt = { readonly id: string; readonly lockVersion: number };
+export type Attempt = { readonly id: string; readonly revision: number };
 export type TransferContext = {
-  readonly attemptId: string;
-  readonly lockVersion: number;
+  readonly sessionId: string;
+  readonly revision: number;
   readonly deadlineAt: string | null;
-  readonly scheduledChallengeId: string;
+  readonly challengeId: string;
   readonly idempotencyKey: string;
 };
 export type SessionQuestion = ServerFlashQuestion | ServerAlphabetQuestion;
 export type SessionReview = FlashChallenge | PyramidChallenge | AlphabetChallenge;
-export type Operation = keyof CompetitiveAttemptClient;
-export type PendingCommand = {
-  [K in Operation]: {
-    readonly operation: K;
-    readonly input: Parameters<CompetitiveAttemptClient[K]>[0];
-  };
-}[Operation];
+export type Operation = GameSessionOperation;
+export type PendingCommand<K extends Operation = Operation> = GameSessionCommand<K>;
 export type FeedbackChannel =
   "submission" | "answerVerification" | "reveal" | "queens" | "wordSearch";
 export type Feedback = {
@@ -64,6 +59,7 @@ export type LifecycleError = {
   readonly code?: string;
   readonly retryAt?: number;
   readonly retryable?: boolean;
+  readonly recoveryAction?: "refresh";
 };
 export type SessionState = {
   phase: SessionPhase;
@@ -100,7 +96,7 @@ export type SessionState = {
   };
 };
 export type SessionEvent =
-  | { type: "time_trial"; progress: TimeTrialProgress }
+  | { type: "time_trial"; progress: TimeTrialProgress; now?: number }
   | {
       type: "phase";
       phase: SessionPhase;
@@ -123,6 +119,7 @@ export type SessionEvent =
   | { type: "control_required"; transfer: TransferContext }
   | { type: "control_cancelled" }
   | { type: "feedback_visible" }
+  | { type: "queens_validation_requested" }
   | {
       type: "prepared";
       attempt: Attempt;
@@ -140,6 +137,7 @@ export type SessionEvent =
       question: SessionQuestion;
       selection?: SessionState["lastWordSearchSelection"];
       message?: string;
+      keepLocked?: boolean;
     }
   | {
       type: "answer_accepted";
@@ -200,7 +198,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         deadlineAt: event.progress.deadlineAt
           ? state.timeTrial?.deadlineAt === event.progress.deadlineAt && state.deadlineAt !== null
             ? state.deadlineAt
-            : Date.now() +
+            : (event.now ?? Date.now()) +
               Date.parse(event.progress.deadlineAt) -
               Date.parse(event.progress.serverNow)
           : null,
@@ -234,15 +232,25 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         ...state,
         pendingCommand: event.command,
         completionRetryScheduled: false,
-        busy: event.command.operation !== "queensDraft",
+        busy:
+          event.command.operation !== "queensDraft" &&
+          event.command.operation !== "connectPairsDraft",
         commandStatus: "submitting",
-        locked: event.command.operation === "queensDraft" ? state.locked : true,
+        locked:
+          event.command.operation === "queensDraft" ||
+          event.command.operation === "connectPairsDraft"
+            ? state.locked
+            : true,
         lifecycleError: undefined,
         startNotice: undefined,
         levelNotice: undefined,
-        feedback: event.feedback
-          ? { channel: event.feedback, state: "submitting", visible: false }
-          : undefined,
+        feedback:
+          event.feedback &&
+          ((event.command.operation !== "queensDraft" &&
+            event.command.operation !== "connectPairsDraft") ||
+            state.locked)
+            ? { channel: event.feedback, state: "submitting", visible: false }
+            : undefined,
         phase:
           event.command.operation === "answer" && state.phase === "playing"
             ? "checking"
@@ -316,6 +324,12 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         ...state,
         feedback: state.feedback ? { ...state.feedback, visible: true } : undefined,
       };
+    case "queens_validation_requested":
+      return {
+        ...state,
+        locked: true,
+        feedback: { channel: "queens", state: "submitting", visible: false },
+      };
     case "prepared":
       return {
         ...state,
@@ -341,11 +355,13 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
         commandStatus: "confirmed",
         question: event.question,
         lastWordSearchSelection: event.selection ?? state.lastWordSearchSelection,
-        locked: false,
+        locked: event.keepLocked ?? false,
         busy: false,
-        feedback: event.message
-          ? { channel: "queens", state: "idle", visible: true, message: event.message }
-          : undefined,
+        feedback: event.keepLocked
+          ? state.feedback
+          : event.message
+            ? { channel: "queens", state: "idle", visible: true, message: event.message }
+            : undefined,
       };
     case "answer_accepted": {
       if (state.results.some((answer) => answer.questionId === event.result.questionId))

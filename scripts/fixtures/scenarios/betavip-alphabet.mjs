@@ -2,10 +2,10 @@ export const BETA_VIP_ALPHABET = {
   slug: "world-geography-alphabet-definition",
   definitionSlug: "betavip-la-vuelta-al-mundo",
   title: "La vuelta al mundo",
-  subtitle: "Dieciocho letras para recorrer el planeta",
+  subtitle: "Dieciséis letras para recorrer el planeta",
   description:
-    "Recorre dieciocho letras entre paisajes, países y capitales. Responde o pasa para volver a intentarlo antes de que se agote el tiempo.",
-  globalTimeLimitMs: 135_000,
+    "Recorre dieciséis letras entre paisajes, países y capitales. Responde o pasa para volver a intentarlo antes de que se agote el tiempo.",
+  globalTimeLimitMs: 150_000,
   questionTimeLimitMs: 120_000,
   entries: [
     {
@@ -55,22 +55,6 @@ export const BETA_VIP_ALPHABET = {
       acceptedAnswers: ["fiordo", "fiordos"],
       topic: "physical_geography",
       explanation: "Un fiordo es un valle excavado por un glaciar e inundado por el mar.",
-    },
-    {
-      letter: "G",
-      prompt: "Gran masa de hielo que se desplaza lentamente sobre la tierra.",
-      correctAnswer: "glaciar",
-      acceptedAnswers: ["glaciar", "glaciares"],
-      topic: "physical_geography",
-      explanation: "Un glaciar es una gran masa de hielo que fluye lentamente.",
-    },
-    {
-      letter: "H",
-      prompt: "Cada una de las dos mitades en que puede dividirse la Tierra.",
-      correctAnswer: "hemisferio",
-      acceptedAnswers: ["hemisferio", "hemisferios"],
-      topic: "physical_geography",
-      explanation: "Un hemisferio es una mitad de la esfera terrestre.",
     },
     {
       letter: "I",

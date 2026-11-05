@@ -5,6 +5,13 @@ import path from "node:path";
 import sharp from "sharp";
 import TABARNIA_MOCK_CONTENT from "./fixtures/scenarios/tabarnia-content.json" with { type: "json" };
 import TABARNIA_ALPHABET_CONTENT from "./fixtures/scenarios/tabarnia-alphabet.json" with { type: "json" };
+import {
+  TABARNIA_FICTION_ALPHABET,
+  tabarniaMultiverseQuestions,
+} from "./fixtures/scenarios/tabarnia-multiverse.mjs";
+import { TABARNIA_PYRAMID_LOGIC_CONTENT } from "./fixtures/scenarios/tabarnia-pyramid-logic.mjs";
+import { TABARNIA_QUEENS_TIME_TRIAL } from "./fixtures/scenarios/tabarnia-time-trial-queens.mjs";
+import { TABARNIA_CONNECT_PAIRS_TIME_TRIAL } from "./fixtures/scenarios/tabarnia-time-trial-connect-pairs.mjs";
 import { SBR_QUESTIONS } from "./fixtures/scenarios/sbr.mjs";
 import { loadMiniWordleDictionary } from "./load-mini-wordle-dictionary.mjs";
 import {
@@ -14,6 +21,7 @@ import {
   scheduleStartExpression,
   scheduleInterval,
   scheduleManifest,
+  scheduleSeason,
   validateFutureStartAt,
 } from "./schedule-profile.mjs";
 import {
@@ -82,6 +90,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Ches-123!",
     displayName: "Ches",
     role: "owner",
+    avatarFile: "ches.jpg",
   },
   {
     label: "dark",
@@ -89,7 +98,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Dark-123!",
     displayName: "Dark",
     role: "member",
-    avatarFile: "dark.jpeg",
+    avatarFile: "dark.webp",
   },
   {
     label: "palmera",
@@ -105,6 +114,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Carlos-123!",
     displayName: "Carlos",
     role: "member",
+    avatarFile: "carlos.jpg",
   },
   {
     label: "kike",
@@ -120,6 +130,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Javi-123!",
     displayName: "Javi",
     role: "member",
+    avatarFile: "javi.jpg",
   },
   {
     label: "rielbe",
@@ -135,6 +146,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Alejandro-123!",
     displayName: "Alejandro",
     role: "member",
+    avatarFile: "alejandro.jpeg",
   },
   {
     label: "jacobo",
@@ -150,7 +162,7 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Lambda-123!",
     displayName: "Lambda",
     role: "member",
-    avatarFile: "lambda.jpg",
+    avatarFile: "lambda.jpeg",
   },
   {
     label: "jhon3d",
@@ -166,6 +178,31 @@ export const TABARNIA_USERS = [
     password: "Tabarnia-local-Diego-123!",
     displayName: "Diego",
     role: "member",
+    avatarFile: "diego.jpg",
+  },
+  {
+    label: "mimi",
+    email: "mimi@tabarnia.local",
+    password: "Tabarnia-local-Mimi-123!",
+    displayName: "Mimi",
+    role: "member",
+    avatarFile: "mimi.jpg",
+  },
+  {
+    label: "lucas",
+    email: "lucas@tabarnia.local",
+    password: "Tabarnia-local-Lucas-123!",
+    displayName: "Lucas",
+    role: "member",
+    avatarFile: "lucas.jpg",
+  },
+  {
+    label: "neak",
+    email: "neak@tabarnia.local",
+    password: "Tabarnia-local-Neak-123!",
+    displayName: "Neak",
+    role: "member",
+    avatarFile: "neak.jpeg",
   },
 ];
 
@@ -217,7 +254,7 @@ async function getImageMetadata(filePath, expected = {}) {
   return getImageMetadataFromBytes(await readFile(filePath), filePath, expected);
 }
 
-async function prepareSpainAssets() {
+export async function prepareSpainAssets() {
   const tempDirectory = await mkdtemp(path.join(os.tmpdir(), "tabarnia-spain-assets-"));
   try {
     const assets = {};
@@ -252,7 +289,7 @@ async function prepareSpainAssets() {
   }
 }
 
-async function getSbrMapMetadata() {
+export async function getSbrMapMetadata() {
   return getImageMetadata(sbrMapPath, {
     expectedFormat: "png",
     expectedWidth: 1859,
@@ -260,7 +297,7 @@ async function getSbrMapMetadata() {
   });
 }
 
-async function getAvatarMetadata(user) {
+export async function getAvatarMetadata(user) {
   const filePath = path.join(avatarDirectory, user.avatarFile);
   const extension = path.extname(user.avatarFile).slice(1).toLowerCase();
   const expectedMimeType = avatarMimeTypes[extension];
@@ -284,6 +321,10 @@ function challengeId(slug) {
     "animals-alphabet-definition": "challenge-definition:animals-alphabet",
     "spain-survival-definition": "challenge-definition:spain-survival",
     "pyramid-abrahamic-definition": "challenge-definition:bible-pyramid",
+    "pyramid-logic-definition": "challenge-definition:tabarnia-pyramid-logic",
+    [TABARNIA_QUEENS_TIME_TRIAL.challenge.slug]: "challenge-definition:tabarnia-queens-time-trial",
+    [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]:
+      "challenge-definition:tabarnia-connect-pairs-time-trial",
     "steel-ball-run": "challenge-definition:steel-ball-run",
   };
   return stableId(labels[slug]);
@@ -294,6 +335,10 @@ function challengeVersionId(slug) {
     "animals-alphabet-definition": "challenge-version:animals-alphabet-v1",
     "spain-survival-definition": "challenge-version:spain-survival-v1",
     "pyramid-abrahamic-definition": "challenge-version:bible-pyramid-v1",
+    "pyramid-logic-definition": "challenge-version:tabarnia-pyramid-logic-v1",
+    [TABARNIA_QUEENS_TIME_TRIAL.challenge.slug]: "challenge-version:tabarnia-queens-time-trial-v1",
+    [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]:
+      "challenge-version:tabarnia-connect-pairs-time-trial-v1",
     "steel-ball-run": "challenge-version:steel-ball-run-v1",
   };
   return stableId(labels[slug]);
@@ -354,6 +399,11 @@ function persistedQuestion(mockQuestion, points, spainAssets, expectedSlug) {
     case "classification":
     case "word-search":
     case "word-hashtag":
+    case "odd-one-out":
+    case "logic-matrix":
+    case "connect-pairs":
+    case "logic-code":
+    case "queens":
       Object.assign(publicPayload, source);
       if (mockQuestion.type === "word-search") {
         solutionPayload = {
@@ -404,6 +454,10 @@ function persistedQuestion(mockQuestion, points, spainAssets, expectedSlug) {
 
 function tabarniaChallenges() {
   const alphabet = TABARNIA_ALPHABET_CONTENT.challenge;
+  const fictionAlphabet = TABARNIA_FICTION_ALPHABET;
+  const logicPyramid = TABARNIA_PYRAMID_LOGIC_CONTENT.challenge;
+  const queensTimeTrial = TABARNIA_QUEENS_TIME_TRIAL.challenge;
+  const connectPairsTimeTrial = TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge;
   const spanish = TABARNIA_MOCK_CONTENT.challenges.find(
     (challenge) => challenge.slug === "spain-survival-definition",
   );
@@ -411,23 +465,6 @@ function tabarniaChallenges() {
     (challenge) => challenge.slug === "pyramid-abrahamic-definition",
   );
   return [
-    {
-      ...alphabet,
-      definitionSlug: "tabarnia-reino-animales",
-      id: challengeId(alphabet.slug),
-      versionId: challengeVersionId(alphabet.slug),
-      globalTimeLimitMs: alphabet.modeConfig.timeLimitMs,
-      modeConfig: {},
-      items: alphabet.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
-    },
-    {
-      ...bible,
-      definitionSlug: "tabarnia-piramide-biblia",
-      id: challengeId(bible.slug),
-      versionId: challengeVersionId(bible.slug),
-      modeConfig: {},
-      items: bible.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
-    },
     {
       slug: "steel-ball-run",
       definitionSlug: "tabarnia-flash-01",
@@ -441,12 +478,65 @@ function tabarniaChallenges() {
       items: SBR_QUESTIONS.map((item) => ({ ...item, questionSlug: item.slug, modeConfig: {} })),
     },
     {
+      ...alphabet,
+      definitionSlug: "tabarnia-reino-animales",
+      id: challengeId(alphabet.slug),
+      versionId: challengeVersionId(alphabet.slug),
+      globalTimeLimitMs: alphabet.modeConfig.timeLimitMs,
+      modeConfig: {},
+      items: alphabet.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
+    },
+    {
+      ...queensTimeTrial,
+      definitionSlug: "tabarnia-contrarreloj-queens",
+      id: challengeId(queensTimeTrial.slug),
+      versionId: challengeVersionId(queensTimeTrial.slug),
+      modeConfig: {},
+      items: queensTimeTrial.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
+    },
+    {
       ...spanish,
       definitionSlug: "tabarnia-supervivencia-espana",
       id: challengeId(spanish.slug),
       versionId: challengeVersionId(spanish.slug),
       modeConfig: { lives: 3 },
       items: spanish.items.map((item) => ({ ...item, modeConfig: {} })),
+    },
+    {
+      ...logicPyramid,
+      definitionSlug: "tabarnia-piramide-cumbre-logica",
+      id: challengeId(logicPyramid.slug),
+      versionId: challengeVersionId(logicPyramid.slug),
+      modeConfig: {},
+      items: logicPyramid.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
+    },
+    {
+      ...fictionAlphabet,
+      id: challengeId(fictionAlphabet.slug),
+      versionId: challengeVersionId(fictionAlphabet.slug),
+      mode: "alphabet",
+      modeConfig: {},
+      items: tabarniaMultiverseQuestions().map((question, index) => ({
+        questionSlug: question.slug,
+        points: question.points,
+        modeConfig: { letter: fictionAlphabet.entries[index].letter },
+      })),
+    },
+    {
+      ...connectPairsTimeTrial,
+      definitionSlug: "tabarnia-contrarreloj-conectar-parejas",
+      id: challengeId(connectPairsTimeTrial.slug),
+      versionId: challengeVersionId(connectPairsTimeTrial.slug),
+      modeConfig: {},
+      items: connectPairsTimeTrial.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
+    },
+    {
+      ...bible,
+      definitionSlug: "tabarnia-piramide-biblia",
+      id: challengeId(bible.slug),
+      versionId: challengeVersionId(bible.slug),
+      modeConfig: {},
+      items: bible.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
     },
   ];
 }
@@ -458,15 +548,26 @@ export function buildTabarniaDomainSql({
   avatarMetadata,
   schedule = "production",
   startsAt = null,
+  conflictSafe = false,
+  wrapTransaction = true,
 }) {
   const profile = resolveScheduleProfile(schedule);
   const normalizedStartAt = normalizeStartAt(startsAt);
   const seasonStart = scheduleStartExpression(normalizedStartAt);
-  const seasonEnd = `${seasonStart} + interval '${profile.tabarniaSeasonEnd}'`;
   const xesmona = accounts.xesmona.playerId;
   const roomId = stableId("room:tabarnia");
   const seasonId = stableId("season:tabarnia-alpha");
   const challenges = tabarniaChallenges();
+  const season = scheduleSeason(profile, challenges.length, "tabarnia", normalizedStartAt);
+  const seasonEnd = `${seasonStart} + interval '${season.endInterval}'`;
+  const conflictClause = conflictSafe ? "\non conflict (id) do nothing" : "";
+  const roleConflictClause = conflictSafe ? "\non conflict (player_id) do nothing" : "";
+  const membershipConflictClause = conflictSafe
+    ? "\non conflict (room_id, player_id) do nothing"
+    : "";
+  const solutionConflictClause = conflictSafe
+    ? "\non conflict (question_version_id) do nothing"
+    : "";
   const items = [];
   const alphabetItems = challenges.find(
     (challenge) => challenge.slug === "animals-alphabet-definition",
@@ -477,8 +578,13 @@ export function buildTabarniaDomainSql({
   const bibleItems = challenges.find(
     (challenge) => challenge.slug === "pyramid-abrahamic-definition",
   ).items;
+  const logicPyramidItems = challenges.find(
+    (challenge) => challenge.slug === TABARNIA_PYRAMID_LOGIC_CONTENT.challenge.slug,
+  ).items;
   const mockQuestions = new Map(
-    TABARNIA_MOCK_CONTENT.questions.map((question) => [question.slug, question]),
+    [...TABARNIA_MOCK_CONTENT.questions, ...TABARNIA_PYRAMID_LOGIC_CONTENT.questions].map(
+      (question) => [question.slug, question],
+    ),
   );
   const questions = [
     ...alphabetItems.map((item) =>
@@ -505,6 +611,17 @@ export function buildTabarniaDomainSql({
         item.questionSlug,
       ),
     ),
+    ...tabarniaMultiverseQuestions(),
+    ...logicPyramidItems.map((item) =>
+      persistedQuestion(
+        mockQuestions.get(item.questionSlug),
+        item.points,
+        spainAssets,
+        item.questionSlug,
+      ),
+    ),
+    ...TABARNIA_QUEENS_TIME_TRIAL.questions,
+    ...TABARNIA_CONNECT_PAIRS_TIME_TRIAL.questions,
     ...SBR_QUESTIONS.map((item) => ({
       ...item,
       publicPayload: JSON.parse(
@@ -539,12 +656,31 @@ export function buildTabarniaDomainSql({
         `(${sqlString(stableId(`question-version:${item.slug}`))}, ${sqlString(JSON.stringify(item.solutionPayload))})`,
     )
     .join(",\n");
+  const solutionInsertSource = conflictSafe
+    ? `select incoming.question_version_id::uuid, incoming.solution_payload::jsonb
+       from (values ${solutionSql}) as incoming(question_version_id, solution_payload)
+      where not exists (
+        select 1 from private.question_version_solutions existing
+         where existing.question_version_id::text = incoming.question_version_id
+      )`
+    : `values\n${solutionSql}`;
   const challengeItemSql = items
     .map(({ item, challenge, index }) => {
       const config = item.modeConfig ?? {};
       return `(${sqlString(stableId(`challenge-item:${item.questionSlug}`))}, ${sqlString(challenge.versionId)}, ${sqlString(stableId(`question-version:${item.questionSlug}`))}, ${index + 1}, ${item.points}, 1, ${sqlString(JSON.stringify(config))})`;
     })
     .join(",\n");
+  const challengeItemInsertSource = conflictSafe
+    ? `select incoming.id::uuid, incoming.challenge_version_id::uuid, incoming.question_version_id::uuid,
+              incoming.position, incoming.points, incoming.config_schema_version, incoming.mode_config::jsonb
+       from (values ${challengeItemSql}) as incoming(
+         id, challenge_version_id, question_version_id, position, points,
+         config_schema_version, mode_config
+       )
+      where not exists (
+        select 1 from private.challenge_items existing where existing.id::text = incoming.id
+      )`
+    : `values\n${challengeItemSql}`;
   const publishedQuestionIds = questions
     .map((item) => sqlString(stableId(`question-version:${item.slug}`)))
     .join(", ");
@@ -574,7 +710,7 @@ export function buildTabarniaDomainSql({
   const avatarPlayerUpdates = avatarAssets
     .map(
       (avatar) =>
-        `update public.players set avatar_path = ${sqlString(avatar.objectPath)} where id = ${sqlString(avatar.playerId)};`,
+        `update public.players set avatar_path = ${sqlString(avatar.objectPath)} where id = ${sqlString(avatar.playerId)} and avatar_path is distinct from ${sqlString(avatar.objectPath)};`,
     )
     .join("\n");
   const mediaAssets = [
@@ -611,85 +747,83 @@ export function buildTabarniaDomainSql({
     .map((challenge, index) => {
       const start = index === 0 ? seasonStart : scheduleInterval(profile, index, normalizedStartAt);
       const end = scheduleInterval(profile, index + 1, normalizedStartAt);
-      const status = index === 0 ? "open" : "scheduled";
+      const status = index === 0 && !normalizedStartAt ? "open" : "scheduled";
       return `(${sqlString(publicationId(challenge.slug))}, ${sqlString(seasonId)}, ${sqlString(challenge.versionId)}, ${index + 1}, '${status}', ${start}, ${end})`;
     })
     .join(",\n");
 
-  return `
-begin;
-set constraints all deferred;
+  return `${wrapTransaction ? "begin;\n" : ""}set constraints all deferred;
 
 insert into private.platform_role_assignments (player_id, role)
-values (${sqlString(xesmona)}, 'superadmin');
+values (${sqlString(xesmona)}, 'superadmin')${roleConflictClause};
 
 insert into public.rooms (id, slug, title, description, time_zone, status)
-values (${sqlString(roomId)}, 'tabarnia', 'Tabarnia', 'Sala privada de la alpha de The Flash.', 'Europe/Madrid', 'active');
+values (${sqlString(roomId)}, 'tabarnia', 'Tabarnia', 'Sala privada de la alpha de The Flash.', 'Europe/Madrid', 'active')${conflictClause};
 
 insert into public.room_memberships (room_id, player_id, role, status, joined_at)
 values
-${memberships};
+${memberships}${membershipConflictClause};
 
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at)
-values (${sqlString(seasonId)}, ${sqlString(roomId)}, 'Temporada Alpha de Tabarnia', 'active', ${seasonStart}, ${seasonEnd});
+values (${sqlString(seasonId)}, ${sqlString(roomId)}, 'Temporada Alpha de Tabarnia', 'active', ${seasonStart}, ${seasonEnd})${conflictClause};
 
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, created_by_player_id, mime_type, byte_size, width, height, sha256)
 values
-${questionMediaSql};
+${questionMediaSql}${conflictClause};
 
 insert into private.media_assets
   (id, bucket_id, object_path, kind, status, owner_player_id, created_by_player_id,
    mime_type, byte_size, width, height, sha256)
 values
-${avatarMediaSql};
+${avatarMediaSql}${conflictClause};
 
 ${avatarPlayerUpdates}
 
 insert into private.question_definitions (id, slug, created_by_player_id)
 values
-${questionDefinitionSql};
+${questionDefinitionSql}${conflictClause};
 
 insert into private.question_versions
   (id, question_definition_id, version_number, payload_schema_version, status, type,
    time_limit_ms, public_payload, created_by_player_id)
 values
-${questionVersionSql};
+${questionVersionSql}${conflictClause};
 
 insert into private.question_version_solutions (question_version_id, solution_payload)
-values
-${solutionSql};
+${solutionInsertSource}${solutionConflictClause};
 
 update private.question_versions
-set status = 'published', published_at = now()
-where id in (${publishedQuestionIds});
+set status = 'published', published_at = coalesce(published_at, now())
+where id in (${publishedQuestionIds}) and status <> 'published';
 
 insert into private.challenge_definitions (id, slug, created_by_player_id)
 values
-${challengeDefinitionSql};
+${challengeDefinitionSql}${conflictClause};
 
 insert into private.challenge_versions
   (id, challenge_definition_id, version_number, config_schema_version, status, mode,
    title, subtitle, description, max_score, global_time_limit_ms, mode_config, created_by_player_id, published_at)
 values
-${challengeVersionSql};
+${challengeVersionSql}${conflictClause};
 
 insert into private.challenge_items
   (id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config)
-values
-${challengeItemSql};
+${challengeItemInsertSource}${conflictClause};
 
 update private.challenge_versions
-set status = 'published', published_at = now()
-where id in (${challenges.map((challenge) => sqlString(challenge.versionId)).join(", ")});
+set status = 'published', published_at = coalesce(published_at, now())
+where id in (${challenges.map((challenge) => sqlString(challenge.versionId)).join(", ")})
+  and status <> 'published';
 
 insert into public.scheduled_challenges
   (id, season_id, challenge_version_id, number, status, opens_at, closes_at)
 values
-${scheduledSql};
+${scheduledSql}${conflictClause};
+
 
 set constraints all immediate;
-commit;
+${wrapTransaction ? "commit;" : ""}
 `;
 }
 
@@ -716,7 +850,7 @@ export function tabarniaManifest(
   const scheduleData = scheduleManifest(
     profile,
     challenges.length,
-    profile.name === "fast" ? 20 : 17 * 24 * 60,
+    scheduleSeason(profile, challenges.length, "tabarnia", normalizedStartAt).durationMinutes,
     normalizedStartAt,
   );
   return {
@@ -737,7 +871,7 @@ export function tabarniaManifest(
       questionCount: challenge.items.length,
       pointsTotal: challenge.items.reduce((total, item) => total + item.points, 0),
       ...scheduleData.publications[index],
-      status: index === 0 ? "open" : "scheduled",
+      status: index === 0 && !normalizedStartAt ? "open" : "scheduled",
     })),
     questionAssets: questionAssetDefinitions.map((asset) => ({
       id: stableId(asset.label),
@@ -757,6 +891,15 @@ export function tabarniaManifest(
   };
 }
 
+export function validateTabarniaSchedule(schedule = "production", startsAt = null) {
+  return scheduleSeason(
+    resolveScheduleProfile(schedule),
+    tabarniaChallenges().length,
+    "tabarnia",
+    startsAt,
+  );
+}
+
 export async function setupTabarniaDataset({
   schedule = "production",
   startsAt = null,
@@ -764,6 +907,7 @@ export async function setupTabarniaDataset({
 } = {}) {
   const profile = resolveScheduleProfile(schedule);
   const normalizedStartAt = validateFutureStartAt(startsAt);
+  validateTabarniaSchedule(profile.name, normalizedStartAt);
   const loadConfig = dependencies.localSupabaseConfig ?? localSupabaseConfig;
   const reset = dependencies.resetLocalDatabase ?? resetLocalDatabase;
   const removeStaleFixture = dependencies.removeFixture ?? removeFixture;
@@ -873,7 +1017,7 @@ export async function setupTabarniaDataset({
 async function main() {
   const { schedule, startsAt } = parseScheduleArgs(
     process.argv.slice(2),
-    "Uso: npm run supabase:tabarnia:setup -- [--schedule <production|fast>] [--starts-at <ISO-8601-con-zona-horaria>]",
+    "Uso: npm run supabase:tabarnia:setup -- [--schedule <production|fast|Nm|Nh>] [--starts-at <ISO-8601-con-zona-horaria>]",
   );
   const output = await setupTabarniaDataset({ schedule, startsAt });
   console.log("Dataset Tabarnia creado en output/fixtures/tabarnia.json.");

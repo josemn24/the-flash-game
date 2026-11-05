@@ -21,4 +21,50 @@
     min-width: 0;
     justify-content: flex-end;
   }
+
+  .rulesCards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    width: min(100%, 27rem);
+    margin: 0 auto;
+    padding: var(--space-2);
+    border-radius: var(--radius-card);
+    background: var(--ds-color-bg-surface-raised);
+    list-style: none;
+  }
+
+  .rulesCards li {
+    display: grid;
+    min-width: 0;
+    min-height: 80px;
+    align-items: center;
+    padding: var(--space-3) var(--space-2);
+    border-radius: var(--radius-control);
+    color: var(--ds-color-fg-primary);
+    background: color-mix(
+      in srgb,
+      var(--ds-color-bg-surface-soft) 55%,
+      var(--ds-color-bg-surface-raised)
+    );
+    font-size: clamp(0.6875rem, 3vw, 0.8125rem);
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .connectPairsRules {
+    width: min(100%, 31rem);
+  }
+
+  @media (max-width: 360px) {
+    .rulesCards {
+      gap: var(--space-1);
+    }
+
+    .rulesCards li {
+      padding-inline: var(--space-1);
+    }
+  }
 }

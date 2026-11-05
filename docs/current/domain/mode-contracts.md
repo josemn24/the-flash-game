@@ -1,8 +1,8 @@
-# Contratos funcionales recomendados por modo
+# Contratos funcionales por modo
 
 ## Estado del documento
 
-Última actualización: 2026-10-11.
+Último contraste documental: 2026-11-02. Las reglas por modo se conservan; no se cambian evaluadores.
 
 Este documento consolida el comportamiento observado en los modos actuales y las recomendaciones
 funcionales que deben guiar las siguientes fases. No define tablas, APIs, endpoints ni detalles de
@@ -12,7 +12,7 @@ La política de recuperación de interacción iniciada que figura en este docume
 por la decisión y ADR de 2026-09-15.
 
 Los cinco modos anteriores se describen en las secciones 1 a 5. La sección 6 describe Contrarreloj,
-implementado inicialmente para Queens. El modo existente se
+implementado para Queens y Conectar parejas. El modo existente se
 denomina únicamente **Flash**.
 
 La jerarquía documental aplicable es la descrita en [`README.md`](README.md): los ADR y las
@@ -101,7 +101,7 @@ modo deba registrar una como no contestada.
 
 ### Ranking por desafío
 
-Los cinco modos actuales usan provisionalmente el mismo comparador para el ranking de cada desafío:
+Flash, Alfabeto, Supervivencia, Narrativa y Pirámide usan el mismo comparador para el ranking de cada desafío:
 
 1. Más Flash Points.
 2. Menor duración efectiva del intento: la suma de `AttemptAnswer.timeUsedMs`, incluyendo respuestas
@@ -115,11 +115,11 @@ Points acumulados.
 
 Contrarreloj tiene un comparador específico: pruebas resueltas y tiempo global hasta el último
 acierto. La [decisión del modo](../../decisions/decisions.md#21-contrarreloj-reglas-acordadas)
-no cambia el comparador de los cinco modos actuales ni el ranking de temporada.
+no cambia el comparador de esos cinco modos ni el ranking de temporada.
 
 ## 1. Flash (`flash`)
 
-### Contrato recomendado
+### Contrato vigente
 
 - **Inicio:** al confirmar el inicio del desafío —en el shell competitivo, después de la cuenta
   atrás— se crea o recupera el único intento. Ver la introducción no lo consume.
@@ -144,13 +144,14 @@ no cambia el comparador de los cinco modos actuales ni el ranking de temporada.
 
 ### Observación de implementación
 
-`useGameSession` ya modela la secuencia, los timers por pregunta, el timeout y un snapshot. El shell
-`Flash Pop` conecta la reanudación de sala; `FlashGameApp` independiente conserva el flujo de
-preview. La persistencia autoritativa del checkpoint debe quedar para la fase de servidor.
+Flash competitivo y su ensayo comparten motor mediante `GameSessionProvider`. La autoridad
+remota conserva los hechos en Supabase; la local permanece en memoria. La biblioteca didáctica
+mantiene sus controles de práctica. La [referencia de proveedores](../game-session-providers.md)
+detalla esta composición.
 
 ## 2. Alfabeto (`alphabet`)
 
-### Contrato recomendado
+### Contrato vigente
 
 - **Inicio:** la partida empieza después de la cuenta atrás y consume el único intento competitivo.
   Cada letra se visita en el mismo intento; `Pasar` no crea una oportunidad nueva.
@@ -196,7 +197,7 @@ versión reconcilia el intento antes de crear un nuevo comando de cierre.
 
 ## 3. Supervivencia (`survival`)
 
-### Contrato recomendado
+### Contrato vigente
 
 - **Inicio:** la cuenta atrás termina y empieza la primera pregunta. En ese momento se crea o
   recupera el intento competitivo.
@@ -204,14 +205,15 @@ versión reconcilia el intento antes de crear un nuevo comando de cierre.
   la cantidad de preguntas. El editor ofrece 3 por defecto, limitadas al número de preguntas.
 - **Duración:** un `timeLimit` por pregunta. Las vidas pertenecen al modo y no son un saldo de
   temporada ni una segunda recompensa.
-- **Agotamiento del tiempo:** genera `unanswered` y aplica la pérdida de vida definida por el modo.
-  Si quedan vidas, se continúa; si llega a cero, termina la partida. El timeout no es abandono.
+- **Agotamiento del tiempo:** aplica la evaluación temporal del formato. Un resultado
+  `unanswered` consume una vida; un resultado `partial` conserva las vidas. Si quedan vidas,
+  se continúa; si llega a cero, termina la partida. El timeout no es abandono.
 - **Finalización:** termina al agotar todas las vidas o al resolver la última pregunta. `eliminated`
   y `survived` son feedback interno; ambos producen un intento global `completed` si el flujo llegó
   a su final reglamentario.
-- **Pérdida de vida:** `incorrect` y `unanswered` descuentan una vida. Matching y Queens también
-  descuentan por errores parciales guardados en sus eventos; Matching cierra inmediatamente ante un
-  error cuando queda una sola vida.
+- **Pérdida de vida:** `incorrect` y `unanswered` descuentan una vida. Matching competitivo se
+  evalúa mediante una comprobación final. Queens consume como máximo una vida por resultado con
+  validaciones incorrectas, incluso si termina resuelto. Los resultados parciales no consumen vida.
 - **Estado global:** `inProgress` mientras se puede responder; `completed` al ser eliminado por la
   mecánica o al llegar al final.
 - **Recuperación y abandono:** una pregunta temporizada activa sin recepción se registra
@@ -238,7 +240,7 @@ sin puntos, con `terminal_reason = inactivity_timeout`.
 
 ## 4. Narrativa (`narrative`)
 
-### Contrato recomendado
+### Contrato vigente
 
 - **Inicio:** iniciar la experiencia crea el intento y comienza la secuencia narrativa. Las escenas
   introductorias forman parte del flujo, pero no son preguntas.
@@ -279,13 +281,19 @@ segundo log narrativo.
 
 ## 5. La Pirámide (`pyramid`)
 
-### Contrato recomendado
+### Contrato competitivo de referencia
+
+La [especificación de Pirámide y su matriz de pruebas](../pyramid-session-contract.md) fija el
+comportamiento competitivo de referencia. Competición y ensayo local usan el mismo controlador y
+vista con proveedores remoto y en memoria; la biblioteca didáctica conserva sus controles de formato.
 
 - **Inicio:** iniciar el ascenso crea o recupera el intento. Cada nivel tiene un briefing y después
   una pregunta; cambiar de briefing no consume otro intento.
-- **Duración:** un `timeLimit` por nivel, limitado por la ventana o deadline aplicable al desafío.
-  El cierre de la publicación sin intento sigue siendo `expired`; no debe confundirse con el
-  timeout de un nivel ya iniciado.
+- **Duración:** cada nivel recibe su duración publicada completa desde la activación. Preparar
+  entrega el contenido autorizado sin iniciar el reloj; la vista lo oculta hasta confirmar
+  `activate`. Repetir la activación no reinicia su plazo. No hay deadline global de Pirámide;
+  un intento válido puede continuar después del cierre ordinario de la publicación. Ese cierre
+  impide un intento nuevo, mientras que cancelación, permisos e inactividad conservan sus reglas.
 - **Agotamiento del tiempo:** registra el nivel como no superado y finaliza La Pirámide según su
   regla actual. El resultado temporal es `unanswered`, pero el intento global es `completed` porque
   el modo llegó a su final reglamentario.
@@ -301,19 +309,21 @@ segundo log narrativo.
 - **Estado global:** `inProgress` mientras el jugador está en briefing o resolviendo un nivel;
   `completed` después de cima o fallo de nivel; `abandoned` por abandono explícito o por pérdida
   del permiso competitivo.
-- **Recuperación y abandono:** un briefing previo al inicio del temporizador se reanuda. Si el nivel
-  temporizado ya se preparó y no existe recepción, se registra como `unanswered`, no se supera y La
-  Pirámide termina con resultado interno `failed` y estado global `completed`; no hay vuelta a ese
-  nivel. Abandonar explícitamente marca `abandoned`.
-- **Checkpoint recomendado:** reutilizar `PyramidAttemptRecord`: nivel actual, resultados,
-  códigos enviados y aceptados, intentos incorrectos, pistas reveladas, `levelStartedAt`, deadline,
-  fase y versión del contenido. Al finalizar, el snapshot deja de ser reanudable.
+- **Recuperación y abandono:** un briefing o preparación sin activación se conserva sin reloj ni
+  respuesta ficticia. Una recepción final pendiente se evalúa antes de resolver la interrupción.
+  Si se interrumpe un nivel activo, el servidor cierra el intervalo y reconstruye la resolución
+  desde recepción y eventos del formato: una respuesta nula produce `unanswered` y cero puntos;
+  una resolución no correcta termina como `completed` / `failed`. La conformidad de recuperación
+  de cada formato requiere su prueba específica. Abandonar explícitamente marca `abandoned`.
+- **Progreso confirmado:** nivel autorizado, evaluaciones, eventos de formato y plazos del servidor.
+  El ensayo confirma esos mismos hechos en una autoridad en memoria a través de `GameSessionProvider`;
+  la composición recibe una definición canónica privada y la vista recibe estado público.
 - **Resultado y feedback:** mostrar Flash Points y niveles alcanzados. “Cima conquistada” se reserva
   para `summit`; “Ascenso terminado” describe `failed` sin convertirlo en un fallo global. Tras un
   intento terminal iniciado, mostrar respuestas propias y soluciones.
 - **Ranking:** aplica el comparador común de ranking por desafío; `levelsCleared` y `outcome` son
   métricas del modo, no criterios adicionales de desempate.
-- **Replay:** el preview independiente conserva replay; con `roomContext` el resultado y la revisión
+- **Replay:** el ensayo independiente crea una ejecución nueva en memoria; con `roomContext` el resultado y la revisión
   solo ofrecen navegación y consulta.
 
 ### Implementación S15 (verificada en Supabase local)
@@ -322,21 +332,24 @@ La ruta competitiva carga una proyección de siete briefings sin payloads de pre
 nivel obtiene solo su pregunta preparada. Las unidades temporales usan scope `level`. El servidor
 guarda recibos y evaluaciones, deriva los niveles superados, `summit`/`failed`, el score y el cierre,
 y no permite preparar después de una respuesta no correcta. La recuperación en briefing reanuda sin
-iniciar reloj; si se interrumpe un nivel temporizado lo resuelve como `unanswered` y finaliza el
-intento. Los roles autorizados pueden leer el resultado terminal y la revisión; la revisión histórica
+iniciar reloj; si se interrumpe un nivel activo, resuelve su recepción y eventos según el
+[contrato de recuperación](../pyramid-session-contract.md#5-reintento-y-recuperación-son-operaciones-distintas).
+Una resolución no correcta finaliza el intento. Los roles autorizados pueden leer el resultado terminal y la revisión; la revisión histórica
 muestra los siete niveles y bloquea los no alcanzados sin payload. El
 editor/calendario y rankings existentes incluyen `pyramid`; no se añaden tablas. La migración,
 pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se validó despliegue remoto.
 
 ## 6. Contrarreloj
 
-- **Identificador y contenido:** `time-trial`; 2–20 Queens 4×4 a 8×8 en orden fijo creciente.
+- **Identificador y contenido:** `time-trial`; 2–20 pruebas de un mismo formato: Queens 4×4 a 8×8 o Conectar parejas cuadradas 4×4 a 8×8, con entre tres parejas y tantas como filas. Los tamaños de Conectar parejas pueden mezclarse; el formato no.
 - **Duración:** segundos enteros positivos obligatorios, sin default. La primera preparación posterior
   a la cuenta atrás fija el deadline una sola vez; intro y cuenta atrás no crean intento.
   Todas las pruebas comparten reloj, incluidas validaciones, cargas y transiciones de 1,1 segundos.
 - **Puntuación:** pesos enteros positivos que suman 100; acierto completo sin bonus, parcial ni penalización.
-- **Oportunidades:** dos validaciones completas incorrectas permiten continuar; la tercera termina.
+- **Oportunidades Queens:** dos validaciones completas incorrectas permiten continuar; la tercera termina.
   Movimientos exploratorios y solicitudes inválidas no consumen oportunidades.
+- **Conectar parejas:** rehacer caminos es libre; solo conectar todas las parejas sin cruces y cubrir
+  todas las casillas concede puntos. Entradas incompletas o inválidas se rechazan sin finalizar el tablero.
 - **Finalización:** `completed`, `outcome = null`; `all_solved`, `validation_limit`, `time_limit` o
   `recovery_interrupted`. Conservar puntos previos; conciliar recepciones aceptadas antes de cerrar.
   Una recepción debe ocurrir después de bloqueos y estrictamente antes del deadline.
@@ -344,6 +357,10 @@ pgTAP, integración Auth/PostgREST/RLS y el E2E focal pasan localmente. No se va
   cero aciertos empatados sin tiempo inventado. Temporada conserva Flash Points acumulados.
 - **Recuperación:** conciliar recepción existente primero; una prueba activa sin recepción termina
   sin respuesta ni replay. Con deadline vencido prevalece `time_limit`. Transferencia conserva reglas.
+- **Checkpoints y revisión:** Queens y Conectar parejas guardan el último tablero validado por el
+  servidor en `attempts.progress_payload`. Si se cierra la interacción sin respuesta, el snapshot
+  aceptado se conserva en `attempt_answers.review_state` antes de limpiar el progreso; sirve para
+  revisar, pero no crea una recepción, no valida la prueba ni concede puntos.
 - **Revisión:** pruebas alcanzadas con revisión autorizada; las no alcanzadas solo metadatos.
 - **Abandono y permisos:** contrato común, sin acreditación.
 
@@ -366,7 +383,7 @@ su propia verificación.
 
 - La UI puede mejorar la señalización previa a la expiración, pero no necesita heartbeat ni lease para
   aplicar la política server-side de 15 minutos después del cierre o deadline.
-- Implementar persistencia y validación autoritativa de checkpoints, deadlines, respuestas y puntos,
-  incluida la resolución transaccional de recuperación aquí definida.
+- Mantener la conformidad de la persistencia y validación autoritativa ya implementadas al ampliar
+  modos o formatos; no desarrollar de nuevo la recuperación existente.
 - Resolver la política de consulta para intentos `invalidated`.
 - Convertir cada recomendación en pruebas de contrato por modo antes de cambiar la UI o el backend.

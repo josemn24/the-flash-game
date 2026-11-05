@@ -3,6 +3,8 @@ import { definition } from "./definition";
 import type { ServerConnectPairsQuestion } from "@/types/gameplay/challenge";
 
 import type { ServerFlashQuestion } from "@/types/gameplay/challenge";
+import { isConnectPairsGrid, isRestorableConnectPairsDraft } from "@/lib/connectPairs";
+import type { ConnectPairsQuestion as PracticeConnectPairsQuestion } from "@/types/gameplay/practice";
 import { publicEnvelope, type PublicReadContext, ServerFlashQuestionError } from "../public-common";
 import { validationResult } from "../types";
 export function readPublic(
@@ -11,16 +13,12 @@ export function readPublic(
   const { value, base } = publicEnvelope(context, definition);
   const grid = value.grid;
   const pairs = value.pairs;
-  const validGrid =
-    grid &&
-    typeof grid === "object" &&
-    !Array.isArray(grid) &&
-    (grid as Record<string, unknown>).rows === 5 &&
-    (grid as Record<string, unknown>).columns === 5;
+  const validGrid = isConnectPairsGrid(grid) ? grid : null;
+  const cellCount = validGrid ? validGrid.rows * validGrid.columns : 0;
   const validPairs =
     Array.isArray(pairs) &&
     pairs.length >= 3 &&
-    pairs.length <= 5 &&
+    pairs.length <= (validGrid?.rows ?? 0) &&
     pairs.every((pair) => {
       if (!pair || typeof pair !== "object" || Array.isArray(pair)) return false;
       const item = pair as Record<string, unknown>;
@@ -35,7 +33,7 @@ export function readPublic(
         Array.isArray(endpoints) &&
         endpoints.length === 2 &&
         endpoints.every(
-          (cell) => Number.isSafeInteger(cell) && Number(cell) >= 0 && Number(cell) < 25,
+          (cell) => Number.isSafeInteger(cell) && Number(cell) >= 0 && Number(cell) < cellCount,
         ) &&
         endpoints[0] !== endpoints[1] &&
         (item.color === undefined || typeof item.color === "string")
@@ -47,6 +45,36 @@ export function readPublic(
   const endpoints = validPairs
     ? (pairs as Array<Record<string, unknown>>).flatMap((pair) => pair.endpoints as number[])
     : [];
+  let progress: ServerConnectPairsQuestion["progress"];
+  if (context.progress !== undefined && context.progress !== null) {
+    const saved = context.progress;
+    if (
+      !saved ||
+      typeof saved !== "object" ||
+      Array.isArray(saved) ||
+      (saved as Record<string, unknown>).kind !== "connect-pairs" ||
+      !(saved as Record<string, unknown>).paths ||
+      typeof (saved as Record<string, unknown>).paths !== "object" ||
+      Array.isArray((saved as Record<string, unknown>).paths)
+    )
+      throw new ServerFlashQuestionError();
+    const paths = (saved as { paths: Record<string, unknown> }).paths;
+    if (
+      !Object.values(paths).every(
+        (path) => Array.isArray(path) && path.every((cell) => Number.isSafeInteger(cell)),
+      ) ||
+      !isRestorableConnectPairsDraft(
+        {
+          grid: validGrid,
+          pairs: pairs as PracticeConnectPairsQuestion["pairs"],
+          requireFullCoverage: true,
+        } as PracticeConnectPairsQuestion,
+        { paths: paths as Record<string, number[]> },
+      )
+    )
+      throw new ServerFlashQuestionError();
+    progress = { kind: "connect-pairs", paths: paths as Record<string, number[]> };
+  }
   if (
     !validGrid ||
     !validPairs ||
@@ -59,9 +87,10 @@ export function readPublic(
   return {
     ...base,
     type: "connect-pairs",
-    grid: { rows: 5, columns: 5 },
+    grid: validGrid,
     pairs: pairs as ServerConnectPairsQuestion["pairs"],
     requireFullCoverage: true,
+    ...(progress ? { progress } : {}),
   } satisfies ServerConnectPairsQuestion;
 }
 export function validatePublic(context: PublicReadContext) {

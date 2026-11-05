@@ -114,7 +114,8 @@ client states for this boundary.
 
 This pattern applies to server-authoritative modes. Practice, previews and other local sessions should
 remain immediate and should not add a network loading state. The persisted server flow is implemented
-for competitive Flash, Alphabet, Supervivencia, Narrative and Pyramid (verified on local Supabase).
+for the six competitive modes: Flash, Alphabet, Supervivencia, Narrative, Pyramid and TimeTrial
+(verified on local Supabase).
 New server-authoritative modes should adopt this lifecycle and adapt only the visible status to their
 mechanics.
 
@@ -323,11 +324,14 @@ app/formatos/[slug]/page.tsx   Server Component
 `PlayableFormatExample.client.tsx` receives one serializable `Question`, opens a native dialog, and reuses the same input renderers and scoring functions as a stage. Its local phases are `ready`, `playing`, and `feedback`; closing or retrying resets the attempt without changing the route.
 
 `QuestionInput` and `QuestionReviewContent` are small presentation facades. Their typed registries,
-`practiceInputRegistry.ts` and `reviewContentRegistry.ts`, cover all 31 formats. Each format keeps its
+`practiceInputRegistry.tsx` and `reviewContentRegistry.ts`, cover all 31 formats. Each format keeps its
 local input in `formats/<id>/PracticeInput.tsx` and its result presentation in
 `formats/<id>/ReviewContent.tsx`. Inputs are Client Components; result renderers and `reviewShared.tsx`
-remain universal. `rendererTypes.ts` provides type-only contracts, and the original facade exports
-remain available to existing consumers. Short text reuses `ShortTextInput` through an alias.
+remain universal. `rendererTypes.ts` retains `ReviewProps`; `practiceInputTypes.ts` provides the
+format-specific local input contracts. The facade accepts only a correlated
+`{ context: "practice", format, props }` input and dispatches all formats exhaustively. The original
+facade exports remain available. Short text uses a typed practice adapter around the neutral
+`ShortTextInput` control.
 
 These presentation modules coexist with the competitive `input.tsx` and `review.ts` adapters. The
 latter reconstruct a review question from an authorized terminal result; presentation modules do not
@@ -347,10 +351,16 @@ Gameplay must prioritize minimal latency, continuity, and immediate responses.
 ```text
 app/desafios/[challengeId]/page.tsx  Server Component, dynamic
 └── RoomChallengeClient.client
-    └── GameApp                  Client mode dispatcher
-        ├── Flash Pop Flash / Alphabet / Survival / Pyramid
-        └── NarrativeGameApp.client
+    └── GameApp                  Explicit server/mock dispatcher
+        └── CompetitiveGameApp
+            ├── Server Flash / Alphabet / Survival / Pyramid / TimeTrial
+            └── ServerNarrativeGame.client
 ```
+
+`RoomChallengeClient` only accepts competitive projections and a required room context.
+Local demo composition uses the separate `MockGameApp` branch. The discriminated props reject
+local challenges in the competitive branch and competitive contexts in the local branch.
+The shared `CompetitiveChallenge` type lives in `types/gameplay/challenge.ts`.
 
 The server route:
 
@@ -360,13 +370,27 @@ The server route:
 - returns a 404 when appropriate;
 - passes serializable configuration to `GameApp`.
 
-The client tree:
+The client tree keeps session state and coordinates timers and transitions. Competitive sessions
+submit server commands and display authorized progress/results; practice sessions evaluate locally.
 
-- keeps the session in memory;
-- measures time;
-- processes answers;
-- coordinates transitions;
-- calculates and displays results without network round trips.
+Competitive format renderers accept `CompetitiveInputByFormat[T]`, with only the public question,
+lock and operations consumed by that format. The pure `createCompetitiveInput` adapter constructs
+a correlated `{ context: "competitive", format, props }` union from the final mode facade. The registry dispatches all 21
+formats exhaustively, and `ServerFlashQuestionStage` keeps layout and timer props separate from
+format operations. Narrative applies its answer-verification feedback projection before building
+that input. Engine commands, transport, retries and attempt versions retain their existing contracts.
+
+Practice compositions build their input through `createPracticeInput`, which keeps existing
+callbacks and validates only the eleven currently restored drafts. Layout and timer props remain
+separate. `withPracticeTimedResponseStart` intercepts only the four preparation-capable formats,
+preserving each surface's existing timer policy. Practice inputs contain no server submission state;
+the context discriminant and architecture checks prevent dependencies between contextual input
+adapters while allowing neutral views and utilities. See [practice contracts](../practice-format-contracts.md).
+
+`NarrativePresentation` shares scenes, epilogue, result and polar decoration across practice and
+competition, reusing the existing DOM and CSS. Each container retains its hooks, transitions,
+persistence and question surface. Results receive an explicit maximum score and optional review;
+practice preserves its current maximum while competition uses the published challenge maximum.
 
 Results and review must not be split into Server Components while they depend on the local reducer. Doing so would require external persistence or navigation with serialized data and would break gameplay continuity.
 

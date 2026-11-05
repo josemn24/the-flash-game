@@ -125,7 +125,7 @@ export const betaVipPyramidQuestions = [
   question(
     "betavip-cumbre-logica-ii-conexiones",
     "connect-pairs",
-    "Encuentra las rutas que completen el tablero sin cruzarse.",
+    "Une los puntos iguales completando el tablero sin cruzarse",
     45000,
     {
       grid: { rows: 5, columns: 5 },

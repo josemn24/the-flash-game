@@ -6,7 +6,6 @@ function getModel(metricCount: 3 | 4 = 3) {
   return {
     gameTitle: "Flash",
     statusLabel: "Completado",
-    eyebrow: "Desafío completado",
     title: "Sprint brutal.",
     score: 78,
     maxScore: 100,

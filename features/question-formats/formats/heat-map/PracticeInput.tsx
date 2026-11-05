@@ -1,13 +1,8 @@
 "use client";
 
 import { HeatMapQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
-export function PracticeInput({
-  question,
-  locked,
-  onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"heat-map">>) {
+export function PracticeInput({ question, locked, onSubmit }: PracticeInputProps<"heat-map">) {
   return <HeatMapQuestion question={question} locked={locked} onSubmit={onSubmit} />;
 }

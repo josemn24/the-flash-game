@@ -8,13 +8,16 @@ import { SupabaseSuperadminCalendarQueries } from "./superadminCalendarQueries";
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
   rpc: vi.fn(),
+  serviceRpc: vi.fn(),
+  createServiceClient: vi.fn(),
 }));
-const pgMocks = vi.hoisted(() => ({ Pool: vi.fn() }));
 
 vi.mock("@/infrastructure/supabase/auth/server-client", () => ({
   createClient: mocks.createClient,
 }));
-vi.mock("pg", () => ({ Pool: pgMocks.Pool }));
+vi.mock("@/infrastructure/supabase/auth/service-client", () => ({
+  createServiceClient: mocks.createServiceClient,
+}));
 
 const id = (last: string) => `00000000-0000-4000-8000-00000000000${last}`;
 const entry = {
@@ -53,7 +56,8 @@ const result = {
 
 describe("SupabaseSuperadminCalendarQueries", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    mocks.createServiceClient.mockReturnValue({ rpc: mocks.serviceRpc });
     mocks.createClient.mockResolvedValue({ rpc: mocks.rpc });
   });
 
@@ -193,69 +197,60 @@ describe("SupabaseSuperadminCalendarQueries", () => {
     ).rejects.toMatchObject({ code: "invalid_response" });
   });
 
-  it("runs the tick through PostgreSQL with a local service-role transaction", async () => {
-    const client = {
-      query: vi
-        .fn()
-        .mockResolvedValueOnce({})
-        .mockResolvedValueOnce({})
-        .mockResolvedValueOnce({
-          rows: [
-            {
-              result: {
-                runId: "calendar-run-1",
-                evaluatedAt: "2026-09-16T10:00:00.000Z",
-                opened: 1,
-                closed: 0,
-                finishedSeasons: 0,
-                abandonedAttempts: 2,
-              },
-            },
-          ],
-        })
-        .mockResolvedValueOnce({}),
-      release: vi.fn(),
+  it("runs the tick with the service RPC and preserves its contract", async () => {
+    const result = {
+      runId: "calendar-run-1",
+      evaluatedAt: "2026-09-16T10:00:00.000Z",
+      opened: 1,
+      closed: 0,
+      finishedSeasons: 0,
+      abandonedAttempts: 2,
     };
-    const pool = {
-      connect: vi.fn().mockResolvedValue(client),
-      end: vi.fn().mockResolvedValue(undefined),
-    };
-    pgMocks.Pool.mockImplementation(() => pool);
-    const previousUrl = process.env.SUPABASE_DB_URL;
-    const configuredUrl =
-      "postgresql://postgres.bebmthwwyiyobaiertsm:p%40ssword@pooler.example:6543/postgres?sslmode=require";
-    process.env.SUPABASE_DB_URL = configuredUrl;
-
-    try {
-      await expect(new SupabaseSuperadminCalendarQueries().runCalendarTick()).resolves.toEqual({
-        runId: "calendar-run-1",
-        evaluatedAt: "2026-09-16T10:00:00.000Z",
-        opened: 1,
-        closed: 0,
-        finishedSeasons: 0,
-        abandonedAttempts: 2,
-        source: "supabase",
-      });
-    } finally {
-      if (previousUrl === undefined) delete process.env.SUPABASE_DB_URL;
-      else process.env.SUPABASE_DB_URL = previousUrl;
-    }
-
-    expect(client.query).toHaveBeenNthCalledWith(1, "BEGIN");
-    expect(pgMocks.Pool).toHaveBeenCalledWith({
-      connectionString: configuredUrl,
-      max: 1,
-      idleTimeoutMillis: 10_000,
-      connectionTimeoutMillis: 5_000,
-      application_name: "the-flash-game-calendar-tick",
+    mocks.serviceRpc.mockResolvedValue({ data: result, error: null, status: 200 });
+    await expect(new SupabaseSuperadminCalendarQueries().runCalendarTick()).resolves.toEqual({
+      ...result,
+      source: "supabase",
     });
-    expect(client.query).toHaveBeenNthCalledWith(2, "SET LOCAL ROLE service_role");
-    expect(client.query).toHaveBeenNthCalledWith(
-      3,
-      "select private.run_calendar_tick_command($1::jsonb) as result",
-      [expect.stringContaining('"runId"')],
-    );
-    expect(client.query).toHaveBeenNthCalledWith(4, "COMMIT");
-    expect(pool.end).toHaveBeenCalledOnce();
+    expect(mocks.serviceRpc).toHaveBeenCalledWith("run_calendar_tick", {
+      input: { runId: expect.stringMatching(/^[0-9a-f-]{36}$/) },
+    });
+    expect(mocks.createClient).not.toHaveBeenCalled();
+  });
+
+  it("rejects a malformed tick response", async () => {
+    mocks.serviceRpc.mockResolvedValue({ data: {}, error: null, status: 200 });
+    await expect(new SupabaseSuperadminCalendarQueries().runCalendarTick()).rejects.toMatchObject({
+      code: "invalid_response",
+    });
+  });
+
+  it.each([
+    [{ code: "22023", message: "calendar_tick_invalid" }, 400, "calendar_tick_invalid"],
+    [{ code: "57014", message: "canceling statement due to statement timeout" }, 500, "57014"],
+    [{ code: "PGRST202", message: "function not in schema cache" }, 404, "database_unavailable"],
+    [{ code: "", message: "fetch failed" }, 0, "database_unavailable"],
+    [{ code: "PGRST301", message: "invalid JWT" }, 401, "database_unavailable"],
+  ])("maps tick errors without losing SQLSTATE", async (error, status, code) => {
+    mocks.serviceRpc.mockResolvedValue({ data: null, error, status });
+    await expect(new SupabaseSuperadminCalendarQueries().runCalendarTick()).rejects.toMatchObject({
+      code,
+      name: "SuperadminCalendarCommandError",
+    });
+  });
+
+  it("normalizes missing service configuration", async () => {
+    mocks.createServiceClient.mockImplementation(() => {
+      throw Object.assign(new Error("database_unavailable"), { code: "database_unavailable" });
+    });
+    await expect(new SupabaseSuperadminCalendarQueries().runCalendarTick()).rejects.toMatchObject({
+      code: "database_unavailable",
+    });
+  });
+
+  it("normalizes a rejected transport request", async () => {
+    mocks.serviceRpc.mockRejectedValue(new TypeError("fetch failed"));
+    await expect(new SupabaseSuperadminCalendarQueries().runCalendarTick()).rejects.toMatchObject({
+      code: "database_unavailable",
+    });
   });
 });

@@ -1,15 +1,10 @@
 "use client";
 
 import { EstimationQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
 import { useState } from "react";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
-export function PracticeInput({
-  question,
-  locked,
-  onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"estimation">>) {
+export function PracticeInput({ question, locked, onSubmit }: PracticeInputProps<"estimation">) {
   return (
     <LocalEstimationInput
       key={question.id}
@@ -24,10 +19,7 @@ function LocalEstimationInput({
   question,
   locked,
   onSubmit,
-}: Pick<
-  QuestionInputProps<PracticeQuestionOfType<"estimation">>,
-  "question" | "locked" | "onSubmit"
->) {
+}: Pick<PracticeInputProps<"estimation">, "question" | "locked" | "onSubmit">) {
   const [value, setValue] = useState(question.initialValue);
 
   return (

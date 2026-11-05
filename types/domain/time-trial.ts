@@ -1,5 +1,7 @@
 import type { UtcIsoDateTime } from "./values";
 
+export type TimeTrialFormat = "queens" | "connect-pairs";
+
 export type TimeTrialEndReason =
   "all_solved" | "validation_limit" | "time_limit" | "recovery_interrupted";
 
@@ -18,9 +20,13 @@ export type TimeTrialProgress = {
   readonly endReason: TimeTrialEndReason | null;
 };
 
-/** A confirmed regulatory result; abandonment has the common lifecycle contract. */
-export type TimeTrialResult = TimeTrialProgress & {
+/** An active board always carries the original authoritative global clock. */
+export type RunningTimeTrialProgress = TimeTrialProgress & {
   readonly clockStartedAt: UtcIsoDateTime;
   readonly deadlineAt: UtcIsoDateTime;
+};
+
+/** A confirmed regulatory result; abandonment has the common lifecycle contract. */
+export type TimeTrialResult = RunningTimeTrialProgress & {
   readonly endReason: TimeTrialEndReason;
 };

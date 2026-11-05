@@ -5,6 +5,8 @@ export type { ChipProps } from "./Chip";
 export { MotionButton } from "./MotionButton.client";
 export type { MotionButtonProps } from "./MotionButton.client";
 export { GameHeader } from "./GameHeader";
+export { GameKeyboard } from "./GameKeyboard";
+export type { GameKeyboardProps } from "./GameKeyboard";
 export type { GameHeaderProps } from "./GameHeader";
 export { Avatar, AvatarStack } from "./Avatar";
 export type { AvatarData, AvatarProps, AvatarSize, AvatarStackProps, AvatarTone } from "./Avatar";

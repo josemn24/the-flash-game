@@ -25,7 +25,9 @@ variantes versionadas. Los tipos editoriales anteriores se reexportan como facha
 
 1. **Publicación:** `stored.ts` valida el documento editorial, delega el payload público a
    `validation.ts` y comprueba que la solución corresponde a sus opciones, referencias o geometría.
-   Queens y Connect Pairs conservan su entrada desde la biblioteca de preguntas publicadas.
+   Queens y Conectar parejas admiten documentos en línea y referencias de biblioteca. Contrarreloj
+   exige secuencias homogéneas de uno de esos formatos; Conectar parejas admite tableros cuadrados
+   de 4×4 a 8×8, con entre tres parejas y tantas como filas. La secuencia puede combinar tamaños.
 2. **Evaluación:** `storedRegistry` comprueba modo, versiones y configuración. Reutiliza los
    validadores públicos y privados del formato y convierte el contenido almacenado en un
    `PublicQuestion` y una `QuestionSolution`. El compositor del servidor produce la pregunta que
@@ -49,6 +51,20 @@ La letra, los pases y el deadline de Alfabeto pertenecen al modo, fuera del form
 Los adaptadores de interacción componen comandos e interpretan progreso o evaluación mediante los
 contratos de `features/game/competitive/formats`. El núcleo de sesiones conserva el transporte,
 la versión, la idempotencia, los reintentos, el estado y los temporizadores.
+
+## Contratos de presentación competitiva
+
+`features/question-formats/competitiveInputTypes.ts` define `CompetitiveInputByFormat` para los
+21 formatos. La base incluye pregunta pública del formato y bloqueo; cada entrada añade solo
+sus respuestas, borradores y operaciones actuales. Los callbacks genéricos utilizan
+`AnswerValueOfType<T>`. Mini-Wordle conserva `MiniWordleCompetitiveInputProps` como alias.
+
+`createCompetitiveInput` valida los borradores restaurados y conserva las funciones de la sesión,
+incluidos los reintentos del comando original. El registro acepta una unión discriminada
+`{ context: "competitive", format, props }` y utiliza un `switch` exhaustivo sin conversiones de pregunta o renderizador.
+El escenario, la numeración, las vidas y el deadline pertenecen a `ServerFlashQuestionStage`.
+Las fachadas aplican su proyección de feedback antes de construir el input; Narrative conserva
+por separado los errores de respuesta y de revelación de pistas.
 
 ## Compatibilidad y correcciones
 
@@ -86,8 +102,12 @@ Cada uno conserva por separado el contrato editorial y, cuando existe, la elegib
 Las fachadas coordinan el envelope, las versiones y las excepciones; el desafío completo se valida
 en `54z_challenge_validation.sql`. La [caracterización previa al refactor](../../test-utils/format-contracts/sql-validation-baseline.json)
 fija 904 resultados, incluidos `NULL`, SQLSTATE y mensajes de error. Véase
-[validación SQL por formato](sql-question-validation-refactor.md) para las fronteras de seguridad,
-la prueba de actualización con datos y la reversión.
+[validación SQL por formato](sql-question-validation-refactor.md) para las fronteras de seguridad
+y los contratos actuales. `npm run supabase:schema:test` comprueba el comportamiento desde schemas
+y migraciones; `npm run supabase:schema:equivalence:test` compara sus catálogos. La prueba histórica
+de actualización con datos y su reversión se retiraron al consolidar el historial; el
+[informe de consolidación](../archive/reports/migration-consolidation-2026-11-03.md) describe el
+cambio y la evidencia conservada.
 
 `npm run test:e2e:isolated` ejecuta los escenarios competitivos en un stack local separado. Incluye
 partidas con `short-text` en Flash, Supervivencia, Narrative, Alfabeto y Pirámide, pérdida de una

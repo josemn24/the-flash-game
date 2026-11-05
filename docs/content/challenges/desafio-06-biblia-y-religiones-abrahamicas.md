@@ -1,4 +1,4 @@
-# Desafío 6: La Biblia y las religiones abrahámicas
+# Desafío 6: La Biblia
 
 ## Estado del documento
 
@@ -11,6 +11,8 @@ Desafío de tipo **La Pirámide** dedicado a la Biblia y a las religiones abrah�
 La experiencia debe combinar conocimiento bíblico, personajes, lugares, textos, acontecimientos y conceptos compartidos por estas tradiciones. Cuando una figura o un relato tenga un significado diferente según la tradición, la pregunta debe indicarlo expresamente.
 
 La Pirámide tendrá siete niveles con dificultad creciente. Un nivel solo se considera superado cuando la prueba se completa correctamente.
+
+La puntuación por nivel sigue la progresión de **Cumbre lógica**: 13, 14, 14, 14, 15, 15 y 15 puntos, para un total de 100.
 
 ## Pruebas
 
@@ -36,7 +38,7 @@ Relacionar cuatro personajes bíblicos con la asociación más conocida de cada 
 - **Pregunta:** «Relaciona cada personaje bíblico con su asociación más conocida».
 - **Parejas:** cuatro.
 - **Tiempo límite propuesto:** 15 segundos.
-- **Puntuación:** 10 puntos como primer nivel.
+- **Puntuación:** 13 puntos como primer nivel.
 - **Dificultad:** fácil.
 - **Condición de éxito:** completar las cuatro parejas para superar el nivel.
 
@@ -83,7 +85,7 @@ Se han elegido asociaciones muy reconocibles y se ha evitado incluir varias resp
     { id: "exodo", label: "Éxodo" },
   ],
   timeLimit: 15,
-  points: 7,
+  points: 13,
 }
 ```
 
@@ -101,8 +103,8 @@ Identificar a un personaje a partir de cuatro pistas que aparecen progresivament
 - **Respuesta alternativa aceptada:** `Ibrahim`, nombre utilizado en la tradición islámica.
 - **Número de pistas:** cuatro.
 - **Tiempo límite propuesto:** 35 segundos.
-- **Puntuación:** 12 puntos como segundo nivel.
-- **Penalización por pista:** 20 % de los puntos base por cada pista adicional que se revele.
+- **Puntuación:** 14 puntos como segundo nivel.
+- **Penalización por pista:** 2 puntos por cada pista adicional que se revele, antes del ajuste por velocidad.
 - **Dificultad:** fácil-media.
 - **Condición de éxito:** acertar en un único intento para superar el nivel.
 
@@ -116,6 +118,8 @@ Las pistas deben mostrarse en este orden, desde la referencia más amplia hasta 
 4. «En la tradición islámica también se me conoce como Ibrahim.»
 
 La cuarta pista no debe ser necesaria para un jugador con conocimientos básicos, pero permite resolver la prueba sin depender exclusivamente de la memoria del nombre bíblico.
+
+El contenido base conserva 100 puntos. Con los 14 puntos asignados a este nivel, `cluePenalty: 14` se escala a una penalización efectiva de 2 puntos por cada pista adicional.
 
 ### Criterio editorial
 
@@ -145,11 +149,11 @@ La respuesta se escribirá sin necesidad de acento y se comparará con normaliza
     "Dios estableció conmigo una alianza y me prometió una gran descendencia.",
     "En la tradición islámica también se me conoce como Ibrahim.",
   ],
-  cluePenalty: 20,
+  cluePenalty: 2,
   correctAnswer: "Abraham",
   acceptedAnswers: ["Abraham", "Ibrahim"],
   timeLimit: 35,
-  points: 9,
+  points: 14,
 }
 ```
 
@@ -171,7 +175,7 @@ Ordenar los cinco libros que forman la Torá, también llamada Pentateuco, segú
 - **Pregunta:** «Ordena los cinco libros de la Torá según su orden tradicional».
 - **Elementos:** cinco.
 - **Tiempo límite propuesto:** 30 segundos.
-- **Puntuación:** 13 puntos como tercer nivel.
+- **Puntuación:** 14 puntos como tercer nivel.
 - **Dificultad:** fácil-media.
 - **Condición de éxito:** colocar correctamente los cinco libros para superar el nivel.
 
@@ -201,7 +205,7 @@ La pregunta debe utilizar la expresión «orden tradicional» para dejar claro q
   correctOrder: ["Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio"],
   directionLabels: { start: "Primero", end: "Último" },
   timeLimit: 30,
-  points: 11,
+  points: 14,
 }
 ```
 
@@ -218,7 +222,7 @@ Descubrir el nombre de un personaje bíblico de cinco letras utilizando el feedb
 - **Respuesta normalizada:** `JOSUE`.
 - **Longitud:** cinco letras.
 - **Intentos máximos:** seis.
-- **Tiempo límite propuesto:** 55 segundos.
+- **Tiempo límite propuesto:** 60 segundos.
 - **Puntuación:** 14 puntos si ocupa el cuarto nivel de la Pirámide.
 - **Penalización:** 10 % de los puntos base por cada intento fallido anterior, manteniendo la política actual del formato.
 - **Resultado:** si no se descubre la palabra en seis intentos o antes del tiempo límite, el nivel se considera fallido y no se desbloquea el siguiente.
@@ -278,7 +282,7 @@ Cuatro intentos serían demasiado exigentes para un nombre propio. Cinco podría
     "MARIA", "MATEO", "PABLO", "PACTO", "PEDRO", "PESAJ", "REZAR", "SALMO",
     "SAULO", "SANTO", "SINAI", "TORAH",
   ],
-  timeLimit: 55,
+  timeLimit: 60,
   points: 14,
 }
 ```
@@ -366,7 +370,7 @@ La prueba busca los nombres, no distinguir entre las diferentes figuras bíblica
     { id: "pedro", word: "PEDRO", startCell: 11, endCell: 47 },
   ],
   timeLimit: 45,
-  points: 16,
+  points: 15,
 }
 ```
 
@@ -387,7 +391,7 @@ La prueba funciona como nivel avanzado porque exige distinguir textos, celebraci
 - **Categorías:** Judaísmo, Cristianismo e Islam.
 - **Elementos:** nueve, tres por categoría.
 - **Tiempo límite propuesto:** 50 segundos.
-- **Puntuación:** 17 puntos como sexto nivel.
+- **Puntuación:** 15 puntos como sexto nivel.
 - **Dificultad:** alta.
 - **Condición de éxito:** clasificar correctamente los nueve elementos.
 
@@ -428,7 +432,7 @@ Los elementos se han elegido por su asociación principal y suficientemente reco
     { label: "Kaaba", correctCategory: "Islam" },
   ],
   timeLimit: 50,
-  points: 19,
+  points: 15,
 }
 ```
 
@@ -454,7 +458,7 @@ La mezcla de categorías aumenta el número de combinaciones posibles y evita qu
 - **Texto:** `TORAH`.
 - **Elemento del culto:** `ALTAR`.
 - **Tiempo límite propuesto:** 45 segundos.
-- **Puntuación:** 19 puntos como Cima.
+- **Puntuación:** 15 puntos como Cima.
 - **Dificultad:** muy alta.
 - **Movimientos:** estado inicial con seis movimientos óptimos y siete movimientos máximos permitidos.
 
@@ -523,7 +527,7 @@ La dificultad debe proceder de la planificación y de las intersecciones, no de 
   ],
   maxMoves: 7,
   timeLimit: 45,
-  points: 24,
+  points: 15,
 }
 ```
 

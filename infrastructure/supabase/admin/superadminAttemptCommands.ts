@@ -2,7 +2,6 @@ import "server-only";
 
 import type {
   SuperadminAdjustResultInput,
-  SuperadminAdministrativeResult,
   SuperadminAttemptCommandInput,
   SuperadminAttemptCommands,
 } from "@/application/ports/superadmin-attempt-commands";
@@ -15,18 +14,10 @@ export class SupabaseSuperadminAttemptCommands implements SuperadminAttemptComma
   constructor(private readonly identity: VerifiedAuthIdentity) {}
 
   adjust(input: SuperadminAdjustResultInput) {
-    return callAttemptCommand<SuperadminAdministrativeResult>(
-      this.identity,
-      "adjust_result",
-      input,
-    );
+    return callAttemptCommand(this.identity, "adjust_result", input);
   }
 
   invalidate(input: SuperadminAttemptCommandInput) {
-    return callAttemptCommand<SuperadminAdministrativeResult>(
-      this.identity,
-      "invalidate_attempt",
-      input,
-    );
+    return callAttemptCommand(this.identity, "invalidate_attempt", input);
   }
 }

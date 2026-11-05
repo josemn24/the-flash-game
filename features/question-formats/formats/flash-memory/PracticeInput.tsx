@@ -1,8 +1,7 @@
 "use client";
 
 import { FlashMemoryQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -10,7 +9,7 @@ export function PracticeInput({
   onProgress,
   onSubmit,
   onTimedResponseStart,
-}: QuestionInputProps<PracticeQuestionOfType<"flash-memory">>) {
+}: PracticeInputProps<"flash-memory">) {
   return (
     <FlashMemoryQuestion
       items={question.items}

@@ -1,4 +1,5 @@
 "use client";
+import { EnjoymentRating, useProductSignal } from "@/components/product/Measurement.client";
 
 import type { CSSProperties } from "react";
 import { motion } from "motion/react";
@@ -19,6 +20,7 @@ import {
 } from "@/features/game/resultSummary";
 import type { ChallengeResultScreenProps, ResultMetricTone } from "./resultTypes";
 import styles from "./ChallengeResultScreen.module.css";
+import { useRehearsalPresentation } from "../RehearsalPresentation";
 
 function toneClass(tone: ResultMetricTone | undefined) {
   if (tone === "success") return styles.metricSuccess;
@@ -30,15 +32,19 @@ function toneClass(tone: ResultMetricTone | undefined) {
 export function ChallengeResultScreen({
   model,
   onReview,
+  onReplay,
   expired = false,
   returnTo,
   returnLabel = "Volver",
+  prefetchReturnLink = true,
 }: ChallengeResultScreenProps) {
+  useProductSignal("rehearsal_completed");
+  const practice = useRehearsalPresentation();
+  const replay = practice ? undefined : onReplay;
   const displayModel = expired
     ? {
         ...model,
         statusLabel: "No completado",
-        eyebrow: "Partida cerrada",
         title: "Partida cerrada por inactividad",
         subtitle:
           "El desafío terminó mientras la partida estaba inactiva. No se han concedido puntos.",
@@ -71,14 +77,15 @@ export function ChallengeResultScreen({
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
           <Card as="section" className={styles.resultCard} aria-labelledby="challenge-result-title">
-            <p className={styles.eyebrow}>{displayModel.eyebrow}</p>
             <h1 id="challenge-result-title">{displayModel.title}</h1>
             {displayModel.subtitle ? (
               <p className={styles.subtitle}>{displayModel.subtitle}</p>
             ) : null}
             <div className={styles.scoreDisplay}>
               <strong>{score}</strong>
-              <span>/{maxScore} puntos</span>
+              <span>
+                /{maxScore} {practice ? "Puntos de prueba" : "puntos"}
+              </span>
             </div>
             <div className={styles.scoreTrack} aria-label={`${score} de ${maxScore} puntos`}>
               <motion.span
@@ -87,10 +94,26 @@ export function ChallengeResultScreen({
                 transition={{ delay: 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               />
             </div>
+            {practice ? (
+              <p className={styles.practiceNotice}>
+                Esta partida ha sido de prueba. No consume tu intento competitivo ni cuenta para el
+                ranking.
+              </p>
+            ) : null}
             <div className={styles.resultActions}>
-              {returnTo ? (
+              {practice ? (
+                <Button
+                  variant="primary"
+                  fullWidth
+                  trailingIcon={<ArrowIcon />}
+                  onClick={() => window.location.assign(practice.returnTo)}
+                >
+                  Volver al desafío
+                </Button>
+              ) : returnTo ? (
                 <ButtonLink
                   href={returnTo}
+                  prefetch={prefetchReturnLink ? undefined : false}
                   variant="primary"
                   fullWidth
                   trailingIcon={<ArrowIcon />}
@@ -103,8 +126,14 @@ export function ChallengeResultScreen({
                   Ver respuestas
                 </Button>
               ) : null}
+              {replay ? (
+                <Button variant="secondary" fullWidth onClick={replay}>
+                  Repetir ensayo
+                </Button>
+              ) : null}
             </div>
           </Card>
+          {!expired && !practice ? <EnjoymentRating /> : null}
         </motion.div>
 
         <motion.div

@@ -98,10 +98,10 @@ test.describe("E04 — Matching competitivo", () => {
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     expect(requestBodies[0]?.answer).toEqual({ l1: "r1", l2: "r2", l3: "r3" });
     await Promise.all(answerRequests);
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").filter({ hasText: "Emparejar" }).locator("summary").click();
     await expect(page.getByText("Cada concepto tiene su equivalente.")).toBeVisible();

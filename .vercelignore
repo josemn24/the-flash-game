@@ -1,0 +1,12 @@
+.git
+.vercel
+.next
+node_modules
+.env*
+output
+test-results
+coverage
+.playwright-cli
+.DS_Store
+*.dump
+*.tsbuildinfo

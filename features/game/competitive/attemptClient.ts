@@ -76,6 +76,13 @@ export type CompetitiveAttemptClient = {
       idempotencyKey: string;
     },
   ) => Promise<CompetitiveJsonObject>;
+  connectPairsDraft: (
+    input: AttemptCommandContext & {
+      challengeItemId: string;
+      paths: Readonly<Record<string, readonly number[]>>;
+      idempotencyKey: string;
+    },
+  ) => Promise<CompetitiveJsonObject>;
   queensValidation: (
     input: AttemptCommandContext & {
       challengeItemId: string;
@@ -178,6 +185,13 @@ export function createCompetitiveAttemptClient(signal?: AbortSignal): Competitiv
         idempotencyKey,
         challengeItemId,
         queens,
+      }),
+    connectPairsDraft: ({ attemptId, lockVersion, challengeItemId, paths, idempotencyKey }) =>
+      post(`/api/competitive/attempts/${attemptId}/connect-pairs/draft`, {
+        lockVersion,
+        idempotencyKey,
+        challengeItemId,
+        paths,
       }),
     queensValidation: ({ attemptId, lockVersion, challengeItemId, queens, idempotencyKey }) =>
       post(`/api/competitive/attempts/${attemptId}/queens/validate`, {

@@ -4,16 +4,30 @@ import {
   getPyramidQuestionIds,
   validatePyramidChallengeDefinition,
 } from "@/test-utils/mockGameplay";
-import { getChallengeById } from "@/test-utils/mockGameplay";
+import { createMockLocalPyramidDefinition } from "@/infrastructure/mock/localPyramidDefinition";
+import { scheduledChallengeRouteAliases } from "@/data/mock/constants";
+import { compileDefinition } from "@/features/game/session/providers/localShared/definition";
 import { mockQuestionsById as questionsById } from "@/test-utils/mockGameplay";
-import { withPyramidScoring } from "@/lib/challengeScoring";
 import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { evaluateAnswer, isValidLogicMatrixConfiguration } from "@/lib/scoring";
 import { countQueensSolutions, isValidQueensConfiguration } from "@/lib/queens";
 import { normalizePyramidResult } from "@/lib/gameplay/pyramidProgress";
 
-describe("La Pirámide: Cumbre lógica", () => {
+function canonicalPyramid(routeId: "tabarnia-challenge-05" | "tabarnia-challenge-06") {
+  const { definition, levels } = compileDefinition(
+    createMockLocalPyramidDefinition(scheduledChallengeRouteAliases[routeId]),
+  );
+  return {
+    ...definition.challenge,
+    levels: definition.challenge.levels.map((level, index) => ({
+      ...level,
+      question: levels[index]!.question,
+    })),
+  };
+}
+
+describe("Cumbre lógica", () => {
   it("defines seven unique levels worth exactly 100 points", () => {
     const definition = challengeDefinitions["pyramid-logic-definition"];
     expect(() => validatePyramidChallengeDefinition(definition)).not.toThrow();
@@ -32,18 +46,18 @@ describe("La Pirámide: Cumbre lógica", () => {
     );
   });
 
-  it("resolves the published challenge and applies its increasing point values", () => {
-    const challenge = getChallengeById("tabarnia-challenge-05");
+  it("resolves the published challenge and applies its configured point progression", () => {
+    const challenge = canonicalPyramid("tabarnia-challenge-05");
     expect(challenge?.mode).toBe("pyramid");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
-    expect(withPyramidScoring(challenge).levels.map((level) => level.question.points)).toEqual([
-      10, 12, 13, 14, 15, 17, 19,
+    expect(challenge.levels.map((level) => level.question.points)).toEqual([
+      13, 14, 14, 14, 15, 15, 15,
     ]);
-    expect(withPyramidScoring(challenge).levels.map((level) => level.briefing.format)).toEqual([
+    expect(challenge.levels.map((level) => level.briefing.format)).toEqual([
       "Encontrar el intruso",
       "Secuencia numérica",
-      "Ordenación lógica",
       "Matriz visual",
+      "Ordenación lógica",
       "Conectar parejas",
       "Código secreto",
       "Queens",
@@ -78,10 +92,10 @@ describe("La Pirámide: Cumbre lógica", () => {
   });
 
   it("ends the ascent on a partial trap submission and passes only complete coverage", () => {
-    const challenge = getChallengeById("tabarnia-challenge-05");
+    const challenge = canonicalPyramid("tabarnia-challenge-05");
     expect(challenge?.mode).toBe("pyramid");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
-    const trap = withPyramidScoring(challenge).levels[4]?.question;
+    const trap = challenge.levels[4]?.question;
     if (trap?.type !== "connect-pairs") throw new Error("Expected connect-pairs trap");
 
     const complete = evaluateAnswer({
@@ -109,7 +123,7 @@ describe("La Pirámide: Cumbre lógica", () => {
   });
 });
 
-describe("La Pirámide: Biblia y religiones abrahámicas", () => {
+describe("La Biblia", () => {
   it("defines seven unique levels worth exactly 100 points", () => {
     const definition = challengeDefinitions["pyramid-abrahamic-definition"];
     expect(() => validatePyramidChallengeDefinition(definition)).not.toThrow();
@@ -128,14 +142,14 @@ describe("La Pirámide: Biblia y religiones abrahámicas", () => {
     );
   });
 
-  it("resolves the scheduled challenge with increasing point values and the expected formats", () => {
-    const challenge = getChallengeById("tabarnia-challenge-06");
+  it("resolves the scheduled challenge with the Cumbre lógica point progression and expected formats", () => {
+    const challenge = canonicalPyramid("tabarnia-challenge-06");
     expect(challenge?.mode).toBe("pyramid");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
 
-    const scored = withPyramidScoring(challenge);
+    const scored = challenge;
     expect(scored.levels.map((level) => level.question.points)).toEqual([
-      10, 12, 13, 14, 15, 17, 19,
+      13, 14, 14, 14, 15, 15, 15,
     ]);
     expect(scored.levels.map((level) => level.question.type)).toEqual([
       "matching",
@@ -149,9 +163,9 @@ describe("La Pirámide: Biblia y religiones abrahámicas", () => {
   });
 
   it("accepts the authored answers and stops on partial word search or classification", () => {
-    const challenge = getChallengeById("tabarnia-challenge-06");
+    const challenge = canonicalPyramid("tabarnia-challenge-06");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
-    const levels = withPyramidScoring(challenge).levels;
+    const levels = challenge.levels;
     const matching = levels[0]?.question;
     const clues = levels[1]?.question;
     const ordering = levels[2]?.question;
@@ -247,7 +261,7 @@ describe("La Pirámide: Biblia y religiones abrahámicas", () => {
   });
 
   it("uses the scheduled availability window", () => {
-    const challenge = getChallengeById("tabarnia-challenge-06");
+    const challenge = canonicalPyramid("tabarnia-challenge-06");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
 
     expect(

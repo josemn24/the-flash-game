@@ -26,7 +26,7 @@ insert into public.rooms (id, slug, title, description) values (${uuid("room")},
 insert into public.room_memberships (room_id, player_id, role, status, joined_at) values ${values(Object.entries(accounts).map(([label, account]) => `(${uuid("room")}, ${quote(account.playerId)}, '${label === "alice" ? "owner" : "member"}', 'active', ${quote(start)})`))};
 insert into public.seasons (id, room_id, title, status, starts_at, ends_at) values (${uuid("season")}, ${uuid("room")}, ${quote(`Temporada ${id}`)}, 'active', ${quote(start)}, ${quote(end)});
 insert into private.question_definitions (id, slug, created_by_player_id) values ${values(questions.map((q, i) => `(${uuid(`question-${i}`)}, ${quote(`${id}-question-${i}`)}, ${author})`))};
-insert into private.question_versions (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id) values ${values(questions.map((q, i) => `(${uuid(`version-${i}`)}, ${uuid(`question-${i}`)}, 1, 1, ${quote(q.type)}, ${q.timeLimitMs ?? 60000}, ${quote(JSON.stringify(q.publicPayload))}, ${author})`))};
+insert into private.question_versions (id, question_definition_id, version_number, payload_schema_version, type, time_limit_ms, public_payload, created_by_player_id) values ${values(questions.map((q, i) => `(${uuid(`version-${i}`)}, ${uuid(`question-${i}`)}, 1, ${q.payloadSchemaVersion ?? 1}, ${quote(q.type)}, ${q.timeLimitMs ?? 60000}, ${quote(JSON.stringify(q.publicPayload))}, ${author})`))};
 insert into private.question_version_solutions (question_version_id, solution_payload) values ${values(questions.map((q, i) => `(${uuid(`version-${i}`)}, ${quote(JSON.stringify(q.solution))})`))};
 update private.question_versions set status = 'published', published_at = ${quote(start)} where id in (${questions.map((q, i) => uuid(`version-${i}`)).join(", ")});
 insert into private.challenge_definitions (id, slug, created_by_player_id) values (${uuid("challenge")}, ${quote(`${id}-definition`)}, ${author});
@@ -44,6 +44,7 @@ commit;
         room: { id: stableId("room"), slug: `${id}-main` },
         publicationId: stableId("publication"),
         challengeItemIds: questions.map((q, i) => stableId(`item-${i}`)),
+        globalTimeLimitMs,
       };
     },
   };

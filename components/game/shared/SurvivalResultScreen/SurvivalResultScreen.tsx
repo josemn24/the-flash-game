@@ -45,9 +45,13 @@ export function SurvivalResultScreen({
   onReplay?: () => void;
 }) {
   const correct = results.filter((result) => result.status === "correct").length;
-  const partial = results.filter((result) => result.status === "partial").length;
+  const partial = results.filter(
+    (result) => result.status === "partial" || result.reviewState,
+  ).length;
   const incorrect = results.filter((result) => result.status === "incorrect").length;
-  const unanswered = results.filter((result) => result.status === "unanswered").length;
+  const unanswered = results.filter(
+    (result) => result.status === "unanswered" && !result.reviewState,
+  ).length;
   const totalTime = results.reduce((total, result) => total + result.timeUsed, 0);
   const message = survived
     ? "Has sobrevivido."
@@ -79,9 +83,7 @@ export function SurvivalResultScreen({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
-          <p className={`${styles.eyebrow} text-[var(--ds-color-fg-brand)]`}>
-            Supervivencia: España
-          </p>
+          <p className={`${styles.eyebrow} text-[var(--ds-color-fg-brand)]`}>España</p>
           <h1 className="mt-3 text-3xl font-black tracking-[-0.045em] text-white sm:text-4xl">
             {message}
           </h1>

@@ -55,7 +55,7 @@ aplicar la [política de incidencias](service-incidents.md) cuando se confirme e
 ## Estado observado y trabajo pendiente
 
 El motor competitivo aplica el presupuesto completo a preparación de sesión, inicio, preparación,
-activación, recuperación, respuestas, formatos, abandono y cierre de los cinco modos. El transporte
+activación, recuperación, respuestas, formatos, abandono y cierre de los seis modos. El transporte
 realiza una petición y el motor conserva el comando original durante retries/reconciliación.
 La [entrega competitiva](../current/competitive-command-recovery.md) describe pruebas y despliegue.
 Auth conserva su presupuesto de 5 s. La política completa de consultas de salas/rankings y las

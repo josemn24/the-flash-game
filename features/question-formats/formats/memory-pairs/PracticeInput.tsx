@@ -1,15 +1,14 @@
 "use client";
 
 import { MemoryPairsQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"memory-pairs">>) {
+}: PracticeInputProps<"memory-pairs">) {
   return (
     <MemoryPairsQuestion
       grid={question.grid}

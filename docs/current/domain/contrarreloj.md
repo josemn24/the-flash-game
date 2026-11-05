@@ -1,14 +1,17 @@
 # Contrarreloj
 
-Estado: vigente para la primera versión competitiva Queens.
+Estado: vigente para Queens y Conectar parejas.
 
-Última actualización: 2026-10-11. Identificador técnico: `time-trial`.
+Última actualización: 2026-11-03. Identificador técnico: `time-trial`.
 
 ## Propósito y alcance
 
-Resolver una secuencia fija de pruebas Queens antes de agotar un único reloj global. Cada tablero
-resuelto concede su peso editorial completo y abre el siguiente. La primera versión admite entre
-2 y 20 pruebas Queens de 4×4 a 8×8. Escape, Conectar parejas, Mini-Wordle y Hashtag quedan fuera
+Resolver una secuencia fija de pruebas de un mismo formato antes de agotar un único reloj global. Cada tablero
+resuelto concede su peso editorial completo y abre el siguiente. Cada desafío admite entre
+2 y 20 pruebas: todas Queens de 4×4 a 8×8 o todas Conectar parejas cuadradas de 4×4 a 8×8,
+con entre tres parejas y tantas como filas tenga cada tablero. Los tamaños pueden mezclarse
+dentro de una secuencia de Conectar parejas; no se admiten secuencias con formatos mezclados.
+Escape, Mini-Wordle y Hashtag quedan fuera
 hasta verificar sus combinaciones de modo y formato.
 
 Las [decisiones normativas](../../decisions/decisions.md#21-contrarreloj-reglas-acordadas), los
@@ -30,9 +33,34 @@ conserva el peso y guardar nunca redistribuye puntos. Un acierto concede todo el
 crédito parcial, bonus por velocidad ni penalización de puntos por validaciones incorrectas.
 Los tiempos individuales publicados en las preguntas no tienen efecto competitivo en este modo.
 
-Dos validaciones completas incorrectas permiten continuar en ese tablero; la tercera termina la
+En Queens, dos validaciones completas incorrectas permiten continuar en ese tablero; la tercera termina la
 partida. El contador se reinicia al avanzar. Las ediciones exploratorias y las solicitudes
 inválidas, incompletas o repetidas con la misma clave no consumen oportunidades.
+
+## Conectar parejas
+
+Conectar todos los extremos iguales con caminos ortogonales, sin casillas repetidas ni solapamientos,
+y cubrir todas las casillas resuelve el tablero. Cada cuadrícula es cuadrada y mide entre 4×4 y 8×8;
+el número de parejas va de tres al lado del tablero. Borrar, recortar y rehacer rutas no consume oportunidades
+ni puntos. La UI envía automáticamente el tablero completo; PostgreSQL valida las reglas públicas
+antes de crear la recepción y acepta cualquier solución legal, aunque difiera de la editorial.
+Una respuesta inválida o incompleta devuelve `invalid_connect_pairs_answer` (HTTP 422), sin consumir
+la interacción; el tablero permanece editable con el reloj activo. No hay límite de errores ni cierre
+por `validation_limit` en este formato. Las reglas de recuperación estricta se conservan.
+
+## Checkpoints y revisión
+
+Queens y Conectar parejas guardan checkpoints validados por el servidor en `attempts.progress_payload`
+mientras la interacción siga abierta. El jugador puede continuar editando mientras se confirma un
+guardado anterior; el checkpoint solo refleja el último estado aceptado por el servidor. Guardarlo no
+crea una recepción ni equivale a validar el tablero.
+
+Al cerrar por timeout o conciliar una evaluación pendiente sin respuesta, el servidor copia el último
+checkpoint válido con progreso de la interacción a `attempt_answers.review_state` antes de limpiar el
+progreso del intento. En un cierre por timeout de Contrarreloj, la respuesta queda como `unanswered`
+con cero puntos; el snapshot solo permite mostrar el tablero o las rutas que quedaron guardadas. No
+concede el peso del tablero ni altera la puntuación. Una recepción aceptada a tiempo se evalúa con sus
+propias reglas y conserva su resultado.
 
 ## Reloj y finalización
 
@@ -66,8 +94,9 @@ evaluación y ledger son idempotentes. No se fabrican respuestas o tiempos para 
 
 Una recepción existente se concilia primero. Si una prueba activa carece de recepción final, se
 cierra sin respuesta y termina el desafío; un borrador guardado, incluso completo, no sustituye una
-validación recibida. No se reentrega una prueba vista. La transferencia de control aplica la misma
-regla y conserva el intento y deadline originales.
+validación recibida. El último checkpoint válido puede conservarse en `review_state` para la revisión,
+sin convertirlo en respuesta ni otorgar puntos. No se reentrega una prueba vista. La transferencia de
+control aplica la misma regla y conserva el intento y deadline originales.
 
 Un intento creado sin tablero puede recibir su primera prueba. Recuperar entre pruebas, sin una
 interacción abierta ni recepción pendiente, permite preparar la siguiente si el reloj sigue vivo.
@@ -90,12 +119,12 @@ requiriendo autorización; las soluciones nunca aparecen durante el juego.
 
 ```mermaid
 flowchart TD
-  Editor[Editor y biblioteca Queens] --> Version[Versión publicada inmutable]
+  Editor[Editor y biblioteca de preguntas] --> Version[Versión publicada inmutable]
   Version --> Publicacion[Publicación en sala y temporada]
   Publicacion --> Intro[Introducción y cuenta atrás: solo metadatos]
   Intro --> Start[Start: intento sin deadline]
   Start --> Prepare[Prepare: inicio y deadline global atómicos]
-  Prepare --> UI[Shell Flash Pop: reloj persistente y Queens]
+  Prepare --> UI[Shell Flash Pop: reloj persistente y formato seleccionado]
   UI --> Validacion[Guardar borrador y validar tablero]
   Validacion --> Recepcion[Recepción privada después de bloqueos]
   Recepcion --> Evaluacion[Evaluación y respuesta con peso publicado]
@@ -110,11 +139,11 @@ flowchart TD
 
 Se reutilizan versiones, publicaciones, intentos, sesiones, unidades temporales, intervalos,
 recepciones, respuestas y ledger; no se añaden tablas. `private.time_trial_progress` deriva el
-progreso separado de Queens. `get_my_time_trial_challenge` entrega metadatos y
+progreso independiente del formato. `get_my_time_trial_challenge` entrega metadatos y
 `get_my_time_trial_result` entrega el resultado propio y revisión protegida. El dispatcher común,
 los comandos competitivos y las rutas HTTP existentes integran el modo.
 
-La UI reutiliza `ChallengeIntro`, `StartCountdown`, `FlashPopGameShell`, `ServerQueensQuestion`,
+La UI reutiliza `ChallengeIntro`, `StartCountdown`, `FlashPopGameShell`, `ServerQueensQuestion`, `ConnectPairsQuestion`,
 `Timer`, avisos de sesión, resultados y revisión. El reloj permanece montado durante la prueba,
 validación, transición y preparación. Los controles desaparecen durante la confirmación final.
 El resultado muestra puntos, resueltas/total, tiempo hasta el último acierto o «Sin aciertos» y motivo.
@@ -126,6 +155,35 @@ primero la migración compatible y después la aplicación. Las suites SQL, unit
 Supabase y E2E aisladas cubren reglas, permisos y regresiones; la evidencia de cada ejecución se
 registra en [estado del proyecto](../status.md).
 
-Antes de habilitar publicaciones reales, resolver una secuencia Queens calibrada en staging,
+Antes de habilitar publicaciones reales, resolver una secuencia del formato seleccionado calibrada en staging,
 comprobar móvil/escritorio y revisión, y verificar soluciones, pistas, progresión y duración. Los
 fixtures de pruebas validan contratos técnicos y no constituyen contenido editorial calibrado.
+
+### Escenario local dedicado
+
+`npm run supabase:fixture -- --scenario time-trial-connect-pairs` prepara una sala local independiente.
+`npm run test:e2e:isolated -- e2e/time-trial-connect-pairs.spec.ts e2e/time-trial.spec.ts` comprueba
+ambos formatos en un stack desechable. El escenario incluye dos tableros curados, 120 segundos globales
+y pesos de 30 y 70 puntos; es contenido de prueba y no modifica los calendarios de BetaVIP o Tabarnia.
+El setup habitual `npm run supabase:betavip:setup` también incluye «Circuito de parejas» como
+primer desafío de BetaVIP: siete tableros 4×4, 4×4, 5×5, 5×5, 6×6, 6×6 y 7×7; 150 segundos y pesos
+12, 13, 13, 14, 15, 16 y 17. Queens de BetaVIP y ambos Contrarreloj de Tabarnia comparten esta
+secuencia de tamaños, duración y pesos. Cada uno empieza con un 4×4 fácil propio; los seis
+tableros anteriores conservan sus diseños y orden relativo.
+
+Para comprobar las cuatro secuencias con integración Supabase y navegador en un stack desechable:
+
+```bash
+E2E_INTEGRATION_SCENARIOS=betavip,tabarnia npm run test:e2e:isolated -- e2e/betavip.spec.ts e2e/tabarnia-time-trial.spec.ts
+```
+
+El ejecutor prepara las salas con sus seeds y restaura los manifiestos locales de ambas al finalizar.
+Esta comprobación no actualiza publicaciones ni historiales de las bases existentes.
+
+Las migraciones originales `20261016144218_time_trial_connect_pairs` y
+`20261016193510_connect_pairs_variable_square_boards` añadieron el formato y sus tamaños actuales;
+ambas forman parte de la [inicial activa](../../../supabase/migrations/20261103090247_initial_schema.sql).
+Una instalación nueva debe aplicar esa inicial antes de desplegar la aplicación. Las bases con el
+historial anterior deben seguir el procedimiento de
+[adopción](../supabase-clean-installation.md#adoptar-el-historial-consolidado); esos IDs retirados
+no se aplican individualmente.

@@ -2,14 +2,15 @@
   .header {
     display: flex;
     width: min(100%, 31rem);
+    margin: 0;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
+    justify-content: center;
+    gap: var(--space-2);
     color: var(--ds-color-fg-secondary);
     font-family: var(--type-mono);
     font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.02em;
     text-transform: uppercase;
   }
 
@@ -93,7 +94,7 @@
     height: clamp(1.35rem, 6vw, 2.15rem);
     place-items: center;
     border-radius: 999px;
-    color: #071011;
+    color: color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 92%, #071011);
     background: color-mix(in srgb, var(--pair-color, var(--ds-color-bg-selected)) 76%, white);
     font-size: clamp(0.8rem, 3vw, 1.1rem);
     box-shadow:

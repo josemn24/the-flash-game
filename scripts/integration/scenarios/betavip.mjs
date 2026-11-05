@@ -15,7 +15,7 @@ export const scenario = {
     const beta = fixture.data;
     const betaSlug = beta.room.slug;
     const tabarniaSlug = beta.tabarnia.room.slug;
-    const [alphabet, pyramid, timeTrial, survival, antiquity] = beta.publications;
+    const [connectPairs, alphabet, pyramid, timeTrial, survival, antiquity] = beta.publications;
     const tabarniaSteel = tabarnia.data.publications.find(
       (publication) => publication.slug === "steel-ball-run",
     );
@@ -25,27 +25,31 @@ export const scenario = {
         beta.publications.map(({ number, title, mode, status }) => [number, title, mode, status]),
       ) ===
         JSON.stringify([
-          [1, "La vuelta al mundo", "alphabet", "open"],
-          [2, "Cumbre lógica II", "pyramid", "scheduled"],
-          [3, "Escalera de coronas", "time-trial", "scheduled"],
-          [4, "Supervivencia: Cultura pop", "survival", "scheduled"],
-          [5, "Ecos de la Antigüedad", "pyramid", "scheduled"],
+          [1, "Circuito de parejas", "time-trial", "open"],
+          [2, "La vuelta al mundo", "alphabet", "scheduled"],
+          [3, "Cumbre lógica II", "pyramid", "scheduled"],
+          [4, "Escalera de coronas", "time-trial", "scheduled"],
+          [5, "Supervivencia: Cultura pop", "survival", "scheduled"],
+          [6, "Ecos de la Antigüedad", "pyramid", "scheduled"],
         ]),
-      "BetaVIP publica Alphabet, Pirámide, Contrarreloj, Survival y Ecos de la Antigüedad en ese orden",
+      "BetaVIP empieza por Conectar parejas y conserva los cinco desafíos anteriores",
     );
-    assert(beta.publicationId === alphabet.id, "El manifiesto apunta al primer desafío");
-    assert(beta.challengeId === alphabet.challengeId, "El manifiesto apunta al desafío Alphabet");
+    assert(beta.publicationId === connectPairs.id, "El manifiesto apunta al primer desafío");
     assert(
-      beta.challengeVersionId === alphabet.challengeVersionId,
-      "El manifiesto apunta a la versión La vuelta al mundo",
-    );
-    assert(
-      beta.questionCount === alphabet.questionCount,
-      "El manifiesto conserva las dieciocho preguntas del Alphabet",
+      beta.challengeId === connectPairs.challengeId,
+      "El manifiesto apunta al desafío Conectar parejas",
     );
     assert(
-      beta.pointsTotal === alphabet.pointsTotal,
-      "El manifiesto conserva los puntos del Alphabet",
+      beta.challengeVersionId === connectPairs.challengeVersionId,
+      "El manifiesto apunta a la versión Circuito de parejas",
+    );
+    assert(
+      beta.questionCount === connectPairs.questionCount,
+      "El manifiesto conserva los siete tableros de Conectar parejas",
+    );
+    assert(
+      beta.pointsTotal === connectPairs.pointsTotal,
+      "El manifiesto conserva los puntos de Conectar parejas",
     );
     assert(beta.survivalPublicationId === survival.id, "Survival tiene ID propio");
     assert(beta.alphabetPublicationId === alphabet.id, "El Alphabet tiene ID explícito");
@@ -53,6 +57,10 @@ export const scenario = {
     assert(
       beta.antiquityPublicationId === antiquity.id,
       "Ecos de la Antigüedad tiene ID explícito",
+    );
+    assert(
+      beta.connectPairsPublicationId === connectPairs.id,
+      "Conectar parejas tiene ID explícito",
     );
     assert(beta.timeTrialPublicationId === timeTrial.id, "Contrarreloj tiene ID explícito");
 
@@ -78,8 +86,8 @@ export const scenario = {
       (await sqlCount(
         `select count(*) from public.room_memberships where room_id = '${beta.tabarnia.room.id}' and status = 'active';`,
         config.dbContainer,
-      )) === 12,
-      "Tabarnia mantiene sus doce miembros",
+      )) === 15,
+      "Tabarnia mantiene sus quince miembros",
     );
     assert(
       (await sqlCount(
@@ -118,17 +126,17 @@ export const scenario = {
     );
     assert(
       (await sqlCount(
-        `select count(*) from private.challenge_versions where id = '${alphabet.challengeVersionId}' and status = 'published' and mode = 'alphabet' and global_time_limit_ms = 135000;`,
+        `select count(*) from private.challenge_versions where id = '${alphabet.challengeVersionId}' and status = 'published' and mode = 'alphabet' and global_time_limit_ms = 150000;`,
         config.dbContainer,
       )) === 1,
-      "El Alphabet de BetaVIP está publicado con 135 segundos",
+      "El Alphabet de BetaVIP está publicado con 150 segundos",
     );
     assert(
       (await sqlCount(
         `select count(*) from private.challenge_items i join private.question_versions q on q.id = i.question_version_id where i.challenge_version_id = '${alphabet.challengeVersionId}' and q.type = 'short-text' and i.mode_config ? 'letter';`,
         config.dbContainer,
-      )) === 18,
-      "La vuelta al mundo tiene dieciocho preguntas con letra",
+      )) === 16,
+      "La vuelta al mundo tiene dieciséis preguntas con letra",
     );
     assert(
       (await sqlCount(
@@ -179,32 +187,33 @@ export const scenario = {
     );
     assert(
       (await sqlCount(
-        `select count(*) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${survival.challengeVersionId}' and item.position = 3 and question.type = 'progressive-image' and question.public_payload->>'revealDurationMs' = '7000';`,
+        `select count(*) from private.challenge_items item join private.question_versions question on question.id = item.question_version_id where item.challenge_version_id = '${survival.challengeVersionId}' and item.position = 3 and question.type = 'progressive-image' and question.public_payload->>'revealDurationMs' = '5000';`,
         config.dbContainer,
       )) === 1,
-      "La tercera prueba muestra la imagen progresiva durante siete segundos",
+      "La tercera prueba muestra la imagen progresiva durante cinco segundos",
     );
     const publicationOrder = await dockerSql(
       `select string_agg(number::text || ':' || status, ',' order by number) from public.scheduled_challenges where season_id = '${beta.seasonId}';`,
       config.dbContainer,
     );
     assert(
-      publicationOrder.stdout.trim() === "1:open,2:scheduled,3:scheduled,4:scheduled,5:scheduled",
-      "Las cinco publicaciones de BetaVIP están en orden y estado correctos",
+      publicationOrder.stdout.trim() ===
+        "1:open,2:scheduled,3:scheduled,4:scheduled,5:scheduled,6:scheduled",
+      "Las seis publicaciones de BetaVIP están en orden y estado correctos",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '120 hours';`,
+        `select count(*) from public.seasons where id = '${beta.seasonId}' and ends_at - starts_at = interval '144 hours';`,
         config.dbContainer,
       )) === 1,
-      "La temporada BetaVIP cubre exactamente cinco ventanas de 24 horas",
+      "La temporada BetaVIP cubre exactamente seis ventanas de 24 horas",
     );
     assert(
       (await sqlCount(
-        `select count(*) from public.scheduled_challenges first join public.scheduled_challenges second on second.season_id = first.season_id join public.scheduled_challenges third on third.season_id = first.season_id join public.scheduled_challenges fourth on fourth.season_id = first.season_id join public.scheduled_challenges fifth on fifth.season_id = first.season_id join public.seasons season on season.id = first.season_id where first.id = '${alphabet.id}' and second.id = '${pyramid.id}' and third.id = '${timeTrial.id}' and fourth.id = '${survival.id}' and fifth.id = '${antiquity.id}' and first.number = 1 and second.number = 2 and third.number = 3 and fourth.number = 4 and fifth.number = 5 and first.opens_at = season.starts_at and first.closes_at = second.opens_at and second.closes_at = third.opens_at and third.closes_at = fourth.opens_at and fourth.closes_at = fifth.opens_at and fifth.closes_at = season.ends_at and extract(epoch from (first.closes_at - first.opens_at)) = 86400 and extract(epoch from (fifth.closes_at - fifth.opens_at)) = 86400 and private.publication_is_effectively_open(first.status, season.status, season.starts_at, season.ends_at, first.opens_at, first.closes_at, first.opens_at + interval '1 hour');`,
+        `select count(*) from public.scheduled_challenges schedule join public.seasons season on season.id = schedule.season_id where season.id = '${beta.seasonId}' and schedule.opens_at = season.starts_at + (schedule.number - 1) * interval '24 hours' and schedule.closes_at = season.starts_at + schedule.number * interval '24 hours' and private.publication_is_effectively_open(schedule.status, season.status, season.starts_at, season.ends_at, schedule.opens_at, schedule.closes_at, schedule.opens_at + interval '1 hour');`,
         config.dbContainer,
-      )) === 1,
-      "Las cinco publicaciones quedan disponibles en sus días, sin huecos ni solapes",
+      )) === 6,
+      "Las seis publicaciones quedan disponibles en sus días, sin huecos ni solapes",
     );
     assert(
       (await sqlCount(
@@ -238,18 +247,43 @@ export const scenario = {
     }
 
     for (const client of [clients.ches, clients.dark, clients.manuel, clients.genis]) {
-      const alphabetPlayable = await rpc(client, "get_my_alphabet_challenge", {
+      const connectPairsPlayable = await rpc(client, "get_my_time_trial_challenge", {
         target_room_slug: betaSlug,
-        target_publication_id: alphabet.id,
+        target_publication_id: connectPairs.id,
       });
-      assert(alphabetPlayable.length === 18, "El Alphabet está disponible durante el primer día");
       assert(
-        alphabetPlayable.reduce((total, row) => total + Number(row.item_points), 0) === 100,
-        "La vuelta al mundo suma 100 puntos durante el primer día",
+        connectPairsPlayable.length === 7,
+        "Conectar parejas está disponible durante el primer día",
       );
       assert(
-        !JSON.stringify(alphabetPlayable).match(/correctAnswer|acceptedAnswers|solutionPayload/i),
+        connectPairsPlayable.reduce((total, row) => total + Number(row.item_points), 0) === 100,
+        "Circuito de parejas suma 100 puntos durante el primer día",
+      );
+      assert(
+        connectPairsPlayable.map((row) => Number(row.item_points)).join(",") ===
+          "12,13,13,14,15,16,17",
+        "Circuito de parejas conserva los pesos progresivos de sus siete tableros",
+      );
+      assert(
+        !JSON.stringify(connectPairsPlayable).match(
+          /correctAnswer|acceptedAnswers|solutionPayload/i,
+        ),
         "La lectura jugable no expone soluciones",
+      );
+      assert(
+        connectPairsPlayable.every(
+          (row) => row.question_type === "connect-pairs" && row.global_time_limit_ms === 150000,
+        ),
+        "Los siete tableros comparten dos minutos y medio",
+      );
+      assert(
+        (
+          await rpc(client, "get_my_alphabet_challenge", {
+            target_room_slug: betaSlug,
+            target_publication_id: alphabet.id,
+          })
+        ).length === 0,
+        "El Alphabet permanece programado para el segundo día",
       );
       assert(
         (
@@ -280,8 +314,8 @@ export const scenario = {
       );
       const calendar = await rpc(client, "get_room_calendar", { target_room_slug: betaSlug });
       assert(
-        calendar.some((entry) => entry.publication_id === alphabet.id && entry.can_start),
-        "La sala permite iniciar Alphabet el primer día",
+        calendar.some((entry) => entry.publication_id === connectPairs.id && entry.can_start),
+        "La sala permite iniciar Conectar parejas el primer día",
       );
       assert(
         !calendar.some((entry) => entry.publication_id === pyramid.id && entry.can_start),
@@ -297,6 +331,11 @@ export const scenario = {
       );
     }
     for (const [method, publicationId, message] of [
+      [
+        "get_my_time_trial_challenge",
+        connectPairs.id,
+        "Un miembro exclusivo de Tabarnia no recibe Conectar parejas de BetaVIP",
+      ],
       [
         "get_my_alphabet_challenge",
         alphabet.id,
@@ -334,8 +373,8 @@ export const scenario = {
           target_room_slug: tabarniaSlug,
           target_publication_id: beta.tabarnia.steelBallRunPublicationId,
         })
-      ).length === 0,
-      "Steel Ball Run sigue programado en Tabarnia",
+      ).length === 16,
+      "Steel Ball Run está abierto como primera publicación de Tabarnia",
     );
     assert(
       (await rpc(clients.manuel, "get_room_detail", { target_room_slug: tabarniaSlug })).length ===
@@ -350,6 +389,9 @@ export const scenario = {
     await dockerSql(
       `
 begin;
+update public.scheduled_challenges set status = 'cancelled', cancelled_at = clock_timestamp() where id = '${connectPairs.id}';
+update public.scheduled_challenges set opens_at = clock_timestamp() + interval '200 milliseconds', closes_at = clock_timestamp() + interval '1 hour' where id = '${alphabet.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-integration-alphabet-before-ranking"}'::jsonb);
 commit;
@@ -428,9 +470,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where id = '${alphabet.id}';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${pyramid.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-integration-pyramid"}'::jsonb);
 commit;
@@ -449,7 +492,7 @@ commit;
         target_room_slug: betaSlug,
         target_publication_id: pyramid.id,
       });
-      assert(playable.length === 7, "La Pirámide se desbloquea como segundo desafío");
+      assert(playable.length === 7, "La Pirámide se desbloquea como tercer desafío");
       assert(
         playable.map((row) => row.question_type).join(",") ===
           "zip,logic-matrix,odd-one-out,connect-pairs,escape,logic-code,queens",
@@ -477,9 +520,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where id = '${pyramid.id}';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${survival.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-integration-survival"}'::jsonb);
 commit;
@@ -512,9 +556,10 @@ update public.scheduled_challenges
 set status = 'cancelled', cancelled_at = clock_timestamp()
 where id in ('${alphabet.id}', '${pyramid.id}', '${survival.id}', '${antiquity.id}') and status <> 'cancelled';
 update public.scheduled_challenges
-set opens_at = (select starts_at from public.seasons where id = season_id),
+set opens_at = clock_timestamp() + interval '200 milliseconds',
     closes_at = clock_timestamp() + interval '1 hour'
 where id = '${timeTrial.id}';
+select pg_sleep(0.3);
 set local role service_role;
 select private.run_calendar_tick_command('{"runId":"betavip-integration-time-trial"}'::jsonb);
 commit;
@@ -526,21 +571,21 @@ commit;
         `select count(*) from public.scheduled_challenges where id = '${timeTrial.id}' and status = 'open';`,
         config.dbContainer,
       )) === 1,
-      "El tick abre Contrarreloj como tercer desafío",
+      "El tick abre Contrarreloj como cuarto desafío",
     );
     const timeTrialRows = await rpc(clients.ches, "get_my_time_trial_challenge", {
       target_room_slug: betaSlug,
       target_publication_id: timeTrial.id,
     });
-    assert(timeTrialRows.length === 6, "Ches puede iniciar el tercer desafío Contrarreloj");
+    assert(timeTrialRows.length === 7, "Ches puede iniciar el cuarto desafío Contrarreloj");
     assert(
       timeTrialRows.every(
         (row) =>
           row.challenge_mode === "time-trial" &&
-          row.global_time_limit_ms === 180000 &&
-          Number(row.question_count) === 6,
-      ) && timeTrialRows.map((row) => Number(row.item_points)).join(",") === "10,12,14,16,20,28",
-      "Contrarreloj entrega el reloj global y los seis pesos publicados",
+          row.global_time_limit_ms === 150000 &&
+          Number(row.question_count) === 7,
+      ) && timeTrialRows.map((row) => Number(row.item_points)).join(",") === "12,13,13,14,15,16,17",
+      "Contrarreloj entrega el reloj global y los siete pesos publicados",
     );
     assert(
       !JSON.stringify(timeTrialRows).match(/solution|prefilledQueens|regions|public_payload/i),

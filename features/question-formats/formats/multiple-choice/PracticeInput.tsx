@@ -1,23 +1,13 @@
 "use client";
 
-import { AnswerOption, NumberSequencePrompt, ServerOperationStatus } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import { AnswerOption, NumberSequencePrompt } from "@/components/questions";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
   locked,
   onSubmit,
-  pendingAnswer,
-  submissionState,
-  submissionStatusVisible = false,
-  submissionError,
-  onRetrySubmission,
-}: QuestionInputProps<PracticeQuestionOfType<"multiple-choice">>) {
-  const selectedAnswer = typeof pendingAnswer === "string" ? pendingAnswer : null;
-  const resolvedSubmissionState = submissionState ?? "idle";
-  const submissionFeedbackEnabled = submissionState !== undefined;
-
+}: PracticeInputProps<"multiple-choice">) {
   return (
     <>
       {question.promptVisual?.type === "number-sequence" && (
@@ -31,23 +21,12 @@ export function PracticeInput({
             key={option}
             label={option}
             index={index}
-            selected={selectedAnswer === option}
-            pending={selectedAnswer === option}
+            selected={false}
             disabled={locked}
             onSelect={() => onSubmit(option)}
           />
         ))}
       </div>
-      {submissionFeedbackEnabled ? (
-        <ServerOperationStatus
-          state={resolvedSubmissionState}
-          visible={submissionStatusVisible}
-          pendingMessage="Comprobando respuesta…"
-          errorMessage={submissionError ?? "No hemos podido confirmar tu respuesta."}
-          retryLabel="Reintentar"
-          onRetry={onRetrySubmission}
-        />
-      ) : null}
     </>
   );
 }

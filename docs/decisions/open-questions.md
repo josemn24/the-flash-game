@@ -8,12 +8,12 @@ Las siguientes decisiones no bloquean el modelo base. Deben cerrarse antes de im
 la funcionalidad correspondiente. Cuando una decisión se apruebe, debe trasladarse a la
 documentación específica y, si afecta a todo el producto, a `decisions.md`.
 
-## Contrato pendiente por modo
+## Contrato de nuevos modos y ampliaciones
 
-La propuesta de contrato común y el detalle recomendado para cada modo están en
-[`mode-contracts.md`](../current/domain/mode-contracts.md). Las reglas marcadas allí como recomendación siguen siendo
-configurables hasta trasladarse a `decisions.md`; esta lista conserva únicamente los puntos que aún
-requieren cierre o implementación.
+El contrato común y las reglas implementadas están en
+[`mode-contracts.md`](../current/domain/mode-contracts.md). Para modos nuevos o ampliaciones,
+cerrar los puntos siguientes antes de implementar. Los seis modos existentes ya tienen contrato;
+esta lista no reabre sus decisiones aprobadas.
 
 Cada modo debe declarar explícitamente:
 
@@ -54,5 +54,8 @@ y la [especificación implementada](../current/domain/contrarreloj.md) contienen
 | CT-04 | Primera preparación inicia reloj; esperas sin compensación; recuperación activa sin recepción termina sin replay. |
 | CT-05 | Recepción BD después de bloqueos, estrictamente antes del deadline; conciliación previa a cierre.                 |
 
-Sigue pendiente habilitar otros formatos y calibrar contenido real en staging. Los fixtures técnicos
+Desde el 2026-10-16 también se admite Conectar parejas con tableros cuadrados de 4×4 a 8×8,
+entre tres parejas y tantas como filas, con edición
+libre de caminos. Cada desafío mantiene un único formato. La recuperación estricta es común.
+Sigue pendiente habilitar más formatos y calibrar contenido real en staging. Los fixtures técnicos
 no son una secuencia editorial validada para publicación real.

@@ -50,6 +50,7 @@ const localEnv = {
     "",
   SUPABASE_SERVICE_ROLE_KEY:
     process.env.SUPABASE_SERVICE_ROLE_KEY || localStatus.SERVICE_ROLE_KEY || "",
+  CRON_SECRET: process.env.CRON_SECRET || "local-measurement-maintenance-secret",
   CALENDAR_TICK_SECRET: process.env.CALENDAR_TICK_SECRET || "local-s12-calendar-secret",
   FLASH_RUNTIME_SCOPE: process.env.FLASH_RUNTIME_SCOPE || "pilot",
   APP_ORIGIN: process.env.APP_ORIGIN || e2eBaseURL,
@@ -59,7 +60,7 @@ const localEnv = {
   // Editorial E2E scenarios create and publish several records in one flow.
   // Keep production's smaller admin burst while allowing the local browser run to complete.
   FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
-  EXPECTED_SCHEMA_REVISION: process.env.EXPECTED_SCHEMA_REVISION || "20261012105317_room_calendar_time_trial",
+  EXPECTED_SCHEMA_REVISION: process.env.EXPECTED_SCHEMA_REVISION || "20261103090247_initial_schema",
 };
 
 export default defineConfig({
@@ -68,6 +69,11 @@ export default defineConfig({
     {
       name: "webkit-profile",
       testMatch: "**/profile-dialog-layout.spec.ts",
+      use: { ...devices["Desktop Safari"] },
+    },
+    {
+      name: "webkit-wordle",
+      testMatch: "**/mini-wordle-practice.spec.ts",
       use: { ...devices["Desktop Safari"] },
     },
   ],

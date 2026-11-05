@@ -1,9 +1,7 @@
 "use client";
 
 import { ConnectPairsQuestion } from "@/components/questions";
-import { isConnectPairsAnswer } from "@/lib/scoring";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -11,16 +9,12 @@ export function PracticeInput({
   initialAnswer,
   onProgress,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"connect-pairs">>) {
+}: PracticeInputProps<"connect-pairs">) {
   return (
     <ConnectPairsQuestion
       key={question.id}
       question={question}
-      initialAnswer={
-        initialAnswer !== undefined && isConnectPairsAnswer(initialAnswer)
-          ? initialAnswer
-          : undefined
-      }
+      initialAnswer={initialAnswer}
       locked={locked}
       onProgress={onProgress}
       onSubmit={onSubmit}

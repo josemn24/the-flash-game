@@ -139,6 +139,7 @@ type RoomMemberReviewOverrides = {
   answer_status: "correct" | "partial" | "incorrect" | "unanswered" | "timeout" | null;
   points: number | null;
   result_details: unknown;
+  review_state?: unknown;
   presented_at: string | null;
   submitted_at: string | null;
   time_used_ms: number | null;

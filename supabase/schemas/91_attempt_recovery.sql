@@ -41,11 +41,16 @@ begin
     ), 0) when q.type = 'queens' then coalesce((
       select count(*)::integer
       from private.queens_validation_events e
+      where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
+    ), 0) + coalesce((
+      select count(*)::integer
+      from private.queens_placement_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and e.penalty_applied
     ), 0) when q.type = 'word-search' then coalesce((
       select count(*)::integer from private.word_search_selection_events e
       where e.attempt_id = r.attempt_id and e.challenge_item_id = r.challenge_item_id and not e.correct
     ), 0) else null end,
+    'incorrectValidations', case when q.type = 'queens' then (private.queens_progress(r.attempt_id, r.challenge_item_id)->>'incorrectValidations')::integer else null end,
     'solutionPayload', qs.solution_payload, 'timeLimitMs', q.time_limit_ms,
     'itemPoints', i.points, 'itemConfigSchemaVersion', i.config_schema_version,
     'itemConfig', i.mode_config, 'mode', cv.mode,
@@ -235,7 +240,7 @@ begin
       else null end,
     'answers', coalesce((select jsonb_agg(jsonb_build_object('challengeItemId', aa.challenge_item_id,
       'status', aa.status, 'answer', aa.answer, 'points', aa.points, 'timeUsedMs', aa.time_used_ms,
-      'resultDetails', aa.result_details) order by i.position)
+      'resultDetails', aa.result_details, 'reviewState', aa.review_state) order by i.position)
       from private.attempt_answers aa join private.challenge_items i on i.id = aa.challenge_item_id where aa.attempt_id = a.id), '[]'::jsonb)
   ) into result
   from public.attempts a join private.attempt_sessions s on s.attempt_id = a.id

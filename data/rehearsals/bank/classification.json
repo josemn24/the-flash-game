@@ -1,0 +1,239 @@
+[
+  {
+    "id": "bank-clasificar-instrumentos",
+    "version": 1,
+    "type": "classification",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Clasifica cada instrumento según su familia.",
+      "categories": ["Cuerda", "Viento", "Percusión"],
+      "items": [
+        {
+          "label": "Violín"
+        },
+        {
+          "label": "Flauta"
+        },
+        {
+          "label": "Tambor"
+        },
+        {
+          "label": "Arpa"
+        },
+        {
+          "label": "Clarinete"
+        },
+        {
+          "label": "Platillos"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "categoriesByItem": {
+        "Violín": "Cuerda",
+        "Flauta": "Viento",
+        "Tambor": "Percusión",
+        "Arpa": "Cuerda",
+        "Clarinete": "Viento",
+        "Platillos": "Percusión"
+      },
+      "explanation": "Violín y arpa hacen vibrar cuerdas; flauta y clarinete, aire; tambor y platillos se golpean."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-clasificar-instrumentos"
+  },
+  {
+    "id": "betavip-antiguedad-q6",
+    "version": 1,
+    "type": "classification",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Clasifica cada ficha por el color que indica su nombre.",
+      "categories": ["Rojo", "Azul", "Verde", "Amarillo"],
+      "items": [
+        {
+          "label": "Rojo 1"
+        },
+        {
+          "label": "Azul 2"
+        },
+        {
+          "label": "Verde 3"
+        },
+        {
+          "label": "Amarillo 4"
+        },
+        {
+          "label": "Rojo 5"
+        },
+        {
+          "label": "Azul 6"
+        },
+        {
+          "label": "Verde 7"
+        },
+        {
+          "label": "Amarillo 8"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "categoriesByItem": {
+        "Rojo 1": "Rojo",
+        "Azul 2": "Azul",
+        "Verde 3": "Verde",
+        "Amarillo 4": "Amarillo",
+        "Rojo 5": "Rojo",
+        "Azul 6": "Azul",
+        "Verde 7": "Verde",
+        "Amarillo 8": "Amarillo"
+      },
+      "explanation": "El número diferencia las fichas, pero el color se obtiene de su nombre: Rojo 1 → Rojo; Azul 2 → Azul; Verde 3 → Verde; Amarillo 4 → Amarillo; Rojo 5 → Rojo; Azul 6 → Azul; Verde 7 → Verde; Amarillo 8 → Amarillo."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 50000,
+    "familyId": "classification-nombres-de-colores"
+  },
+  {
+    "id": "flash-referencia-q8",
+    "version": 1,
+    "type": "classification",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Clasifica cada ficha por el color que indica su nombre.",
+      "categories": ["Rojo", "Azul"],
+      "items": [
+        {
+          "label": "Rojo 1"
+        },
+        {
+          "label": "Azul 2"
+        },
+        {
+          "label": "Rojo 3"
+        },
+        {
+          "label": "Azul 4"
+        },
+        {
+          "label": "Rojo 5"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "categoriesByItem": {
+        "Rojo 1": "Rojo",
+        "Azul 2": "Azul",
+        "Rojo 3": "Rojo",
+        "Azul 4": "Azul",
+        "Rojo 5": "Rojo"
+      },
+      "explanation": "El número diferencia las fichas, pero el color se obtiene de su nombre: Rojo 1 → Rojo; Azul 2 → Azul; Rojo 3 → Rojo; Azul 4 → Azul; Rojo 5 → Rojo."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 22000,
+    "familyId": "classification-nombres-de-colores"
+  },
+  {
+    "id": "bank-clasificar-materia",
+    "version": 1,
+    "type": "classification",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-clasificar-materia",
+    "publicPayload": {
+      "question": "Clasifica cada material según su estado habitual.",
+      "categories": ["Sólido", "Líquido", "Gas"],
+      "items": [
+        {
+          "label": "Madera"
+        },
+        {
+          "label": "Leche"
+        },
+        {
+          "label": "Oxígeno"
+        },
+        {
+          "label": "Hierro"
+        },
+        {
+          "label": "Aceite"
+        },
+        {
+          "label": "Helio"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "categoriesByItem": {
+        "Madera": "Sólido",
+        "Leche": "Líquido",
+        "Oxígeno": "Gas",
+        "Hierro": "Sólido",
+        "Aceite": "Líquido",
+        "Helio": "Gas"
+      },
+      "explanation": "Madera e hierro conservan forma y volumen como sólidos; leche y aceite fluyen como líquidos; oxígeno y helio se expanden como gases a temperatura ambiente."
+    }
+  },
+  {
+    "id": "bank-clasificar-divisibilidad",
+    "version": 1,
+    "type": "classification",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-clasificar-divisibilidad",
+    "publicPayload": {
+      "question": "Clasifica cada entero según su divisibilidad por 2 y por 3.",
+      "categories": ["Solo por 2", "Solo por 3", "Por ambos", "Por ninguno"],
+      "items": [
+        {
+          "label": "14"
+        },
+        {
+          "label": "21"
+        },
+        {
+          "label": "30"
+        },
+        {
+          "label": "25"
+        },
+        {
+          "label": "46"
+        },
+        {
+          "label": "51"
+        },
+        {
+          "label": "72"
+        },
+        {
+          "label": "77"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "categoriesByItem": {
+        "14": "Solo por 2",
+        "21": "Solo por 3",
+        "30": "Por ambos",
+        "25": "Por ninguno",
+        "46": "Solo por 2",
+        "51": "Solo por 3",
+        "72": "Por ambos",
+        "77": "Por ninguno"
+      },
+      "explanation": "La última cifra decide divisibilidad por 2; la suma de cifras decide por 3. Así 14 y 46 son pares con suma no múltiplo de 3; 21 y 51 son impares con suma múltiplo de 3; 30 y 72 cumplen ambas; 25 y 77 no cumplen ninguna."
+    }
+  }
+]

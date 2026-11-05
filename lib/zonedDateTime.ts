@@ -143,3 +143,9 @@ export function utcToLocalDateTime(value: string, timeZone: string) {
     ].join("-") + `T${String(parts.hour).padStart(2, "0")}:${String(parts.minute).padStart(2, "0")}`
   );
 }
+
+/** Preserve the database's original precision and DST occurrence for untouched fields. */
+export function resolveLocalDateTime(value: string, timeZone: string, original?: string) {
+  if (original && value === utcToLocalDateTime(original, timeZone)) return original;
+  return localDateTimeToUtc(value, timeZone).toISOString();
+}

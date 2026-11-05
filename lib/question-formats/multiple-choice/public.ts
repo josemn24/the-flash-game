@@ -26,6 +26,7 @@ export function readPublic(
     type: "multiple-choice",
     options: validated.value.options,
     ...(media ? { media } : {}),
+    ...(validated.value.promptVisual ? { promptVisual: validated.value.promptVisual } : {}),
   };
 }
 export function validatePublic(context: PublicReadContext) {

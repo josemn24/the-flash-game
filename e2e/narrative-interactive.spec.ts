@@ -1,3 +1,4 @@
+import { placeQueensCrown } from "./support/queens";
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 test("Narrative persiste Queens, revela pistas y recupera el cursor interactivo", async ({
@@ -16,12 +17,12 @@ test("Narrative persiste Queens, revela pistas y recupera el cursor interactivo"
   const board = page.getByRole("grid", { name: "Tablero Queens de 4 por 4" });
   await expect(board).toBeVisible();
   const draft = page.waitForResponse((response) => response.url().endsWith("/queens/draft"));
-  await board.getByRole("gridcell", { name: /Fila 2, columna 1/ }).click();
+  await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 2, columna 1/ }));
   await draft;
   await page.reload();
-  await expect(page.getByText("2/4 coronas")).toBeVisible();
-  await board.getByRole("gridcell", { name: /Fila 3, columna 4/ }).click();
-  await board.getByRole("gridcell", { name: /Fila 4, columna 2/ }).click();
+  await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("2/4");
+  await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 3, columna 4/ }));
+  await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 4, columna 2/ }));
   await expect(page.getByRole("heading", { name: "El segundo sello" })).toBeVisible();
   await page.getByRole("button", { name: "Seguir" }).click();
   await expect(
@@ -49,7 +50,7 @@ test("Narrative persiste Queens, revela pistas y recupera el cursor interactivo"
   await expect(page.getByText("2 de 3 pistas")).toBeVisible();
   await page.getByLabel("Escribe tu respuesta").fill("muro de berlin");
   await page.getByRole("button", { name: "Enviar respuesta" }).click();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
 });
 
 test("Narrative reintenta preparación y una respuesta aceptada sin duplicarla", async ({
@@ -66,9 +67,9 @@ test("Narrative reintenta preparación y una respuesta aceptada sin duplicarla",
   await page.getByRole("button", { name: "Empezar desafío" }).click();
   await page.getByRole("button", { name: "Seguir" }).click();
   const board = page.getByRole("grid", { name: "Tablero Queens de 4 por 4" });
-  await board.getByRole("gridcell", { name: /Fila 2, columna 1/ }).click();
-  await board.getByRole("gridcell", { name: /Fila 3, columna 4/ }).click();
-  await board.getByRole("gridcell", { name: /Fila 4, columna 2/ }).click();
+  await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 2, columna 1/ }));
+  await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 3, columna 4/ }));
+  await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 4, columna 2/ }));
   await expect(page.getByRole("heading", { name: "El segundo sello" })).toBeVisible();
   const preparations: Record<string, unknown>[] = [];
   await page.route("**/attempts/*/prepare", async (route) => {
@@ -108,7 +109,7 @@ test("Narrative reintenta preparación y una respuesta aceptada sin duplicarla",
   await page.getByLabel("Escribe tu respuesta").fill("muro de berlin");
   await page.getByRole("button", { name: "Enviar respuesta" }).click();
   await page.getByRole("button", { name: "Reintentar", exact: true }).click();
-  await expect(page.getByText("Desafío completado")).toBeVisible();
+  await expect(page.locator("#challenge-result-title")).toBeVisible();
   expect(answers[1]).toEqual(answers[0]);
   await page.reload();
   await page.getByRole("button", { name: "Ver respuestas" }).click();

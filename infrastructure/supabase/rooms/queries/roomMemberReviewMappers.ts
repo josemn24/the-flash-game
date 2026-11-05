@@ -1,10 +1,21 @@
 import { resolveAvatarPath } from "@/infrastructure/supabase/assets/publicAvatar";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
+import { getQuestionReviewCardContent } from "@/lib/gameplay/questionReviewCardContent";
 import { initials } from "@/lib/roomPresentation";
 import type { RoomMemberDetailModel, RoomMemberReviewItem } from "@/types/view-models";
 import type { RoomMemberReviewReadRow } from "./roomReadContracts";
 import { toHistoricalFlashQuestion } from "./roomReviewQuestionMapper";
 import { toHistoricalAnswerReview } from "./roomReviewResultMappers";
+
+function timeTrialSubtitle(question: RoomMemberReviewItem["question"]) {
+  if (question?.type === "queens") {
+    return `Queens · ${question.grid.rows}×${question.grid.columns}`;
+  }
+  if (question?.type === "connect-pairs") {
+    return `Conectar parejas · ${question.grid.rows}×${question.grid.columns}`;
+  }
+  return question ? "Queens" : "";
+}
 
 export function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMemberReviewItem[] {
   return rows
@@ -16,6 +27,10 @@ export function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMe
       const question = locked ? null : toHistoricalFlashQuestion(row);
       const result = locked ? null : toHistoricalAnswerReview(row);
       const status = locked ? "locked" : (result?.status ?? "unanswered");
+      const cardContent =
+        (row.challenge_mode === "flash" || row.challenge_mode === "survival") && question
+          ? getQuestionReviewCardContent(question)
+          : undefined;
       const metadata =
         row.challenge_mode === "pyramid"
           ? {
@@ -40,13 +55,23 @@ export function toRoomMemberReviewItems(rows: RoomMemberReviewReadRow[]): RoomMe
             ? `Prueba ${row.item_position}`
             : row.challenge_mode === "pyramid"
               ? (row.level_label ?? `Nivel ${row.item_position}`)
-              : question
-                ? QUESTION_FORMAT_LABELS[question.type]
-                : row.question_type,
+              : row.challenge_mode === "alphabet" && question
+                ? question.question
+                : cardContent
+                  ? cardContent.title
+                  : question
+                    ? QUESTION_FORMAT_LABELS[question.type]
+                    : row.question_type,
         subtitle:
           row.challenge_mode === "pyramid"
             ? (row.briefing_title ?? `Nivel ${row.item_position}`)
-            : (question?.category ?? ""),
+            : row.challenge_mode === "alphabet" && row.alphabet_letter
+              ? `Letra ${row.alphabet_letter}`
+              : row.challenge_mode === "time-trial"
+                ? timeTrialSubtitle(question)
+                : cardContent
+                  ? cardContent.subtitle
+                  : (question?.category ?? ""),
         question,
         result,
         status,

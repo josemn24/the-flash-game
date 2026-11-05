@@ -5,28 +5,82 @@ export const SCHEDULE_PROFILES = Object.freeze({
     windowStep: 24,
     windowUnit: "hours",
     tabarniaSeasonEnd: "17 days",
-    betaVipSeasonEnd: "120 hours",
+    betaVipSeasonEnd: "144 hours",
   }),
   fast: Object.freeze({
     name: "fast",
     windowMinutes: 5,
     windowStep: 5,
     windowUnit: "minutes",
-    tabarniaSeasonEnd: "20 minutes",
-    betaVipSeasonEnd: "25 minutes",
+    tabarniaSeasonEnd: "30 minutes",
+    betaVipSeasonEnd: "30 minutes",
   }),
 });
 
 export function resolveScheduleProfile(schedule = "production") {
-  const profile = Object.hasOwn(SCHEDULE_PROFILES, schedule)
-    ? SCHEDULE_PROFILES[schedule]
-    : undefined;
-  if (!profile) {
+  const profile =
+    typeof schedule === "string" && Object.hasOwn(SCHEDULE_PROFILES, schedule)
+      ? SCHEDULE_PROFILES[schedule]
+      : undefined;
+  if (profile) return profile;
+  const match = typeof schedule === "string" ? /^([1-9]\d*)(m|h)$/.exec(schedule) : null;
+  if (!match || match[0] !== schedule) {
     throw new Error(
-      `Perfil de calendario no válido: ${String(schedule)}. Usa "production" o "fast".`,
+      `Perfil de calendario no válido: ${String(schedule)}. Usa "production", "fast" o una duración como 10m, 30m o 1h.`,
     );
   }
-  return profile;
+  const windowMinutes = Number(match[1]) * (match[2] === "h" ? 60 : 1);
+  assertScheduleDateRange(windowMinutes);
+  return Object.freeze({
+    name: `${windowMinutes}m`,
+    windowMinutes,
+    windowStep: windowMinutes,
+    windowUnit: "minutes",
+  });
+}
+
+function assertScheduleDateRange(durationMinutes, startsAt = null) {
+  const normalizedStartAt = normalizeStartAt(startsAt);
+  const start = normalizedStartAt
+    ? Date.parse(normalizedStartAt)
+    : Math.floor(Date.now() / 60_000) * 60_000;
+  const milliseconds = durationMinutes * 60_000;
+  if (
+    !Number.isSafeInteger(durationMinutes) ||
+    durationMinutes <= 0 ||
+    !Number.isSafeInteger(milliseconds) ||
+    !Number.isFinite(new Date(start + milliseconds).getTime())
+  ) {
+    throw new Error("La duración del calendario queda fuera del rango de fechas válido.");
+  }
+}
+
+/** One source for the SQL interval and the duration persisted in the manifest. */
+export function scheduleSeason(profile, publicationCount, dataset, startsAt = null) {
+  if (!Number.isSafeInteger(publicationCount) || publicationCount <= 0) {
+    throw new Error("El calendario debe contener un número entero positivo de publicaciones.");
+  }
+  if (dataset !== "tabarnia" && dataset !== "betavip")
+    throw new Error("Dataset de calendario no válido.");
+  const publicationSpan = publicationCount * profile.windowMinutes;
+  assertScheduleDateRange(publicationSpan, startsAt);
+  const production = profile.name === "production";
+  const durationMinutes = production
+    ? dataset === "tabarnia"
+      ? 17 * 24 * 60
+      : 6 * 24 * 60
+    : publicationSpan;
+  assertScheduleDateRange(durationMinutes, startsAt);
+  if (publicationSpan > durationMinutes)
+    throw new Error("Los desafíos no caben en la duración de la temporada.");
+  return {
+    durationMinutes,
+    endInterval: production
+      ? dataset === "tabarnia"
+        ? profile.tabarniaSeasonEnd
+        : profile.betaVipSeasonEnd
+      : `${durationMinutes} minutes`,
+  };
 }
 
 export function normalizeStartAt(value) {
@@ -86,7 +140,7 @@ export function validateFutureStartAt(value) {
 
 export function scheduleStartExpression(startsAt) {
   const normalized = normalizeStartAt(startsAt);
-  return normalized ? `'${normalized}'::timestamptz` : "now()";
+  return normalized ? `'${normalized}'::timestamptz` : "date_trunc('minute', now())";
 }
 
 export function parseScheduleArgs(args, usage) {

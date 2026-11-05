@@ -146,7 +146,7 @@ select test_support.run('record_evaluation', '{"status":"correct","points":50}')
 select is((select last_result->>'status' from test_support.runtime), 'correct', 'Progressive-image accepts normalized answers');
 select is((select (last_result->>'points')::integer from test_support.runtime), 50, 'Progressive-image awards the configured points');
 select ok(current_setting('e10.time_used_ms')::integer < 20000, 'Evaluation uses server time instead of client time');
-select test_support.run('complete_attempt', jsonb_build_object('score', 50));
+select test_support.run('complete_attempt', '{}'::jsonb);
 
 select test_support.as_actor('owner');
 set local role authenticated;

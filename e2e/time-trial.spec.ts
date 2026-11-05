@@ -1,3 +1,4 @@
+import { placeQueensCrown } from "./support/queens";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -50,18 +51,43 @@ test("la intro y cuenta atrás no crean intento; el reloj continúa al cambiar d
   await page.waitForTimeout(1200);
   // One-second question clocks do not end a Contrarreloj board.
   await expect(cell(page, 10)).toBeEnabled();
-  for (const index of [10, 18, 21]) await cell(page, index).click();
-  await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
+  let releaseCheckpoint!: () => void;
+  let checkpointCommitted!: () => void;
+  const held = new Promise<void>((resolve) => {
+    releaseCheckpoint = resolve;
+  });
+  const committed = new Promise<void>((resolve) => {
+    checkpointCommitted = resolve;
+  });
+  let holdFirst = true;
+  await page.route("**/queens/draft", async (route) => {
+    const response = await route.fetch();
+    if (holdFirst) {
+      holdFirst = false;
+      expect(response.ok()).toBe(true);
+      checkpointCommitted();
+      await held;
+    }
+    await route.fulfill({ response });
+  });
+  try {
+    await placeQueensCrown(cell(page, 10));
+    await committed;
+    for (const index of [18, 21]) await placeQueensCrown(cell(page, index));
+    await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible({ timeout: 3500 });
+  } finally {
+    releaseCheckpoint();
+  }
   expect(preparations).toHaveLength(2);
   expect(preparations[1].deadlineAt).toBe(preparations[0].deadlineAt);
   expect(JSON.stringify(preparations)).not.toMatch(/solutionPayload|"solution"/);
-  for (const index of [9, 10, 18, 21]) await cell(page, index).click();
+  for (const index of [9, 10, 18, 21]) await placeQueensCrown(cell(page, index));
   await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible();
   await expect(page.getByText("2/2", { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible();
   await page.getByRole("button", { name: "Ver respuestas" }).click();
-  await expect(page.getByRole("heading", { name: "Historial de pruebas" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible();
 });
 
 test("móvil: el tercer fallo termina la partida sin puntos ni ventaja por fallar antes", async ({
@@ -71,15 +97,17 @@ test("móvil: el tercer fallo termina la partida sin puntos ni ventaja por falla
   await page.setViewportSize({ width: 390, height: 844 });
   await start(page, "bob");
   // The first board has two fixed crowns.
-  for (const index of [0, 5, 14]) await cell(page, index).click();
-  await expect(page.getByText("2 intentos restantes", { exact: true })).toBeVisible();
-  await cell(page, 14).click();
-  await cell(page, 20).click();
+  for (const index of [0, 5, 14]) await placeQueensCrown(cell(page, index));
   await expect(
-    page.getByText("1 intento restante · Último intento", { exact: true }),
+    page.getByLabel("2 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
+  await cell(page, 14).click();
+  await placeQueensCrown(cell(page, 20));
+  await expect(
+    page.getByLabel("1 de 3 intentos restantes en este tablero", { exact: true }),
   ).toBeVisible();
   await cell(page, 20).click();
-  await cell(page, 24).click();
+  await placeQueensCrown(cell(page, 24));
   await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible();
   await expect(page.getByText("Tres validaciones incorrectas", { exact: true })).toBeVisible();
   await expect(page.getByText("Sin aciertos", { exact: true })).toBeVisible();
@@ -96,9 +124,10 @@ test("teclado y recarga: una prueba activa sin recepción se cierra y no se reen
   await cell(page, 0).focus();
   await page.keyboard.press("ArrowDown");
   await expect(cell(page, 5)).toBeFocused();
-  await page.keyboard.press("x");
   await page.keyboard.press("Space");
-  await expect(page.getByText("3 intentos restantes", { exact: true })).toBeVisible();
+  await expect(
+    page.getByLabel("3 de 3 intentos restantes en este tablero", { exact: true }),
+  ).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible();
   await expect(
@@ -126,13 +155,13 @@ test("una confirmación de acierto perdida se concilia sin puntuar dos veces", a
       });
     } else await route.fulfill({ response });
   });
-  for (const index of [10, 18, 21]) await cell(page, index).click();
+  for (const index of [10, 18, 21]) await placeQueensCrown(cell(page, index));
   await expect(
     page.getByRole("button", { name: "Reintentar validación", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Reintentar validación", exact: true }).click();
   await expect(page.getByText("Prueba 2 de 2", { exact: true })).toBeVisible();
   expect(requests[1]).toEqual(requests[0]);
-  for (const index of [9, 10, 18, 21]) await cell(page, index).click();
+  for (const index of [9, 10, 18, 21]) await placeQueensCrown(cell(page, index));
   await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible();
 });

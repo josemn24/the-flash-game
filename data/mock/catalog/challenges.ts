@@ -157,37 +157,37 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
     slug: "animals-alphabet-definition",
     mode: "alphabet",
     title: "Reino de animales",
-    subtitle: "Dieciocho letras, una sola cuenta atrás",
+    subtitle: "Dieciséis letras, una sola cuenta atrás",
     description:
-      "Recorre dieciocho letras, responde un animal para cada una y pasa las que quieras recuperar antes de que se agote el tiempo.",
+      "Recorre dieciséis letras, responde un animal para cada una y pasa las que quieras recuperar antes de que se agote el tiempo.",
     modeConfig: {
-      timeLimitMs: 135000,
+      timeLimitMs: 150000,
     },
     items: [
       {
         questionSlug: "alphabet-animals-a",
-        points: 6,
+        points: 7,
         modeConfig: {
           letter: "A",
         },
       },
       {
         questionSlug: "alphabet-animals-b",
-        points: 6,
+        points: 7,
         modeConfig: {
           letter: "B",
         },
       },
       {
         questionSlug: "alphabet-animals-c",
-        points: 6,
+        points: 7,
         modeConfig: {
           letter: "C",
         },
       },
       {
         questionSlug: "alphabet-animals-d",
-        points: 6,
+        points: 7,
         modeConfig: {
           letter: "D",
         },
@@ -207,20 +207,6 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
         },
       },
       {
-        questionSlug: "alphabet-animals-g",
-        points: 6,
-        modeConfig: {
-          letter: "G",
-        },
-      },
-      {
-        questionSlug: "alphabet-animals-h",
-        points: 6,
-        modeConfig: {
-          letter: "H",
-        },
-      },
-      {
         questionSlug: "alphabet-animals-i",
         points: 6,
         modeConfig: {
@@ -236,56 +222,56 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "alphabet-animals-l",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "L",
         },
       },
       {
         questionSlug: "alphabet-animals-m",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "M",
         },
       },
       {
         questionSlug: "alphabet-animals-o",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "O",
         },
       },
       {
         questionSlug: "alphabet-animals-p",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "P",
         },
       },
       {
         questionSlug: "alphabet-animals-r",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "R",
         },
       },
       {
         questionSlug: "alphabet-animals-s",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "S",
         },
       },
       {
         questionSlug: "alphabet-animals-t",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "T",
         },
       },
       {
         questionSlug: "alphabet-animals-z",
-        points: 5,
+        points: 6,
         modeConfig: {
           letter: "Z",
         },
@@ -295,7 +281,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
   {
     slug: "spain-survival-definition",
     mode: "survival",
-    title: "Supervivencia: España",
+    title: "España",
     subtitle: "20 retos, 3 vidas",
     description:
       "Aguanta una ruta de cultura general sobre España: mapas, patrimonio, lengua, ciencia, arte y lógica con tres vidas.",
@@ -408,7 +394,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
   {
     slug: "pyramid-logic-definition",
     mode: "pyramid",
-    title: "La Pirámide: Cumbre lógica",
+    title: "Cumbre lógica",
     subtitle: "Siete niveles. Sube cuanto puedas.",
     description:
       "Empieza con un patrón sencillo y asciende por siete pruebas de lógica. Solo un acierto completo abre el siguiente nivel.",
@@ -418,7 +404,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
     items: [
       {
         questionSlug: "pyramid-square-intruder",
-        points: 10,
+        points: 13,
         modeConfig: {
           levelId: "entrance",
           label: "Entrada",
@@ -431,7 +417,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "pyramid-growing-products",
-        points: 12,
+        points: 14,
         modeConfig: {
           levelId: "pattern",
           label: "Patrón",
@@ -439,19 +425,6 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
             title: "Completa la secuencia",
             format: "Secuencia numérica",
             description: "Identifica la regla que conecta los términos y elige el siguiente valor.",
-          },
-        },
-      },
-      {
-        questionSlug: "pyramid-constraint-order",
-        points: 13,
-        modeConfig: {
-          levelId: "order",
-          label: "Orden",
-          briefing: {
-            title: "Construye el orden",
-            format: "Ordenación lógica",
-            description: "Coloca todos los elementos respetando simultáneamente las restricciones.",
           },
         },
       },
@@ -465,6 +438,19 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
             title: "Completa la matriz",
             format: "Matriz visual",
             description: "Observa la regla de figuras y flechas y elige la pieza que falta.",
+          },
+        },
+      },
+      {
+        questionSlug: "pyramid-constraint-order",
+        points: 14,
+        modeConfig: {
+          levelId: "order",
+          label: "Orden",
+          briefing: {
+            title: "Construye el orden",
+            format: "Ordenación lógica",
+            description: "Coloca todos los elementos respetando simultáneamente las restricciones.",
           },
         },
       },
@@ -484,7 +470,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "pyramid-secret-code",
-        points: 17,
+        points: 15,
         modeConfig: {
           levelId: "lock",
           label: "Cerradura",
@@ -498,7 +484,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "pyramid-summit-queens",
-        points: 19,
+        points: 15,
         modeConfig: {
           levelId: "summit",
           label: "Cima",
@@ -515,7 +501,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
   {
     slug: "pyramid-abrahamic-definition",
     mode: "pyramid",
-    title: "Biblia y religiones abrahámicas",
+    title: "La Biblia",
     subtitle: "Siete niveles. Una herencia compartida.",
     description:
       "Asciende por siete pruebas sobre personajes, textos y tradiciones del judaísmo, el cristianismo y el islam. Solo un acierto completo abre el siguiente nivel.",
@@ -525,7 +511,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
     items: [
       {
         questionSlug: "abrahamic-matching-biblical-associations",
-        points: 10,
+        points: 13,
         modeConfig: {
           levelId: "entrance",
           label: "Entrada",
@@ -538,7 +524,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "abrahamic-progressive-abraham",
-        points: 12,
+        points: 14,
         modeConfig: {
           levelId: "patriarch",
           label: "Adivinanza",
@@ -551,7 +537,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "abrahamic-order-torah-books",
-        points: 13,
+        points: 14,
         modeConfig: {
           levelId: "torah",
           label: "Secuencia",
@@ -591,7 +577,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "abrahamic-classification-three-traditions",
-        points: 17,
+        points: 15,
         modeConfig: {
           levelId: "traditions",
           label: "Tradiciones",
@@ -604,7 +590,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       },
       {
         questionSlug: "abrahamic-word-hashtag-references",
-        points: 19,
+        points: 15,
         modeConfig: {
           levelId: "summit",
           label: "Cima",

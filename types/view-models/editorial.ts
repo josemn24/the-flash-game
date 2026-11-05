@@ -1,4 +1,4 @@
-import type { GameMode } from "@/types/domain/content";
+import type { QuestionDifficulty, GameMode } from "@/types/domain/content";
 
 export type {
   EditorialJsonObject,
@@ -117,6 +117,7 @@ export type SuperadminQuestionLibraryEntry = {
   readonly slug: string;
   readonly type:
     | "queens"
+    | "connect-pairs"
     | "multiple-choice"
     | "estimation"
     | "heat-map"
@@ -140,6 +141,7 @@ export type SuperadminQuestionLibraryEntry = {
   readonly category: string | null;
   readonly tags: EditorialJsonObject;
   readonly timeLimitMs: number;
+  readonly difficulty?: QuestionDifficulty;
   readonly createdAt: string;
   readonly updatedAt: string;
   readonly publishedAt: string | null;
@@ -234,6 +236,7 @@ export type SuperadminChallengeVersionSnapshotItem = {
   readonly type: string;
   readonly payloadSchemaVersion: number;
   readonly timeLimitMs: number;
+  readonly difficulty?: QuestionDifficulty;
   readonly points: number;
   readonly modeConfig: EditorialJsonObject;
   readonly publicPayload: EditorialJsonObject;

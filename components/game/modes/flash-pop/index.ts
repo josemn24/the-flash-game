@@ -10,7 +10,6 @@ export { FlashPopRoomRanking } from "./FlashPopRoomRanking";
 export { FlashPopRoomSettings } from "./FlashPopRoomSettings";
 export { RoomLeaderboard } from "./RoomLeaderboard";
 export { FlashPopLobby } from "./FlashPopLobby.client";
-export { FlashPopPyramidGame } from "./FlashPopPyramidGame.client";
 export { FlashPopSurvivalGame } from "./FlashPopSurvivalGame.client";
 export { FlashPopSurvivalResult } from "./FlashPopSurvivalResult";
 export { FlashPopReview } from "./FlashPopReview";

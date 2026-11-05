@@ -1,0 +1,620 @@
+[
+  {
+    "id": "betavip-logica-q4",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Une las parejas y cubre todas las casillas.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [4, 18]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [13, 12]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [17, 6]
+        },
+        {
+          "id": "p3",
+          "label": "Pareja 4",
+          "symbol": "★",
+          "color": "#A76318",
+          "endpoints": [1, 20]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [4, 9, 14, 19, 24, 23, 18],
+        "p1": [13, 8, 3, 2, 7, 12],
+        "p2": [17, 22, 21, 16, 11, 6],
+        "p3": [1, 0, 5, 10, 15, 20]
+      },
+      "explanation": "Sigue estos recorridos (fila, columna), desde 1: p0: (1, 5) → (2, 5) → (3, 5) → (4, 5) → (5, 5) → (5, 4) → (4, 4); p1: (3, 4) → (2, 4) → (1, 4) → (1, 3) → (2, 3) → (3, 3); p2: (4, 3) → (5, 3) → (5, 2) → (4, 2) → (3, 2) → (2, 2); p3: (1, 2) → (1, 1) → (2, 1) → (3, 1) → (4, 1) → (5, 1). Cada paso es ortogonal; los caminos no se cruzan y entre todos cubren el tablero."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 45000,
+    "familyId": "connect-pairs-4ae78bf939d3a284e4f7"
+  },
+  {
+    "id": "betavip-parejas-q1",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Une las parejas y cubre todas las casillas.",
+      "grid": {
+        "rows": 4,
+        "columns": 4
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [3, 10]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [6, 9]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [13, 0]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [3, 7, 11, 15, 14, 10],
+        "p1": [6, 2, 1, 5, 9],
+        "p2": [13, 12, 8, 4, 0]
+      },
+      "explanation": "Sigue estos recorridos (fila, columna), desde 1: p0: (1, 4) → (2, 4) → (3, 4) → (4, 4) → (4, 3) → (3, 3); p1: (2, 3) → (1, 3) → (1, 2) → (2, 2) → (3, 2); p2: (4, 2) → (4, 1) → (3, 1) → (2, 1) → (1, 1). Cada paso es ortogonal; los caminos no se cruzan y entre todos cubren el tablero."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "connect-pairs-50a1c7d70c5b49f82edc"
+  },
+  {
+    "id": "betavip-parejas-q2",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Une las parejas y cubre todas las casillas.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [2, 6]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [7, 9]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [14, 18]
+        },
+        {
+          "id": "p3",
+          "label": "Pareja 4",
+          "symbol": "★",
+          "color": "#A76318",
+          "endpoints": [13, 21]
+        },
+        {
+          "id": "p4",
+          "label": "Pareja 5",
+          "symbol": "■",
+          "color": "#33773B",
+          "endpoints": [20, 10]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [2, 1, 0, 5, 6],
+        "p1": [7, 8, 3, 4, 9],
+        "p2": [14, 19, 24, 23, 18],
+        "p3": [13, 12, 17, 22, 21],
+        "p4": [20, 15, 16, 11, 10]
+      },
+      "explanation": "Sigue estos recorridos (fila, columna), desde 1: p0: (1, 3) → (1, 2) → (1, 1) → (2, 1) → (2, 2); p1: (2, 3) → (2, 4) → (1, 4) → (1, 5) → (2, 5); p2: (3, 5) → (4, 5) → (5, 5) → (5, 4) → (4, 4); p3: (3, 4) → (3, 3) → (4, 3) → (5, 3) → (5, 2); p4: (5, 1) → (4, 1) → (4, 2) → (3, 2) → (3, 1). Cada paso es ortogonal; los caminos no se cruzan y entre todos cubren el tablero."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "connect-pairs-c176d602df8afe371600"
+  },
+  {
+    "id": "betavip-parejas-q4",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Une las parejas y cubre todas las casillas.",
+      "grid": {
+        "rows": 6,
+        "columns": 6
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [14, 34]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [33, 25]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [26, 21]
+        },
+        {
+          "id": "p3",
+          "label": "Pareja 4",
+          "symbol": "★",
+          "color": "#A76318",
+          "endpoints": [20, 13]
+        },
+        {
+          "id": "p4",
+          "label": "Pareja 5",
+          "symbol": "■",
+          "color": "#33773B",
+          "endpoints": [7, 1]
+        },
+        {
+          "id": "p5",
+          "label": "Pareja 6",
+          "symbol": "✚",
+          "color": "#A13B35",
+          "endpoints": [2, 10]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [14, 15, 16, 17, 23, 29, 35, 34],
+        "p1": [33, 32, 31, 30, 24, 25],
+        "p2": [26, 27, 28, 22, 21],
+        "p3": [20, 19, 18, 12, 13],
+        "p4": [7, 6, 0, 1],
+        "p5": [2, 8, 9, 3, 4, 5, 11, 10]
+      },
+      "explanation": "Sigue estos recorridos (fila, columna), desde 1: p0: (3, 3) → (3, 4) → (3, 5) → (3, 6) → (4, 6) → (5, 6) → (6, 6) → (6, 5); p1: (6, 4) → (6, 3) → (6, 2) → (6, 1) → (5, 1) → (5, 2); p2: (5, 3) → (5, 4) → (5, 5) → (4, 5) → (4, 4); p3: (4, 3) → (4, 2) → (4, 1) → (3, 1) → (3, 2); p4: (2, 2) → (2, 1) → (1, 1) → (1, 2); p5: (1, 3) → (2, 3) → (2, 4) → (1, 4) → (1, 5) → (1, 6) → (2, 6) → (2, 5). Cada paso es ortogonal; los caminos no se cruzan y entre todos cubren el tablero."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "connect-pairs-e07a7c0dca3db5a71616"
+  },
+  {
+    "id": "betavip-parejas-q5",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Une las parejas y cubre todas las casillas.",
+      "grid": {
+        "rows": 6,
+        "columns": 6
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [5, 28]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [22, 15]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [21, 14]
+        },
+        {
+          "id": "p3",
+          "label": "Pareja 4",
+          "symbol": "★",
+          "color": "#A76318",
+          "endpoints": [8, 25]
+        },
+        {
+          "id": "p4",
+          "label": "Pareja 5",
+          "symbol": "■",
+          "color": "#33773B",
+          "endpoints": [31, 0]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [5, 11, 17, 23, 29, 35, 34, 28],
+        "p1": [22, 16, 10, 4, 3, 9, 15],
+        "p2": [21, 27, 33, 32, 26, 20, 14],
+        "p3": [8, 2, 1, 7, 13, 19, 25],
+        "p4": [31, 30, 24, 18, 12, 6, 0]
+      },
+      "explanation": "Sigue estos recorridos (fila, columna), desde 1: p0: (1, 6) → (2, 6) → (3, 6) → (4, 6) → (5, 6) → (6, 6) → (6, 5) → (5, 5); p1: (4, 5) → (3, 5) → (2, 5) → (1, 5) → (1, 4) → (2, 4) → (3, 4); p2: (4, 4) → (5, 4) → (6, 4) → (6, 3) → (5, 3) → (4, 3) → (3, 3); p3: (2, 3) → (1, 3) → (1, 2) → (2, 2) → (3, 2) → (4, 2) → (5, 2); p4: (6, 2) → (6, 1) → (5, 1) → (4, 1) → (3, 1) → (2, 1) → (1, 1). Cada paso es ortogonal; los caminos no se cruzan y entre todos cubren el tablero."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "connect-pairs-71e02ce7ee8db9a81f8d"
+  },
+  {
+    "id": "betavip-parejas-q6",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Une las parejas y cubre todas las casillas.",
+      "grid": {
+        "rows": 7,
+        "columns": 7
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [44, 40]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [39, 31]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [32, 26]
+        },
+        {
+          "id": "p3",
+          "label": "Pareja 4",
+          "symbol": "★",
+          "color": "#A76318",
+          "endpoints": [25, 28]
+        },
+        {
+          "id": "p4",
+          "label": "Pareja 5",
+          "symbol": "■",
+          "color": "#33773B",
+          "endpoints": [21, 13]
+        },
+        {
+          "id": "p5",
+          "label": "Pareja 6",
+          "symbol": "✚",
+          "color": "#A13B35",
+          "endpoints": [20, 11]
+        },
+        {
+          "id": "p6",
+          "label": "Pareja 7",
+          "symbol": "⬟",
+          "color": "#3A57AB",
+          "endpoints": [18, 16]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [44, 45, 46, 47, 48, 41, 40],
+        "p1": [39, 38, 37, 30, 31],
+        "p2": [32, 33, 34, 27, 26],
+        "p3": [25, 24, 23, 22, 29, 36, 43, 42, 35, 28],
+        "p4": [21, 14, 7, 0, 1, 2, 3, 4, 5, 6, 13],
+        "p5": [20, 19, 12, 11],
+        "p6": [18, 17, 10, 9, 8, 15, 16]
+      },
+      "explanation": "Sigue estos recorridos (fila, columna), desde 1: p0: (7, 3) → (7, 4) → (7, 5) → (7, 6) → (7, 7) → (6, 7) → (6, 6); p1: (6, 5) → (6, 4) → (6, 3) → (5, 3) → (5, 4); p2: (5, 5) → (5, 6) → (5, 7) → (4, 7) → (4, 6); p3: (4, 5) → (4, 4) → (4, 3) → (4, 2) → (5, 2) → (6, 2) → (7, 2) → (7, 1) → (6, 1) → (5, 1); p4: (4, 1) → (3, 1) → (2, 1) → (1, 1) → (1, 2) → (1, 3) → (1, 4) → (1, 5) → (1, 6) → (1, 7) → (2, 7); p5: (3, 7) → (3, 6) → (2, 6) → (2, 5); p6: (3, 5) → (3, 4) → (2, 4) → (2, 3) → (2, 2) → (3, 2) → (3, 3). Cada paso es ortogonal; los caminos no se cruzan y entre todos cubren el tablero."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "connect-pairs-59b0711d1cb2ca11a279"
+  },
+  {
+    "id": "bank-parejas-esquinas",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Conecta las 3 parejas y cubre las 16 casillas sin cruzar los caminos.",
+      "grid": {
+        "rows": 4,
+        "columns": 4
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [2, 5]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [1, 12]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [13, 14]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [2, 3, 7, 6, 5],
+        "p1": [1, 0, 4, 8, 12],
+        "p2": [13, 9, 10, 11, 15, 14]
+      },
+      "explanation": "Recorridos verificados (fila, columna), contando desde 1: Pareja 1: (1, 3) → (1, 4) → (2, 4) → (2, 3) → (2, 2); Pareja 2: (1, 2) → (1, 1) → (2, 1) → (3, 1) → (4, 1); Pareja 3: (4, 2) → (3, 2) → (3, 3) → (3, 4) → (4, 4) → (4, 3). Las 16 casillas quedan cubiertas una sola vez, sin cruces ni saltos diagonales."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "connect-pairs-d2493751b08a679e1e84"
+  },
+  {
+    "id": "bank-parejas-cuatro-rutas",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Conecta las 4 parejas y cubre las 16 casillas sin cruzar los caminos.",
+      "grid": {
+        "rows": 4,
+        "columns": 4
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [11, 14]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [10, 13]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [12, 6]
+        },
+        {
+          "id": "p3",
+          "label": "Pareja 4",
+          "symbol": "★",
+          "color": "#A76318",
+          "endpoints": [7, 2]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [11, 15, 14],
+        "p1": [10, 9, 13],
+        "p2": [12, 8, 4, 0, 1, 5, 6],
+        "p3": [7, 3, 2]
+      },
+      "explanation": "Recorridos verificados (fila, columna), contando desde 1: Pareja 1: (3, 4) → (4, 4) → (4, 3); Pareja 2: (3, 3) → (3, 2) → (4, 2); Pareja 3: (4, 1) → (3, 1) → (2, 1) → (1, 1) → (1, 2) → (2, 2) → (2, 3); Pareja 4: (2, 4) → (1, 4) → (1, 3). Las 16 casillas quedan cubiertas una sola vez, sin cruces ni saltos diagonales."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "connect-pairs-25a6849c65cd6e00184d"
+  },
+  {
+    "id": "bank-parejas-pasillo-central",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Conecta las 4 parejas y cubre las 25 casillas sin cruzar los caminos.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [4, 14]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [19, 5]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [0, 6]
+        },
+        {
+          "id": "p3",
+          "label": "Pareja 4",
+          "symbol": "★",
+          "color": "#A76318",
+          "endpoints": [11, 8]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [4, 9, 14],
+        "p1": [19, 24, 23, 22, 21, 20, 15, 10, 5],
+        "p2": [0, 1, 6],
+        "p3": [11, 16, 17, 18, 13, 12, 7, 2, 3, 8]
+      },
+      "explanation": "Recorridos verificados (fila, columna), contando desde 1: Pareja 1: (1, 5) → (2, 5) → (3, 5); Pareja 2: (4, 5) → (5, 5) → (5, 4) → (5, 3) → (5, 2) → (5, 1) → (4, 1) → (3, 1) → (2, 1); Pareja 3: (1, 1) → (1, 2) → (2, 2); Pareja 4: (3, 2) → (4, 2) → (4, 3) → (4, 4) → (3, 4) → (3, 3) → (2, 3) → (1, 3) → (1, 4) → (2, 4). Las 25 casillas quedan cubiertas una sola vez, sin cruces ni saltos diagonales."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "connect-pairs-c6adeda9d4de031a1d35"
+  },
+  {
+    "id": "bank-parejas-cinco-desvios",
+    "version": 1,
+    "type": "connect-pairs",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Conecta las 5 parejas y cubre las 25 casillas sin cruzar los caminos.",
+      "grid": {
+        "rows": 5,
+        "columns": 5
+      },
+      "pairs": [
+        {
+          "id": "p0",
+          "label": "Pareja 1",
+          "symbol": "●",
+          "color": "#147D92",
+          "endpoints": [10, 6]
+        },
+        {
+          "id": "p1",
+          "label": "Pareja 2",
+          "symbol": "▲",
+          "color": "#AF3C74",
+          "endpoints": [11, 2]
+        },
+        {
+          "id": "p2",
+          "label": "Pareja 3",
+          "symbol": "◆",
+          "color": "#7253B0",
+          "endpoints": [3, 13]
+        },
+        {
+          "id": "p3",
+          "label": "Pareja 4",
+          "symbol": "★",
+          "color": "#A76318",
+          "endpoints": [14, 23]
+        },
+        {
+          "id": "p4",
+          "label": "Pareja 5",
+          "symbol": "■",
+          "color": "#33773B",
+          "endpoints": [18, 16]
+        }
+      ],
+      "requireFullCoverage": true
+    },
+    "solutionPayload": {
+      "paths": {
+        "p0": [10, 5, 0, 1, 6],
+        "p1": [11, 12, 7, 2],
+        "p2": [3, 4, 9, 8, 13],
+        "p3": [14, 19, 24, 23],
+        "p4": [18, 17, 22, 21, 20, 15, 16]
+      },
+      "explanation": "Recorridos verificados (fila, columna), contando desde 1: Pareja 1: (3, 1) → (2, 1) → (1, 1) → (1, 2) → (2, 2); Pareja 2: (3, 2) → (3, 3) → (2, 3) → (1, 3); Pareja 3: (1, 4) → (1, 5) → (2, 5) → (2, 4) → (3, 4); Pareja 4: (3, 5) → (4, 5) → (5, 5) → (5, 4); Pareja 5: (4, 4) → (4, 3) → (5, 3) → (5, 2) → (5, 1) → (4, 1) → (4, 2). Las 25 casillas quedan cubiertas una sola vez, sin cruces ni saltos diagonales."
+    },
+    "modes": ["flash", "survival", "pyramid", "time-trial"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "connect-pairs-e03c9bb83c0d8a2b902a"
+  }
+]

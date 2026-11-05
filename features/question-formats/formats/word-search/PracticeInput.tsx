@@ -1,9 +1,7 @@
 "use client";
 
 import { WordSearchQuestion } from "@/components/questions";
-import { isWordSearchAnswer } from "@/lib/scoring";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -12,14 +10,12 @@ export function PracticeInput({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"word-search">>) {
+}: PracticeInputProps<"word-search">) {
   return (
     <WordSearchQuestion
       key={question.id}
       question={question}
-      initialAnswer={
-        initialAnswer !== undefined && isWordSearchAnswer(initialAnswer) ? initialAnswer : undefined
-      }
+      initialAnswer={initialAnswer}
       locked={locked}
       onProgress={onProgress}
       onIncorrectAttempt={onIncorrectAttempt}

@@ -30,6 +30,7 @@ function renderDefaultPreview(question: FlashEditorialQuestion, index: number) {
 }
 export const EDITORIAL_PREVIEW_RENDERERS = {
   queens: renderDefaultPreview,
+  "connect-pairs": renderDefaultPreview,
   "mini-wordle": miniWordlePreview,
   "logic-code": logicCodePreview,
   "progressive-clues": progressiveCluesPreview,

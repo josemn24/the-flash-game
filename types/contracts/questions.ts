@@ -100,7 +100,7 @@ export type QuestionContractMap = {
   };
   readonly "connect-pairs": {
     readonly public: {
-      readonly grid: { readonly rows: 5; readonly columns: 5 };
+      readonly grid: ContractShapes.ConnectPairsGrid;
       readonly pairs: readonly ContractShapes.ConnectPairsPair[];
       readonly requireFullCoverage: true;
     };
@@ -115,7 +115,7 @@ export type QuestionContractMap = {
     readonly reveal: never;
   };
   readonly "short-text": {
-    readonly public: null;
+    readonly public: { readonly answerPlaceholder?: string | null } | null;
     readonly solution: {
       readonly correctAnswer: string;
       readonly acceptedAnswers: readonly string[];

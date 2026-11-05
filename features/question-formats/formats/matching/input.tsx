@@ -1,7 +1,7 @@
 "use client";
 import { ServerMatchingQuestion } from "@/components/questions/formats/matching/ServerMatchingQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"matching">) {
   const {
     locked,
     pendingAnswer,
@@ -12,10 +12,7 @@ export function render(props: CompetitiveInputProps) {
     onSubmit,
     onProgress,
   } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "matching" }
-  >;
+  const { question } = props;
   return (
     <ServerMatchingQuestion
       key={question.id}

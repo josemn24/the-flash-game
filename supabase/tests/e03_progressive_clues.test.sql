@@ -27,8 +27,11 @@ select lives_ok($$
   )
 $$,
   'El validador editorial acepta un Flash mixto con Progressive-clues');
-select is(to_regclass('private.progressive_clue_events_item_idx')::text,
-  'private.progressive_clue_events_item_idx', 'Existe el índice de consulta por intento/item/pista');
+select ok(exists (
+  select 1 from pg_indexes
+  where schemaname = 'private' and tablename = 'progressive_clue_reveal_events'
+    and indexdef like '%(attempt_id, challenge_item_id, clue_index)%'
+), 'La restricción UNIQUE conserva la cobertura por intento/item/pista');
 select is(private.progressive_clue_effective_penalty(20, 12), 2,
   'La penalización editorial se escala desde la base de 100 puntos');
 select is(private.progressive_clue_effective_penalty(1, 12), 1,

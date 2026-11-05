@@ -1,3 +1,4 @@
+import { placeQueensCrown } from "./support/queens";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
@@ -38,7 +39,7 @@ test.describe("E05 — Queens competitivo", () => {
     });
     await page.getByRole("button", { name: "Lisboa" }).click();
     await expect(page.getByRole("heading", { name: "Coloca las seis coronas" })).toBeVisible();
-    await expect(page.getByText("1/6 coronas")).toBeVisible();
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("1/6");
     expect(await page.content()).not.toContain('"solution"');
 
     const board = page.getByRole("grid", { name: "Tablero Queens de 6 por 6" });
@@ -63,24 +64,29 @@ test.describe("E05 — Queens competitivo", () => {
       (response) =>
         response.url().includes("/queens/draft") && response.request().method() === "POST",
     );
-    await board.getByRole("gridcell", { name: /Fila 2, columna 4/ }).click();
-    await expect(page.getByText("2/6 coronas")).toBeVisible();
+    await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 2, columna 4/ }));
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("2/6");
     expect((await draftResponse).ok()).toBe(true);
     expect(validationBodies).toHaveLength(0);
     await page.reload();
     await expect(page.getByRole("heading", { name: "Coloca las seis coronas" })).toBeVisible();
-    await expect(page.getByText("2/6 coronas")).toBeVisible();
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("2/6");
 
-    await board.getByRole("gridcell", { name: /Fila 3, columna 2/ }).click();
-    await board.getByRole("gridcell", { name: /Fila 4, columna 5/ }).click();
-    await board.getByRole("gridcell", { name: /Fila 5, columna 3/ }).click();
-    await board.getByRole("gridcell", { name: /Fila 5, columna 4/ }).click();
+    await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 3, columna 2/ }));
+    await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 4, columna 5/ }));
+    await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 5, columna 3/ }));
+    const temporaryCrown = board.getByRole("gridcell", { name: /Fila 5, columna 4/ });
+    await placeQueensCrown(temporaryCrown);
+    await temporaryCrown.click();
+    await page.waitForTimeout(900);
+    expect(validationBodies).toHaveLength(0);
+    await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 5, columna 4/ }));
     await expect(page.getByText("El tablero no es correcto.")).toBeVisible();
     expect(validationBodies).toHaveLength(1);
 
     await board.getByRole("gridcell", { name: /Fila 5, columna 4/ }).click();
     failedValidations = 2;
-    await board.getByRole("gridcell", { name: /Fila 6, columna 6/ }).click();
+    await placeQueensCrown(board.getByRole("gridcell", { name: /Fila 6, columna 6/ }));
     await expect.poll(() => validationBodies.length).toBe(3);
     await expect(
       page.getByRole("button", { name: "Reintentar validación", exact: true }),
@@ -92,15 +98,17 @@ test.describe("E05 — Queens competitivo", () => {
 
     const miniBoard = page.getByRole("grid", { name: "Tablero Queens de 4 por 4" });
     await expect(page.getByRole("heading", { name: "Coloca las cuatro coronas" })).toBeVisible();
-    await expect(page.getByText("1/4 coronas")).toBeVisible();
-    await miniBoard.getByRole("gridcell", { name: /Fila 2, columna 1/ }).click();
-    await miniBoard.getByRole("gridcell", { name: /Fila 3, columna 4/ }).click();
-    await miniBoard.getByRole("gridcell", { name: /Fila 4, columna 2/ }).click();
-    await expect(page.getByText("4/4 coronas")).toBeVisible();
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("1/4");
+    await placeQueensCrown(miniBoard.getByRole("gridcell", { name: /Fila 2, columna 1/ }));
+    await placeQueensCrown(miniBoard.getByRole("gridcell", { name: /Fila 3, columna 4/ }));
+    await placeQueensCrown(miniBoard.getByRole("gridcell", { name: /Fila 4, columna 2/ }));
+    await expect(page.getByRole("status", { name: "Progreso de coronas" })).toContainText("4/4");
     await expect.poll(() => validationBodies).toHaveLength(5);
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
-    const firstQueensReview = page.locator("details").filter({ hasText: /^02Queens/ });
+    const firstQueensReview = page.locator("details").filter({
+      has: page.locator("summary").getByText("Coloca las seis coronas.", { exact: true }),
+    });
     await firstQueensReview.locator("summary").click();
     await expect(
       firstQueensReview.getByText("Una corona por fila, columna y región."),

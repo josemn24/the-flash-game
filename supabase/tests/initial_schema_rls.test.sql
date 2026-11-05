@@ -299,6 +299,7 @@ select throws_ok($$update private.attempt_answers set points = 100$$,
   'P0001', null, 'Append-only trigger also blocks table owner');
 select throws_ok($$update private.flash_point_entries set amount = 100$$,
   'P0001', null, 'Ledger is append-only');
+set constraints public.scheduled_challenges_season_id_tstzrange_excl immediate;
 select throws_ok($$insert into public.scheduled_challenges
   (season_id, challenge_version_id, number, opens_at, closes_at)
   values (pg_temp.test_id('season-a'), pg_temp.test_id('cv-1'), 2, now(), now() + interval '1 hour')$$,

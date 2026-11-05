@@ -1,16 +1,11 @@
 import type { AnswerResult } from "@/types/gameplay/result";
 import type {
-  ServerAlphabetChallenge,
-  ServerTimeTrialChallenge,
-  ServerFlashChallenge,
-  ServerNarrativeChallenge,
+  CompetitiveChallenge,
   ServerNarrativeStep,
-  ServerPyramidChallenge,
-  ServerSurvivalChallenge,
   ServerFlashTerminalReview,
 } from "@/types/gameplay/challenge";
 import type { SessionPhase, SessionReview, SessionState } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { alphabetChallengeWithReview } from "../../serverAlphabetQuestionAdapter";
 import {
   challengeWithReview,
@@ -23,24 +18,20 @@ import { pyramidPolicy } from "./pyramid";
 import { narrativePolicy } from "./narrative";
 import { timeTrialPolicy } from "./timeTrial";
 import { alphabetPolicy } from "./alphabet";
+import type { FinalizationPolicy } from "./finalization";
 
-export type CompetitiveChallenge =
-  | ServerFlashChallenge
-  | ServerSurvivalChallenge
-  | ServerPyramidChallenge
-  | ServerNarrativeChallenge
-  | ServerAlphabetChallenge
-  | ServerTimeTrialChallenge;
+export type { CompetitiveChallenge } from "@/types/gameplay/challenge";
 export type ModeStep =
   | { type: "prepare" }
   | { type: "complete" }
   | { type: "phase"; phase: SessionPhase; stepIndex: number; questionIndex?: number };
 export type ModePolicy = {
+  finalization: FinalizationPolicy;
   initialPhase: SessionPhase;
   sequence: readonly ServerNarrativeStep[];
   position: (itemId: string) => number;
   next: (state: SessionState) => ModeStep;
-  recover: (state: SessionState, response: CompetitiveJsonObject) => ModeStep;
+  recover: (state: SessionState, response: AuthoritativeSessionUpdate) => ModeStep;
   terminal: (results: readonly AnswerResult[], questionIndex: number) => boolean;
 };
 export function slotsFor(challenge: CompetitiveChallenge) {

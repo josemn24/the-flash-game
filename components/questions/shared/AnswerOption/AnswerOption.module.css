@@ -1,8 +1,10 @@
 @layer app-formats {
-  .option:hover:not(:disabled) {
-    border-color: var(--format-hover-border);
-    color: var(--format-hover-ink);
-    background: var(--format-hover-surface);
+  @media (hover: hover) and (pointer: fine) {
+    .option:hover:not(:disabled) {
+      border-color: var(--format-hover-border);
+      color: var(--format-hover-ink);
+      background: var(--format-hover-surface);
+    }
   }
   .selected {
     border-color: var(--format-selected-border);

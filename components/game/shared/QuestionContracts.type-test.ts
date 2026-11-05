@@ -15,10 +15,10 @@ type PracticeQuestionsStayOutOfPublicContracts = Assert<
   IsNotAssignable<PracticeQuestion, PublicQuestion>
 >;
 type PublicQuestionsStayOutOfPracticeStages = Assert<
-  IsNotAssignable<PublicQuestion, QuestionStageProps["question"]>
+  IsNotAssignable<PublicQuestion, QuestionStageProps["input"]["props"]["question"]>
 >;
 type PracticeStagesAcceptPracticeQuestions = Assert<
-  IsAssignable<PracticeQuestion, QuestionStageProps["question"]>
+  IsAssignable<PracticeQuestion, QuestionStageProps["input"]["props"]["question"]>
 >;
 type PracticeAnswerIsFormatSpecific = Assert<
   IsNotAssignable<PracticeAnswerValueOfType<"queens">, PracticeAnswerValueOfType<"multiple-choice">>

@@ -1,9 +1,7 @@
 "use client";
 
 import { MatchingQuestion } from "@/components/questions";
-import { isMatchingAnswer } from "@/lib/scoring";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
@@ -12,14 +10,12 @@ export function PracticeInput({
   onProgress,
   onIncorrectAttempt,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"matching">>) {
+}: PracticeInputProps<"matching">) {
   return (
     <MatchingQuestion
       leftItems={question.leftItems}
       rightItems={question.rightItems}
-      initialAnswer={
-        initialAnswer !== undefined && isMatchingAnswer(initialAnswer) ? initialAnswer : undefined
-      }
+      initialAnswer={initialAnswer}
       locked={locked}
       onProgress={onProgress}
       onIncorrectAttempt={onIncorrectAttempt}

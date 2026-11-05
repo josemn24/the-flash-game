@@ -1,5 +1,7 @@
+import { ProductSignal } from "@/components/product/Measurement.client";
 import { CheckIcon, ClockIcon, CrossIcon, LockIcon } from "@/components/ui";
 import { QUESTION_FORMAT_LABELS } from "@/lib/questionFormat";
+import { getQuestionReviewCardContent } from "@/lib/gameplay/questionReviewCardContent";
 import { logicCodeReviewResult } from "@/lib/question-formats/logic-code/review";
 import type { AnswerResult, AnswerStatus } from "@/types/gameplay";
 import type { PracticeChallenge, PracticeQuestion } from "@/types/gameplay/practice";
@@ -15,6 +17,7 @@ export type ReviewAnswerEntry = {
   marker: string;
   title?: string;
   subtitle?: string;
+  showFullTitleOnExpand?: boolean;
   status?: ReviewAnswerVisualStatus;
   statusLabel?: string;
   lockedMessage?: string;
@@ -22,6 +25,8 @@ export type ReviewAnswerEntry = {
 };
 
 function statusFor(entry: ReviewAnswerEntry): ReviewAnswerVisualStatus {
+  if (entry.status === "locked") return entry.status;
+  if (entry.result?.reviewState) return "partial";
   if (entry.status) return entry.status;
   return entry.result?.status ?? "unanswered";
 }
@@ -85,12 +90,24 @@ export function ReviewAnswerList({
 }) {
   return (
     <div className={styles.reviewAnswerList}>
+      {entries.length > 0 ? <ProductSignal type="review_viewed" /> : null}
       {entries.map((entry) => {
         const status = statusFor(entry);
         const result = entry.result;
+        const hasUnsubmittedConnectPairsDraft =
+          status === "partial" &&
+          entry.question?.type === "connect-pairs" &&
+          result?.answer === null &&
+          result.reviewState?.type === "connect-pairs";
+        const visualStatusLabel = hasUnsubmittedConnectPairsDraft
+          ? "Borrador"
+          : statusLabel(status, entry.statusLabel);
         const title =
           entry.title ?? (entry.question ? QUESTION_FORMAT_LABELS[entry.question.type] : "Nivel");
         const subtitle = entry.subtitle ?? entry.question?.category ?? "";
+        const titleClassName = entry.showFullTitleOnExpand
+          ? `${styles.reviewAnswerTitle} ${styles.reviewAnswerTitleExpandable}`
+          : styles.reviewAnswerTitle;
 
         return (
           <details
@@ -100,13 +117,13 @@ export function ReviewAnswerList({
           >
             <summary>
               <span className={styles.reviewAnswerNumber}>{entry.marker}</span>
-              <span className={styles.reviewAnswerTitle}>
+              <span className={titleClassName}>
                 <strong>{title}</strong>
                 <small>{subtitle}</small>
               </span>
               <span className={styles.reviewAnswerStatus}>
                 {statusIcon(status)}
-                <span>{statusLabel(status, entry.statusLabel)}</span>
+                <span>{visualStatusLabel}</span>
               </span>
             </summary>
 
@@ -117,15 +134,25 @@ export function ReviewAnswerList({
                   {entry.lockedMessage ?? "Este desafío terminó antes de esta respuesta."}
                 </span>
               </div>
-            ) : result && entry.question ? (
+            ) : entry.question && (result || entry.showFullTitleOnExpand) ? (
               <div className={styles.reviewAnswerBody}>
-                <QuestionReviewContent question={entry.question} result={result} />
-                {entry.showMeta !== false ? (
+                {entry.showFullTitleOnExpand ? (
+                  <div className={styles.reviewAnswerExpandedQuestion}>
+                    <span>Pregunta</span>
+                    <p>{title}</p>
+                  </div>
+                ) : null}
+                {result ? (
+                  <QuestionReviewContent question={entry.question} result={result} />
+                ) : null}
+                {result && entry.showMeta !== false ? (
                   <div className={styles.reviewAnswerMeta} aria-label="Resumen de la respuesta">
                     {resultSummary(result, entry.question)}
                   </div>
                 ) : null}
-                <p className={styles.reviewAnswerExplanation}>{entry.question.explanation}</p>
+                {result ? (
+                  <p className={styles.reviewAnswerExplanation}>{entry.question.explanation}</p>
+                ) : null}
               </div>
             ) : null}
           </details>
@@ -169,6 +196,9 @@ export function buildReviewAnswerEntries(
       question,
       result,
       marker: String(index + 1).padStart(2, "0"),
+      ...(challenge.mode === "flash" || challenge.mode === "survival"
+        ? { ...getQuestionReviewCardContent(question), showFullTitleOnExpand: true }
+        : {}),
       status: pyramidLocked ? "locked" : undefined,
       lockedMessage: pyramidLocked
         ? "No alcanzado: el ascenso terminó en un nivel anterior."

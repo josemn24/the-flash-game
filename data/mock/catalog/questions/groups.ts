@@ -25,8 +25,6 @@ export const questionGroups = {
     "alphabet-animals-d",
     "alphabet-animals-e",
     "alphabet-animals-f",
-    "alphabet-animals-g",
-    "alphabet-animals-h",
     "alphabet-animals-i",
     "alphabet-animals-j",
     "alphabet-animals-l",

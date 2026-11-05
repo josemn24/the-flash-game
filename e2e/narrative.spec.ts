@@ -64,12 +64,12 @@ test.describe("Fase 2 — Narrative competitivo persistido", () => {
     ).toBeVisible();
     await page.getByLabel("Escribe tu respuesta").fill("Termómetro");
     await page.getByRole("button", { name: "Enviar respuesta" }).click();
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
     expect(await page.content()).not.toContain("NARRATIVE_PRIVATE");
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").first().locator("summary").click();
     await expect(
@@ -109,7 +109,7 @@ test.describe("Fase 2 — Narrative competitivo persistido", () => {
     ).toBeVisible();
     await page.getByLabel("Escribe tu respuesta").fill("Termómetro");
     await page.getByRole("button", { name: "Enviar respuesta" }).click();
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByText(/\/100 puntos/)).toBeVisible();
   });
 });

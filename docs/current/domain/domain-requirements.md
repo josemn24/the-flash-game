@@ -7,12 +7,13 @@ decisiones de dominio ya aprobadas. Es la fuente de verdad funcional para las fa
 junto con [`../../decisions/decisions.md`](../../decisions/decisions.md). Cuando una regla aún no está cerrada se
 marca como cuestión abierta; no se deduce una solución técnica a partir de ella.
 
-Última actualización: 2026-09-16.
+Modelo original: 2026-09-16. Último contraste documental: 2026-10-24.
 
-Las etiquetas indican la relación con la implementación actual:
+Las etiquetas distinguen reglas y capacidades. El estado por entorno está centralizado en
+[estado actual](../status.md):
 
 - **Objetivo confirmado**: regla funcional que debe regir el producto.
-- **Implementado/mock**: comportamiento visible hoy, que puede ser provisional.
+- **Implementado**: recorrido disponible; no implica verificación de staging.
 - **Previsto**: capacidad claramente modelada o documentada, pero no completa en la UI actual.
 
 ## 1. Propósito del producto
@@ -38,11 +39,10 @@ ni ranking.
 - **Editor o autor de contenido**: actor previsto para preparar y publicar desafíos y preguntas.
 - **Sistema**: controla disponibilidad, duración, evaluación, cierre y acreditación de resultados.
 
-Las slices persistidas actuales ya implementan autenticación, provisioning de jugador, el recorrido competitivo Flash
-persistido sobre Supabase local, la creación inicial de salas, la activación de temporadas y la
-publicación editorial mínima desde un portal privado. La gestión posterior de miembros no está
-implementada en la interfaz pública; en la beta cerrada se reservará a un portal privado de
-superadministración.
+La aplicación persistida ya implementa autenticación, provisioning de jugador, seis modos
+competitivos, creación inicial de salas, temporadas y publicación editorial desde el portal privado. Los ajustes de sala ya permiten al owner conceder/quitar admin y eliminar lógicamente
+miembros. El provisioning directo se realiza desde el portal privado; invitaciones completas,
+transferencia de propiedad y bloqueo/desbloqueo siguen pendientes.
 
 ### Alcance operativo de la beta cerrada
 
@@ -89,8 +89,8 @@ No son funciones de la UI pública.
 - **Publicación o desafío programado**: una versión de desafío disponible dentro de una sala y una
   temporada, con una ventana de apertura y cierre.
 - **Pregunta y formato**: una pregunta versionada con una interacción concreta. El catálogo actual
-  contiene 31 formatos de pregunta y cinco modos de juego (`flash`, `alphabet`, `survival`,
-  `narrative` y `pyramid`).
+  contiene 31 formatos y seis modos: `flash`, `alphabet`, `survival`,
+  `narrative`, `pyramid` y `time-trial`. Sus capacidades están en [estado actual](../status.md).
 - **Intento**: ejecución de un jugador sobre un desafío programado. Un intento competitivo conserva
   su ciclo de vida, respuestas, resultado y puntuación.
 - **Ciclo de vida del intento**: mientras un desafío está disponible puede no existir intento; al
@@ -119,14 +119,14 @@ No son funciones de la UI pública.
 - **FR-02 —** El jugador debe disponer de un nombre visible y avatar globales, editables y visibles
   donde corresponda. (**Objetivo confirmado**)
 - **FR-03 —** El jugador debe poder consultar sus salas activas y entrar en cada sala a la que
-  pertenece. (**Previsto**; hoy se alimenta con mocks.)
+  pertenece. (**Implementado** con lecturas autorizadas de Supabase.)
 
 ### 5.2 Salas y membresías
 
 - **FR-04 —** Las salas son privadas y un jugador puede pertenecer a varias.
   (**Objetivo confirmado**)
 - **FR-05 —** La sala debe mostrar su temporada activa, el desafío disponible o su ausencia, el
-  total de Flash Points y la posición del jugador cuando exista. (**Implementado/mock**)
+  total de Flash Points y la posición del jugador cuando exista. (**Implementado**)
 - **FR-06 —** `owner`, `admin` y `member` pueden competir; `spectator` solo puede consultar.
   (**Objetivo confirmado**)
 - **FR-07 —** Los responsables deben poder gestionar invitaciones, membresías y las reglas de
@@ -146,7 +146,7 @@ No son funciones de la UI pública.
 - **FR-12 —** Los desafíos cerrados deben quedar disponibles en el historial, incluidos los que no
   haya jugado nadie. Las publicaciones canceladas no contribuyen al ranking ordinario.
 - **FR-13 —** La interfaz debe distinguir, como mínimo, disponible, en progreso, completado y no
-  completado. (**Implementado/mock**)
+  completado. (**Implementado**)
 
 ### 5.4 Contenido y formatos
 
@@ -155,7 +155,7 @@ No son funciones de la UI pública.
 - **FR-15 —** El contenido publicado debe conservar la versión con la que se jugó; una versión
   publicada no se modifica silenciosamente.
 - **FR-16 —** El jugador debe recibir la interacción específica de cada formato: selección, texto,
-  ordenación, memoria, recorrido, lógica u otra mecánica del catálogo. (**Implementado/mock**)
+  ordenación, memoria, recorrido, lógica u otra mecánica del catálogo. (**Implementado**)
 - **FR-17 —** Los ejemplos de formatos pueden repetirse libremente como exploración, sin crear
   intentos competitivos. (**Objetivo confirmado**)
 
@@ -173,15 +173,14 @@ No son funciones de la UI pública.
   controladora autorizada debe reanudar el mismo intento y no crear otro. El servidor debe resolver
   antes cualquier interacción temporal abierta según el modo; cerrar una pestaña o perder conexión
   no marca por sí solo `abandoned`. La transferencia explícita de control a la misma cuenta está
-  [aprobada y pendiente de implementar](../../decisions/adr/0006-explicit-attempt-control-transfer.md):
+  [implementada](../../decisions/adr/0006-explicit-attempt-control-transfer.md):
   «Continuar aquí» revoca atómicamente la sesión anterior sin crear otro intento ni reiniciar plazos.
-  El runtime aún bloquea otra sesión; el abandono explícito sigue siendo terminal.
+  Otro controlador debe confirmarla; no existe takeover automático. El abandono explícito sigue siendo terminal.
 - **FR-21 —** El desafío debe aplicar el tiempo total, los tiempos por pregunta y las reglas de
   finalización propias del modo. El agotamiento del tiempo de una pregunta o ronda se registra como
   una respuesta no contestada o como el estado equivalente definido por el modo; no implica por sí
-  mismo que el intento completo haya sido superado o fallado. (**Implementado/mock**; el detalle por
-  modo está consolidado en [`mode-contracts.md`](mode-contracts.md), con persistencia
-  autoritativa aún pendiente.)
+  mismo que el intento completo haya sido superado o fallado. (**Implementado**; detalle y autoridad persistida en
+  [`mode-contracts.md`](mode-contracts.md).)
 - **FR-22 —** Tras un intento competitivo terminal (`completed`, `abandoned` o `invalidated`) el
   jugador puede consultar el resultado, el ranking y la revisión de respuestas cuando existan. Si
   el intento se inició, la revisión puede mostrar las respuestas enviadas y las respuestas correctas.
@@ -193,7 +192,7 @@ No son funciones de la UI pública.
 ### 5.6 Resultados y Flash Points
 
 - **FR-24 —** El resultado debe mostrar, cuando aplique, puntuación, precisión, tiempo y desglose de
-  respuestas correctas, parciales, incorrectas y no contestadas. (**Implementado/mock**)
+  respuestas correctas, parciales, incorrectas y no contestadas. (**Implementado**)
 - **FR-25 —** La evaluación debe producir una puntuación entera no negativa entre 0 y 100 para el
   desafío.
 - **FR-25a —** Completar un desafío con cero Flash Points es un resultado válido y no se considera
@@ -215,7 +214,7 @@ No son funciones de la UI pública.
   prueba, invalidados y las publicaciones canceladas quedan fuera.
 - **FR-31 —** El ranking por temporada ordena por el total de Flash Points acreditados en esa
   temporada de la sala.
-- **FR-32 —** En el ranking por desafío, los cinco modos actuales ordenan por más Flash Points,
+- **FR-32 —** En el ranking por desafío, Flash, Alfabeto, Supervivencia, Narrativa y Pirámide ordenan por más Flash Points,
   menor duración efectiva del intento —suma de `AttemptAnswer.timeUsedMs`, incluidas respuestas
   temporizadas y no contestadas— y `startedAt` más antiguo. La cuenta atrás, las esperas externas y
   la diferencia entre `completedAt` y `startedAt` no forman parte de esa duración. Si los tres
@@ -228,7 +227,7 @@ No son funciones de la UI pública.
 ### 5.8 Historial y experiencia social
 
 - **FR-34 —** El historial debe permitir consultar desafíos cerrados, participantes y ranking
-  histórico con el contenido de la versión publicada. (**Implementado/mock**)
+  histórico con el contenido de la versión publicada. (**Implementado**)
 - **FR-35 —** El conteo de participantes representa jugadores competitivos distintos que iniciaron el
   desafío; los jugadores fantasma quedan excluidos.
 - **FR-36 —** La sala puede mostrar actividad social resumida, pero un feed completo y notificaciones
@@ -271,7 +270,7 @@ No son funciones de la UI pública.
   penalizaciones por errores, intentos o tiempo: estas reducen la puntuación disponible de la
   pregunta o prueba, pero su resultado final se limita a un mínimo de cero. La puntuación acumulada
   del desafío tampoco puede ser negativa.
-- El crédito parcial y las reglas de tiempo dependen del modo. Los cinco modos actuales comparten
+- El crédito parcial y las reglas de tiempo dependen del modo. Flash, Alfabeto, Supervivencia, Narrativa y Pirámide comparten
   provisionalmente el comparador del ranking por desafío: más Flash Points, menor duración efectiva
   y `startedAt` más antiguo, con posiciones compartidas.
 - Los Flash Points obtenidos al jugar se suman al total de la temporada activa de esa sala; `⚡`
@@ -302,9 +301,9 @@ No son funciones de la UI pública.
   de que iniciara su intento. No es un estado de un intento creado, no es abandono y no produce
   respuestas ni puntos.
 - `abandoned` significa que el jugador inició el intento, pero lo dejó sin llegar al final. Se
-  conserva la información que haya enviado y puede revisarla junto con la respuesta correcta. Solo
-  una operación explícita lo establece en esta fase; una interrupción técnica mantiene el intento
-  recuperable y se resuelve por modo.
+  conserva la información aceptada y la revisión aplica permisos y contenido alcanzado. Puede
+  producirse por abandono explícito, inactividad tras cierre/deadline o pérdida del permiso
+  competitivo. Una interrupción técnica se resuelve según el modo y los hechos persistidos.
 - Estado de respuesta observado: correcta, parcial, incorrecta, no contestada o timeout.
 
 ### Publicación, temporada y membresía
@@ -355,7 +354,8 @@ separada del ciclo de vida del intento (`in_progress`, `completed`, `abandoned`,
   jugable de un desafío competitivo.
 - El superadministrador actúa fuera de la competición normal y sus resultados se excluyen.
 - El contenido publicado, los resultados y las correcciones requieren controles de autorización
-  acordes al rol; la UI actual todavía no implementa esos flujos de escritura.
+  acordes al rol; el portal privado ya implementa publicación, inspección y ajustes auditados.
+  Las operaciones restantes están en el backlog.
 
 ## 9. Supuestos confirmados
 
@@ -406,70 +406,20 @@ Estas cuestiones no cambian las decisiones confirmadas anteriores:
 - Alcance exacto de la actividad social, notificaciones y formatos/challenges que entrarán en la
   primera validación con usuarios.
 
-## 11. Inconsistencias entre implementación, documentación y objetivo
+## 11. Contraste de implementación
 
-- **Resuelta (2026-09-13):** la UI competitiva usa el estado del intento para mostrar `Jugar`,
-  `Continuar` o `Ver resultado`, bloquea la entrada a desafíos terminales y oculta replay en el
-  resultado y la revisión. Los previews sin `roomContext` conservan replay.
-- **Parcialmente implementada (2026-09-13, sesión de prototipo):** el proveedor conserva snapshots
-  de los modos competitivos mientras el intento está en progreso y los rehidrata al volver al
-  desafío. Todavía no detecta ni registra el cierre de pestaña, la pérdida de conexión o el
-  abandono voluntario, y el estado en memoria se pierde al recargar o cerrar la pestaña. La
-  recuperación actual no sustituye la persistencia ni la validación de servidor futuras.
-- **Resuelta (2026-09-13, prototipo):** la finalización competitiva es first-completion-wins para
-  `(roomId, challengeId)` y la aplicación local de resultados es idempotente. La misma regla deberá
-  validarse en servidor cuando exista backend.
-- **Resuelta (2026-09-13):** un resultado de cero Flash Points sigue siendo `completed` si el jugador
-  llegó al final del flujo y se incluye en el ranking del desafío.
-- **Resuelta (2026-09-13, precisada 2026-09-15, ampliada 2026-09-29 y cerrada 2026-10-07):** `abandoned` se reserva
-  para un intento iniciado, por abandono explícito, `inactivity_timeout` o pérdida del permiso
-  competitivo (`permission_revoked`); `expired` se reserva
-  para una publicación que termina antes de que el jugador empiece. Una interrupción abierta mientras
-  el desafío sigue vigente se recupera por modo y no equivale a abandono automático.
-- **Resuelta (2026-09-13):** `expired` ya no forma parte de `AttemptStatus`. El mock deriva la
-  expiración a partir de la ventana de la publicación cuando no existe un intento; la interfaz la
-  muestra como desafío cerrado sin resultado ni revisión propios.
-- **Resuelta (2026-09-13):** el motor y las pruebas de scoring conservan las penalizaciones por
-  error, intentos o tiempo, pero normalizan el resultado de cada pregunta o prueba a un mínimo de
-  cero antes de agregarlo al desafío. El total mantiene además una protección defensiva no negativa.
-- **Resuelta (2026-09-14):** los cinco modos actuales comparten el comparador del ranking por
-  desafío: más Flash Points, menor duración efectiva —suma de `AttemptAnswer.timeUsedMs`— y
-  `startedAt` más antiguo, con posiciones compartidas. El ranking de temporada solo usa Flash
-  Points acumulados.
-- **Resuelta (2026-09-29):** la expiración por inactividad usa 15 minutos desde la última actividad,
-  o desde el inicio si no existe, y exige publicación cerrada o deadline vencido. Se aplica mediante
-  Vercel Cron diario y reconciliación bajo demanda; devuelve `attempt_inactivity_expired` a una acción
-  que encuentra su intento recién cerrado.
-- **Resuelta (2026-09-13):** La Pirámide conserva `summit` y `failed` como resultado interno del
-  modo. Ambos se proyectan como `completed` cuando la partida llega a su final reglamentario;
-  `failed` indica únicamente que terminó antes de alcanzar la cima y no equivale a `notCompleted`.
-- El modelo genérico de intento aún conserva nombres legacy como `passed`/`failed` en algunas
-  estructuras; no deben interpretarse como estados funcionales globales del desafío.
-- Los documentos históricos de contexto pueden conservar terminología o flujos anteriores; no son requisitos vigentes.
-- El detalle de sala puede mostrar el CTA `Jugar` a un espectador, aunque el acceso jugable lo
-  rechaza. La presentación y la autorización deben alinearse.
-- El cliente actual recibe soluciones y calcula parte del resultado localmente; el requisito de
-  referencia exige preservar el contenido privado y que la evaluación sea autoritativa.
-- Perfil, invitaciones, notificaciones y ajustes presentan controles visuales o locales, pero no
-  tienen persistencia ni acciones completas.
-- El lobby y algunos datos sociales usan valores hardcodeados de demo; no representan todavía una
-  sala, temporada o ranking persistidos.
-- El ranking completo muestra filas no enlazadas al detalle de miembro, aunque existe la ruta de
-  detalle y el ranking diario sí expone esos enlaces.
-- El modelo de respuestas contempla `timeout`, mientras que parte del juego legacy lo representa
-  con un estado distinto y `lastTimedOut`; debe unificarse antes de cerrar el contrato de modo. El
-  timeout de una pregunta no debe confundirse con `expired` del desafío ni con `abandoned` del intento.
-- El catálogo canónico del código contiene 31 formatos y los mocks contienen siete desafíos definidos
-  y seis programados, mientras que documentos antiguos describen 25 formatos o solo dos desafíos.
-  Esos documentos antiguos deben tratarse como históricos.
-- El informe histórico [`../../archive/redesign/qa-fase-4.md`](../../archive/redesign/qa-fase-4.md) conserva cifras
-  de una migración anterior; el estado vigente de QA está en [`../qa.md`](../qa.md).
+Las capacidades y límites están en [estado actual](../status.md),
+los pendientes en el [backlog](../../implementation-plan.md) y las comprobaciones en [QA](../qa.md).
+
+La recuperación y el cierre ya conservan hechos en servidor para los seis modos. El timeout de
+una interacción no equivale a expiración de una publicación ni a abandono voluntario; consultar
+el [ciclo de vida](../attempt-lifecycle.md) y el contrato específico del modo.
 
 ## Fuera de alcance de esta fase
 
 Este documento no define base de datos, tablas, APIs, endpoints, backend, ORM, autenticación
-técnica, almacenamiento ni arquitectura detallada. Esas decisiones solo deben abordarse en la fase
-correspondiente y respetando los requisitos anteriores.
+técnica, almacenamiento ni arquitectura detallada. Esas decisiones se desarrollan en el
+[modelo de persistencia](../data-model.md) y la [arquitectura](../architecture.md), respetando los requisitos anteriores.
 
 ## Evidencias principales
 

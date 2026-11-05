@@ -1,9 +1,9 @@
 import type { SessionQuestion } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { evaluated, numbers, type FormatOutcome } from "./types";
 export function queensOutcome(
   question: SessionQuestion,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
   draft: boolean,
 ): FormatOutcome {
   if (question.type !== "queens") throw new Error("unexpected_question_format");

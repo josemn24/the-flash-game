@@ -1,7 +1,7 @@
 "use client";
 import { ProgressiveImageQuestion } from "@/components/questions/formats/progressive-image/ProgressiveImageQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"progressive-image">) {
   const {
     locked,
     submissionState,
@@ -11,10 +11,7 @@ export function render(props: CompetitiveInputProps) {
     onSubmit,
     presentedAt,
   } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "progressive-image" }
-  >;
+  const { question } = props;
   return (
     <ProgressiveImageQuestion
       surface={question.surface}

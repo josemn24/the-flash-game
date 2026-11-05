@@ -21,6 +21,7 @@ import {
 import type { AlphabetChallenge, AnswerStatus, ChallengeCompletionResult } from "@/types/gameplay";
 import type { GameRoomContext } from "@/types/view-models/room";
 import styles from "./FlashPopAlphabetGame.module.css";
+import { countAlphabetAnswerCharacters } from "@/lib/gameplay/alphabetAnswerSlots";
 
 function Intro({
   challenge,
@@ -50,9 +51,10 @@ function Playing({
   const correct = session.feedback === "correct";
   return (
     <AlphabetPlayingPresentation
+      key={challenge.id}
       round={session.round}
-      correctAnswers={session.correctAnswers}
-      totalLetters={challenge.entries.length}
+      currentIndex={session.currentIndex}
+      answerVisitKey={`${session.round}:${session.currentIndex}`}
       timer={
         <Timer
           duration={challenge.timeLimit}
@@ -63,7 +65,10 @@ function Playing({
         />
       }
       letters={session.letters}
-      question={entry.question}
+      question={{
+        ...entry.question,
+        answerLength: countAlphabetAnswerCharacters(entry.question.correctAnswer) || null,
+      }}
       locked={locked}
       feedback={
         session.phase === "feedback"
@@ -103,7 +108,6 @@ function Results({
       model={{
         gameTitle: "Alfabeto",
         statusLabel: "Completado",
-        eyebrow: "Desafío completado",
         title:
           session.correctAnswers === challenge.entries.length
             ? "Alfabeto dominado"
@@ -213,7 +217,13 @@ export function FlashPopAlphabetGame({
     <MotionConfig reducedMotion="user">
       <Canvas
         maxWidth={session.phase === "intro" ? "none" : "wide"}
-        contentClassName={session.phase === "intro" ? styles.introCanvasContent : styles.screen}
+        contentClassName={
+          session.phase === "intro"
+            ? styles.introCanvasContent
+            : session.phase === "playing" || session.phase === "feedback"
+              ? styles.playingCanvasContent
+              : styles.screen
+        }
       >
         <AnimatePresence mode="wait">
           {session.phase === "intro" ? (

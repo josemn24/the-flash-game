@@ -1,5 +1,6 @@
 "use client";
 
+import { isTimeTrialFormat } from "@/lib/timeTrial";
 import { randomUuid } from "@/lib/randomUuid";
 
 import {
@@ -204,7 +205,7 @@ export function EditorialManagement({
 
   function selectLibraryQuestion() {
     const compatible = publishedLibraryEntries.filter(
-      (entry) => editableDocument?.challenge.mode !== "time-trial" || entry.type === "queens",
+      (entry) => editableDocument?.challenge.mode !== "time-trial" || isTimeTrialFormat(entry.type),
     );
     const entry =
       compatible.find((candidate) => candidate.questionVersionId === libraryQuestionId) ??
@@ -265,7 +266,7 @@ export function EditorialManagement({
               fieldId={fieldId}
               entries={
                 editableDocument?.challenge.mode === "time-trial"
-                  ? publishedLibraryEntries.filter((entry) => entry.type === "queens")
+                  ? publishedLibraryEntries.filter((entry) => isTimeTrialFormat(entry.type))
                   : publishedLibraryEntries
               }
               selectedId={libraryQuestionId}
@@ -279,6 +280,23 @@ export function EditorialManagement({
             <EditorialModeSettings
               fieldId={fieldId}
               document={editableDocument}
+              libraryDifficulties={Object.fromEntries(
+                (questionLibrary?.entries ?? []).map((q) => [
+                  q.questionVersionId,
+                  q.difficulty ?? "medium",
+                ]),
+              )}
+              onQuestionDifficultyChange={(index, difficulty) => {
+                if (editableDocument)
+                  setDocumentText(
+                    formatFlashEditorialDocument({
+                      ...editableDocument,
+                      questions: editableDocument.questions.map((q, i) =>
+                        i === index && !("source" in q) ? { ...q, difficulty } : q,
+                      ),
+                    }),
+                  );
+              }}
               onGlobalDurationChange={(seconds) => {
                 if (editableDocument)
                   setDocumentText(

@@ -1,15 +1,14 @@
 "use client";
 
 import { ZipQuestion } from "@/components/questions";
-import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
-import type { QuestionInputProps } from "../../rendererTypes";
+import type { PracticeInputProps } from "../../practiceInputTypes";
 
 export function PracticeInput({
   question,
   locked,
   onProgress,
   onSubmit,
-}: QuestionInputProps<PracticeQuestionOfType<"zip">>) {
+}: PracticeInputProps<"zip">) {
   return (
     <ZipQuestion
       key={question.id}

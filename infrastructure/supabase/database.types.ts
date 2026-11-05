@@ -131,6 +131,9 @@ isOneToOne: false
 "add_superadmin_room_member":
 { Args: { "input": Json }; Returns: Json
                            },
+"apply_superadmin_calendar_change":
+{ Args: { "input": Json }; Returns: Json
+                           },
 "archive_superadmin_challenge_version":
 { Args: { "input": Json }; Returns: Json
                            },
@@ -161,6 +164,9 @@ isOneToOne: false
 "create_superadmin_season":
 { Args: { "input": Json }; Returns: Json
                            },
+"expire_stale_attempts":
+{ Args: { "input": Json }; Returns: Json
+                           },
 "get_challenge_ranking":
 { Args: { "target_publication_id": string }; Returns: {
               "avatar_path": string,"display_name": string,"duration_ms": number,"flash_points": number,"last_correct_elapsed_ms": number,"player_id": string,"position": number,"solved_count": number
@@ -186,7 +192,7 @@ isOneToOne: false
                            },
 "get_my_flash_result":
 { Args: { "target_attempt_id": string }; Returns: {
-              "answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_id": string,"attempt_lock_version": number,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"challenge_description": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_subtitle": string,"challenge_title": string,"item_position": number,"payload_schema_version": number,"points": number,"presented_at": string,"public_payload": Json,"question_type": string,"question_version_id": string,"result_details": Json,"scheduled_challenge_id": string,"solution_payload": Json,"submitted_at": string,"time_used_ms": number
+              "answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_id": string,"attempt_lock_version": number,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"challenge_description": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_subtitle": string,"challenge_title": string,"item_position": number,"payload_schema_version": number,"points": number,"presented_at": string,"public_payload": Json,"question_type": string,"question_version_id": string,"result_details": Json,"review_state": Json,"scheduled_challenge_id": string,"solution_payload": Json,"submitted_at": string,"time_used_ms": number
             }[]
                            },
 "get_my_narrative_challenge":
@@ -206,13 +212,16 @@ isOneToOne: false
                            },
 "get_my_pyramid_result":
 { Args: { "target_attempt_id": string }; Returns: {
-              "answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_id": string,"attempt_lock_version": number,"attempt_outcome": string,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"challenge_description": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_subtitle": string,"challenge_title": string,"item_position": number,"payload_schema_version": number,"points": number,"presented_at": string,"public_payload": Json,"question_type": string,"question_version_id": string,"result_details": Json,"scheduled_challenge_id": string,"solution_payload": Json,"submitted_at": string,"time_used_ms": number
+              "answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_id": string,"attempt_lock_version": number,"attempt_outcome": string,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"challenge_description": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_subtitle": string,"challenge_title": string,"item_position": number,"payload_schema_version": number,"points": number,"presented_at": string,"public_payload": Json,"question_type": string,"question_version_id": string,"result_details": Json,"review_state": Json,"scheduled_challenge_id": string,"solution_payload": Json,"submitted_at": string,"time_used_ms": number
             }[]
                            },
 "get_my_room_cards":
 { Args: Record<PropertyKey, never>; Returns: {
               "challenge_max_score": number,"challenge_mode": string,"challenge_subtitle": string,"challenge_title": string,"closes_at": string,"competitive_playable": boolean,"current_flash_points": number,"current_position": number,"member_count": number,"member_previews": Json,"membership_role": string,"opens_at": string,"publication_id": string,"publication_status": string,"question_count": number,"room_description": string,"room_id": string,"room_slug": string,"room_title": string,"season_ends_at": string,"season_id": string,"season_starts_at": string,"season_status": string,"season_title": string
             }[]
+                           },
+"get_my_season_rating":
+{ Args: { "target_publication_id": string }; Returns: Json
                            },
 "get_my_survival_challenge":
 { Args: { "target_publication_id": string,"target_room_slug": string }; Returns: {
@@ -221,7 +230,7 @@ isOneToOne: false
                            },
 "get_my_survival_result":
 { Args: { "target_attempt_id": string }; Returns: {
-              "answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_id": string,"attempt_lock_version": number,"attempt_outcome": string,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"challenge_description": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_subtitle": string,"challenge_title": string,"item_position": number,"payload_schema_version": number,"points": number,"presented_at": string,"public_payload": Json,"question_type": string,"question_version_id": string,"result_details": Json,"scheduled_challenge_id": string,"solution_payload": Json,"submitted_at": string,"time_used_ms": number
+              "answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_id": string,"attempt_lock_version": number,"attempt_outcome": string,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"challenge_description": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_subtitle": string,"challenge_title": string,"item_position": number,"payload_schema_version": number,"points": number,"presented_at": string,"public_payload": Json,"question_type": string,"question_version_id": string,"result_details": Json,"review_state": Json,"scheduled_challenge_id": string,"solution_payload": Json,"submitted_at": string,"time_used_ms": number
             }[]
                            },
 "get_my_time_trial_challenge":
@@ -231,7 +240,7 @@ isOneToOne: false
                            },
 "get_my_time_trial_result":
 { Args: { "target_attempt_id": string }; Returns: {
-              "answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_id": string,"attempt_lock_version": number,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"challenge_description": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_subtitle": string,"challenge_title": string,"item_position": number,"payload_schema_version": number,"points": number,"presented_at": string,"public_payload": Json,"question_type": string,"question_version_id": string,"result_details": Json,"scheduled_challenge_id": string,"solution_payload": Json,"submitted_at": string,"time_trial": Json,"time_used_ms": number
+              "answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_id": string,"attempt_lock_version": number,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"challenge_description": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_subtitle": string,"challenge_title": string,"item_position": number,"payload_schema_version": number,"points": number,"presented_at": string,"public_payload": Json,"question_type": string,"question_version_id": string,"result_details": Json,"review_state": Json,"scheduled_challenge_id": string,"solution_payload": Json,"submitted_at": string,"time_trial": Json,"time_used_ms": number
             }[]
                            },
 "get_room_calendar":
@@ -256,7 +265,7 @@ isOneToOne: false
                            },
 "get_room_member_review":
 { Args: { "target_player_id": string,"target_publication_id": string,"target_room_slug": string }; Returns: {
-              "alphabet_letter": string,"answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_duration_ms": number,"attempt_id": string,"attempt_lock_version": number,"attempt_outcome": string,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"avatar_path": string,"briefing_description": string,"briefing_format": string,"briefing_title": string,"challenge_description": string,"challenge_id": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_mode": string,"challenge_slug": string,"challenge_subtitle": string,"challenge_title": string,"challenge_version_id": string,"display_name": string,"global_time_limit_ms": number,"has_persisted_answer": boolean,"initial_lives": number,"item_points": number,"item_position": number,"level_id": string,"level_label": string,"payload_schema_version": number,"player_id": string,"points": number,"presented_at": string,"public_payload": Json,"publication_closes_at": string,"publication_id": string,"publication_status": string,"question_count": number,"question_type": string,"question_version_id": string,"result_details": Json,"room_id": string,"room_slug": string,"room_title": string,"season_id": string,"season_title": string,"solution_payload": Json,"submitted_at": string,"time_limit_ms": number,"time_used_ms": number,"viewer_role": string
+              "alphabet_letter": string,"answer": Json,"answer_status": string,"attempt_completed_at": string,"attempt_duration_ms": number,"attempt_id": string,"attempt_lock_version": number,"attempt_outcome": string,"attempt_score": number,"attempt_started_at": string,"attempt_status": string,"avatar_path": string,"briefing_description": string,"briefing_format": string,"briefing_title": string,"challenge_description": string,"challenge_id": string,"challenge_item_id": string,"challenge_max_score": number,"challenge_mode": string,"challenge_slug": string,"challenge_subtitle": string,"challenge_title": string,"challenge_version_id": string,"display_name": string,"global_time_limit_ms": number,"has_persisted_answer": boolean,"initial_lives": number,"item_points": number,"item_position": number,"level_id": string,"level_label": string,"payload_schema_version": number,"player_id": string,"points": number,"presented_at": string,"public_payload": Json,"publication_closes_at": string,"publication_id": string,"publication_status": string,"question_count": number,"question_type": string,"question_version_id": string,"result_details": Json,"review_state": Json,"room_id": string,"room_slug": string,"room_title": string,"season_id": string,"season_title": string,"solution_payload": Json,"submitted_at": string,"time_limit_ms": number,"time_used_ms": number,"viewer_role": string
             }[]
                            },
 "get_season_ranking":
@@ -306,12 +315,18 @@ isOneToOne: false
 "get_superadmin_room_detail":
 { Args: { "target_room_id": string }; Returns: Json
                            },
+"get_superadmin_season_measurement":
+{ Args: { "target_room_id": string,"target_season_id"?: string }; Returns: Json
+                           },
 "lookup_superadmin_players":
 { Args: { "target_emails": (string)[] }; Returns: {
               "display_name": string,"email": string,"player_id": string
             }[]
                            },
 "manage_room_member":
+{ Args: { "input": Json }; Returns: Json
+                           },
+"preview_superadmin_calendar_change":
 { Args: { "input": Json }; Returns: Json
                            },
 "provision_player":
@@ -323,6 +338,15 @@ isOneToOne: false
 { Args: { "input": Json }; Returns: Json
                            },
 "publish_superadmin_question":
+{ Args: { "input": Json }; Returns: Json
+                           },
+"record_room_measurement_event":
+{ Args: { "input": Json }; Returns: boolean
+                           },
+"run_calendar_tick":
+{ Args: { "input": Json }; Returns: Json
+                           },
+"save_my_season_rating":
 { Args: { "input": Json }; Returns: Json
                            },
 "update_superadmin_flash_draft":

@@ -119,3 +119,6 @@ create policy attempts_select_own on public.attempts for select to authenticated
 revoke all on all functions in schema private from public, anon, authenticated, service_role;
 grant execute on function private.current_player_id(), private.is_room_member(uuid),
   private.can_read_profile(uuid), private.can_read_own_attempt(uuid, uuid) to authenticated;
+-- Calendar maintenance entrypoints are service-only; grant them after the global revoke.
+grant execute on function private.expire_stale_attempts(jsonb),
+  private.run_calendar_tick_command(jsonb) to service_role;

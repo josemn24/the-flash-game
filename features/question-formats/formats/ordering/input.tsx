@@ -1,12 +1,9 @@
 "use client";
 import { OrderingQuestion } from "@/components/questions/formats/ordering/OrderingQuestion";
 import type { CompetitiveInputProps } from "../../competitiveInputTypes";
-export function render(props: CompetitiveInputProps) {
+export function render(props: CompetitiveInputProps<"ordering">) {
   const { locked, onSubmit } = props;
-  const question = props.question as Extract<
-    CompetitiveInputProps["question"],
-    { type: "ordering" }
-  >;
+  const { question } = props;
   return (
     <>
       <OrderingQuestion

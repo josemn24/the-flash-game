@@ -1,10 +1,10 @@
 import type { SessionQuestion } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 import { evaluated, type FormatOutcome } from "./types";
 export function logicCodeOutcome(
   question: SessionQuestion,
   code: string,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): FormatOutcome {
   if (question.type !== "logic-code") throw new Error("unexpected_question_format");
   const accepted = String(response.code ?? code);

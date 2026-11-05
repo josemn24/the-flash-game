@@ -147,7 +147,7 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
                 {primaryChallenge.levels.length}
               </p>
             ) : null}
-            <div className={styles.socialRow}>
+            <div className={styles.timeTrialLinks}>
               <AvatarStack
                 items={players}
                 maxVisible={3}
@@ -248,6 +248,65 @@ export function FlashPopLobby({ model }: { model: FlashPopLobbyPageModel }) {
             >
               Probar Flash
             </ButtonLink>
+          </Card>
+
+          <Card as="section" className={styles.classicPreviewCard}>
+            <p className={styles.eyebrow}>Ensayo local</p>
+            <h2>Alfabeto</h2>
+            <p className={styles.challengeCopy}>
+              Recorre las 16 letras del Reino de animales, pasa preguntas y vuelve a ellas antes del
+              límite global.
+            </p>
+            <ButtonLink
+              href="/demo/flash-pop/desafios/tabarnia-challenge-02"
+              variant="secondary"
+              fullWidth
+              trailingIcon={<ArrowIcon />}
+            >
+              Ensayar Alfabeto
+            </ButtonLink>
+          </Card>
+
+          <Card as="section" className={styles.classicPreviewCard}>
+            <p className={styles.eyebrow}>Ensayo local</p>
+            <h2>Supervivencia</h2>
+            <p className={styles.challengeCopy}>
+              Prueba el recorrido de España con tres vidas y el mismo flujo competitivo.
+            </p>
+            <ButtonLink
+              href="/demo/flash-pop/desafios/tabarnia-challenge-03"
+              variant="secondary"
+              fullWidth
+              trailingIcon={<ArrowIcon />}
+            >
+              Ensayar Supervivencia
+            </ButtonLink>
+          </Card>
+
+          <Card as="section" className={styles.classicPreviewCard}>
+            <p className={styles.eyebrow}>Ensayo local</p>
+            <h2>Contrarreloj</h2>
+            <p className={styles.challengeCopy}>
+              Resuelve Queens o Conectar parejas antes de que termine el reloj global.
+            </p>
+            <div className={styles.socialRow}>
+              <ButtonLink
+                href="/demo/flash-pop/desafios/tabarnia-time-trial-queens-01"
+                variant="secondary"
+                fullWidth
+                trailingIcon={<ArrowIcon />}
+              >
+                Ensayar Queens
+              </ButtonLink>
+              <ButtonLink
+                href="/demo/flash-pop/desafios/tabarnia-time-trial-connect-pairs-01"
+                variant="secondary"
+                fullWidth
+                trailingIcon={<ArrowIcon />}
+              >
+                Ensayar Conectar parejas
+              </ButtonLink>
+            </div>
           </Card>
 
           <Card as="section" className={styles.activitySection}>

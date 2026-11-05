@@ -29,9 +29,26 @@ select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,20]}');
 select is((select last_result->'incorrectValidations' from test_support.runtime), '1'::jsonb, 'First failure leaves two opportunities');
 select is((select last_result->'terminal' from test_support.runtime), 'false'::jsonb, 'First failure keeps the level open');
 select is(test_support.repeat_last(), (select last_result from test_support.runtime), 'A replay consumes no additional opportunity');
+select throws_ok($$select test_support.repeat_last('{"queens":[0,2,5,14,24]}')$$,
+  '40001', 'idempotency_conflict', 'The same validation key cannot accept a different board');
+reset role;
+select is((select count(*) from private.answer_receipts
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)
+    and challenge_item_id = test_support.id('pyramid-queens-item-2')), 0::bigint,
+  'PYR-05: the first failed validation is progress, not a terminal receipt');
+select is((select status from public.attempts
+  where id = (select (state->>'attemptId')::uuid from test_support.runtime)), 'in_progress',
+  'The attempt remains in progress after the first failed validation');
+set local role service_role;
 select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,24]}');
 select is((select last_result->'incorrectValidations' from test_support.runtime), '2'::jsonb, 'Second failure leaves one opportunity');
 select is((select last_result->'terminal' from test_support.runtime), 'false'::jsonb, 'Second failure keeps the level open');
+reset role;
+select is((select count(*) from private.attempt_answers
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)
+    and challenge_item_id = test_support.id('pyramid-queens-item-2')), 0::bigint,
+  'PYR-05: the second failed validation has no final level evaluation');
+set local role service_role;
 select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,21]}');
 select is((select last_result->'incorrectValidations' from test_support.runtime), '3'::jsonb, 'Third failure exhausts the opportunities');
 select is((select last_result->'terminal' from test_support.runtime), 'true'::jsonb, 'Third failure closes the level');
@@ -50,7 +67,7 @@ select test_support.run('record_evaluation', '{"status":"incorrect","points":0,"
 select is(test_support.repeat_last(), (select last_result from test_support.runtime), 'The exhausted result is recorded idempotently');
 select throws_ok($$select test_support.run('prepare_interaction')$$,
   '55000', 'pyramid_level_failed', 'The next level is unavailable after exhausting attempts');
-select is(test_support.run('complete_attempt', '{"score":0,"outcome":"failed"}')->>'outcome', 'failed', 'Exhaustion finishes Pyramid as failed');
+select is(test_support.run('complete_attempt', '{"outcome":"failed"}')->>'outcome', 'failed', 'Exhaustion finishes Pyramid as failed');
 select is(test_support.repeat_last(), (select last_result from test_support.runtime), 'Failure finalization is idempotent');
 reset role;
 select is((select count(*) from private.queens_validation_events
@@ -98,6 +115,7 @@ select test_support.start_pyramid_queens(6);
 select test_support.run('activate_interaction');
 select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,20]}');
 select test_support.run('submit_queens_answer', '{"queens":[0,2,5,14,24]}');
+select test_support.run('save_queens_draft', '{"queens":[2,9,10]}');
 select pg_sleep(1.05);
 select throws_ok($$select test_support.run('submit_queens_answer', '{"queens":[2,9,10,18,21]}')$$,
   '55000', 'deadline_reached', 'A validation after the server deadline is rejected');
@@ -107,6 +125,9 @@ select is(private.read_evaluation_context(
   (select state->>'sessionToken' from test_support.runtime))->'incorrectValidations',
   '2'::jsonb, 'A late validation does not consume a third opportunity');
 select test_support.run('record_evaluation', '{"status":"unanswered","points":0}');
-select is(test_support.run('complete_attempt', '{"score":0,"outcome":"failed"}')->>'outcome', 'failed', 'Timeout retains Pyramid failure policy');
+select is((select review_state from private.attempt_answers where attempt_id=(select (state->>'attemptId')::uuid from test_support.runtime)
+  and challenge_item_id=test_support.id('pyramid-queens-timeout-item-2')),
+  '{"type":"queens","queens":[2,9,10]}'::jsonb,'A per-level Queens timeout preserves saved crowns, without marks');
+select is(test_support.run('complete_attempt', '{"outcome":"failed"}')->>'outcome', 'failed', 'Timeout retains Pyramid failure policy');
 select * from finish();
 rollback;

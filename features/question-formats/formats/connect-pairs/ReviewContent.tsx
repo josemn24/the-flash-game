@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react";
 import {
+  calculateConnectPairsMetrics,
   connectPairsRoutePoints,
-  CONNECT_PAIRS_COLUMNS,
   getConnectPairsPairColor,
+  isRestorableConnectPairsDraft,
 } from "@/lib/connectPairs";
 import styles from "@/components/game/shared/ReviewAnswers.module.css";
 import { isConnectPairsAnswer } from "@/lib/scoring";
@@ -13,25 +14,60 @@ export function ReviewContent({
   question,
   result,
 }: ReviewProps<PracticeQuestionOfType<"connect-pairs">>) {
-  const answer = isConnectPairsAnswer(result.answer) ? result.answer : null;
-  const details = result.details?.type === "connect-pairs" ? result.details : undefined;
-  const showSubmittedPaths = answer !== null && !result.isCorrect;
+  const storedAnswer = isConnectPairsAnswer(result.answer) ? result.answer : null;
+  const savedDraft =
+    result.reviewState?.type === "connect-pairs" &&
+    isRestorableConnectPairsDraft(question, { paths: result.reviewState.paths })
+      ? {
+          paths: Object.fromEntries(
+            Object.entries(result.reviewState.paths).map(([id, path]) => [id, [...path]]),
+          ),
+        }
+      : null;
+  const hasUnsubmittedSavedDraft = storedAnswer === null && savedDraft !== null;
+  const answer = storedAnswer ?? savedDraft;
+  const details =
+    (storedAnswer || !savedDraft) && result.details?.type === "connect-pairs"
+      ? result.details
+      : undefined;
+  const metrics = answer ? calculateConnectPairsMetrics(question, answer) : null;
+  const reviewMetrics = {
+    connectedPairs: details?.connectedPairs ?? metrics?.connectedPairs ?? 0,
+    totalPairs: details?.totalPairs ?? question.pairs.length,
+    coverage: details?.coverage ?? metrics?.coverageRatio ?? 0,
+  };
+  const matchesSolution =
+    answer !== null &&
+    question.pairs.every((pair) => {
+      const submitted = (answer.paths[pair.id] ?? []).join(",");
+      const solution = question.solutionPaths[pair.id] ?? [];
+      return submitted === solution.join(",") || submitted === [...solution].reverse().join(",");
+    });
+  const showSubmittedPaths =
+    savedDraft !== null || (answer !== null && (!result.isCorrect || !matchesSolution));
   const solutionCells = new Set(Object.values(question.solutionPaths).flat());
   const solutionOwner = new Map<number, (typeof question.pairs)[number]>();
   const submittedOwner = new Map<number, (typeof question.pairs)[number]>();
+  const submittedSingletonCells = new Set<number>();
 
   question.pairs.forEach((pair) => {
     (question.solutionPaths[pair.id] ?? []).forEach((cell) => solutionOwner.set(cell, pair));
-    (answer?.paths[pair.id] ?? []).forEach((cell) => submittedOwner.set(cell, pair));
+    const submittedPath = answer?.paths[pair.id] ?? [];
+    submittedPath.forEach((cell) => submittedOwner.set(cell, pair));
+    if (showSubmittedPaths && submittedPath.length === 1) {
+      submittedSingletonCells.add(submittedPath[0]);
+    }
   });
 
-  const reviewStatus = result.isCorrect
-    ? "Solución completa"
-    : answer === null || result.status === "unanswered"
-      ? "Sin respuesta"
-      : result.status === "partial"
-        ? "Respuesta parcial"
-        : "Respuesta incorrecta";
+  const reviewStatus = hasUnsubmittedSavedDraft
+    ? "Borrador guardado · sin envío final"
+    : result.isCorrect
+      ? "Solución completa"
+      : savedDraft === null && (answer === null || result.status === "unanswered")
+        ? "Sin respuesta"
+        : savedDraft !== null || result.status === "partial"
+          ? "Respuesta parcial"
+          : "Respuesta incorrecta";
 
   const pathLayerLabel = showSubmittedPaths
     ? "Muestra la solución oficial y tu respuesta"
@@ -43,12 +79,12 @@ export function ReviewContent({
     <div className="grid gap-3">
       <div
         className={styles.connectPairsReviewGrid}
-        style={{ gridTemplateColumns: `repeat(${CONNECT_PAIRS_COLUMNS}, minmax(0, 1fr))` }}
-        aria-label={`Tablero de conexiones. ${pathLayerLabel}.`}
+        style={{ gridTemplateColumns: `repeat(${question.grid.columns}, minmax(0, 1fr))` }}
+        aria-label={`Tablero de conexiones ${question.grid.rows}×${question.grid.columns}. ${pathLayerLabel}.`}
       >
         <svg
           className={styles.connectPairsReviewRouteOverlay}
-          viewBox={`0 0 ${CONNECT_PAIRS_COLUMNS} ${question.grid.rows}`}
+          viewBox={`0 0 ${question.grid.columns} ${question.grid.rows}`}
           preserveAspectRatio="none"
           aria-hidden="true"
         >
@@ -59,7 +95,7 @@ export function ReviewContent({
               <polyline
                 key={`solution-${pair.id}`}
                 className={styles.connectPairsReviewRouteLine}
-                points={connectPairsRoutePoints(solutionPath)}
+                points={connectPairsRoutePoints(solutionPath, question.grid)}
                 style={{ "--pair-color": color } as CSSProperties}
               />
             ) : null;
@@ -72,7 +108,7 @@ export function ReviewContent({
                   <polyline
                     key={`submitted-${pair.id}`}
                     className={styles.connectPairsReviewSubmittedLine}
-                    points={connectPairsRoutePoints(submittedPath)}
+                    points={connectPairsRoutePoints(submittedPath, question.grid)}
                     style={{ "--pair-color": color } as CSSProperties}
                   />
                 ) : null;
@@ -99,8 +135,18 @@ export function ReviewContent({
                 isEndpoint && showSubmittedPaths && !answerIncludesEndpoint
                   ? styles.connectPairsReviewEndpointMissing
                   : ""
-              }`}
-              style={{ "--pair-color": color } as CSSProperties}
+              } ${submittedSingletonCells.has(cell) ? styles.connectPairsReviewSubmittedSingleton : ""}`}
+              style={
+                {
+                  "--pair-color": color,
+                  "--submitted-pair-color": submittedPair
+                    ? getConnectPairsPairColor(
+                        submittedPair.color,
+                        question.pairs.findIndex((pair) => pair.id === submittedPair.id),
+                      )
+                    : undefined,
+                } as CSSProperties
+              }
               aria-label={
                 owner
                   ? `Casilla ${cell + 1}: ${isEndpoint ? "extremo" : "ruta"} de ${owner.label}${
@@ -110,7 +156,9 @@ export function ReviewContent({
                           ? "; extremo no incluido en tu respuesta"
                           : ""
                     }`
-                  : `Casilla ${cell + 1}: vacía`
+                  : submittedPair && showSubmittedPaths
+                    ? `Casilla ${cell + 1}: tu ruta de ${submittedPair.label}`
+                    : `Casilla ${cell + 1}: vacía`
               }
             >
               {owner ? (isEndpoint ? owner.symbol : solutionCells.has(cell) ? "·" : "") : ""}
@@ -156,12 +204,12 @@ export function ReviewContent({
         <div className={styles.answerBox}>
           <span>Parejas conectadas</span>
           <strong>
-            {details?.connectedPairs ?? 0}/{details?.totalPairs ?? question.pairs.length}
+            {reviewMetrics.connectedPairs}/{reviewMetrics.totalPairs}
           </strong>
         </div>
         <div className={styles.answerBox}>
           <span>Cobertura</span>
-          <strong>{details ? `${Math.round(details.coverage * 100)} %` : "0 %"}</strong>
+          <strong>{Math.round(reviewMetrics.coverage * 100)} %</strong>
         </div>
         <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
           <span>Estado</span>

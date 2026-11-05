@@ -51,7 +51,6 @@ export function ProgressiveImageQuestion({
   submissionError,
   onRetrySubmission,
 }: ProgressiveImageQuestionProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
   const startedRef = useRef(false);
   const lastMilestoneRef = useRef(0);
   const [imageState, setImageState] = useState<ImageState>("loading");
@@ -103,7 +102,6 @@ export function ProgressiveImageQuestion({
     setImageState("ready");
     setAnnouncement("Imagen preparada. Comienza el revelado.");
     if (presentedAtMs === undefined) onTimedResponseStart();
-    window.requestAnimationFrame(() => inputRef.current?.focus());
   };
 
   const retryLoad = () => {
@@ -198,7 +196,6 @@ export function ProgressiveImageQuestion({
         <label htmlFor="progressive-image-answer">{answerLabel}</label>
         <div className={styles.answerRow}>
           <input
-            ref={inputRef}
             id="progressive-image-answer"
             type="text"
             value={answer}

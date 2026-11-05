@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type {
-  CompetitiveChallengeQueries,
   DemoChallengeQueries,
   RoomHistoryQueries,
   RoomLobbyQueries,
@@ -46,7 +45,8 @@ type RoomReadCapabilities = RoomHistoryQueries &
   RoomRankingQueries &
   RoomSettingsQueries;
 // Demo and competitive adapters are composed here only to exercise the shared contract.
-type ChallengeReadCapabilities = DemoChallengeQueries & CompetitiveChallengeQueries;
+type ChallengeReadCapabilities = DemoChallengeQueries &
+  Pick<MockCompetitiveChallengeQueries, "getPlayable">;
 
 function withStore(changes: Partial<DomainStore>): DomainStore {
   return { ...mockDomainStore, ...changes };

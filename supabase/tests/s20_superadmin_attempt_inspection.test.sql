@@ -20,7 +20,7 @@ select test_support.run('record_evaluation', '{"status":"correct","points":50}')
 select test_support.run('prepare_interaction');
 select test_support.run('receive_answer', '{"answer":false}');
 select test_support.run('record_evaluation', '{"status":"incorrect","points":0}');
-select test_support.run('complete_attempt', '{"score":50}');
+select test_support.run('complete_attempt', '{}');
 create temp table s20_context (attempt_id uuid) on commit drop;
 grant select on s20_context to authenticated;
 insert into s20_context

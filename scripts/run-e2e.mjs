@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 import { BROWSER_FIXTURE_SPECS, normalizeSpecPath, scenarioForSpec } from "./e2e-scenarios.mjs";
 
@@ -68,7 +68,74 @@ function run(command, args, options = {}) {
   });
 }
 
+function localSupabaseStatus() {
+  const args = ["supabase", "status", "-o", "env"];
+  if (process.env.SUPABASE_TEST_WORKDIR)
+    args.push("--workdir", process.env.SUPABASE_TEST_WORKDIR);
+  const output = execFileSync("npx", args, { encoding: "utf8", env: pilotEnv });
+  return Object.fromEntries(
+    output.split("\n").flatMap((line) => {
+      const match = line.match(/^([A-Z][A-Z0-9_]*)=(.*)$/);
+      if (!match) return [];
+      return [[match[1], match[2].replace(/^\"|\"$/g, "")]];
+    }),
+  );
+}
+
+async function waitForSupabaseAuth(status) {
+  const apiUrl = status.API_URL;
+  const apiKey = status.PUBLISHABLE_KEY || status.ANON_KEY;
+  if (!apiUrl || !apiKey) throw new Error("No se pudo resolver la URL/clave local de Supabase Auth.");
+
+  const endpoint = new URL("/auth/v1/health", apiUrl);
+  if (!["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname))
+    throw new Error("La comprobación de readiness solo admite Supabase local.");
+
+  const deadline = Date.now() + 30_000;
+  let consecutiveSuccesses = 0;
+  let lastFailure = "sin respuesta";
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(endpoint, {
+        headers: { apikey: apiKey },
+        signal: AbortSignal.timeout(2_000),
+      });
+      await response.text();
+      if (response.ok) {
+        consecutiveSuccesses += 1;
+        if (consecutiveSuccesses >= 2) return;
+        lastFailure = `Auth respondió ${response.status}; esperando estabilidad.`;
+      } else {
+        consecutiveSuccesses = 0;
+        lastFailure = `Auth respondió HTTP ${response.status}.`;
+      }
+    } catch (error) {
+      consecutiveSuccesses = 0;
+      lastFailure = error instanceof Error ? error.message : String(error);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+  throw new Error(`Supabase Auth no estuvo lista tras 30 s: ${lastFailure}`);
+}
+
 async function prepareScenario(scenario) {
+  if (scenario === "betavip" || scenario === "tabarnia") {
+    await run(process.execPath, [`scripts/seed-${scenario}.mjs`]);
+    return;
+  }
+  if (scenario === "rehearsals") {
+    await run("npx", [
+      "supabase",
+      "db",
+      "reset",
+      "--local",
+      ...(process.env.SUPABASE_TEST_WORKDIR
+        ? ["--workdir", process.env.SUPABASE_TEST_WORKDIR]
+        : []),
+    ]);
+    await run(process.execPath, ["scripts/seed-betavip.mjs"]);
+    return;
+  }
   await run("npm", ["run", "supabase:fixture", "--", "--scenario", scenario, "--clean"]);
   await run("npx", [
     "supabase",
@@ -84,6 +151,7 @@ async function prepareScenario(scenario) {
 }
 
 async function cleanScenario(scenario) {
+  if (["rehearsals", "betavip", "tabarnia"].includes(scenario)) return;
   await run("npm", ["run", "supabase:fixture", "--", "--scenario", scenario, "--clean"]);
 }
 
@@ -112,11 +180,12 @@ export async function runSelectedE2E(args) {
         : []),
     ]);
   }
+  const supabaseStatus = groups.size > 0 ? localSupabaseStatus() : null;
 
   const failedScenarios = [];
   for (const [scenario, specs] of groups) {
     await prepareScenario(scenario);
-    if (scenario === "time-trial")
+    if (["time-trial", "time-trial-connect-pairs"].includes(scenario))
       await run("npm", ["run", "test:integration:supabase", "--", "--scenario", scenario]);
     try {
       if ((process.env.E2E_INTEGRATION_SCENARIOS ?? "").split(",").includes(scenario)) {
@@ -125,8 +194,22 @@ export async function runSelectedE2E(args) {
         // need a fresh fixture rather than inheriting those mutations.
         await prepareScenario(scenario);
       }
+      if (supabaseStatus) await waitForSupabaseAuth(supabaseStatus);
       const scenarioEnv = {
         ...(scenario === "e01" ? { FLASH_RATE_LIMIT_BURST: "30" } : {}),
+        ...(specs.some((spec) =>
+          [
+            "e2e/flash-session-conformance.spec.ts",
+            "e2e/survival-session-conformance.spec.ts",
+            "e2e/time-trial-session-conformance.spec.ts",
+            "e2e/time-trial-connect-pairs-session-conformance.spec.ts",
+            "e2e/time-trial-timeout-conformance.spec.ts",
+            "e2e/alphabet-session-conformance.spec.ts",
+            "e2e/pyramid-session-conformance.spec.ts",
+          ].includes(spec),
+        )
+          ? { FLASH_RATE_LIMIT_BURST: "10000" }
+          : {}),
         PLAYWRIGHT_JSON_OUTPUT_FILE: `output/playwright/competitive-${scenario}.json`,
       };
       await run(

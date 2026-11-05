@@ -79,10 +79,10 @@ test.describe("F19 — word-hashtag competitivo", () => {
     expect(requestBodies[0]?.idempotencyKey).toBe(requestBodies[1]?.idempotencyKey);
     await swap(page, 5, 13);
     await swap(page, 16, 19);
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 20_000 });
 
     await page.reload();
-    await expect(page.getByText("Desafío completado")).toBeVisible();
+    await expect(page.locator("#challenge-result-title")).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").last().locator("summary").click();
     await expect(page.locator('[aria-label="Solución del Hashtag de palabras"]')).toBeVisible();
@@ -99,7 +99,7 @@ test.describe("F19 — word-hashtag competitivo", () => {
     await expect(page.getByText("Ese intercambio no está permitido.")).toBeVisible();
     await swap(page, 1, 7);
     await expect(page.getByText(/movimientos usados/)).toBeVisible();
-    await expect(page.getByText("Desafío completado")).toBeVisible({ timeout: 60_000 });
+    await expect(page.locator("#challenge-result-title")).toBeVisible({ timeout: 60_000 });
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     await page.locator("details").last().locator("summary").click();
     await expect(page.getByText(/Movimientos/)).toBeVisible();

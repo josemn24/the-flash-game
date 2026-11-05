@@ -14,8 +14,7 @@
     padding: 0;
   }
 
-  .stage,
-  .playing {
+  .stage {
     display: grid;
     width: min(100%, 760px);
     gap: var(--space-6);
@@ -36,46 +35,30 @@
   }
 
   .board {
-    position: relative;
-    width: min(100%, 270px);
-    aspect-ratio: 1;
-  }
-
-  .boardCompact {
-    width: min(100%, 240px);
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 0.38rem;
   }
 
   .letterCell {
-    position: absolute;
-    top: 50%;
-    left: 50%;
+    position: relative;
     display: grid;
-    width: clamp(2rem, 8vw, 2.8rem);
-    height: clamp(2rem, 8vw, 2.8rem);
+    width: 100%;
+    min-width: 0;
+    aspect-ratio: 1;
     place-items: center;
     border: var(--border-subtle);
-    border-radius: var(--radius-pill);
+    border-radius: var(--radius-control);
     color: var(--ds-color-fg-secondary);
     background: var(--ds-color-bg-surface-raised);
-    box-shadow: var(--shadow-control);
     font-family: var(--type-display);
-    font-size: 0.95rem;
+    font-size: 0.88rem;
     font-weight: var(--type-display-strong-weight);
-    transform: translate(-50%, -50%)
-      rotate(calc(var(--letter-index) * 360deg / var(--letter-count)))
-      translateY(calc(min(32vw, 7.8rem) * -1))
-      rotate(calc(var(--letter-index) * -360deg / var(--letter-count)));
     transition:
       color var(--motion-press-out),
       border-color var(--motion-press-out),
       background var(--motion-press-out);
-  }
-
-  .boardCompact .letterCell {
-    transform: translate(-50%, -50%)
-      rotate(calc(var(--letter-index) * 360deg / var(--letter-count)))
-      translateY(calc(min(28vw, 6.8rem) * -1))
-      rotate(calc(var(--letter-index) * -360deg / var(--letter-count)));
   }
 
   .markIcon,
@@ -96,9 +79,9 @@
 
   .status_active {
     z-index: 2;
-    border-color: var(--ds-color-border-brand);
-    color: var(--ds-color-fg-on-brand);
-    background: var(--ds-color-bg-brand);
+    border-color: var(--ds-color-border-selected);
+    color: var(--ds-color-fg-on-selected);
+    background: var(--ds-color-bg-selected);
   }
 
   .status_passed {
@@ -143,9 +126,38 @@
     width: min(100%, 560px);
   }
 
+  .playingCanvasContent {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+  }
+
   .playing {
+    position: fixed;
+    inset: var(--alphabet-viewport-top, 0px) 0 auto;
+    display: grid;
     width: min(100%, 1040px);
-    gap: var(--space-4);
+    height: var(--alphabet-viewport-height, 100dvh);
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: var(--space-2);
+    margin: 0 auto;
+    padding: max(var(--space-3), env(safe-area-inset-top))
+      max(var(--space-4), env(safe-area-inset-right))
+      max(var(--space-2), env(safe-area-inset-bottom))
+      max(var(--space-4), env(safe-area-inset-left));
+  }
+
+  .playHeader {
+    min-height: var(--space-10);
+  }
+
+  .playScroll {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding: var(--space-1);
   }
 
   .gameMeta {
@@ -156,10 +168,6 @@
     font-family: var(--type-mono);
     font-size: 11px;
     font-weight: 700;
-  }
-
-  .reviewHeading {
-    gap: var(--space-3);
   }
 
   .gameMeta strong {
@@ -182,19 +190,30 @@
     line-height: 1.02;
   }
 
-  .answerForm {
+  .answerEditor {
     display: grid;
+    min-width: 0;
     gap: var(--space-2);
-    margin-top: var(--space-3);
+    margin-top: var(--space-1);
   }
 
-  .answerForm label {
+  .answerHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-1);
+  }
+
+  .answerEditor label {
     color: var(--ds-color-fg-secondary);
     font-size: 13px;
     font-weight: 700;
   }
 
-  .answerForm input {
+  .answerEditor input {
+    width: 100%;
+    min-width: 0;
     min-height: 56px;
     border: var(--border-subtle);
     border-radius: var(--radius-control);
@@ -205,12 +224,12 @@
     font-weight: 700;
   }
 
-  .answerForm input::placeholder,
-  .answerForm > p {
+  .answerEditor input::placeholder,
+  .answerEditor > p {
     color: var(--ds-color-fg-secondary);
   }
 
-  .answerForm input:focus-visible {
+  .answerEditor input:focus-visible {
     border-color: var(--ds-color-focus-ring);
     outline: 3px solid var(--ds-color-focus-ring);
     outline-offset: 2px;
@@ -218,16 +237,18 @@
 
   .answerActions {
     display: grid;
-    grid-template-columns: 0.72fr 1.28fr;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
     gap: var(--space-2);
   }
 
   .passButton {
-    min-height: var(--control-height-hero);
+    min-height: var(--control-height);
     gap: var(--space-3);
+    padding-inline: var(--space-4);
+    white-space: nowrap;
   }
 
-  .answerForm > p {
+  .answerEditor > p {
     margin: 0;
     font-size: 11px;
     line-height: 1.45;
@@ -245,16 +266,6 @@
     font-weight: 700;
   }
 
-  @media (min-width: 720px) {
-    .playGrid {
-      grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
-      align-items: stretch;
-    }
-    .boardCard {
-      min-height: 100%;
-    }
-  }
-
   @media (max-width: 520px) {
     .gameMeta > span:first-child {
       display: none;
@@ -267,7 +278,6 @@
     }
   }
 
-  /* Keep the original gameplay geometry while using the Flash Pop palette. */
   .playGrid {
     display: grid;
     width: min(100%, 58rem);
@@ -278,26 +288,260 @@
     padding: 0;
   }
 
-  .boardCard .boardCompact {
+  .boardPanel {
     display: grid;
-    width: 100%;
-    height: auto;
-    aspect-ratio: auto;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 0.38rem;
+    gap: var(--space-1);
   }
 
-  .boardCard .boardCompact .letterCell {
-    position: relative;
-    top: auto;
-    left: auto;
-    width: 100%;
-    height: auto;
+  .playingBoard {
+    width: min(100%, 29rem);
+    padding: var(--space-2);
+    box-shadow: var(--shadow-card);
+  }
+
+  .playingBoard .letterCell {
+    font-size: clamp(14px, 4vw, 20px);
+    line-height: 1;
+  }
+
+  .playingBoard .markIcon,
+  .playingBoard .passMark,
+  .playingBoard .emptyMark {
+    width: 12px;
+    height: 12px;
+    font-size: 8px;
+  }
+
+  .navigationHint {
+    margin: 0;
+    color: var(--ds-color-fg-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .answerHeader {
+      display: none;
+    }
+
+    .playGrid {
+      gap: var(--space-3);
+    }
+  }
+
+  .answerPanel {
     min-width: 0;
-    aspect-ratio: 1;
-    border-radius: 0.62rem;
+    cursor: text;
+    --alphabet-answer-tile-width: 40px;
+    --alphabet-answer-tile-height: 44px;
+    --alphabet-answer-gap: var(--space-2);
+  }
+
+  .answerPanel:focus-visible {
+    outline: none;
+  }
+
+  .answerPanel:focus-visible .activeSlot,
+  .keyboardSwitch:focus-visible,
+  .keyboardToggle:focus-visible {
+    outline: 3px solid var(--ds-color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .answerPanel[aria-disabled="true"] {
+    opacity: var(--ds-opacity-disabled);
+  }
+
+  .answerTiles {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    max-height: calc(
+      2 * var(--alphabet-answer-tile-height) + var(--alphabet-answer-gap) + 2 * var(--space-2)
+    );
+    flex-wrap: wrap;
+    gap: var(--alphabet-answer-gap);
+    overflow: auto;
+    overscroll-behavior: contain;
+    padding: var(--space-2);
+  }
+
+  .answerTile,
+  .emptyAnswerSlot {
+    display: grid;
+    width: var(--alphabet-answer-tile-width);
+    height: var(--alphabet-answer-tile-height);
+    flex: 0 0 var(--alphabet-answer-tile-width);
+    place-items: center;
+    border-radius: var(--radius-control);
+    color: var(--ds-color-fg-primary);
+    background: var(--ds-color-bg-surface);
+    box-shadow: var(--shadow-control);
+    font-family: var(--type-display);
+    font-size: clamp(18px, calc(var(--alphabet-answer-tile-width) * 0.6), 24px);
+    font-weight: var(--type-display-strong-weight);
+    text-transform: uppercase;
+  }
+
+  .emptyAnswerSlot {
+    position: relative;
+    border: 1px dashed var(--ds-color-border-default);
+    color: var(--ds-color-fg-secondary);
+    background: var(--ds-color-bg-surface-soft);
     box-shadow: none;
-    font-size: 0.88rem;
-    transform: none;
+  }
+
+  .emptyAnswerSlot::after {
+    position: absolute;
+    bottom: min(10px, calc(var(--alphabet-answer-tile-height) / 4));
+    left: calc(50% - 8px);
+    width: 16px;
+    height: 2px;
+    border-radius: var(--radius-pill);
+    background: currentColor;
+    content: "";
+  }
+
+  .letterPlaceholder {
+    color: var(--ds-color-fg-decorative);
+  }
+
+  .letterPlaceholder::after {
+    content: none;
+  }
+
+  .answerSpace {
+    width: 8px;
+    height: var(--alphabet-answer-tile-height);
+    flex: 0 0 8px;
+  }
+
+  .writingCaret {
+    width: 2px;
+    height: min(32px, var(--alphabet-answer-tile-height));
+    flex: 0 0 2px;
+    align-self: center;
+    background: var(--ds-color-focus-ring);
+  }
+
+  .srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 640px) {
+    .answerPanel {
+      container-type: inline-size;
+      --alphabet-answer-gap: var(--space-1);
+      /* Eight tiles plus their gaps and the trailing caret fit the editor. */
+      --alphabet-answer-tile-width: min(
+        40px,
+        calc((100cqi - 2 * var(--space-2) - 8 * var(--alphabet-answer-gap) - 2px) / 8)
+      );
+      --alphabet-answer-tile-height: calc(var(--alphabet-answer-tile-width) * 1.1);
+    }
+
+    .answerTiles {
+      max-width: calc(8 * 40px + 8 * var(--alphabet-answer-gap) + 2px + 2 * var(--space-2));
+    }
+
+    .answerPanel:focus-visible .activeSlot {
+      outline-width: 2px;
+      outline-offset: 1px;
+    }
+  }
+
+  .keyboardSwitch,
+  .keyboardToggle {
+    min-height: 44px;
+    padding: var(--space-1) var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    color: var(--ds-color-fg-selected);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  .keyboardSwitch:disabled,
+  .keyboardToggle:disabled {
+    opacity: var(--ds-opacity-disabled);
+    cursor: not-allowed;
+  }
+
+  .answerDock {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: var(--border-subtle);
+    background: var(--ds-color-bg-canvas);
+  }
+
+  .answerActions > button {
+    min-height: 48px;
+  }
+
+  .keyboardArea {
+    display: grid;
+    width: min(100%, 640px);
+    justify-self: center;
+  }
+
+  @media (max-width: 640px) {
+    .keyboardArea {
+      width: auto;
+      justify-self: stretch;
+      margin-left: calc(
+        max(var(--space-2), env(safe-area-inset-left)) -
+          max(var(--space-4), env(safe-area-inset-left))
+      );
+      margin-right: calc(
+        max(var(--space-2), env(safe-area-inset-right)) -
+          max(var(--space-4), env(safe-area-inset-right))
+      );
+    }
+  }
+
+  .compactHeight {
+    gap: var(--space-1);
+    padding-top: max(var(--space-1), env(safe-area-inset-top));
+  }
+
+  .compactHeight .playingBoard .letterCell {
+    height: 32px;
+    aspect-ratio: auto;
+  }
+
+  .compactHeight .answerTiles {
+    max-width: none;
+    max-height: none;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .compactHeight .answerDock {
+    gap: var(--space-1);
+  }
+
+  .compactHeight .questionPanel h1 {
+    font-size: 26px;
+  }
+
+  @media (min-width: 641px) {
+    .compactHeight .playGrid {
+      grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+      align-items: start;
+      gap: var(--space-6);
+    }
   }
 }

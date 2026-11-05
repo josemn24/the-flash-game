@@ -18,7 +18,7 @@ contradecir estas decisiones sin que antes se registre una nueva decisión o ADR
   conservación de estado y comportamiento al agotarlos.
 - [`adr/`](adr/): decisiones arquitectónicas difíciles de revertir.
 - [ADR-0006](adr/0006-explicit-attempt-control-transfer.md): transferencia explícita de una partida
-  a otra sesión de la misma cuenta, con un único controlador; aprobada y pendiente de implementar.
+  a otra sesión de la misma cuenta, con un único controlador; implementada en cliente, API y PostgreSQL; validación multi-dispositivo en staging pendiente.
 
 ## Orden de precedencia
 

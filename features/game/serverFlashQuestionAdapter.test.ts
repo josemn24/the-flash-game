@@ -95,6 +95,34 @@ describe("server flash question adapter", () => {
     expect(question.correctAnswer).toBe("");
   });
 
+  it("preserves a validated public number sequence without exposing a solution", () => {
+    const question = questionFromPayload(
+      "item-sequence",
+      {
+        question: "Completa la secuencia.",
+        options: ["26", "28", "30", "32"],
+        promptVisual: {
+          type: "number-sequence",
+          sequence: ["2", "6", "12", "20", "?"],
+        },
+      },
+      18_000,
+      12,
+      "multiple-choice",
+    );
+
+    expect(question).toMatchObject({
+      type: "multiple-choice",
+      options: ["26", "28", "30", "32"],
+      promptVisual: {
+        type: "number-sequence",
+        sequence: ["2", "6", "12", "20", "?"],
+      },
+    });
+    expect(question).not.toHaveProperty("correctAnswer");
+    expect(question).not.toHaveProperty("explanation");
+  });
+
   it("rejects incomplete or malformed public payloads", () => {
     expect(() => questionFromPayload("item-1", { question: "Sin opciones" }, 5_000, 50)).toThrow(
       ServerFlashQuestionError,

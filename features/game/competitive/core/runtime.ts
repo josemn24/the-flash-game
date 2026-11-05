@@ -1,5 +1,6 @@
 import type { CommandData } from "./commandExecutor";
-import type { CompetitiveJsonObject } from "../transport";
+import type { SessionUpdateByOperation } from "@/types/gameplay/authoritative-session";
+import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import type {
   FeedbackChannel,
   Operation,
@@ -8,8 +9,13 @@ import type {
   SessionState,
 } from "./sessionReducer";
 import type { CompetitiveChallenge, ModePolicy } from "../modes/policy";
-export type CommandStep = {
-  accept: (response: CompetitiveJsonObject, command: PendingCommand) => void;
+export type CommandOrigin = "run" | "retry" | "takeover";
+export type CommandStep<K extends Operation = Operation> = {
+  accept(
+    response: SessionUpdateByOperation<K>,
+    command: PendingCommand<K>,
+    review?: readonly ServerFlashTerminalReview[],
+  ): void;
   after?: () => Promise<void>;
   channel?: FeedbackChannel;
 };
@@ -21,10 +27,21 @@ export type SessionRuntime = {
   run: <K extends Operation>(
     operation: K,
     data: CommandData<K>,
-    step: CommandStep,
+    step: CommandStep<K>,
+  ) => Promise<boolean>;
+  runDeadline: <K extends Operation>(
+    operation: K,
+    data: CommandData<K>,
+    step: CommandStep<K>,
+  ) => Promise<boolean>;
+  runOvertakingDraft: <K extends Operation>(
+    operation: K,
+    data: CommandData<K>,
+    step: CommandStep<K>,
   ) => Promise<boolean>;
   schedule: (name: string, delay: number, callback: () => void) => void;
   cancel: (name: string) => void;
   cancelAll: () => void;
   refresh: () => void;
+  now: () => number;
 };

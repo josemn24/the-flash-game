@@ -6,9 +6,11 @@ import type {
   SuperadminPortalRoom,
 } from "@/types/view-models";
 import Link from "next/link";
+import { calendarErrorMessage } from "@/lib/calendarChange";
 import { Card, Chip } from "@/components/ui";
 import { CalendarCancelDialog } from "./CalendarCancelDialog.client";
 import { CalendarScheduleDialog } from "./CalendarScheduleDialog.client";
+import { CalendarChangeDialog } from "./CalendarChangeDialog.client";
 import styles from "./CalendarManagement.module.css";
 
 type Entry = SuperadminCalendarContext["entries"][number];
@@ -61,6 +63,17 @@ export function CalendarEntryCard({
   readonly canEdit: boolean;
   readonly variant?: "agenda" | "detail" | "week";
 }) {
+  const displayStatus: Entry["status"] =
+    entry.status === "cancelled"
+      ? "cancelled"
+      : entry.calendarPermissions?.canExtendClose
+        ? "open"
+        : entry.calendarPermissions?.blockedReason === "schedule_finished" ||
+            entry.calendarPermissions?.blockedReason === "season_finished"
+          ? "closed"
+          : entry.calendarPermissions?.canEditWindow
+            ? "scheduled"
+            : entry.status;
   const isAgenda = variant === "agenda";
   const isWeek = variant === "week";
   const detailHref = challengeDetailHref(content);
@@ -70,8 +83,12 @@ export function CalendarEntryCard({
       <Card as="article" surface="surface" density="compact" className={styles.entryWeek}>
         <div className={styles.weekEntryTopline}>
           <span className={styles.weekEntryNumber}>#{entry.number}</span>
-          <Chip variant="status" tone={statusTone(entry.status)} className={styles.weekEntryStatus}>
-            {statusLabel(entry.status)}
+          <Chip
+            variant="status"
+            tone={statusTone(displayStatus)}
+            className={styles.weekEntryStatus}
+          >
+            {statusLabel(displayStatus)}
           </Chip>
         </div>
         <h4 className={styles.weekEntryTitle} title={entry.challengeTitle}>
@@ -95,14 +112,23 @@ export function CalendarEntryCard({
         </p>
         {canEdit && room ? (
           <div className={styles.entryActions}>
-            <CalendarScheduleDialog
-              mode="update"
-              entry={entry}
+            {!entry.calendarPermissions?.canExtendClose ? (
+              <CalendarScheduleDialog
+                mode="update"
+                entry={entry}
+                room={room}
+                publishedContent={publishedContent}
+                compact
+              />
+            ) : null}
+            <CalendarChangeDialog
               room={room}
-              publishedContent={publishedContent}
-              compact
+              season={room.seasons.find((season) => season.seasonId === entry.seasonId)!}
+              entry={entry}
             />
-            <CalendarCancelDialog entry={entry} room={room} compact />
+            {!entry.calendarPermissions?.canExtendClose ? (
+              <CalendarCancelDialog entry={entry} room={room} compact />
+            ) : null}
           </div>
         ) : null}
       </Card>
@@ -137,23 +163,37 @@ export function CalendarEntryCard({
             )}
           </h4>
         </div>
-        <Chip variant="status" tone={statusTone(entry.status)}>
-          {statusLabel(entry.status)}
+        <Chip variant="status" tone={statusTone(displayStatus)}>
+          {statusLabel(displayStatus)}
         </Chip>
       </div>
       <p className={styles.helper}>
         {timestamp(entry.opensAt, entry.timeZone)} – {timestamp(entry.closesAt, entry.timeZone)} · v
         {entry.versionNumber}
       </p>
+      {!canEdit && entry.calendarPermissions?.blockedReason ? (
+        <p className={styles.helper}>
+          {calendarErrorMessage(entry.calendarPermissions.blockedReason)}
+        </p>
+      ) : null}
       {canEdit && room ? (
         <div className={styles.entryActions}>
-          <CalendarScheduleDialog
-            mode="update"
-            entry={entry}
+          {!entry.calendarPermissions?.canExtendClose ? (
+            <CalendarScheduleDialog
+              mode="update"
+              entry={entry}
+              room={room}
+              publishedContent={publishedContent}
+            />
+          ) : null}
+          <CalendarChangeDialog
             room={room}
-            publishedContent={publishedContent}
+            season={room.seasons.find((season) => season.seasonId === entry.seasonId)!}
+            entry={entry}
           />
-          <CalendarCancelDialog entry={entry} room={room} />
+          {!entry.calendarPermissions?.canExtendClose ? (
+            <CalendarCancelDialog entry={entry} room={room} />
+          ) : null}
         </div>
       ) : null}
       {!isAgenda && content ? <span className={styles.helper}>{content.slug}</span> : null}

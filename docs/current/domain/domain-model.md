@@ -11,7 +11,7 @@ Es la referencia para hablar del dominio en las siguientes fases. Distingue las 
 de las cuestiones abiertas y no define tablas, schemas ORM, APIs, endpoints ni arquitectura de
 backend.
 
-Última actualización: 2026-09-16.
+Modelo original: 2026-09-16. Último contraste documental: 2026-10-24.
 
 ## 1. Visión general del modelo
 
@@ -34,25 +34,25 @@ crea una competición.
 
 ## 2. Glosario
 
-| Concepto                 | Significado en el dominio                                                                              |
-| ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| **Jugador**              | Persona con perfil global y, normalmente, una identidad autenticada.                                   |
-| **Sala**                 | Grupo privado que contiene la competición asíncrona.                                                   |
-| **Membresía**            | Relación de un jugador con una sala, con rol y ciclo de vida propios.                                  |
-| **Temporada**            | Periodo competitivo de una sala, con total y ranking propios.                                          |
-| **Desafío**              | Experiencia jugable reutilizable compuesta por preguntas, reglas y modo.                               |
-| **Versión de desafío**   | Snapshot concreto e inmutable del contenido de un desafío.                                             |
-| **Publicación**          | Instancia de una versión de desafío programada en una temporada y sala.                                |
-| **Pregunta**             | Unidad de contenido versionada que ofrece una interacción de un formato.                               |
-| **Elemento del desafío** | Inclusión ordenada de una versión de pregunta con puntos y configuración contextual.                   |
-| **Modo**                 | Regla de alto nivel que organiza la sesión (`flash`, `alphabet`, `survival`, `narrative` o `pyramid`). |
-| **Intento**              | Ejecución competitiva o de prueba de un jugador sobre una publicación.                                 |
-| **Respuesta**            | Resultado final del jugador para un elemento concreto del desafío.                                     |
-| **Flash Points**         | Puntuación competitiva obtenida en un desafío y acumulada en su temporada.                             |
-| **Ranking**              | Proyección ordenada por desafío o por temporada; solo existen esos dos tipos funcionales.              |
-| **Práctica / preview**   | Exploración de un formato sin intento competitivo ni efectos sociales.                                 |
-| **Abandono**             | Terminación de un intento ya iniciado sin llegar a su final reglamentario.                             |
-| **Expiración**           | Publicación que se cerró antes de que el jugador iniciara un intento.                                  |
+| Concepto                 | Significado en el dominio                                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **Jugador**              | Persona con perfil global y, normalmente, una identidad autenticada.                                                 |
+| **Sala**                 | Grupo privado que contiene la competición asíncrona.                                                                 |
+| **Membresía**            | Relación de un jugador con una sala, con rol y ciclo de vida propios.                                                |
+| **Temporada**            | Periodo competitivo de una sala, con total y ranking propios.                                                        |
+| **Desafío**              | Experiencia jugable reutilizable compuesta por preguntas, reglas y modo.                                             |
+| **Versión de desafío**   | Snapshot concreto e inmutable del contenido de un desafío.                                                           |
+| **Publicación**          | Instancia de una versión de desafío programada en una temporada y sala.                                              |
+| **Pregunta**             | Unidad de contenido versionada que ofrece una interacción de un formato.                                             |
+| **Elemento del desafío** | Inclusión ordenada de una versión de pregunta con puntos y configuración contextual.                                 |
+| **Modo**                 | Regla de alto nivel que organiza la sesión (`flash`, `alphabet`, `survival`, `narrative`, `pyramid` o `time-trial`). |
+| **Intento**              | Ejecución competitiva o de prueba de un jugador sobre una publicación.                                               |
+| **Respuesta**            | Resultado final del jugador para un elemento concreto del desafío.                                                   |
+| **Flash Points**         | Puntuación competitiva obtenida en un desafío y acumulada en su temporada.                                           |
+| **Ranking**              | Proyección ordenada por desafío o por temporada; solo existen esos dos tipos funcionales.                            |
+| **Práctica / preview**   | Exploración de un formato sin intento competitivo ni efectos sociales.                                               |
+| **Abandono**             | Terminación de un intento ya iniciado sin llegar a su final reglamentario.                                           |
+| **Expiración**           | Publicación que se cerró antes de que el jugador iniciara un intento.                                                |
 
 ## 3. Entidades y conceptos
 
@@ -142,8 +142,8 @@ del contenido público de la partida competitiva.
 
 El formato define la interacción de una pregunta; el catálogo actual contiene 31 formatos. El modo
 define el flujo de nivel superior y sus reglas de inicio, tiempo, finalización, puntuación,
-revisión y desempate. Los cinco modos actuales son `flash`, `alphabet`, `survival`, `narrative` y
-`pyramid`.
+revisión y desempate. Los seis modos actuales son `flash`, `alphabet`, `survival`, `narrative`,
+`pyramid` y `time-trial`.
 
 Los estados internos de un modo —por ejemplo `summit`/`failed` en La Pirámide o `survived`/
 `eliminated` en Supervivencia— no son estados globales del intento.
@@ -327,10 +327,11 @@ intento en `abandoned`, ni convierte la publicación en `expired`.
   debe nombrarlo o eliminar la sala antes de salir.
 - Una publicación cancelada conserva sus intentos para auditoría, pero no aparece como finalizada
   ordinaria ni suma al ranking.
-- Cada modo define sus reglas de tiempo, crédito parcial, penalizaciones y finalización. Los cinco
-  modos actuales comparten provisionalmente el comparador del ranking por desafío: más Flash Points,
+- Cada modo define sus reglas de tiempo, crédito parcial, penalizaciones y finalización. Flash,
+  Alfabeto, Supervivencia, Narrativa y Pirámide comparten el comparador del ranking por desafío: más Flash Points,
   menor duración efectiva (suma de `AttemptAnswer.timeUsedMs`) y `startedAt` más antiguo; los empates
   completos comparten posición (`1, 1, 3`). El ranking de temporada solo usa Flash Points.
+  Contrarreloj compara pruebas resueltas y tiempo hasta el último acierto.
   Las penalizaciones no pueden producir puntuación negativa.
 - `completedAt`, `lastCorrectAt` y otras marcas específicas se conservan para historial y métricas,
   pero no son criterios del ranking común.

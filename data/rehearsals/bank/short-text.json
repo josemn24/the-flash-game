@@ -1,0 +1,4619 @@
+[
+  {
+    "id": "betavip-alfabeto-q1",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Fruto seco que se obtiene del almendro."
+    },
+    "solutionPayload": {
+      "correctAnswer": "almendra",
+      "acceptedAnswers": ["almendra"],
+      "explanation": "La almendra es la semilla comestible del fruto del almendro; su cáscara dura la protege."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q1",
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "betavip-alfabeto-q2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Embarcación que se mueve con remos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "barca",
+      "acceptedAnswers": ["barca"],
+      "explanation": "Una barca es una embarcación pequeña que puede impulsarse con remos, empujando el agua hacia atrás."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q2",
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "betavip-alfabeto-q3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Utensilio para tomar sopa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "cuchara",
+      "acceptedAnswers": ["cuchara"],
+      "explanation": "La cavidad de una cuchara retiene líquidos como la sopa, a diferencia de las púas de un tenedor."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q3",
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "betavip-alfabeto-q4",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Pieza con seis caras numeradas usada en juegos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "dado",
+      "acceptedAnswers": ["dado"],
+      "explanation": "Un dado cúbico tiene seis caras; la numeración permite utilizarlo para obtener resultados al azar."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q4",
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "betavip-alfabeto-q5",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Objeto que refleja tu imagen."
+    },
+    "solutionPayload": {
+      "correctAnswer": "espejo",
+      "acceptedAnswers": ["espejo"],
+      "explanation": "La superficie reflectante del espejo devuelve la luz y permite ver la imagen de quien se coloca delante."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q5",
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "betavip-alfabeto-q6",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Órgano de una planta que suele tener pétalos de colores."
+    },
+    "solutionPayload": {
+      "correctAnswer": "flor",
+      "acceptedAnswers": ["flor"],
+      "explanation": "Los pétalos forman parte de la flor, el órgano reproductor de muchas plantas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q6",
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "betavip-alfabeto-q7",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Objeto que atrae materiales como el hierro mediante un campo magnético."
+    },
+    "solutionPayload": {
+      "correctAnswer": "imán",
+      "acceptedAnswers": ["imán"],
+      "explanation": "Un imán crea un campo magnético que atrae materiales como el hierro; no atrae todos los metales."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q7",
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "betavip-alfabeto-q8",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Recipiente con asa para servir agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jarra",
+      "acceptedAnswers": ["jarra"],
+      "explanation": "La jarra permite contener y servir agua: el asa facilita sujetarla y la boca permite verterla."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q8",
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "betavip-alfabeto-q9",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Objeto que abre una cerradura."
+    },
+    "solutionPayload": {
+      "correctAnswer": "llave",
+      "acceptedAnswers": ["llave"],
+      "explanation": "El perfil de una llave acciona el mecanismo de una cerradura compatible y permite abrirla."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q9",
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "betavip-alfabeto-q10",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Mueble sobre el que se come o escribe."
+    },
+    "solutionPayload": {
+      "correctAnswer": "mesa",
+      "acceptedAnswers": ["mesa"],
+      "explanation": "Una mesa ofrece una superficie horizontal elevada, adecuada para apoyar platos o escribir."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q10",
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "betavip-alfabeto-q11",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Metal precioso de color amarillo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "oro",
+      "acceptedAnswers": ["oro"],
+      "explanation": "El oro es un metal de color amarillo que se emplea en joyería por su maleabilidad y resistencia a la corrosión."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q11",
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "betavip-alfabeto-q12",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Material usado para escribir y dibujar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "papel",
+      "acceptedAnswers": ["papel"],
+      "explanation": "El papel forma una lámina de fibras sobre la que se puede escribir, dibujar o imprimir."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q12",
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "betavip-alfabeto-q13",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Instrumento que mide el tiempo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "reloj",
+      "acceptedAnswers": ["reloj"],
+      "explanation": "El reloj indica el paso del tiempo mediante horas, minutos y, en muchos modelos, segundos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q13",
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "betavip-alfabeto-q14",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Asiento con respaldo para una persona."
+    },
+    "solutionPayload": {
+      "correctAnswer": "silla",
+      "acceptedAnswers": ["silla"],
+      "explanation": "La silla está pensada para sentarse y dispone de respaldo para apoyar la espalda."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q14",
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "betavip-alfabeto-q15",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Recipiente con asa para beber."
+    },
+    "solutionPayload": {
+      "correctAnswer": "taza",
+      "acceptedAnswers": ["taza"],
+      "explanation": "La taza es un recipiente para beber; su asa permite sujetarla sin tocar directamente toda la pared."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q15",
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "betavip-alfabeto-q16",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Calzado que cubre el pie."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zapato",
+      "acceptedAnswers": ["zapato"],
+      "explanation": "El zapato protege la planta del pie mediante una suela y cubre su parte superior."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "betavip-alfabeto-q16",
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-a-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-a-2",
+    "publicPayload": {
+      "question": "Fruto seco del avellano."
+    },
+    "solutionPayload": {
+      "correctAnswer": "avellana",
+      "acceptedAnswers": ["avellana"],
+      "explanation": "El avellano produce avellanas, frutos secos cuya semilla comestible queda dentro de una cáscara dura."
+    },
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-a-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-a-3",
+    "publicPayload": {
+      "question": "Especia que se obtiene de los estigmas de una flor."
+    },
+    "solutionPayload": {
+      "correctAnswer": "azafrán",
+      "acceptedAnswers": ["azafrán"],
+      "explanation": "El azafrán se obtiene de los estigmas secos de la flor del azafrán, utilizados como especia y colorante."
+    },
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-b-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-b-2",
+    "publicPayload": {
+      "question": "Herraje que permite girar una puerta."
+    },
+    "solutionPayload": {
+      "correctAnswer": "bisagra",
+      "acceptedAnswers": ["bisagra"],
+      "explanation": "Una bisagra une dos piezas mediante un eje de giro; así permite que una puerta se abra y cierre."
+    },
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-b-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-b-3",
+    "publicPayload": {
+      "question": "Recipiente de barro que conserva fresca el agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "botijo",
+      "acceptedAnswers": ["botijo"],
+      "explanation": "El barro poroso del botijo deja evaporar una pequeña cantidad de agua; esa evaporación ayuda a enfriar la restante."
+    },
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-c-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-c-2",
+    "publicPayload": {
+      "question": "Cierre portátil que se abre con llave."
+    },
+    "solutionPayload": {
+      "correctAnswer": "candado",
+      "acceptedAnswers": ["candado"],
+      "explanation": "El candado tiene un arco que se cierra sobre el objeto y un mecanismo que puede abrirse con llave."
+    },
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-d-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-d-2",
+    "publicPayload": {
+      "question": "Protector del dedo que se usa al coser."
+    },
+    "solutionPayload": {
+      "correctAnswer": "dedal",
+      "acceptedAnswers": ["dedal"],
+      "explanation": "El dedal protege el dedo al empujar una aguja a través de la tela durante la costura."
+    },
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-d-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-d-3",
+    "publicPayload": {
+      "question": "Acumulación de arena modelada por el viento."
+    },
+    "solutionPayload": {
+      "correctAnswer": "duna",
+      "acceptedAnswers": ["duna"],
+      "explanation": "El viento transporta y deposita arena hasta formar una duna, que puede cambiar de forma y posición."
+    },
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-e-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-e-2",
+    "publicPayload": {
+      "question": "Utensilio con cerdas que sirve para barrer."
+    },
+    "solutionPayload": {
+      "correctAnswer": "escoba",
+      "acceptedAnswers": ["escoba"],
+      "explanation": "Las cerdas de la escoba desplazan polvo y residuos al barrer una superficie."
+    },
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "bank-alfabeto-f-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-f-2",
+    "publicPayload": {
+      "question": "Caja con luz que alumbra calles o espacios exteriores."
+    },
+    "solutionPayload": {
+      "correctAnswer": "farol",
+      "acceptedAnswers": ["farol"],
+      "explanation": "El farol aloja una fuente de luz y la protege; puede iluminar calles o espacios exteriores."
+    },
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-f-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-f-3",
+    "publicPayload": {
+      "question": "Instrumento que impulsa aire al comprimirlo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "fuelle",
+      "acceptedAnswers": ["fuelle"],
+      "explanation": "Al comprimir un fuelle se reduce el volumen de su cámara y el aire sale por una abertura."
+    },
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-i-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-i-2",
+    "publicPayload": {
+      "question": "Refugio construido con bloques de nieve."
+    },
+    "solutionPayload": {
+      "correctAnswer": "iglú",
+      "acceptedAnswers": ["iglú"],
+      "explanation": "El iglú se construye con bloques de nieve; el aire atrapado en la nieve contribuye al aislamiento térmico."
+    },
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-j-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-j-2",
+    "publicPayload": {
+      "question": "Producto que se usa con agua para limpiar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jabón",
+      "acceptedAnswers": ["jabón"],
+      "explanation": "El jabón ayuda a dispersar la grasa en el agua, lo que facilita retirar la suciedad al aclarar."
+    },
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-l-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-l-2",
+    "publicPayload": {
+      "question": "Pieza cocida de arcilla utilizada en muros."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ladrillo",
+      "acceptedAnswers": ["ladrillo"],
+      "explanation": "El ladrillo es una pieza de construcción, habitualmente de arcilla cocida, que se coloca junto a otras para formar muros."
+    },
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-l-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-l-3",
+    "publicPayload": {
+      "question": "Lámpara portátil alimentada por pilas o batería."
+    },
+    "solutionPayload": {
+      "correctAnswer": "linterna",
+      "acceptedAnswers": ["linterna"],
+      "explanation": "Una linterna transforma la energía de pilas o batería en luz y permite llevar la iluminación de un lugar a otro."
+    },
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-m-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-m-2",
+    "publicPayload": {
+      "question": "Recipiente en el que se machacan ingredientes."
+    },
+    "solutionPayload": {
+      "correctAnswer": "mortero",
+      "acceptedAnswers": ["mortero"],
+      "explanation": "El mortero es el recipiente donde se trituran ingredientes con una mano o maja."
+    },
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-m-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-m-3",
+    "publicPayload": {
+      "question": "Tela que cubre y protege la mesa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "mantel",
+      "acceptedAnswers": ["mantel"],
+      "explanation": "El mantel se extiende sobre la mesa para cubrirla y protegerla de manchas y roces."
+    },
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-o-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-o-2",
+    "publicPayload": {
+      "question": "Bola de hilo enrollado."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ovillo",
+      "acceptedAnswers": ["ovillo"],
+      "explanation": "Un ovillo reúne hilo enrollado en forma de bola y permite ir desenrollándolo para tejer."
+    },
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-o-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-o-3",
+    "publicPayload": {
+      "question": "Hierba aromática frecuente en las pizzas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "orégano",
+      "acceptedAnswers": ["orégano"],
+      "explanation": "El orégano es una hierba aromática cuyas hojas se utilizan como condimento, por ejemplo en pizzas."
+    },
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-p-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-p-2",
+    "publicPayload": {
+      "question": "Utensilio con púas para arreglar el cabello."
+    },
+    "solutionPayload": {
+      "correctAnswer": "peine",
+      "acceptedAnswers": ["peine"],
+      "explanation": "Las púas del peine pasan entre los cabellos y ayudan a separarlos y ordenarlos."
+    },
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-p-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-p-3",
+    "publicPayload": {
+      "question": "Cuerpo suspendido que oscila de un lado a otro."
+    },
+    "solutionPayload": {
+      "correctAnswer": "péndulo",
+      "acceptedAnswers": ["péndulo"],
+      "explanation": "Un péndulo es un cuerpo suspendido de un punto que oscila por la acción de la gravedad."
+    },
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-r-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-r-2",
+    "publicPayload": {
+      "question": "Recipiente con rociador para echar agua a las plantas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "regadera",
+      "acceptedAnswers": ["regadera"],
+      "explanation": "La regadera almacena agua y la distribuye por un rociador para regar sin verter un chorro concentrado."
+    },
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-r-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-r-3",
+    "publicPayload": {
+      "question": "Cilindro usado para extender masa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "rodillo",
+      "acceptedAnswers": ["rodillo"],
+      "explanation": "El rodillo gira sobre la masa al presionarlo, extendiéndola y reduciendo su grosor."
+    },
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-s-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-s-2",
+    "publicPayload": {
+      "question": "Utensilio con mango para freír alimentos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "sartén",
+      "acceptedAnswers": ["sartén"],
+      "explanation": "La sartén ofrece una superficie de cocción y un mango que permite manejarla al freír alimentos."
+    },
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-s-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-s-3",
+    "publicPayload": {
+      "question": "Objeto pequeño que produce un sonido al soplar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "silbato",
+      "acceptedAnswers": ["silbato"],
+      "explanation": "Al soplar en el silbato, la corriente de aire produce vibraciones que generan un sonido agudo."
+    },
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-t-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-t-2",
+    "publicPayload": {
+      "question": "Utensilio de malla para separar partículas por tamaño."
+    },
+    "solutionPayload": {
+      "correctAnswer": "tamiz",
+      "acceptedAnswers": ["tamiz"],
+      "explanation": "La malla del tamiz deja pasar partículas pequeñas y retiene las de mayor tamaño."
+    },
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-t-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-t-3",
+    "publicPayload": {
+      "question": "Pieza roscada que sirve para fijar otras piezas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "tornillo",
+      "acceptedAnswers": ["tornillo"],
+      "explanation": "La rosca del tornillo convierte el giro en avance y permite fijar piezas entre sí."
+    },
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-z-2",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-z-2",
+    "publicPayload": {
+      "question": "Calzado ligero que puede utilizarse para hacer deporte."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zapatilla",
+      "acceptedAnswers": ["zapatilla"],
+      "explanation": "La zapatilla es un calzado ligero y flexible; muchos modelos están diseñados para practicar deporte."
+    },
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-z-3",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-z-3",
+    "publicPayload": {
+      "question": "Líquido extraído de frutas u hortalizas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zumo",
+      "acceptedAnswers": ["zumo"],
+      "explanation": "El zumo es el líquido que se extrae de frutas u hortalizas mediante presión u otros procedimientos."
+    },
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-c-extra",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Conjunto de hilos retorcidos que se usa para atar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "cuerda",
+      "acceptedAnswers": ["cuerda"],
+      "explanation": "Una cuerda agrupa fibras o hilos retorcidos para resistir tracción y poder atar o sujetar objetos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-c-extra",
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-j-extra",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Recipiente decorativo en el que se colocan flores."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jarrón",
+      "acceptedAnswers": ["jarrón"],
+      "explanation": "El jarrón es un recipiente decorativo con una abertura donde se colocan flores y, a menudo, agua."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-j-extra",
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-i-extra",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Porción de tierra rodeada de agua por todas partes."
+    },
+    "solutionPayload": {
+      "correctAnswer": "isla",
+      "acceptedAnswers": ["isla"],
+      "explanation": "Una isla es una porción de tierra rodeada de agua por todos sus lados, a diferencia de una península."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-i-extra",
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-e-extra",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Utensilio de boca ancha y tubo estrecho para trasvasar líquidos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "embudo",
+      "acceptedAnswers": ["embudo"],
+      "explanation": "La boca ancha del embudo recoge el líquido y su tubo estrecho lo dirige hacia un recipiente de menor abertura."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-e-extra",
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "bank-alfabeto-g-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-g-easy",
+    "publicPayload": {
+      "question": "Objeto de caucho que permite borrar trazos de lápiz."
+    },
+    "solutionPayload": {
+      "correctAnswer": "goma",
+      "acceptedAnswers": ["goma"],
+      "explanation": "La goma arrastra partículas de grafito del papel; por eso permite borrar lo escrito a lápiz."
+    },
+    "alphabetLetter": "G"
+  },
+  {
+    "id": "bank-alfabeto-h-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-h-easy",
+    "publicPayload": {
+      "question": "Aparato que cocina alimentos dentro de una cámara caliente."
+    },
+    "solutionPayload": {
+      "correctAnswer": "horno",
+      "acceptedAnswers": ["horno"],
+      "explanation": "El horno mantiene calor dentro de un recinto cerrado para cocinar alimentos de manera envolvente."
+    },
+    "alphabetLetter": "H"
+  },
+  {
+    "id": "bank-alfabeto-k-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-k-easy",
+    "publicPayload": {
+      "question": "Fruta de piel parda con vello y pulpa normalmente verde."
+    },
+    "solutionPayload": {
+      "correctAnswer": "kiwi",
+      "acceptedAnswers": ["kiwi"],
+      "explanation": "El kiwi combina una piel parda vellosa con pulpa verde y pequeñas semillas negras."
+    },
+    "alphabetLetter": "K"
+  },
+  {
+    "id": "bank-alfabeto-n-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-n-easy",
+    "publicPayload": {
+      "question": "Atracción de feria formada por una gran rueda con cabinas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "noria",
+      "acceptedAnswers": ["noria"],
+      "explanation": "Las cabinas de una noria describen una circunferencia vertical al girar la rueda."
+    },
+    "alphabetLetter": "N"
+  },
+  {
+    "id": "bank-alfabeto-enie-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-enie-easy",
+    "publicPayload": {
+      "question": "Pieza pequeña de pasta, a menudo hecha con patata, que suele cocerse en agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ñoqui",
+      "acceptedAnswers": ["ñoqui"],
+      "explanation": "El ñoqui se prepara con una masa que puede contener patata y harina, dividida en pequeñas piezas para cocer."
+    },
+    "alphabetLetter": "Ñ"
+  },
+  {
+    "id": "bank-alfabeto-q-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-q-easy",
+    "publicPayload": {
+      "question": "Alimento que se obtiene al coagular leche y separar parte del suero."
+    },
+    "solutionPayload": {
+      "correctAnswer": "queso",
+      "acceptedAnswers": ["queso"],
+      "explanation": "La coagulación reúne las proteínas de la leche en una cuajada; al retirar suero se obtiene la base del queso."
+    },
+    "alphabetLetter": "Q"
+  },
+  {
+    "id": "bank-alfabeto-u-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-u-easy",
+    "publicPayload": {
+      "question": "Recipiente cerrado con una abertura donde se introducen votos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "urna",
+      "acceptedAnswers": ["urna"],
+      "explanation": "La urna recoge papeletas mediante una ranura y permite conservarlas hasta el recuento."
+    },
+    "alphabetLetter": "U"
+  },
+  {
+    "id": "bank-alfabeto-v-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-v-easy",
+    "publicPayload": {
+      "question": "Objeto con mecha y cera que da luz al arder."
+    },
+    "solutionPayload": {
+      "correctAnswer": "vela",
+      "acceptedAnswers": ["vela"],
+      "explanation": "La mecha transporta cera fundida hacia la llama, donde actúa como combustible."
+    },
+    "alphabetLetter": "V"
+  },
+  {
+    "id": "bank-alfabeto-w-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-w-easy",
+    "publicPayload": {
+      "question": "Conjunto de páginas enlazadas que se consultan con un navegador."
+    },
+    "solutionPayload": {
+      "correctAnswer": "web",
+      "acceptedAnswers": ["web"],
+      "explanation": "La web organiza documentos mediante enlaces y permite recorrerlos usando un navegador."
+    },
+    "alphabetLetter": "W"
+  },
+  {
+    "id": "bank-alfabeto-x-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-x-easy",
+    "publicPayload": {
+      "question": "Instrumento de percusión con láminas de madera de distintas notas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "xilófono",
+      "acceptedAnswers": ["xilófono"],
+      "explanation": "Las láminas del xilófono vibran al golpearlas; sus diferentes tamaños producen notas distintas."
+    },
+    "alphabetLetter": "X"
+  },
+  {
+    "id": "bank-alfabeto-y-easy",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-y-easy",
+    "publicPayload": {
+      "question": "Producto lácteo obtenido por fermentación de la leche."
+    },
+    "solutionPayload": {
+      "correctAnswer": "yogur",
+      "acceptedAnswers": ["yogur"],
+      "explanation": "En el yogur, la fermentación transforma parte de la lactosa en ácido láctico y espesa la leche."
+    },
+    "alphabetLetter": "Y"
+  },
+  {
+    "id": "bank-alfabeto-a-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-a-medium",
+    "publicPayload": {
+      "question": "Aparato que separa componentes de una mezcla mediante evaporación y condensación."
+    },
+    "solutionPayload": {
+      "correctAnswer": "alambique",
+      "acceptedAnswers": ["alambique"],
+      "explanation": "El alambique calienta una mezcla y enfría sus vapores para condensarlos; aprovecha diferencias de volatilidad."
+    },
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-b-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-b-medium",
+    "publicPayload": {
+      "question": "Instrumento que mide la presión atmosférica."
+    },
+    "solutionPayload": {
+      "correctAnswer": "barómetro",
+      "acceptedAnswers": ["barómetro"],
+      "explanation": "El barómetro mide la presión que ejerce el aire; esa magnitud ayuda a estudiar cambios del tiempo."
+    },
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-c-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-c-medium",
+    "publicPayload": {
+      "question": "Estado de pupa de una mariposa durante su metamorfosis."
+    },
+    "solutionPayload": {
+      "correctAnswer": "crisálida",
+      "acceptedAnswers": ["crisálida"],
+      "explanation": "La crisálida corresponde a la pupa: una fase entre la oruga y la mariposa adulta."
+    },
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-d-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-d-medium",
+    "publicPayload": {
+      "question": "Máquina que transforma movimiento en corriente eléctrica continua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "dinamo",
+      "acceptedAnswers": ["dinamo"],
+      "explanation": "La dinamo convierte energía mecánica en eléctrica mediante inducción electromagnética y un colector."
+    },
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-e-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-e-medium",
+    "publicPayload": {
+      "question": "Recinto con compuertas que permite a un barco cambiar de nivel en un canal."
+    },
+    "solutionPayload": {
+      "correctAnswer": "esclusa",
+      "acceptedAnswers": ["esclusa"],
+      "explanation": "La esclusa se llena o vacía con las compuertas cerradas para elevar o bajar el barco hasta el nivel contiguo."
+    },
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "bank-alfabeto-f-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-f-medium",
+    "publicPayload": {
+      "question": "Punto de apoyo alrededor del cual gira una palanca."
+    },
+    "solutionPayload": {
+      "correctAnswer": "fulcro",
+      "acceptedAnswers": ["fulcro"],
+      "explanation": "El fulcro es el apoyo de la palanca; su posición determina los brazos de las fuerzas aplicadas."
+    },
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-g-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-g-medium",
+    "publicPayload": {
+      "question": "Cavidad de una roca cuyo interior está recubierto de cristales."
+    },
+    "solutionPayload": {
+      "correctAnswer": "geoda",
+      "acceptedAnswers": ["geoda"],
+      "explanation": "En una geoda, minerales precipitan sobre las paredes de una cavidad y forman cristales hacia el interior."
+    },
+    "alphabetLetter": "G"
+  },
+  {
+    "id": "bank-alfabeto-h-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-h-medium",
+    "publicPayload": {
+      "question": "Pieza de palas que gira para impulsar un vehículo en aire o agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "hélice",
+      "acceptedAnswers": ["hélice"],
+      "explanation": "Las palas de la hélice desplazan el fluido; la reacción produce una fuerza que impulsa el vehículo."
+    },
+    "alphabetLetter": "H"
+  },
+  {
+    "id": "bank-alfabeto-i-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-i-medium",
+    "publicPayload": {
+      "question": "Dispositivo que abre o cierra el paso de corriente en un circuito."
+    },
+    "solutionPayload": {
+      "correctAnswer": "interruptor",
+      "acceptedAnswers": ["interruptor"],
+      "explanation": "El interruptor establece o interrumpe la continuidad del circuito; al abrirlo impide el paso de corriente por esa rama."
+    },
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-j-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-j-medium",
+    "publicPayload": {
+      "question": "Cada una de las piezas verticales laterales del marco de una puerta."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jamba",
+      "acceptedAnswers": ["jamba"],
+      "explanation": "Las jambas son los laterales verticales; el dintel es la pieza horizontal situada encima."
+    },
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-k-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-k-medium",
+    "publicPayload": {
+      "question": "Unidad de potencia equivalente a mil vatios."
+    },
+    "solutionPayload": {
+      "correctAnswer": "kilovatio",
+      "acceptedAnswers": ["kilovatio"],
+      "explanation": "El prefijo kilo- representa mil: un kilovatio equivale a 1000 vatios de potencia."
+    },
+    "alphabetLetter": "K"
+  },
+  {
+    "id": "bank-alfabeto-l-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-l-medium",
+    "publicPayload": {
+      "question": "Hongo microscópico que se utiliza para fermentar masas de pan."
+    },
+    "solutionPayload": {
+      "correctAnswer": "levadura",
+      "acceptedAnswers": ["levadura"],
+      "explanation": "La levadura fermenta azúcares y libera dióxido de carbono; el gas forma burbujas que hacen crecer la masa."
+    },
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-m-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-m-medium",
+    "publicPayload": {
+      "question": "Sustancia que permite unir ladrillos, formada habitualmente por un conglomerante, arena y agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "mortero de albañilería",
+      "acceptedAnswers": ["mortero de albañilería", "mortero"],
+      "explanation": "El mortero de albañilería mezcla un conglomerante, arena y agua; al endurecer une y asienta piezas como ladrillos. Aquí se pide la mezcla de construcción, no el recipiente de cocina."
+    },
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-n-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-n-medium",
+    "publicPayload": {
+      "question": "Partícula sin carga eléctrica presente en muchos núcleos atómicos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "neutrón",
+      "acceptedAnswers": ["neutrón"],
+      "explanation": "El neutrón carece de carga eléctrica y, junto con los protones, forma los núcleos de la mayoría de los átomos."
+    },
+    "alphabetLetter": "N"
+  },
+  {
+    "id": "bank-alfabeto-enie-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-enie-medium",
+    "publicPayload": {
+      "question": "Ave sudamericana de gran tamaño, corredora y no voladora."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ñandú",
+      "acceptedAnswers": ["ñandú"],
+      "explanation": "El ñandú es un ave sudamericana adaptada a correr; sus alas no le permiten volar."
+    },
+    "alphabetLetter": "Ñ"
+  },
+  {
+    "id": "bank-alfabeto-o-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-o-medium",
+    "publicPayload": {
+      "question": "Instrumento que registra la distancia recorrida por un vehículo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "odómetro",
+      "acceptedAnswers": ["odómetro"],
+      "explanation": "El odómetro acumula la distancia del trayecto; el velocímetro indica velocidad en cada momento."
+    },
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-p-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-p-medium",
+    "publicPayload": {
+      "question": "Rueda acanalada por la que pasa una cuerda para transmitir una fuerza."
+    },
+    "solutionPayload": {
+      "correctAnswer": "polea",
+      "acceptedAnswers": ["polea"],
+      "explanation": "La garganta de la polea guía la cuerda; una polea fija permite cambiar la dirección del esfuerzo."
+    },
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-q-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-q-medium",
+    "publicPayload": {
+      "question": "Parte de un marco sobre la que gira una puerta."
+    },
+    "solutionPayload": {
+      "correctAnswer": "quicio",
+      "acceptedAnswers": ["quicio"],
+      "explanation": "El quicio es la zona del marco que sostiene el giro de la puerta mediante sus apoyos."
+    },
+    "alphabetLetter": "Q"
+  },
+  {
+    "id": "bank-alfabeto-r-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-r-medium",
+    "publicPayload": {
+      "question": "Interruptor cuyo circuito se acciona mediante una señal eléctrica."
+    },
+    "solutionPayload": {
+      "correctAnswer": "relé",
+      "acceptedAnswers": ["relé"],
+      "explanation": "Un relé permite controlar la apertura o cierre de un circuito usando una señal en otro circuito."
+    },
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-s-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-s-medium",
+    "publicPayload": {
+      "question": "Instrumento de navegación que mide el ángulo entre un astro y el horizonte."
+    },
+    "solutionPayload": {
+      "correctAnswer": "sextante",
+      "acceptedAnswers": ["sextante"],
+      "explanation": "El sextante mide alturas angulares; combinadas con hora y referencias astronómicas ayudan a calcular la posición."
+    },
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-t-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-t-medium",
+    "publicPayload": {
+      "question": "Máquina de palas que obtiene giro a partir de una corriente de fluido."
+    },
+    "solutionPayload": {
+      "correctAnswer": "turbina",
+      "acceptedAnswers": ["turbina"],
+      "explanation": "El fluido entrega energía a las palas de la turbina y hace girar su eje."
+    },
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-u-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-u-medium",
+    "publicPayload": {
+      "question": "Parte inferior de la entrada de una puerta."
+    },
+    "solutionPayload": {
+      "correctAnswer": "umbral",
+      "acceptedAnswers": ["umbral"],
+      "explanation": "El umbral ocupa la base de la abertura de una puerta y se cruza al entrar o salir."
+    },
+    "alphabetLetter": "U"
+  },
+  {
+    "id": "bank-alfabeto-v-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-v-medium",
+    "publicPayload": {
+      "question": "Dispositivo que gira para indicar de dónde procede el viento."
+    },
+    "solutionPayload": {
+      "correctAnswer": "veleta",
+      "acceptedAnswers": ["veleta"],
+      "explanation": "La veleta se orienta con la corriente de aire; su posición señala la dirección de procedencia del viento."
+    },
+    "alphabetLetter": "V"
+  },
+  {
+    "id": "bank-alfabeto-w-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-w-medium",
+    "publicPayload": {
+      "question": "Deporte de equipos que se juega en una piscina y consiste en marcar goles con un balón."
+    },
+    "solutionPayload": {
+      "correctAnswer": "waterpolo",
+      "acceptedAnswers": ["waterpolo"],
+      "explanation": "El waterpolo combina desplazamiento a nado y pases de balón para introducirlo en la portería rival."
+    },
+    "alphabetLetter": "W"
+  },
+  {
+    "id": "bank-alfabeto-x-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-x-medium",
+    "publicPayload": {
+      "question": "Tejido vegetal que conduce agua y sales minerales desde las raíces."
+    },
+    "solutionPayload": {
+      "correctAnswer": "xilema",
+      "acceptedAnswers": ["xilema"],
+      "explanation": "El xilema conduce la savia bruta hacia las partes aéreas de la planta y también aporta soporte."
+    },
+    "alphabetLetter": "X"
+  },
+  {
+    "id": "bank-alfabeto-y-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-y-medium",
+    "publicPayload": {
+      "question": "Bloque metálico sobre el que se golpean y trabajan metales."
+    },
+    "solutionPayload": {
+      "correctAnswer": "yunque",
+      "acceptedAnswers": ["yunque"],
+      "explanation": "La masa y dureza del yunque proporcionan una base resistente para dar forma al metal a golpes."
+    },
+    "alphabetLetter": "Y"
+  },
+  {
+    "id": "bank-alfabeto-z-medium",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-z-medium",
+    "publicPayload": {
+      "question": "Aparato con ranuras que produce una ilusión de movimiento al girar una secuencia de dibujos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zoótropo",
+      "acceptedAnswers": ["zoótropo"],
+      "explanation": "Al mirar por las ranuras del zoótropo se ven imágenes sucesivas; su variación crea la ilusión de movimiento."
+    },
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-a-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-a-hard",
+    "publicPayload": {
+      "question": "Instrumento que cuantifica la velocidad del viento."
+    },
+    "solutionPayload": {
+      "correctAnswer": "anemómetro",
+      "acceptedAnswers": ["anemómetro"],
+      "explanation": "El anemómetro mide velocidad del viento; la veleta mide su dirección. Distinguir ambas magnitudes identifica la respuesta."
+    },
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-b-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-b-hard",
+    "publicPayload": {
+      "question": "Escritura cuyas líneas alternan el sentido de lectura."
+    },
+    "solutionPayload": {
+      "correctAnswer": "bustrofedón",
+      "acceptedAnswers": ["bustrofedón"],
+      "explanation": "En el bustrofedón una línea se lee en un sentido y la siguiente en el contrario, como las vueltas de un arado."
+    },
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-c-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-c-hard",
+    "publicPayload": {
+      "question": "Reloj que mide el paso del tiempo mediante el flujo de agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "clepsidra",
+      "acceptedAnswers": ["clepsidra"],
+      "explanation": "La clepsidra relaciona una cantidad de agua que fluye con el tiempo transcurrido, mediante recipientes y marcas de nivel."
+    },
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-d-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-d-hard",
+    "publicPayload": {
+      "question": "Pieza metálica de dos ramas que vibra y proporciona una nota de referencia."
+    },
+    "solutionPayload": {
+      "correctAnswer": "diapasón",
+      "acceptedAnswers": ["diapasón"],
+      "explanation": "Al golpear suavemente sus ramas, el diapasón vibra con una frecuencia característica que sirve para afinar."
+    },
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-e-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-e-hard",
+    "publicPayload": {
+      "question": "Resumen o compendio de una obra extensa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "epítome",
+      "acceptedAnswers": ["epítome"],
+      "explanation": "Un epítome reduce una obra a sus ideas principales; conserva su contenido esencial de forma abreviada."
+    },
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "bank-alfabeto-f-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-f-hard",
+    "publicPayload": {
+      "question": "Disposición de las hojas alrededor del tallo de una planta."
+    },
+    "solutionPayload": {
+      "correctAnswer": "filotaxis",
+      "acceptedAnswers": ["filotaxis"],
+      "explanation": "La filotaxis describe cómo se distribuyen las hojas en el tallo, por ejemplo alternas, opuestas o en espiral."
+    },
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-g-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-g-hard",
+    "publicPayload": {
+      "question": "Pieza de un reloj solar cuya sombra permite leer la hora."
+    },
+    "solutionPayload": {
+      "correctAnswer": "gnomon",
+      "acceptedAnswers": ["gnomon"],
+      "explanation": "El gnomon proyecta una sombra que cambia con la posición aparente del Sol y señala las marcas del reloj solar."
+    },
+    "alphabetLetter": "G"
+  },
+  {
+    "id": "bank-alfabeto-h-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-h-hard",
+    "publicPayload": {
+      "question": "Forma familiar o afectuosa de un nombre propio, como Paco por Francisco."
+    },
+    "solutionPayload": {
+      "correctAnswer": "hipocorístico",
+      "acceptedAnswers": ["hipocorístico"],
+      "explanation": "Un hipocorístico transforma un nombre para un uso cercano o afectuoso; Paco y Pepe son ejemplos tradicionales."
+    },
+    "alphabetLetter": "H"
+  },
+  {
+    "id": "bank-alfabeto-i-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-i-hard",
+    "publicPayload": {
+      "question": "Línea de un mapa que une puntos con la misma presión atmosférica."
+    },
+    "solutionPayload": {
+      "correctAnswer": "isobara",
+      "acceptedAnswers": ["isobara"],
+      "explanation": "Una isobara conecta igual presión, mientras que una isoterma conecta igual temperatura; el sufijo remite a presión."
+    },
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-j-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-j-hard",
+    "publicPayload": {
+      "question": "Viga principal que sostiene otras vigas de una estructura."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jácena",
+      "acceptedAnswers": ["jácena"],
+      "explanation": "La jácena recibe cargas de vigas secundarias y las transmite a los apoyos de la estructura."
+    },
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-k-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-k-hard",
+    "publicPayload": {
+      "question": "Relieve formado por disolución de rocas solubles, con dolinas y cuevas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "karst",
+      "acceptedAnswers": ["karst"],
+      "explanation": "El relieve kárstico se origina cuando el agua disuelve roca soluble y crea cavidades, sumideros y depresiones."
+    },
+    "alphabetLetter": "K"
+  },
+  {
+    "id": "bank-alfabeto-l-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-l-hard",
+    "publicPayload": {
+      "question": "Línea sobre una esfera que corta todos los meridianos con el mismo ángulo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "loxodromia",
+      "acceptedAnswers": ["loxodromia"],
+      "explanation": "La loxodromia mantiene un rumbo angular constante respecto a los meridianos; no coincide en general con la ruta más corta."
+    },
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-m-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-m-hard",
+    "publicPayload": {
+      "question": "Figura que designa algo con el nombre de otra cosa relacionada, como leer a un autor por leer su obra."
+    },
+    "solutionPayload": {
+      "correctAnswer": "metonimia",
+      "acceptedAnswers": ["metonimia"],
+      "explanation": "La metonimia sustituye un término por otro por una relación de contigüidad, como autor y obra, y no por semejanza."
+    },
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-n-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-n-hard",
+    "publicPayload": {
+      "question": "Instrumento que mide la luz dispersada por partículas en suspensión."
+    },
+    "solutionPayload": {
+      "correctAnswer": "nefelómetro",
+      "acceptedAnswers": ["nefelómetro"],
+      "explanation": "El nefelómetro detecta la dispersión de un haz por partículas y permite estudiar la turbidez de una muestra."
+    },
+    "alphabetLetter": "N"
+  },
+  {
+    "id": "bank-alfabeto-enie-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-enie-hard",
+    "publicPayload": {
+      "question": "Variedad de pimiento pequeño y redondeado que suele utilizarse seca."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ñora",
+      "acceptedAnswers": ["ñora"],
+      "explanation": "La ñora es un pimiento que se seca para conservarlo; su pulpa hidratada se utiliza para dar sabor a preparaciones."
+    },
+    "alphabetLetter": "Ñ"
+  },
+  {
+    "id": "bank-alfabeto-o-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-o-hard",
+    "publicPayload": {
+      "question": "Figura que reúne dos términos de significado opuesto, como silencio atronador."
+    },
+    "solutionPayload": {
+      "correctAnswer": "oxímoron",
+      "acceptedAnswers": ["oxímoron"],
+      "explanation": "El oxímoron une palabras aparentemente contradictorias en una misma expresión para producir un sentido nuevo."
+    },
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-p-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-p-hard",
+    "publicPayload": {
+      "question": "Uso de palabras redundantes para reforzar una expresión, como subir arriba."
+    },
+    "solutionPayload": {
+      "correctAnswer": "pleonasmo",
+      "acceptedAnswers": ["pleonasmo"],
+      "explanation": "En el pleonasmo, parte de la información ya está contenida en otra palabra; arriba repite la dirección implícita en subir."
+    },
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-q-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-q-hard",
+    "publicPayload": {
+      "question": "Figura que dispone elementos en orden cruzado, según el esquema A-B-B-A."
+    },
+    "solutionPayload": {
+      "correctAnswer": "quiasmo",
+      "acceptedAnswers": ["quiasmo"],
+      "explanation": "El quiasmo invierte la disposición de elementos paralelos: el primer par A-B se refleja como B-A."
+    },
+    "alphabetLetter": "Q"
+  },
+  {
+    "id": "bank-alfabeto-r-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-r-hard",
+    "publicPayload": {
+      "question": "Tallo subterráneo que crece horizontalmente y emite raíces y brotes."
+    },
+    "solutionPayload": {
+      "correctAnswer": "rizoma",
+      "acceptedAnswers": ["rizoma"],
+      "explanation": "Un rizoma es un tallo, no una raíz: posee yemas capaces de producir nuevos brotes mientras crece bajo el suelo."
+    },
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-s-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-s-hard",
+    "publicPayload": {
+      "question": "Figura que usa una parte para designar el todo, como velas para referirse a barcos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "sinécdoque",
+      "acceptedAnswers": ["sinécdoque"],
+      "explanation": "La sinécdoque establece una relación de inclusión entre lo dicho y lo designado: las velas son partes de los barcos."
+    },
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-t-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-t-hard",
+    "publicPayload": {
+      "question": "Propiedad de ciertos materiales que se vuelven menos viscosos al agitarlos y recuperan viscosidad en reposo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "tixotropía",
+      "acceptedAnswers": ["tixotropía"],
+      "explanation": "La tixotropía describe un cambio reversible dependiente del tiempo de agitación: la estructura interna se altera y se reconstruye en reposo."
+    },
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-u-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-u-hard",
+    "publicPayload": {
+      "question": "Conjunto de hilos longitudinales de un telar que se cruza con la trama."
+    },
+    "solutionPayload": {
+      "correctAnswer": "urdimbre",
+      "acceptedAnswers": ["urdimbre"],
+      "explanation": "La urdimbre se mantiene tensada en sentido longitudinal; los hilos transversales de la trama se entrelazan con ella."
+    },
+    "alphabetLetter": "U"
+  },
+  {
+    "id": "bank-alfabeto-v-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-v-hard",
+    "publicPayload": {
+      "question": "Escala auxiliar que permite leer fracciones de la división de una escala principal."
+    },
+    "solutionPayload": {
+      "correctAnswer": "vernier",
+      "acceptedAnswers": ["vernier"],
+      "explanation": "El vernier compara dos escalas de separación ligeramente distinta; la coincidencia de sus marcas permite afinar la lectura."
+    },
+    "alphabetLetter": "V"
+  },
+  {
+    "id": "bank-alfabeto-w-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-w-hard",
+    "publicPayload": {
+      "question": "Elemento químico de símbolo W utilizado en aplicaciones que exigen soportar temperaturas muy altas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "wolframio",
+      "acceptedAnswers": ["wolframio"],
+      "explanation": "El símbolo W identifica el wolframio, metal de elevado punto de fusión; el símbolo procede de su nombre histórico."
+    },
+    "alphabetLetter": "W"
+  },
+  {
+    "id": "bank-alfabeto-x-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-x-hard",
+    "publicPayload": {
+      "question": "Planta adaptada a vivir con poca disponibilidad de agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "xerófita",
+      "acceptedAnswers": ["xerófita"],
+      "explanation": "Las plantas xerófitas presentan adaptaciones como hojas reducidas, tejidos de reserva o cubiertas que limitan la pérdida de agua."
+    },
+    "alphabetLetter": "X"
+  },
+  {
+    "id": "bank-alfabeto-y-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-y-hard",
+    "publicPayload": {
+      "question": "Pie métrico formado por una sílaba breve seguida de una larga en la métrica clásica."
+    },
+    "solutionPayload": {
+      "correctAnswer": "yambo",
+      "acceptedAnswers": ["yambo"],
+      "explanation": "El yambo sigue la secuencia breve-larga; el troqueo utiliza el orden inverso. La oposición permite distinguir ambos pies."
+    },
+    "alphabetLetter": "Y"
+  },
+  {
+    "id": "bank-alfabeto-z-hard",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-alfabeto-z-hard",
+    "publicPayload": {
+      "question": "Figura que omite un término ya expresado y lo sobreentiende en otra parte de la oración."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zeugma",
+      "acceptedAnswers": ["zeugma"],
+      "explanation": "En el zeugma un elemento se expresa una vez y se comparte con varios miembros, evitando repetirlo en cada uno."
+    },
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-g-gafas",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Objeto con dos lentes que se apoya en la nariz y las orejas para ayudar a ver."
+    },
+    "solutionPayload": {
+      "correctAnswer": "gafas",
+      "acceptedAnswers": ["gafas"],
+      "explanation": "Las gafas colocan una lente ante cada ojo; sus patillas permiten sujetarlas a las orejas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-g-gafas",
+    "alphabetLetter": "G"
+  },
+  {
+    "id": "bank-alfabeto-g-guante",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Prenda que cubre la mano y suele tener un espacio para cada dedo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "guante",
+      "acceptedAnswers": ["guante"],
+      "explanation": "El guante protege la mano; se distingue de una manopla porque suele separar todos los dedos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-g-guante",
+    "alphabetLetter": "G"
+  },
+  {
+    "id": "bank-alfabeto-h-hilo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Hebra larga y fina que se pasa por una aguja para coser."
+    },
+    "solutionPayload": {
+      "correctAnswer": "hilo",
+      "acceptedAnswers": ["hilo"],
+      "explanation": "El hilo atraviesa la tela con ayuda de la aguja y forma puntadas que unen las piezas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-h-hilo",
+    "alphabetLetter": "H"
+  },
+  {
+    "id": "bank-alfabeto-h-hucha",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Recipiente con una ranura en el que se guardan monedas para ahorrar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "hucha",
+      "acceptedAnswers": ["hucha"],
+      "explanation": "La hucha permite introducir monedas por una abertura pequeña y acumularlas sin gastarlas de inmediato."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-h-hucha",
+    "alphabetLetter": "H"
+  },
+  {
+    "id": "bank-alfabeto-k-karate",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Arte marcial japonés que se practica con golpes de manos y pies, sin armas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "karate",
+      "acceptedAnswers": ["karate"],
+      "explanation": "El karate utiliza técnicas corporales de ataque y defensa; el cinturón forma parte de su indumentaria habitual."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-k-karate",
+    "alphabetLetter": "K"
+  },
+  {
+    "id": "bank-alfabeto-k-kimono",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Prenda tradicional japonesa, larga y cruzada por delante, que se sujeta con una faja."
+    },
+    "solutionPayload": {
+      "correctAnswer": "kimono",
+      "acceptedAnswers": ["kimono", "quimono"],
+      "explanation": "El kimono tiene mangas amplias y se envuelve alrededor del cuerpo; una faja mantiene cerrada la prenda."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-k-kimono",
+    "alphabetLetter": "K"
+  },
+  {
+    "id": "bank-alfabeto-n-naranja",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Fruta cítrica redonda, del color al que da nombre, que suele exprimirse para hacer zumo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "naranja",
+      "acceptedAnswers": ["naranja"],
+      "explanation": "La naranja tiene una corteza que rodea sus gajos; al exprimirlos se obtiene su zumo."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-naranja",
+    "alphabetLetter": "N"
+  },
+  {
+    "id": "bank-alfabeto-n-nevera",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Electrodoméstico que mantiene fríos los alimentos para conservarlos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "nevera",
+      "acceptedAnswers": ["nevera", "frigorífico"],
+      "explanation": "La nevera extrae calor de su interior y mantiene los alimentos a una temperatura inferior a la del ambiente."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-nevera",
+    "alphabetLetter": "N"
+  },
+  {
+    "id": "bank-alfabeto-n-name",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Tubérculo tropical comestible cuyo nombre tiene cuatro letras y comienza por Ñ."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ñame",
+      "acceptedAnswers": ["ñame"],
+      "explanation": "El ñame almacena nutrientes en un tubérculo que se consume cocinado; no es el ñoqui, que es una preparación de pasta."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-name",
+    "alphabetLetter": "Ñ"
+  },
+  {
+    "id": "bank-alfabeto-n-nu",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Antílope africano de nombre muy corto, con barba y cuernos curvados, que vive en grandes manadas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ñu",
+      "acceptedAnswers": ["ñu"],
+      "explanation": "El ñu es un antílope de las sabanas africanas; su cabeza robusta y su barba lo distinguen de otros antílopes."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-nu",
+    "alphabetLetter": "Ñ"
+  },
+  {
+    "id": "bank-alfabeto-q-quesadilla",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Preparación mexicana que consiste en una tortilla doblada con queso en su interior."
+    },
+    "solutionPayload": {
+      "correctAnswer": "quesadilla",
+      "acceptedAnswers": ["quesadilla"],
+      "explanation": "En esta preparación, el queso queda dentro de la tortilla y puede fundirse al calentarla; el nombre es quesadilla."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-q-quesadilla",
+    "alphabetLetter": "Q"
+  },
+  {
+    "id": "bank-alfabeto-q-quiosco",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Pequeño puesto de la calle donde suelen venderse periódicos y revistas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "quiosco",
+      "acceptedAnswers": ["quiosco", "kiosco"],
+      "explanation": "El quiosco es un puesto de venta de tamaño reducido; en este caso se identifica por los periódicos y revistas que ofrece."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-q-quiosco",
+    "alphabetLetter": "Q"
+  },
+  {
+    "id": "bank-alfabeto-u-uva",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Fruta pequeña que crece en racimos en la vid y se utiliza para elaborar vino."
+    },
+    "solutionPayload": {
+      "correctAnswer": "uva",
+      "acceptedAnswers": ["uva"],
+      "explanation": "Las uvas son los frutos de la vid; al fermentar sus azúcares se puede obtener vino."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-u-uva",
+    "alphabetLetter": "U"
+  },
+  {
+    "id": "bank-alfabeto-u-una",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Lámina dura que crece en el extremo de los dedos de manos y pies."
+    },
+    "solutionPayload": {
+      "correctAnswer": "uña",
+      "acceptedAnswers": ["uña"],
+      "explanation": "La uña está formada principalmente por queratina y protege la parte final del dedo."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-u-una",
+    "alphabetLetter": "U"
+  },
+  {
+    "id": "bank-alfabeto-v-vaso",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Recipiente sin asa que se usa habitualmente para beber agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "vaso",
+      "acceptedAnswers": ["vaso"],
+      "explanation": "El vaso puede sujetarse por su pared y permite beber por su borde; el asa caracteriza a otros recipientes, como la taza."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-v-vaso",
+    "alphabetLetter": "V"
+  },
+  {
+    "id": "bank-alfabeto-v-vestido",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Prenda de una sola pieza que cubre el torso y se prolonga en forma de falda."
+    },
+    "solutionPayload": {
+      "correctAnswer": "vestido",
+      "acceptedAnswers": ["vestido"],
+      "explanation": "El vestido reúne en una sola prenda la parte superior y la falda, a diferencia de un conjunto de dos piezas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-v-vestido",
+    "alphabetLetter": "V"
+  },
+  {
+    "id": "bank-alfabeto-w-wifi",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Nombre habitual de la conexión inalámbrica que permite a un móvil acceder a la red mediante un router."
+    },
+    "solutionPayload": {
+      "correctAnswer": "wifi",
+      "acceptedAnswers": ["wifi", "wi-fi"],
+      "explanation": "La wifi comunica dispositivos por radio con un punto de acceso; no requiere unir el móvil al router mediante un cable."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-w-wifi",
+    "alphabetLetter": "W"
+  },
+  {
+    "id": "bank-alfabeto-w-wok",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Sartén honda de origen asiático, con paredes curvas, que se usa para saltear alimentos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "wok",
+      "acceptedAnswers": ["wok"],
+      "explanation": "Las paredes del wok permiten mover los ingredientes mientras se cocinan; su forma facilita el salteado."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-w-wok",
+    "alphabetLetter": "W"
+  },
+  {
+    "id": "bank-alfabeto-x-xenofobia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Rechazo hacia las personas por proceder de otros países; la palabra une xeno- y -fobia."
+    },
+    "solutionPayload": {
+      "correctAnswer": "xenofobia",
+      "acceptedAnswers": ["xenofobia"],
+      "explanation": "En xenofobia, xeno- se refiere a lo extranjero y -fobia al rechazo; esas dos partes permiten reconstruir el término."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-x-xenofobia",
+    "alphabetLetter": "X"
+  },
+  {
+    "id": "bank-alfabeto-x-xilografia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Técnica de grabado en madera cuyo nombre une xilo-, madera, y -grafía."
+    },
+    "solutionPayload": {
+      "correctAnswer": "xilografía",
+      "acceptedAnswers": ["xilografía"],
+      "explanation": "La xilografía parte de una plancha de madera tallada; su relieve puede entintarse y trasladar una imagen al papel."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-x-xilografia",
+    "alphabetLetter": "X"
+  },
+  {
+    "id": "bank-alfabeto-y-yema",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Parte amarilla situada en el interior de un huevo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "yema",
+      "acceptedAnswers": ["yema"],
+      "explanation": "La yema es la porción amarilla del huevo y contiene reservas nutritivas; la clara la rodea."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-y-yema",
+    "alphabetLetter": "Y"
+  },
+  {
+    "id": "bank-alfabeto-y-yoyo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Juguete con dos discos unidos que baja y sube por una cuerda enrollada en su eje."
+    },
+    "solutionPayload": {
+      "correctAnswer": "yoyó",
+      "acceptedAnswers": ["yoyó", "yo-yo"],
+      "explanation": "Al dejar caer el yoyó se desenrolla la cuerda; el giro permite que vuelva a subir por ella."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-y-yoyo",
+    "alphabetLetter": "Y"
+  },
+  {
+    "id": "bank-alfabeto-a-almidon",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Sustancia de reserva vegetal, formada por cadenas de glucosa, abundante en la patata y el arroz."
+    },
+    "solutionPayload": {
+      "correctAnswer": "almidón",
+      "acceptedAnswers": ["almidón"],
+      "explanation": "El almidón almacena glucosa en las plantas; aparece en alimentos como los tubérculos y los cereales."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-a-almidon",
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-a-acuifero",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Formación de rocas o sedimentos que almacena agua subterránea y permite que circule."
+    },
+    "solutionPayload": {
+      "correctAnswer": "acuífero",
+      "acceptedAnswers": ["acuífero"],
+      "explanation": "Los poros o las fisuras de un acuífero contienen agua y permiten su movimiento; no basta con que una roca esté húmeda."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-a-acuifero",
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-b-biela",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Barra articulada que transmite movimiento entre un pistón y un cigüeñal."
+    },
+    "solutionPayload": {
+      "correctAnswer": "biela",
+      "acceptedAnswers": ["biela"],
+      "explanation": "La biela une piezas móviles del mecanismo y participa en la transformación entre movimiento alternativo y giro."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-b-biela",
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-b-boveda",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Cubierta arquitectónica curva que prolonga un arco sobre un espacio."
+    },
+    "solutionPayload": {
+      "correctAnswer": "bóveda",
+      "acceptedAnswers": ["bóveda"],
+      "explanation": "La bóveda cubre un recinto mediante una superficie curva; una bóveda de cañón puede entenderse como un arco prolongado."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-b-boveda",
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-c-capilar",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Vaso sanguíneo de pared muy fina donde se intercambian sustancias con los tejidos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "capilar",
+      "acceptedAnswers": ["capilar"],
+      "explanation": "Los capilares conectan la circulación arterial y venosa; sus paredes delgadas permiten el intercambio con las células."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-c-capilar",
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-c-catalizador",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Sustancia que acelera una reacción química sin consumirse en su balance global."
+    },
+    "solutionPayload": {
+      "correctAnswer": "catalizador",
+      "acceptedAnswers": ["catalizador"],
+      "explanation": "Un catalizador ofrece un mecanismo de reacción más rápido y se regenera durante el proceso; no es un reactivo que se agote globalmente."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-c-catalizador",
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-d-diafragma",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Músculo situado bajo los pulmones que separa tórax y abdomen y participa en la respiración."
+    },
+    "solutionPayload": {
+      "correctAnswer": "diafragma",
+      "acceptedAnswers": ["diafragma"],
+      "explanation": "Al contraerse, el diafragma desciende y aumenta el volumen del tórax, lo que favorece la entrada de aire."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-d-diafragma",
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-d-dintel",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Elemento horizontal que sostiene la parte del muro situada sobre una puerta o ventana."
+    },
+    "solutionPayload": {
+      "correctAnswer": "dintel",
+      "acceptedAnswers": ["dintel"],
+      "explanation": "El dintel salva horizontalmente una abertura; se apoya en sus laterales y transmite a ellos la carga superior."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-d-dintel",
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-e-estuario",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Desembocadura ensanchada de un río en la que se mezclan agua dulce y agua marina."
+    },
+    "solutionPayload": {
+      "correctAnswer": "estuario",
+      "acceptedAnswers": ["estuario"],
+      "explanation": "En el estuario confluyen el caudal fluvial y las mareas; se distingue de un delta, caracterizado por depósitos que forman brazos y terrenos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-e-estuario",
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "bank-alfabeto-e-enzima",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Catalizador biológico, normalmente de naturaleza proteica, que facilita una reacción específica."
+    },
+    "solutionPayload": {
+      "correctAnswer": "enzima",
+      "acceptedAnswers": ["enzima"],
+      "explanation": "La enzima acelera una reacción en los seres vivos al actuar sobre determinadas moléculas; la mayoría son proteínas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-e-enzima",
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "bank-alfabeto-f-fusible",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Dispositivo eléctrico que interrumpe un circuito al fundirse cuando pasa demasiada corriente."
+    },
+    "solutionPayload": {
+      "correctAnswer": "fusible",
+      "acceptedAnswers": ["fusible"],
+      "explanation": "El elemento del fusible se calienta por la corriente; si esta supera su límite, se funde y abre el circuito."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-f-fusible",
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-f-fotosintesis",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Proceso por el que plantas y algas utilizan luz para formar materia orgánica a partir de dióxido de carbono y agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "fotosíntesis",
+      "acceptedAnswers": ["fotosíntesis"],
+      "explanation": "En la fotosíntesis de las plantas, la energía luminosa permite producir compuestos orgánicos y se libera oxígeno."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-f-fotosintesis",
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-g-galvanometro",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Instrumento que detecta o mide pequeñas corrientes eléctricas mediante la desviación de un indicador."
+    },
+    "solutionPayload": {
+      "correctAnswer": "galvanómetro",
+      "acceptedAnswers": ["galvanómetro"],
+      "explanation": "En un galvanómetro, la corriente produce una desviación relacionada con su intensidad; se emplea para detectar corrientes débiles."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-g-galvanometro",
+    "alphabetLetter": "G"
+  },
+  {
+    "id": "bank-alfabeto-g-gubia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Herramienta de carpintería con filo curvo que permite tallar huecos o surcos en madera."
+    },
+    "solutionPayload": {
+      "correctAnswer": "gubia",
+      "acceptedAnswers": ["gubia"],
+      "explanation": "La sección curvada de la gubia permite retirar material con un perfil cóncavo; la distingue del formón de filo recto."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-g-gubia",
+    "alphabetLetter": "G"
+  },
+  {
+    "id": "bank-alfabeto-h-higrometro",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Instrumento que mide la humedad del aire."
+    },
+    "solutionPayload": {
+      "correctAnswer": "higrómetro",
+      "acceptedAnswers": ["higrómetro"],
+      "explanation": "El higrómetro informa sobre el contenido de vapor de agua del aire; no mide presión, como el barómetro."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-h-higrometro",
+    "alphabetLetter": "H"
+  },
+  {
+    "id": "bank-alfabeto-h-hemoglobina",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Proteína de los glóbulos rojos que se une al oxígeno y ayuda a transportarlo por la sangre."
+    },
+    "solutionPayload": {
+      "correctAnswer": "hemoglobina",
+      "acceptedAnswers": ["hemoglobina"],
+      "explanation": "La hemoglobina contiene grupos con hierro capaces de unirse al oxígeno; su transporte es una función de los glóbulos rojos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-h-hemoglobina",
+    "alphabetLetter": "H"
+  },
+  {
+    "id": "bank-alfabeto-i-inercia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Propiedad por la que un cuerpo mantiene su reposo o su movimiento rectilíneo uniforme si no actúa una fuerza neta."
+    },
+    "solutionPayload": {
+      "correctAnswer": "inercia",
+      "acceptedAnswers": ["inercia"],
+      "explanation": "La inercia se opone a los cambios de velocidad; cambiar el estado de movimiento requiere una fuerza resultante."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-i-inercia",
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-i-isotopo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Cada variante de un elemento químico que tiene el mismo número de protones, pero diferente número de neutrones."
+    },
+    "solutionPayload": {
+      "correctAnswer": "isótopo",
+      "acceptedAnswers": ["isótopo"],
+      "explanation": "Los isótopos pertenecen al mismo elemento porque conservan sus protones; la variación de neutrones cambia su masa."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-i-isotopo",
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-j-jalon",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Vara visible que se coloca en el terreno para señalar puntos en trabajos de topografía."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jalón",
+      "acceptedAnswers": ["jalón"],
+      "explanation": "El jalón marca posiciones y ayuda a trazar alineaciones; suele llevar colores que permiten localizarlo desde lejos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-j-jalon",
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-j-jeroglifico",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Sistema de escritura del antiguo Egipto que utiliza signos figurativos con valores de sonido o de significado."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jeroglífico",
+      "acceptedAnswers": ["jeroglífico"],
+      "explanation": "Los jeroglíficos no son simples dibujos decorativos: sus signos pueden representar sonidos, palabras o indicar categorías de significado."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-j-jeroglifico",
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-k-kelvin",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Unidad básica del sistema internacional para la temperatura termodinámica, cuyo símbolo es K."
+    },
+    "solutionPayload": {
+      "correctAnswer": "kelvin",
+      "acceptedAnswers": ["kelvin"],
+      "explanation": "El kelvin es una unidad de temperatura absoluta; un incremento de un kelvin tiene el mismo tamaño que uno de un grado Celsius."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-k-kelvin",
+    "alphabetLetter": "K"
+  },
+  {
+    "id": "bank-alfabeto-k-kilopascal",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Unidad de presión que equivale a mil pascales y se representa mediante kPa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "kilopascal",
+      "acceptedAnswers": ["kilopascal"],
+      "explanation": "El prefijo kilo- multiplica por mil: 1 kPa equivale a 1000 Pa. El pascal es la unidad de presión del sistema internacional."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-k-kilopascal",
+    "alphabetLetter": "K"
+  },
+  {
+    "id": "bank-alfabeto-l-ligamento",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Banda resistente de tejido conjuntivo que une huesos y contribuye a estabilizar una articulación."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ligamento",
+      "acceptedAnswers": ["ligamento"],
+      "explanation": "El ligamento conecta huesos entre sí y limita movimientos; el tendón une habitualmente un músculo con un hueso."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-l-ligamento",
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-l-limbo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Parte ancha y generalmente plana de una hoja, situada a continuación de su pecíolo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "limbo",
+      "acceptedAnswers": ["limbo"],
+      "explanation": "El limbo es la lámina de la hoja; el pecíolo es el rabillo que la conecta al tallo."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-l-limbo",
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-m-membrana",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Estructura que delimita una célula y regula el intercambio de sustancias con su entorno."
+    },
+    "solutionPayload": {
+      "correctAnswer": "membrana",
+      "acceptedAnswers": ["membrana", "membrana celular", "membrana plasmática"],
+      "explanation": "La membrana celular separa el interior del exterior y controla el paso de materiales; no equivale a la pared rígida de una célula vegetal."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-m-membrana",
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-m-menisco",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Curvatura que forma la superficie de un líquido junto a la pared de un tubo estrecho."
+    },
+    "solutionPayload": {
+      "correctAnswer": "menisco",
+      "acceptedAnswers": ["menisco"],
+      "explanation": "El menisco resulta de la relación entre la atracción del líquido por la pared y la cohesión entre sus moléculas; puede ser cóncavo o convexo."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-m-menisco",
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-n-nitrogeno",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Elemento químico de símbolo N cuyo gas constituye la mayor parte del aire de la atmósfera terrestre."
+    },
+    "solutionPayload": {
+      "correctAnswer": "nitrógeno",
+      "acceptedAnswers": ["nitrógeno"],
+      "explanation": "El nitrógeno molecular es el componente más abundante del aire; el oxígeno ocupa una proporción menor."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-nitrogeno",
+    "alphabetLetter": "N"
+  },
+  {
+    "id": "bank-alfabeto-n-nucleo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Región central de un átomo, donde se encuentran los protones y, salvo excepciones como el hidrógeno más común, los neutrones."
+    },
+    "solutionPayload": {
+      "correctAnswer": "núcleo",
+      "acceptedAnswers": ["núcleo", "núcleo atómico"],
+      "explanation": "El núcleo concentra la carga positiva y casi toda la masa del átomo; los electrones se distribuyen alrededor."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-nucleo",
+    "alphabetLetter": "N"
+  },
+  {
+    "id": "bank-alfabeto-n-napa",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Nombre usado en varios países americanos para un pequeño añadido que se entrega como regalo en una compra."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ñapa",
+      "acceptedAnswers": ["ñapa"],
+      "explanation": "La ñapa es un extra que se añade a lo comprado; su uso regional se relaciona con la idea de dar algo más de lo acordado."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-napa",
+    "alphabetLetter": "Ñ"
+  },
+  {
+    "id": "bank-alfabeto-n-nono",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Adjetivo masculino que puede aplicarse a un relato soso, insustancial y falto de interés."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ñoño",
+      "acceptedAnswers": ["ñoño", "ñoña"],
+      "explanation": "Un relato ñoño resulta de poca sustancia; aquí se pide esa acepción del adjetivo, no una descripción de su longitud."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-nono",
+    "alphabetLetter": "Ñ"
+  },
+  {
+    "id": "bank-alfabeto-o-osmosis",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Paso neto de agua a través de una membrana selectiva hacia la disolución con mayor concentración de solutos que no la atraviesan."
+    },
+    "solutionPayload": {
+      "correctAnswer": "osmosis",
+      "acceptedAnswers": ["osmosis"],
+      "explanation": "La ósmosis depende de la membrana y de la diferencia entre las disoluciones; el agua se desplaza hasta que se equilibran los efectos que la impulsan."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-o-osmosis",
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-o-obturador",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Mecanismo de una cámara que controla durante cuánto tiempo llega luz al sensor o a la película."
+    },
+    "solutionPayload": {
+      "correctAnswer": "obturador",
+      "acceptedAnswers": ["obturador"],
+      "explanation": "El obturador determina la duración de la exposición; el diafragma regula el tamaño de la abertura."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-o-obturador",
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-p-periscopio",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Instrumento óptico que permite observar por encima de un obstáculo mediante espejos o prismas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "periscopio",
+      "acceptedAnswers": ["periscopio"],
+      "explanation": "El periscopio desvía la luz hasta el observador; permite mirar desde una posición que no tiene visión directa del objeto."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-p-periscopio",
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-p-pluviometro",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Instrumento que recoge y mide la cantidad de lluvia caída en un lugar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "pluviómetro",
+      "acceptedAnswers": ["pluviómetro"],
+      "explanation": "El pluviómetro relaciona el agua recogida con la superficie de su abertura; la precipitación suele expresarse como una altura de agua."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-p-pluviometro",
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-q-quilla",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Pieza longitudinal situada en la parte inferior del casco de una embarcación y que sirve de base a su estructura."
+    },
+    "solutionPayload": {
+      "correctAnswer": "quilla",
+      "acceptedAnswers": ["quilla"],
+      "explanation": "La quilla recorre el casco por debajo y contribuye a su armazón; en algunas embarcaciones también ayuda a la estabilidad."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-q-quilla",
+    "alphabetLetter": "Q"
+  },
+  {
+    "id": "bank-alfabeto-q-quena",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Flauta tradicional andina que suele tener una muesca en el extremo por el que se sopla."
+    },
+    "solutionPayload": {
+      "correctAnswer": "quena",
+      "acceptedAnswers": ["quena"],
+      "explanation": "La quena produce sonido al dirigir el aire contra el borde de su muesca; los orificios permiten cambiar las notas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-q-quena",
+    "alphabetLetter": "Q"
+  },
+  {
+    "id": "bank-alfabeto-r-refraccion",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Cambio de dirección que puede experimentar la luz al pasar oblicuamente entre medios donde se propaga a distinta velocidad."
+    },
+    "solutionPayload": {
+      "correctAnswer": "refracción",
+      "acceptedAnswers": ["refracción"],
+      "explanation": "La refracción ocurre al atravesar la separación entre medios; explica que un lápiz sumergido parezca doblarse en la superficie del agua."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-r-refraccion",
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-r-remache",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Pieza de unión que se fija deformando uno de sus extremos para sujetar permanentemente dos materiales."
+    },
+    "solutionPayload": {
+      "correctAnswer": "remache",
+      "acceptedAnswers": ["remache"],
+      "explanation": "El remache atraviesa las piezas y se ensancha al deformarse; a diferencia de un tornillo, no se asegura mediante una rosca."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-r-remache",
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-s-sinapsis",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Zona funcional de comunicación entre una neurona y otra célula, mediante señales químicas o eléctricas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "sinapsis",
+      "acceptedAnswers": ["sinapsis"],
+      "explanation": "La sinapsis permite transmitir información entre células; en una sinapsis química intervienen neurotransmisores."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-s-sinapsis",
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-s-solenoide",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Bobina de alambre enrollada en forma de hélice que genera un campo magnético cuando circula corriente."
+    },
+    "solutionPayload": {
+      "correctAnswer": "solenoide",
+      "acceptedAnswers": ["solenoide"],
+      "explanation": "Las espiras del solenoide suman sus campos magnéticos; su disposición permite producir un campo intenso en el interior."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-s-solenoide",
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-t-teodolito",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Instrumento topográfico que mide ángulos horizontales y verticales con ayuda de un anteojo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "teodolito",
+      "acceptedAnswers": ["teodolito"],
+      "explanation": "El teodolito permite orientar visuales y medir sus ángulos; esas medidas se utilizan para determinar posiciones en el terreno."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-t-teodolito",
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-t-transistor",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Componente semiconductor que puede amplificar señales o actuar como interruptor electrónico."
+    },
+    "solutionPayload": {
+      "correctAnswer": "transistor",
+      "acceptedAnswers": ["transistor"],
+      "explanation": "Una señal de control permite modificar la corriente que atraviesa el transistor; por eso se utiliza en amplificación y circuitos digitales."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-t-transistor",
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-u-uranio",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Elemento químico de símbolo U que se emplea como combustible en determinados reactores nucleares."
+    },
+    "solutionPayload": {
+      "correctAnswer": "uranio",
+      "acceptedAnswers": ["uranio"],
+      "explanation": "El uranio es un metal pesado con isótopos radiactivos; algunos pueden participar en procesos de fisión nuclear."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-u-uranio",
+    "alphabetLetter": "U"
+  },
+  {
+    "id": "bank-alfabeto-u-ultrasonido",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Sonido cuya frecuencia está por encima del límite superior habitual de audición humana, en torno a 20 000 hercios."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ultrasonido",
+      "acceptedAnswers": ["ultrasonido"],
+      "explanation": "El ultrasonido es una vibración acústica de frecuencia elevada; la referencia de 20 000 Hz es aproximada porque la audición varía entre personas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-u-ultrasonido",
+    "alphabetLetter": "U"
+  },
+  {
+    "id": "bank-alfabeto-v-voltimetro",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Instrumento que mide la diferencia de potencial eléctrico entre dos puntos de un circuito."
+    },
+    "solutionPayload": {
+      "correctAnswer": "voltímetro",
+      "acceptedAnswers": ["voltímetro"],
+      "explanation": "El voltímetro se conecta entre los puntos que se quieren comparar y expresa la diferencia de potencial en voltios."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-v-voltimetro",
+    "alphabetLetter": "V"
+  },
+  {
+    "id": "bank-alfabeto-v-valvula",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Dispositivo que abre, cierra o regula el paso de un fluido por un conducto."
+    },
+    "solutionPayload": {
+      "correctAnswer": "válvula",
+      "acceptedAnswers": ["válvula"],
+      "explanation": "La válvula modifica la sección de paso del conducto; puede dejar circular el fluido o impedirlo según su posición."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-v-valvula",
+    "alphabetLetter": "V"
+  },
+  {
+    "id": "bank-alfabeto-w-windsurf",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Deporte en el que se navega de pie sobre una tabla provista de una vela articulada."
+    },
+    "solutionPayload": {
+      "correctAnswer": "windsurf",
+      "acceptedAnswers": ["windsurf", "windsurfing"],
+      "explanation": "En el windsurf, la vela aprovecha el viento y la tabla se desliza sobre el agua; la vela está unida a la tabla."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-w-windsurf",
+    "alphabetLetter": "W"
+  },
+  {
+    "id": "bank-alfabeto-w-walkie-talkie",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Aparato de radio portátil que permite hablar y escuchar con otros aparatos compatibles, normalmente por turnos."
+    },
+    "solutionPayload": {
+      "correctAnswer": "walkie-talkie",
+      "acceptedAnswers": ["walkie-talkie", "walkie talkie"],
+      "explanation": "El walkie-talkie transmite voz por radio; habitualmente se pulsa un botón para emitir y se suelta para escuchar."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-w-walkie-talkie",
+    "alphabetLetter": "W"
+  },
+  {
+    "id": "bank-alfabeto-x-xantofila",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Pigmento vegetal de color amarillo que pertenece al grupo de los carotenoides."
+    },
+    "solutionPayload": {
+      "correctAnswer": "xantofila",
+      "acceptedAnswers": ["xantofila"],
+      "explanation": "La xantofila puede quedar enmascarada por la clorofila verde; participa en la captación y protección frente a la luz."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-x-xantofila",
+    "alphabetLetter": "X"
+  },
+  {
+    "id": "bank-alfabeto-x-xilofago",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Adjetivo masculino que describe a un animal cuya alimentación se basa en madera."
+    },
+    "solutionPayload": {
+      "correctAnswer": "xilófago",
+      "acceptedAnswers": ["xilófago", "xilófaga"],
+      "explanation": "Xilo- alude a madera y -fago a alimentación; la combinación describe, por ejemplo, a insectos que consumen madera."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-x-xilofago",
+    "alphabetLetter": "X"
+  },
+  {
+    "id": "bank-alfabeto-y-yesca",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Material seco y muy combustible que se utiliza para iniciar un fuego a partir de una chispa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "yesca",
+      "acceptedAnswers": ["yesca"],
+      "explanation": "La yesca prende con facilidad y permite pasar de una chispa pequeña a una combustión que encienda otros materiales."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-y-yesca",
+    "alphabetLetter": "Y"
+  },
+  {
+    "id": "bank-alfabeto-y-yacimiento",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Lugar en el que se concentra de forma natural un mineral que puede tener interés para su extracción."
+    },
+    "solutionPayload": {
+      "correctAnswer": "yacimiento",
+      "acceptedAnswers": ["yacimiento", "yacimiento mineral"],
+      "explanation": "En un yacimiento mineral, la concentración del recurso lo distingue de su presencia dispersa; el mismo término tiene otros usos, como el arqueológico."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-y-yacimiento",
+    "alphabetLetter": "Y"
+  },
+  {
+    "id": "bank-alfabeto-z-zocalo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Franja que recubre la parte inferior de una pared para protegerla o decorarla."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zócalo",
+      "acceptedAnswers": ["zócalo"],
+      "explanation": "El zócalo se sitúa junto al suelo y protege la base del muro; puede estar hecho de madera, piedra u otros materiales."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-z-zocalo",
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-z-zarcillo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Órgano delgado de ciertas plantas que se enrolla en un soporte y facilita que trepen."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zarcillo",
+      "acceptedAnswers": ["zarcillo"],
+      "explanation": "Los zarcillos se curvan al encontrar un apoyo; permiten que la planta se sostenga sin formar un tronco rígido."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-z-zarcillo",
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-a-anacoluto",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Ruptura de la construcción sintáctica de una frase, cuyo final no sigue la estructura iniciada."
+    },
+    "solutionPayload": {
+      "correctAnswer": "anacoluto",
+      "acceptedAnswers": ["anacoluto"],
+      "explanation": "En un anacoluto se abandona una construcción y se continúa con otra; la falta de correspondencia es sintáctica, no una mera repetición."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-a-anacoluto",
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-a-albedo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Fracción de la radiación que recibe una superficie y que esta devuelve por reflexión."
+    },
+    "solutionPayload": {
+      "correctAnswer": "albedo",
+      "acceptedAnswers": ["albedo"],
+      "explanation": "Un albedo elevado indica que se refleja una proporción grande de la radiación incidente; la nieve suele reflejar más que una superficie oscura."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-a-albedo",
+    "alphabetLetter": "A"
+  },
+  {
+    "id": "bank-alfabeto-b-batimetria",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Medición y representación del relieve de los fondos de mares, lagos u otras masas de agua."
+    },
+    "solutionPayload": {
+      "correctAnswer": "batimetría",
+      "acceptedAnswers": ["batimetría"],
+      "explanation": "La batimetría describe profundidades y formas del fondo; cumple bajo el agua una función semejante a la topografía en tierra."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-b-batimetria",
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-b-borax",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Mineral formado por un borato hidratado de sodio que se emplea, entre otros usos, en la fabricación de vidrio."
+    },
+    "solutionPayload": {
+      "correctAnswer": "bórax",
+      "acceptedAnswers": ["bórax"],
+      "explanation": "El bórax contiene sodio y boro en forma de borato hidratado; se distingue del ácido bórico por su composición."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-b-borax",
+    "alphabetLetter": "B"
+  },
+  {
+    "id": "bank-alfabeto-c-catacresis",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Uso de una palabra en sentido figurado para nombrar algo que carece de denominación específica, como las patas de una mesa."
+    },
+    "solutionPayload": {
+      "correctAnswer": "catacresis",
+      "acceptedAnswers": ["catacresis"],
+      "explanation": "La catacresis extiende un nombre existente a otra realidad; en patas de una mesa, la analogía permite nombrar sus apoyos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-c-catacresis",
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-c-catenaria",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Curva que forma una cadena uniforme y flexible suspendida por sus extremos bajo su propio peso."
+    },
+    "solutionPayload": {
+      "correctAnswer": "catenaria",
+      "acceptedAnswers": ["catenaria"],
+      "explanation": "La catenaria surge del equilibrio del peso distribuido a lo largo de la cadena; no es, en general, una parábola."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-c-catenaria",
+    "alphabetLetter": "C"
+  },
+  {
+    "id": "bank-alfabeto-d-dehiscencia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Apertura espontánea de un fruto o una antera al madurar para liberar semillas o polen."
+    },
+    "solutionPayload": {
+      "correctAnswer": "dehiscencia",
+      "acceptedAnswers": ["dehiscencia"],
+      "explanation": "La dehiscencia se produce en zonas preparadas para abrirse; permite liberar el contenido sin que un agente externo rompa la estructura."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-d-dehiscencia",
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-d-dendrocronologia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Método que permite fechar madera mediante la comparación de sus anillos de crecimiento."
+    },
+    "solutionPayload": {
+      "correctAnswer": "dendrocronología",
+      "acceptedAnswers": ["dendrocronología"],
+      "explanation": "La dendrocronología compara secuencias de anillos de distintos grosores con series conocidas; no se limita a contar anillos aislados."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-d-dendrocronologia",
+    "alphabetLetter": "D"
+  },
+  {
+    "id": "bank-alfabeto-e-entimema",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Silogismo abreviado que omite una premisa porque se da por sobreentendida."
+    },
+    "solutionPayload": {
+      "correctAnswer": "entimema",
+      "acceptedAnswers": ["entimema"],
+      "explanation": "El entimema conserva una conclusión y parte del razonamiento; la premisa omitida debe reconstruirse para comprobar el argumento."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-e-entimema",
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "bank-alfabeto-e-exegesis",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Interpretación crítica y detallada de un texto, especialmente cuando requiere aclarar su sentido y contexto."
+    },
+    "solutionPayload": {
+      "correctAnswer": "exégesis",
+      "acceptedAnswers": ["exégesis"],
+      "explanation": "La exégesis analiza el texto y sus circunstancias para explicar lo que significa; no consiste solo en resumirlo."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-e-exegesis",
+    "alphabetLetter": "E"
+  },
+  {
+    "id": "bank-alfabeto-f-fagocitosis",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Proceso por el que una célula rodea e incorpora partículas sólidas mediante prolongaciones de su membrana."
+    },
+    "solutionPayload": {
+      "correctAnswer": "fagocitosis",
+      "acceptedAnswers": ["fagocitosis"],
+      "explanation": "En la fagocitosis, la membrana envuelve la partícula y forma una vesícula interna; se distingue de la incorporación de líquido."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-f-fagocitosis",
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-f-fricativa",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Consonante cuya articulación estrecha el paso del aire y produce un ruido de fricción sin cerrarlo por completo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "fricativa",
+      "acceptedAnswers": ["fricativa"],
+      "explanation": "En una fricativa, como la f, el aire sigue circulando por un paso estrecho; una oclusiva interrumpe antes su salida."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-f-fricativa",
+    "alphabetLetter": "F"
+  },
+  {
+    "id": "bank-alfabeto-g-gliptoteca",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Colección o museo dedicado principalmente a obras de escultura."
+    },
+    "solutionPayload": {
+      "correctAnswer": "gliptoteca",
+      "acceptedAnswers": ["gliptoteca"],
+      "explanation": "La gliptoteca reúne esculturas; la pinacoteca se especializa en pinturas, lo que permite distinguir ambos términos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-g-gliptoteca",
+    "alphabetLetter": "G"
+  },
+  {
+    "id": "bank-alfabeto-g-gnoseologia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Rama de la filosofía que estudia la naturaleza, las posibilidades y los límites del conocimiento."
+    },
+    "solutionPayload": {
+      "correctAnswer": "gnoseología",
+      "acceptedAnswers": ["gnoseología", "teoría del conocimiento"],
+      "explanation": "La gnoseología pregunta qué significa conocer y cómo puede justificarse el conocimiento; su objeto no se reduce a una ciencia particular."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-g-gnoseologia",
+    "alphabetLetter": "G"
+  },
+  {
+    "id": "bank-alfabeto-h-hapax",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Palabra que aparece una sola vez en un texto, en la obra de un autor o en un corpus delimitado."
+    },
+    "solutionPayload": {
+      "correctAnswer": "hápax",
+      "acceptedAnswers": ["hápax", "hápax legómenon"],
+      "explanation": "Un hápax se identifica respecto de un conjunto concreto de textos; no significa necesariamente que la palabra se haya usado una sola vez en toda la lengua."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-h-hapax",
+    "alphabetLetter": "H"
+  },
+  {
+    "id": "bank-alfabeto-h-homotecia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Transformación geométrica que multiplica por una misma razón las distancias de todos los puntos a un centro fijo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "homotecia",
+      "acceptedAnswers": ["homotecia"],
+      "explanation": "La homotecia lleva cada punto a la recta que lo une con el centro y escala su distancia; conserva la forma de las figuras."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-h-homotecia",
+    "alphabetLetter": "H"
+  },
+  {
+    "id": "bank-alfabeto-i-isoglosa",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Línea de un mapa lingüístico que separa zonas según la presencia de un rasgo concreto del habla."
+    },
+    "solutionPayload": {
+      "correctAnswer": "isoglosa",
+      "acceptedAnswers": ["isoglosa"],
+      "explanation": "La isoglosa delimita la distribución de un fenómeno lingüístico; distintas características pueden producir límites que no coinciden."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-i-isoglosa",
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-i-isomorfismo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Correspondencia biyectiva entre estructuras matemáticas que conserva las operaciones o relaciones consideradas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "isomorfismo",
+      "acceptedAnswers": ["isomorfismo"],
+      "explanation": "Un isomorfismo empareja los elementos sin perder la estructura; permite considerar equivalentes sus relaciones matemáticas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-i-isomorfismo",
+    "alphabetLetter": "I"
+  },
+  {
+    "id": "bank-alfabeto-j-jitanjafora",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Texto que prima la sonoridad de palabras reales o inventadas sobre un significado lógico reconocible."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jitanjáfora",
+      "acceptedAnswers": ["jitanjáfora"],
+      "explanation": "La jitanjáfora busca un efecto sonoro y evocador; su interés no depende de construir un mensaje con sentido ordinario."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-j-jitanjafora",
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-j-jarcha",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Breve composición que cierra una moaxaja y que puede estar escrita en romance o árabe coloquial."
+    },
+    "solutionPayload": {
+      "correctAnswer": "jarcha",
+      "acceptedAnswers": ["jarcha"],
+      "explanation": "La jarcha ocupa el cierre de la moaxaja; en las romances, ese final aporta testimonios tempranos de poesía en una lengua romance."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-j-jarcha",
+    "alphabetLetter": "J"
+  },
+  {
+    "id": "bank-alfabeto-k-koine",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Lengua griega común, basada sobre todo en el ático, difundida tras las conquistas de Alejandro Magno."
+    },
+    "solutionPayload": {
+      "correctAnswer": "koiné",
+      "acceptedAnswers": ["koiné", "coiné"],
+      "explanation": "La koiné facilitó la comunicación en el mundo helenístico al superar diferencias dialectales; por extensión, el término designa otras lenguas comunes."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-k-koine",
+    "alphabetLetter": "K"
+  },
+  {
+    "id": "bank-alfabeto-k-kermes",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Insecto que vive en la coscoja y del que se obtenía un colorante rojo; escribe la variante que empieza por K."
+    },
+    "solutionPayload": {
+      "correctAnswer": "kermes",
+      "acceptedAnswers": ["kermes", "quermes"],
+      "explanation": "El kermes, también llamado quermes, se utilizó para producir grana; no debe confundirse con la kermés, que es una fiesta popular."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-k-kermes",
+    "alphabetLetter": "K"
+  },
+  {
+    "id": "bank-alfabeto-l-litote",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Figura retórica que expresa una idea negando su contraria, como no está nada mal para elogiar algo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "lítote",
+      "acceptedAnswers": ["lítote", "litotes"],
+      "explanation": "La lítote afirma de manera atenuada mediante una negación; no está nada mal puede comunicar una valoración positiva."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-l-litote",
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-l-lenticela",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Pequeña abertura del tejido protector de tallos leñosos que permite intercambiar gases con el exterior."
+    },
+    "solutionPayload": {
+      "correctAnswer": "lenticela",
+      "acceptedAnswers": ["lenticela"],
+      "explanation": "La lenticela atraviesa localmente el tejido protector del tallo; facilita la entrada y salida de gases sin ser un estoma de una hoja."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-l-lenticela",
+    "alphabetLetter": "L"
+  },
+  {
+    "id": "bank-alfabeto-m-mirmecologia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Rama de la zoología dedicada al estudio de las hormigas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "mirmecología",
+      "acceptedAnswers": ["mirmecología"],
+      "explanation": "La mirmecología estudia las hormigas y sus sociedades; es una especialidad dentro del estudio de los insectos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-m-mirmecologia",
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-m-metempsicosis",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Doctrina según la cual las almas pasan a otros cuerpos después de la muerte; se pide su nombre de origen griego."
+    },
+    "solutionPayload": {
+      "correctAnswer": "metempsícosis",
+      "acceptedAnswers": ["metempsícosis"],
+      "explanation": "La metempsícosis plantea la transmigración de las almas entre cuerpos; se trata de una doctrina religiosa o filosófica, no de un proceso demostrado."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-m-metempsicosis",
+    "alphabetLetter": "M"
+  },
+  {
+    "id": "bank-alfabeto-n-neuma",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Signo de la notación musical antigua usado para orientar el canto antes de la notación moderna en pentagrama."
+    },
+    "solutionPayload": {
+      "correctAnswer": "neuma",
+      "acceptedAnswers": ["neuma"],
+      "explanation": "Los neumas señalaban el desarrollo de la melodía; su forma y precisión varían según el sistema y la época."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-neuma",
+    "alphabetLetter": "N"
+  },
+  {
+    "id": "bank-alfabeto-n-nictinastia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Movimiento no orientado de hojas o flores relacionado con la alternancia entre el día y la noche."
+    },
+    "solutionPayload": {
+      "correctAnswer": "nictinastia",
+      "acceptedAnswers": ["nictinastia"],
+      "explanation": "La nictinastia cambia la posición de órganos vegetales siguiendo el ciclo diario; no es un crecimiento dirigido hacia la luz."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-nictinastia",
+    "alphabetLetter": "N"
+  },
+  {
+    "id": "bank-alfabeto-n-nanduti",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Encaje tradicional de Paraguay cuyo dibujo recuerda una telaraña."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ñandutí",
+      "acceptedAnswers": ["ñandutí"],
+      "explanation": "El ñandutí forma una trama fina que evoca una red de araña; su tradición artesanal es característica de Paraguay."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-nanduti",
+    "alphabetLetter": "Ñ"
+  },
+  {
+    "id": "bank-alfabeto-n-nanigo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Nombre de un miembro de la sociedad afrocubana Abakuá."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ñáñigo",
+      "acceptedAnswers": ["ñáñigo", "ñáñiga"],
+      "explanation": "El término ñáñigo se refiere a la pertenencia a la sociedad Abakuá; también puede usarse como adjetivo relativo a ella."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-n-nanigo",
+    "alphabetLetter": "Ñ"
+  },
+  {
+    "id": "bank-alfabeto-o-opistografo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Adjetivo que describe un escrito realizado por las dos caras de una hoja o de un soporte similar."
+    },
+    "solutionPayload": {
+      "correctAnswer": "opistógrafo",
+      "acceptedAnswers": ["opistógrafo", "opistógrafa"],
+      "explanation": "Un soporte opistógrafo lleva escritura en anverso y reverso; la característica se refiere a sus dos caras."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-o-opistografo",
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-o-ortocentro",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Punto en el que se cortan las tres alturas de un triángulo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ortocentro",
+      "acceptedAnswers": ["ortocentro"],
+      "explanation": "Las alturas pasan por un vértice y son perpendiculares al lado opuesto; su intersección es el ortocentro, no el baricentro de las medianas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-o-ortocentro",
+    "alphabetLetter": "O"
+  },
+  {
+    "id": "bank-alfabeto-p-paleografia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Disciplina que estudia las escrituras antiguas para leerlas, interpretarlas y ayudar a fecharlas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "paleografía",
+      "acceptedAnswers": ["paleografía"],
+      "explanation": "La paleografía analiza formas de letras, abreviaturas y usos gráficos; su objeto es la escritura, no el estudio de fósiles."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-p-paleografia",
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-p-parenquima",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Tejido vegetal de células generalmente vivas que puede realizar fotosíntesis o almacenar reservas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "parénquima",
+      "acceptedAnswers": ["parénquima", "parénquima vegetal"],
+      "explanation": "El parénquima cumple funciones de elaboración o almacenamiento; se diferencia de tejidos especializados en sostén o conducción."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-p-parenquima",
+    "alphabetLetter": "P"
+  },
+  {
+    "id": "bank-alfabeto-q-quincunce",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Disposición de cinco puntos con cuatro en los vértices de un cuadrado y uno en el centro, como en un dado."
+    },
+    "solutionPayload": {
+      "correctAnswer": "quincunce",
+      "acceptedAnswers": ["quincunce"],
+      "explanation": "El quincunce combina las cuatro posiciones exteriores con una central; esa relación espacial lo distingue de una fila de cinco puntos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-q-quincunce",
+    "alphabetLetter": "Q"
+  },
+  {
+    "id": "bank-alfabeto-q-quiralidad",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Propiedad de un objeto o una molécula cuya imagen especular no puede superponerse con el original."
+    },
+    "solutionPayload": {
+      "correctAnswer": "quiralidad",
+      "acceptedAnswers": ["quiralidad"],
+      "explanation": "Las manos ilustran la quiralidad: una es imagen especular de la otra, pero no coinciden al superponerlas mediante giros y desplazamientos."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-q-quiralidad",
+    "alphabetLetter": "Q"
+  },
+  {
+    "id": "bank-alfabeto-r-reologia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Disciplina que estudia cómo fluyen y se deforman los materiales bajo la acción de fuerzas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "reología",
+      "acceptedAnswers": ["reología"],
+      "explanation": "La reología relaciona esfuerzos y deformaciones, incluidos comportamientos viscosos y elásticos; no se limita a líquidos ideales."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-r-reologia",
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-r-ritornelo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Pasaje musical que reaparece a lo largo de una composición, especialmente en formas del concierto barroco."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ritornelo",
+      "acceptedAnswers": ["ritornelo", "ritornello"],
+      "explanation": "El ritornelo funciona como una sección que retorna entre otros episodios; esa recurrencia ayuda a organizar la obra."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-r-ritornelo",
+    "alphabetLetter": "R"
+  },
+  {
+    "id": "bank-alfabeto-s-sinalefa",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Unión en una sola sílaba métrica de vocales pertenecientes al final de una palabra y al principio de la siguiente."
+    },
+    "solutionPayload": {
+      "correctAnswer": "sinalefa",
+      "acceptedAnswers": ["sinalefa"],
+      "explanation": "La sinalefa enlaza vocales de palabras contiguas al contar versos; por eso el número de sílabas métricas puede diferir del gramatical."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-s-sinalefa",
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-s-sincrotron",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Acelerador circular de partículas cuyos campos se ajustan de forma sincronizada a medida que aumenta su energía."
+    },
+    "solutionPayload": {
+      "correctAnswer": "sincrotrón",
+      "acceptedAnswers": ["sincrotrón"],
+      "explanation": "En un sincrotrón se coordinan la aceleración y el campo que curva la trayectoria; así las partículas pueden mantenerse en una órbita de radio previsto."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-s-sincrotron",
+    "alphabetLetter": "S"
+  },
+  {
+    "id": "bank-alfabeto-t-tropopausa",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Zona de transición entre la troposfera y la estratosfera."
+    },
+    "solutionPayload": {
+      "correctAnswer": "tropopausa",
+      "acceptedAnswers": ["tropopausa"],
+      "explanation": "La tropopausa marca el límite superior de la troposfera; su altura cambia con la latitud y las condiciones atmosféricas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-t-tropopausa",
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-t-telomero",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Región situada en el extremo de un cromosoma lineal que contribuye a protegerlo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "telómero",
+      "acceptedAnswers": ["telómero"],
+      "explanation": "Los telómeros contienen secuencias repetidas y proteínas asociadas; ayudan a distinguir los extremos cromosómicos de roturas del ADN."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-t-telomero",
+    "alphabetLetter": "T"
+  },
+  {
+    "id": "bank-alfabeto-u-ubicuidad",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Capacidad de estar presente en todas partes al mismo tiempo."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ubicuidad",
+      "acceptedAnswers": ["ubicuidad"],
+      "explanation": "La ubicuidad describe una presencia simultánea en todos los lugares; no equivale simplemente a viajar con rapidez."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-u-ubicuidad",
+    "alphabetLetter": "U"
+  },
+  {
+    "id": "bank-alfabeto-u-ucronia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relato o reconstrucción que imagina cómo habría sido la historia si un hecho del pasado hubiera ocurrido de otra manera."
+    },
+    "solutionPayload": {
+      "correctAnswer": "ucronía",
+      "acceptedAnswers": ["ucronía"],
+      "explanation": "La ucronía parte de una divergencia respecto de la historia conocida y desarrolla sus consecuencias; no es una predicción del futuro."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-u-ucronia",
+    "alphabetLetter": "U"
+  },
+  {
+    "id": "bank-alfabeto-v-vexilologia",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Disciplina dedicada al estudio de las banderas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "vexilología",
+      "acceptedAnswers": ["vexilología"],
+      "explanation": "La vexilología analiza las banderas, sus diseños, usos e historia; se distingue de la heráldica centrada en escudos de armas."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-v-vexilologia",
+    "alphabetLetter": "V"
+  },
+  {
+    "id": "bank-alfabeto-v-vitelo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Conjunto de sustancias de reserva del óvulo que sirven de alimento al embrión."
+    },
+    "solutionPayload": {
+      "correctAnswer": "vitelo",
+      "acceptedAnswers": ["vitelo"],
+      "explanation": "El vitelo aporta nutrientes durante el desarrollo embrionario; la yema de un huevo es un ejemplo visible de esa reserva."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-v-vitelo",
+    "alphabetLetter": "V"
+  },
+  {
+    "id": "bank-alfabeto-w-weber",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Unidad de flujo magnético del sistema internacional cuyo símbolo es Wb."
+    },
+    "solutionPayload": {
+      "correctAnswer": "weber",
+      "acceptedAnswers": ["weber"],
+      "explanation": "El weber mide flujo magnético; un weber equivale a un tesla multiplicado por un metro cuadrado."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-w-weber",
+    "alphabetLetter": "W"
+  },
+  {
+    "id": "bank-alfabeto-w-wurtzita",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Mineral de sulfuro de cinc que cristaliza en el sistema hexagonal, distinto de la esfalerita cúbica."
+    },
+    "solutionPayload": {
+      "correctAnswer": "wurtzita",
+      "acceptedAnswers": ["wurtzita"],
+      "explanation": "La wurtzita y la esfalerita tienen composición basada en ZnS, pero distinta organización cristalina; ese cambio de estructura las distingue."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-w-wurtzita",
+    "alphabetLetter": "W"
+  },
+  {
+    "id": "bank-alfabeto-x-xenolito",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Fragmento de roca ajena que queda incluido en una roca ígnea al ser incorporado por el magma."
+    },
+    "solutionPayload": {
+      "correctAnswer": "xenolito",
+      "acceptedAnswers": ["xenolito"],
+      "explanation": "El xenolito procede de una roca preexistente y queda atrapado en la masa que después solidifica; no es un cristal formado originalmente en ella."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-x-xenolito",
+    "alphabetLetter": "X"
+  },
+  {
+    "id": "bank-alfabeto-x-xilopalo",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Madera fósil cuyos tejidos han sido sustituidos por sílice."
+    },
+    "solutionPayload": {
+      "correctAnswer": "xilópalo",
+      "acceptedAnswers": ["xilópalo"],
+      "explanation": "El xilópalo conserva la forma o estructura de la madera mediante mineralización silícea; no es madera actual simplemente endurecida."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-x-xilopalo",
+    "alphabetLetter": "X"
+  },
+  {
+    "id": "bank-alfabeto-y-yuxtaposicion",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Relación entre proposiciones que aparecen juntas sin una conjunción que las enlace, como llegué, vi, vencí."
+    },
+    "solutionPayload": {
+      "correctAnswer": "yuxtaposición",
+      "acceptedAnswers": ["yuxtaposición"],
+      "explanation": "En la yuxtaposición, las proposiciones se conectan por su proximidad y por signos de puntuación; no aparece un nexo como y o porque."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-y-yuxtaposicion",
+    "alphabetLetter": "Y"
+  },
+  {
+    "id": "bank-alfabeto-y-yodometria",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Método de análisis en el que se determina una sustancia midiendo el yodo que libera, habitualmente mediante valoración con tiosulfato."
+    },
+    "solutionPayload": {
+      "correctAnswer": "yodometría",
+      "acceptedAnswers": ["yodometría"],
+      "explanation": "La yodometría es una valoración indirecta: la sustancia provoca la liberación de yodo y la cantidad de este permite calcular la de aquella."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-y-yodometria",
+    "alphabetLetter": "Y"
+  },
+  {
+    "id": "bank-alfabeto-z-zigurat",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Construcción religiosa de la antigua Mesopotamia formada por plataformas escalonadas."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zigurat",
+      "acceptedAnswers": ["zigurat", "ziggurat"],
+      "explanation": "El zigurat elevaba un espacio sagrado sobre terrazas sucesivas; se distingue de una pirámide funeraria egipcia."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-z-zigurat",
+    "alphabetLetter": "Z"
+  },
+  {
+    "id": "bank-alfabeto-z-zoolatria",
+    "version": 1,
+    "type": "short-text",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Culto religioso que tiene a los animales como objeto de adoración."
+    },
+    "solutionPayload": {
+      "correctAnswer": "zoolatría",
+      "acceptedAnswers": ["zoolatría"],
+      "explanation": "La zoolatría atribuye carácter sagrado a animales; se refiere a una práctica de culto y no al estudio científico de la fauna."
+    },
+    "modes": ["flash", "survival", "pyramid", "alphabet"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 120000,
+    "familyId": "bank-alfabeto-z-zoolatria",
+    "alphabetLetter": "Z"
+  }
+]

@@ -6,7 +6,7 @@ import type {
   PendingCommand,
   FeedbackChannel,
 } from "../core/sessionReducer";
-import type { CompetitiveJsonObject } from "../transport";
+import type { AuthoritativeSessionUpdate } from "@/types/gameplay/authoritative-session";
 export type FormatOutcome =
   | {
       kind: "progress";
@@ -37,7 +37,7 @@ export type InteractionSpec = {
     operation: K;
     data: Omit<
       Extract<PendingCommand, { operation: K }>["input"],
-      "attemptId" | "lockVersion" | "idempotencyKey"
+      "sessionId" | "revision" | "idempotencyKey"
     >;
     channel?: FeedbackChannel;
   };
@@ -45,7 +45,7 @@ export type InteractionSpec = {
 export function evaluated(
   question: SessionQuestion,
   answer: AnswerValue | null,
-  response: CompetitiveJsonObject,
+  response: AuthoritativeSessionUpdate,
 ): FormatOutcome {
   const status = response.status;
   if (
@@ -53,6 +53,13 @@ export function evaluated(
     status !== "partial" &&
     status !== "incorrect" &&
     status !== "unanswered"
+  )
+    throw new Error("invalid_answer_response");
+  if (
+    typeof response.points !== "number" ||
+    !Number.isFinite(response.points) ||
+    typeof response.timeUsedMs !== "number" ||
+    !Number.isFinite(response.timeUsedMs)
   )
     throw new Error("invalid_answer_response");
   return {
@@ -63,9 +70,10 @@ export function evaluated(
       answer,
       status,
       isCorrect: status === "correct" || status === "partial",
-      points: Number(response.points ?? 0),
-      timeUsed: Number(response.timeUsedMs ?? 0) / 1000,
+      points: response.points,
+      timeUsed: response.timeUsedMs / 1000,
       ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),
+      ...(response.reviewState ? { reviewState: response.reviewState } : {}),
     },
   };
 }

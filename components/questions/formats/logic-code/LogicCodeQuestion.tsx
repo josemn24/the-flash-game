@@ -129,7 +129,7 @@ export function LogicCodeQuestion({
         </div>
 
         <p className={styles.feedback} role="status" aria-live="polite">
-          {feedback || "Cada intento incorrecto reduce la puntuación. El reloj sigue corriendo."}
+          {feedback || "Cada intento incorrecto reduce la puntuación"}
         </p>
 
         <motion.button

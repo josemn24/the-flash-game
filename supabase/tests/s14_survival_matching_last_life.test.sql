@@ -79,7 +79,7 @@ select lives_ok(
   'A complete wrong Matching map is received as one final answer'
 );
 select test_support.run('record_evaluation', '{"status":"incorrect","points":0}'::jsonb);
-select test_support.run('complete_attempt', '{"score":100,"outcome":"survived"}'::jsonb);
+select test_support.run('complete_attempt', '{"outcome":"survived"}'::jsonb);
 reset role;
 
 select is((select status from public.attempts where id = (select attempt_id from s14_matching_attempt)), 'completed',

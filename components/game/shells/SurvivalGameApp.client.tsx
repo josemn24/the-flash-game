@@ -1,5 +1,7 @@
 "use client";
 
+import { createPracticeInput } from "@/features/question-formats/createPracticeInput";
+
 import { useMemo } from "react";
 import { AnimatePresence, MotionConfig } from "motion/react";
 import { ChallengeIntro } from "@/components/game/shared/ChallengeIntro";
@@ -15,6 +17,17 @@ import type { SurvivalChallenge } from "@/types/gameplay";
 export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge }) {
   const scoredChallenge = useMemo(() => withChallengeScoring(challenge), [challenge]);
   const session = useSurvivalSession(scoredChallenge);
+  const input = createPracticeInput({
+    question: session.question,
+    locked: session.locked,
+    codeAttemptCount: session.codeAttempts.length,
+    onSubmit: session.submitAnswer,
+    onCodeAttempt: session.handleCodeAttempt,
+    onProgress: session.handleAnswerProgress,
+    onIncorrectAttempt: session.handleIncorrectAttempt,
+    onProgressiveClueReveal: session.handleProgressiveClueReveal,
+    onTimedResponseStart: session.handleTimedResponseStart,
+  });
   const latestResult = session.results.at(-1);
 
   return (
@@ -30,21 +43,13 @@ export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge })
                 onStart={session.start}
               />
             )}
-            {session.phase === "playing" && session.question && (
+            {session.phase === "playing" && session.question && input && (
               <SurvivalQuestionStage
                 key={session.question.id}
-                question={session.question}
+                input={input}
                 questionNumber={session.questionIndex + 1}
                 totalQuestions={scoredChallenge.questions.length}
-                locked={session.locked}
-                codeAttemptCount={session.codeAttempts.length}
-                onSubmit={(answer) => session.submitAnswer(answer)}
                 onTimeUp={session.handleTimeUp}
-                onCodeAttempt={session.handleCodeAttempt}
-                onProgress={session.handleAnswerProgress}
-                onIncorrectAttempt={session.handleIncorrectAttempt}
-                onProgressiveClueReveal={session.handleProgressiveClueReveal}
-                onTimedResponseStart={session.handleTimedResponseStart}
                 livesRemaining={session.livesRemaining}
                 totalLives={scoredChallenge.lives}
               />
@@ -58,6 +63,9 @@ export function SurvivalGameApp({ challenge }: { challenge: SurvivalChallenge })
                   session.questionIndex === scoredChallenge.questions.length - 1
                 }
                 status={latestResult?.status}
+                points={
+                  latestResult?.details?.type === "estimation" ? latestResult.points : undefined
+                }
                 eliminated={session.eliminated}
               />
             )}

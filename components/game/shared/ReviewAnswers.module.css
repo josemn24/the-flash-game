@@ -159,6 +159,15 @@
     white-space: nowrap;
   }
 
+  .reviewAnswerTitleExpandable strong {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    text-overflow: ellipsis;
+    white-space: normal;
+  }
+
   .reviewAnswerTitle strong {
     font-size: 16px;
     line-height: 1.25;
@@ -208,6 +217,23 @@
     display: grid;
     gap: var(--space-4);
     padding: 0 var(--space-4) var(--space-5) 68px;
+  }
+
+  .reviewAnswerExpandedQuestion {
+    display: grid;
+    gap: 4px;
+  }
+
+  .reviewAnswerExpandedQuestion span {
+    color: var(--ds-color-fg-secondary);
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .reviewAnswerExpandedQuestion p {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.5;
   }
 
   .reviewAnswerBody .wordSearchReviewList li {
@@ -1094,6 +1120,15 @@
       0 0 0 2px color-mix(in srgb, var(--ds-color-bg-error) 42%, transparent);
     color: var(--ds-color-fg-primary);
     background: color-mix(in srgb, var(--pair-color) 58%, var(--ds-color-bg-surface-soft));
+  }
+
+  .connectPairsReviewSubmittedSingleton::after {
+    position: absolute;
+    inset: 0.18rem;
+    border: 2px dashed var(--submitted-pair-color);
+    border-radius: 50%;
+    content: "";
+    pointer-events: none;
   }
 
   .connectPairsReviewLegend {

@@ -22,14 +22,20 @@ export function CompetitiveLifecycleNotice({
   return (
     <Card role="alert" className="mx-auto my-4 max-w-xl">
       <p>{error.message}</p>
-      {error.retryable !== false ? (
+      {error.recoveryAction === "refresh" || error.retryable !== false ? (
         <Button
           type="button"
           className="mt-3"
           disabled={busy || waiting}
           onClick={() => void onRetry()}
         >
-          {busy ? "Reintentando…" : waiting ? "Espera para reintentar" : "Reintentar partida"}
+          {error.recoveryAction === "refresh"
+            ? "Recargar partida"
+            : busy
+              ? "Reintentando…"
+              : waiting
+                ? "Espera para reintentar"
+                : "Reintentar partida"}
         </Button>
       ) : null}
     </Card>

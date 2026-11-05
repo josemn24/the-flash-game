@@ -1,0 +1,132 @@
+[
+  {
+    "id": "betavip-supervivencia-q3",
+    "version": 1,
+    "type": "progressive-image",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "Identifica la figura que se va revelando.",
+      "surface": {
+        "src": "/rehearsals/v1/triangle.svg",
+        "alt": "Figura geométrica de práctica",
+        "width": 600,
+        "height": 400
+      },
+      "revealDurationMs": 5000
+    },
+    "solutionPayload": {
+      "correctAnswer": "triángulo",
+      "acceptedAnswers": ["triángulo"],
+      "solutionAlt": "Un triángulo azul",
+      "explanation": "La figura tiene tres lados rectos y tres vértices: es un triángulo."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "progressive-image-triangulo"
+  },
+  {
+    "id": "flash-referencia-q5",
+    "version": 1,
+    "type": "progressive-image",
+    "payloadSchemaVersion": 1,
+    "publicPayload": {
+      "question": "Identifica la figura que se va revelando.",
+      "surface": {
+        "src": "/rehearsals/v1/triangle.svg",
+        "alt": "Figura geométrica de práctica",
+        "width": 600,
+        "height": 400
+      },
+      "revealDurationMs": 11
+    },
+    "solutionPayload": {
+      "correctAnswer": "triángulo",
+      "acceptedAnswers": ["triángulo"],
+      "solutionAlt": "Un triángulo azul",
+      "explanation": "La figura tiene tres lados rectos y tres vértices: es un triángulo."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 20000,
+    "familyId": "progressive-image-triangulo"
+  },
+  {
+    "id": "bank-imagen-cuadrado",
+    "version": 1,
+    "type": "progressive-image",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-imagen-cuadrado",
+    "publicPayload": {
+      "question": "¿Qué figura roja se descubre en este ejercicio?",
+      "surface": {
+        "src": "/rehearsals/v1/square.svg",
+        "alt": "Una figura roja de cuatro lados iguales",
+        "width": 600,
+        "height": 400
+      },
+      "revealDurationMs": 4000
+    },
+    "solutionPayload": {
+      "correctAnswer": "cuadrado",
+      "acceptedAnswers": ["cuadrado"],
+      "solutionAlt": "Un cuadrado rojo",
+      "explanation": "Cuatro lados iguales y cuatro ángulos rectos identifican un cuadrado."
+    }
+  },
+  {
+    "id": "bank-imagen-heptagono",
+    "version": 1,
+    "type": "progressive-image",
+    "payloadSchemaVersion": 2,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-imagen-heptagono",
+    "publicPayload": {
+      "question": "¿Cómo se llama el polígono regular violeta que se revela?",
+      "surface": {
+        "src": "/rehearsals/v1/heptagon.svg",
+        "alt": "Figura violeta que se revela progresivamente",
+        "width": 600,
+        "height": 400
+      },
+      "revealDurationMs": 9000
+    },
+    "solutionPayload": {
+      "correctAnswer": "heptágono",
+      "acceptedAnswers": ["heptágono"],
+      "solutionAlt": "Heptágono regular violeta de siete lados",
+      "explanation": "Recorre el contorno y cuenta siete segmentos y siete vértices. Un polígono de siete lados es un heptágono; al ser regular tiene además todos los lados y ángulos iguales."
+    }
+  },
+  {
+    "id": "bank-imagen-circulo",
+    "version": 1,
+    "type": "progressive-image",
+    "payloadSchemaVersion": 2,
+    "publicPayload": {
+      "question": "¿Qué figura naranja se descubre en la imagen?",
+      "surface": {
+        "src": "/rehearsals/v1/target.svg",
+        "alt": "Una figura naranja sobre una cuadrícula",
+        "width": 600,
+        "height": 400
+      },
+      "revealDurationMs": 3500
+    },
+    "solutionPayload": {
+      "correctAnswer": "círculo",
+      "acceptedAnswers": ["círculo"],
+      "solutionAlt": "Un círculo naranja sobre una cuadrícula",
+      "explanation": "El contorno es una curva cerrada cuyos puntos están a la misma distancia del centro; no tiene lados rectos ni vértices. Es la circunferencia que delimita el círculo naranja."
+    },
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "easy",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-imagen-circulo"
+  }
+]

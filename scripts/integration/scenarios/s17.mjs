@@ -33,6 +33,23 @@ export const scenario = {
   id: "s17",
 
   async run({ fixture, clients, config, assert }) {
+    const deniedDetail = await clients.member.rpc("get_superadmin_question_version", {
+      question_version_id: fixture.data.libraryTailQuestionVersionId,
+    });
+    assert(
+      deniedDetail.error?.code === "42501" && deniedDetail.data === null,
+      "S17 deniega la lectura RPC de soluciones a un miembro autenticado",
+    );
+    const libraryPage = await clients.superadmin.rpc("get_superadmin_question_library", {
+      input: { status: "published", search: "s17-library", page: 6, pageSize: 25 },
+    });
+    assert(
+      !libraryPage.error &&
+        libraryPage.data?.total === 126 &&
+        libraryPage.data?.entries?.length === 1 &&
+        libraryPage.data.entries[0].questionVersionId === fixture.data.libraryTailQuestionVersionId,
+      "S17 pagina por RPC hasta la versión publicada posterior a las primeras 100 entradas",
+    );
     const created = await clients.superadmin.rpc("create_superadmin_flash_draft", {
       input: {
         idempotencyKey: "integration-s17-create-1",
