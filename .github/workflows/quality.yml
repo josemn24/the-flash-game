@@ -119,11 +119,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Production build
-        run: npm run build
-
       - name: Start Supabase
         run: npm run supabase:start
+
+      - name: Production build
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from "node:child_process";
+          import { localSupabaseConfig } from "./scripts/support/supabase-local.mjs";
+
+          const { url, publishableKey } = await localSupabaseConfig();
+          execFileSync("npm", ["run", "build"], {
+            env: {
+              ...process.env,
+              NEXT_PUBLIC_SUPABASE_URL: url,
+              NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: publishableKey,
+            },
+            stdio: "inherit",
+          });
+          NODE
 
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
@@ -135,6 +149,8 @@ jobs:
         run: npm run test:e2e:raw -- e2e/pwa.spec.ts
 
       - name: Browser smoke scenarios
+        env:
+          E2E_PRODUCTION: "1"
         run: >-
           npm run test:e2e --
           e2e/admin-portal.spec.ts
