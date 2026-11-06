@@ -44,6 +44,10 @@ begin
       allowed := array['idempotencyKey','attemptId','lockVersion','reason']; required := allowed;
     when 'adjust' then
       allowed := array['idempotencyKey','attemptId','lockVersion','reason','score']; required := allowed;
+    when 'regrade_answer' then
+      required := array['idempotencyKey','attemptId','lockVersion','reason','challengeItemId',
+        'rubricQuestionVersionId','resultStatus','resultPoints'];
+      allowed := required || array['resultDetails'];
     else raise exception 'unknown_command' using errcode = '22023';
   end case;
   if jsonb_typeof(input) is distinct from 'object' or key is null or btrim(key) = ''
@@ -208,6 +212,24 @@ $$;
 alter function private.adjust_result(jsonb) owner to postgres;
 revoke all on function private.adjust_result(jsonb) from public, anon, authenticated, service_role;
 grant execute on function private.adjust_result(jsonb) to service_role;
+
+create function private.regrade_answer(input jsonb) returns jsonb
+language plpgsql security definer set search_path = '' as $$
+declare
+  actor uuid := private.command_actor();
+begin
+  if not exists (
+    select 1 from private.platform_role_assignments assignment
+    where assignment.player_id = actor and assignment.role = 'superadmin'
+  ) then
+    raise exception 'not_authorized' using errcode = '42501';
+  end if;
+  return private.execute_command('regrade_answer', input);
+end;
+$$;
+alter function private.regrade_answer(jsonb) owner to postgres;
+revoke all on function private.regrade_answer(jsonb) from public, anon, authenticated, service_role;
+grant execute on function private.regrade_answer(jsonb) to service_role;
 
 alter function private.execute_command(text, jsonb) owner to postgres;
 revoke all on function private.execute_command(text, jsonb) from public, anon, authenticated, service_role;

@@ -13,10 +13,12 @@ import {
   adjustSuperadminAttempt as executeAdjustSuperadminAttempt,
   invalidateSuperadminAttempt as executeInvalidateSuperadminAttempt,
 } from "@/server/admin-attempt";
+import type { SuperadminAnswerRegradePreview } from "@/application/ports/superadmin-attempt-commands";
 
 export type AttemptActionState = {
   readonly message?: string;
   readonly fieldErrors?: Readonly<Record<string, string>>;
+  readonly preview?: SuperadminAnswerRegradePreview;
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -79,10 +81,118 @@ function commandMessage(code: string) {
       return "La puntuación debe estar entre 0 y 100.";
     case "not_competitive":
       return "Solo se pueden operar intentos competitivos.";
+    case "invalid_command":
+      return "La respuesta, la rúbrica o el ítem ya no se pueden recalcular. Recarga la inspección.";
     case "not_authorized":
       return "No tienes permisos para esta operación.";
     default:
       return "No se ha podido completar la operación. Inténtalo de nuevo.";
+  }
+}
+
+function parseRegradeSelection(formData: FormData) {
+  const roomId = textValue(formData, "roomId");
+  const scheduledChallengeId = textValue(formData, "scheduledChallengeId");
+  const attemptId = textValue(formData, "attemptId");
+  const challengeItemId = textValue(formData, "challengeItemId");
+  const rubricQuestionVersionId = textValue(formData, "rubricQuestionVersionId");
+  const lockVersion = Number(textValue(formData, "lockVersion"));
+  const fieldErrors: Record<string, string> = {};
+  if (
+    ![roomId, scheduledChallengeId, attemptId, challengeItemId, rubricQuestionVersionId].every(
+      (id) => uuidPattern.test(id),
+    )
+  ) {
+    fieldErrors.form = "La selección no es válida. Recarga la inspección.";
+  }
+  if (!Number.isSafeInteger(lockVersion) || lockVersion < 1) {
+    fieldErrors.form = "El intento cambió. Recarga la inspección.";
+  }
+  return {
+    roomId,
+    scheduledChallengeId,
+    attemptId,
+    challengeItemId,
+    rubricQuestionVersionId,
+    lockVersion,
+    fieldErrors,
+  };
+}
+
+export async function previewSuperadminAnswerRegrade(
+  _state: AttemptActionState,
+  formData: FormData,
+): Promise<AttemptActionState> {
+  try {
+    await requireSuperadmin();
+    const parsed = parseRegradeSelection(formData);
+    if (Object.keys(parsed.fieldErrors).length > 0) {
+      return {
+        message: "Revisa la selección de pregunta y rúbrica.",
+        fieldErrors: parsed.fieldErrors,
+      };
+    }
+    const preview = await productionAdminServices.commands.previewAttemptAnswerRegrade({
+      attemptId: parsed.attemptId,
+      challengeItemId: parsed.challengeItemId,
+      rubricQuestionVersionId: parsed.rubricQuestionVersionId,
+      lockVersion: parsed.lockVersion,
+    });
+    return { preview };
+  } catch (error) {
+    if (error instanceof SuperadminAttemptCommandError)
+      return { message: commandMessage(error.code) };
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    ) {
+      handlePortalBoundary(error);
+    }
+    throw error;
+  }
+}
+
+export async function applySuperadminAnswerRegrade(
+  _state: AttemptActionState,
+  formData: FormData,
+): Promise<AttemptActionState> {
+  try {
+    await requireSuperadmin();
+    const parsed = parseRegradeSelection(formData);
+    const reason = textValue(formData, "reason");
+    const idempotencyKey = textValue(formData, "idempotencyKey");
+    if (reason.length < 1 || reason.length > 500) {
+      parsed.fieldErrors.reason = "Introduce un motivo de hasta 500 caracteres.";
+    }
+    if (idempotencyKey.length < 8 || idempotencyKey.length > 160) {
+      parsed.fieldErrors.form = "No se pudo preparar la operación. Recarga la inspección.";
+    }
+    if (Object.keys(parsed.fieldErrors).length > 0) {
+      return { message: "Revisa los datos del recálculo.", fieldErrors: parsed.fieldErrors };
+    }
+    await productionAdminServices.commands.regradeAttemptAnswer({
+      attemptId: parsed.attemptId,
+      challengeItemId: parsed.challengeItemId,
+      rubricQuestionVersionId: parsed.rubricQuestionVersionId,
+      lockVersion: parsed.lockVersion,
+      reason,
+      idempotencyKey,
+    });
+    revalidatePath(`/admin/rooms/${parsed.roomId}/attempts`, "layout");
+    revalidatePath(`/admin/rooms/${parsed.roomId}`);
+    redirect(
+      `/admin/rooms/${parsed.roomId}/attempts/${parsed.scheduledChallengeId}/${parsed.attemptId}?updated=1`,
+    );
+  } catch (error) {
+    if (error instanceof SuperadminAttemptCommandError)
+      return { message: commandMessage(error.code) };
+    if (
+      error instanceof AuthenticationRequiredError ||
+      error instanceof SuperadminAccessDeniedError
+    ) {
+      handlePortalBoundary(error);
+    }
+    throw error;
   }
 }
 

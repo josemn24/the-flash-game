@@ -18,6 +18,9 @@ declare
   points integer;
   result jsonb;
 begin
+        if op = 'regrade_answer' then
+          return private.handle_attempt_answer_regrade_command(input, actor, a, sc, instant, key);
+        end if;
         if nullif(btrim(input->>'reason'), '') is null then raise exception 'reason_required' using errcode = '22023'; end if;
         if a.kind <> 'competitive' then raise exception 'not_competitive' using errcode = '55000'; end if;
         select coalesce(sum(amount),0)::integer into balance from private.flash_point_entries where attempt_id = a.id;

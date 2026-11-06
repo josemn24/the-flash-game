@@ -56,7 +56,9 @@ la [validación por formato](../../docs/current/sql-question-validation-refactor
 - Publicaciones, versiones, recepciones y hechos de puntuación se preservan. Ajustar o invalidar
   exige motivo, autorización y auditoría. El comando privado de borrado es una excepción limitada a
   un intento competitivo terminal, con autorización global y limpieza de sus datos vinculados en
-  una transacción. Los ensayos en memoria no acreditan puntos oficiales.
+  una transacción. Las correcciones por pregunta conservan evaluaciones originales y nuevas en un
+  historial append-only, y acreditan solo la diferencia en el ledger. Los ensayos en memoria no
+  acreditan puntos oficiales.
 
 ## Matriz de permisos SQL directos
 
@@ -82,6 +84,7 @@ su asignación en DB. `service_role` elude RLS, por lo que la restricción de es
 | `private.challenge_items`              | —                                                                              | S            |
 | `private.attempt_sessions`             | —                                                                              | S            |
 | `private.attempt_answers`              | —                                                                              | S            |
+| `private.attempt_answer_regrades`       | —                                                                              | S            |
 | `private.flash_point_entries`          | —                                                                              | S            |
 | `private.audit_log`                    | —                                                                              | S            |
 | `private.command_requests`             | —                                                                              | —            |

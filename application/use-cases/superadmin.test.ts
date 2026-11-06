@@ -85,6 +85,9 @@ function createCommands(access: ApplicationSuperadminAccess) {
   const attempts = {
     adjust: vi.fn().mockResolvedValue({}),
     invalidate: vi.fn().mockResolvedValue({}),
+    purge: vi.fn().mockResolvedValue("room"),
+    previewAnswerRegrade: vi.fn().mockResolvedValue({}),
+    regradeAnswer: vi.fn().mockResolvedValue({}),
   };
   const commands = new ApplicationSuperadminCommands({
     access,

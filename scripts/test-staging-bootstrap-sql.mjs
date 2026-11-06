@@ -1,4 +1,5 @@
 import { TABARNIAVERSO_QUESTIONS } from "./fixtures/scenarios/tabarniaverso.mjs";
+import { SBR_QUESTIONS } from "./fixtures/scenarios/sbr.mjs";
 import { buildStagingBetaVipDomainSql, stagingBetaVipManifest } from "./seed-betavip.mjs";
 import {
   buildTabarniaDomainSql,
@@ -54,6 +55,7 @@ export async function testStagingBootstrapSql(sql) {
     ),
   );
   const tabarniaverso = data.publications.at(-1);
+  const canyon = SBR_QUESTIONS.find((question) => question.slug === "sbr-grand-canyon-progressive");
   const betaVip = stagingBetaVipManifest();
   const spain = await prepareSpainAssets();
   try {
@@ -98,6 +100,20 @@ do $$ begin
   end if;
   if (select count(*) from public.scheduled_challenges where season_id = '${data.seasonId}') <> 9 then
     raise exception 'expected nine Tabarnia publications';
+  end if;
+  if not exists (
+    select 1 from private.question_definitions d
+    join private.question_versions v on v.question_definition_id = d.id
+    join private.question_version_solutions s on s.question_version_id = v.id
+    join private.challenge_items i on i.question_version_id = v.id
+    where d.slug = '${canyon.slug}' and v.status = 'published'
+      and i.challenge_version_id = '${data.publications[0].challengeVersionId}'
+      and s.solution_payload->'acceptedAnswers' = ${sqlString(JSON.stringify(canyon.solutionPayload.acceptedAnswers))}::jsonb
+      and jsonb_array_length(s.solution_payload->'acceptedAnswers') = 10
+      and s.solution_payload->'acceptedAnswers' ? 'Cañón'
+      and (select count(*) from private.question_versions where question_definition_id = d.id) = 1
+  ) then
+    raise exception 'expected one seeded Gran Cañón version with all ten accepted answers';
   end if;
   if not exists (
     select 1

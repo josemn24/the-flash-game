@@ -64,7 +64,7 @@ try {
     .filter((name) => name.endsWith(".test.sql") && (!requestedTest || name === requestedTest))
     .sort()) {
     let source = await readFile(`supabase/tests/${file}`, "utf8");
-    for (const name of ["command", "pyramid-queens", "time-trial", "question-library"]) {
+    for (const name of ["command", "regrade", "pyramid-queens", "time-trial", "question-library"]) {
       if (source.includes(`-- @${name}-fixtures`)) {
         const fixtures = await readFile(`supabase/tests/support/${name}-fixtures.sql`, "utf8");
         source = source.replace(`-- @${name}-fixtures`, () => fixtures);

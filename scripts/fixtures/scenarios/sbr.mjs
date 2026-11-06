@@ -161,7 +161,18 @@ const SBR_QUESTIONS = [
     },
     solutionPayload: {
       correctAnswer: "Gran Cañón",
-      acceptedAnswers: ["Gran Cañón", "Grand Canyon", "El Gran Cañón"],
+      acceptedAnswers: [
+        "Gran Cañón",
+        "Cañón",
+        "Grand Canyon",
+        "El Gran Cañón",
+        "Gran Cañón del Colorado",
+        "Cañón del Colorado",
+        "Gran Cañón de Colorado",
+        "El Gran Cañón de Colorado",
+        "Parque el Gran Cañón",
+        "Parque Nacional del Gran Cañón",
+      ],
       solutionAlt: "Fotografía del Gran Cañón con paredes rojizas, sombras profundas y cielo azul.",
       explanation:
         "El paisaje representa el Gran Cañón, una de las formaciones más reconocibles del suroeste de Estados Unidos.",

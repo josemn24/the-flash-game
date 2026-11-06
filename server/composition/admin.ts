@@ -26,6 +26,7 @@ import {
 import { supabaseMediaStorage } from "@/infrastructure/supabase/assets/mediaStorage";
 import { supabaseSuperadminAttemptQueries } from "@/infrastructure/supabase/admin/superadminAttemptQueries";
 import { SupabaseSuperadminAttemptCommands } from "@/infrastructure/supabase/admin/superadminAttemptCommands";
+import { supabaseCompetitiveEvaluator } from "@/server/evaluation/competitive-evaluator";
 import { supabaseCalendarChanges } from "@/infrastructure/supabase/admin/superadminCalendarChanges";
 import { supabaseSuperadminCalendarQueries } from "@/infrastructure/supabase/admin/superadminCalendarQueries";
 import { supabaseSuperadminDashboardQueries } from "@/infrastructure/supabase/admin/superadminDashboardQueries";
@@ -81,7 +82,8 @@ export function createProductionAdminServices() {
     seasons: supabaseSuperadminSeasonCommands,
     users: supabaseSuperadminUserCommands,
     authAdmin,
-    attemptCommandsFor: (authUserId) => new SupabaseSuperadminAttemptCommands({ authUserId }),
+    attemptCommandsFor: (authUserId) =>
+      new SupabaseSuperadminAttemptCommands({ authUserId }, supabaseCompetitiveEvaluator),
   });
 
   const questionAssets = new SuperadminQuestionAssets({

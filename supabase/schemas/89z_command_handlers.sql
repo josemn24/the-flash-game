@@ -28,9 +28,13 @@ declare
   allow_stale_timeout boolean := false;
 begin
   is_admin := exists (select 1 from private.platform_role_assignments where player_id = actor);
-  if op in ('invalidate','adjust') and not is_admin then
+  if op in ('invalidate','adjust','regrade_answer') and not is_admin then
     raise exception 'not_authorized' using errcode = '42501';
   end if;
+  if op = 'regrade_answer' and not exists (
+    select 1 from private.platform_role_assignments assignment
+    where assignment.player_id = actor and assignment.role = 'superadmin'
+  ) then raise exception 'not_authorized' using errcode = '42501'; end if;
   if op = 'start' then
     return private.handle_attempt_start(input, safe_input, actor, cached_result, is_admin);
   else
@@ -42,7 +46,7 @@ begin
     if op = 'takeover' and a.scheduled_challenge_id <> (input->>'scheduledChallengeId')::uuid then
       raise exception 'not_authorized' using errcode = '42501';
     end if;
-    if op not in ('invalidate','adjust') then
+    if op not in ('invalidate','adjust','regrade_answer') then
       if a.player_id <> actor or a.kind <> 'competitive' or is_admin or not exists (
         select 1 from public.seasons s join public.rooms r on r.id = s.room_id
         join public.room_memberships m on m.room_id = r.id
@@ -101,10 +105,10 @@ begin
         raise exception 'stale_version' using errcode = '40001';
       end if;
     end if;
-    if op not in ('invalidate','adjust') and a.status <> 'in_progress' then
+    if op not in ('invalidate','adjust','regrade_answer') and a.status <> 'in_progress' then
       raise exception 'attempt_terminal' using errcode = '55000';
     end if;
-    if op not in ('invalidate','adjust','abandon') and sc.status = 'cancelled' then
+    if op not in ('invalidate','adjust','regrade_answer','abandon') and sc.status = 'cancelled' then
       raise exception 'publication_cancelled' using errcode = '55000';
     end if;
     previous := jsonb_build_object('status', a.status, 'lockVersion', a.lock_version, 'score', a.score);
@@ -141,11 +145,11 @@ begin
         a := operation_outcome.updated_attempt;
         result := operation_outcome.operation_result;
         clear_progress := operation_outcome.clear_progress;
-      when 'invalidate', 'adjust' then
+      when 'invalidate', 'adjust', 'regrade_answer' then
         result := private.handle_attempt_admin_command(op, input, actor, a, sc, instant, key);
         select * into a from public.attempts where id = a.id;
     end case;
-    if op not in ('complete','abandon','invalidate','adjust') then
+    if op not in ('complete','abandon','invalidate','adjust','regrade_answer') then
       update public.attempts
         set lock_version = lock_version + 1,
             last_activity_at = instant,

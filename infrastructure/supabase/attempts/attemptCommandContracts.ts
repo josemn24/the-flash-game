@@ -3,7 +3,12 @@ import { alphabetProgress } from "@/lib/competitiveResponseContract";
 import { preparedProgress } from "@/lib/competitiveResponseContract";
 import { checkedTimeTrial } from "@/lib/competitiveResponseContract";
 import type { AttemptCommands, EvaluationContext } from "@/application/ports/attempt-commands";
-import type { SuperadminAttemptCommands } from "@/application/ports/superadmin-attempt-commands";
+import type {
+  SuperadminAdministrativeResult,
+  SuperadminAnswerRegradeCommandInput,
+  SuperadminAnswerRegradeSelection,
+  SuperadminAttemptCommands,
+} from "@/application/ports/superadmin-attempt-commands";
 import { readTimeTrialProgress } from "@/lib/timeTrial";
 import { isCompetitiveQuestionType } from "@/lib/question-formats/definitions";
 import { FORMAT_PUBLIC_VALIDATORS } from "@/lib/question-formats/publicRegistry";
@@ -56,6 +61,9 @@ type Methods = {
   reveal_progressive_clue: AttemptCommands["revealProgressiveClue"];
   adjust_result: SuperadminAttemptCommands["adjust"];
   invalidate_attempt: SuperadminAttemptCommands["invalidate"];
+  regrade_answer: (
+    input: SuperadminAnswerRegradeCommandInput,
+  ) => Promise<SuperadminAdministrativeResult>;
 };
 export type AttemptSqlCommandMap = {
   [K in keyof Methods]: {
@@ -74,6 +82,74 @@ export type AttemptItemValidationContext = {
   readonly globalTimeLimitMs: number | null;
   readonly publicPayload: Record<string, unknown>;
 };
+
+export type AttemptAnswerRegradeContext = EvaluationContext & {
+  readonly attemptId: string;
+  readonly challengeItemId: string;
+  readonly rubricQuestionVersionId: string;
+  readonly expectedLockVersion: number;
+  readonly originalStatus: "correct" | "partial" | "incorrect";
+  readonly originalPoints: number;
+  readonly currentStatus: "correct" | "partial" | "incorrect";
+  readonly currentPoints: number;
+  readonly currentRubricVersionId: string | null;
+  readonly effectiveScore: number;
+  readonly rubricVersionNumber: number;
+  readonly acceptedAnswers: readonly string[];
+};
+
+export function decodeAttemptAnswerRegradeContext(value: unknown): AttemptAnswerRegradeContext {
+  const r = record(value, "regrade.context");
+  fields(
+    r,
+    {
+      receiptId: text,
+      attemptId: text,
+      challengeItemId: text,
+      rubricQuestionVersionId: text,
+      expectedLockVersion: positive,
+      originalStatus: oneOf("correct", "partial", "incorrect"),
+      originalPoints: points,
+      currentStatus: oneOf("correct", "partial", "incorrect"),
+      currentPoints: points,
+      currentRubricVersionId: nullable(text),
+      effectiveScore: points,
+      rubricVersionNumber: positive,
+      questionVersionId: text,
+      questionType: (v) => typeof v === "string" && isCompetitiveQuestionType(v),
+      payloadSchemaVersion: positive,
+      publicPayload: (v) => isRecord(v),
+      solutionPayload: (v) => isRecord(v),
+      timeLimitMs: positive,
+      itemPoints: points,
+      itemConfigSchemaVersion: positive,
+      itemConfig: (v) => isRecord(v),
+      mode,
+      modeConfigSchemaVersion: positive,
+      modeConfig: (v) => isRecord(v),
+      answer: (v) => typeof v === "string" && v.trim().length > 0,
+      receivedAt: date,
+      timeUsedMs: integer,
+      timedOut: (v) => v === false,
+      acceptedAnswers: list(text),
+      progressiveCluesRevealed: nullable(positive),
+      progressiveClueAvailablePoints: nullable(points),
+    },
+    "regrade.context",
+  );
+  requireResponse(
+    ["short-text", "progressive-image", "progressive-clues"].includes(String(r.questionType)) &&
+      (r.acceptedAnswers as string[]).length > 0,
+    "regrade.context.questionType",
+  );
+  optionalFields(r, {
+    submittedCodes: nullable(list(text)),
+    incorrectAttempts: nullable(integer),
+    incorrectValidations: nullable(integer),
+    matchingIncorrectAttempts: nullable(integer),
+  });
+  return r as unknown as AttemptAnswerRegradeContext;
+}
 export function decodeAttemptItemValidationContext(value: unknown): AttemptItemValidationContext {
   const r = record(value, "context.item");
   fields(
@@ -266,7 +342,17 @@ export const attemptSqlDecoders: { [K in keyof Methods]: Decoder<K> } = {
   invalidate_attempt: decode("invalidate_attempt", (r) =>
     fields(r, { status: oneOf("completed", "abandoned", "invalidated"), effectiveScore: points }),
   ),
+  regrade_answer: decodeRegradeAnswerResult,
 };
+export function decodeRegradeAnswerResult(
+  value: unknown,
+  selection: Pick<SuperadminAnswerRegradeSelection, "attemptId" | "challengeItemId">,
+): SuperadminAdministrativeResult {
+  const row = record(value);
+  identity(row, selection);
+  fields(row, { challengeItemId: text, status: oneOf("completed"), effectiveScore: points });
+  return row as SuperadminAdministrativeResult;
+}
 export function decodeRecordedEvaluation(value: unknown, receiptId: string) {
   if (value === null) return null;
   const r = record(value);

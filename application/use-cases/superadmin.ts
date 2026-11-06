@@ -18,6 +18,9 @@ import type {
   PurgeTerminalAttemptInput,
   SuperadminAdjustResultInput,
   SuperadminAdministrativeResult,
+  SuperadminAnswerRegradeSelection,
+  SuperadminAnswerRegradePreview,
+  SuperadminApplyAnswerRegradeInput,
 } from "@/application/ports/superadmin-attempt-commands";
 import type {
   CalendarTickRunner,
@@ -464,6 +467,24 @@ export class ApplicationSuperadminCommands {
     const access = await this.prepare("superadmin");
     return this.runAttemptCommand(() =>
       this.dependencies.attemptCommandsFor(access.authUserId).invalidate(input),
+    );
+  }
+
+  async previewAttemptAnswerRegrade(
+    input: SuperadminAnswerRegradeSelection,
+  ): Promise<SuperadminAnswerRegradePreview> {
+    const access = await this.prepare("superadmin");
+    return this.runAttemptCommand(() =>
+      this.dependencies.attemptCommandsFor(access.authUserId).previewAnswerRegrade(input),
+    );
+  }
+
+  async regradeAttemptAnswer(
+    input: SuperadminApplyAnswerRegradeInput,
+  ): Promise<SuperadminAdministrativeResult> {
+    const access = await this.prepare("superadmin");
+    return this.runAttemptCommand(() =>
+      this.dependencies.attemptCommandsFor(access.authUserId).regradeAnswer(input),
     );
   }
 

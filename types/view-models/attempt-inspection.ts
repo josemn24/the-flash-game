@@ -60,8 +60,15 @@ export type SuperadminAttemptItemInspection = {
   readonly publicPayload: JsonValue;
   readonly answer: JsonValue | null;
   readonly status: "correct" | "partial" | "incorrect" | "unanswered" | "timeout" | null;
+  readonly effectiveStatus: "correct" | "partial" | "incorrect" | "unanswered" | "timeout" | null;
   readonly resultDetails: JsonValue | null;
   readonly awardedPoints: number | null;
+  readonly effectiveAwardedPoints: number | null;
+  readonly currentRubricVersionId: string | null;
+  readonly availableRubrics: readonly {
+    readonly questionVersionId: string;
+    readonly versionNumber: number;
+  }[];
   readonly presentedAt: UtcIsoDateTime | null;
   readonly submittedAt: UtcIsoDateTime | null;
   readonly timeUsedMs: number | null;
@@ -69,7 +76,7 @@ export type SuperadminAttemptItemInspection = {
 
 export type SuperadminAttemptLedgerEntry = {
   readonly entryId: string;
-  readonly entryType: "accreditation" | "adjustment" | "reversal";
+  readonly entryType: "accreditation" | "adjustment" | "answer_regrade" | "reversal";
   readonly amount: number;
   readonly reason: string | null;
   readonly createdByPlayerId: string | null;

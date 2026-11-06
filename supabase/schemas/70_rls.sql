@@ -69,6 +69,10 @@ alter table private.flash_point_entries enable row level security;
 revoke all on table private.flash_point_entries from public, anon, authenticated, service_role;
 grant select on table private.flash_point_entries to service_role;
 
+alter table private.attempt_answer_regrades enable row level security;
+revoke all on table private.attempt_answer_regrades from public, anon, authenticated, service_role;
+grant select on table private.attempt_answer_regrades to service_role;
+
 alter table private.audit_log enable row level security;
 revoke all on table private.audit_log from public, anon, authenticated, service_role;
 grant select on table private.audit_log to service_role;

@@ -134,8 +134,22 @@ function isItem(value: unknown): value is SuperadminAttemptItemInspection {
       ["correct", "partial", "incorrect", "unanswered", "timeout"].includes(
         String(value.status),
       )) &&
+    (value.effectiveStatus === null ||
+      ["correct", "partial", "incorrect", "unanswered", "timeout"].includes(
+        String(value.effectiveStatus),
+      )) &&
     (value.resultDetails === null || isJsonValue(value.resultDetails)) &&
     (value.awardedPoints === null || isInteger(value.awardedPoints)) &&
+    (value.effectiveAwardedPoints === null || isInteger(value.effectiveAwardedPoints)) &&
+    (value.currentRubricVersionId === null || isUuid(value.currentRubricVersionId)) &&
+    Array.isArray(value.availableRubrics) &&
+    value.availableRubrics.every(
+      (rubric) =>
+        isRecord(rubric) &&
+        isUuid(rubric.questionVersionId) &&
+        isInteger(rubric.versionNumber) &&
+        rubric.versionNumber > 0,
+    ) &&
     (value.presentedAt === null || isIso(value.presentedAt)) &&
     (value.submittedAt === null || isIso(value.submittedAt)) &&
     (value.timeUsedMs === null || isInteger(value.timeUsedMs))
@@ -146,7 +160,9 @@ function isLedgerEntry(value: unknown): value is SuperadminAttemptLedgerEntry {
   return (
     isRecord(value) &&
     isUuid(value.entryId) &&
-    ["accreditation", "adjustment", "reversal"].includes(String(value.entryType)) &&
+    ["accreditation", "adjustment", "answer_regrade", "reversal"].includes(
+      String(value.entryType),
+    ) &&
     isInteger(value.amount) &&
     (value.reason === null || typeof value.reason === "string") &&
     (value.createdByPlayerId === null || isUuid(value.createdByPlayerId)) &&
