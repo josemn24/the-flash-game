@@ -8,7 +8,7 @@ export const ROOM_ART_BY_MODE: Readonly<Record<GameMode, string>> = {
   survival: "/flash-pop/concepts/survival-last-beacon.webp",
   narrative: "/flash-pop/concepts/narrative-story-trail.webp",
   pyramid: ROOM_ART_FALLBACK,
-  "time-trial": "/flash-pop/concepts/flash-floating-cards.webp",
+  "time-trial": "/flash-pop/concepts/time-trial-board-sequence.webp",
 };
 
 export function getChallengeImage(mode: GameMode) {
