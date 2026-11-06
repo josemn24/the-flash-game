@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { SupabaseSuperadminAttemptCommands } from "../admin/superadminAttemptCommands";
 import {
   AttemptCommandError,
   callAttemptCommand,
@@ -114,6 +115,94 @@ describe("Supabase attempt database connection", () => {
   });
 
   const attemptId = "00000000-0000-4000-8000-000000000003";
+
+  it("confirms and replays a regrade without evaluating or writing twice", async () => {
+    const selection = {
+      attemptId,
+      challengeItemId: "00000000-0000-4000-8000-000000000004",
+      rubricQuestionVersionId: "00000000-0000-4000-8000-000000000005",
+      lockVersion: 6,
+    };
+    const input = { ...selection, reason: "New accepted answer", idempotencyKey: "regrade-key" };
+    const result = {
+      attemptId,
+      challengeItemId: selection.challengeItemId,
+      lockVersion: 7,
+      status: "completed",
+      effectiveScore: 31,
+    };
+    let saved = false;
+    client.query.mockImplementation(async (sql: string, parameters?: string[]) => {
+      if (sql.includes("private.prepare_attempt_answer_regrade")) {
+        expect(JSON.parse(parameters?.[0] ?? "null")).toEqual(input);
+        if (saved) return { rows: [{ preparation: { result } }] };
+        return {
+          rows: [
+            {
+              preparation: {
+                context: {
+                  ...selection,
+                  receiptId: "receipt",
+                  expectedLockVersion: 6,
+                  originalStatus: "incorrect",
+                  originalPoints: 0,
+                  currentStatus: "incorrect",
+                  currentPoints: 0,
+                  currentRubricVersionId: null,
+                  effectiveScore: 0,
+                  rubricVersionNumber: 2,
+                  questionVersionId: "original-version",
+                  questionType: "short-text",
+                  payloadSchemaVersion: 1,
+                  publicPayload: {},
+                  solutionPayload: { correctAnswer: "Gran Cañón", acceptedAnswers: ["Gran Cañón"] },
+                  timeLimitMs: 25_000,
+                  itemPoints: 100,
+                  itemConfigSchemaVersion: 1,
+                  itemConfig: {},
+                  mode: "flash",
+                  modeConfigSchemaVersion: 1,
+                  modeConfig: {},
+                  answer: "Cañon",
+                  receivedAt: "2026-11-06T10:00:00Z",
+                  timeUsedMs: 1000,
+                  timedOut: false,
+                  acceptedAnswers: ["Gran Cañón", "Cañón"],
+                  progressiveCluesRevealed: null,
+                  progressiveClueAvailablePoints: null,
+                },
+              },
+            },
+          ],
+        };
+      }
+      if (sql.includes("private.regrade_answer")) {
+        expect(JSON.parse(parameters?.[0] ?? "null")).toEqual({
+          ...input,
+          resultStatus: "correct",
+          resultPoints: 31,
+        });
+        saved = true;
+        return { rows: [{ result }] };
+      }
+      return {};
+    });
+
+    const evaluate = vi.fn(() => ({ status: "correct" as const, points: 31 }));
+    const adminCommands = new SupabaseSuperadminAttemptCommands(
+      { authUserId: "00000000-0000-4000-8000-000000000001" },
+      { evaluate },
+    );
+    await expect(adminCommands.regradeAnswer(input)).resolves.toEqual(result);
+    expect(client.query.mock.calls.filter(([sql]) => sql === "BEGIN")).toHaveLength(1);
+    expect(client.query).toHaveBeenLastCalledWith("COMMIT");
+    await expect(adminCommands.regradeAnswer(input)).resolves.toEqual(result);
+    expect(evaluate).toHaveBeenCalledTimes(1);
+    expect(
+      client.query.mock.calls.filter(([sql]) => sql.includes("private.regrade_answer")),
+    ).toHaveLength(1);
+    expect(client.query).toHaveBeenLastCalledWith("COMMIT");
+  });
 
   it("preserves the definitive late Alphabet pass error and rolls back", async () => {
     client.query.mockImplementation(async (sql: string) => {

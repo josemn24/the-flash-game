@@ -132,6 +132,7 @@ describe("SupabaseSuperadminAttemptQueries", () => {
   });
 
   it("validates the complete inspection projection without inventing private fields", async () => {
+    const availableRubrics = [{ questionVersionId: id("d"), versionNumber: 2 }];
     mocks.rpc.mockResolvedValue({
       data: {
         publication,
@@ -142,12 +143,16 @@ describe("SupabaseSuperadminAttemptQueries", () => {
             position: 1,
             itemPoints: 100,
             questionVersionId: id("9"),
-            questionType: "multiple-choice",
+            questionType: "progressive-image",
             publicPayload: { prompt: "Pregunta" },
             answer: "a",
             status: "correct",
+            effectiveStatus: "correct",
             resultDetails: { evaluated: true },
             awardedPoints: 70,
+            effectiveAwardedPoints: 70,
+            currentRubricVersionId: null,
+            availableRubrics,
             presentedAt: timestamp,
             submittedAt: "2026-09-25T10:01:00.000Z",
             timeUsedMs: 1000,
@@ -191,7 +196,7 @@ describe("SupabaseSuperadminAttemptQueries", () => {
       ),
     ).resolves.toMatchObject({
       attempt: { email: "jugador@example.test", effectiveScore: 80 },
-      items: [{ answer: "a", awardedPoints: 70 }],
+      items: [{ answer: "a", awardedPoints: 70, availableRubrics }],
       audit: [{ action: "adjust" }],
     });
   });

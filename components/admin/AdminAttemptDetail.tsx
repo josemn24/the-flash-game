@@ -3,6 +3,7 @@ import type { SuperadminAttemptInspectionModel } from "@/types/view-models";
 import { AdminEmptyState } from "./AdminEmptyState";
 import { AdminAttemptDelete } from "./AdminAttemptDelete.client";
 import { AdminAttemptActions } from "./AdminAttemptActions.client";
+import { AdminAttemptAnswerRegrade } from "./AdminAttemptAnswerRegrade.client";
 import { AdminShell } from "./AdminShell";
 import styles from "./AdminAttemptInspection.module.css";
 
@@ -24,6 +25,19 @@ function statusTone(status: SuperadminAttemptInspectionModel["attempt"]["status"
 
 function pretty(value: unknown) {
   return JSON.stringify(value, null, 2);
+}
+
+function ledgerLabel(entryType: SuperadminAttemptInspectionModel["ledger"][number]["entryType"]) {
+  switch (entryType) {
+    case "accreditation":
+      return "Acreditación original";
+    case "adjustment":
+      return "Ajuste global";
+    case "answer_regrade":
+      return "Recálculo por pregunta";
+    case "reversal":
+      return "Reversión";
+  }
 }
 
 export function AdminAttemptDetail({
@@ -152,13 +166,31 @@ export function AdminAttemptDetail({
                   <strong>
                     Ítem {item.position} · {item.questionType}
                   </strong>
-                  <Chip variant="status" tone={item.status === "correct" ? "success" : "neutral"}>
-                    {item.status ?? "Sin respuesta"}
+                  <Chip
+                    variant="status"
+                    tone={item.effectiveStatus === "correct" ? "success" : "neutral"}
+                  >
+                    {item.effectiveStatus ?? "Sin respuesta"}
                   </Chip>
                 </div>
                 <p className={styles.meta}>
-                  {item.awardedPoints ?? 0}/{item.itemPoints} puntos · {item.timeUsedMs ?? 0} ms
+                  Efectivos {item.effectiveAwardedPoints ?? 0}/{item.itemPoints} puntos · original{" "}
+                  {item.awardedPoints ?? 0}/{item.itemPoints} · {item.timeUsedMs ?? 0} ms
                 </p>
+                {attempt.status === "completed" &&
+                item.availableRubrics.length > 0 &&
+                typeof item.answer === "string" ? (
+                  <AdminAttemptAnswerRegrade
+                    roomId={model.roomId}
+                    scheduledChallengeId={publication.scheduledChallengeId}
+                    attemptId={attempt.attemptId}
+                    challengeItemId={item.challengeItemId}
+                    lockVersion={attempt.lockVersion}
+                    answer={item.answer}
+                    itemPoints={item.itemPoints}
+                    rubrics={item.availableRubrics}
+                  />
+                ) : null}
                 <details>
                   <summary>Ver payloads</summary>
                   <pre>
@@ -189,7 +221,7 @@ export function AdminAttemptDetail({
               {model.ledger.map((entry) => (
                 <Card as="article" surface="soft" className={styles.ledgerCard} key={entry.entryId}>
                   <div className={styles.rowTopline}>
-                    <strong>{entry.entryType}</strong>
+                    <strong>{ledgerLabel(entry.entryType)}</strong>
                     <Chip variant="data" tone={entry.amount < 0 ? "danger" : "success"}>
                       {entry.amount > 0 ? "+" : ""}
                       {entry.amount}

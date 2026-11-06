@@ -109,7 +109,7 @@ create table private.flash_point_entries (
   player_id uuid not null,
   scheduled_challenge_id uuid not null,
   attempt_id uuid not null,
-  entry_type text not null check (entry_type in ('accreditation', 'adjustment', 'reversal')),
+  entry_type text not null check (entry_type in ('accreditation', 'adjustment', 'answer_regrade', 'reversal')),
   amount integer not null check (amount between -100 and 100),
   reason text,
   created_by_player_id uuid references public.players(id) on delete restrict,
@@ -120,9 +120,29 @@ create table private.flash_point_entries (
   foreign key (attempt_id, player_id, scheduled_challenge_id)
     references public.attempts(id, player_id, scheduled_challenge_id) on delete restrict,
   check ((entry_type = 'accreditation' and amount >= 0)
-    or (entry_type in ('adjustment', 'reversal') and reason is not null
+    or (entry_type in ('adjustment', 'answer_regrade', 'reversal') and reason is not null
       and btrim(reason) <> '' and created_by_player_id is not null)),
   check (entry_type <> 'reversal' or amount <= 0)
+);
+
+create table private.attempt_answer_regrades (
+  id uuid primary key default gen_random_uuid(),
+  attempt_id uuid not null,
+  challenge_item_id uuid not null,
+  rubric_question_version_id uuid not null references private.question_versions(id) on delete restrict,
+  attempt_lock_version bigint not null check (attempt_lock_version > 0),
+  before_status text not null check (before_status in ('correct', 'partial', 'incorrect')),
+  before_points integer not null check (before_points between 0 and 100),
+  before_details jsonb,
+  after_status text not null check (after_status in ('correct', 'partial', 'incorrect')),
+  after_points integer not null check (after_points between 0 and 100),
+  after_details jsonb,
+  reason text not null check (btrim(reason) <> ''),
+  actor_player_id uuid not null references public.players(id) on delete restrict,
+  idempotency_key text not null unique check (btrim(idempotency_key) <> ''),
+  created_at timestamptz not null default now(),
+  foreign key (attempt_id, challenge_item_id)
+    references private.attempt_answers(attempt_id, challenge_item_id) on delete cascade
 );
 
 create table private.audit_log (

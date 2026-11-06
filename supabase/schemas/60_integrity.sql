@@ -316,6 +316,8 @@ create trigger answers_append_only before update or delete on private.attempt_an
   for each row execute function private.reject_rewrite();
 create trigger entries_append_only before update or delete on private.flash_point_entries
   for each row execute function private.reject_rewrite();
+create trigger attempt_answer_regrades_append_only before update or delete on private.attempt_answer_regrades
+  for each row execute function private.reject_rewrite();
 create trigger audit_append_only before update or delete on private.audit_log
   for each row execute function private.reject_rewrite();
 
@@ -373,7 +375,7 @@ begin
       select 1 from private.platform_role_assignments x join public.players p on p.id = x.player_id
       where x.player_id = new.created_by_player_id and p.status = 'active' and p.auth_user_id is not null
     ) then raise exception 'A correction requires accreditation and an active superadministrator'; end if;
-    if new.entry_type = 'adjustment' and (a.status <> 'completed' or exists (
+    if new.entry_type in ('adjustment', 'answer_regrade') and (a.status <> 'completed' or exists (
       select 1 from public.scheduled_challenges where id = a.scheduled_challenge_id and status = 'cancelled'
     )) then raise exception 'Only eligible results may be adjusted'; end if;
   end if;

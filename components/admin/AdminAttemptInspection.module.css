@@ -224,6 +224,60 @@
     font-size: 1.1rem;
   }
 
+  .regradePanel {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 14px;
+    border: 1px solid var(--ds-color-border-default);
+    border-radius: 12px;
+    background: var(--ds-color-bg-surface-soft);
+  }
+
+  .regradePanel h3,
+  .regradePanel p {
+    margin: 0;
+  }
+
+  .regradePanel h3 {
+    color: var(--ds-color-fg-primary);
+    font-size: 1rem;
+  }
+
+  .regradeAnswer {
+    color: var(--ds-color-fg-secondary);
+    overflow-wrap: anywhere;
+  }
+
+  .regradeForm {
+    display: grid;
+    gap: 10px;
+  }
+
+  .regradePreview {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    margin: 0;
+  }
+
+  .regradePreview div {
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--ds-color-bg-surface);
+  }
+
+  .regradePreview dt {
+    color: var(--ds-color-fg-secondary);
+    font-size: 0.72rem;
+  }
+
+  .regradePreview dd {
+    margin: 4px 0 0;
+    color: var(--ds-color-fg-primary);
+    font-weight: 700;
+  }
+
   .error {
     margin: 0;
     color: var(--ds-color-fg-error);

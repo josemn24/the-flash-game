@@ -9,6 +9,12 @@
         "table": ["SELECT"]
       }
     },
+    "private.attempt_answer_regrades": {
+      "kind": "r",
+      "service_role": {
+        "table": ["SELECT"]
+      }
+    },
     "private.attempt_sessions": {
       "kind": "r",
       "service_role": {
@@ -260,6 +266,12 @@
       "securityDefiner": true,
       "executeRoles": ["service_role"]
     },
+    "private.regrade_answer": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "v"
+    },
     "private.can_read_own_attempt": {
       "arguments": "target_publication_id uuid, target_player_id uuid",
       "securityDefiner": true,
@@ -448,6 +460,12 @@
       "arguments": "op text, input jsonb, actor uuid, target_attempt attempts, target_schedule scheduled_challenges, instant timestamp with time zone, key text",
       "securityDefiner": false,
       "executeRoles": []
+    },
+    "private.handle_attempt_answer_regrade_command": {
+      "arguments": "input jsonb, actor uuid, target_attempt attempts, target_schedule scheduled_challenges, instant timestamp with time zone, key text",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "v"
     },
     "private.handle_attempt_command": {
       "arguments": "op text, input jsonb, safe_input jsonb, actor uuid, cached_result jsonb, received_at timestamp with time zone",
@@ -1146,6 +1164,24 @@
       "arguments": "target_receipt uuid, session_token text",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
+    },
+    "private.read_attempt_answer_regrade_context": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "s"
+    },
+    "private.valid_regrade_accepted_answers": {
+      "arguments": "answers jsonb",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "i"
+    },
+    "private.prepare_attempt_answer_regrade": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "v"
     },
     "private.read_attempt_context": {
       "arguments": "target_attempt uuid, session_token text",

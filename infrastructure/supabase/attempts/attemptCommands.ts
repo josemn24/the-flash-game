@@ -20,6 +20,11 @@ import type {
   StartAttemptCommand,
   TakeOverAttemptCommand,
 } from "@/application/ports/attempt-commands";
+import type {
+  SuperadminAnswerRegradeCommandInput,
+  SuperadminAnswerRegradeSelection,
+  SuperadminApplyAnswerRegradeInput,
+} from "@/application/ports/superadmin-attempt-commands";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
 import { AttemptCommandError } from "@/application/errors/attempts";
@@ -29,6 +34,9 @@ import {
   attemptSqlDecoders,
   decodeRecordedEvaluation,
   decodeEvaluationContext,
+  decodeAttemptAnswerRegradeContext,
+  decodeRegradeAnswerResult,
+  type AttemptAnswerRegradeContext,
   type AttemptSqlCommandMap,
   type SqlDecoderContext,
   decodeAttemptItemValidationContext,
@@ -192,6 +200,49 @@ export async function purgeTerminalAttempt(
     const roomSlug = result.rows[0]?.room_slug;
     requireResponse(typeof roomSlug === "string" && roomSlug.length > 0, "purge.roomSlug");
     return roomSlug;
+  });
+}
+
+export async function readAttemptAnswerRegradeContext(
+  identity: VerifiedAuthIdentity,
+  {
+    attemptId,
+    challengeItemId,
+    rubricQuestionVersionId,
+    lockVersion,
+  }: SuperadminAnswerRegradeSelection,
+) {
+  return transaction(identity, async (client) => {
+    const result = await client.query<{ context: unknown }>(
+      "select private.read_attempt_answer_regrade_context($1::jsonb) as context",
+      [JSON.stringify({ attemptId, challengeItemId, rubricQuestionVersionId, lockVersion })],
+    );
+    return decodeAttemptAnswerRegradeContext(result.rows[0]?.context);
+  });
+}
+
+export function confirmAttemptAnswerRegrade(
+  identity: VerifiedAuthIdentity,
+  input: SuperadminApplyAnswerRegradeInput,
+  evaluate: (
+    context: AttemptAnswerRegradeContext,
+  ) => Pick<SuperadminAnswerRegradeCommandInput, "resultStatus" | "resultPoints" | "resultDetails">,
+) {
+  return transaction(identity, async (client) => {
+    const preparation = await client.query<{ preparation: unknown }>(
+      "select private.prepare_attempt_answer_regrade($1::jsonb) as preparation",
+      [JSON.stringify(input)],
+    );
+    const prepared = record(preparation.rows[0]?.preparation, "regrade.preparation");
+    if ("result" in prepared) return decodeRegradeAnswerResult(prepared.result, input);
+
+    const context = decodeAttemptAnswerRegradeContext(prepared.context);
+    const evaluation = evaluate(context);
+    const result = await client.query<{ result: unknown }>(
+      "select private.regrade_answer($1::jsonb) as result",
+      [JSON.stringify({ ...input, ...evaluation })],
+    );
+    return decodeRegradeAnswerResult(result.rows[0]?.result, input);
   });
 }
 

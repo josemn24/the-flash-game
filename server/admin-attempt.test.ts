@@ -18,6 +18,8 @@ function commands() {
     purge: vi.fn(),
     adjust: mocks.adjust,
     invalidate: mocks.invalidate,
+    previewAnswerRegrade: vi.fn(),
+    regradeAnswer: vi.fn(),
   };
 }
 

@@ -137,7 +137,7 @@ begin
       coalesce((select sum(entry.amount)::integer
         from private.flash_point_entries entry where entry.attempt_id = attempt.id), 0) as effective_score,
       exists (select 1 from private.flash_point_entries entry
-        where entry.attempt_id = attempt.id and entry.entry_type in ('adjustment', 'reversal')) as is_corrected
+        where entry.attempt_id = attempt.id and entry.entry_type in ('adjustment', 'answer_regrade', 'reversal')) as is_corrected
     from public.attempts attempt
     join public.players player on player.id = attempt.player_id
     where attempt.scheduled_challenge_id = target_scheduled_challenge_id
@@ -249,7 +249,7 @@ begin
         from private.flash_point_entries entry where entry.attempt_id = attempt.id), 0),
       'lockVersion', attempt.lock_version,
       'isCorrected', exists (select 1 from private.flash_point_entries entry
-        where entry.attempt_id = attempt.id and entry.entry_type in ('adjustment', 'reversal')),
+        where entry.attempt_id = attempt.id and entry.entry_type in ('adjustment', 'answer_regrade', 'reversal')),
       'terminalReason', attempt.terminal_reason
     ),
     'items', coalesce((
@@ -262,8 +262,23 @@ begin
         'publicPayload', question.public_payload,
         'answer', answer.answer,
         'status', answer.status,
+        'effectiveStatus', coalesce(regrade.after_status, answer.status),
         'resultDetails', answer.result_details,
         'awardedPoints', answer.points,
+        'effectiveAwardedPoints', coalesce(regrade.after_points, answer.points),
+        'currentRubricVersionId', regrade.rubric_question_version_id,
+        'availableRubrics', case when attempt.kind = 'competitive' and attempt.status = 'completed'
+          and schedule.status <> 'cancelled' and question.type in ('short-text','progressive-image','progressive-clues')
+          and answer.status in ('correct','partial','incorrect') and answer.submitted_at is not null
+          and jsonb_typeof(answer.answer) = 'string' and (answer.answer #>> '{}') ~ '[^[:space:]]' then coalesce((
+            select jsonb_agg(jsonb_build_object('questionVersionId', rubric.id, 'versionNumber', rubric.version_number)
+              order by rubric.version_number desc)
+            from private.question_versions rubric
+            join private.question_version_solutions solution on solution.question_version_id = rubric.id
+            where rubric.question_definition_id = question.question_definition_id
+              and rubric.type = question.type and rubric.status = 'published'
+              and private.valid_regrade_accepted_answers(solution.solution_payload->'acceptedAnswers')
+          ), '[]'::jsonb) else '[]'::jsonb end,
         'presentedAt', answer.presented_at,
         'submittedAt', answer.submitted_at,
         'timeUsedMs', answer.time_used_ms
@@ -272,6 +287,13 @@ begin
       join private.question_versions question on question.id = item.question_version_id
       left join private.attempt_answers answer
         on answer.attempt_id = attempt.id and answer.challenge_item_id = item.id
+      left join lateral (
+        select correction.after_status, correction.after_points, correction.rubric_question_version_id
+        from private.attempt_answer_regrades correction
+        where correction.attempt_id = attempt.id and correction.challenge_item_id = item.id
+        order by correction.attempt_lock_version desc
+        limit 1
+      ) regrade on true
       where item.challenge_version_id = attempt.challenge_version_id
     ), '[]'::jsonb),
     'ledger', coalesce((

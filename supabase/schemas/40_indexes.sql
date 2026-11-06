@@ -45,6 +45,8 @@ create index entries_attempt_player_publication_idx
 create index entries_publication_season_idx on private.flash_point_entries (scheduled_challenge_id, season_id);
 create index entries_season_player_idx on private.flash_point_entries (season_id, player_id);
 create index entries_creator_idx on private.flash_point_entries (created_by_player_id);
+create unique index attempt_answer_regrades_item_version_idx
+  on private.attempt_answer_regrades (attempt_id, challenge_item_id, attempt_lock_version desc);
 create index audit_entity_time_idx on private.audit_log (entity_type, entity_id, created_at);
 create index audit_actor_time_idx on private.audit_log (actor_player_id, created_at);
 -- No speculative JSONB GIN indexes: the initial queries use structured columns.

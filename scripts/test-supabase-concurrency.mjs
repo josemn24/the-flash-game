@@ -1131,4 +1131,81 @@ export async function testConcurrentCommands(sql) {
     "0",
   );
   console.log("Terminal purge waits for completion and removes its accreditation.");
+
+  const regradeFixtures = await readFile("supabase/tests/support/regrade-fixtures.sql", "utf8");
+  const regradeAttempt = lastJson(
+    await sql(`
+    begin;
+    ${regradeFixtures}
+    select test_support.as_actor('member');
+    set local role service_role;
+    select test_support.run('start_attempt', jsonb_build_object(
+      'scheduledChallengeId', test_support.id('sc-regrade'), 'sessionToken', repeat('r', 40)));
+    select test_support.run('prepare_interaction');
+    select test_support.run('receive_answer', '{"answer":"Cañon"}');
+    select test_support.run('record_evaluation', '{"status":"incorrect","points":0}');
+    select test_support.run('complete_attempt');
+    commit;
+  `),
+  );
+  await sql(`
+    create function test_support.confirm_regrade(input jsonb) returns jsonb
+    language plpgsql as $$
+    declare prepared jsonb := private.prepare_attempt_answer_regrade(input);
+    begin
+      if prepared ? 'result' then return prepared->'result'; end if;
+      return private.regrade_answer(input || '{"resultStatus":"correct","resultPoints":31}'::jsonb);
+    end;
+    $$;
+    grant execute on function test_support.confirm_regrade(jsonb) to service_role;
+  `);
+  const regradeInput = {
+    attemptId: regradeAttempt.attemptId,
+    lockVersion: regradeAttempt.lockVersion,
+    challengeItemId: id("item-regrade"),
+    rubricQuestionVersionId: id("qv-regrade-rubric"),
+    reason: "A new accepted answer",
+    idempotencyKey: "concurrent-answer-regrade",
+  };
+  const firstRegrade = await invoke(
+    "superadmin",
+    "confirm_regrade",
+    regradeInput,
+    true,
+    "service_role",
+    "test_support",
+  );
+  const secondRegrade = await invoke(
+    "superadmin",
+    "confirm_regrade",
+    regradeInput,
+    false,
+    "service_role",
+    "test_support",
+  );
+  const [confirmed, concurrentRetry] = await Promise.all([firstRegrade.done, secondRegrade.done]);
+  assert.equal(confirmed.effectiveScore, 31);
+  assert.deepEqual(
+    concurrentRetry,
+    confirmed,
+    "A concurrent confirmation replays the stored result",
+  );
+  const regradeId = quote(regradeAttempt.attemptId);
+  assert.deepEqual(
+    lastJson(
+      await sql(`
+    select jsonb_build_object(
+      'original', (select score from public.attempts where id = ${regradeId}),
+      'effective', (select sum(amount) from private.flash_point_entries where attempt_id = ${regradeId}),
+      'events', (select count(*) from private.attempt_answer_regrades where attempt_id = ${regradeId}),
+      'entries', (select count(*) from private.flash_point_entries where attempt_id = ${regradeId}
+        and entry_type = 'answer_regrade'),
+      'audits', (select count(*) from private.audit_log where entity_id = ${regradeId}
+        and action = 'regrade_answer')
+    );
+  `),
+    ),
+    { original: 0, effective: 31, events: 1, entries: 1, audits: 1 },
+  );
+  console.log("Concurrent question regrade replay passed.");
 }
