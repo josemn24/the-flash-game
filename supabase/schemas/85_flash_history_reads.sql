@@ -234,7 +234,7 @@ language sql stable security definer set search_path = '' as $$
       case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer end as initial_lives,
       a.id as attempt_id,
       a.status as attempt_status,
-      a.score as attempt_score,
+      private.review_attempt_score(a.id, a.score) as attempt_score,
       a.outcome as attempt_outcome,
       a.started_at as attempt_started_at,
       a.completed_at as attempt_completed_at,
@@ -291,7 +291,7 @@ language sql stable security definer set search_path = '' as $$
   join private.challenge_items i on i.challenge_version_id = a.challenge_version_id
   join private.question_versions q on q.id = i.question_version_id
   join private.question_version_solutions qs on qs.question_version_id = q.id
-  left join private.attempt_answers aa on aa.attempt_id = a.attempt_id
+  left join private.review_attempt_answers aa on aa.attempt_id = a.attempt_id
     and aa.challenge_item_id = i.id
   where a.challenge_mode <> 'survival' or aa.id is not null
   order by i.position

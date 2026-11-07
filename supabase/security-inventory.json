@@ -61,6 +61,10 @@
       },
       "boundary": "Internal invoker view; service SELECT only. Public ranking functions enforce active room membership and project social fields."
     },
+    "private.review_attempt_answers": {
+      "kind": "v",
+      "boundary": "Internal invoker view read by authorized review functions to project confirmed answer regrades."
+    },
     "private.flash_point_entries": {
       "kind": "r",
       "service_role": {
@@ -1217,6 +1221,12 @@
       "arguments": "target_attempt uuid",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
+    },
+    "private.review_attempt_score": {
+      "arguments": "target_attempt uuid, original_score integer",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.read_abandoned_attempt": {
       "arguments": "target_attempt uuid",
