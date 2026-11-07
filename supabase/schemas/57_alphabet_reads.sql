@@ -120,7 +120,7 @@ language sql stable security definer set search_path = '' as $$
     q.payload_schema_version, q.public_payload, qs.solution_payload,
     aa.answer, aa.status, coalesce(aa.points, 0), aa.result_details,
     aa.presented_at, aa.submitted_at, coalesce(aa.time_used_ms, 0),
-    a.status, coalesce(a.score, 0), a.started_at, a.completed_at, a.lock_version,
+    a.status, coalesce(private.review_attempt_score(a.id, a.score), 0), a.started_at, a.completed_at, a.lock_version,
     cv.title, cv.subtitle, cv.description, cv.max_score, i.mode_config->>'letter'
   from public.attempts a
   join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
@@ -131,7 +131,7 @@ language sql stable security definer set search_path = '' as $$
   join private.challenge_items i on i.challenge_version_id = cv.id
   join private.question_versions q on q.id = i.question_version_id
   join private.question_version_solutions qs on qs.question_version_id = q.id
-  left join private.attempt_answers aa
+  left join private.review_attempt_answers aa
     on aa.attempt_id = a.id and aa.challenge_item_id = i.id
   where a.id = target_attempt_id and a.player_id = private.current_player_id()
     and a.kind = 'competitive' and a.status = 'completed'

@@ -274,6 +274,22 @@ select is((public.get_superadmin_attempt_inspection(test_support.id('room-regrad
 select test_support.as_actor('member');
 select is((select flash_points from public.get_challenge_ranking(test_support.id('sc-regrade'))
   where player_id=test_support.id('member')),10::bigint, 'Ranking uses the latest effective balance');
+select ok((select answer_status='correct' and points=10 and attempt_score=10
+  and answer='"Cañon"'::jsonb and solution_payload->>'correctAnswer'='Gran Cañón'
+  from public.get_room_member_review('commands-regrade', test_support.id('sc-regrade'), test_support.id('member'))),
+  'Player review shows the latest regrade with the original submitted answer and question solution');
+select ok((select answer_status='correct' and points=10 and attempt_score=10
+  from public.get_my_flash_result((select attempt_id from s20_regrade_context))),
+  'The owner Flash result shows the latest regrade');
+reset role;
+set local role service_role;
+select ok((private.read_completed_attempt((select attempt_id from s20_regrade_context))->'result')
+  @> '{"score":10,"answers":[{"answer":"Cañon","status":"correct","points":10}]}'::jsonb,
+  'Completed-attempt recovery shows the latest regrade');
+select ok((select score=0 from public.attempts where id=(select attempt_id from s20_regrade_context))
+  and (select status='incorrect' and points=0 from private.attempt_answers
+    where attempt_id=(select attempt_id from s20_regrade_context)),
+  'Player review preserves the original attempt and answer records');
 reset role;
 update public.scheduled_challenges set status='cancelled', cancelled_at=now()
 where id=test_support.id('sc-regrade');

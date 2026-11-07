@@ -37,7 +37,7 @@ create function private.read_completed_attempt(target_attempt uuid) returns json
 language sql stable security definer set search_path = '' as $$
   select jsonb_build_object('scheduledChallengeId', sc.id, 'result',
     jsonb_strip_nulls(jsonb_build_object('attemptId', a.id, 'lockVersion', a.lock_version,
-      'status', a.status, 'score', a.score, 'outcome', a.outcome,
+      'status', a.status, 'score', private.review_attempt_score(a.id, a.score), 'outcome', a.outcome,
       'initialLives', case when cv.mode = 'survival' then (cv.mode_config->>'lives')::integer end,
       'livesRemaining', case when cv.mode = 'survival' then greatest((cv.mode_config->>'lives')::integer - coalesce((
         select sum(case when answer.status in ('incorrect','unanswered','timeout') then 1
@@ -50,7 +50,7 @@ language sql stable security definer set search_path = '' as $$
         'answer', answer.answer, 'status', answer.status, 'points', answer.points,
         'timeUsedMs', answer.time_used_ms, 'resultDetails', answer.result_details,
         'reviewState', answer.review_state) order by item.position)
-        from private.attempt_answers answer join private.challenge_items item on item.id = answer.challenge_item_id
+        from private.review_attempt_answers answer join private.challenge_items item on item.id = answer.challenge_item_id
         where answer.attempt_id = a.id), '[]'::jsonb))) ||
       jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome, 'terminalReason', a.terminal_reason,
         'timeTrial', case when cv.mode = 'time-trial' then private.time_trial_progress(a.id) end))

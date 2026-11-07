@@ -140,7 +140,7 @@ language sql stable security definer set search_path = '' as $$
     a.id, a.scheduled_challenge_id, aa.challenge_item_id, i.position, q.id,
     q.type, q.payload_schema_version, q.public_payload, qs.solution_payload, aa.answer,
     aa.status, aa.points, aa.result_details, aa.review_state, aa.presented_at, aa.submitted_at, aa.time_used_ms,
-    a.status, a.score, a.started_at, a.completed_at, a.lock_version,
+    a.status, private.review_attempt_score(a.id, a.score), a.started_at, a.completed_at, a.lock_version,
     cv.title, cv.subtitle, cv.description, cv.max_score
   from public.attempts a
   join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
@@ -151,7 +151,7 @@ language sql stable security definer set search_path = '' as $$
   join private.challenge_items i on i.challenge_version_id = cv.id
   join private.question_versions q on q.id = i.question_version_id
   join private.question_version_solutions qs on qs.question_version_id = q.id
-  left join private.attempt_answers aa on aa.attempt_id = a.id and aa.challenge_item_id = i.id
+  left join private.review_attempt_answers aa on aa.attempt_id = a.id and aa.challenge_item_id = i.id
   where a.id = target_attempt_id
     and a.player_id = private.current_player_id()
     and a.kind = 'competitive'
