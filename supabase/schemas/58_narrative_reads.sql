@@ -181,7 +181,7 @@ language sql stable security definer set search_path = '' as $$
     answer.submitted_at,
     coalesce(answer.time_used_ms, 0),
     attempt.status,
-    attempt.score,
+    private.review_attempt_score(attempt.id, attempt.score),
     attempt.started_at,
     attempt.completed_at,
     attempt.lock_version,
@@ -198,7 +198,7 @@ language sql stable security definer set search_path = '' as $$
   join private.challenge_items item on item.challenge_version_id = version.id
   join private.question_versions question on question.id = item.question_version_id
   join private.question_version_solutions solution on solution.question_version_id = question.id
-  left join private.attempt_answers answer
+  left join private.review_attempt_answers answer
     on answer.attempt_id = attempt.id and answer.challenge_item_id = item.id
   where attempt.id = target_attempt_id
     and attempt.player_id = private.current_player_id()

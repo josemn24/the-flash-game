@@ -125,7 +125,7 @@ language sql stable security definer set search_path = '' as $$
     item.position, question.id, question.type, question.payload_schema_version,
     question.public_payload, solution.solution_payload, answer.answer, answer.status,
     answer.points, answer.result_details, answer.review_state, answer.presented_at, answer.submitted_at,
-    answer.time_used_ms, attempt.status, attempt.score, attempt.outcome,
+    answer.time_used_ms, attempt.status, private.review_attempt_score(attempt.id, attempt.score), attempt.outcome,
     attempt.started_at, attempt.completed_at, attempt.lock_version,
     version.title, version.subtitle, version.description, version.max_score
   from public.attempts attempt
@@ -134,7 +134,7 @@ language sql stable security definer set search_path = '' as $$
   join public.rooms room on room.id = season.room_id
   join public.room_memberships membership on membership.room_id = room.id
   join private.challenge_versions version on version.id = attempt.challenge_version_id
-  join private.attempt_answers answer on answer.attempt_id = attempt.id
+  join private.review_attempt_answers answer on answer.attempt_id = attempt.id
   join private.challenge_items item on item.id = answer.challenge_item_id
   join private.question_versions question on question.id = item.question_version_id
   join private.question_version_solutions solution on solution.question_version_id = question.id

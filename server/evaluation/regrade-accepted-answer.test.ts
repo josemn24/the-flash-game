@@ -86,6 +86,36 @@ describe("published accepted-answer regrading", () => {
     expect(proposed.details).toMatchObject({ revealedClues: 3, availablePoints: 4 });
   });
 
+  it("awards six points for Cañon at 6.556 seconds on the Grand Canyon image", () => {
+    const original = context();
+    const result = evaluateWithPublishedAcceptedAnswers(
+      supabaseCompetitiveEvaluator,
+      {
+        ...original,
+        questionType: "progressive-image",
+        publicPayload: {
+          category: "Geografía",
+          tags,
+          question: "¿Qué paisaje aparece en la imagen?",
+          surface: {
+            src: "/visuals/sbr/grand-canyon-nps.jpg",
+            alt: "Paisaje rocoso",
+            width: 1280,
+            height: 853,
+          },
+          revealDurationMs: 11,
+        },
+        solutionPayload: {
+          correctAnswer: "Gran Cañón",
+          acceptedAnswers: ["Gran Cañón"],
+          solutionAlt: "Fotografía del Gran Cañón",
+        },
+      },
+      ["Gran Cañón", "Cañón"],
+    );
+    expect(result).toMatchObject({ status: "correct", points: 6 });
+  });
+
   it("does not re-evaluate empty or timed-out answers", () => {
     expect(() =>
       evaluateWithPublishedAcceptedAnswers(
