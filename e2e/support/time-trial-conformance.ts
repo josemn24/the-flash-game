@@ -28,12 +28,17 @@ function fixture(scenario: string): ScenarioFixture {
   return JSON.parse(readFileSync(`output/fixtures/${scenario}.json`, "utf8")) as ScenarioFixture;
 }
 
-function localDefinition(data: ScenarioData, format: Format): LocalTimeTrialDefinition {
+function localDefinition(
+  data: ScenarioData,
+  format: Format,
+  queensTimeoutPartialCredit?: boolean,
+): LocalTimeTrialDefinition {
   return createTimeTrialTestDefinition({
     format,
     challengeId: data.publicationId,
     itemIds: data.challengeItemIds,
     globalTimeLimitMs: data.globalTimeLimitMs ?? undefined,
+    queensTimeoutPartialCredit,
   });
 }
 
@@ -189,6 +194,7 @@ export function registerTimeTrialConformance(options: {
   scenario: string;
   format: Format;
   timeout?: boolean;
+  queensTimeoutPartialCredit?: boolean;
 }) {
   let browserContext: BrowserContext;
   let request: APIRequestContext;
@@ -217,7 +223,7 @@ export function registerTimeTrialConformance(options: {
     async () => {
       test.setTimeout(60_000);
       const data = fixture(options.scenario).data;
-      const definition = localDefinition(data, options.format);
+      const definition = localDefinition(data, options.format, options.queensTimeoutPartialCredit);
       const clock = manualClock();
       const local = new SessionDriver(
         createLocalTimeTrialSessionProvider({ definition, clock }),
@@ -252,6 +258,7 @@ export function registerTimeTrialConformance(options: {
       const first = await pair("prepare", {}, 0);
 
       if (options.timeout) {
+        if (options.queensTimeoutPartialCredit) await pair("queensDraft", { queens: [10] });
         const deadline = Date.parse(first.remote.state.deadlineAt!);
         const waitMs = Math.max(0, deadline - Date.now() + 150);
         await new Promise((resolve) => setTimeout(resolve, waitMs));
@@ -264,7 +271,11 @@ export function registerTimeTrialConformance(options: {
           elapsedTimeMs: definition.challenge.timeLimitMs,
         });
         expect(remoteResult.state.timeTrial?.elapsedTimeMs).toBe(definition.challenge.timeLimitMs);
-        expect(localResult.state.answers?.map((answer) => answer.status)).toEqual(["unanswered"]);
+        expect(localResult.state.answers).toMatchObject([
+          options.queensTimeoutPartialCredit
+            ? { status: "partial", points: 10, isCorrect: false }
+            : { status: "unanswered", points: 0 },
+        ]);
         expect(localResult.review).toHaveLength(1);
         return;
       }

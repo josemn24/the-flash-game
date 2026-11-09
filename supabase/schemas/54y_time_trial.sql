@@ -13,13 +13,21 @@ $$;
 alter function private.is_supported_time_trial_question(uuid) owner to postgres;
 revoke all on function private.is_supported_time_trial_question(uuid) from public,anon,authenticated,service_role;
 
+create function private.is_valid_time_trial_config(config jsonb, question_type text) returns boolean
+language sql immutable set search_path = '' as $$
+  select config = '{}'::jsonb
+    or (config = '{"queensTimeoutPartialCredit":true}'::jsonb and question_type = 'queens')
+$$;
+alter function private.is_valid_time_trial_config(jsonb,text) owner to postgres;
+revoke all on function private.is_valid_time_trial_config(jsonb,text) from public,anon,authenticated,service_role;
+
 create function private.assert_time_trial_content(target_version uuid) returns void
 language plpgsql volatile set search_path = '' as $$
 declare version private.challenge_versions%rowtype;
 begin
   select * into version from private.challenge_versions where id = target_version;
   if version.mode <> 'time-trial' then return; end if;
-  if version.config_schema_version <> 1 or version.mode_config <> '{}'::jsonb
+  if version.config_schema_version <> 1
     or version.global_time_limit_ms is null or version.global_time_limit_ms <= 0
     or version.global_time_limit_ms % 1000 <> 0
     or (select count(*) from private.challenge_items where challenge_version_id = target_version) not between 2 and 20
@@ -28,6 +36,7 @@ begin
       select 1 from private.challenge_items i join private.question_versions q on q.id = i.question_version_id
       where i.challenge_version_id = target_version and (
         i.points <= 0 or i.config_schema_version <> 1 or i.mode_config <> '{}'::jsonb
+        or not private.is_valid_time_trial_config(version.mode_config, q.type)
         or q.type not in ('queens','connect-pairs') or q.payload_schema_version <> 1
         or not private.is_supported_time_trial_question(q.id)
       )

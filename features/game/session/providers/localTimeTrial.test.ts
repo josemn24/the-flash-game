@@ -124,6 +124,48 @@ describe("local Time Trial authority", () => {
     expect(completed.review).toHaveLength(1);
   });
 
+  it.each([
+    { weight: 15, placed: [], expected: 0 },
+    { weight: 15, placed: [10], expected: 5 },
+    { weight: 15, placed: [0, 10, 18], expected: 10 },
+    { weight: 15, placed: [10, 18, 21], expected: 14 },
+    { weight: 14, placed: [10, 18], expected: 9 },
+  ])(
+    "awards $expected/$weight from the last accepted Queens checkpoint",
+    async ({ weight, placed, expected }) => {
+      const definition = createTimeTrialTestDefinition({ queensTimeoutPartialCredit: true });
+      const { clock, driver } = setup({
+        ...definition,
+        challenge: {
+          ...definition.challenge,
+          slots: definition.challenge.slots.map((slot, index) => ({
+            ...slot,
+            points: index === 0 ? weight : 100 - weight,
+          })),
+        },
+      });
+      await driver.begin();
+      const prepared = await driver.issue("prepare");
+      await driver.issue("queensDraft", { queens: [2, 9, ...placed] });
+      clock.set(Date.parse(prepared.state.deadlineAt!));
+
+      const completed = await driver.issue(weight === 14 ? "recover" : "complete");
+      expect(completed.state).toMatchObject({
+        score: expected,
+        terminalReason: "time_limit",
+        timeTrial: { solvedCount: 0, points: expected },
+        answers: [
+          {
+            status: expected > 0 ? "partial" : "unanswered",
+            answer: null,
+            points: expected,
+            isCorrect: false,
+          },
+        ],
+      });
+    },
+  );
+
   it.each(["connect-pairs", "queens"] as const)(
     "keeps the latest %s board for review when the global clock expires",
     async (format) => {

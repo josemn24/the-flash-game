@@ -56,7 +56,9 @@ begin
       or (challenge->'modeConfig'->>'lives')::numeric <> trunc((challenge->'modeConfig'->>'lives')::numeric)
       or (challenge->'modeConfig'->>'lives')::integer not between 1 and 20
     ))
-    or (challenge->>'mode' in ('pyramid', 'time-trial') and challenge->'modeConfig' <> '{}'::jsonb) then
+    or (challenge->>'mode' = 'pyramid' and challenge->'modeConfig' <> '{}'::jsonb)
+    or (challenge->>'mode' = 'time-trial'
+      and not private.is_valid_time_trial_config(challenge->'modeConfig', 'queens')) then
     raise exception 'invalid_content' using errcode = '22023';
   end if;
 
@@ -87,6 +89,7 @@ begin
         question_format := question->>'type';
       end if;
       if question_format is null or question_format not in ('queens','connect-pairs')
+        or not private.is_valid_time_trial_config(challenge->'modeConfig', question_format)
         or (trial_format is not null and trial_format <> question_format) then
         raise exception 'unsupported_question' using errcode = '22023';
       end if;

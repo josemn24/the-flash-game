@@ -130,6 +130,9 @@ create function test_support.cp_document() returns jsonb language sql as $$
       private.question_version_document(test_support.id('cp-qv-2')) || '{"points":70}'::jsonb))
 $$;
 select lives_ok($$select private.validate_flash_editorial_document(test_support.cp_document())$$,'Inline Connect pairs can be saved');
+select throws_ok($$select private.validate_flash_editorial_document(jsonb_set(test_support.cp_document(),
+  '{challenge,modeConfig}', '{"queensTimeoutPartialCredit":true}'))$$,
+  '22023','unsupported_question','Connect pairs cannot opt in to Queens timeout credit');
 select lives_ok($$select private.validate_flash_editorial_document(jsonb_set(test_support.cp_document(),'{questions,0}',jsonb_build_object('source','library','questionVersionId',upper(test_support.id('cp-qv-1')::text),'points',30,'modeConfig','{}'::jsonb)))$$,'Uppercase UUID library references remain compatible');
 select throws_ok($$select private.validate_flash_editorial_document(jsonb_set(test_support.cp_document(),'{questions,0,solutionPayload,paths,c}','[10,11,12,13,14]'))$$,'22023','invalid_solution_payload','Incomplete editorial solutions are rejected');
 select throws_ok($$select private.validate_flash_editorial_document(jsonb_set(test_support.cp_document(),'{questions,0}',jsonb_build_object('source','library','questionVersionId',test_support.id('pyramid-queens-qv'),'points',30,'modeConfig','{}'::jsonb)))$$,'22023','unsupported_question','Mixed inline and library formats are rejected');
@@ -138,6 +141,13 @@ values(test_support.id('cp-cv'),test_support.id('ct-cd'),3,'time-trial','Conecta
 insert into private.challenge_items(id,challenge_version_id,question_version_id,position,points)
 select test_support.id('cp-item-'||n),test_support.id('cp-cv'),test_support.id('cp-qv-'||n),n,case when n=1 then 30 else 70 end from generate_series(1,2) n;
 select lives_ok($$select private.assert_time_trial_content(test_support.id('cp-cv'))$$,'Homogeneous Connect pairs content is valid');
+update private.challenge_versions set mode_config='{"queensTimeoutPartialCredit":true}' where id=test_support.id('cp-cv');
+select throws_ok($$update private.challenge_versions set status='published' where id=test_support.id('cp-cv')$$,
+  '22023','invalid_time_trial_content','Published Connect pairs references cannot opt in');
+update private.challenge_versions set mode_config='{}' where id=test_support.id('cp-cv');
+select throws_ok($$update private.challenge_versions set status='published',
+  mode_config='{"queensTimeoutPartialCredit":true}' where id=test_support.id('cp-cv')$$,
+  '22023','invalid_time_trial_content','Publishing cannot bypass validation by changing the draft config in the same write');
 update private.challenge_items set question_version_id=test_support.id('pyramid-queens-qv') where id=test_support.id('cp-item-2');
 select throws_ok($$select private.assert_time_trial_content(test_support.id('cp-cv'))$$,'22023','invalid_time_trial_content','Mixed library content is rejected');
 update private.challenge_items set question_version_id=test_support.id('cp-qv-2') where id=test_support.id('cp-item-2');

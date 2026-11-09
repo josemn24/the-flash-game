@@ -67,7 +67,10 @@ function answers(value: unknown, allowOmittedNullAnswers: boolean): AnswerResult
       questionId: row.challengeItemId,
       answer: row.answer === undefined ? null : (row.answer as AnswerResult["answer"]),
       status,
-      isCorrect: status === "correct" || status === "partial",
+      isCorrect:
+        status === "correct" ||
+        (status === "partial" &&
+          (row.reviewState as AnswerResult["reviewState"])?.type !== "queens"),
       points: row.points as number,
       timeUsed: (row.timeUsedMs as number) / 1000,
       ...(row.resultDetails ? { details: row.resultDetails as AnswerResult["details"] } : {}),

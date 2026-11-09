@@ -28,9 +28,15 @@ predeterminada. Se almacena en milisegundos y el límite del campo permite hasta
 Los tiempos individuales de las preguntas no se aplican a Contrarreloj.
 
 Asignar a cada prueba un peso entero positivo; todos deben sumar exactamente 100. Resolverla concede
-el peso completo, sin bonus de velocidad, crédito parcial ni penalización por errores internos.
+el peso completo, sin bonus de velocidad ni penalización por errores internos.
 Reordenar conserva pesos. El editor no ajusta automáticamente una suma incorrecta al guardar.
 No se aplica la antigua propuesta proporcional de CT-01.
+
+En una nueva versión con todos los tableros de Queens se puede activar **Puntos parciales al
+agotar el tiempo**. El valor del tablero se reparte entre las coronas que el jugador debe colocar.
+Solo cuentan las coronas correctas del último guardado aceptado antes del límite. El parcial
+se redondea hacia abajo y queda como máximo un punto por debajo del peso completo. El tercer error,
+el abandono y una recuperación que interrumpe el tablero antes del límite quedan fuera del parcial.
 
 ## Calibración
 

@@ -14,11 +14,13 @@ export function createTimeTrialTestDefinition({
   challengeId = `test-time-trial-${format}`,
   itemIds,
   globalTimeLimitMs = 120_000,
+  queensTimeoutPartialCredit = false,
 }: {
   format?: TimeTrialFormat;
   challengeId?: string;
   itemIds?: readonly string[];
   globalTimeLimitMs?: number;
+  queensTimeoutPartialCredit?: boolean;
 } = {}): LocalTimeTrialDefinition {
   const questions = format === "queens" ? timeTrialQueensQuestions : timeTrialConnectPairsQuestions;
   const ids = itemIds ?? questions.map((_, index) => `${challengeId}-item-${index + 1}`);
@@ -60,6 +62,7 @@ export function createTimeTrialTestDefinition({
       description: "Definición compartida por las pruebas del proveedor y la conformidad HTTP.",
       mode: "time-trial",
       timeLimitMs: globalTimeLimitMs,
+      ...(queensTimeoutPartialCredit ? { queensTimeoutPartialCredit: true } : {}),
       maxScore: 100,
       slots: questions.map((question, index) => ({
         id: ids[index]!,

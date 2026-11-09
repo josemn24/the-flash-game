@@ -34,6 +34,23 @@ const document = () => ({
   questions: [queen, { ...queen, slug: "queens-2", points: 70 }],
 });
 describe("Contrarreloj editorial contract", () => {
+  it("persists Queens timeout credit only as an explicit true opt-in", () => {
+    const draft = document();
+    const modeConfig = { queensTimeoutPartialCredit: true };
+    expect(
+      parseFlashEditorialDocument({
+        ...draft,
+        challenge: { ...draft.challenge, modeConfig },
+      }).challenge.modeConfig,
+    ).toEqual(modeConfig);
+    expect(() =>
+      parseFlashEditorialDocument({
+        ...draft,
+        challenge: { ...draft.challenge, modeConfig: { queensTimeoutPartialCredit: false } },
+      }),
+    ).toThrow(/Configuración de Contrarreloj inválida/);
+  });
+
   it("admits inline Queens and library references without per-question time affecting the global clock", () => {
     const parsed = parseFlashEditorialDocument(document());
     expect(parsed.challenge.globalTimeLimitMs).toBe(60000);

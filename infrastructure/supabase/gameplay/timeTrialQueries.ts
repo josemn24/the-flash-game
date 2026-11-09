@@ -15,13 +15,18 @@ import {
 } from "./flashQueries";
 import { validateCompetitiveRows } from "./competitiveReadProjection";
 
-type ReadRow = GeneratedCompetitiveReadRow<"get_my_time_trial_challenge">;
+type ReadRow = GeneratedCompetitiveReadRow<"get_my_time_trial_challenge"> & {
+  queens_timeout_partial_credit?: boolean;
+};
 function isReadRow(value: unknown): value is ReadRow {
   if (!isFlashReadRow<"get_my_time_trial_challenge">(value)) return false;
   const row = value as Record<string, unknown>;
   return (
     row.challenge_mode === "time-trial" &&
     isTimeTrialFormat(row.question_type) &&
+    (row.queens_timeout_partial_credit === undefined ||
+      (typeof row.queens_timeout_partial_credit === "boolean" &&
+        (!row.queens_timeout_partial_credit || row.question_type === "queens"))) &&
     typeof row.global_time_limit_ms === "number" &&
     Number.isSafeInteger(row.global_time_limit_ms) &&
     row.global_time_limit_ms > 0 &&
@@ -47,7 +52,10 @@ export class SupabaseTimeTrialQueries {
     timeTrialFormat(rows.map((row) => row.question_type));
     if (
       rows.length !== first.question_count ||
-      rows.reduce((sum, row) => sum + row.item_points, 0) !== 100
+      rows.reduce((sum, row) => sum + row.item_points, 0) !== 100 ||
+      rows.some(
+        (row) => !!row.queens_timeout_partial_credit !== !!first.queens_timeout_partial_credit,
+      )
     )
       throw new Error("Invalid Contrarreloj sequence");
     const resultRows =
@@ -68,6 +76,7 @@ export class SupabaseTimeTrialQueries {
       description: first.challenge_description,
       mode: "time-trial",
       timeLimitMs: first.global_time_limit_ms,
+      ...(first.queens_timeout_partial_credit ? { queensTimeoutPartialCredit: true } : {}),
       maxScore: first.challenge_max_score,
       slots: rows.map((row) => ({
         id: row.challenge_item_id,

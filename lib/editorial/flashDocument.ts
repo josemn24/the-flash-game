@@ -167,13 +167,21 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
   }
   if (
     challenge.mode === "time-trial" &&
+    !(
+      Object.keys(challenge.modeConfig).length === 0 ||
+      (hasExactKeys(challenge.modeConfig, ["queensTimeoutPartialCredit"]) &&
+        challenge.modeConfig.queensTimeoutPartialCredit === true)
+    )
+  )
+    throw new FlashEditorialValidationError(["Configuración de Contrarreloj inválida."]);
+  if (
+    challenge.mode === "time-trial" &&
     !editing &&
     ((challenge.globalTimeLimitMs as number) > 2147483647 ||
-      (challenge.globalTimeLimitMs as number) % 1000 !== 0 ||
-      Object.keys(challenge.modeConfig).length !== 0)
+      (challenge.globalTimeLimitMs as number) % 1000 !== 0)
   )
     throw new FlashEditorialValidationError([
-      "Contrarreloj requiere una duración global en segundos enteros positivos y configuración vacía.",
+      "Contrarreloj requiere una duración global en segundos enteros positivos.",
     ]);
   const validQuestionCount =
     Array.isArray(questions) &&
@@ -273,6 +281,14 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
     if (types.some((type) => !isTimeTrialFormat(type)) || new Set(types).size > 1) {
       throw new FlashEditorialValidationError([
         "Contrarreloj admite únicamente secuencias de un mismo formato: Queens o Conectar parejas.",
+      ]);
+    }
+    if (
+      challenge.modeConfig.queensTimeoutPartialCredit === true &&
+      types.some((type) => type !== "queens")
+    ) {
+      throw new FlashEditorialValidationError([
+        "Los puntos parciales al agotar el tiempo requieren una secuencia de Queens.",
       ]);
     }
   }

@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261107100004_player_answer_regrade_reads";
+const canonicalSchemaRevision = "20261108195724_queens_timeout_partial_credit";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -50,6 +50,7 @@ async function checkDatabase() {
           and to_regprocedure('private.matching_answer_valid(jsonb,jsonb,boolean)') is not null
         and to_regprocedure('private.connect_pairs_answer_valid(jsonb,jsonb)') is not null
         and to_regprocedure('private.is_supported_time_trial_question(uuid)') is not null
+        and to_regprocedure('private.is_valid_time_trial_config(jsonb,text)') is not null
         and to_regprocedure('private.submit_queens_placement(jsonb)') is not null
         and to_regprocedure('private.save_queens_draft(jsonb)') is not null
         and to_regprocedure('private.submit_queens_answer(jsonb)') is not null

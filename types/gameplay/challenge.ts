@@ -201,6 +201,7 @@ export type ServerFlashChallenge = ChallengeBase & {
 export type ServerTimeTrialChallenge = Omit<ServerFlashChallenge, "mode"> & {
   readonly mode: "time-trial";
   readonly timeLimitMs: number;
+  readonly queensTimeoutPartialCredit?: boolean;
 };
 
 export type ServerSurvivalChallenge = Omit<ServerFlashChallenge, "mode"> & {

@@ -124,6 +124,10 @@ begin
         raise exception 'Challenge items must sum to 100 points';
       end if;
       if new.mode = 'time-trial' then
+        -- The content assertion reads the saved draft by ID.
+        if new.mode is distinct from old.mode or new.mode_config is distinct from old.mode_config then
+          raise exception 'invalid_time_trial_content' using errcode = '22023';
+        end if;
         perform private.assert_time_trial_content(new.id);
       end if;
       if exists (select 1 from private.challenge_items i join private.question_versions q on q.id = i.question_version_id
@@ -323,7 +327,17 @@ create trigger audit_append_only before update or delete on private.audit_log
 
 create function private.guard_answer() returns trigger
 language plpgsql set search_path = '' as $$
-declare a public.attempts%rowtype; item_points integer; r private.answer_receipts%rowtype;
+declare
+  a public.attempts%rowtype;
+  r private.answer_receipts%rowtype;
+  item_points integer;
+  challenge_mode text;
+  challenge_config jsonb;
+  question_version uuid;
+  public_payload jsonb;
+  solution jsonb;
+  correct_placements integer;
+  required_placements integer;
 begin
   select * into a from public.attempts where id = new.attempt_id for update;
   if a.status is distinct from 'in_progress' then raise exception 'Attempt is not in progress'; end if;
@@ -344,11 +358,37 @@ begin
   if exists (select 1 from public.scheduled_challenges where id = a.scheduled_challenge_id and status = 'cancelled') then
     raise exception 'Publication cancelled';
   end if;
-  select points into item_points from private.challenge_items where id = new.challenge_item_id;
-  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial')
+  select i.points, cv.mode, cv.mode_config, i.question_version_id
+    into item_points, challenge_mode, challenge_config, question_version
+  from private.challenge_items i
+  join private.challenge_versions cv on cv.id = i.challenge_version_id
+  where i.id = new.challenge_item_id;
+  if challenge_mode = 'time-trial'
     and (new.status = 'partial' or new.points <> case when new.status = 'correct' then item_points else 0 end
       or (new.status = 'correct' and (r.timed_out or r.received_at >= a.deadline_at))) then
     raise exception 'Invalid Contrarreloj score';
+  end if;
+  if challenge_mode = 'time-trial' and challenge_config = '{"queensTimeoutPartialCredit":true}'::jsonb
+    and new.status = 'unanswered' and r.timed_out and r.received_at >= a.deadline_at
+    and r.effective_submitted_at = a.deadline_at
+    and (r.answer is null or r.answer = 'null'::jsonb) then
+    new.review_state := private.attempt_review_state(a.id, new.challenge_item_id);
+    if new.review_state->>'type' = 'queens' then
+      select q.public_payload, s.solution_payload->'solution' into public_payload, solution
+      from private.question_versions q
+      join private.question_version_solutions s on s.question_version_id = q.id
+      where q.id = question_version;
+      required_placements := (public_payload->'grid'->>'rows')::integer
+        - jsonb_array_length(public_payload->'prefilledQueens');
+      select count(distinct cell.value)::integer into correct_placements
+      from jsonb_array_elements(new.review_state->'queens') cell(value)
+      where solution @> jsonb_build_array(cell.value)
+        and not (public_payload->'prefilledQueens' @> jsonb_build_array(cell.value));
+      if required_placements > 0 then
+        new.points := least(item_points - 1, item_points * correct_placements / required_placements);
+      end if;
+      if new.points > 0 then new.status := 'partial'; end if;
+    end if;
   end if;
   if new.points > item_points then raise exception 'Points exceed item allocation'; end if;
   return new;

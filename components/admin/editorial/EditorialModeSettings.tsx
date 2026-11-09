@@ -7,6 +7,8 @@ export function EditorialModeSettings({
   onModeChange: updateMode,
   onLivesChange: updateLives,
   onGlobalDurationChange,
+  onQueensTimeoutPartialCreditChange,
+  allQuestionsAreQueens,
   onQuestionPointsChange,
   onQuestionMove,
   onQuestionDifficultyChange,
@@ -22,6 +24,8 @@ export function EditorialModeSettings({
   readonly onModeChange: (mode: FlashEditorialDocument["challenge"]["mode"]) => void;
   readonly onLivesChange: (lives: number) => void;
   readonly onGlobalDurationChange?: (seconds: string) => void;
+  readonly onQueensTimeoutPartialCreditChange?: (enabled: boolean) => void;
+  readonly allQuestionsAreQueens?: boolean;
   readonly onQuestionPointsChange?: (index: number, points: number) => void;
   readonly onQuestionMove?: (index: number, offset: -1 | 1) => void;
 }) {
@@ -128,6 +132,19 @@ export function EditorialModeSettings({
               />
             )}
           </FormField>
+          {allQuestionsAreQueens ||
+          parsedDocument.challenge.modeConfig.queensTimeoutPartialCredit === true ? (
+            <label>
+              <input
+                type="checkbox"
+                checked={parsedDocument.challenge.modeConfig.queensTimeoutPartialCredit === true}
+                onChange={(event) =>
+                  onQueensTimeoutPartialCreditChange?.(event.currentTarget.checked)
+                }
+              />{" "}
+              Puntos parciales al agotar el tiempo
+            </label>
+          ) : null}
           <p className={styles.helper}>
             Entre 2 y 20 pruebas de un mismo formato: Queens o Conectar parejas con tableros
             cuadrados de 4×4 a 8×8; en Conectar parejas puedes mezclar tamaños y usar entre tres

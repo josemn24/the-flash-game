@@ -280,6 +280,30 @@ export function EditorialManagement({
             <EditorialModeSettings
               fieldId={fieldId}
               document={editableDocument}
+              allQuestionsAreQueens={
+                !!editableDocument?.questions.length &&
+                editableDocument.questions.every((question) =>
+                  "source" in question
+                    ? questionLibrary?.entries.some(
+                        (entry) =>
+                          entry.questionVersionId === question.questionVersionId &&
+                          entry.type === "queens",
+                      )
+                    : question.type === "queens",
+                )
+              }
+              onQueensTimeoutPartialCreditChange={(enabled) => {
+                if (editableDocument)
+                  setDocumentText(
+                    formatFlashEditorialDocument({
+                      ...editableDocument,
+                      challenge: {
+                        ...editableDocument.challenge,
+                        modeConfig: enabled ? { queensTimeoutPartialCredit: true } : {},
+                      },
+                    }),
+                  );
+              }}
               libraryDifficulties={Object.fromEntries(
                 (questionLibrary?.entries ?? []).map((q) => [
                   q.questionVersionId,
