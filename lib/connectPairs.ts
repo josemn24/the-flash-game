@@ -76,7 +76,7 @@ export type ConnectPairsCellSelectionResult = {
   changed: boolean;
 };
 
-function pathConnectsEndpoints(path: number[], endpoints: readonly [number, number]) {
+function pathConnectsEndpoints(path: readonly number[], endpoints: readonly [number, number]) {
   const first = path[0];
   const last = path.at(-1);
   return (
@@ -209,6 +209,28 @@ export function isValidConnectPairsConfiguration(question: ConnectPairsQuestion)
     solutionMetrics.valid &&
     solutionMetrics.exact
   );
+}
+
+/** Measure only closed routes in a draft already accepted by the authority. */
+export function connectPairsCompletedRouteMetrics(
+  question: ConnectPairsQuestion,
+  paths: Readonly<Record<string, readonly number[]>>,
+) {
+  let connectedPairs = 0;
+  let coveredCells = 0;
+  for (const pair of question.pairs) {
+    const path = paths[pair.id];
+    if (path && pathConnectsEndpoints(path, pair.endpoints)) {
+      connectedPairs += 1;
+      coveredCells += path.length;
+    }
+  }
+  return {
+    connectedPairs,
+    coveredCells,
+    totalPairs: question.pairs.length,
+    totalCells: question.grid.rows * question.grid.columns,
+  };
 }
 
 export function calculateConnectPairsMetrics(

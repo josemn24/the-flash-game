@@ -97,6 +97,8 @@ export function compileTimeTrialDefinition(input: LocalTimeTrialDefinition): {
   const format = slots[0]?.questionType;
   if (
     challenge.mode !== "time-trial" ||
+    (challenge.queensTimeoutPartialCredit === true && format !== "queens") ||
+    (challenge.connectPairsTimeoutPartialCredit === true && format !== "connect-pairs") ||
     !challenge.id ||
     !Number.isSafeInteger(challenge.timeLimitMs) ||
     challenge.timeLimitMs <= 0 ||

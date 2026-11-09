@@ -1,4 +1,4 @@
-import { isTimeTrialFormat } from "@/lib/timeTrial";
+import { isTimeTrialFormat, TIME_TRIAL_TIMEOUT_CREDIT_KEYS } from "@/lib/timeTrial";
 import { parseEditorialQuestion as parseQuestion } from "@/lib/question-formats/editorialRegistry";
 import {
   challengeKeys,
@@ -165,15 +165,26 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
   ) {
     throw new FlashEditorialValidationError(["challenge no cumple el contrato Flash."]);
   }
+  const modeConfig = challenge.modeConfig;
+  const configKeys = Object.keys(modeConfig);
+  if (
+    challenge.mode === "time-trial" &&
+    !(
+      configKeys.length === 0 ||
+      Object.values(TIME_TRIAL_TIMEOUT_CREDIT_KEYS).some(
+        (key) => configKeys.length === 1 && configKeys[0] === key && modeConfig[key] === true,
+      )
+    )
+  )
+    throw new FlashEditorialValidationError(["Configuración de Contrarreloj inválida."]);
   if (
     challenge.mode === "time-trial" &&
     !editing &&
     ((challenge.globalTimeLimitMs as number) > 2147483647 ||
-      (challenge.globalTimeLimitMs as number) % 1000 !== 0 ||
-      Object.keys(challenge.modeConfig).length !== 0)
+      (challenge.globalTimeLimitMs as number) % 1000 !== 0)
   )
     throw new FlashEditorialValidationError([
-      "Contrarreloj requiere una duración global en segundos enteros positivos y configuración vacía.",
+      "Contrarreloj requiere una duración global en segundos enteros positivos.",
     ]);
   const validQuestionCount =
     Array.isArray(questions) &&
@@ -273,6 +284,16 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
     if (types.some((type) => !isTimeTrialFormat(type)) || new Set(types).size > 1) {
       throw new FlashEditorialValidationError([
         "Contrarreloj admite únicamente secuencias de un mismo formato: Queens o Conectar parejas.",
+      ]);
+    }
+    if (
+      configKeys.length > 0 &&
+      types.some(
+        (type) => isTimeTrialFormat(type) && TIME_TRIAL_TIMEOUT_CREDIT_KEYS[type] !== configKeys[0],
+      )
+    ) {
+      throw new FlashEditorialValidationError([
+        "La opción de puntos parciales debe corresponder al formato de la secuencia.",
       ]);
     }
   }

@@ -557,6 +557,12 @@
       "securityDefiner": false,
       "executeRoles": []
     },
+    "private.is_valid_time_trial_config": {
+      "arguments": "config jsonb, question_type text",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "i"
+    },
     "private.activate_season_command": {
       "arguments": "input jsonb",
       "securityDefiner": true,

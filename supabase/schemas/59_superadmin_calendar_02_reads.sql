@@ -144,7 +144,6 @@ language sql stable security definer set search_path = '' as $$
         and jsonb_typeof(version.mode_config->'lives') = 'number'
         and (version.mode_config->>'lives')::integer between 1 and compatibility.question_count
       or version.mode = 'time-trial'
-        and version.mode_config = '{}'::jsonb
         and version.global_time_limit_ms > 0
       or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
         and compatibility.question_count = 7
@@ -177,7 +176,7 @@ language sql stable security definer set search_path = '' as $$
           or version.mode = 'alphabet'
             and jsonb_typeof(item.mode_config->'letter') = 'string'
           or version.mode = 'time-trial'
-            and version.mode_config = '{}'::jsonb
+            and private.is_valid_time_trial_config(version.mode_config, question.type)
             and version.global_time_limit_ms > 0
             and private.is_supported_time_trial_question(question.id)
             and item.mode_config = '{}'::jsonb

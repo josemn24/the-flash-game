@@ -7,5 +7,6 @@ export default sessionFixture({
   title: "Contrarreloj timeout de conformidad",
   // Leave time for the browser to retry a lost checkpoint before the deadline.
   globalTimeLimitMs: 10_000,
+  modeConfig: { queensTimeoutPartialCredit: true },
   questions: timeTrialQueensQuestions,
 });

@@ -354,7 +354,13 @@ export class SupabaseFlashQueries {
       questionId: row.challenge_item_id,
       answer: row.answer as AnswerResult["answer"],
       status: row.answer_status,
-      isCorrect: row.answer_status === "correct" || row.answer_status === "partial",
+      isCorrect:
+        row.answer_status === "correct" ||
+        (row.answer_status === "partial" &&
+          row.review_state?.type !== "queens" &&
+          !(
+            row.result_details?.type === "connect-pairs" && row.result_details.timeoutPartialCredit
+          )),
       points: row.points,
       timeUsed: row.time_used_ms / 1000,
       ...(row.result_details ? { details: row.result_details } : {}),

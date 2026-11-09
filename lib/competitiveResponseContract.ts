@@ -389,6 +389,7 @@ export function resultDetails(
       totalCells: integer,
       coverage: ratio,
       conflicts: integer,
+      timeoutPartialCredit: (value) => value === undefined || value === true,
     }),
     "flash-memory": shape({ correctPlacements: integer, totalPlacements: integer }),
     "memory-pairs": shape({

@@ -121,7 +121,9 @@ language sql stable security definer set search_path = '' as $$
         select (count(*) between 2 and 20 and cv.mode in ('flash', 'alphabet', 'survival', 'narrative', 'time-trial')
             or count(*) = 7 and cv.mode = 'pyramid')
           and bool_and(private.is_supported_flash_question(q.id))
-          and (cv.mode = 'time-trial' and cv.mode_config = '{}'::jsonb and cv.global_time_limit_ms > 0 and bool_and(private.is_supported_time_trial_question(q.id)) and count(distinct q.type) = 1
+          and (cv.mode = 'time-trial' and cv.global_time_limit_ms > 0 and bool_and(
+              private.is_valid_time_trial_config(cv.mode_config, q.type)
+              and private.is_supported_time_trial_question(q.id)) and count(distinct q.type) = 1
             or cv.mode = 'flash' and cv.mode_config = '{}'::jsonb
             or cv.mode = 'alphabet' and cv.mode_config = '{}'::jsonb
               and bool_and(jsonb_typeof(items.mode_config->'letter') = 'string')
@@ -228,7 +230,9 @@ language sql stable security definer set search_path = '' as $$
     (select (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'time-trial')
           or count(*) = 7 and version.mode = 'pyramid')
         and bool_and(private.is_supported_flash_question(question.id))
-        and (version.mode = 'time-trial' and version.mode_config = '{}'::jsonb and version.global_time_limit_ms > 0 and bool_and(private.is_supported_time_trial_question(question.id)) and count(distinct question.type) = 1
+        and (version.mode = 'time-trial' and version.global_time_limit_ms > 0 and bool_and(
+            private.is_valid_time_trial_config(version.mode_config, question.type)
+            and private.is_supported_time_trial_question(question.id)) and count(distinct question.type) = 1
         or version.mode = 'flash' and version.mode_config = '{}'::jsonb
           or version.mode = 'alphabet' and version.mode_config = '{}'::jsonb
             and bool_and(jsonb_typeof(item.mode_config->'letter') = 'string')

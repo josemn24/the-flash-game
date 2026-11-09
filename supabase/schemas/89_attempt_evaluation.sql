@@ -13,6 +13,7 @@ declare
   key text := input->>'idempotencyKey';
   receipt private.answer_receipts%rowtype;
   snapshot jsonb;
+  saved private.attempt_answers%rowtype;
   result jsonb;
 begin
   clear_progress := false;
@@ -31,10 +32,11 @@ begin
     input->>'status', receipt.answer, input->'resultDetails', snapshot,
     case when cv.mode = 'time-trial' then case when input->>'status' = 'correct' then (select allocated.points from private.challenge_items allocated where allocated.id = receipt.challenge_item_id) else 0 end when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
       else (input->>'points')::integer end,
-    receipt.presented_at, receipt.effective_submitted_at, receipt.time_used_ms, key);
-  result := jsonb_build_object('receiptId', receipt.id, 'status', input->>'status',
-    'points', case when cv.mode = 'time-trial' then case when input->>'status' = 'correct' then (select allocated.points from private.challenge_items allocated where allocated.id = receipt.challenge_item_id) else 0 end when cv.mode = 'pyramid' and input->>'status' <> 'correct' then 0
-      else (input->>'points')::integer end) || jsonb_strip_nulls(jsonb_build_object('reviewState', snapshot));
+    receipt.presented_at, receipt.effective_submitted_at, receipt.time_used_ms, key)
+  returning * into saved;
+  result := jsonb_build_object('receiptId', receipt.id, 'status', saved.status,
+    'points', saved.points) || jsonb_strip_nulls(jsonb_build_object('reviewState', saved.review_state,
+      'details', case when saved.result_details->'timeoutPartialCredit' = 'true'::jsonb then saved.result_details end));
   updated_attempt := a;
   operation_result := result;
   clear_progress := coalesce(clear_progress, false);

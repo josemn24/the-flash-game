@@ -413,7 +413,18 @@ function materialize(
         : t.mode === "survival"
           ? { ...base, mode: t.mode, slots, lives: Number(t.modeConfig.lives) }
           : t.mode === "time-trial"
-            ? { ...base, mode: t.mode, slots, timeLimitMs: t.globalTimeLimitMs! }
+            ? {
+                ...base,
+                mode: t.mode,
+                slots,
+                timeLimitMs: t.globalTimeLimitMs!,
+                ...(t.modeConfig.queensTimeoutPartialCredit === true
+                  ? { queensTimeoutPartialCredit: true }
+                  : {}),
+                ...(t.modeConfig.connectPairsTimeoutPartialCredit === true
+                  ? { connectPairsTimeoutPartialCredit: true }
+                  : {}),
+              }
             : { ...base, mode: t.mode, slots };
   const definition = { challenge, levels } as RehearsalDefinition;
   validateRehearsalDefinition(definition);

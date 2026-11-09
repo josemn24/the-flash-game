@@ -30,7 +30,9 @@ La duración es obligatoria, sin valor inicial: segundos enteros positivos, guar
 
 Cada prueba tiene un peso editorial entero positivo. Los pesos suman exactamente 100; reordenar
 conserva el peso y guardar nunca redistribuye puntos. Un acierto concede todo el peso. No hay
-crédito parcial, bonus por velocidad ni penalización de puntos por validaciones incorrectas.
+bonus por velocidad ni penalización de puntos por validaciones incorrectas. Cada versión puede
+activar el crédito parcial al agotar el tiempo mediante `modeConfig.queensTimeoutPartialCredit` o
+`modeConfig.connectPairsTimeoutPartialCredit`, según el formato. La configuración vacía usa puntuación binaria.
 Los tiempos individuales publicados en las preguntas no tienen efecto competitivo en este modo.
 
 En Queens, dos validaciones completas incorrectas permiten continuar en ese tablero; la tercera termina la
@@ -58,9 +60,17 @@ crea una recepción ni equivale a validar el tablero.
 Al cerrar por timeout o conciliar una evaluación pendiente sin respuesta, el servidor copia el último
 checkpoint válido con progreso de la interacción a `attempt_answers.review_state` antes de limpiar el
 progreso del intento. En un cierre por timeout de Contrarreloj, la respuesta queda como `unanswered`
-con cero puntos; el snapshot solo permite mostrar el tablero o las rutas que quedaron guardadas. No
-concede el peso del tablero ni altera la puntuación. Una recepción aceptada a tiempo se evalúa con sus
-propias reglas y conserva su resultado.
+con cero puntos si el parcial está desactivado. En Queens con el parcial activo, PostgreSQL compara
+las coronas guardadas con la solución publicada, excluye las fijas y aplica
+`min(peso − 1, floor(peso × aciertos propios / coronas por colocar))`. Con cero coronas por
+colocar o sin aciertos propios, la puntuación es cero. En Conectar parejas con el parcial activo,
+se toma el menor valor entre el peso menos uno y los dos productos redondeados hacia abajo
+`peso × parejas conectadas / parejas totales` y
+`peso × casillas de caminos completos / casillas totales`. Los caminos abiertos se muestran
+en la revisión y aportan cero. Si acredita puntos, la respuesta queda como
+`partial` y aporta al total y a la temporada sin contar como resuelta. Solo cuenta el último guardado
+aceptado antes del límite. Una recepción aceptada a tiempo se evalúa con sus propias reglas y conserva
+su resultado.
 
 ## Reloj y finalización
 
@@ -104,10 +114,12 @@ Recargar y perder una confirmación nunca crea un nuevo reloj ni una segunda acr
 
 ## Rankings y revisión
 
-El comparador central de publicación e historial ordena por pruebas resueltas descendente y luego
-milisegundos globales hasta el último acierto ascendente. La métrica procede de las recepciones
+El comparador central de publicación e historial ordena por pruebas resueltas descendente. En
+versiones con parcial activo, el primer desempate es la puntuación del desafío, de mayor a menor.
+El último criterio son los milisegundos globales hasta el último acierto, de menor a mayor. El tiempo
+procede de las recepciones
 aceptadas e incluye las transiciones. No incluye el tiempo del fallo final. Los empates comparten
-posición (`1, 1, 3`); todos los jugadores sin aciertos empatan sin tiempo de último acierto.
+posición (`1, 1, 3`). Los jugadores sin tableros resueltos carecen de tiempo de último acierto.
 El identificador del jugador estabiliza únicamente el orden visual. La temporada sigue sumando
 Flash Points y no cambia su comparador.
 

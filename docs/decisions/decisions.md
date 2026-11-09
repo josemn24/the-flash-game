@@ -557,7 +557,10 @@ La [especificación funcional](../current/domain/contrarreloj.md) desarrolla el 
 - Duración global obligatoria, sin default, en segundos enteros positivos almacenados como
   milisegundos dentro del rango integer existente. Los límites por pregunta no se aplican.
 - Pesos editoriales enteros positivos, suma exacta 100. Cada acierto concede todo su peso, sin
-  crédito parcial, bonus de velocidad ni penalización por validaciones incorrectas.
+  bonus de velocidad ni penalización por validaciones incorrectas. Las nuevas versiones pueden
+  activar crédito parcial al agotar el tiempo a partir del último guardado aceptado. Queens cuenta
+  coronas correctas propias. Conectar parejas toma el menor porcentaje entre parejas cerradas y
+  cobertura de sus caminos completos.
 - Cada tablero Queens permite dos validaciones completas incorrectas; la tercera termina el desafío.
   Movimientos exploratorios, solicitudes inválidas e idempotencia no consumen oportunidades.
 - Conectar parejas permite rehacer caminos libremente. Solo resolver todas las parejas sin cruces y
@@ -580,9 +583,10 @@ La [especificación funcional](../current/domain/contrarreloj.md) desarrolla el 
 - Los cierres reglamentarios usan `completed`, `outcome = null` y los motivos anteriores, conservando
   puntos. Finalización y acreditación son idempotentes. Las pruebas no entregadas no reciben respuestas
   o tiempos ficticios; revisión solo muestra sus metadatos, sin tablero ni solución.
-- Ranking de publicación e historial: resueltas descendente, luego milisegundos hasta último acierto
-  ascendente, derivados de recepciones aceptadas e incluyendo transiciones. Empates `1,1,3`; cero
-  aciertos comparten posición sin tiempo inventado. El orden visual estable no desempata.
+- El ranking de publicación e historial ordena por pruebas resueltas, de mayor a menor. Las
+  versiones con crédito parcial desempatan por puntos del desafío, de mayor a menor. El último
+  criterio es el tiempo hasta el último acierto, de menor a mayor, con las transiciones incluidas.
+  Los empates comparten posición y los jugadores sin aciertos carecen de tiempo de último acierto.
 - La temporada continúa sumando Flash Points. Abandono, pérdida de permisos, invalidación y acceso
   a revisión mantienen el contrato común; abandonar no acredita puntos.
 

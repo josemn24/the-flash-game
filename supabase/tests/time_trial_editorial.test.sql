@@ -14,6 +14,12 @@ create function test_support.ct_document(n integer default 2) returns jsonb lang
       from generate_series(1,n) p))
 $$;
 select lives_ok($$select private.validate_flash_editorial_document(test_support.ct_document(2))$$,'Two Queens boards publish');
+select lives_ok($$select private.validate_flash_editorial_document(jsonb_set(test_support.ct_document(2),
+  '{challenge,modeConfig}', '{"queensTimeoutPartialCredit":true}'))$$, 'Inline Queens can opt in');
+select lives_ok($$select private.validate_flash_editorial_document(jsonb_set(
+  jsonb_set(test_support.ct_document(2), '{challenge,modeConfig}', '{"queensTimeoutPartialCredit":true}'),
+  '{questions,0}', jsonb_build_object('source','library','questionVersionId',test_support.id('pyramid-queens-qv'),
+    'points',50,'modeConfig','{}'::jsonb)))$$, 'Library Queens can opt in');
 select lives_ok($$select private.validate_flash_editorial_document(test_support.ct_document(20))$$,'Twenty Queens boards publish');
 select throws_ok($$select private.validate_flash_editorial_document(test_support.ct_document(1))$$,'22023','incomplete_content','One board is rejected');
 select throws_ok($$select private.validate_flash_editorial_document(test_support.ct_document(21))$$,'22023','incomplete_content','Twenty-one boards are rejected');

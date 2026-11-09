@@ -68,6 +68,10 @@ export function FlashPopTimeTrialGameView({
         ]
       : ["Une los puntos iguales", "Cubre todo el tablero", "No cruces ni compartas casillas"];
   const solved = session.results.filter((result) => result.status === "correct").length;
+  const partialPoints = session.results.reduce(
+    (total, result) => total + (result.status === "partial" ? result.points : 0),
+    0,
+  );
   const provisionalSolved = Math.max(solved, session.timeTrial?.solvedCount ?? 0);
   const provisionalScore =
     session.timeTrial?.points ??
@@ -134,6 +138,8 @@ export function FlashPopTimeTrialGameView({
               maxScore: 100,
               timeLimitMs: challenge.timeLimitMs,
               timeTrialFormat: format,
+              timeoutPartialCredit:
+                challenge.queensTimeoutPartialCredit || challenge.connectPairsTimeoutPartialCredit,
             }}
             onStart={session.begin}
             canStart
@@ -240,6 +246,7 @@ export function FlashPopTimeTrialGameView({
                   tone: "success",
                 },
                 { label: "Hasta el último acierto", value: timeLabel },
+                ...(partialPoints > 0 ? [{ label: "Puntos parciales", value: partialPoints }] : []),
               ],
             }}
             returnTo={returnTo}
@@ -280,7 +287,10 @@ export function FlashPopTimeTrialGameView({
                   : result.status === "correct"
                     ? "Resuelta"
                     : result.status === "unanswered"
-                      ? "Sin responder"
+                      ? challenge.queensTimeoutPartialCredit &&
+                        result.reviewState?.type === "queens"
+                        ? "Sin resolver"
+                        : "Sin responder"
                       : result.status === "partial"
                         ? "Parcial"
                         : "Sin resolver",

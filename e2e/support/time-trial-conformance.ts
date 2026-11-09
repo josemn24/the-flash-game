@@ -28,12 +28,19 @@ function fixture(scenario: string): ScenarioFixture {
   return JSON.parse(readFileSync(`output/fixtures/${scenario}.json`, "utf8")) as ScenarioFixture;
 }
 
-function localDefinition(data: ScenarioData, format: Format): LocalTimeTrialDefinition {
+function localDefinition(
+  data: ScenarioData,
+  format: Format,
+  queensTimeoutPartialCredit?: boolean,
+  connectPairsTimeoutPartialCredit?: boolean,
+): LocalTimeTrialDefinition {
   return createTimeTrialTestDefinition({
     format,
     challengeId: data.publicationId,
     itemIds: data.challengeItemIds,
     globalTimeLimitMs: data.globalTimeLimitMs ?? undefined,
+    queensTimeoutPartialCredit,
+    connectPairsTimeoutPartialCredit,
   });
 }
 
@@ -189,6 +196,8 @@ export function registerTimeTrialConformance(options: {
   scenario: string;
   format: Format;
   timeout?: boolean;
+  queensTimeoutPartialCredit?: boolean;
+  connectPairsTimeoutPartialCredit?: boolean;
 }) {
   let browserContext: BrowserContext;
   let request: APIRequestContext;
@@ -212,12 +221,17 @@ export function registerTimeTrialConformance(options: {
 
   test(
     options.timeout
-      ? "local Queens matches competitive global timeout and review"
+      ? `local ${options.format} matches competitive global timeout and review`
       : `local ${options.format} matches competitive progress, scoring and review`,
     async () => {
       test.setTimeout(60_000);
       const data = fixture(options.scenario).data;
-      const definition = localDefinition(data, options.format);
+      const definition = localDefinition(
+        data,
+        options.format,
+        options.queensTimeoutPartialCredit,
+        options.connectPairsTimeoutPartialCredit,
+      );
       const clock = manualClock();
       const local = new SessionDriver(
         createLocalTimeTrialSessionProvider({ definition, clock }),
@@ -252,6 +266,11 @@ export function registerTimeTrialConformance(options: {
       const first = await pair("prepare", {}, 0);
 
       if (options.timeout) {
+        if (options.queensTimeoutPartialCredit) await pair("queensDraft", { queens: [10] });
+        if (options.connectPairsTimeoutPartialCredit)
+          await pair("connectPairsDraft", {
+            paths: { a: [3, 2, 1, 0], b: [4, 9, 8, 7], c: [6, 5, 10, 11], d: [12, 13, 14, 19] },
+          });
         const deadline = Date.parse(first.remote.state.deadlineAt!);
         const waitMs = Math.max(0, deadline - Date.now() + 150);
         await new Promise((resolve) => setTimeout(resolve, waitMs));
@@ -264,7 +283,18 @@ export function registerTimeTrialConformance(options: {
           elapsedTimeMs: definition.challenge.timeLimitMs,
         });
         expect(remoteResult.state.timeTrial?.elapsedTimeMs).toBe(definition.challenge.timeLimitMs);
-        expect(localResult.state.answers?.map((answer) => answer.status)).toEqual(["unanswered"]);
+        expect(localResult.state.answers).toMatchObject([
+          options.queensTimeoutPartialCredit
+            ? { status: "partial", points: 10, isCorrect: false }
+            : options.connectPairsTimeoutPartialCredit
+              ? {
+                  status: "partial",
+                  points: 7,
+                  isCorrect: false,
+                  details: { connectedPairs: 3, coveredCells: 12 },
+                }
+              : { status: "unanswered", points: 0 },
+        ]);
         expect(localResult.review).toHaveLength(1);
         return;
       }

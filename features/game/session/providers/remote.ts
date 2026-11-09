@@ -63,14 +63,19 @@ function answers(value: unknown, allowOmittedNullAnswers: boolean): AnswerResult
     const status = answerStatus(row.status);
     if (!status || typeof row.challengeItemId !== "string")
       throw new CompetitiveCommandError("invalid_json_response", 200);
+    const details = row.resultDetails as AnswerResult["details"];
     return {
       questionId: row.challengeItemId,
       answer: row.answer === undefined ? null : (row.answer as AnswerResult["answer"]),
       status,
-      isCorrect: status === "correct" || status === "partial",
+      isCorrect:
+        status === "correct" ||
+        (status === "partial" &&
+          (row.reviewState as AnswerResult["reviewState"])?.type !== "queens" &&
+          !(details?.type === "connect-pairs" && details.timeoutPartialCredit)),
       points: row.points as number,
       timeUsed: (row.timeUsedMs as number) / 1000,
-      ...(row.resultDetails ? { details: row.resultDetails as AnswerResult["details"] } : {}),
+      ...(details ? { details } : {}),
       ...(row.reviewState ? { reviewState: row.reviewState as AnswerResult["reviewState"] } : {}),
     };
   });

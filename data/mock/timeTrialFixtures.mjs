@@ -48,3 +48,32 @@ export const timeTrialConnectPairsQuestions = [
   squareConnectPairsQuestion(4, 30, "Conecta las parejas y cubre el tablero. (4×4)"),
   squareConnectPairsQuestion(6, 70, "Encuentra otra distribución de caminos. (6×6)"),
 ];
+
+const timeoutPaths = {
+  a: [0, 1, 2, 3],
+  b: [4, 9, 8, 7],
+  c: [6, 5, 10, 11],
+  d: [12, 13, 14, 19, 18],
+  e: [17, 16, 15, 20, 21, 22, 23, 24],
+};
+
+export const connectPairsTimeoutQuestions = [
+  {
+    type: "connect-pairs",
+    points: 15,
+    timeLimitMs: 1000,
+    publicPayload: {
+      question: "Conecta las parejas del tablero 5×5.",
+      grid: { rows: 5, columns: 5 },
+      pairs: Object.entries(timeoutPaths).map(([id, path]) => ({
+        id,
+        label: `Pareja ${id.toUpperCase()}`,
+        symbol: id.toUpperCase(),
+        endpoints: [path[0], path.at(-1)],
+      })),
+      requireFullCoverage: true,
+    },
+    solution: { paths: timeoutPaths },
+  },
+  { ...timeTrialConnectPairsQuestions[1], points: 85 },
+];

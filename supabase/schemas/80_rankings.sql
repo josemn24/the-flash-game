@@ -5,7 +5,10 @@ select a.id as attempt_id, a.player_id, a.scheduled_challenge_id, sc.season_id,
   s.room_id, a.started_at, points.flash_points,
   case when cv.mode = 'time-trial' then coalesce((trial.progress->>'lastCorrectElapsedMs')::bigint,0) else duration.duration_ms end as duration_ms,
   cv.mode as challenge_mode, (trial.progress->>'solvedCount')::integer as solved_count,
-  (trial.progress->>'lastCorrectElapsedMs')::bigint as last_correct_elapsed_ms
+  (trial.progress->>'lastCorrectElapsedMs')::bigint as last_correct_elapsed_ms,
+  case when cv.mode = 'time-trial' and cv.mode_config in (
+      '{"queensTimeoutPartialCredit":true}'::jsonb, '{"connectPairsTimeoutPartialCredit":true}'::jsonb)
+    then (trial.progress->>'points')::integer end as time_trial_tiebreak_points
 from public.attempts a
 join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
 join public.seasons s on s.id = sc.season_id
@@ -27,8 +30,11 @@ grant select on private.effective_results to service_role;
 
 -- One comparator for the live ranking and historical projections.
 create view private.ranked_challenge_results with (security_invoker = true) as
-select e.*, rank() over (partition by scheduled_challenge_id order by
+select e.attempt_id, e.player_id, e.scheduled_challenge_id, e.season_id, e.room_id,
+  e.started_at, e.flash_points, e.duration_ms, e.challenge_mode, e.solved_count, e.last_correct_elapsed_ms,
+  rank() over (partition by scheduled_challenge_id order by
   case when challenge_mode = 'time-trial' then solved_count else flash_points end desc,
+  time_trial_tiebreak_points desc nulls last,
   case when challenge_mode = 'time-trial' then last_correct_elapsed_ms else duration_ms end asc nulls last,
   case when challenge_mode <> 'time-trial' then started_at end asc
 ) as position from private.effective_results e;

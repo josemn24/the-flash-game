@@ -27,6 +27,7 @@ export type AnswerResultDetails =
       totalCells: number;
       coverage: number;
       conflicts: number;
+      timeoutPartialCredit?: true;
     }
   | {
       type: "flash-memory";

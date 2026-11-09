@@ -7,6 +7,7 @@ registerTimeTrialConformance({
   scenario: "time-trial-timeout-conformance",
   format: "queens",
   timeout: true,
+  queensTimeoutPartialCredit: true,
 });
 
 test("timeout retries its close while a committed Queens checkpoint retry is held", async ({
@@ -56,6 +57,9 @@ test("timeout retries its close while a committed Queens checkpoint retry is hel
     await route.fulfill({ response: await route.fetch() });
   });
   try {
+    await expect(
+      page.getByText(/las coronas correctas que colocaste y quedaron guardadas/),
+    ).toBeVisible();
     await page.getByRole("button", { name: "Empezar desafío" }).click();
     await expect(page.getByText("Prueba 1 de 2", { exact: true })).toBeVisible({ timeout: 15000 });
     const crown = page.getByRole("gridcell", { name: /^Fila 3, columna 1,/ });
@@ -68,16 +72,19 @@ test("timeout retries its close while a committed Queens checkpoint retry is hel
     await expect(page.getByRole("heading", { name: "Tu recorrido contrarreloj" })).toBeVisible({
       timeout: 8000,
     });
+    await expect(page.getByText("Puntos parciales", { exact: true })).toBeVisible();
     expect(closes).toHaveLength(2);
     expect(closes[1]).toEqual(closes[0]);
     expect(checkpoints[1]).toEqual(checkpoints[0]);
     releaseCheckpoint();
     await page.reload();
+    await expect(page.getByText("Puntos parciales", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Ver respuestas" }).click();
     const review = page.locator("details").first();
     await review.locator("summary").click();
     const savedBoard = review.getByLabel("Tablero final del jugador");
     await expect(savedBoard).toBeVisible();
+    await expect(review.getByText(/10 puntos/)).toBeVisible();
     await expect(
       savedBoard.getByRole("gridcell", { name: /^Fila 3, columna 1,.*corona/ }),
     ).toBeVisible();
