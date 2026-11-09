@@ -1,6 +1,6 @@
 "use client";
 
-import { isTimeTrialFormat } from "@/lib/timeTrial";
+import { isTimeTrialFormat, TIME_TRIAL_TIMEOUT_CREDIT_KEYS } from "@/lib/timeTrial";
 import { randomUuid } from "@/lib/randomUuid";
 
 import {
@@ -156,6 +156,20 @@ export function EditorialManagement({
     }
   }, [documentText]);
 
+  const editableQuestionTypes = editableDocument?.questions.map((question) =>
+    "source" in question
+      ? questionLibrary?.entries.find(
+          (entry) => entry.questionVersionId === question.questionVersionId,
+        )?.type
+      : question.type,
+  );
+  const firstEditableType = editableQuestionTypes?.[0];
+  const timeoutCreditFormat =
+    isTimeTrialFormat(firstEditableType) &&
+    editableQuestionTypes?.every((type) => type === firstEditableType)
+      ? firstEditableType
+      : undefined;
+
   const documentSummary = parsedDocument
     ? `${parsedDocument.challenge.mode === "survival" ? "Supervivencia" : parsedDocument.challenge.mode === "alphabet" ? "Alphabet" : parsedDocument.challenge.mode === "narrative" ? "Narrativa" : parsedDocument.challenge.mode === "pyramid" ? "La Pirámide" : parsedDocument.challenge.mode === "time-trial" ? "Contrarreloj" : "Flash"} · ${parsedDocument.challenge.mode === "pyramid" ? `${parsedDocument.questions.length}/7 niveles` : `${parsedDocument.questions.length} preguntas`} · ${parsedDocument.questions.reduce((total, question) => total + question.points, 0)} puntos`
     : `Flash · ${FLASH_MIN_QUESTIONS}–${FLASH_MAX_QUESTIONS} preguntas · ${FLASH_TOTAL_POINTS} puntos`;
@@ -280,26 +294,18 @@ export function EditorialManagement({
             <EditorialModeSettings
               fieldId={fieldId}
               document={editableDocument}
-              allQuestionsAreQueens={
-                !!editableDocument?.questions.length &&
-                editableDocument.questions.every((question) =>
-                  "source" in question
-                    ? questionLibrary?.entries.some(
-                        (entry) =>
-                          entry.questionVersionId === question.questionVersionId &&
-                          entry.type === "queens",
-                      )
-                    : question.type === "queens",
-                )
-              }
-              onQueensTimeoutPartialCreditChange={(enabled) => {
+              timeoutCreditFormat={timeoutCreditFormat}
+              onTimeoutPartialCreditChange={(enabled) => {
                 if (editableDocument)
                   setDocumentText(
                     formatFlashEditorialDocument({
                       ...editableDocument,
                       challenge: {
                         ...editableDocument.challenge,
-                        modeConfig: enabled ? { queensTimeoutPartialCredit: true } : {},
+                        modeConfig:
+                          enabled && timeoutCreditFormat
+                            ? { [TIME_TRIAL_TIMEOUT_CREDIT_KEYS[timeoutCreditFormat]]: true }
+                            : {},
                       },
                     }),
                   );

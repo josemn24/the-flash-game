@@ -1,4 +1,6 @@
 import { Button, FormField, Input, Select } from "@/components/ui";
+import { TIME_TRIAL_TIMEOUT_CREDIT_KEYS } from "@/lib/timeTrial";
+import type { TimeTrialFormat } from "@/types/domain/time-trial";
 import type { FlashEditorialDocument } from "@/types/view-models/editorial";
 import styles from "../EditorialManagement.module.css";
 export function EditorialModeSettings({
@@ -7,8 +9,8 @@ export function EditorialModeSettings({
   onModeChange: updateMode,
   onLivesChange: updateLives,
   onGlobalDurationChange,
-  onQueensTimeoutPartialCreditChange,
-  allQuestionsAreQueens,
+  onTimeoutPartialCreditChange,
+  timeoutCreditFormat,
   onQuestionPointsChange,
   onQuestionMove,
   onQuestionDifficultyChange,
@@ -24,12 +26,15 @@ export function EditorialModeSettings({
   readonly onModeChange: (mode: FlashEditorialDocument["challenge"]["mode"]) => void;
   readonly onLivesChange: (lives: number) => void;
   readonly onGlobalDurationChange?: (seconds: string) => void;
-  readonly onQueensTimeoutPartialCreditChange?: (enabled: boolean) => void;
-  readonly allQuestionsAreQueens?: boolean;
+  readonly onTimeoutPartialCreditChange?: (enabled: boolean) => void;
+  readonly timeoutCreditFormat?: TimeTrialFormat;
   readonly onQuestionPointsChange?: (index: number, points: number) => void;
   readonly onQuestionMove?: (index: number, offset: -1 | 1) => void;
 }) {
   if (!parsedDocument) return null;
+  const timeoutCreditEnabled = Object.values(TIME_TRIAL_TIMEOUT_CREDIT_KEYS).some(
+    (key) => parsedDocument.challenge.modeConfig[key] === true,
+  );
   return (
     <div className={styles.draftSelector}>
       <FormField id={fieldId + "-modo-del-desafio"} label="Modo del desafío" density="compact">
@@ -132,15 +137,12 @@ export function EditorialModeSettings({
               />
             )}
           </FormField>
-          {allQuestionsAreQueens ||
-          parsedDocument.challenge.modeConfig.queensTimeoutPartialCredit === true ? (
+          {timeoutCreditFormat || timeoutCreditEnabled ? (
             <label>
               <input
                 type="checkbox"
-                checked={parsedDocument.challenge.modeConfig.queensTimeoutPartialCredit === true}
-                onChange={(event) =>
-                  onQueensTimeoutPartialCreditChange?.(event.currentTarget.checked)
-                }
+                checked={timeoutCreditEnabled}
+                onChange={(event) => onTimeoutPartialCreditChange?.(event.currentTarget.checked)}
               />{" "}
               Puntos parciales al agotar el tiempo
             </label>

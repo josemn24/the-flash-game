@@ -138,7 +138,8 @@ export function FlashPopTimeTrialGameView({
               maxScore: 100,
               timeLimitMs: challenge.timeLimitMs,
               timeTrialFormat: format,
-              queensTimeoutPartialCredit: challenge.queensTimeoutPartialCredit,
+              timeoutPartialCredit:
+                challenge.queensTimeoutPartialCredit || challenge.connectPairsTimeoutPartialCredit,
             }}
             onStart={session.begin}
             canStart

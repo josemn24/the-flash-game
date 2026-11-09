@@ -1,4 +1,5 @@
 import {
+  connectPairsTimeoutQuestions,
   timeTrialConnectPairsQuestions,
   timeTrialQueensQuestions,
 } from "@/data/mock/timeTrialFixtures.mjs";
@@ -15,14 +16,21 @@ export function createTimeTrialTestDefinition({
   itemIds,
   globalTimeLimitMs = 120_000,
   queensTimeoutPartialCredit = false,
+  connectPairsTimeoutPartialCredit = false,
 }: {
   format?: TimeTrialFormat;
   challengeId?: string;
   itemIds?: readonly string[];
   globalTimeLimitMs?: number;
   queensTimeoutPartialCredit?: boolean;
+  connectPairsTimeoutPartialCredit?: boolean;
 } = {}): LocalTimeTrialDefinition {
-  const questions = format === "queens" ? timeTrialQueensQuestions : timeTrialConnectPairsQuestions;
+  const questions =
+    format === "queens"
+      ? timeTrialQueensQuestions
+      : connectPairsTimeoutPartialCredit
+        ? connectPairsTimeoutQuestions
+        : timeTrialConnectPairsQuestions;
   const ids = itemIds ?? questions.map((_, index) => `${challengeId}-item-${index + 1}`);
   if (
     ids.length !== questions.length ||
@@ -63,6 +71,7 @@ export function createTimeTrialTestDefinition({
       mode: "time-trial",
       timeLimitMs: globalTimeLimitMs,
       ...(queensTimeoutPartialCredit ? { queensTimeoutPartialCredit: true } : {}),
+      ...(connectPairsTimeoutPartialCredit ? { connectPairsTimeoutPartialCredit: true } : {}),
       maxScore: 100,
       slots: questions.map((question, index) => ({
         id: ids[index]!,

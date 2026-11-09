@@ -5,6 +5,11 @@ export function isTimeTrialFormat(value: unknown): value is TimeTrialFormat {
   return value === "queens" || value === "connect-pairs";
 }
 
+export const TIME_TRIAL_TIMEOUT_CREDIT_KEYS = {
+  queens: "queensTimeoutPartialCredit",
+  "connect-pairs": "connectPairsTimeoutPartialCredit",
+} as const satisfies Record<TimeTrialFormat, string>;
+
 /** Derive the format from metadata rather than duplicating persisted configuration. */
 export function timeTrialFormat(types: readonly unknown[]): TimeTrialFormat {
   const first = types[0];

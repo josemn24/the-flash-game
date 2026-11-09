@@ -11,9 +11,10 @@ import type {
   AuthoritativeSessionUpdate,
   SessionResultDraft,
 } from "@/types/gameplay/authoritative-session";
-import type { AnswerResult } from "@/types/gameplay/result";
+import type { AnswerResult, AnswerResultDetails } from "@/types/gameplay/result";
 import type { LocalTimeTrialDefinition } from "@/types/gameplay/local-time-trial";
 import { evaluateCompetitiveReceipt } from "@/lib/scoringCore/competitiveReceipt";
+import { connectPairsCompletedRouteMetrics } from "@/lib/connectPairs";
 import { randomUuid } from "@/lib/randomUuid";
 import { systemSessionClock } from "../clock";
 import { compileTimeTrialDefinition } from "./localShared/definition";
@@ -161,7 +162,9 @@ export function createLocalTimeTrialSessionProvider(
         ? evaluated.details?.type === "queens" && evaluated.details.solved
         : evaluated.status === "correct");
     const reviewState = pending.timedOut ? formatReviewState(level, state) : undefined;
-    let points = correct ? challenge.slots[pending.index]!.points : 0;
+    const weight = challenge.slots[pending.index]!.points;
+    let points = correct ? weight : 0;
+    let details: AnswerResultDetails | undefined = pending.timedOut ? undefined : evaluated.details;
     if (
       challenge.queensTimeoutPartialCredit &&
       reviewState?.type === "queens" &&
@@ -174,9 +177,27 @@ export function createLocalTimeTrialSessionProvider(
           (cell) => solution.includes(cell) && !prefilledQueens.includes(cell),
         ),
       ).size;
-      const weight = challenge.slots[pending.index]!.points;
       if (required > 0)
         points = Math.min(weight - 1, Math.floor((weight * placedCorrectly) / required));
+    } else if (
+      challenge.connectPairsTimeoutPartialCredit &&
+      reviewState?.type === "connect-pairs" &&
+      level.question.type === "connect-pairs"
+    ) {
+      const metrics = connectPairsCompletedRouteMetrics(level.question, reviewState.paths);
+      const { connectedPairs, totalPairs, coveredCells, totalCells } = metrics;
+      points = Math.min(
+        weight - 1,
+        Math.floor((weight * connectedPairs) / totalPairs),
+        Math.floor((weight * coveredCells) / totalCells),
+      );
+      details = {
+        type: "connect-pairs",
+        timeoutPartialCredit: true,
+        ...metrics,
+        coverage: coveredCells / totalCells,
+        conflicts: 0,
+      };
     }
     const result: AnswerResult = {
       questionId: level.source.challengeItemId,
@@ -191,7 +212,7 @@ export function createLocalTimeTrialSessionProvider(
       isCorrect: correct,
       points,
       timeUsed: pending.timeUsedMs / 1000,
-      ...(evaluated.details && !pending.timedOut ? { details: evaluated.details } : {}),
+      ...(details ? { details } : {}),
       ...(reviewState ? { reviewState } : {}),
     };
     answers.push(result);
@@ -308,7 +329,7 @@ export function createLocalTimeTrialSessionProvider(
     if (
       operation === "complete" ||
       (operation === "recover" &&
-        challenge.queensTimeoutPartialCredit &&
+        (challenge.queensTimeoutPartialCredit || challenge.connectPairsTimeoutPartialCredit) &&
         endReason(now) === "time_limit")
     ) {
       if (deadlineAt !== null && now >= deadlineAt && active) {

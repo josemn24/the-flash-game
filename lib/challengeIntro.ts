@@ -79,7 +79,7 @@ function getModeLabelForMode(mode: GameMode) {
 function buildSafeRules(
   mode: GameMode,
   format?: TimeTrialFormat,
-  queensTimeoutPartialCredit?: boolean,
+  timeoutPartialCredit?: boolean,
 ): [ChallengeIntroRule, ChallengeIntroRule, ChallengeIntroRule] {
   switch (mode) {
     case "time-trial":
@@ -98,10 +98,11 @@ function buildSafeRules(
           },
           {
             title: "Resuelve para sumar y avanzar",
-            description:
-              format === "queens" && queensTimeoutPartialCredit
+            description: timeoutPartialCredit
+              ? format === "queens"
                 ? "Si se agota el tiempo, las coronas correctas que colocaste y quedaron guardadas pueden sumar puntos parciales."
-                : "Cada tablero completado suma puntos. Si lo abandonas sin resolver, termina la partida.",
+                : "Si se agota el tiempo, los caminos completos guardados pueden sumar puntos parciales según las parejas conectadas y las casillas que cubren."
+              : "Cada tablero completado suma puntos. Si lo abandonas sin resolver, termina la partida.",
           },
         ];
       }
@@ -141,7 +142,7 @@ export type SafeChallengeIntroduction = {
   maxScore: number;
   timeLimitMs?: number;
   timeTrialFormat?: TimeTrialFormat;
-  queensTimeoutPartialCredit?: boolean;
+  timeoutPartialCredit?: boolean;
 };
 
 export function buildSafeChallengeIntroModel(
@@ -165,7 +166,7 @@ export function buildSafeChallengeIntroModel(
     rules: buildSafeRules(
       introduction.mode,
       introduction.timeTrialFormat,
-      introduction.queensTimeoutPartialCredit,
+      introduction.timeoutPartialCredit,
     ),
   };
 }

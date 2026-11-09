@@ -6,7 +6,8 @@ select a.id as attempt_id, a.player_id, a.scheduled_challenge_id, sc.season_id,
   case when cv.mode = 'time-trial' then coalesce((trial.progress->>'lastCorrectElapsedMs')::bigint,0) else duration.duration_ms end as duration_ms,
   cv.mode as challenge_mode, (trial.progress->>'solvedCount')::integer as solved_count,
   (trial.progress->>'lastCorrectElapsedMs')::bigint as last_correct_elapsed_ms,
-  case when cv.mode = 'time-trial' and cv.mode_config = '{"queensTimeoutPartialCredit":true}'::jsonb
+  case when cv.mode = 'time-trial' and cv.mode_config in (
+      '{"queensTimeoutPartialCredit":true}'::jsonb, '{"connectPairsTimeoutPartialCredit":true}'::jsonb)
     then (trial.progress->>'points')::integer end as time_trial_tiebreak_points
 from public.attempts a
 join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id

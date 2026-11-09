@@ -47,6 +47,7 @@ const specs = requested.length
       "time-trial-connect-pairs",
       "time-trial-connect-pairs-session-conformance",
       "time-trial-timeout-conformance",
+      "time-trial-connect-pairs-partial",
       "s03",
       "s04",
       "s05",

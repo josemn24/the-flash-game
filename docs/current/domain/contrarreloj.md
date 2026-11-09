@@ -30,9 +30,9 @@ La duración es obligatoria, sin valor inicial: segundos enteros positivos, guar
 
 Cada prueba tiene un peso editorial entero positivo. Los pesos suman exactamente 100; reordenar
 conserva el peso y guardar nunca redistribuye puntos. Un acierto concede todo el peso. No hay
-bonus por velocidad ni penalización de puntos por validaciones incorrectas. Una versión de Queens
-puede activar el crédito parcial al agotar el tiempo mediante `modeConfig.queensTimeoutPartialCredit`.
-La configuración vacía usa puntuación binaria.
+bonus por velocidad ni penalización de puntos por validaciones incorrectas. Cada versión puede
+activar el crédito parcial al agotar el tiempo mediante `modeConfig.queensTimeoutPartialCredit` o
+`modeConfig.connectPairsTimeoutPartialCredit`, según el formato. La configuración vacía usa puntuación binaria.
 Los tiempos individuales publicados en las preguntas no tienen efecto competitivo en este modo.
 
 En Queens, dos validaciones completas incorrectas permiten continuar en ese tablero; la tercera termina la
@@ -63,7 +63,11 @@ progreso del intento. En un cierre por timeout de Contrarreloj, la respuesta que
 con cero puntos si el parcial está desactivado. En Queens con el parcial activo, PostgreSQL compara
 las coronas guardadas con la solución publicada, excluye las fijas y aplica
 `min(peso − 1, floor(peso × aciertos propios / coronas por colocar))`. Con cero coronas por
-colocar o sin aciertos propios, la puntuación es cero. Si acredita puntos, la respuesta queda como
+colocar o sin aciertos propios, la puntuación es cero. En Conectar parejas con el parcial activo,
+se toma el menor valor entre el peso menos uno y los dos productos redondeados hacia abajo
+`peso × parejas conectadas / parejas totales` y
+`peso × casillas de caminos completos / casillas totales`. Los caminos abiertos se muestran
+en la revisión y aportan cero. Si acredita puntos, la respuesta queda como
 `partial` y aporta al total y a la temporada sin contar como resuelta. Solo cuenta el último guardado
 aceptado antes del límite. Una recepción aceptada a tiempo se evalúa con sus propias reglas y conserva
 su resultado.
@@ -111,7 +115,7 @@ Recargar y perder una confirmación nunca crea un nuevo reloj ni una segunda acr
 ## Rankings y revisión
 
 El comparador central de publicación e historial ordena por pruebas resueltas descendente. En
-Queens con parcial activo, el primer desempate es la puntuación del desafío, de mayor a menor.
+versiones con parcial activo, el primer desempate es la puntuación del desafío, de mayor a menor.
 El último criterio son los milisegundos globales hasta el último acierto, de menor a mayor. El tiempo
 procede de las recepciones
 aceptadas e incluye las transiciones. No incluye el tiempo del fallo final. Los empates comparten

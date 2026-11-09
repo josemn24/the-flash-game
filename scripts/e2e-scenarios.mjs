@@ -13,6 +13,7 @@ export const E2E_BY_SCENARIO = Object.freeze({
     "e2e/time-trial-connect-pairs-session-conformance.spec.ts",
   ],
   "time-trial-timeout-conformance": ["e2e/time-trial-timeout-conformance.spec.ts"],
+  "time-trial-connect-pairs-partial": ["e2e/time-trial-connect-pairs-partial.spec.ts"],
   portal: [
     "e2e/admin-portal.spec.ts",
     "e2e/auth-login.spec.ts",
@@ -69,6 +70,7 @@ export const PILOT_E2E_BY_SCENARIO = Object.freeze({
   "time-trial": E2E_BY_SCENARIO["time-trial"],
   "time-trial-connect-pairs": E2E_BY_SCENARIO["time-trial-connect-pairs"],
   "time-trial-timeout-conformance": E2E_BY_SCENARIO["time-trial-timeout-conformance"],
+  "time-trial-connect-pairs-partial": E2E_BY_SCENARIO["time-trial-connect-pairs-partial"],
   e01: E2E_BY_SCENARIO.e01,
   e02: E2E_BY_SCENARIO.e02,
   e03: E2E_BY_SCENARIO.e03,

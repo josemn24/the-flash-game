@@ -215,6 +215,73 @@ describe("local Time Trial authority", () => {
     },
   );
 
+  it.each([
+    { name: "open routes", paths: { a: [0, 1, 2] }, pairs: 0, cells: 0, points: 0 },
+    {
+      name: "closed routes in either direction",
+      paths: { a: [3, 2, 1, 0], b: [4, 9, 8, 7], c: [6, 5, 10, 11], d: [12, 13, 14, 19] },
+      pairs: 3,
+      cells: 12,
+      points: 7,
+    },
+    {
+      name: "all pairs with holes",
+      paths: {
+        a: [0, 1, 2, 3],
+        b: [4, 9, 8, 7],
+        c: [6, 5, 10, 11],
+        d: [12, 13, 18],
+        e: [17, 22, 23, 24],
+      },
+      pairs: 5,
+      cells: 19,
+      points: 11,
+    },
+    {
+      name: "fully covered draft",
+      paths: {
+        a: [0, 1, 2, 3],
+        b: [4, 9, 8, 7],
+        c: [6, 5, 10, 11],
+        d: [12, 13, 14, 19, 18],
+        e: [17, 16, 15, 20, 21, 22, 23, 24],
+      },
+      pairs: 5,
+      cells: 25,
+      points: 14,
+    },
+  ])("scores $name at expiry", async ({ paths, pairs, cells, points }) => {
+    const definition = createTimeTrialTestDefinition({
+      format: "connect-pairs",
+      connectPairsTimeoutPartialCredit: true,
+    });
+    const { driver, clock } = setup(definition);
+    await driver.begin();
+    const prepared = await driver.issue("prepare");
+    await driver.issue("connectPairsDraft", { paths });
+    clock.set(Date.parse(prepared.state.deadlineAt!));
+    const finished = await driver.issue("recover");
+    expect(finished.state).toMatchObject({
+      score: points,
+      terminalReason: "time_limit",
+      timeTrial: { solvedCount: 0 },
+      answers: [
+        {
+          status: points ? "partial" : "unanswered",
+          isCorrect: false,
+          points,
+          details: {
+            type: "connect-pairs",
+            timeoutPartialCredit: true,
+            connectedPairs: pairs,
+            coveredCells: cells,
+          },
+          reviewState: { type: "connect-pairs", paths },
+        },
+      ],
+    });
+  });
+
   it("evaluates Connect Pairs answers through the canonical scorer", async () => {
     const definition = createTimeTrialTestDefinition({ format: "connect-pairs" });
     const { clock, driver } = setup(definition);

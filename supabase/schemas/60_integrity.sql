@@ -338,6 +338,10 @@ declare
   solution jsonb;
   correct_placements integer;
   required_placements integer;
+  connected_pairs integer;
+  total_pairs integer;
+  covered_cells integer;
+  total_cells integer;
 begin
   select * into a from public.attempts where id = new.attempt_id for update;
   if a.status is distinct from 'in_progress' then raise exception 'Attempt is not in progress'; end if;
@@ -368,12 +372,14 @@ begin
       or (new.status = 'correct' and (r.timed_out or r.received_at >= a.deadline_at))) then
     raise exception 'Invalid Contrarreloj score';
   end if;
-  if challenge_mode = 'time-trial' and challenge_config = '{"queensTimeoutPartialCredit":true}'::jsonb
+  if challenge_mode = 'time-trial' and challenge_config in (
+      '{"queensTimeoutPartialCredit":true}'::jsonb, '{"connectPairsTimeoutPartialCredit":true}'::jsonb
+    )
     and new.status = 'unanswered' and r.timed_out and r.received_at >= a.deadline_at
     and r.effective_submitted_at = a.deadline_at
     and (r.answer is null or r.answer = 'null'::jsonb) then
     new.review_state := private.attempt_review_state(a.id, new.challenge_item_id);
-    if new.review_state->>'type' = 'queens' then
+    if new.review_state->>'type' = 'queens' and challenge_config = '{"queensTimeoutPartialCredit":true}'::jsonb then
       select q.public_payload, s.solution_payload->'solution' into public_payload, solution
       from private.question_versions q
       join private.question_version_solutions s on s.question_version_id = q.id
@@ -387,8 +393,26 @@ begin
       if required_placements > 0 then
         new.points := least(item_points - 1, item_points * correct_placements / required_placements);
       end if;
-      if new.points > 0 then new.status := 'partial'; end if;
+    elsif new.review_state->>'type' = 'connect-pairs'
+      and challenge_config = '{"connectPairsTimeoutPartialCredit":true}'::jsonb then
+      select q.public_payload into public_payload
+      from private.question_versions q where q.id = question_version;
+      total_pairs := jsonb_array_length(public_payload->'pairs');
+      total_cells := (public_payload->'grid'->>'rows')::integer * (public_payload->'grid'->>'columns')::integer;
+      -- The review snapshot has already passed the draft validator, including overlap checks.
+      select count(*)::integer, coalesce(sum(jsonb_array_length(route.path)), 0)::integer
+        into connected_pairs, covered_cells
+      from jsonb_array_elements(public_payload->'pairs') pair(value)
+      cross join lateral (select new.review_state->'paths'->(pair.value->>'id') as path) route
+      where (route.path->0 = pair.value->'endpoints'->0 and route.path->-1 = pair.value->'endpoints'->1)
+         or (route.path->0 = pair.value->'endpoints'->1 and route.path->-1 = pair.value->'endpoints'->0);
+      new.points := least(item_points - 1, item_points * connected_pairs / total_pairs,
+        item_points * covered_cells / total_cells);
+      new.result_details := jsonb_build_object('type', 'connect-pairs', 'timeoutPartialCredit', true,
+        'connectedPairs', connected_pairs, 'totalPairs', total_pairs, 'coveredCells', covered_cells,
+        'totalCells', total_cells, 'coverage', covered_cells::numeric / total_cells, 'conflicts', 0);
     end if;
+    if new.points > 0 then new.status := 'partial'; end if;
   end if;
   if new.points > item_points then raise exception 'Points exceed item allocation'; end if;
   return new;

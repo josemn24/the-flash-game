@@ -130,6 +130,13 @@ create function test_support.cp_document() returns jsonb language sql as $$
       private.question_version_document(test_support.id('cp-qv-2')) || '{"points":70}'::jsonb))
 $$;
 select lives_ok($$select private.validate_flash_editorial_document(test_support.cp_document())$$,'Inline Connect pairs can be saved');
+select lives_ok($$select private.validate_flash_editorial_document(jsonb_set(test_support.cp_document(),
+  '{challenge,modeConfig}', '{"connectPairsTimeoutPartialCredit":true}'))$$,
+  'Inline Connect pairs can opt in to timeout credit');
+select lives_ok($$select private.validate_flash_editorial_document(jsonb_set(jsonb_set(test_support.cp_document(),
+  '{challenge,modeConfig}', '{"connectPairsTimeoutPartialCredit":true}'), '{questions,0}',
+  jsonb_build_object('source','library','questionVersionId',test_support.id('cp-qv-1'),'points',30,'modeConfig','{}'::jsonb)))$$,
+  'Library Connect pairs can opt in to timeout credit');
 select throws_ok($$select private.validate_flash_editorial_document(jsonb_set(test_support.cp_document(),
   '{challenge,modeConfig}', '{"queensTimeoutPartialCredit":true}'))$$,
   '22023','unsupported_question','Connect pairs cannot opt in to Queens timeout credit');
@@ -339,6 +346,115 @@ reset role;
 set local role authenticated;
 select is((select review_state from public.get_my_time_trial_result((select (state->>'attemptId')::uuid from test_support.runtime)) where item_position=1),
   '{"type":"connect-pairs","paths":{"a":[0],"b":[5,6,7,8,9]}}'::jsonb,'Reopened CP result retains the snapshot from pending evaluation');
+reset role;
+
+-- An opted-in 5×5 board with three four-cell routes and two longer routes.
+insert into private.question_versions(id, question_definition_id, version_number, payload_schema_version,
+  type, time_limit_ms, public_payload, created_by_player_id)
+select test_support.id('cp-partial-qv'), question_definition_id, 2, payload_schema_version,
+  type, time_limit_ms, jsonb_set(public_payload, '{pairs}', (
+    select jsonb_agg(jsonb_build_object('id', pair.id, 'label', upper(pair.id), 'symbol', upper(pair.id),
+      'endpoints', jsonb_build_array(pair.start_cell, pair.end_cell)) order by pair.id)
+    from (values ('a',0,3), ('b',4,7), ('c',6,11), ('d',12,18), ('e',17,24)) pair(id,start_cell,end_cell)
+  )), created_by_player_id from private.question_versions where id = test_support.id('cp-qv-1');
+insert into private.question_version_solutions(question_version_id, solution_payload)
+values (test_support.id('cp-partial-qv'),
+  '{"paths":{"a":[0,1,2,3],"b":[4,9,8,7],"c":[6,5,10,11],"d":[12,13,14,19,18],"e":[17,16,15,20,21,22,23,24]}}');
+update private.question_versions set status = 'published' where id = test_support.id('cp-partial-qv');
+insert into private.challenge_versions(id, challenge_definition_id, version_number, mode, title,
+  global_time_limit_ms, mode_config, created_by_player_id)
+values (test_support.id('cp-partial-cv'), test_support.id('ct-cd'), 5, 'time-trial', 'Conectar parejas parcial',
+  1000, '{"connectPairsTimeoutPartialCredit":true}', test_support.id('owner'));
+insert into private.challenge_items(id, challenge_version_id, question_version_id, position, points)
+values
+  (test_support.id('cp-partial-item-1'), test_support.id('cp-partial-cv'), test_support.id('cp-partial-qv'), 1, 15),
+  (test_support.id('cp-partial-item-2'), test_support.id('cp-partial-cv'), test_support.id('cp-qv-1'), 2, 85);
+update private.challenge_versions set status = 'published' where id = test_support.id('cp-partial-cv');
+insert into public.rooms(id, slug, title)
+select test_support.id('cp-room-'||n), 'cp-room-'||n, 'Conectar parejas parcial' from generate_series(8,10) n;
+insert into public.room_memberships(room_id, player_id, role)
+select test_support.id('cp-room-'||n), m.player_id, m.role from public.room_memberships m
+cross join generate_series(8,10) n where m.room_id = test_support.id('room-pyramid');
+insert into public.seasons(id, room_id, title, status, starts_at, ends_at)
+select test_support.id('cp-season-'||n), test_support.id('cp-room-'||n), 'CP parcial', 'active',
+  now()-interval '1 day', now()+interval '1 day' from generate_series(8,10) n;
+insert into public.scheduled_challenges(id, season_id, challenge_version_id, number, status, opens_at, closes_at)
+select test_support.id('cp-sc-'||n), test_support.id('cp-season-'||n), test_support.id('cp-partial-cv'),
+  1, 'open', now()-interval '1 hour', now()+interval '1 day' from generate_series(8,10) n;
+
+select test_support.as_actor('owner');
+set local role authenticated;
+select is((select can_start from public.get_room_calendar('cp-room-8')),true,'Calendar admits opted-in Connect pairs');
+select is(public.get_my_competitive_challenge('cp-room-8',test_support.id('cp-sc-8'))
+  ->'rows'->0->'connect_pairs_timeout_partial_credit','true'::jsonb,'Competitive metadata carries the opt-in');
+reset role;
+set local role service_role;
+select test_support.start_cp(8);
+select test_support.run('save_connect_pairs_draft',
+  '{"paths":{"a":[3,2,1,0],"b":[4,9,8,7],"c":[6,5,10,11],"d":[12,13,14,19]}}');
+select pg_sleep(1.05);
+select throws_ok($$select test_support.run('save_connect_pairs_draft','{"paths":{}}')$$,
+  '55000','deadline_reached','An expired edit cannot replace the scoring checkpoint');
+select is(test_support.run('complete_attempt')->'score','7'::jsonb,'3/5 pairs and 12/25 cells earn seven points');
+select is((select last_result->'timeTrial'->'solvedCount' from test_support.runtime),'0'::jsonb,
+  'Timeout points do not count as a solved board');
+select is(test_support.repeat_last(),(select last_result from test_support.runtime),'Completion replay retains the partial');
+select is((select array_agg(amount) from private.flash_point_entries
+  where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)),
+  array[7], 'Exactly one partial accreditation is recorded');
+reset role;
+set local role authenticated;
+select ok((select result_details @> '{"timeoutPartialCredit":true,"connectedPairs":3,"coveredCells":12}'
+  and review_state->'paths'->'d' = '[12,13,14,19]'::jsonb
+  from public.get_my_time_trial_result((select (state->>'attemptId')::uuid from test_support.runtime))
+  where item_position=1), 'Reloaded review retains the open path and only credits closed paths');
+reset role;
+set local role service_role;
+select test_support.as_actor('member');
+select test_support.start_cp(8);
+select test_support.run('save_connect_pairs_draft','{"paths":{"a":[0,1,2,3],"b":[4,9,8,7],"c":[6,5,10,11]}}');
+select test_support.run('save_connect_pairs_draft','{"paths":{"a":[0,1,2,3],"b":[4,9,8,7]}}');
+select pg_sleep(1.05);
+select is(test_support.run('complete_attempt')->'score','4'::jsonb,'Deleting a route reduces the partial');
+
+select test_support.as_actor('member2');
+select test_support.start_cp(8);
+select test_support.run('receive_answer','{"answer":{"paths":{"a":[3,2,1,0],"b":[4,9,8,7],"c":[6,5,10,11],"d":[12,13,14,19,18],"e":[17,16,15,20,21,22,23,24]}}}');
+select is(test_support.run('record_evaluation','{"status":"correct","points":15}')->'points','15'::jsonb,
+  'A legal solution received on time earns its full weight');
+select test_support.run('prepare_interaction');
+select test_support.run('receive_answer',jsonb_build_object('answer',test_support.cp_alternative()));
+select pg_sleep(1.05);
+select test_support.run('record_evaluation','{"status":"correct","points":85}');
+select is(test_support.run('complete_attempt')->'score','100'::jsonb,'A timely alternative route earns full credit even when evaluated late');
+reset role;
+set local role authenticated;
+select is((select array_agg(flash_points order by position) from public.get_challenge_ranking(test_support.id('cp-sc-8'))),
+  array[100,7,4]::bigint[], 'Solved boards rank first, then partial points break ties at zero solved');
+reset role;
+update public.scheduled_challenges set status='closed' where id=test_support.id('cp-sc-8');
+set local role authenticated;
+select is((select array_agg(flash_points order by position) from public.get_room_history('cp-room-8',test_support.id('cp-sc-8'))),
+  array[100,7,4]::bigint[], 'History agrees with the opted-in ranking');
+reset role;
+select test_support.as_actor('owner');
+set local role service_role;
+select test_support.start_cp(9);
+select test_support.run('save_connect_pairs_draft','{"paths":{"a":[0,1,2,3],"b":[4,9,8,7],"c":[6,5,10,11],"d":[12,13,14,19,18],"e":[17,16,15,20,21,22,23,24]}}');
+select pg_sleep(1.05);
+select test_support.run('recover_attempt');
+select is(test_support.run('record_evaluation','{"status":"unanswered","points":0}')->'points','14'::jsonb,
+  'A fully covered draft earns at most fourteen through expired recovery');
+select is(test_support.run('complete_attempt')->'timeTrial'->>'endReason','time_limit',
+  'Expired recovery keeps the timeout reason');
+
+select test_support.start_cp(10);
+select test_support.run('save_connect_pairs_draft','{"paths":{"a":[0,1,2,3]}}');
+select test_support.run('recover_attempt');
+select pg_sleep(1.05);
+select is(test_support.run('complete_attempt',jsonb_build_object('pendingEvaluation',jsonb_build_object(
+  'receiptId',(select state->'receiptId' from test_support.runtime),'status','unanswered','points',0)))->'score',
+  '0'::jsonb,'Early interruption gets zero even when reconciled after expiry');
 reset role;
 
 select * from finish();

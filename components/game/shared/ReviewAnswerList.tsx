@@ -98,7 +98,12 @@ export function ReviewAnswerList({
           status === "partial" &&
           entry.question?.type === "connect-pairs" &&
           result?.answer === null &&
-          result.reviewState?.type === "connect-pairs";
+          result.reviewState?.type === "connect-pairs" &&
+          !(
+            result.status === "partial" &&
+            result.details?.type === "connect-pairs" &&
+            result.details.timeoutPartialCredit
+          );
         const visualStatusLabel = hasUnsubmittedConnectPairsDraft
           ? "Borrador"
           : statusLabel(status, entry.statusLabel);

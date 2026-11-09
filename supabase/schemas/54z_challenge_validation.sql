@@ -58,7 +58,8 @@ begin
     ))
     or (challenge->>'mode' = 'pyramid' and challenge->'modeConfig' <> '{}'::jsonb)
     or (challenge->>'mode' = 'time-trial'
-      and not private.is_valid_time_trial_config(challenge->'modeConfig', 'queens')) then
+      and not private.is_valid_time_trial_config(challenge->'modeConfig', 'queens')
+      and not private.is_valid_time_trial_config(challenge->'modeConfig', 'connect-pairs')) then
     raise exception 'invalid_content' using errcode = '22023';
   end if;
 

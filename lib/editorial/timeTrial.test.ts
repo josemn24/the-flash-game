@@ -159,6 +159,27 @@ const connectBoard = {
   solutionPayload: { paths: connectExample.solutionPaths },
 };
 describe("Contrarreloj Conectar parejas", () => {
+  it("accepts timeout credit for Connect Pairs and rejects the option for other sequences", () => {
+    const draft = document();
+    const modeConfig = { connectPairsTimeoutPartialCredit: true };
+    const enabled = { ...draft.challenge, modeConfig };
+    expect(
+      parseFlashEditorialDocument({
+        challenge: enabled,
+        questions: [connectBoard, { ...connectBoard, slug: "connect-2", points: 70 }],
+      }).challenge.modeConfig,
+    ).toEqual(modeConfig);
+    expect(() => parseFlashEditorialDocument({ ...draft, challenge: enabled })).toThrow(
+      /corresponder al formato/,
+    );
+    expect(() =>
+      parseFlashEditorialDocument({
+        ...draft,
+        challenge: { ...enabled, modeConfig: { ...modeConfig, queensTimeoutPartialCredit: true } },
+      }),
+    ).toThrow(/Configuración de Contrarreloj inválida/);
+  });
+
   it("admits a homogeneous sequence and preserves editorial weights", () => {
     const parsed = parseFlashEditorialDocument({
       ...document(),

@@ -1,4 +1,4 @@
-import { isTimeTrialFormat } from "@/lib/timeTrial";
+import { isTimeTrialFormat, TIME_TRIAL_TIMEOUT_CREDIT_KEYS } from "@/lib/timeTrial";
 import { parseEditorialQuestion as parseQuestion } from "@/lib/question-formats/editorialRegistry";
 import {
   challengeKeys,
@@ -165,12 +165,15 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
   ) {
     throw new FlashEditorialValidationError(["challenge no cumple el contrato Flash."]);
   }
+  const modeConfig = challenge.modeConfig;
+  const configKeys = Object.keys(modeConfig);
   if (
     challenge.mode === "time-trial" &&
     !(
-      Object.keys(challenge.modeConfig).length === 0 ||
-      (hasExactKeys(challenge.modeConfig, ["queensTimeoutPartialCredit"]) &&
-        challenge.modeConfig.queensTimeoutPartialCredit === true)
+      configKeys.length === 0 ||
+      Object.values(TIME_TRIAL_TIMEOUT_CREDIT_KEYS).some(
+        (key) => configKeys.length === 1 && configKeys[0] === key && modeConfig[key] === true,
+      )
     )
   )
     throw new FlashEditorialValidationError(["Configuración de Contrarreloj inválida."]);
@@ -284,11 +287,13 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
       ]);
     }
     if (
-      challenge.modeConfig.queensTimeoutPartialCredit === true &&
-      types.some((type) => type !== "queens")
+      configKeys.length > 0 &&
+      types.some(
+        (type) => isTimeTrialFormat(type) && TIME_TRIAL_TIMEOUT_CREDIT_KEYS[type] !== configKeys[0],
+      )
     ) {
       throw new FlashEditorialValidationError([
-        "Los puntos parciales al agotar el tiempo requieren una secuencia de Queens.",
+        "La opción de puntos parciales debe corresponder al formato de la secuencia.",
       ]);
     }
   }

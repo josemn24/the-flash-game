@@ -421,6 +421,9 @@ function materialize(
                 ...(t.modeConfig.queensTimeoutPartialCredit === true
                   ? { queensTimeoutPartialCredit: true }
                   : {}),
+                ...(t.modeConfig.connectPairsTimeoutPartialCredit === true
+                  ? { connectPairsTimeoutPartialCredit: true }
+                  : {}),
               }
             : { ...base, mode: t.mode, slots };
   const definition = { challenge, levels } as RehearsalDefinition;

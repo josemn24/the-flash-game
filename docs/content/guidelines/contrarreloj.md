@@ -32,11 +32,12 @@ el peso completo, sin bonus de velocidad ni penalización por errores internos.
 Reordenar conserva pesos. El editor no ajusta automáticamente una suma incorrecta al guardar.
 No se aplica la antigua propuesta proporcional de CT-01.
 
-En una nueva versión con todos los tableros de Queens se puede activar **Puntos parciales al
-agotar el tiempo**. El valor del tablero se reparte entre las coronas que el jugador debe colocar.
-Solo cuentan las coronas correctas del último guardado aceptado antes del límite. El parcial
-se redondea hacia abajo y queda como máximo un punto por debajo del peso completo. El tercer error,
-el abandono y una recuperación que interrumpe el tablero antes del límite quedan fuera del parcial.
+Una nueva versión puede activar **Puntos parciales al agotar el tiempo**. Solo cuenta el último
+guardado aceptado antes del límite. En Queens, el valor se reparte entre las coronas que le toca
+colocar al jugador y se cuentan sus aciertos. En Conectar parejas se aplica al peso el menor
+porcentaje entre parejas conectadas y casillas cubiertas por sus caminos completos. El parcial se
+redondea hacia abajo y queda como máximo un punto por debajo del peso completo. El abandono, el
+tercer error de Queens y una recuperación que interrumpe el tablero antes del límite quedan fuera.
 
 ## Calibración
 

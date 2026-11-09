@@ -26,10 +26,9 @@ export function ReviewContent({
       : null;
   const hasUnsubmittedSavedDraft = storedAnswer === null && savedDraft !== null;
   const answer = storedAnswer ?? savedDraft;
-  const details =
-    (storedAnswer || !savedDraft) && result.details?.type === "connect-pairs"
-      ? result.details
-      : undefined;
+  const scoredDetails = result.details?.type === "connect-pairs" ? result.details : undefined;
+  const timeoutCredit = scoredDetails?.timeoutPartialCredit === true;
+  const details = storedAnswer || !savedDraft || timeoutCredit ? scoredDetails : undefined;
   const metrics = answer ? calculateConnectPairsMetrics(question, answer) : null;
   const reviewMetrics = {
     connectedPairs: details?.connectedPairs ?? metrics?.connectedPairs ?? 0,
@@ -60,7 +59,9 @@ export function ReviewContent({
   });
 
   const reviewStatus = hasUnsubmittedSavedDraft
-    ? "Borrador guardado · sin envío final"
+    ? timeoutCredit && result.status === "partial"
+      ? "Parcial"
+      : "Borrador guardado · sin envío final"
     : result.isCorrect
       ? "Solución completa"
       : savedDraft === null && (answer === null || result.status === "unanswered")
@@ -208,8 +209,12 @@ export function ReviewContent({
           </strong>
         </div>
         <div className={styles.answerBox}>
-          <span>Cobertura</span>
-          <strong>{Math.round(reviewMetrics.coverage * 100)} %</strong>
+          <span>{timeoutCredit ? "Casillas en caminos completos" : "Cobertura"}</span>
+          <strong>
+            {timeoutCredit && details
+              ? `${details.coveredCells}/${details.totalCells}`
+              : `${Math.round(reviewMetrics.coverage * 100)} %`}
+          </strong>
         </div>
         <div className={`${styles.answerBox} ${styles.answerBoxCorrect}`}>
           <span>Estado</span>

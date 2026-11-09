@@ -17,6 +17,7 @@ create function private.is_valid_time_trial_config(config jsonb, question_type t
 language sql immutable set search_path = '' as $$
   select config = '{}'::jsonb
     or (config = '{"queensTimeoutPartialCredit":true}'::jsonb and question_type = 'queens')
+    or (config = '{"connectPairsTimeoutPartialCredit":true}'::jsonb and question_type = 'connect-pairs')
 $$;
 alter function private.is_valid_time_trial_config(jsonb,text) owner to postgres;
 revoke all on function private.is_valid_time_trial_config(jsonb,text) from public,anon,authenticated,service_role;

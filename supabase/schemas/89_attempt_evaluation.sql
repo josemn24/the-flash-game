@@ -35,7 +35,8 @@ begin
     receipt.presented_at, receipt.effective_submitted_at, receipt.time_used_ms, key)
   returning * into saved;
   result := jsonb_build_object('receiptId', receipt.id, 'status', saved.status,
-    'points', saved.points) || jsonb_strip_nulls(jsonb_build_object('reviewState', saved.review_state));
+    'points', saved.points) || jsonb_strip_nulls(jsonb_build_object('reviewState', saved.review_state,
+      'details', case when saved.result_details->'timeoutPartialCredit' = 'true'::jsonb then saved.result_details end));
   updated_attempt := a;
   operation_result := result;
   clear_progress := coalesce(clear_progress, false);

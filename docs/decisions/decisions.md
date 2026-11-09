@@ -557,9 +557,10 @@ La [especificación funcional](../current/domain/contrarreloj.md) desarrolla el 
 - Duración global obligatoria, sin default, en segundos enteros positivos almacenados como
   milisegundos dentro del rango integer existente. Los límites por pregunta no se aplican.
 - Pesos editoriales enteros positivos, suma exacta 100. Cada acierto concede todo su peso, sin
-  bonus de velocidad ni penalización por validaciones incorrectas. Las nuevas versiones de Queens
-  pueden activar crédito parcial al agotar el tiempo, calculado sobre las coronas correctas propias
-  en el último guardado aceptado.
+  bonus de velocidad ni penalización por validaciones incorrectas. Las nuevas versiones pueden
+  activar crédito parcial al agotar el tiempo a partir del último guardado aceptado. Queens cuenta
+  coronas correctas propias. Conectar parejas toma el menor porcentaje entre parejas cerradas y
+  cobertura de sus caminos completos.
 - Cada tablero Queens permite dos validaciones completas incorrectas; la tercera termina el desafío.
   Movimientos exploratorios, solicitudes inválidas e idempotencia no consumen oportunidades.
 - Conectar parejas permite rehacer caminos libremente. Solo resolver todas las parejas sin cruces y
