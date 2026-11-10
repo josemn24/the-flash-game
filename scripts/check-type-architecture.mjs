@@ -1,9 +1,12 @@
+import { existsSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
-const TYPES_ROOT = path.join(process.cwd(), "types");
-const MOCK_ROOT = path.join(process.cwd(), "data", "mock");
+const PROJECT_ROOT = process.cwd();
+const FIXTURE_ROOT = process.env.ARCHITECTURE_FIXTURE_ROOT;
+const TYPES_ROOT = path.join(PROJECT_ROOT, "types");
+const MOCK_ROOT = path.join(PROJECT_ROOT, "data", "mock");
 const LEGACY_MOCK_BOUNDARIES = new Set([
   "legacyAdapters.ts",
   "legacyChallengeAdapter.ts",
@@ -72,6 +75,33 @@ async function collectTypeScriptFiles(directory) {
   return files.flat();
 }
 
+async function collectProjectTypeScriptFiles(directory) {
+  const projectFiles = await collectTypeScriptFiles(directory);
+  if (!FIXTURE_ROOT) return projectFiles;
+
+  const relativeDirectory = path.relative(PROJECT_ROOT, directory);
+  const fixtureDirectory = path.join(FIXTURE_ROOT, relativeDirectory);
+  if (!existsSync(fixtureDirectory)) return projectFiles;
+
+  const fixtureFiles = await collectTypeScriptFiles(fixtureDirectory);
+  const logicalFixtureFiles = fixtureFiles.map((file) =>
+    path.join(PROJECT_ROOT, path.relative(FIXTURE_ROOT, file)),
+  );
+  return [...new Set([...projectFiles, ...logicalFixtureFiles])];
+}
+
+async function readProjectFile(file) {
+  if (FIXTURE_ROOT) {
+    const fixtureFile = path.join(FIXTURE_ROOT, path.relative(PROJECT_ROOT, file));
+    try {
+      return await readFile(fixtureFile, "utf8");
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+  return readFile(file, "utf8");
+}
+
 function layerFor(file) {
   return path.relative(TYPES_ROOT, file).split(path.sep)[0];
 }
@@ -116,40 +146,42 @@ function isExplicitLocalCompatibilityPath(relative) {
 }
 
 const files = (
-  await Promise.all(LAYERS.map((layer) => collectTypeScriptFiles(path.join(TYPES_ROOT, layer))))
+  await Promise.all(
+    LAYERS.map((layer) => collectProjectTypeScriptFiles(path.join(TYPES_ROOT, layer))),
+  )
 )
   .flat()
   .filter((file) => !/\.(?:test|spec)\.(?:ts|tsx)$/.test(path.basename(file)));
 const violations = [];
 
 for (const file of files) {
-  const source = await readFile(file, "utf8");
+  const source = await readProjectFile(file);
   const layer = layerFor(file);
 
   for (const imported of importsIn(source)) {
     const projectArea = imported.specifier.match(/^@\/([^/]+)/)?.[1];
     if (projectArea && FORBIDDEN_PROJECT_AREAS.includes(projectArea)) {
       violations.push(
-        `${path.relative(process.cwd(), file)} imports forbidden ${imported.specifier}`,
+        `${path.relative(PROJECT_ROOT, file)} imports forbidden ${imported.specifier}`,
       );
     }
 
     if (imported.statement.startsWith("import") && !imported.typeOnly) {
       violations.push(
-        `${path.relative(process.cwd(), file)} has runtime import ${imported.specifier}`,
+        `${path.relative(PROJECT_ROOT, file)} has runtime import ${imported.specifier}`,
       );
     }
 
     const importedTypeArea = imported.specifier.match(/^@\/types\/([^/]+)(?:\/|$)/)?.[1];
     if (importedTypeArea && !ALLOWED_TYPE_DEPENDENCIES[layer].includes(importedTypeArea)) {
       violations.push(
-        `${path.relative(process.cwd(), file)} makes ${layer} depend on ${imported.specifier}`,
+        `${path.relative(PROJECT_ROOT, file)} makes ${layer} depend on ${imported.specifier}`,
       );
     }
 
     if (LEGACY_TYPE_IMPORTS.has(imported.specifier) && layer !== "legacy") {
       violations.push(
-        `${path.relative(process.cwd(), file)} imports legacy type barrel ${imported.specifier}`,
+        `${path.relative(PROJECT_ROOT, file)} imports legacy type barrel ${imported.specifier}`,
       );
     }
 
@@ -159,7 +191,7 @@ for (const file of files) {
         imported.specifier.startsWith("@/types/compat/"))
     ) {
       violations.push(
-        `${path.relative(process.cwd(), file)} makes contracts depend on a compatibility type`,
+        `${path.relative(PROJECT_ROOT, file)} makes contracts depend on a compatibility type`,
       );
     }
 
@@ -168,15 +200,15 @@ for (const file of files) {
       (imported.specifier === "@/types/legacy" || imported.specifier.startsWith("@/types/compat/"))
     ) {
       violations.push(
-        `${path.relative(process.cwd(), file)} exposes a legacy model through view-models`,
+        `${path.relative(PROJECT_ROOT, file)} exposes a legacy model through view-models`,
       );
     }
   }
 }
 
-const mockFiles = await collectTypeScriptFiles(MOCK_ROOT);
+const mockFiles = await collectProjectTypeScriptFiles(MOCK_ROOT);
 for (const file of mockFiles) {
-  const source = await readFile(file, "utf8");
+  const source = await readProjectFile(file);
   const relativeFile = path.relative(MOCK_ROOT, file);
   const allowsLegacyDependencies =
     relativeFile.startsWith(`compat${path.sep}`) || LEGACY_MOCK_BOUNDARIES.has(path.basename(file));
@@ -185,7 +217,7 @@ for (const file of mockFiles) {
   for (const imported of importsIn(source)) {
     if (isCanonicalFixture && LEGACY_DATA_SOURCES.has(imported.specifier)) {
       violations.push(
-        `${path.relative(process.cwd(), file)} makes canonical fixtures depend on ${imported.specifier}`,
+        `${path.relative(PROJECT_ROOT, file)} makes canonical fixtures depend on ${imported.specifier}`,
       );
     }
     if (
@@ -200,7 +232,7 @@ for (const file of mockFiles) {
       imported.specifier.startsWith("@/app/")
     ) {
       violations.push(
-        `${path.relative(process.cwd(), file)} imports forbidden ${imported.specifier}`,
+        `${path.relative(PROJECT_ROOT, file)} imports forbidden ${imported.specifier}`,
       );
     }
   }
@@ -217,7 +249,7 @@ const PRODUCTION_LAYERS = [
 ];
 const productionFiles = (
   await Promise.all(
-    PRODUCTION_LAYERS.map((layer) => collectTypeScriptFiles(path.join(process.cwd(), layer))),
+    PRODUCTION_LAYERS.map((layer) => collectProjectTypeScriptFiles(path.join(PROJECT_ROOT, layer))),
   )
 )
   .flat()
@@ -238,13 +270,13 @@ function isSupabaseGeneratedType(specifier) {
 function isSupabaseDependency(specifier, importingFile) {
   if (specifier.startsWith("@supabase/")) return true;
   const resolved = specifier.startsWith("@/")
-    ? path.resolve(process.cwd(), specifier.slice(2))
+    ? path.resolve(PROJECT_ROOT, specifier.slice(2))
     : specifier.startsWith(".")
       ? path.resolve(path.dirname(importingFile), specifier)
       : null;
   const boundaries = [
-    path.join(process.cwd(), "lib", "supabase"),
-    path.join(process.cwd(), "infrastructure", "supabase"),
+    path.join(PROJECT_ROOT, "lib", "supabase"),
+    path.join(PROJECT_ROOT, "infrastructure", "supabase"),
   ];
   return (
     resolved !== null &&
@@ -282,11 +314,11 @@ function inputContext(relative) {
 }
 function resolvedProjectImport(specifier, file) {
   const resolved = specifier.startsWith("@/")
-    ? path.resolve(process.cwd(), specifier.slice(2))
+    ? path.resolve(PROJECT_ROOT, specifier.slice(2))
     : specifier.startsWith(".")
       ? path.resolve(path.dirname(file), specifier)
       : null;
-  return resolved ? path.relative(process.cwd(), resolved) : null;
+  return resolved ? path.relative(PROJECT_ROOT, resolved) : null;
 }
 
 function isApplicationForbiddenImport(specifier) {
@@ -303,8 +335,8 @@ function isApplicationForbiddenImport(specifier) {
 }
 
 for (const file of productionFiles) {
-  const source = await readFile(file, "utf8");
-  const relative = path.relative(process.cwd(), file);
+  const source = await readProjectFile(file);
+  const relative = path.relative(PROJECT_ROOT, file);
   const layer = relative.split(path.sep)[0];
   const isAdministrativeFacade =
     relative.startsWith(`server${path.sep}admin`) ||
@@ -587,8 +619,8 @@ const serverFacadeFiles = [
   "server/production-room-members.ts",
 ];
 for (const relative of serverFacadeFiles) {
-  const facadePath = path.join(process.cwd(), relative);
-  const facadeSource = await readFile(facadePath, "utf8");
+  const facadePath = path.join(PROJECT_ROOT, relative);
+  const facadeSource = await readProjectFile(facadePath);
   if (!/^import ["']server-only["'];/m.test(facadeSource)) {
     violations.push(`${relative} is missing the server-only marker`);
   }
@@ -624,9 +656,9 @@ for (const relative of serverFacadeFiles) {
 }
 
 for (const file of productionFiles) {
-  const relative = path.relative(process.cwd(), file);
+  const relative = path.relative(PROJECT_ROOT, file);
   if (!relative.startsWith(`server${path.sep}`)) continue;
-  const source = await readFile(file, "utf8");
+  const source = await readProjectFile(file);
   if (relative === "server/demo-data-access.ts" || relative === "server/composition/demo.ts")
     continue;
   if (/@\/infrastructure\/mock\//.test(source) || /@\/data\/mock\//.test(source)) {
@@ -642,15 +674,15 @@ for (const relative of [
   "server/production-rehearsal-data-access.ts",
   "server/production-room-members.ts",
 ]) {
-  const source = await readFile(path.join(process.cwd(), relative), "utf8");
+  const source = await readProjectFile(path.join(PROJECT_ROOT, relative));
   if (/@\/(?:data\/mock|infrastructure\/mock)\//.test(source)) {
     violations.push(`${relative} imports mock data or infrastructure`);
   }
 }
 
 for (const file of productionFiles) {
-  const relative = path.relative(process.cwd(), file);
-  const source = await readFile(file, "utf8");
+  const relative = path.relative(PROJECT_ROOT, file);
+  const source = await readProjectFile(file);
   const importedSpecifiers = importsIn(source).map(({ specifier }) => specifier);
   const isAppRoute = relative.startsWith(`app${path.sep}`);
   const isDemoRoute = relative.startsWith(`app${path.sep}demo${path.sep}`);
@@ -737,9 +769,9 @@ for (const file of productionFiles) {
   }
 }
 
-const competitiveReaderSource = await readFile(
+const competitiveReaderSource = await readProjectFile(
   path.join(
-    process.cwd(),
+    PROJECT_ROOT,
     "infrastructure",
     "supabase",
     "gameplay",
@@ -752,16 +784,15 @@ for (const mode of ["flash", "alphabet", "survival", "narrative", "pyramid", "ti
     violations.push(`competitive challenge mode ${mode} has no Supabase reader`);
   }
 }
-const productionBarrelSource = await readFile(
-  path.join(process.cwd(), "components", "game", "production.ts"),
-  "utf8",
+const productionBarrelSource = await readProjectFile(
+  path.join(PROJECT_ROOT, "components", "game", "production.ts"),
 );
 if (!productionBarrelSource.includes("ServerNarrativeGame")) {
   violations.push("components/game/production.ts does not expose ServerNarrativeGame");
 }
 
-const attemptCommandsPort = path.join(process.cwd(), "application", "ports", "attempt-commands.ts");
-const attemptCommandsSource = await readFile(attemptCommandsPort, "utf8");
+const attemptCommandsPort = path.join(PROJECT_ROOT, "application", "ports", "attempt-commands.ts");
+const attemptCommandsSource = await readProjectFile(attemptCommandsPort);
 for (const forbidden of [
   "invalidate(",
   "adjust(",

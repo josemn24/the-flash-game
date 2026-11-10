@@ -24,7 +24,8 @@ export function ReviewContent({
           ),
         }
       : null;
-  const hasUnsubmittedSavedDraft = storedAnswer === null && savedDraft !== null;
+  const hasUnsubmittedSavedDraft =
+    storedAnswer === null && savedDraft !== null && result.status !== "correct";
   const answer = storedAnswer ?? savedDraft;
   const scoredDetails = result.details?.type === "connect-pairs" ? result.details : undefined;
   const timeoutCredit = scoredDetails?.timeoutPartialCredit === true;

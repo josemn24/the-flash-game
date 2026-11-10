@@ -32,6 +32,7 @@ export type AttemptErrorCode =
   | "publication_cancelled"
   | "attempt_not_terminal"
   | "reason_required"
+  | "timeout_checkpoint_unavailable"
   | "invalid_score"
   | "not_competitive"
   | "incomplete_challenge"

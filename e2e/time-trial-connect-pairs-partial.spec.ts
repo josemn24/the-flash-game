@@ -6,8 +6,17 @@ const scenario = "time-trial-connect-pairs-partial";
 registerTimeTrialConformance({
   scenario,
   format: "connect-pairs",
-  timeout: true,
+  timeout: "partial",
   connectPairsTimeoutPartialCredit: true,
+});
+
+test.describe("Connect Pairs checkpoint solved at expiry", () => {
+  registerTimeTrialConformance({
+    scenario,
+    format: "connect-pairs",
+    timeout: "checkpoint",
+    connectPairsTimeoutPartialCredit: true,
+  });
 });
 
 test("scores the committed route despite lost checkpoint and completion confirmations", async ({

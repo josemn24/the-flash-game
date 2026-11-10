@@ -26,7 +26,7 @@ export type ReviewAnswerEntry = {
 
 function statusFor(entry: ReviewAnswerEntry): ReviewAnswerVisualStatus {
   if (entry.status === "locked") return entry.status;
-  if (entry.result?.reviewState) return "partial";
+  if (entry.result?.reviewState && entry.result.status !== "correct") return "partial";
   if (entry.status) return entry.status;
   return entry.result?.status ?? "unanswered";
 }

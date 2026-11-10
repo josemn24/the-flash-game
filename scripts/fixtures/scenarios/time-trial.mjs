@@ -6,5 +6,6 @@ export default sessionFixture({
   mode: "time-trial",
   title: "Contrarreloj Queens",
   globalTimeLimitMs: 120000,
+  additionalPlayers: ["conformance"],
   questions: timeTrialQueensQuestions,
 });

@@ -145,27 +145,37 @@ export function createLocalTimeTrialSessionProvider(
     const state = formats[pending.index]!;
     const effective =
       level.question.type === "queens" ? { queens: state.queens, marks: [] } : pending.answer;
+    const reviewState = pending.timedOut ? formatReviewState(level, state) : undefined;
+    const checkpoint =
+      reviewState?.type === "queens"
+        ? { queens: [...reviewState.queens], marks: [] }
+        : reviewState?.type === "connect-pairs"
+          ? {
+              paths: Object.fromEntries(
+                Object.entries(reviewState.paths).map(([id, path]) => [id, [...path]]),
+              ),
+            }
+          : null;
     const evaluated = evaluateCompetitiveReceipt({
       question: level.question,
-      answer: pending.timedOut ? null : effective,
+      answer: pending.timedOut ? checkpoint : effective,
       receipt: {
         timeUsedMs: pending.timeUsedMs as DurationMs,
-        timedOut: pending.timedOut,
+        timedOut: pending.timedOut && checkpoint === null,
       },
       // Keep attempt details for review; the Time Trial policy below awards
       // the full editorial weight and never applies the Queens penalty.
       incorrectAttempts: formats[pending.index]!.incorrectValidations,
     });
     const correct =
-      !pending.timedOut &&
-      (level.question.type === "queens"
+      level.question.type === "queens"
         ? evaluated.details?.type === "queens" && evaluated.details.solved
-        : evaluated.status === "correct");
-    const reviewState = pending.timedOut ? formatReviewState(level, state) : undefined;
+        : evaluated.status === "correct";
     const weight = challenge.slots[pending.index]!.points;
     let points = correct ? weight : 0;
     let details: AnswerResultDetails | undefined = pending.timedOut ? undefined : evaluated.details;
     if (
+      !correct &&
       challenge.queensTimeoutPartialCredit &&
       reviewState?.type === "queens" &&
       level.question.type === "queens"
@@ -180,6 +190,7 @@ export function createLocalTimeTrialSessionProvider(
       if (required > 0)
         points = Math.min(weight - 1, Math.floor((weight * placedCorrectly) / required));
     } else if (
+      !correct &&
       challenge.connectPairsTimeoutPartialCredit &&
       reviewState?.type === "connect-pairs" &&
       level.question.type === "connect-pairs"
@@ -202,12 +213,12 @@ export function createLocalTimeTrialSessionProvider(
     const result: AnswerResult = {
       questionId: level.source.challengeItemId,
       answer: pending.timedOut ? null : effective,
-      status: pending.timedOut
-        ? points > 0
-          ? "partial"
-          : "unanswered"
-        : correct
-          ? "correct"
+      status: correct
+        ? "correct"
+        : pending.timedOut
+          ? points > 0
+            ? "partial"
+            : "unanswered"
           : "incorrect",
       isCorrect: correct,
       points,
@@ -325,14 +336,11 @@ export function createLocalTimeTrialSessionProvider(
       return result;
     }
 
+    const deadline = deadlineAt;
+    const deadlineReached = deadline !== null && now >= deadline;
     let result: LocalSessionResult;
-    if (
-      operation === "complete" ||
-      (operation === "recover" &&
-        (challenge.queensTimeoutPartialCredit || challenge.connectPairsTimeoutPartialCredit) &&
-        endReason(now) === "time_limit")
-    ) {
-      if (deadlineAt !== null && now >= deadlineAt && active) {
+    if (operation === "complete" || (operation === "recover" && deadlineReached)) {
+      if (deadlineReached && active) {
         evaluate(
           {
             index: active.index,
@@ -340,7 +348,7 @@ export function createLocalTimeTrialSessionProvider(
             timeUsedMs: answerTime(active, now),
             timedOut: true,
           },
-          deadlineAt,
+          deadline,
         );
       }
       result = finish(now);

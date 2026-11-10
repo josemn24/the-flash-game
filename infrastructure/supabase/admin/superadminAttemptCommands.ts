@@ -8,6 +8,8 @@ import type {
   SuperadminAdjustResultInput,
   SuperadminAttemptCommandInput,
   SuperadminAttemptCommands,
+  TimeoutCheckpointSelection,
+  RecognizeTimeoutCheckpointInput,
 } from "@/application/ports/superadmin-attempt-commands";
 import type { CompetitiveEvaluator } from "@/application/ports/competitive-evaluator";
 import { evaluateWithPublishedAcceptedAnswers } from "@/application/administration/evaluate-answer-regrade";
@@ -16,6 +18,8 @@ import {
   callAttemptCommand,
   confirmAttemptAnswerRegrade,
   purgeTerminalAttempt,
+  previewTimeoutCheckpoint,
+  recognizeTimeoutCheckpoint,
   readAttemptAnswerRegradeContext,
   AttemptCommandError,
   type VerifiedAuthIdentity,
@@ -49,6 +53,14 @@ export class SupabaseSuperadminAttemptCommands implements SuperadminAttemptComma
 
   invalidate(input: SuperadminAttemptCommandInput) {
     return callAttemptCommand(this.identity, "invalidate_attempt", input);
+  }
+
+  previewTimeoutCheckpoint(input: TimeoutCheckpointSelection) {
+    return previewTimeoutCheckpoint(this.identity, input);
+  }
+
+  recognizeTimeoutCheckpoint(input: RecognizeTimeoutCheckpointInput) {
+    return recognizeTimeoutCheckpoint(this.identity, input);
   }
 
   async previewAnswerRegrade(

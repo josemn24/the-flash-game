@@ -4,6 +4,7 @@ import { AdminEmptyState } from "./AdminEmptyState";
 import { AdminAttemptDelete } from "./AdminAttemptDelete.client";
 import { AdminAttemptActions } from "./AdminAttemptActions.client";
 import { AdminAttemptAnswerRegrade } from "./AdminAttemptAnswerRegrade.client";
+import { AdminTimeoutCheckpoint } from "./AdminTimeoutCheckpoint.client";
 import { AdminShell } from "./AdminShell";
 import styles from "./AdminAttemptInspection.module.css";
 
@@ -113,6 +114,12 @@ export function AdminAttemptDetail({
           {attempt.terminalReason ? (
             <p className={styles.meta}>Motivo terminal: {attempt.terminalReason}</p>
           ) : null}
+          {attempt.effectiveTerminalReason &&
+          attempt.effectiveTerminalReason !== attempt.terminalReason ? (
+            <p className={styles.meta}>
+              Motivo tras la corrección: {attempt.effectiveTerminalReason}
+            </p>
+          ) : null}
         </Card>
       </section>
       <section className={styles.section} aria-labelledby="attempt-actions-title">
@@ -189,6 +196,15 @@ export function AdminAttemptDetail({
                     answer={item.answer}
                     itemPoints={item.itemPoints}
                     rubrics={item.availableRubrics}
+                  />
+                ) : null}
+                {item.canRecognizeTimeoutCheckpoint ? (
+                  <AdminTimeoutCheckpoint
+                    roomId={model.roomId}
+                    scheduledChallengeId={publication.scheduledChallengeId}
+                    attemptId={attempt.attemptId}
+                    challengeItemId={item.challengeItemId}
+                    lockVersion={attempt.lockVersion}
                   />
                 ) : null}
                 <details>

@@ -142,6 +142,8 @@ function isItem(value: unknown): value is SuperadminAttemptItemInspection {
     (value.awardedPoints === null || isInteger(value.awardedPoints)) &&
     (value.effectiveAwardedPoints === null || isInteger(value.effectiveAwardedPoints)) &&
     (value.currentRubricVersionId === null || isUuid(value.currentRubricVersionId)) &&
+    (value.canRecognizeTimeoutCheckpoint === undefined ||
+      typeof value.canRecognizeTimeoutCheckpoint === "boolean") &&
     Array.isArray(value.availableRubrics) &&
     value.availableRubrics.every(
       (rubric) =>
@@ -216,6 +218,7 @@ function isDetailPayload(value: unknown): value is {
   attempt: SuperadminAttemptListRow & {
     readonly email: string | null;
     readonly terminalReason: string | null;
+    readonly effectiveTerminalReason?: string | null;
   };
   items: readonly SuperadminAttemptItemInspection[];
   ledger: readonly SuperadminAttemptLedgerEntry[];
@@ -233,10 +236,13 @@ function isDetailPayload(value: unknown): value is {
   const detailAttempt = attempt as SuperadminAttemptListRow & {
     readonly email: string | null;
     readonly terminalReason: string | null;
+    readonly effectiveTerminalReason?: string | null;
   };
   return (
     (detailAttempt.email === null || typeof detailAttempt.email === "string") &&
     (detailAttempt.terminalReason === null || typeof detailAttempt.terminalReason === "string") &&
+    (detailAttempt.effectiveTerminalReason == null ||
+      typeof detailAttempt.effectiveTerminalReason === "string") &&
     Array.isArray(value.items) &&
     value.items.every(isItem) &&
     Array.isArray(value.ledger) &&
@@ -318,6 +324,9 @@ export class SupabaseSuperadminAttemptQueries implements SuperadminAttemptQuerie
         ...mapAttemptRow(data.attempt as unknown as Record<string, unknown>),
         email: data.attempt.email,
         terminalReason: data.attempt.terminalReason,
+        ...(data.attempt.effectiveTerminalReason !== undefined
+          ? { effectiveTerminalReason: data.attempt.effectiveTerminalReason }
+          : {}),
       },
       items: data.items,
       ledger: data.ledger,

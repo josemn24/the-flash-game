@@ -20,6 +20,8 @@ function commands() {
     invalidate: mocks.invalidate,
     previewAnswerRegrade: vi.fn(),
     regradeAnswer: vi.fn(),
+    previewTimeoutCheckpoint: vi.fn(),
+    recognizeTimeoutCheckpoint: vi.fn(),
   };
 }
 

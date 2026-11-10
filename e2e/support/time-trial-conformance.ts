@@ -153,31 +153,26 @@ function compare(local: GameSessionResult, remote: GameSessionResult) {
     );
   expect(normalized(project(local.state))).toEqual(normalized(project(remote.state)));
   if (remote.state.answers) {
-    expect(
-      normalized(
-        local.state.answers?.map((answer) => ({
-          challengeItemId: answer.questionId,
-          answer: answer.answer,
-          status: answer.status,
-          isCorrect: answer.isCorrect,
-          points: answer.points,
-          timeUsed: answer.timeUsed,
-          details: answer.details,
-        })),
-      ),
-    ).toEqual(
-      normalized(
-        remote.state.answers.map((answer) => ({
-          challengeItemId: answer.questionId,
-          answer: answer.answer,
-          status: answer.status,
-          isCorrect: answer.isCorrect,
-          points: answer.points,
-          timeUsed: answer.timeUsed,
-          details: answer.details,
-        })),
-      ),
-    );
+    const answers = (state: typeof local.state) =>
+      state.answers?.map(
+        ({ questionId, answer, status, isCorrect, points, details, reviewState }) => ({
+          questionId,
+          answer,
+          status,
+          isCorrect,
+          points,
+          details,
+          reviewState,
+        }),
+      );
+    expect(normalized(answers(local.state))).toEqual(normalized(answers(remote.state)));
+    for (const [index, remoteAnswer] of remote.state.answers.entries()) {
+      const localAnswer = local.state.answers![index]!;
+      // Per-board times can have the same millisecond quantization difference as the global time.
+      const localMs = Math.round(localAnswer.timeUsed * 1_000);
+      const remoteMs = Math.round(remoteAnswer.timeUsed * 1_000);
+      expect(Math.abs(localMs - remoteMs)).toBeLessThanOrEqual(1);
+    }
   }
   if (local.effect === "completed" && remote.effect === "completed") {
     const reviewRows = (rows: typeof local.review) =>
@@ -195,7 +190,7 @@ function compare(local: GameSessionResult, remote: GameSessionResult) {
 export function registerTimeTrialConformance(options: {
   scenario: string;
   format: Format;
-  timeout?: boolean;
+  timeout?: "partial" | "checkpoint";
   queensTimeoutPartialCredit?: boolean;
   connectPairsTimeoutPartialCredit?: boolean;
 }) {
@@ -207,8 +202,11 @@ export function registerTimeTrialConformance(options: {
     browserContext = await browser.newContext();
     const page = await browserContext.newPage();
     await page.goto(origin);
-    await page.getByLabel("Correo electrónico").fill(data.users.alice!.email);
-    await page.getByLabel("Contraseña").fill(data.users.alice!.password);
+    const label =
+      options.timeout === "checkpoint" ? "carol" : options.timeout ? "alice" : "conformance";
+    const account = data.users[label]!;
+    await page.getByLabel("Correo electrónico").fill(account.email);
+    await page.getByLabel("Contraseña").fill(account.password);
     await page.getByRole("button", { name: "Iniciar sesión" }).click();
     await expect(page.getByRole("heading", { name: "Mis salas" })).toBeVisible();
     await page.close();
@@ -220,9 +218,11 @@ export function registerTimeTrialConformance(options: {
   });
 
   test(
-    options.timeout
-      ? `local ${options.format} matches competitive global timeout and review`
-      : `local ${options.format} matches competitive progress, scoring and review`,
+    options.timeout === "checkpoint"
+      ? `local ${options.format} matches competitive full credit from a checkpoint at expiry`
+      : options.timeout
+        ? `local ${options.format} matches competitive global timeout and review`
+        : `local ${options.format} matches competitive progress, scoring and review`,
     async () => {
       test.setTimeout(60_000);
       const data = fixture(options.scenario).data;
@@ -265,19 +265,22 @@ export function registerTimeTrialConformance(options: {
       await pair("start");
       const first = await pair("prepare", {}, 0);
 
-      if (options.timeout) {
+      const expire = async () => {
+        const deadline = Date.parse(first.remote.state.deadlineAt!);
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.max(0, deadline - Date.now() + 150)),
+        );
+        clock.set(deadline);
+      };
+
+      if (options.timeout === "partial") {
         if (options.queensTimeoutPartialCredit) await pair("queensDraft", { queens: [10] });
         if (options.connectPairsTimeoutPartialCredit)
           await pair("connectPairsDraft", {
             paths: { a: [3, 2, 1, 0], b: [4, 9, 8, 7], c: [6, 5, 10, 11], d: [12, 13, 14, 19] },
           });
-        const deadline = Date.parse(first.remote.state.deadlineAt!);
-        const waitMs = Math.max(0, deadline - Date.now() + 150);
-        await new Promise((resolve) => setTimeout(resolve, waitMs));
-        const remoteResult = confirmed(await remote.execute(remote.command("complete")));
-        clock.set(deadline);
-        const localResult = confirmed(await local.execute(local.command("complete")));
-        compare(localResult, remoteResult);
+        await expire();
+        const { local: localResult, remote: remoteResult } = await pair("complete");
         expect(localResult.state.timeTrial).toMatchObject({
           endReason: "time_limit",
           elapsedTimeMs: definition.challenge.timeLimitMs,
@@ -301,19 +304,39 @@ export function registerTimeTrialConformance(options: {
 
       for (let index = 0; index < definition.levels.length; index++) {
         if (index > 0) await pair("prepare", {}, index);
+        const saveOnly = options.timeout === "checkpoint" && index === definition.levels.length - 1;
         if (options.format === "queens") {
           const level = definition.levels[index]!;
           if (level.solution.type !== "queens") throw new Error("expected Queens fixture");
-          await pair("queensValidation", { queens: level.solution.payload.solution }, index);
+          await pair(
+            saveOnly ? "queensDraft" : "queensValidation",
+            { queens: level.solution.payload.solution },
+            index,
+          );
         } else {
           const level = definition.levels[index]!;
           if (level.solution.type !== "connect-pairs")
             throw new Error("expected Connect Pairs fixture");
-          await pair("answer", { answer: { paths: level.solution.payload.paths } }, index);
+          const paths = level.solution.payload.paths;
+          if (saveOnly) await pair("connectPairsDraft", { paths }, index);
+          else await pair("answer", { answer: { paths } }, index);
         }
       }
-      const terminal = await pair("complete");
+      if (options.timeout === "checkpoint") await expire();
+      const terminal = await pair(options.timeout === "checkpoint" ? "recover" : "complete");
       expect(terminal.local.state.score).toBe(100);
+      if (options.timeout === "checkpoint") {
+        expect(terminal.remote.state.timeTrial).toMatchObject({
+          endReason: "all_solved",
+          lastCorrectElapsedMs: definition.challenge.timeLimitMs,
+          solvedCount: definition.levels.length,
+        });
+        expect(terminal.remote.state.answers?.at(-1)).toMatchObject({
+          status: "correct",
+          points: definition.challenge.slots.at(-1)!.points,
+          reviewState: { type: options.format },
+        });
+      }
       expect(
         Math.abs(
           (terminal.local.state.timeTrial?.elapsedTimeMs ?? 0) -

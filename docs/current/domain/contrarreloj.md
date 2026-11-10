@@ -2,7 +2,7 @@
 
 Estado: vigente para Queens y Conectar parejas.
 
-Última actualización: 2026-11-03. Identificador técnico: `time-trial`.
+Última actualización: 2026-11-10. Identificador técnico: `time-trial`.
 
 ## Propósito y alcance
 
@@ -59,8 +59,12 @@ crea una recepción ni equivale a validar el tablero.
 
 Al cerrar por timeout o conciliar una evaluación pendiente sin respuesta, el servidor copia el último
 checkpoint válido con progreso de la interacción a `attempt_answers.review_state` antes de limpiar el
-progreso del intento. En un cierre por timeout de Contrarreloj, la respuesta queda como `unanswered`
-con cero puntos si el parcial está desactivado. En Queens con el parcial activo, PostgreSQL compara
+progreso del intento. Al vencer el reloj, un checkpoint que resuelve el tablero según las reglas del
+formato cuenta como `correct` y recibe todo su peso en cualquier versión de Contrarreloj. Si era el
+último tablero, el intento termina como `all_solved`. Si quedaban más, termina como `time_limit`.
+
+Si el checkpoint no resuelve el tablero y el parcial está desactivado, la respuesta queda como
+`unanswered` con cero puntos. En Queens con el parcial activo, PostgreSQL compara
 las coronas guardadas con la solución publicada, excluye las fijas y aplica
 `min(peso − 1, floor(peso × aciertos propios / coronas por colocar))`. Con cero coronas por
 colocar o sin aciertos propios, la puntuación es cero. En Conectar parejas con el parcial activo,
@@ -88,13 +92,13 @@ La recepción se fecha en PostgreSQL después de adquirir los bloqueos. Solo es 
 **antes** del deadline; la igualdad queda fuera. El cierre concilia primero cualquier recepción
 pendiente. Una recepción aceptada a tiempo mantiene sus puntos aunque se evalúe después del límite:
 
-| Hecho conciliado                                               | Motivo de cierre       |
-| -------------------------------------------------------------- | ---------------------- |
-| Resuelve la última prueba                                      | `all_solved`           |
-| Tercera validación completa incorrecta                         | `validation_limit`     |
-| Acierto intermedio y reloj ya vencido                          | `time_limit`           |
-| Prueba activa sin recepción final, recuperada antes del límite | `recovery_interrupted` |
-| Reloj vencido al recuperar sin recepción                       | `time_limit`           |
+| Hecho conciliado                                                    | Motivo de cierre       |
+| ------------------------------------------------------------------- | ---------------------- |
+| Resuelve la última prueba mediante recepción o checkpoint al vencer | `all_solved`           |
+| Tercera validación completa incorrecta                              | `validation_limit`     |
+| Acierto intermedio y reloj ya vencido                               | `time_limit`           |
+| Prueba activa sin recepción final, recuperada antes del límite      | `recovery_interrupted` |
+| Reloj vencido al recuperar con pruebas sin resolver                 | `time_limit`           |
 
 Los cierres reglamentarios persisten `completed`, `outcome = null` y conservan los puntos anteriores.
 Abandono y pérdida de permisos siguen las reglas comunes y no acreditan puntos. Finalización,
@@ -102,11 +106,10 @@ evaluación y ledger son idempotentes. No se fabrican respuestas o tiempos para 
 
 ## Recuperación
 
-Una recepción existente se concilia primero. Si una prueba activa carece de recepción final, se
-cierra sin respuesta y termina el desafío; un borrador guardado, incluso completo, no sustituye una
-validación recibida. El último checkpoint válido puede conservarse en `review_state` para la revisión,
-sin convertirlo en respuesta ni otorgar puntos. No se reentrega una prueba vista. La transferencia de
-control aplica la misma regla y conserva el intento y deadline originales.
+Una recepción existente se concilia primero. Antes del vencimiento, recuperar una prueba activa sin
+recepción final interrumpe el desafío y puede conservar el checkpoint para revisión, con cero puntos
+en esa prueba. Después del vencimiento, la recuperación aplica el mismo cierre que el temporizador.
+No se reentrega una prueba vista. La transferencia de control conserva el intento y deadline originales.
 
 Un intento creado sin tablero puede recibir su primera prueba. Recuperar entre pruebas, sin una
 interacción abierta ni recepción pendiente, permite preparar la siguiente si el reloj sigue vivo.
@@ -116,9 +119,10 @@ Recargar y perder una confirmación nunca crea un nuevo reloj ni una segunda acr
 
 El comparador central de publicación e historial ordena por pruebas resueltas descendente. En
 versiones con parcial activo, el primer desempate es la puntuación del desafío, de mayor a menor.
-El último criterio son los milisegundos globales hasta el último acierto, de menor a mayor. El tiempo
-procede de las recepciones
-aceptadas e incluye las transiciones. No incluye el tiempo del fallo final. Los empates comparten
+El último criterio son los milisegundos globales hasta el último acierto, de menor a mayor. Las
+recepciones aceptadas usan su hora efectiva. Los tableros resueltos a partir de un checkpoint de
+timeout usan la hora del vencimiento. El tiempo incluye las transiciones y excluye el fallo final.
+Los empates comparten
 posición (`1, 1, 3`). Los jugadores sin tableros resueltos carecen de tiempo de último acierto.
 El identificador del jugador estabiliza únicamente el orden visual. La temporada sigue sumando
 Flash Points y no cambia su comparador.
@@ -126,6 +130,20 @@ Flash Points y no cambia su comparador.
 La revisión distingue pruebas resueltas, entregadas sin resolver y no alcanzadas. Las últimas
 muestran orden, formato y peso, sin tablero ni solución. Las consultas de resultado propio siguen
 requiriendo autorización; las soluciones nunca aparecen durante el juego.
+
+## Reconocimiento desde superadmin
+
+En el detalle de un intento histórico cerrado por tiempo, **Reconocer tablero resuelto al vencer**
+aparece si la recepción de timeout quedó sin respuesta y el borrador conservado resuelve el tablero
+publicado. El panel muestra los cambios en puntos del tablero, puntuación, tableros resueltos,
+tiempo de desempate y Flash Points de temporada antes de confirmar. La confirmación exige un motivo
+y vuelve a comprobar la elegibilidad con el intento bloqueado. Si ya hay un ajuste global del
+intento o una corrección del tablero, el reconocimiento queda bloqueado.
+
+La operación conserva la recepción y el resultado originales. Registra la corrección del tablero,
+la diferencia en el ledger y un asiento de auditoría con el operador, el motivo y el antes y después.
+La revisión, el ranking y el historial reflejan el resultado efectivo, con el vencimiento como hora
+del acierto. Reintentar la misma confirmación devuelve el mismo resultado y no duplica los puntos.
 
 ## Recorrido E2E
 

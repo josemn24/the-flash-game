@@ -6,8 +6,17 @@ import { registerTimeTrialConformance } from "./support/time-trial-conformance";
 registerTimeTrialConformance({
   scenario: "time-trial-timeout-conformance",
   format: "queens",
-  timeout: true,
+  timeout: "partial",
   queensTimeoutPartialCredit: true,
+});
+
+test.describe("Queens checkpoint solved at expiry", () => {
+  registerTimeTrialConformance({
+    scenario: "time-trial-timeout-conformance",
+    format: "queens",
+    timeout: "checkpoint",
+    queensTimeoutPartialCredit: true,
+  });
 });
 
 test("timeout retries its close while a committed Queens checkpoint retry is held", async ({

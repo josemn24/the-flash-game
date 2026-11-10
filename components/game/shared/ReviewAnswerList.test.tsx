@@ -90,6 +90,36 @@ describe("ReviewAnswerList", () => {
     expect(markup).toContain("0 puntos");
   });
 
+  it("shows a correct Connect Pairs checkpoint as a complete solution", () => {
+    const question = questionsById["pyramid-connect-pairs-trap"];
+    if (question.type !== "connect-pairs") throw new Error("Expected Connect Pairs question");
+    const markup = renderToStaticMarkup(
+      <ReviewAnswerList
+        entries={[
+          {
+            id: question.id,
+            question,
+            marker: "07",
+            result: {
+              questionId: question.id,
+              answer: null,
+              status: "correct",
+              isCorrect: true,
+              points: 17,
+              timeUsed: 46.3,
+              reviewState: { type: "connect-pairs", paths: question.solutionPaths },
+            },
+          },
+        ]}
+      />,
+    );
+
+    expect(markup).toContain("reviewAnswer_correct");
+    expect(markup).toContain("Solución completa");
+    expect(markup).toContain("17 puntos");
+    expect(markup).not.toContain("Borrador");
+  });
+
   it("keeps the no-answer label when a Connect Pairs result has no saved draft", () => {
     const question = questionsById["pyramid-connect-pairs-trap"];
     if (question.type !== "connect-pairs") throw new Error("Expected Connect Pairs question");

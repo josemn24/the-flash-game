@@ -9,6 +9,7 @@ const fixture = sessionFixture({
   mode: "time-trial",
   title: "Contrarreloj Conectar parejas",
   globalTimeLimitMs: 120000,
+  additionalPlayers: ["conformance"],
   questions: timeTrialConnectPairsQuestions,
 });
 

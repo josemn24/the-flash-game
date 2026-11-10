@@ -131,7 +131,7 @@ create table private.attempt_answer_regrades (
   challenge_item_id uuid not null,
   rubric_question_version_id uuid not null references private.question_versions(id) on delete restrict,
   attempt_lock_version bigint not null check (attempt_lock_version > 0),
-  before_status text not null check (before_status in ('correct', 'partial', 'incorrect')),
+  before_status text not null check (before_status in ('correct', 'partial', 'incorrect', 'unanswered')),
   before_points integer not null check (before_points between 0 and 100),
   before_details jsonb,
   after_status text not null check (after_status in ('correct', 'partial', 'incorrect')),

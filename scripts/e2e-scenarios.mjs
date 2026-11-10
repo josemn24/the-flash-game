@@ -14,6 +14,7 @@ export const E2E_BY_SCENARIO = Object.freeze({
   ],
   "time-trial-timeout-conformance": ["e2e/time-trial-timeout-conformance.spec.ts"],
   "time-trial-connect-pairs-partial": ["e2e/time-trial-connect-pairs-partial.spec.ts"],
+  "time-trial-checkpoint-admin": ["e2e/admin-timeout-checkpoint.spec.ts"],
   portal: [
     "e2e/admin-portal.spec.ts",
     "e2e/auth-login.spec.ts",

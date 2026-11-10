@@ -55,7 +55,7 @@ language sql stable security definer set search_path = '' as $$
       cv.max_score as challenge_max_score,
       a.id as own_attempt_id,
       a.status as own_attempt_status,
-      a.score as own_attempt_score,
+      private.review_attempt_score(a.id, a.score) as own_attempt_score,
       a.started_at as own_attempt_started_at,
       a.completed_at as own_attempt_completed_at,
       a.deadline_at as own_attempt_deadline_at,
@@ -141,7 +141,7 @@ language sql stable security definer set search_path = '' as $$
     a.id, a.scheduled_challenge_id, i.id, i.position, q.id,
     q.type, q.payload_schema_version, case when aa.id is not null then q.public_payload end, case when aa.id is not null then qs.solution_payload end, aa.answer,
     aa.status, aa.points, aa.result_details, aa.review_state, aa.presented_at, aa.submitted_at, aa.time_used_ms,
-    a.status, a.score, a.started_at, a.completed_at, a.lock_version,
+    a.status, private.review_attempt_score(a.id, a.score), a.started_at, a.completed_at, a.lock_version,
     cv.title, cv.subtitle, cv.description, cv.max_score, private.time_trial_progress(a.id)
   from public.attempts a
   join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
@@ -152,7 +152,7 @@ language sql stable security definer set search_path = '' as $$
   join private.challenge_items i on i.challenge_version_id = cv.id
   join private.question_versions q on q.id = i.question_version_id
   join private.question_version_solutions qs on qs.question_version_id = q.id
-  left join private.attempt_answers aa on aa.attempt_id = a.id and aa.challenge_item_id = i.id
+  left join private.review_attempt_answers aa on aa.attempt_id = a.id and aa.challenge_item_id = i.id
   where a.id = target_attempt_id
     and a.player_id = private.current_player_id()
     and a.kind = 'competitive'

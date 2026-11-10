@@ -13,12 +13,16 @@ import {
   adjustSuperadminAttempt as executeAdjustSuperadminAttempt,
   invalidateSuperadminAttempt as executeInvalidateSuperadminAttempt,
 } from "@/server/admin-attempt";
-import type { SuperadminAnswerRegradePreview } from "@/application/ports/superadmin-attempt-commands";
+import type {
+  SuperadminAnswerRegradePreview,
+  TimeoutCheckpointPreview,
+} from "@/application/ports/superadmin-attempt-commands";
 
 export type AttemptActionState = {
   readonly message?: string;
   readonly fieldErrors?: Readonly<Record<string, string>>;
   readonly preview?: SuperadminAnswerRegradePreview;
+  readonly checkpointPreview?: TimeoutCheckpointPreview;
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -83,6 +87,8 @@ function commandMessage(code: string) {
       return "Solo se pueden operar intentos competitivos.";
     case "invalid_command":
       return "La respuesta, la rúbrica o el ítem ya no se pueden recalcular. Recarga la inspección.";
+    case "timeout_checkpoint_unavailable":
+      return "Este tablero ya no admite el reconocimiento al vencer. Recarga la inspección.";
     case "not_authorized":
       return "No tienes permisos para esta operación.";
     default:
@@ -90,18 +96,15 @@ function commandMessage(code: string) {
   }
 }
 
-function parseRegradeSelection(formData: FormData) {
+function parseItemSelection(formData: FormData) {
   const roomId = textValue(formData, "roomId");
   const scheduledChallengeId = textValue(formData, "scheduledChallengeId");
   const attemptId = textValue(formData, "attemptId");
   const challengeItemId = textValue(formData, "challengeItemId");
-  const rubricQuestionVersionId = textValue(formData, "rubricQuestionVersionId");
   const lockVersion = Number(textValue(formData, "lockVersion"));
   const fieldErrors: Record<string, string> = {};
   if (
-    ![roomId, scheduledChallengeId, attemptId, challengeItemId, rubricQuestionVersionId].every(
-      (id) => uuidPattern.test(id),
-    )
+    ![roomId, scheduledChallengeId, attemptId, challengeItemId].every((id) => uuidPattern.test(id))
   ) {
     fieldErrors.form = "La selección no es válida. Recarga la inspección.";
   }
@@ -113,10 +116,80 @@ function parseRegradeSelection(formData: FormData) {
     scheduledChallengeId,
     attemptId,
     challengeItemId,
-    rubricQuestionVersionId,
     lockVersion,
     fieldErrors,
   };
+}
+
+function parseRegradeSelection(formData: FormData) {
+  const selection = parseItemSelection(formData);
+  const rubricQuestionVersionId = textValue(formData, "rubricQuestionVersionId");
+  if (!uuidPattern.test(rubricQuestionVersionId)) {
+    selection.fieldErrors.form = "La selección no es válida. Recarga la inspección.";
+  }
+  return { ...selection, rubricQuestionVersionId };
+}
+
+export async function previewSuperadminTimeoutCheckpoint(
+  _state: AttemptActionState,
+  formData: FormData,
+): Promise<AttemptActionState> {
+  try {
+    await requireSuperadmin();
+    const { fieldErrors, ...input } = parseItemSelection(formData);
+    if (Object.keys(fieldErrors).length > 0) {
+      return { message: fieldErrors.form, fieldErrors };
+    }
+    const checkpointPreview =
+      await productionAdminServices.commands.previewTimeoutCheckpoint(input);
+    return { checkpointPreview };
+  } catch (error) {
+    if (error instanceof SuperadminAttemptCommandError)
+      return { message: commandMessage(error.code) };
+    handlePortalBoundary(error);
+  }
+}
+
+export async function applySuperadminTimeoutCheckpoint(
+  _state: AttemptActionState,
+  formData: FormData,
+): Promise<AttemptActionState> {
+  try {
+    await requireSuperadmin();
+    const { fieldErrors, ...input } = parseItemSelection(formData);
+    const reason = textValue(formData, "reason");
+    const idempotencyKey = textValue(formData, "idempotencyKey");
+    if (reason.length < 1 || reason.length > 500)
+      fieldErrors.reason = "Introduce un motivo de hasta 500 caracteres.";
+    if (idempotencyKey.length < 8 || idempotencyKey.length > 160)
+      fieldErrors.form = "No se pudo preparar la operación. Recarga el formulario.";
+    if (Object.keys(fieldErrors).length > 0) {
+      return { message: "Revisa los datos de la corrección.", fieldErrors };
+    }
+    const roomSlug = await productionAdminServices.commands.recognizeTimeoutCheckpoint({
+      ...input,
+      reason,
+      idempotencyKey,
+    });
+    const listPath = `/admin/rooms/${input.roomId}/attempts/${input.scheduledChallengeId}`;
+    const detailPath = `${listPath}/${input.attemptId}`;
+    const roomPath = `/salas/${roomSlug}`;
+    for (const path of [
+      listPath,
+      detailPath,
+      roomPath,
+      `${roomPath}/ranking`,
+      `${roomPath}/historial`,
+      `${roomPath}/historial/${input.scheduledChallengeId}`,
+      `/desafios/${input.scheduledChallengeId}`,
+    ])
+      revalidatePath(path);
+    redirect(`${detailPath}?updated=1`);
+  } catch (error) {
+    if (error instanceof SuperadminAttemptCommandError)
+      return { message: commandMessage(error.code) };
+    handlePortalBoundary(error);
+  }
 }
 
 export async function previewSuperadminAnswerRegrade(

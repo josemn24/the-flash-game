@@ -6,7 +6,7 @@ import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/datab
 
 const poolKey = Symbol.for("the-flash-game.supabase.health-pool");
 const globalPool = globalThis as typeof globalThis & { [poolKey]?: Pool };
-const canonicalSchemaRevision = "20261108221544_connect_pairs_timeout_partial_credit";
+const canonicalSchemaRevision = "20261110082801_superadmin_timeout_checkpoint";
 
 function databaseUrl() {
   return getSupabaseDatabaseUrl();
@@ -52,6 +52,9 @@ async function checkDatabase() {
         and to_regprocedure('private.is_supported_time_trial_question(uuid)') is not null
         and pg_get_functiondef(to_regprocedure('private.is_valid_time_trial_config(jsonb,text)'))
           like '%connectPairsTimeoutPartialCredit%'
+        and pg_get_functiondef(to_regprocedure('private.time_trial_progress(uuid)'))
+          like '%or (r.timed_out and r.effective_submitted_at = a.deadline_at)%'
+        and to_regprocedure('private.recognize_timeout_checkpoint(jsonb)') is not null
         and to_regprocedure('private.submit_queens_placement(jsonb)') is not null
         and to_regprocedure('private.save_queens_draft(jsonb)') is not null
         and to_regprocedure('private.submit_queens_answer(jsonb)') is not null

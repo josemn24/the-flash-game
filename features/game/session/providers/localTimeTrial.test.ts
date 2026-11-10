@@ -128,7 +128,6 @@ describe("local Time Trial authority", () => {
     { weight: 15, placed: [], expected: 0 },
     { weight: 15, placed: [10], expected: 5 },
     { weight: 15, placed: [0, 10, 18], expected: 10 },
-    { weight: 15, placed: [10, 18, 21], expected: 14 },
     { weight: 14, placed: [10, 18], expected: 9 },
   ])(
     "awards $expected/$weight from the last accepted Queens checkpoint",
@@ -163,6 +162,73 @@ describe("local Time Trial authority", () => {
           },
         ],
       });
+    },
+  );
+
+  it.each([
+    { format: "queens", partial: true },
+    { format: "queens", partial: false },
+    { format: "connect-pairs", partial: true },
+    { format: "connect-pairs", partial: false },
+  ] as const)(
+    "credits the seventh $format board saved 68 ms before expiry (partial credit: $partial)",
+    async ({ format, partial }) => {
+      const base = createTimeTrialTestDefinition({
+        format,
+        globalTimeLimitMs: 150_000,
+        queensTimeoutPartialCredit: format === "queens" && partial,
+        connectPairsTimeoutPartialCredit: format === "connect-pairs" && partial,
+      });
+      const slots = [12, 13, 13, 14, 15, 16, 17].map((points, index) => ({
+        ...base.challenge.slots[index % base.challenge.slots.length]!,
+        id: `board-${index + 1}`,
+        position: index + 1,
+        points,
+      }));
+      const { clock, driver, definition } = setup({
+        challenge: { ...base.challenge, slots },
+        levels: slots.map((slot, index) => ({
+          ...base.levels[index % base.levels.length]!,
+          challengeItemId: slot.id,
+        })),
+      });
+      const { levels } = compileTimeTrialDefinition(definition);
+      await driver.begin();
+      for (let index = 0; index < 6; index++) {
+        await driver.issue("prepare", {}, index);
+        const { question } = levels[index]!;
+        if (question.type === "queens")
+          await driver.issue("queensValidation", { queens: question.solution }, index);
+        else if (question.type === "connect-pairs")
+          await driver.issue("answer", { answer: { paths: question.solutionPaths } }, index);
+        else throw new Error("Expected a time-trial board");
+      }
+      const prepared = await driver.issue("prepare", {}, 6);
+      expect(prepared.state.timeTrial?.points).toBe(83);
+      const deadline = Date.parse(prepared.state.deadlineAt!);
+      clock.set(deadline - 68);
+      const { question } = levels[6]!;
+      if (question.type === "queens")
+        await driver.issue("queensDraft", { queens: question.solution }, 6);
+      else if (question.type === "connect-pairs")
+        await driver.issue("connectPairsDraft", { paths: question.solutionPaths }, 6);
+      else throw new Error("Expected a time-trial board");
+      clock.set(deadline + 1_103);
+
+      const completed = await driver.issue("recover");
+      expect(completed.state).toMatchObject({
+        score: 100,
+        terminalReason: "all_solved",
+        timeTrial: { solvedCount: 7, lastCorrectElapsedMs: 150_000, elapsedTimeMs: 150_000 },
+      });
+      expect(completed.state.answers?.[6]).toMatchObject({
+        answer: null,
+        status: "correct",
+        points: 17,
+        isCorrect: true,
+        reviewState: { type: format },
+      });
+      expect((await driver.issue("complete")).state).toEqual(completed.state);
     },
   );
 
@@ -236,19 +302,6 @@ describe("local Time Trial authority", () => {
       pairs: 5,
       cells: 19,
       points: 11,
-    },
-    {
-      name: "fully covered draft",
-      paths: {
-        a: [0, 1, 2, 3],
-        b: [4, 9, 8, 7],
-        c: [6, 5, 10, 11],
-        d: [12, 13, 14, 19, 18],
-        e: [17, 16, 15, 20, 21, 22, 23, 24],
-      },
-      pairs: 5,
-      cells: 25,
-      points: 14,
     },
   ])("scores $name at expiry", async ({ paths, pairs, cells, points }) => {
     const definition = createTimeTrialTestDefinition({

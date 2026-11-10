@@ -357,6 +357,7 @@ const attemptErrorStatuses = {
   publication_cancelled: 409,
   attempt_not_terminal: 409,
   reason_required: 409,
+  timeout_checkpoint_unavailable: 409,
   invalid_score: 409,
   not_competitive: 409,
   incomplete_challenge: 409,

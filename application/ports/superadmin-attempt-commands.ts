@@ -55,6 +55,29 @@ export type PurgeTerminalAttemptInput = {
   readonly attemptId: string;
 };
 
+export type TimeoutCheckpointSelection = PurgeTerminalAttemptInput & {
+  readonly challengeItemId: string;
+  readonly lockVersion: number;
+};
+
+export type TimeoutCheckpointPreview = {
+  readonly lockVersion: number;
+  readonly currentPoints: number;
+  readonly proposedPoints: number;
+  readonly currentEffectiveScore: number;
+  readonly newEffectiveScore: number;
+  readonly solvedCount: number;
+  readonly totalCount: number;
+  readonly lastCorrectElapsedMs: number | null;
+  readonly deadlineElapsedMs: number;
+  readonly difference: number;
+};
+
+export type RecognizeTimeoutCheckpointInput = TimeoutCheckpointSelection & {
+  readonly reason: string;
+  readonly idempotencyKey: string;
+};
+
 export interface SuperadminAttemptCommands {
   purge(input: PurgeTerminalAttemptInput): Promise<string>;
   adjust(input: SuperadminAdjustResultInput): Promise<SuperadminAdministrativeResult>;
@@ -63,4 +86,6 @@ export interface SuperadminAttemptCommands {
     input: SuperadminAnswerRegradeSelection,
   ): Promise<SuperadminAnswerRegradePreview>;
   regradeAnswer(input: SuperadminApplyAnswerRegradeInput): Promise<SuperadminAdministrativeResult>;
+  previewTimeoutCheckpoint(input: TimeoutCheckpointSelection): Promise<TimeoutCheckpointPreview>;
+  recognizeTimeoutCheckpoint(input: RecognizeTimeoutCheckpointInput): Promise<string>;
 }

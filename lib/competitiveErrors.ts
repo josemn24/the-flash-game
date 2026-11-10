@@ -28,6 +28,7 @@ export const ATTEMPT_ERROR_REASONS = {
   publication_cancelled: "lifecycle",
   attempt_not_terminal: "lifecycle",
   reason_required: "conflict",
+  timeout_checkpoint_unavailable: "conflict",
   invalid_score: "conflict",
   not_competitive: "conflict",
   incomplete_challenge: "conflict",
