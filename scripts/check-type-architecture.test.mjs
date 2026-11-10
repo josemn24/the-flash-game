@@ -1,20 +1,32 @@
 import { execFile } from "node:child_process";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const execFileAsync = promisify(execFile);
 const projectRoot = process.cwd();
+let fixtureRoot;
+
+beforeAll(async () => {
+  fixtureRoot = await mkdtemp(path.join(tmpdir(), "flash-type-architecture-"));
+});
+
+afterAll(async () => {
+  await rm(fixtureRoot, { recursive: true, force: true });
+});
 
 async function runChecker() {
   return execFileAsync("node", ["scripts/check-type-architecture.mjs"], {
     cwd: projectRoot,
+    env: { ...process.env, ARCHITECTURE_FIXTURE_ROOT: fixtureRoot },
   });
 }
 
 async function expectCheckerFailure(relativePath, source, message) {
-  const fixturePath = path.join(projectRoot, relativePath);
+  const fixturePath = path.join(fixtureRoot, relativePath);
+  await mkdir(path.dirname(fixturePath), { recursive: true });
   await writeFile(fixturePath, source);
   try {
     await expect(runChecker()).rejects.toMatchObject({
@@ -76,11 +88,12 @@ describe("type architecture boundary checker", () => {
 
   it("allows Supabase infrastructure to use infrastructure observability", async () => {
     const fixturePath = path.join(
-      projectRoot,
+      fixtureRoot,
       "infrastructure",
       "supabase",
       "__architecture-observability-test__.ts",
     );
+    await mkdir(path.dirname(fixturePath), { recursive: true });
     await writeFile(
       fixturePath,
       'import { logHttpEvent } from "@/infrastructure/observability/http";\n\nvoid logHttpEvent;\n',
@@ -103,7 +116,8 @@ describe("type architecture boundary checker", () => {
   });
 
   it("allows the demo facade inside app/demo", async () => {
-    const fixturePath = path.join(projectRoot, "app", "demo", "__architecture-boundary-test__.ts");
+    const fixturePath = path.join(fixtureRoot, "app", "demo", "__architecture-boundary-test__.ts");
+    await mkdir(path.dirname(fixturePath), { recursive: true });
     await writeFile(
       fixturePath,
       'import { getFlashPopLobbyPageModel } from "@/server/demo-data-access";\n\nvoid getFlashPopLobbyPageModel;\n',
@@ -185,25 +199,27 @@ describe("question input context boundaries", () => {
     ["input", 'const renderer = import("../mini-wordle/PracticeInput");'],
   ])("rejects %s importing another input context", async (adapter, source) => {
     const directory = "features/question-formats/formats/__architecture-context-test__";
-    await mkdir(directory, { recursive: true });
+    const fixtureDirectory = path.join(fixtureRoot, directory);
+    await mkdir(fixtureDirectory, { recursive: true });
     try {
       await expectCheckerFailure(
-        `${directory}/${adapter}.tsx`,
+        path.join(directory, `${adapter}.tsx`),
         source,
         "crosses question input contexts",
       );
     } finally {
-      await rm(directory, { recursive: true, force: true });
+      await rm(fixtureDirectory, { recursive: true, force: true });
     }
   });
 
   it("allows both contexts to use a neutral view and shared algorithms", async () => {
     const directory = "features/question-formats/formats/__architecture-context-test__";
-    await mkdir(directory, { recursive: true });
+    const fixtureDirectory = path.join(fixtureRoot, directory);
+    await mkdir(fixtureDirectory, { recursive: true });
     try {
       for (const adapter of ["PracticeInput", "input"]) {
         await writeFile(
-          `${directory}/${adapter}.tsx`,
+          path.join(fixtureDirectory, `${adapter}.tsx`),
           'export { ShortTextInput } from "../short-text/ShortTextInput";\nexport { normalizeMiniWordleWord } from "@/lib/miniWordle";\n',
         );
       }
@@ -211,7 +227,7 @@ describe("question input context boundaries", () => {
         stdout: expect.stringContaining("Type architecture OK"),
       });
     } finally {
-      await rm(directory, { recursive: true, force: true });
+      await rm(fixtureDirectory, { recursive: true, force: true });
     }
   });
 });
