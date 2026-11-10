@@ -56,14 +56,21 @@ language sql volatile set search_path = '' as $$
   with facts as (
     select a.*, cv.global_time_limit_ms,
       (select count(*)::integer from private.challenge_items i where i.challenge_version_id = a.challenge_version_id) as total,
-      (select count(*)::integer from private.attempt_answers aa where aa.attempt_id = a.id and aa.status = 'correct') as solved,
-      (select max(r.effective_submitted_at) from private.attempt_answers aa
-        join private.answer_receipts r on r.id = aa.receipt_id
-        where aa.attempt_id = a.id and aa.status = 'correct'
+      answers.*
+    from public.attempts a join private.challenge_versions cv on cv.id = a.challenge_version_id
+    cross join lateral (
+      select count(*) filter (where aa.status = 'correct')::integer as solved,
+        max(r.effective_submitted_at) filter (where aa.status = 'correct'
           and ((not r.timed_out and r.received_at < a.deadline_at)
             or (r.timed_out and r.effective_submitted_at = a.deadline_at))) as last_correct,
-      (select coalesce(sum(points),0)::integer from private.attempt_answers aa where aa.attempt_id = a.id) as earned
-    from public.attempts a join private.challenge_versions cv on cv.id = a.challenge_version_id
+        coalesce(sum(aa.points),0)::integer as earned,
+        max(aa.submitted_at) as last_submitted,
+        coalesce(bool_or(aa.status = 'incorrect'),false) as has_incorrect,
+        coalesce(bool_or(aa.status <> 'correct'),false) as has_unresolved
+      from private.review_attempt_answers aa
+      join private.answer_receipts r on r.id = aa.receipt_id
+      where aa.attempt_id = a.id
+    ) answers
     where a.id = target_attempt and cv.mode = 'time-trial'
   )
   select jsonb_build_object(
@@ -73,16 +80,17 @@ language sql volatile set search_path = '' as $$
     'deadlineAt',deadline_at,'serverNow',clock_timestamp(),
     'elapsedTimeMs',case when deadline_at is null then 0 else greatest(0,floor(extract(epoch from (
       (case when solved = total then last_correct
-        when status = 'completed' and exists (select 1 from private.attempt_answers aa where aa.attempt_id = facts.id and aa.status = 'incorrect') then (select max(aa.submitted_at) from private.attempt_answers aa where aa.attempt_id = facts.id)
+        when status = 'completed' and has_incorrect then last_submitted
         else least(coalesce(completed_at,clock_timestamp()),deadline_at) end)
       - (deadline_at - global_time_limit_ms * interval '1 millisecond')))*1000))::bigint end,
     'lastCorrectElapsedMs',floor(extract(epoch from (last_correct - (deadline_at - global_time_limit_ms * interval '1 millisecond'))) * 1000)::bigint,
     'endReason',case
+      when status = 'completed' and terminal_reason = 'time_limit' and solved = total then 'all_solved'
       when terminal_reason in ('all_solved','validation_limit','time_limit','recovery_interrupted') then terminal_reason
       when solved = total then 'all_solved'
-      when exists (select 1 from private.attempt_answers aa where aa.attempt_id = facts.id and aa.status = 'incorrect') then 'validation_limit'
+      when has_incorrect then 'validation_limit'
       when deadline_at is not null and clock_timestamp() >= deadline_at then 'time_limit'
-      when exists (select 1 from private.attempt_answers aa where aa.attempt_id = facts.id and aa.status <> 'correct') then 'recovery_interrupted'
+      when has_unresolved then 'recovery_interrupted'
       else null end
   ) from facts
 $$;

@@ -88,6 +88,8 @@ function createCommands(access: ApplicationSuperadminAccess) {
     purge: vi.fn().mockResolvedValue("room"),
     previewAnswerRegrade: vi.fn().mockResolvedValue({}),
     regradeAnswer: vi.fn().mockResolvedValue({}),
+    previewTimeoutCheckpoint: vi.fn().mockResolvedValue({}),
+    recognizeTimeoutCheckpoint: vi.fn().mockResolvedValue("room"),
   };
   const commands = new ApplicationSuperadminCommands({
     access,

@@ -250,7 +250,9 @@ begin
       'lockVersion', attempt.lock_version,
       'isCorrected', exists (select 1 from private.flash_point_entries entry
         where entry.attempt_id = attempt.id and entry.entry_type in ('adjustment', 'answer_regrade', 'reversal')),
-      'terminalReason', attempt.terminal_reason
+      'terminalReason', attempt.terminal_reason,
+      'effectiveTerminalReason', case when version.mode = 'time-trial' and attempt.status = 'completed'
+        then private.time_trial_progress(attempt.id)->>'endReason' else attempt.terminal_reason end
     ),
     'items', coalesce((
       select jsonb_agg(jsonb_build_object(
@@ -266,6 +268,14 @@ begin
         'resultDetails', answer.result_details,
         'awardedPoints', answer.points,
         'effectiveAwardedPoints', coalesce(regrade.after_points, answer.points),
+        'canRecognizeTimeoutCheckpoint', case when version.mode = 'time-trial'
+          and attempt.kind = 'competitive' and attempt.status = 'completed'
+          and attempt.terminal_reason = 'time_limit' and schedule.status <> 'cancelled'
+          and regrade.after_status is null and answer.status in ('partial','unanswered')
+          and not exists (select 1 from private.flash_point_entries entry
+            where entry.attempt_id = attempt.id and entry.entry_type = 'adjustment')
+          then private.is_solved_timeout_checkpoint(answer.*, attempt.deadline_at)
+          else false end,
         'currentRubricVersionId', regrade.rubric_question_version_id,
         'availableRubrics', case when attempt.kind = 'competitive' and attempt.status = 'completed'
           and schedule.status <> 'cancelled' and question.type in ('short-text','progressive-image','progressive-clues')

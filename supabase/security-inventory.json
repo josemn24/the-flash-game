@@ -471,6 +471,24 @@
       "executeRoles": [],
       "volatility": "v"
     },
+    "private.is_solved_timeout_checkpoint": {
+      "arguments": "answer private.attempt_answers, deadline timestamp with time zone",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
+    },
+    "private.preview_timeout_checkpoint": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "s"
+    },
+    "private.recognize_timeout_checkpoint": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "v"
+    },
     "private.handle_attempt_command": {
       "arguments": "op text, input jsonb, safe_input jsonb, actor uuid, cached_result jsonb, received_at timestamp with time zone",
       "securityDefiner": false,

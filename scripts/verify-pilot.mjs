@@ -15,8 +15,7 @@ const pilotEnv = {
   APP_ORIGIN: process.env.APP_ORIGIN || "http://127.0.0.1:3000",
   HEALTHCHECK_SECRET: process.env.HEALTHCHECK_SECRET || "local-s22-health-secret",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION ||
-    "20261110074315_time_trial_solved_checkpoint_at_deadline",
+    process.env.EXPECTED_SCHEMA_REVISION || "20261110082801_superadmin_timeout_checkpoint",
 };
 
 async function run(label, command, args, options = {}) {

@@ -24,6 +24,9 @@ import type {
   SuperadminAnswerRegradeCommandInput,
   SuperadminAnswerRegradeSelection,
   SuperadminApplyAnswerRegradeInput,
+  RecognizeTimeoutCheckpointInput,
+  TimeoutCheckpointPreview,
+  TimeoutCheckpointSelection,
 } from "@/application/ports/superadmin-attempt-commands";
 import type { AnswerReceiptId } from "@/types/domain/identifiers";
 import { getSupabaseDatabaseUrl } from "@/infrastructure/supabase/platform/databaseUrl";
@@ -46,6 +49,7 @@ import {
   fields,
   identity as responseIdentity,
   integer,
+  nullable,
   record,
   requireResponse,
 } from "@/lib/competitiveResponseContract";
@@ -199,6 +203,50 @@ export async function purgeTerminalAttempt(
     );
     const roomSlug = result.rows[0]?.room_slug;
     requireResponse(typeof roomSlug === "string" && roomSlug.length > 0, "purge.roomSlug");
+    return roomSlug;
+  });
+}
+
+export function previewTimeoutCheckpoint(
+  identity: VerifiedAuthIdentity,
+  input: TimeoutCheckpointSelection,
+): Promise<TimeoutCheckpointPreview> {
+  return transaction(identity, async (client) => {
+    const result = await client.query<{ preview: unknown }>(
+      "select private.preview_timeout_checkpoint($1::jsonb) as preview",
+      [JSON.stringify(input)],
+    );
+    const preview = record(result.rows[0]?.preview);
+    responseIdentity(preview, input);
+    fields(preview, {
+      currentPoints: integer,
+      proposedPoints: integer,
+      currentEffectiveScore: integer,
+      newEffectiveScore: integer,
+      solvedCount: integer,
+      totalCount: integer,
+      lastCorrectElapsedMs: nullable(integer),
+      deadlineElapsedMs: integer,
+      difference: integer,
+    });
+    requireResponse(preview.lockVersion === input.lockVersion, "preview.lockVersion");
+    return preview as unknown as TimeoutCheckpointPreview;
+  });
+}
+
+export function recognizeTimeoutCheckpoint(
+  identity: VerifiedAuthIdentity,
+  input: RecognizeTimeoutCheckpointInput,
+): Promise<string> {
+  return transaction(identity, async (client) => {
+    const result = await client.query<{ result: unknown }>(
+      "select private.recognize_timeout_checkpoint($1::jsonb) as result",
+      [JSON.stringify(input)],
+    );
+    const response = record(result.rows[0]?.result);
+    responseIdentity(response, input);
+    const { roomSlug } = response;
+    requireResponse(typeof roomSlug === "string" && roomSlug.length > 0, "checkpoint.roomSlug");
     return roomSlug;
   });
 }

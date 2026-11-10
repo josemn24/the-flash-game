@@ -457,6 +457,20 @@ select is(test_support.run('complete_attempt',jsonb_build_object('pendingEvaluat
   '0'::jsonb,'Early interruption gets zero even when reconciled after expiry');
 reset role;
 
+select is((select private.is_solved_timeout_checkpoint(answer.*, attempt.deadline_at)
+  from public.attempts attempt join private.attempt_answers answer on answer.attempt_id = attempt.id
+  where attempt.scheduled_challenge_id = test_support.id('cp-sc-8')
+    and attempt.player_id = test_support.id('owner')), false,
+  'Superadmin recognition rejects a historical incomplete board');
+select ok((select private.is_solved_timeout_checkpoint(jsonb_populate_record(answer.*,
+    jsonb_build_object('status','unanswered','points',0,'review_state',
+      jsonb_set(answer.review_state, '{paths,a}', '[3,2,1,0]'))),
+    attempt.deadline_at)
+  from public.attempts attempt join private.attempt_answers answer on answer.attempt_id = attempt.id
+  where attempt.scheduled_challenge_id = test_support.id('cp-sc-9')
+    and attempt.player_id = test_support.id('owner')),
+  'Superadmin recognition accepts a historical zero-point board with a legal reversed path');
+
 select * from test_support.check_deadline_checkpoint(test_support.id('cp-qv-1'),
   test_support.cp_answer(), test_support.cp_alternative());
 

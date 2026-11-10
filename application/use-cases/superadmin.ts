@@ -21,6 +21,8 @@ import type {
   SuperadminAnswerRegradeSelection,
   SuperadminAnswerRegradePreview,
   SuperadminApplyAnswerRegradeInput,
+  TimeoutCheckpointSelection,
+  RecognizeTimeoutCheckpointInput,
 } from "@/application/ports/superadmin-attempt-commands";
 import type {
   CalendarTickRunner,
@@ -485,6 +487,20 @@ export class ApplicationSuperadminCommands {
     const access = await this.prepare("superadmin");
     return this.runAttemptCommand(() =>
       this.dependencies.attemptCommandsFor(access.authUserId).regradeAnswer(input),
+    );
+  }
+
+  async previewTimeoutCheckpoint(input: TimeoutCheckpointSelection) {
+    const access = await this.prepare("superadmin");
+    return this.runAttemptCommand(() =>
+      this.dependencies.attemptCommandsFor(access.authUserId).previewTimeoutCheckpoint(input),
+    );
+  }
+
+  async recognizeTimeoutCheckpoint(input: RecognizeTimeoutCheckpointInput) {
+    const access = await this.prepare("superadmin");
+    return this.runAttemptCommand(() =>
+      this.dependencies.attemptCommandsFor(access.authUserId).recognizeTimeoutCheckpoint(input),
     );
   }
 

@@ -2,7 +2,7 @@
 
 Estado: vigente para Queens y Conectar parejas.
 
-Última actualización: 2026-11-03. Identificador técnico: `time-trial`.
+Última actualización: 2026-11-10. Identificador técnico: `time-trial`.
 
 ## Propósito y alcance
 
@@ -130,6 +130,20 @@ Flash Points y no cambia su comparador.
 La revisión distingue pruebas resueltas, entregadas sin resolver y no alcanzadas. Las últimas
 muestran orden, formato y peso, sin tablero ni solución. Las consultas de resultado propio siguen
 requiriendo autorización; las soluciones nunca aparecen durante el juego.
+
+## Reconocimiento desde superadmin
+
+En el detalle de un intento histórico cerrado por tiempo, **Reconocer tablero resuelto al vencer**
+aparece si la recepción de timeout quedó sin respuesta y el borrador conservado resuelve el tablero
+publicado. El panel muestra los cambios en puntos del tablero, puntuación, tableros resueltos,
+tiempo de desempate y Flash Points de temporada antes de confirmar. La confirmación exige un motivo
+y vuelve a comprobar la elegibilidad con el intento bloqueado. Si ya hay un ajuste global del
+intento o una corrección del tablero, el reconocimiento queda bloqueado.
+
+La operación conserva la recepción y el resultado originales. Registra la corrección del tablero,
+la diferencia en el ledger y un asiento de auditoría con el operador, el motivo y el antes y después.
+La revisión, el ranking y el historial reflejan el resultado efectivo, con el vencimiento como hora
+del acierto. Reintentar la misma confirmación devuelve el mismo resultado y no duplica los puntos.
 
 ## Recorrido E2E
 

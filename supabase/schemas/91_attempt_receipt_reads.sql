@@ -52,14 +52,16 @@ language sql stable security definer set search_path = '' as $$
         'reviewState', answer.review_state) order by item.position)
         from private.review_attempt_answers answer join private.challenge_items item on item.id = answer.challenge_item_id
         where answer.attempt_id = a.id), '[]'::jsonb))) ||
-      jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome, 'terminalReason', a.terminal_reason,
-        'timeTrial', case when cv.mode = 'time-trial' then private.time_trial_progress(a.id) end))
+      jsonb_build_object('challengeMode', cv.mode, 'outcome', a.outcome,
+        'terminalReason', coalesce(trial.progress->>'endReason', a.terminal_reason),
+        'timeTrial', trial.progress))
   from public.attempts a
   join public.scheduled_challenges sc on sc.id = a.scheduled_challenge_id
   join public.seasons season on season.id = sc.season_id
   join private.challenge_versions cv on cv.id = a.challenge_version_id
   join public.rooms room on room.id = season.room_id
   join public.room_memberships m on m.room_id = room.id and m.player_id = a.player_id
+  cross join lateral (select case when cv.mode = 'time-trial' then private.time_trial_progress(a.id) end as progress) trial
   where a.id = target_attempt and a.player_id = private.current_player_id()
     and a.kind = 'competitive' and a.status = 'completed' and sc.status <> 'cancelled'
     and room.status = 'active' and m.status = 'active' and m.role in ('owner','admin','member')

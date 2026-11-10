@@ -65,6 +65,7 @@ export type SuperadminAttemptItemInspection = {
   readonly awardedPoints: number | null;
   readonly effectiveAwardedPoints: number | null;
   readonly currentRubricVersionId: string | null;
+  readonly canRecognizeTimeoutCheckpoint?: boolean;
   readonly availableRubrics: readonly {
     readonly questionVersionId: string;
     readonly versionNumber: number;
@@ -105,6 +106,7 @@ export type SuperadminAttemptInspectionModel = {
   readonly attempt: SuperadminAttemptListRow & {
     readonly email: string | null;
     readonly terminalReason: string | null;
+    readonly effectiveTerminalReason?: string | null;
   };
   readonly items: readonly SuperadminAttemptItemInspection[];
   readonly ledger: readonly SuperadminAttemptLedgerEntry[];

@@ -5,7 +5,7 @@ select answer.id, answer.attempt_id, answer.challenge_item_id, answer.answer,
   coalesce(regrade.after_points, answer.points) as points,
   case when regrade.after_status is not null then regrade.after_details
     else answer.result_details end as result_details,
-  answer.review_state, answer.presented_at, answer.submitted_at, answer.time_used_ms
+  answer.review_state, answer.presented_at, answer.submitted_at, answer.time_used_ms, answer.receipt_id
 from private.attempt_answers answer
 left join lateral (
   select correction.after_status, correction.after_points, correction.after_details
