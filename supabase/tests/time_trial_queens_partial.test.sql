@@ -106,7 +106,7 @@ select test_support.run('save_queens_draft', '{"queens":[10,18,21]}');
 select pg_sleep(1.05);
 select test_support.run('recover_attempt');
 select is(test_support.run('record_evaluation','{"status":"unanswered","points":0}')->'points',
-  '14'::jsonb, 'Recovery at expiry records a fully correct draft at the partial cap');
+  '15'::jsonb, 'Recovery at expiry awards the full weight for a correct draft');
 select is(test_support.run('complete_attempt','{}')->'timeTrial'->>'endReason', 'time_limit',
   'Recovery after the deadline retains the timeout reason');
 
@@ -142,6 +142,9 @@ select is((select count(*) from private.flash_point_entries
   where attempt_id = (select (state->>'attemptId')::uuid from test_support.runtime)),
   0::bigint, 'Abandonment with correct saved crowns creates no accreditation');
 reset role;
+
+select * from test_support.check_deadline_checkpoint(test_support.id('pyramid-queens-qv'),
+  '{"queens":[2,9,10,18,21]}', '{"queens":[2,9,10,18,21]}');
 
 select * from finish();
 rollback;

@@ -61,7 +61,8 @@ const localEnv = {
   // Keep production's smaller admin burst while allowing the local browser run to complete.
   FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
   EXPECTED_SCHEMA_REVISION:
-    process.env.EXPECTED_SCHEMA_REVISION || "20261108221544_connect_pairs_timeout_partial_credit",
+    process.env.EXPECTED_SCHEMA_REVISION ||
+    "20261110074315_time_trial_solved_checkpoint_at_deadline",
 };
 
 export default defineConfig({

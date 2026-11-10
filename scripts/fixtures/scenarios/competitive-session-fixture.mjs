@@ -6,11 +6,12 @@ export function sessionFixture({
   questions,
   modeConfig = {},
   globalTimeLimitMs = null,
+  additionalPlayers = [],
 }) {
   return {
     id,
     namespace: `the-flash-game:${id}`,
-    users: ["alice", "bob", "carol", "dave"].map((label) => ({
+    users: ["alice", "bob", "carol", "dave", ...additionalPlayers].map((label) => ({
       label,
       displayName: `${label} ${id}`,
     })),

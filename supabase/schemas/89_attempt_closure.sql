@@ -66,6 +66,7 @@ begin
         if time_trial_reason is null then raise exception 'time_trial_not_terminal' using errcode = '55000'; end if;
         if time_trial_reason = 'time_limit' then
           perform private.close_time_trial_interaction(a.id, a.deadline_at, 'timeout');
+          time_trial_reason := private.time_trial_progress(a.id)->>'endReason';
         end if;
       elsif private.next_attempt_item(a.id) is not null then
         if instant < a.deadline_at then

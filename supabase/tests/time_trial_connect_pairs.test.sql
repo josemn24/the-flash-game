@@ -443,8 +443,8 @@ select test_support.start_cp(9);
 select test_support.run('save_connect_pairs_draft','{"paths":{"a":[0,1,2,3],"b":[4,9,8,7],"c":[6,5,10,11],"d":[12,13,14,19,18],"e":[17,16,15,20,21,22,23,24]}}');
 select pg_sleep(1.05);
 select test_support.run('recover_attempt');
-select is(test_support.run('record_evaluation','{"status":"unanswered","points":0}')->'points','14'::jsonb,
-  'A fully covered draft earns at most fourteen through expired recovery');
+select is(test_support.run('record_evaluation','{"status":"unanswered","points":0}')->'points','15'::jsonb,
+  'A fully covered draft earns its full weight through expired recovery');
 select is(test_support.run('complete_attempt')->'timeTrial'->>'endReason','time_limit',
   'Expired recovery keeps the timeout reason');
 
@@ -456,6 +456,9 @@ select is(test_support.run('complete_attempt',jsonb_build_object('pendingEvaluat
   'receiptId',(select state->'receiptId' from test_support.runtime),'status','unanswered','points',0)))->'score',
   '0'::jsonb,'Early interruption gets zero even when reconciled after expiry');
 reset role;
+
+select * from test_support.check_deadline_checkpoint(test_support.id('cp-qv-1'),
+  test_support.cp_answer(), test_support.cp_alternative());
 
 select * from finish();
 rollback;

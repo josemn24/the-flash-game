@@ -59,7 +59,9 @@ language sql volatile set search_path = '' as $$
       (select count(*)::integer from private.attempt_answers aa where aa.attempt_id = a.id and aa.status = 'correct') as solved,
       (select max(r.effective_submitted_at) from private.attempt_answers aa
         join private.answer_receipts r on r.id = aa.receipt_id
-        where aa.attempt_id = a.id and aa.status = 'correct' and not r.timed_out and r.received_at < a.deadline_at) as last_correct,
+        where aa.attempt_id = a.id and aa.status = 'correct'
+          and ((not r.timed_out and r.received_at < a.deadline_at)
+            or (r.timed_out and r.effective_submitted_at = a.deadline_at))) as last_correct,
       (select coalesce(sum(points),0)::integer from private.attempt_answers aa where aa.attempt_id = a.id) as earned
     from public.attempts a join private.challenge_versions cv on cv.id = a.challenge_version_id
     where a.id = target_attempt and cv.mode = 'time-trial'
