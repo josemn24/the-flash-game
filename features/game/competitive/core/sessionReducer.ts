@@ -1,3 +1,4 @@
+import { isDraftCommand } from "./checkpoints";
 import type { TimeTrialProgress } from "@/types/domain/time-trial";
 import type { AnswerValue } from "@/types/contracts";
 import type { AnswerResult } from "@/types/gameplay/result";
@@ -227,28 +228,20 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
             }
           : {}),
       };
-    case "command_started":
+    case "command_started": {
+      const drafting = isDraftCommand(event.command.operation);
       return {
         ...state,
         pendingCommand: event.command,
         completionRetryScheduled: false,
-        busy:
-          event.command.operation !== "queensDraft" &&
-          event.command.operation !== "connectPairsDraft",
+        busy: !drafting,
         commandStatus: "submitting",
-        locked:
-          event.command.operation === "queensDraft" ||
-          event.command.operation === "connectPairsDraft"
-            ? state.locked
-            : true,
+        locked: drafting ? state.locked : true,
         lifecycleError: undefined,
         startNotice: undefined,
         levelNotice: undefined,
         feedback:
-          event.feedback &&
-          ((event.command.operation !== "queensDraft" &&
-            event.command.operation !== "connectPairsDraft") ||
-            state.locked)
+          event.feedback && (!drafting || state.locked)
             ? { channel: event.feedback, state: "submitting", visible: false }
             : undefined,
         phase:
@@ -256,6 +249,7 @@ export function sessionReducer(state: SessionState, event: SessionEvent): Sessio
             ? "checking"
             : state.phase,
       };
+    }
     case "command_succeeded":
       return {
         ...state,

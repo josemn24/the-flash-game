@@ -1,4 +1,4 @@
-import { hasTimeoutPartialCredit } from "./pyramidTimeoutCredit";
+import { hasAccreditedPartialCredit } from "./pyramidPartialCredit";
 import type { PyramidAttemptOutcome } from "@/types/domain/attempt";
 import type { AnswerResult } from "@/types/gameplay";
 
@@ -16,7 +16,7 @@ export function isPyramidLevelPassed(result: Pick<AnswerResult, "status" | "isCo
 }
 
 export function normalizePyramidResult(result: AnswerResult): AnswerResult {
-  const earnedPartial = result.status === "partial" && hasTimeoutPartialCredit(result.details);
+  const earnedPartial = result.status === "partial" && hasAccreditedPartialCredit(result.details);
   return isPyramidLevelPassed(result) || earnedPartial ? result : { ...result, points: 0 };
 }
 

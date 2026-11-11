@@ -227,6 +227,14 @@ export type SaveConnectPairsDraftResult = AttemptCommandResult & {
   readonly challengeItemId: ChallengeItemId;
   readonly reviewState: import("@/types/gameplay/result").ReviewState;
 };
+export type SavePyramidDraftInput = AttemptCommandInput & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly answer: import("@/types/contracts/game-session").PyramidDraftAnswer;
+};
+export type SavePyramidDraftResult = AttemptCommandResult & {
+  readonly challengeItemId: ChallengeItemId;
+  readonly reviewState: import("@/types/gameplay/result").ReviewState;
+};
 export type ValidateQueensBoardInput = AttemptCommandInput & {
   readonly challengeItemId: ChallengeItemId;
   readonly queens: readonly number[];

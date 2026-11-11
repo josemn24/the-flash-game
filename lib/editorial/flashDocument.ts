@@ -1,8 +1,8 @@
 import {
-  PYRAMID_TIMEOUT_CREDIT_FORMATS,
-  PYRAMID_TIMEOUT_CREDIT_KEYS,
-  pyramidTimeoutCreditEnabled,
-} from "@/lib/gameplay/pyramidTimeoutCredit";
+  PYRAMID_PARTIAL_CREDIT_FORMATS,
+  PYRAMID_PARTIAL_CREDIT_KEYS,
+  pyramidPartialCreditEnabled,
+} from "@/lib/gameplay/pyramidPartialCredit";
 import { isTimeTrialFormat, TIME_TRIAL_TIMEOUT_CREDIT_KEYS } from "@/lib/timeTrial";
 import { parseEditorialQuestion as parseQuestion } from "@/lib/question-formats/editorialRegistry";
 import {
@@ -170,8 +170,8 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
       Object.entries(challenge.modeConfig).some(
         ([key, enabled]) =>
           enabled !== true ||
-          !PYRAMID_TIMEOUT_CREDIT_FORMATS.some(
-            (format) => PYRAMID_TIMEOUT_CREDIT_KEYS[format] === key,
+          !PYRAMID_PARTIAL_CREDIT_FORMATS.some(
+            (format) => PYRAMID_PARTIAL_CREDIT_KEYS[format] === key,
           ),
       ))
   ) {
@@ -260,9 +260,9 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
     });
     if (
       !editing &&
-      PYRAMID_TIMEOUT_CREDIT_FORMATS.some(
+      PYRAMID_PARTIAL_CREDIT_FORMATS.some(
         (format) =>
-          pyramidTimeoutCreditEnabled(modeConfig, format) &&
+          pyramidPartialCreditEnabled(modeConfig, format) &&
           !parsedQuestions.some((question) => "source" in question || question.type === format),
       )
     ) {

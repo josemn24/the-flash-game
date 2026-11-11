@@ -1,4 +1,4 @@
-import { hasTimeoutPartialCredit } from "@/lib/gameplay/pyramidTimeoutCredit";
+import { hasAccreditedPartialCredit } from "@/lib/gameplay/pyramidPartialCredit";
 import type { AnswerReview } from "@/types/gameplay/completion";
 import type { AnswerResult } from "@/types/gameplay/result";
 import type { RoomMemberReviewReadRow } from "./roomReadContracts";
@@ -13,7 +13,8 @@ export function toHistoricalAnswerReview(row: RoomMemberReviewReadRow): AnswerRe
     questionId: row.challenge_item_id,
     answer: row.answer as AnswerReview["answer"],
     status,
-    isCorrect: status === "correct" || (status === "partial" && !hasTimeoutPartialCredit(details)),
+    isCorrect:
+      status === "correct" || (status === "partial" && !hasAccreditedPartialCredit(details)),
     points: row.points ?? 0,
     timeUsed: (row.time_used_ms ?? 0) / 1_000,
     ...(details ? { details } : {}),

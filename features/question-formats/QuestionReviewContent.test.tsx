@@ -18,6 +18,50 @@ function result(overrides: Partial<AnswerResult>): AnswerResult {
   };
 }
 
+describe("Pyramid credited answer review", () => {
+  it.each(["matching", "classification"] as const)(
+    "shows a valid %s answer whose item key is stepId",
+    (format) => {
+      const source = Object.values(questionsById).find((row) => row.type === format)!;
+      if (source.type !== "matching" && source.type !== "classification")
+        throw new Error("Expected an assignment question");
+      const creditedQuestion =
+        source.type === "matching"
+          ? {
+              ...source,
+              leftItems: source.leftItems.map((item, index) =>
+                index === 0 ? { ...item, id: "stepId" } : item,
+              ),
+            }
+          : {
+              ...source,
+              items: source.items.map((item, index) =>
+                index === 0 ? { ...item, label: "stepId" } : item,
+              ),
+            };
+      const answer = Object.fromEntries(
+        creditedQuestion.type === "matching"
+          ? creditedQuestion.leftItems.map((item) => [item.id, item.correctMatchId])
+          : creditedQuestion.items.map((item) => [item.label, item.correctCategory]),
+      );
+      for (const submitted of [false, true]) {
+        const markup = renderToStaticMarkup(
+          <QuestionReviewContent
+            question={creditedQuestion}
+            result={result({
+              questionId: creditedQuestion.id,
+              answer: submitted ? answer : null,
+              reviewState: submitted ? undefined : { type: format, answer },
+            })}
+          />,
+        );
+        expect(markup).not.toContain("Sin emparejar");
+        expect(markup).not.toContain("Sin respuesta");
+      }
+    },
+  );
+});
+
 describe("Connect Pairs review", () => {
   it("renders the canonical routes and hides the duplicate submitted layer when correct", () => {
     if (question.type !== "connect-pairs") throw new Error("Expected connect-pairs question");

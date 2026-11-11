@@ -87,6 +87,31 @@ describe("competitive generic input families", () => {
     expect(submit).toHaveBeenCalledExactlyOnceWith(expected);
   });
 
+  it("saves Ordering only after a move and confirms the displayed order", () => {
+    const submit = vi.fn();
+    const updateDraft = vi.fn();
+    const { question } = competitiveInputFor("ordering").props;
+    const initial = [...question.items];
+    const { rerender } = render(
+      <CompetitiveQuestionInput input={competitiveInputFor("ordering", { submit, updateDraft })} />,
+    );
+    expect(updateDraft).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar orden" }));
+    expect(submit).toHaveBeenLastCalledWith(initial);
+    fireEvent.click(screen.getByRole("button", { name: `Mover ${initial[1]} arriba` }));
+    const moved = [initial[1], initial[0], ...initial.slice(2)];
+    expect(updateDraft).toHaveBeenCalledExactlyOnceWith(moved);
+    fireEvent.click(screen.getByRole("button", { name: "Confirmar orden" }));
+    expect(submit).toHaveBeenLastCalledWith(moved);
+    rerender(
+      <CompetitiveQuestionInput
+        input={competitiveInputFor("ordering", { submit, updateDraft, locked: true })}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: `Mover ${moved[1]} arriba` }));
+    expect(updateDraft).toHaveBeenCalledOnce();
+  });
+
   it("restores a numeric estimation and submits the session's updated draft", () => {
     const submit = vi.fn(),
       updateDraft = vi.fn();

@@ -1,6 +1,6 @@
 "use client";
 
-import { PYRAMID_TIMEOUT_CREDIT_FORMATS } from "@/lib/gameplay/pyramidTimeoutCredit";
+import { PYRAMID_PARTIAL_CREDIT_FORMATS } from "@/lib/gameplay/pyramidPartialCredit";
 
 import { isTimeTrialFormat } from "@/lib/timeTrial";
 import { randomUuid } from "@/lib/randomUuid";
@@ -171,7 +171,7 @@ export function EditorialManagement({
     editableQuestionTypes?.every((type) => type === firstEditableType)
       ? firstEditableType
       : undefined;
-  const pyramidTimeoutCreditFormats = PYRAMID_TIMEOUT_CREDIT_FORMATS.filter(
+  const pyramidPartialCreditFormats = PYRAMID_PARTIAL_CREDIT_FORMATS.filter(
     (format) =>
       editableQuestionTypes?.includes(format) || editableQuestionTypes?.includes(undefined),
   );
@@ -301,7 +301,7 @@ export function EditorialManagement({
               fieldId={fieldId}
               document={editableDocument}
               timeoutCreditFormat={timeoutCreditFormat}
-              pyramidTimeoutCreditFormats={pyramidTimeoutCreditFormats}
+              pyramidPartialCreditFormats={pyramidPartialCreditFormats}
               onTimeoutPartialCreditChange={(key, enabled) => {
                 if (!editableDocument) return;
                 const { challenge } = editableDocument;

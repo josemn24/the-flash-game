@@ -85,7 +85,9 @@ create table private.attempt_answers (
     jsonb_typeof(review_state) = 'object' and (
       (review_state->>'type' = 'connect-pairs' and jsonb_typeof(review_state->'paths') = 'object') or
       (review_state->>'type' = 'queens' and jsonb_typeof(review_state->'queens') = 'array') or
-      (review_state->>'type' = 'word-search' and jsonb_typeof(review_state->'foundWordIds') = 'array')
+      (review_state->>'type' = 'word-search' and jsonb_typeof(review_state->'foundWordIds') = 'array') or
+      (review_state->>'type' in ('matching', 'classification') and jsonb_typeof(review_state->'answer') = 'object') or
+      (review_state->>'type' = 'ordering' and jsonb_typeof(review_state->'answer') = 'array')
     )
   )),
   points integer not null check (points between 0 and 100),

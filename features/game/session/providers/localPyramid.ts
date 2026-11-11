@@ -11,7 +11,7 @@ import type {
   AuthoritativeSessionUpdate,
 } from "@/types/gameplay/authoritative-session";
 import type { LocalPyramidDefinition } from "@/types/gameplay/local-pyramid";
-import type { AnswerResult } from "@/types/gameplay/result";
+import type { AnswerResult, PyramidDraftReviewState } from "@/types/gameplay/result";
 import { randomUuid } from "@/lib/randomUuid";
 import {
   deriveCompetitivePyramidProgress,
@@ -21,11 +21,17 @@ import { evaluateCompetitiveReceipt } from "@/lib/scoringCore/competitiveReceipt
 import { calculateConnectPairsMetrics } from "@/lib/connectPairs";
 import { connectPairsTimeoutPartial } from "@/lib/scoringCore/questions/connectPairs";
 import {
-  pyramidTimeoutCreditEnabled,
+  isPyramidDraftFormat,
+  pyramidPartialCreditEnabled,
   timeoutPartialPoints,
-} from "@/lib/gameplay/pyramidTimeoutCredit";
+} from "@/lib/gameplay/pyramidPartialCredit";
 import { QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS } from "@/lib/queens";
-import { pyramidEvaluation, pyramidNullEvaluation } from "@/lib/scoringCore/pyramid";
+import {
+  evaluatePyramidDraft,
+  pyramidDraftSnapshot,
+  pyramidEvaluation,
+  pyramidNullEvaluation,
+} from "@/lib/scoringCore/pyramid";
 import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 import { isMatchingAnswer } from "@/lib/scoringCore/questions/matching";
 import type { DurationMs } from "@/types/domain/values";
@@ -89,8 +95,12 @@ export function createLocalPyramidSessionProvider(
   const answers: AnswerResult[] = [];
   const formats = levels.map(initialFormatState);
   const checkpointSavedAt = new Map<number, number>();
-  const usesTimeoutCredit = (level: CompiledLevel) =>
-    pyramidTimeoutCreditEnabled(definition.challenge, level.question.type);
+  const pyramidDrafts = new Map<
+    number,
+    { snapshot: PyramidDraftReviewState; baseRevision: number }
+  >();
+  const usesPartialCredit = (level: CompiledLevel) =>
+    pyramidPartialCreditEnabled(definition.challenge, level.question.type);
   const cache = new Map<string, Cached>();
   const enqueue = createLocalCommandQueue();
   const accept = (
@@ -151,7 +161,21 @@ export function createLocalPyramidSessionProvider(
     ) {
       reviewState = { type: "queens", queens: [...state.queens] };
     }
-    let checkpointEvaluation: ReturnType<typeof pyramidEvaluation> | undefined;
+    let authoritativeEvaluation: ReturnType<typeof pyramidEvaluation> | undefined;
+    if (isPyramidDraftFormat(q.type) && usesPartialCredit(level)) {
+      const snapshot = pending.timedOut
+        ? pending.checkpointTimeUsedMs === undefined
+          ? undefined
+          : pyramidDrafts.get(pending.index)?.snapshot
+        : pyramidDraftSnapshot(q, pending.answer, true);
+      if (pending.timedOut) reviewState = snapshot;
+      authoritativeEvaluation = evaluatePyramidDraft(
+        q,
+        snapshot,
+        pending.checkpointTimeUsedMs ?? pending.timeUsedMs,
+        pending.timedOut,
+      );
+    }
     if (
       pending.checkpointTimeUsedMs !== undefined &&
       q.type === "connect-pairs" &&
@@ -161,14 +185,14 @@ export function createLocalPyramidSessionProvider(
         Object.entries(reviewState.paths).map(([id, path]) => [id, [...path]]),
       );
       if (calculateConnectPairsMetrics(q, { paths }).exact) {
-        checkpointEvaluation = evaluateCompetitiveReceipt({
+        authoritativeEvaluation = evaluateCompetitiveReceipt({
           question: q,
           answer: { paths },
           receipt: { timeUsedMs: pending.checkpointTimeUsedMs as DurationMs, timedOut: false },
         });
       } else {
         const partial = connectPairsTimeoutPartial(q, paths);
-        checkpointEvaluation = {
+        authoritativeEvaluation = {
           ...partial,
           status: partial.points > 0 ? "partial" : "unanswered",
         };
@@ -187,7 +211,7 @@ export function createLocalPyramidSessionProvider(
         incorrectAttempts: state.incorrectValidations,
       });
       if (scored.status === "correct") {
-        checkpointEvaluation = scored;
+        authoritativeEvaluation = scored;
       } else if (scored.details?.type === "queens") {
         const fixed = new Set(q.prefilledQueens ?? []);
         const requiredPlacements = q.grid.rows - fixed.size;
@@ -195,7 +219,7 @@ export function createLocalPyramidSessionProvider(
           (cell) => !fixed.has(cell) && q.solution.includes(cell),
         ).length;
         const points = timeoutPartialPoints(q.points, correctPlacements, requiredPlacements);
-        checkpointEvaluation = {
+        authoritativeEvaluation = {
           status: points > 0 ? "partial" : "unanswered",
           points,
           details: {
@@ -207,12 +231,12 @@ export function createLocalPyramidSessionProvider(
         };
       }
     }
-    if (pending.timedOut && q.type === "word-search" && usesTimeoutCredit(level)) {
+    if (pending.timedOut && q.type === "word-search" && usesPartialCredit(level)) {
       const foundWordIds = state.selections.map((selection) => selection.targetId);
       if (foundWordIds.length > 0) {
         const points = timeoutPartialPoints(q.points, foundWordIds.length, q.targets.length);
         reviewState = { type: "word-search", foundWordIds };
-        checkpointEvaluation = {
+        authoritativeEvaluation = {
           status: points > 0 ? "partial" : "unanswered",
           points,
           details: {
@@ -226,9 +250,9 @@ export function createLocalPyramidSessionProvider(
         };
       }
     }
-    const unanswered = pending.answer === null && usesTimeoutCredit(level);
+    const unanswered = pending.answer === null && usesPartialCredit(level);
     const evaluated =
-      checkpointEvaluation ??
+      authoritativeEvaluation ??
       pyramidNullEvaluation(unanswered ? null : effective) ??
       pyramidEvaluation(
         evaluateCompetitiveReceipt({
@@ -263,7 +287,7 @@ export function createLocalPyramidSessionProvider(
       status: evaluated.status,
       isCorrect:
         evaluated.status === "correct" ||
-        (evaluated.status === "partial" && checkpointEvaluation === undefined),
+        (evaluated.status === "partial" && authoritativeEvaluation === undefined),
       points: evaluated.points,
       timeUsed: pending.timeUsedMs / 1000,
       ...(evaluated.details ? { details: evaluated.details } : {}),
@@ -293,7 +317,7 @@ export function createLocalPyramidSessionProvider(
     if (!active) return reject("interaction_not_presented");
     if (now < active.presentedAt) return reject("request_predates_presentation");
     const timedOut = now >= active.deadlineAt;
-    const useCheckpoint = timedOut && usesTimeoutCredit(levels[index]!);
+    const useCheckpoint = timedOut && usesPartialCredit(levels[index]!);
     const savedAt = useCheckpoint ? checkpointSavedAt.get(index) : undefined;
     const pending: Receipt = {
       index,
@@ -380,7 +404,14 @@ export function createLocalPyramidSessionProvider(
         status !== "in_progress"
       )
         return terminal();
-      if (input.revision !== revision) return reject("stale_version");
+      const overtakesDraft =
+        operation === "answer" &&
+        active &&
+        (input.answer !== null || now >= active.deadlineAt) &&
+        input.challengeItemId === levels[active.index]?.source.challengeItemId &&
+        revision === input.revision + 1 &&
+        pyramidDrafts.get(active.index)?.baseRevision === input.revision;
+      if (input.revision !== revision && !overtakesDraft) return reject("stale_version");
       if (status !== "in_progress") return reject("attempt_terminal");
       if (operation === "abandon") return finish(true);
       if (operation === "complete") {
@@ -454,20 +485,39 @@ export function createLocalPyramidSessionProvider(
           let pending: Receipt | undefined;
           let update: AuthoritativeSessionUpdate = {};
           if (operation === "answer") {
-            validateAnswer(level, input.answer, now >= active.deadlineAt);
+            if (isPyramidDraftFormat(level.question.type) && usesPartialCredit(level)) {
+              if (
+                input.answer !== null &&
+                now < active.deadlineAt &&
+                !pyramidDraftSnapshot(level.question, input.answer, true)
+              )
+                return reject("invalid_command");
+            } else validateAnswer(level, input.answer, now >= active.deadlineAt);
             const answer =
               input.answer === null && level.question.type === "word-hashtag"
                 ? { swaps: formats[index]!.swaps }
                 : input.answer;
             pending = receive(index, answer, now);
             revision++;
+          } else if (operation === "pyramidDraft") {
+            if (!usesPartialCredit(level)) return reject("invalid_command");
+            const snapshot = pyramidDraftSnapshot(level.question, input.answer, false);
+            if (!snapshot) return reject("invalid_command");
+            if (now >= active.deadlineAt) return reject("deadline_reached");
+            pyramidDrafts.set(index, {
+              snapshot: structuredClone(snapshot),
+              baseRevision: revision,
+            });
+            checkpointSavedAt.set(index, now);
+            update = { reviewState: snapshot };
+            revision++;
           } else {
             const savesDraft = operation === "queensDraft" || operation === "connectPairsDraft";
-            if (now >= active.deadlineAt && (!savesDraft || usesTimeoutCredit(level)))
+            if (now >= active.deadlineAt && (!savesDraft || usesPartialCredit(level)))
               return reject("deadline_reached");
             const transition = transitionFormat(level, formats[index]!, command, dictionaries);
             formats[index] = transition.state;
-            if ((savesDraft || operation === "queensValidation") && usesTimeoutCredit(level))
+            if ((savesDraft || operation === "queensValidation") && usesPartialCredit(level))
               checkpointSavedAt.set(index, now);
             update = transition.update;
             if (operation === "miniWordleGuess")

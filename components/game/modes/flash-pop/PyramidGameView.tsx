@@ -1,6 +1,9 @@
 "use client";
 
-import { pyramidTimeoutCreditEnabled } from "@/lib/gameplay/pyramidTimeoutCredit";
+import {
+  isPyramidDraftFormat,
+  pyramidPartialCreditEnabled,
+} from "@/lib/gameplay/pyramidPartialCredit";
 
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
 
@@ -45,7 +48,11 @@ function PyramidFeedback({
 }) {
   const passed = result.status === "correct" && result.isCorrect;
   const partial = result.status === "partial" && result.points > 0;
-  const timedOut = result.status === "unanswered" || partial;
+  const submittedPartial =
+    result.details &&
+    "pyramidPartialCredit" in result.details &&
+    result.details.pyramidPartialCredit === "submission";
+  const timedOut = result.status === "unanswered" || (partial && !submittedPartial);
   const zeroProximityEstimate =
     result.details?.type === "estimation" && result.details.proximity === 0;
   const status = passed ? "correct" : timedOut ? "unanswered" : "incorrect";
@@ -215,13 +222,15 @@ export function PyramidGameView({
             <p className={styles.briefingFormat}>{currentLevel.briefing.format}</p>
             <h1 id="pyramid-briefing-title">{currentLevel.briefing.title}</h1>
             <p className={styles.briefingDescription}>{currentLevel.briefing.description}</p>
-            {pyramidTimeoutCreditEnabled(challenge, currentLevel.questionType) ? (
+            {pyramidPartialCreditEnabled(challenge, currentLevel.questionType) ? (
               <p className={styles.briefingDescription}>
                 {currentLevel.questionType === "connect-pairs"
                   ? "Al agotarse el tiempo, las rutas completas guardadas pueden sumar puntos parciales."
-                  : currentLevel.questionType === "word-search"
-                    ? "Al agotarse el tiempo, las palabras encontradas pueden sumar puntos parciales."
-                    : "Al agotarse el tiempo, tus coronas bien colocadas pueden sumar puntos parciales."}
+                  : isPyramidDraftFormat(currentLevel.questionType)
+                    ? "Los aciertos pueden sumar puntos parciales al confirmar o al agotarse el tiempo."
+                    : currentLevel.questionType === "word-search"
+                      ? "Al agotarse el tiempo, las palabras encontradas pueden sumar puntos parciales."
+                      : "Al agotarse el tiempo, tus coronas bien colocadas pueden sumar puntos parciales."}
               </p>
             ) : null}
             {session.levelNotice ? (

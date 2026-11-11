@@ -1,3 +1,4 @@
+import { isDraftCommand } from "./checkpoints";
 import type { GameSessionProvider } from "@/application/ports/game-session";
 import type { GameSessionCommandInputs } from "@/types/contracts/game-session";
 import type { GameSessionResult } from "@/types/gameplay/authoritative-session";
@@ -9,8 +10,6 @@ export type CommandData<K extends Operation> = Omit<
   GameSessionCommandInputs[K],
   "sessionId" | "revision" | "idempotencyKey"
 >;
-const isCheckpoint = (operation: Operation) =>
-  operation === "queensDraft" || operation === "connectPairsDraft";
 
 /** Definitive writes stay ordered; a superseded checkpoint cannot hold the queue. */
 export class CommandExecutor {
@@ -31,7 +30,7 @@ export class CommandExecutor {
       invoke: () => Promise<GameSessionResult<K>>,
     ) => Promise<void>,
   ) {
-    if (!isCheckpoint(operation) && this.scheduled.has(operation))
+    if (!isDraftCommand(operation) && this.scheduled.has(operation))
       return Promise.reject(new PendingCommandBlocked());
     const originalData = structuredClone(data);
     const generation = this.generation;
@@ -68,7 +67,7 @@ export class CommandExecutor {
       invoke: () => Promise<GameSessionResult<K>>,
     ) => Promise<void>,
   ) {
-    if (!isCheckpoint(operation) && this.scheduled.has(operation))
+    if (!isDraftCommand(operation) && this.scheduled.has(operation))
       return Promise.reject(new PendingCommandBlocked());
     const originalInput = structuredClone(input);
     const generation = this.generation;
@@ -90,7 +89,7 @@ export class CommandExecutor {
     ) => Promise<void>,
   ) {
     const pending = this.pending();
-    if (pending && !isCheckpoint(pending.operation))
+    if (pending && !isDraftCommand(pending.operation))
       return Promise.reject(new PendingCommandBlocked());
     const attempt = this.attempt();
     if (!attempt) return Promise.reject(new PendingCommandBlocked());

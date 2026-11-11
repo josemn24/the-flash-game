@@ -401,6 +401,8 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
     modeConfig: {
       attemptSchemaVersion: 2,
       connectPairsTimeoutPartialCredit: true,
+      orderingPartialCredit: true,
+      queensTimeoutPartialCredit: true,
     },
     items: [
       {
@@ -508,6 +510,10 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       "Asciende por siete pruebas sobre personajes, textos y tradiciones del judaísmo, el cristianismo y el islam. Solo un acierto completo abre el siguiente nivel.",
     modeConfig: {
       attemptSchemaVersion: 1,
+      matchingPartialCredit: true,
+      orderingPartialCredit: true,
+      wordSearchTimeoutPartialCredit: true,
+      classificationPartialCredit: true,
     },
     items: [
       {

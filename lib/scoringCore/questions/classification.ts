@@ -40,6 +40,17 @@ export function isValidClassificationAnswer(
   );
 }
 
+export function calculateClassificationMetrics(
+  question: ClassificationQuestion,
+  answer: ClassificationAnswer,
+) {
+  return {
+    correctItems: question.items.filter((item) => answer[item.label] === item.correctCategory)
+      .length,
+    totalItems: question.items.length,
+  };
+}
+
 function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const classificationQuestion = asQuestion(question);
   return (
@@ -59,16 +70,17 @@ export function evaluateClassification({
     return { isCorrect: correct, status: "incorrect", points: 0 };
   }
 
-  const correctItems = classificationQuestion.items.filter(
-    (item) => answer[item.label] === item.correctCategory,
-  ).length;
+  const { correctItems, totalItems } = calculateClassificationMetrics(
+    classificationQuestion,
+    answer,
+  );
   return {
     isCorrect: correct,
     status: correct ? "correct" : correctItems > 0 ? "partial" : "incorrect",
     points: calculateProportionalScore(
       classificationQuestion.points,
       correctItems,
-      classificationQuestion.items.length,
+      totalItems,
       calculateSpeedMultiplier(timeUsed, classificationQuestion.timeLimit),
     ),
   };

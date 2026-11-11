@@ -35,7 +35,9 @@ import type {
   SaveQueensDraftInput,
   SaveQueensDraftResult,
   SaveConnectPairsDraftInput,
+  SavePyramidDraftInput,
   SaveConnectPairsDraftResult,
+  SavePyramidDraftResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
   SubmitLogicCodeAttemptInput,
@@ -76,6 +78,7 @@ export type AttemptUseCaseDependencies = {
     | "submitQueensPlacement"
     | "saveQueensDraft"
     | "saveConnectPairsDraft"
+    | "savePyramidDraft"
     | "validateQueensBoard"
     | "revealProgressiveClue"
     | "readEvaluationContext"
@@ -346,6 +349,10 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
 
   saveConnectPairsDraft(input: SaveConnectPairsDraftInput): Promise<SaveConnectPairsDraftResult> {
     return this.commands.saveConnectPairsDraft(input);
+  }
+
+  savePyramidDraft(input: SavePyramidDraftInput): Promise<SavePyramidDraftResult> {
+    return this.commands.savePyramidDraft(input);
   }
 
   async validateQueensBoard(input: ValidateQueensBoardInput): Promise<ValidateQueensBoardResult> {

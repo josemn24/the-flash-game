@@ -112,6 +112,28 @@ test("supports a mobile reduced-motion layout and keyboard start without authent
 });
 
 test("returns 404 for unapproved local challenge ids", async ({ request }) => {
-  const response = await request.get("/demo/flash-pop/desafios/tabarnia-challenge-06");
+  const response = await request.get("/demo/flash-pop/desafios/tabarnia-challenge-99");
   expect(response.status()).toBe(404);
+});
+
+test("plays La Biblia locally and credits a confirmed matching partial", async ({ page }) => {
+  await page.goto("/demo/flash-pop/desafios/tabarnia-challenge-06");
+  await expect(page.getByRole("heading", { name: "La Biblia", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
+  await openLevel(page, "Relaciona las figuras");
+  for (const [left, right] of [
+    ["Noé", "Arca"],
+    ["Moisés", "Éxodo"],
+    ["David", "Nazaret"],
+    ["Jesús", "Goliat"],
+  ]) {
+    await page.getByRole("button", { name: left, exact: true }).click();
+    await page.getByRole("button", { name: right, exact: true }).click();
+  }
+  await page.getByRole("button", { name: "Comprobar parejas" }).click();
+  await expect(page.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
+  await expect(page.getByText("+6 puntos en Entrada")).toBeVisible();
+  await page.getByRole("button", { name: "Ver respuestas" }).click();
+  await expect(page.getByText("0 de 7 superados")).toBeVisible();
+  await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(6);
 });

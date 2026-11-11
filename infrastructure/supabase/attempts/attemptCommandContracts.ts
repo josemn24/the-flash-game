@@ -57,6 +57,7 @@ type Methods = {
   submit_queens_placement: AttemptCommands["submitQueensPlacement"];
   save_queens_draft: AttemptCommands["saveQueensDraft"];
   save_connect_pairs_draft: AttemptCommands["saveConnectPairsDraft"];
+  save_pyramid_draft: AttemptCommands["savePyramidDraft"];
   submit_queens_answer: AttemptCommands["validateQueensBoard"];
   reveal_progressive_clue: AttemptCommands["revealProgressiveClue"];
   adjust_result: SuperadminAttemptCommands["adjust"];
@@ -327,6 +328,7 @@ export const attemptSqlDecoders: { [K in keyof Methods]: Decoder<K> } = {
     format("wordSearchSelection"),
   ),
   submit_queens_placement: decode("submit_queens_placement", format("queensPlacement")),
+  save_pyramid_draft: decode("save_pyramid_draft", format("pyramidDraft")),
   save_queens_draft: decode("save_queens_draft", format("queensDraft")),
   save_connect_pairs_draft: decode("save_connect_pairs_draft", (r) => {
     fields(r, { challengeItemId: text, reviewState: reviewStateValue });

@@ -76,6 +76,7 @@ export function sessionWireFixture(
       availablePoints: 10,
       cluePenalty: 1,
     },
+    pyramidDraft: { reviewState: { type: "ordering", answer: ["A", "B"] } },
     connectPairsDraft: { reviewState: { type: "connect-pairs", paths: { a: [0, 1, 2] } } },
     wordSearchSelection: {
       correct: false,

@@ -1,3 +1,4 @@
+import { isDraftCommand } from "./checkpoints";
 import type { GameSessionFailure } from "@/types/contracts/game-session";
 import type { GameMode } from "@/types/domain/content";
 import { GAME_SESSION_ERROR_REASONS } from "@/lib/competitiveErrors";
@@ -15,6 +16,7 @@ const lifecycleOperations = new Set<Operation>([
   "alphabetPass",
   "queensDraft",
   "connectPairsDraft",
+  "pyramidDraft",
   "takeover",
 ]);
 /** The engine owns counters and timers; this policy only describes the next wait. */
@@ -37,7 +39,7 @@ export function commandRetryPlan({
     failure?.retryAfterSeconds === undefined ? undefined : Math.max(1, failure.retryAfterSeconds);
   const retryable = !definitive && (!failure || failure.retryable);
   const limit =
-    retryUntilAccepted || operation === "queensDraft" || operation === "connectPairsDraft"
+    retryUntilAccepted || isDraftCommand(operation)
       ? Number.POSITIVE_INFINITY
       : operation === "complete"
         ? 3

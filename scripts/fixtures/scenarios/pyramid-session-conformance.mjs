@@ -20,6 +20,9 @@ const queen = cases.find((row) => row.document.type === "queens");
 const creditCases = [
   ["queens", "queensTimeoutPartialCredit"],
   ["word-search", "wordSearchTimeoutPartialCredit"],
+  ["matching", "matchingPartialCredit"],
+  ["classification", "classificationPartialCredit"],
+  ["ordering", "orderingPartialCredit"],
 ].map(([format, key]) => ({
   ...cases.find((row) => row.document.type === format),
   id: `${format}-timeout-credit`,

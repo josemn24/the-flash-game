@@ -45,7 +45,7 @@ export type CompetitiveInputByFormat = {
       readonly pendingAnswer?: AnswerValueOfType<"multiple-choice"> | null;
     };
   readonly "odd-one-out": Base<"odd-one-out"> & Answer<"odd-one-out">;
-  readonly ordering: Base<"ordering"> & Answer<"ordering">;
+  readonly ordering: Base<"ordering"> & Answer<"ordering"> & Draft<"ordering">;
   readonly "progressive-clues": Base<"progressive-clues"> &
     Answer<"progressive-clues"> &
     Submission & {

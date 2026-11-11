@@ -109,6 +109,19 @@ Para activar la regla en una publicación, selecciona una versión publicada con
   por tiempo ni por fallos previos. Suma al ranking y termina el ascenso. Una resolución final
   aceptada a tiempo tiene prioridad y una interrupción antes del límite no acredita el borrador.
 
+### Crédito al confirmar o vencer en Emparejamiento, Clasificación y Ordenación
+
+Las opciones de versión `matchingPartialCredit`, `classificationPartialCredit` y
+`orderingPartialCredit` se activan de forma independiente. Cada una exige un nivel de su formato.
+
+- Se cuenta cada pareja correcta, cada elemento en su categoría correcta o cada elemento en su posición
+  exacta, según el formato. Un parcial positivo usa `min(peso − 1, floor(peso × aciertos / total))`
+  tanto al confirmar como al vencer. Aporta puntos al cierre del intento y termina el ascenso.
+- La confirmación completa recibida a tiempo tiene prioridad. Sin ella, el servidor evalúa al vencer
+  el último borrador aceptado antes del límite. Un borrador resuelto puntúa por velocidad según su hora
+  de guardado y permite avanzar. El orden inicial sin movimientos y la recuperación antes del límite
+  sin confirmación aportan cero.
+
 ## 4. Queens: una interacción puede continuar después de un fallo
 
 Al completar las `N` coronas, incluidas las pistas fijas, el control solicita validación del tablero

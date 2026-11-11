@@ -20,4 +20,9 @@ export type AnswerResult = {
 export type ReviewState =
   | { readonly type: "connect-pairs"; readonly paths: Readonly<Record<string, readonly number[]>> }
   | { readonly type: "queens"; readonly queens: readonly number[] }
-  | { readonly type: "word-search"; readonly foundWordIds: readonly string[] };
+  | { readonly type: "word-search"; readonly foundWordIds: readonly string[] }
+  | PyramidDraftReviewState;
+
+export type PyramidDraftReviewState =
+  | { readonly type: "matching" | "classification"; readonly answer: Record<string, string> }
+  | { readonly type: "ordering"; readonly answer: string[] };

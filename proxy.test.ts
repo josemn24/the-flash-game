@@ -30,13 +30,26 @@ describe("design system availability before authentication", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1");
     expect(mocks.updateSession).not.toHaveBeenCalled();
   });
-  it("serves the approved local Pyramid rehearsal without contacting authentication", async () => {
-    const response = await proxy(
-      new NextRequest("http://localhost/demo/flash-pop/desafios/tabarnia-challenge-05"),
-    );
-    expect(response.headers.get("x-middleware-next")).toBe("1");
-    expect(mocks.updateSession).not.toHaveBeenCalled();
-  });
+  it.each(["tabarnia-challenge-05", "tabarnia-challenge-06"])(
+    "serves the approved local Pyramid rehearsal %s without contacting authentication",
+    async (challengeId) => {
+      const response = await proxy(
+        new NextRequest(`http://localhost/demo/flash-pop/desafios/${challengeId}`),
+      );
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+      expect(mocks.updateSession).not.toHaveBeenCalled();
+    },
+  );
+  it.each([4, 5])(
+    "serves the public %i-letter Mini-Wordle dictionary without authentication",
+    async (length) => {
+      const response = await proxy(
+        new NextRequest(`http://localhost/dictionaries/es-general-${length}.v1.json`),
+      );
+      expect(response.headers.get("x-middleware-next")).toBe("1");
+      expect(mocks.updateSession).not.toHaveBeenCalled();
+    },
+  );
   it("serves the approved local Flash rehearsal without contacting authentication", async () => {
     const response = await proxy(
       new NextRequest("http://localhost/demo/flash-pop/desafios/tabarnia-flash-01"),
@@ -46,7 +59,7 @@ describe("design system availability before authentication", () => {
   });
   it("returns 404 for other demo challenge identifiers before authentication", async () => {
     const response = await proxy(
-      new NextRequest("http://localhost/demo/flash-pop/desafios/tabarnia-challenge-06"),
+      new NextRequest("http://localhost/demo/flash-pop/desafios/tabarnia-challenge-99"),
     );
     expect(response.status).toBe(404);
     expect(response.headers.get("cache-control")).toBe("no-store");

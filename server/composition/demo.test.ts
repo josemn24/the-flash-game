@@ -17,8 +17,30 @@ describe("demo local Pyramid composition", () => {
     ]);
   });
 
-  it("does not compose any other challenge as a local rehearsal", () => {
-    expect(createDemoReadServices().localPyramid.getDefinition("tabarnia-challenge-06")).toBeNull();
+  it("loads La Biblia with credit enabled for every compatible format", () => {
+    const definition = createDemoReadServices().localPyramid.getDefinition("tabarnia-challenge-06");
+    expect(definition?.challenge).toMatchObject({
+      id: "tabarnia-challenge-06",
+      title: "La Biblia",
+      availableUntil: "9999-12-31T23:59:59.999Z",
+      matchingPartialCredit: true,
+      orderingPartialCredit: true,
+      wordSearchTimeoutPartialCredit: true,
+      classificationPartialCredit: true,
+    });
+    expect(definition?.challenge.levels.map((level) => level.questionType)).toEqual([
+      "matching",
+      "progressive-clues",
+      "ordering",
+      "mini-wordle",
+      "word-search",
+      "classification",
+      "word-hashtag",
+    ]);
+  });
+
+  it("does not compose an unknown challenge as a local rehearsal", () => {
+    expect(createDemoReadServices().localPyramid.getDefinition("tabarnia-challenge-99")).toBeNull();
   });
 });
 

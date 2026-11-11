@@ -1,4 +1,11 @@
 import { createAlphabetTimeoutGuard } from "../../alphabetTimeoutGuard";
+import { isDraftCommand } from "./checkpoints";
+import {
+  isPyramidDraftAnswer,
+  isPyramidDraftFormat,
+  pyramidPartialCreditEnabled,
+} from "@/lib/gameplay/pyramidPartialCredit";
+import type { PyramidDraftAnswer } from "@/types/contracts/game-session";
 import type { AnswerValue } from "@/types/contracts";
 import { supportsServerFlashDraft } from "../formats/generic";
 import { interactionFor, normalizeInteraction } from "../formats/adapter";
@@ -16,17 +23,23 @@ export function createInteractions(
   let timeoutItemId: string | null = null;
   let draftRevision = 0;
   let lastQueensCheckpointAt: number | null = null;
-  let lastConnectPairsCheckpointAt: number | null = null;
+  let lastDraftCheckpointAt: number | null = null;
   let firstQueensEditAt: number | null = null;
-  let firstConnectPairsEditAt: number | null = null;
+  let firstDraftEditAt: number | null = null;
   let queensCheckpointScheduled = false;
-  let connectPairsCheckpointScheduled = false;
+  let draftCheckpointScheduled = false;
   let latestQueens: { itemId: string; queens: readonly number[]; revision: number } | null = null;
-  let latestConnectPairs: {
+  let latestDraft: {
     itemId: string;
-    paths: Readonly<Record<string, readonly number[]>>;
     revision: number;
+    payload:
+      | { operation: "connectPairsDraft"; paths: Readonly<Record<string, readonly number[]>> }
+      | { operation: "pyramidDraft"; answer: PyramidDraftAnswer };
   } | null = null;
+  const usesPyramidDraft = (type: string) =>
+    runtime.challenge.mode === "pyramid" &&
+    isPyramidDraftFormat(type) &&
+    pyramidPartialCreditEnabled(runtime.challenge, type);
   let validationIntent: { itemId: string; queens: readonly number[] } | null = null;
   const checkpointDelay = (lastCheckpointAt: number | null, firstEditAt: number | null) => {
     if (lastCheckpointAt === null)
@@ -45,15 +58,15 @@ export function createInteractions(
       },
     );
   };
-  const scheduleConnectPairsCheckpoint = () => {
-    if (connectPairsCheckpointScheduled) return;
-    connectPairsCheckpointScheduled = true;
+  const scheduleDraftCheckpoint = () => {
+    if (draftCheckpointScheduled) return;
+    draftCheckpointScheduled = true;
     runtime.schedule(
-      "connect-pairs-draft",
-      checkpointDelay(lastConnectPairsCheckpointAt, firstConnectPairsEditAt),
+      "answer-draft",
+      checkpointDelay(lastDraftCheckpointAt, firstDraftEditAt),
       () => {
-        connectPairsCheckpointScheduled = false;
-        void flushConnectPairs();
+        draftCheckpointScheduled = false;
+        void flushDraft();
       },
     );
   };
@@ -61,9 +74,9 @@ export function createInteractions(
     runtime.cancel("queens-draft");
     queensCheckpointScheduled = false;
   };
-  const cancelConnectPairsCheckpoint = () => {
-    runtime.cancel("connect-pairs-draft");
-    connectPairsCheckpointScheduled = false;
+  const cancelDraftCheckpoint = () => {
+    runtime.cancel("answer-draft");
+    draftCheckpointScheduled = false;
   };
   const resumeTimeout = async () => {
     if (
@@ -86,18 +99,18 @@ export function createInteractions(
     )
       return false;
     const pendingOperation = state.pendingCommand?.operation;
-    const pendingCheckpoint =
-      pendingOperation === "queensDraft" || pendingOperation === "connectPairsDraft";
-    const authoritativeAction =
-      (action.kind === "answer" && question.type === "connect-pairs") ||
-      action.kind === "queens-validation";
+    const pendingCheckpoint = isDraftCommand(pendingOperation);
+    const draftAnswer =
+      action.kind === "answer" &&
+      (question.type === "connect-pairs" || usesPyramidDraft(question.type));
+    const authoritativeAction = draftAnswer || action.kind === "queens-validation";
+    if (draftAnswer) {
+      cancelDraftCheckpoint();
+      latestDraft = null;
+      firstDraftEditAt = null;
+    }
     if (state.pendingCommand && !deadline) {
       if (pendingCheckpoint && authoritativeAction) {
-        if (action.kind === "answer" && question.type === "connect-pairs") {
-          cancelConnectPairsCheckpoint();
-          latestConnectPairs = null;
-          firstConnectPairsEditAt = null;
-        }
         if (action.kind === "queens-validation") {
           cancelQueensCheckpoint();
           latestQueens = null;
@@ -132,8 +145,8 @@ export function createInteractions(
               message: outcome.message,
             });
           else {
-            cancelConnectPairsCheckpoint();
-            latestConnectPairs = null;
+            cancelDraftCheckpoint();
+            latestDraft = null;
             timeoutItemId = null;
             validationIntent = null;
             const reveal =
@@ -142,7 +155,10 @@ export function createInteractions(
               outcome.result.status === "correct";
             runtime.commit({
               type: "answer_accepted",
-              result: outcome.result,
+              result:
+                usesPyramidDraft(question.type) && response.timedOut
+                  ? { ...outcome.result, answer: null }
+                  : outcome.result,
               question: outcome.question,
               phase: reveal ? "answer-reveal" : "transition",
             });
@@ -223,80 +239,91 @@ export function createInteractions(
       scheduleQueensCheckpoint();
     }
   };
-  const flushConnectPairs = async () => {
-    cancelConnectPairsCheckpoint();
+  const flushDraft = async () => {
+    cancelDraftCheckpoint();
     const state = runtime.state();
     if (state.pendingCommand) return;
-    if (
-      state.question?.type !== "connect-pairs" ||
-      state.phase !== "playing" ||
-      state.locked ||
-      !latestConnectPairs
-    )
-      return;
-    const draft = latestConnectPairs;
-    latestConnectPairs = null;
+    if (!state.question || state.phase !== "playing" || state.locked || !latestDraft) return;
+    const draft = latestDraft;
+    latestDraft = null;
     if (draft.itemId !== state.question.id) return;
-    const { paths } = draft;
     const question = state.question;
-    lastConnectPairsCheckpointAt = runtime.now();
-    firstConnectPairsEditAt = null;
-    const accepted = await runtime.run(
-      "connectPairsDraft",
-      { challengeItemId: question.id, paths },
-      {
-        accept: (response, command) => {
-          const outcome = normalizeInteraction(
-            runtime.state().question ?? question,
-            command,
-            response,
-          );
-          if (outcome.kind === "progress")
-            runtime.commit({ type: "progress", question: outcome.question });
-        },
-        after: async () => {
-          await resumeTimeout();
-          if (latestConnectPairs) scheduleConnectPairsCheckpoint();
-        },
+    lastDraftCheckpointAt = runtime.now();
+    firstDraftEditAt = null;
+    const step: CommandStep<"connectPairsDraft" | "pyramidDraft"> = {
+      accept: (response, command) => {
+        const outcome = normalizeInteraction(
+          runtime.state().question ?? question,
+          command,
+          response,
+        );
+        if (outcome.kind === "progress")
+          runtime.commit({ type: "progress", question: outcome.question });
       },
-    );
+      after: async () => {
+        await resumeTimeout();
+        if (latestDraft) scheduleDraftCheckpoint();
+      },
+    };
+    const { payload } = draft;
+    const accepted =
+      payload.operation === "connectPairsDraft"
+        ? await runtime.run<"connectPairsDraft">(
+            "connectPairsDraft",
+            { challengeItemId: question.id, paths: payload.paths },
+            step,
+          )
+        : await runtime.run<"pyramidDraft">(
+            "pyramidDraft",
+            { challengeItemId: question.id, answer: payload.answer },
+            step,
+          );
     const pending = runtime.state().pendingCommand;
     const ownsDraft =
-      pending?.operation === "connectPairsDraft" &&
-      pending.input.challengeItemId === draft.itemId &&
-      JSON.stringify(pending.input.paths) === JSON.stringify(paths);
+      (pending?.operation === "connectPairsDraft" &&
+        pending.input.challengeItemId === draft.itemId &&
+        payload.operation === "connectPairsDraft" &&
+        JSON.stringify(pending.input.paths) === JSON.stringify(payload.paths)) ||
+      (pending?.operation === "pyramidDraft" &&
+        pending.input.challengeItemId === draft.itemId &&
+        payload.operation === "pyramidDraft" &&
+        JSON.stringify(pending.input.answer) === JSON.stringify(payload.answer));
     if (
       !accepted &&
       !ownsDraft &&
-      runtime.state().pendingCommand?.operation === "connectPairsDraft" &&
+      runtime.state().pendingCommand?.operation === payload.operation &&
       draft.revision === draftRevision &&
       runtime.state().question?.id === draft.itemId
     ) {
-      latestConnectPairs = draft;
-      scheduleConnectPairsCheckpoint();
+      latestDraft = draft;
+      scheduleDraftCheckpoint();
     }
   };
   const timeoutAnswer = async () => {
     const state = runtime.state();
     if (
       !state.question ||
-      (state.pendingCommand &&
-        state.pendingCommand.operation !== "queensDraft" &&
-        state.pendingCommand.operation !== "connectPairsDraft") ||
+      (state.pendingCommand && !isDraftCommand(state.pendingCommand.operation)) ||
       (runtime.challenge.mode === "narrative" && state.questionDeadlineAt === null)
     )
       return;
     validationIntent = null;
     cancelQueensCheckpoint();
-    cancelConnectPairsCheckpoint();
+    cancelDraftCheckpoint();
     latestQueens = null;
-    latestConnectPairs = null;
+    latestDraft = null;
     firstQueensEditAt = null;
-    firstConnectPairsEditAt = null;
+    firstDraftEditAt = null;
     if (runtime.state().question?.id !== state.question.id) return;
     const draft = runtime.state().pendingAnswer;
     await interact(
-      { kind: "answer", answer: supportsServerFlashDraft(state.question.type) ? draft : null },
+      {
+        kind: "answer",
+        answer:
+          !usesPyramidDraft(state.question.type) && supportsServerFlashDraft(state.question.type)
+            ? draft
+            : null,
+      },
       true,
       true,
     );
@@ -309,11 +336,11 @@ export function createInteractions(
       if (!globalTimeout.claim()) return;
       draftRevision++;
       cancelQueensCheckpoint();
-      cancelConnectPairsCheckpoint();
+      cancelDraftCheckpoint();
       latestQueens = null;
-      latestConnectPairs = null;
+      latestDraft = null;
       firstQueensEditAt = null;
-      firstConnectPairsEditAt = null;
+      firstDraftEditAt = null;
       await lifecycle.finalizeGlobalClock();
       return;
     }
@@ -325,10 +352,7 @@ export function createInteractions(
     )
       return;
     const pending = runtime.state().pendingCommand;
-    if (
-      reserved ||
-      (pending && pending.operation !== "queensDraft" && pending.operation !== "connectPairsDraft")
-    ) {
+    if (reserved || (pending && !isDraftCommand(pending.operation))) {
       timeoutItemId = runtime.state().question?.id ?? null;
       return;
     }
@@ -376,21 +400,22 @@ export function createInteractions(
     submitWordSearchSelection: (startCell: number, endCell: number) =>
       interact({ kind: "word-search", startCell, endCell }),
     updateDraft: (answer: AnswerValue) => {
-      const state = runtime.state();
-      if (state.question && supportsServerFlashDraft(state.question.type) && !state.locked)
+      const { question, locked } = runtime.state();
+      if (!question || locked) return;
+      if (supportsServerFlashDraft(question.type) || usesPyramidDraft(question.type))
         runtime.commit({ type: "draft", answer });
-      if (state.question?.type === "connect-pairs" && !state.locked) {
+      let payload: NonNullable<typeof latestDraft>["payload"];
+      if (question.type === "connect-pairs") {
         const paths = (answer as { paths?: Readonly<Record<string, readonly number[]>> }).paths;
         if (!paths || typeof paths !== "object" || Array.isArray(paths)) return;
-        latestConnectPairs = {
-          itemId: state.question.id,
-          paths: structuredClone(paths),
-          revision: ++draftRevision,
-        };
-        firstConnectPairsEditAt ??= runtime.now();
+        payload = { operation: "connectPairsDraft", paths: structuredClone(paths) };
         runtime.commit({ type: "draft", answer });
-        scheduleConnectPairsCheckpoint();
-      }
+      } else if (usesPyramidDraft(question.type) && isPyramidDraftAnswer(answer)) {
+        payload = { operation: "pyramidDraft", answer: structuredClone(answer) };
+      } else return;
+      latestDraft = { itemId: question.id, payload, revision: ++draftRevision };
+      firstDraftEditAt ??= runtime.now();
+      scheduleDraftCheckpoint();
     },
     updateQueensDraft: (queens: readonly number[]) => {
       const state = runtime.state();

@@ -69,6 +69,7 @@ export function sessionEffect(
     case "wordSearchSelection":
       return state.terminal === true ? "evaluated" : "progress";
     case "queensDraft":
+    case "pyramidDraft":
     case "connectPairsDraft":
     case "progressiveClueReveal":
       return "progress";
@@ -255,6 +256,7 @@ export function decodeSessionAcceptance<
       case "alphabetPass":
         fields(r, { passed: oneOf(true) });
         break;
+      case "pyramidDraft":
       case "connectPairsDraft":
         fields(r, { challengeItemId: text, reviewState: reviewStateValue });
         break;

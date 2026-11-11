@@ -67,6 +67,7 @@ declare
   received timestamptz := received_at;
   question_type text;
   question_payload jsonb;
+  pyramid_draft boolean := false;
   segment private.interaction_intervals%rowtype;
   item private.challenge_items%rowtype;
   unit private.attempt_timing_units%rowtype;
@@ -85,9 +86,10 @@ begin
   end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
   select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+  select q.type, q.public_payload into question_type, question_payload
+    from private.question_versions q where q.id = item.question_version_id;
+  pyramid_draft := cv.mode = 'pyramid' and private.pyramid_draft_enabled(cv.mode_config, question_type);
   if cv.mode = 'time-trial' then
-    select q.type, q.public_payload into question_type, question_payload
-      from private.question_versions q where q.id = item.question_version_id;
     if question_type = 'queens' and (op = 'pass' or received < a.deadline_at) then
       raise exception 'queens_requires_validation_command' using errcode = '22023';
     elsif question_type = 'connect-pairs' then
@@ -98,10 +100,12 @@ begin
       end if;
     end if;
   end if;
-  if op = 'receive' and exists (
-    select 1 from private.question_versions q
-    where q.id = item.question_version_id and q.type = 'matching'
-  ) and (
+  if op = 'receive' and pyramid_draft and received < unit.deadline_at
+    and input->'answer' <> 'null'::jsonb
+    and not private.pyramid_draft_valid(question_type, question_payload, input->'answer', true) then
+    raise exception 'invalid_command' using errcode = '22023';
+  end if;
+  if op = 'receive' and not pyramid_draft and question_type = 'matching' and (
     (instant < unit.deadline_at and not private.matching_answer_valid(
       (select q.public_payload from private.question_versions q where q.id = item.question_version_id),
       input->'answer',
@@ -160,7 +164,8 @@ begin
     insert into private.answer_receipts(attempt_id, challenge_item_id, challenge_version_id, answer,
       received_at, presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms)
     values(a.id, segment.challenge_item_id, a.challenge_version_id,
-      case when late and cv.mode = 'pyramid'
+      case when late and pyramid_draft then null
+      when late and cv.mode = 'pyramid'
         and cv.mode_config->'connectPairsTimeoutPartialCredit' = 'true'::jsonb
         and exists (select 1 from private.question_versions q
           where q.id = item.question_version_id and q.type = 'connect-pairs') then null

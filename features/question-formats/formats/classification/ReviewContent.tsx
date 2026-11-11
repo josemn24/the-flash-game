@@ -1,5 +1,6 @@
 import styles from "@/components/game/shared/ReviewAnswers.module.css";
 import { isClassificationAnswer } from "@/lib/scoring";
+import { isPyramidDraftAnswer } from "@/lib/gameplay/pyramidPartialCredit";
 import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
 import type { ReviewProps } from "../../rendererTypes";
 
@@ -12,7 +13,12 @@ export function ReviewContent({
   question,
   result,
 }: ReviewProps<PracticeQuestionOfType<"classification">>) {
-  const answer = isClassificationAnswer(result.answer) ? result.answer : null;
+  const snapshot =
+    result.reviewState?.type === "classification" ? result.reviewState.answer : result.answer;
+  const answer =
+    isClassificationAnswer(snapshot) || (isPyramidDraftAnswer(snapshot) && !Array.isArray(snapshot))
+      ? snapshot
+      : null;
   return (
     <div className={styles.classificationReviewList}>
       {question.items.map((item) => {

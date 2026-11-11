@@ -16,7 +16,7 @@ import {
   createMockFlashPopTimeTrialQueensDemoDefinition,
 } from "@/infrastructure/mock/localTimeTrialDefinition";
 import {
-  FLASH_POP_CHALLENGE_ID,
+  isFlashPopPreviewChallenge,
   FLASH_POP_FLASH_PILOT_ID,
   FLASH_POP_ALPHABET_PILOT_ID,
   FLASH_POP_SURVIVAL_PILOT_ID,
@@ -32,8 +32,8 @@ export function createDemoReadServices() {
     }),
     localPyramid: {
       getDefinition(challengeId: string) {
-        if (challengeId !== FLASH_POP_CHALLENGE_ID) return null;
-        return createMockFlashPopPyramidDemoDefinition();
+        if (!isFlashPopPreviewChallenge(challengeId)) return null;
+        return createMockFlashPopPyramidDemoDefinition(challengeId);
       },
     },
     localFlash: {

@@ -188,6 +188,7 @@ export type SessionAcceptanceByOperation = {
     "progress",
     ProgressState<"queens" | "incorrectValidations" | "solved">
   >;
+  pyramidDraft: Acceptance<"pyramidDraft", "progress", ProgressState<"reviewState">>;
   connectPairsDraft: Acceptance<"connectPairsDraft", "progress", ProgressState<"reviewState">>;
   progressiveClueReveal: Acceptance<
     "progressiveClueReveal",

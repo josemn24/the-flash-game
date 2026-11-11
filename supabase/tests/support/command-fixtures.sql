@@ -104,6 +104,7 @@ begin
     when 'submit_queens_placement' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'save_queens_draft' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'save_connect_pairs_draft' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
+    when 'save_pyramid_draft' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'submit_queens_answer' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'reveal_progressive_clue' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];
     when 'pass_interaction' then keys:=array['attemptId','lockVersion','sessionToken','challengeItemId'];

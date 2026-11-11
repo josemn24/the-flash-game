@@ -125,10 +125,17 @@ describe("EditorialManagement", () => {
     expect(select).toContain('<option value="hard" selected="">Difícil</option>');
   });
   it("shows independent Pyramid credit controls with the configured formats selected", () => {
-    const formats = ["connect-pairs", "word-search", "queens"] as const;
+    const formats = [
+      "connect-pairs",
+      "word-search",
+      "queens",
+      "matching",
+      "classification",
+      "ordering",
+    ] as const;
     const questionLibrary = {
       source: "supabase" as const,
-      total: 3,
+      total: formats.length,
       page: 1,
       pageSize: 50,
       entries: formats.map((type, index) => ({
@@ -153,7 +160,12 @@ describe("EditorialManagement", () => {
       challenge: {
         ...document.challenge,
         mode: "pyramid",
-        modeConfig: { connectPairsTimeoutPartialCredit: true, queensTimeoutPartialCredit: true },
+        modeConfig: {
+          connectPairsTimeoutPartialCredit: true,
+          queensTimeoutPartialCredit: true,
+          matchingPartialCredit: true,
+          orderingPartialCredit: true,
+        },
       },
       questions: Array.from({ length: 7 }, (_, index) => {
         const modeConfig = {
@@ -186,13 +198,16 @@ describe("EditorialManagement", () => {
         questionLibrary={questionLibrary}
       />,
     );
-    for (const [label, enabled] of [
-      ["Conectar parejas", true],
-      ["Sopa de letras", false],
-      ["Queens", true],
+    for (const [label, enabled, suffix] of [
+      ["Conectar parejas", true, "al agotar el tiempo"],
+      ["Sopa de letras", false, "al agotar el tiempo"],
+      ["Queens", true, "al agotar el tiempo"],
+      ["Emparejamiento", true, "al confirmar o agotar el tiempo"],
+      ["Clasificación", false, "al confirmar o agotar el tiempo"],
+      ["Ordenación", true, "al confirmar o agotar el tiempo"],
     ] as const) {
       const input = markup.match(
-        new RegExp(`(<input[^>]*>) Puntos parciales en ${label} al agotar el tiempo`),
+        new RegExp(`(<input[^>]*>) Puntos parciales en ${label} ${suffix}`),
       )?.[1];
       expect(input).toContain('type="checkbox"');
       expect(input?.includes('checked=""')).toBe(enabled);

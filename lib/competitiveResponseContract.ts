@@ -47,6 +47,14 @@ export const reviewStateValue: Check = (value) => {
           key.length > 0 && Array.isArray(path) && path.every((cell) => integer(cell)),
       )
     );
+  if (value.type === "matching" || value.type === "classification")
+    return isRecord(value.answer) && Object.values(value.answer).every(text);
+  if (value.type === "ordering")
+    return (
+      Array.isArray(value.answer) &&
+      value.answer.every(text) &&
+      new Set(value.answer).size === value.answer.length
+    );
   if (value.type === "word-search") {
     return (
       Array.isArray(value.foundWordIds) &&
@@ -170,6 +178,7 @@ export function formatFields(operation: string, row: ResponseRecord, evaluated: 
         "response.revealedClues",
       );
       break;
+    case "pyramidDraft":
     case "connectPairsDraft":
       fields(row, { challengeItemId: text, reviewState: reviewStateValue });
       break;
@@ -385,10 +394,14 @@ export function resultDetails(
   const finite: Check = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0;
   const ratio: Check = (v) => finite(v) && Number(v) <= 1;
   const point = shape({ x: ratio, y: ratio });
+  const pyramidPartialCredit = oneOf(undefined, "submission", "timeout");
+  const itemCounts = shape({ correctItems: integer, totalItems: integer, pyramidPartialCredit });
   const schemas = {
     "logic-code": shape({ submittedCodes: list(text), incorrectAttempts: integer }),
     estimation: shape({ difference: finite, proximity: ratio }),
-    matching: shape({ correctPairs: integer, totalPairs: integer }),
+    matching: shape({ correctPairs: integer, totalPairs: integer, pyramidPartialCredit }),
+    classification: itemCounts,
+    ordering: itemCounts,
     "connect-pairs": shape({
       connectedPairs: integer,
       totalPairs: integer,

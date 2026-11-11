@@ -87,6 +87,13 @@ export type CompetitiveAttemptClient = {
       idempotencyKey: string;
     },
   ) => Promise<CompetitiveJsonObject>;
+  pyramidDraft: (
+    input: AttemptCommandContext & {
+      challengeItemId: string;
+      answer: import("@/types/contracts/game-session").PyramidDraftAnswer;
+      idempotencyKey: string;
+    },
+  ) => Promise<CompetitiveJsonObject>;
   queensValidation: (
     input: AttemptCommandContext & {
       challengeItemId: string;
@@ -194,6 +201,13 @@ export function createCompetitiveAttemptClient(signal?: AbortSignal): Competitiv
         idempotencyKey,
         challengeItemId,
         paths,
+      }),
+    pyramidDraft: ({ attemptId, lockVersion, challengeItemId, answer, idempotencyKey }) =>
+      post(`/api/competitive/attempts/${attemptId}/pyramid/draft`, {
+        lockVersion,
+        idempotencyKey,
+        challengeItemId,
+        answer,
       }),
     queensValidation: ({ attemptId, lockVersion, challengeItemId, queens, idempotencyKey }) =>
       post(`/api/competitive/attempts/${attemptId}/queens/validate`, {

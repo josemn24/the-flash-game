@@ -32,7 +32,10 @@ begin
       select jsonb_agg(to_jsonb(row) || jsonb_strip_nulls(jsonb_build_object(
         'connect_pairs_timeout_partial_credit', version.mode_config->'connectPairsTimeoutPartialCredit',
         'word_search_timeout_partial_credit', version.mode_config->'wordSearchTimeoutPartialCredit',
-        'queens_timeout_partial_credit', version.mode_config->'queensTimeoutPartialCredit'
+        'queens_timeout_partial_credit', version.mode_config->'queensTimeoutPartialCredit',
+        'matching_partial_credit', version.mode_config->'matchingPartialCredit',
+        'classification_partial_credit', version.mode_config->'classificationPartialCredit',
+        'ordering_partial_credit', version.mode_config->'orderingPartialCredit'
       )) order by row.item_position) into challenge_rows
       from public.get_my_pyramid_challenge(target_room_slug, target_publication_id) row
       join private.challenge_versions version on version.id = row.challenge_version_id;

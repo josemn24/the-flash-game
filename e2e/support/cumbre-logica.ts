@@ -10,7 +10,7 @@ export async function waitForBriefing(page: Page, title: string) {
   await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 15_000 });
 }
 
-export async function reachConexiones(page: Page) {
+export async function reachOrden(page: Page) {
   await openLevel(page, "Encuentra el intruso");
   await page.getByRole("button", { name: "29", exact: true }).click();
   await waitForBriefing(page, "Completa la secuencia");
@@ -27,6 +27,10 @@ export async function reachConexiones(page: Page) {
   await waitForBriefing(page, "Construye el orden");
 
   await openLevel(page, "Construye el orden");
+}
+
+export async function reachConexiones(page: Page) {
+  await reachOrden(page);
   const currentOrder = ["Sol", "Río", "Nube", "Mar", "Luna"];
   const correctOrder = ["Río", "Mar", "Sol", "Luna", "Nube"];
   for (const [targetIndex, item] of correctOrder.entries()) {

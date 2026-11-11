@@ -7,7 +7,7 @@ import {
   getAvatarMetadata,
   getSbrMapMetadata,
   prepareSpainAssets,
-  TABARNIA_LOGIC_PYRAMID_V1_ID,
+  TABARNIA_PYRAMID_LEGACY_VERSION_IDS,
   TABARNIA_USERS,
   tabarniaChallengeCount,
   tabarniaManifest,
@@ -223,7 +223,7 @@ async function validateTabarniaDomain(
     publications.map((row) => [row.id, row.status, row.opens_after, row.duration]),
     data.publications.map((item, index) => [
       item.id,
-      item.slug === "pyramid-logic-definition" ? publications[index]?.status : item.status,
+      TABARNIA_PYRAMID_LEGACY_VERSION_IDS[item.slug] ? publications[index]?.status : item.status,
       item.opensAfterMinutes * 60,
       item.durationMinutes * 60,
     ]),
@@ -234,10 +234,7 @@ async function validateTabarniaDomain(
     const row = publications[index];
     if (
       row.challenge_version_id !== item.challengeVersionId &&
-      !(
-        item.slug === "pyramid-logic-definition" &&
-        row.challenge_version_id === TABARNIA_LOGIC_PYRAMID_V1_ID
-      )
+      !TABARNIA_PYRAMID_LEGACY_VERSION_IDS[item.slug]?.includes(row.challenge_version_id)
     ) {
       throw new Error(`La publicación de ${item.title} referencia otra versión.`);
     }

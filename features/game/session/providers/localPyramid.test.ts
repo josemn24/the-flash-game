@@ -521,3 +521,150 @@ describe("versioned Word Search and Queens timeout credit", () => {
     });
   });
 });
+
+describe("Pyramid credit for matching, classification and ordering", () => {
+  const cases = [
+    {
+      format: "matching",
+      key: "matchingPartialCredit",
+      draft: { l1: "r1" },
+      submission: { l1: "r1", l2: "r3", l3: "r2" },
+      zeroAnswer: { l1: "r2", l2: "r3", l3: "r1" },
+      solved: { l1: "r1", l2: "r2", l3: "r3" },
+      points: 4,
+    },
+    {
+      format: "classification",
+      key: "classificationPartialCredit",
+      draft: { Brújula: "útil en 1890" },
+      submission: { Brújula: "útil en 1890", "Navegador GPS": "útil en 1890" },
+      zeroAnswer: { Brújula: "anacrónico", "Navegador GPS": "útil en 1890" },
+      solved: { Brújula: "útil en 1890", "Navegador GPS": "anacrónico" },
+      points: 7,
+    },
+    {
+      format: "ordering",
+      key: "orderingPartialCredit",
+      draft: ["Denver", "San Diego", "Nueva York"],
+      submission: ["Nueva York", "Denver", "San Diego"],
+      zeroAnswer: ["Denver", "Nueva York", "San Diego"],
+      solved: ["San Diego", "Denver", "Nueva York"],
+      points: 4,
+    },
+  ] as const;
+
+  async function open(test: (typeof cases)[number], enabled = true) {
+    const example = sessionCases.find((row) => row.document.type === test.format)!;
+    const definition = definitionFor(example, { duration: 10_000 });
+    const { clock, driver } = setup(example, {
+      ...definition,
+      challenge: { ...definition.challenge, ...(enabled ? { [test.key]: true } : {}) },
+    });
+    await driver.begin();
+    await driver.open();
+    return { clock, driver };
+  }
+
+  it.each(cases)("scores a final $format answer ahead of a solved draft", async (test) => {
+    const { driver } = await open(test);
+    const originalAnswer = driver.command("answer", { answer: test.submission });
+    await driver.issue("pyramidDraft", { answer: test.solved });
+    const result = await driver.execute(originalAnswer);
+    expect(result).toMatchObject({
+      effect: "evaluated",
+      state: {
+        status: "partial",
+        points: test.points,
+        details: { pyramidPartialCredit: "submission" },
+      },
+    });
+    expect(await driver.execute(originalAnswer)).toEqual(result);
+    expect(await driver.execute(driver.command("prepare"))).toMatchObject({
+      code: "pyramid_level_failed",
+    });
+    const completed = await driver.issue("complete");
+    expect(completed.state).toMatchObject({
+      score: test.points,
+      answers: [{ status: "partial", isCorrect: false, answer: test.submission }],
+    });
+  });
+
+  it.each(cases)("recovers the accepted $format draft after expiry", async (test) => {
+    const { clock, driver } = await open(test);
+    await driver.issue("pyramidDraft", { answer: test.draft });
+    clock.advance(10_000);
+    expect(
+      await driver.execute(driver.command("pyramidDraft", { answer: test.solved })),
+    ).toMatchObject({
+      code: "deadline_reached",
+    });
+    const command = driver.command("recover");
+    const result = await driver.execute(command);
+    expect(result).toMatchObject({
+      effect: "completed",
+      state: {
+        score: test.points,
+        answers: [
+          {
+            status: "partial",
+            isCorrect: false,
+            answer: null,
+            reviewState: { type: test.format, answer: test.draft },
+            details: { pyramidPartialCredit: "timeout" },
+          },
+        ],
+      },
+    });
+    expect(await driver.execute(command)).toEqual(result);
+  });
+
+  it.each(cases)("uses the $format save time for a solved draft", async (test) => {
+    const { clock, driver } = await open(test);
+    clock.advance(2500);
+    await driver.issue("pyramidDraft", { answer: test.solved });
+    clock.advance(7500);
+    expect((await driver.issue("answer", { answer: null })).state).toMatchObject({
+      status: "correct",
+      points: 13,
+      reviewState: { type: test.format, answer: test.solved },
+    });
+    expect((await driver.issue("prepare")).state.challengeItemId).toBe(driver.itemIds[1]);
+  });
+
+  it.each(cases)("keeps $format partials disabled by default", async (test) => {
+    const { driver } = await open(test, false);
+    expect(
+      await driver.execute(driver.command("pyramidDraft", { answer: test.draft })),
+    ).toMatchObject({
+      code: "invalid_command",
+    });
+    expect((await driver.issue("answer", { answer: test.submission })).state.points).toBe(0);
+  });
+
+  it.each(cases)("awards zero when $format has no correct elements", async (test) => {
+    for (const timedOut of [false, true]) {
+      const { driver, clock } = await open(test);
+      if (timedOut) {
+        await driver.issue("pyramidDraft", { answer: test.zeroAnswer });
+        clock.advance(10_000);
+      }
+      expect(
+        (await driver.issue("answer", { answer: timedOut ? null : test.zeroAnswer })).state,
+      ).toMatchObject({ status: timedOut ? "unanswered" : "incorrect", points: 0 });
+      expect(await driver.execute(driver.command("prepare"))).toMatchObject({
+        code: "pyramid_level_failed",
+      });
+      expect((await driver.issue("complete")).state.score).toBe(0);
+    }
+  });
+
+  it("awards zero for an unedited order or an early interruption", async () => {
+    const test = cases[2];
+    const untouched = await open(test);
+    untouched.clock.advance(10_000);
+    expect((await untouched.driver.issue("recover")).state.score).toBe(0);
+    const interrupted = await open(test);
+    await interrupted.driver.issue("pyramidDraft", { answer: test.solved });
+    expect((await interrupted.driver.issue("recover")).state.score).toBe(0);
+  });
+});

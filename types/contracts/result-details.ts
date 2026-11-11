@@ -16,8 +16,15 @@ export type AnswerResultDetails =
       type: "matching";
       correctPairs: number;
       totalPairs: number;
+      pyramidPartialCredit?: "submission" | "timeout";
       /** Legacy field kept only when reading results produced by the old pair protocol. */
       incorrectAttempts?: number;
+    }
+  | {
+      type: "classification" | "ordering";
+      correctItems: number;
+      totalItems: number;
+      pyramidPartialCredit?: "submission" | "timeout";
     }
   | {
       type: "connect-pairs";

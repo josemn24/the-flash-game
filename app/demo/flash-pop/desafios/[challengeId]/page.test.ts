@@ -134,7 +134,7 @@ describe("Flash Pop local demo route", () => {
     mocks.getLocalSurvivalDemoDefinition.mockResolvedValue(null);
     mocks.getLocalTimeTrialDemoDefinition.mockResolvedValue(null);
     await expect(
-      PyramidDemoPage({ params: Promise.resolve({ challengeId: "tabarnia-challenge-06" }) }),
+      PyramidDemoPage({ params: Promise.resolve({ challengeId: "tabarnia-challenge-99" }) }),
     ).rejects.toThrow("NOT_FOUND");
   });
 

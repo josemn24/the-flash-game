@@ -31,7 +31,8 @@ const genericAdapter: InteractionAdapter = {
     };
   },
   normalize(question, command, response) {
-    if (command.operation === "connectPairsDraft") return { kind: "progress", question };
+    if (command.operation === "connectPairsDraft" || command.operation === "pyramidDraft")
+      return { kind: "progress", question };
     if (command.operation !== "answer") throw new Error("unexpected_interaction_command");
     return evaluated(question, command.input.answer, response);
   },
@@ -140,6 +141,7 @@ export function interactionFor(
 const adapterByOperation: Partial<Record<PendingCommand["operation"], CompetitiveAdapterKey>> = {
   answer: "generic",
   connectPairsDraft: "generic",
+  pyramidDraft: "generic",
   miniWordleGuess: "mini-wordle",
   logicCodeAttempt: "logic-code",
   wordHashtagSwap: "word-hashtag",

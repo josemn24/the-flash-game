@@ -66,7 +66,7 @@ type ExpectedKeys = {
     | "onMiniWordleGuess";
   "multiple-choice": "question" | "locked" | "onSubmit" | "pendingAnswer";
   "odd-one-out": "question" | "locked" | "onSubmit";
-  ordering: "question" | "locked" | "onSubmit";
+  ordering: "question" | "locked" | "onSubmit" | "onProgress" | "pendingAnswer";
   "progressive-clues":
     | "question"
     | "locked"
@@ -158,7 +158,14 @@ type AnswerChecks = {
   >;
 };
 type ProgressFormats =
-  "classification" | "connect-pairs" | "estimation" | "heat-map" | "matching" | "zip" | "escape";
+  | "classification"
+  | "connect-pairs"
+  | "estimation"
+  | "heat-map"
+  | "matching"
+  | "ordering"
+  | "zip"
+  | "escape";
 type ProgressChecks = {
   [T in ProgressFormats]: Equal<
     Parameters<CompetitiveInputByFormat[T]["onProgress"]>[0],

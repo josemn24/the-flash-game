@@ -26,6 +26,9 @@ type PyramidReadRow = Omit<
   connect_pairs_timeout_partial_credit?: boolean;
   word_search_timeout_partial_credit?: boolean;
   queens_timeout_partial_credit?: boolean;
+  matching_partial_credit?: boolean;
+  classification_partial_credit?: boolean;
+  ordering_partial_credit?: boolean;
   level_id: string;
   level_label: string;
   briefing_title: string;
@@ -45,6 +48,9 @@ function isPyramidReadRow(value: unknown): value is PyramidReadRow {
       row.connect_pairs_timeout_partial_credit,
       row.word_search_timeout_partial_credit,
       row.queens_timeout_partial_credit,
+      row.matching_partial_credit,
+      row.classification_partial_credit,
+      row.ordering_partial_credit,
     ].every((flag) => flag === undefined || typeof flag === "boolean") &&
     typeof row.challenge_version_number === "number" &&
     Number.isSafeInteger(row.challenge_version_number) &&
@@ -151,6 +157,9 @@ export class SupabasePyramidQueries {
         : {}),
       ...(first.word_search_timeout_partial_credit ? { wordSearchTimeoutPartialCredit: true } : {}),
       ...(first.queens_timeout_partial_credit ? { queensTimeoutPartialCredit: true } : {}),
+      ...(first.matching_partial_credit ? { matchingPartialCredit: true } : {}),
+      ...(first.classification_partial_credit ? { classificationPartialCredit: true } : {}),
+      ...(first.ordering_partial_credit ? { orderingPartialCredit: true } : {}),
       availableFrom: first.publication_opens_at,
       availableUntil: first.publication_closes_at,
       levels: rows.map((row) => ({

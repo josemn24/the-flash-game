@@ -197,10 +197,11 @@ Alphabet (16 letras, 150 segundos, 100 puntos), Flow Free (siete tableros de
 100 puntos), en ese orden y en ventanas consecutivas de 24 horas. La novena ventana ocupa
 las horas 192 a 216 desde el inicio. La temporada dura 17 días con el perfil predeterminado.
 
-Las instalaciones nuevas programan Cumbre lógica v2 con crédito parcial al vencer el reloj en
-Conexiones. En una instalación existente, la migración publica v2 si está disponible el contenido
-original, y el calendario conserva la versión ya asignada. Para usar v2, selecciónala desde el
-calendario mientras la publicación permita cambiar de versión.
+Las instalaciones nuevas programan Cumbre lógica v2 con parciales en Ordenación, Conexiones y Queens,
+y La Biblia v2 con parciales en Emparejamiento, Ordenación, Sopa de letras y Clasificación. Estos
+controles coinciden con los de sus demos locales. Las publicaciones existentes conservan su versión
+asignada. Para usar una versión nueva, selecciónala desde el calendario mientras la publicación
+permita cambiar de versión.
 
 Carga los diccionarios de Mini-Wordle y los recursos privados de imagen; el mapa SVG de Canarias
 se rasteriza a PNG durante la preparación. No crea intentos ni resultados históricos. Las cuentas,

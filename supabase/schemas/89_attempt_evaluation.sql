@@ -37,6 +37,8 @@ begin
   result := jsonb_build_object('receiptId', receipt.id, 'status', saved.status,
     'points', saved.points) || jsonb_strip_nulls(jsonb_build_object('reviewState', saved.review_state,
       'details', case when saved.result_details->'timeoutPartialCredit' = 'true'::jsonb
+        or saved.result_details ? 'pyramidPartialCredit'
+        or (cv.mode = 'pyramid' and saved.review_state->>'type' in ('matching', 'classification', 'ordering'))
         or (cv.mode = 'pyramid' and receipt.timed_out and saved.status = 'correct'
           and saved.review_state->>'type' = 'queens') then saved.result_details end));
   updated_attempt := a;
