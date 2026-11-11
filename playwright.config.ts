@@ -33,6 +33,7 @@ function parseLocalStatus() {
 
 const localStatus = parseLocalStatus();
 const isPwaE2e = process.env.PWA_E2E === "1";
+const isProductionE2e = isPwaE2e || process.env.E2E_PRODUCTION === "1";
 const e2ePort = isPwaE2e ? process.env.PWA_E2E_PORT || "3001" : process.env.E2E_PORT || "3000";
 const e2eBaseURL = `http://127.0.0.1:${e2ePort}`;
 const localEnv = {
@@ -85,15 +86,17 @@ export default defineConfig({
   use: {
     ...devices["Desktop Chrome"],
     baseURL: e2eBaseURL,
+    // Let smoke tests intercept assets without the service worker handling them first.
+    serviceWorkers: isProductionE2e && !isPwaE2e ? "block" : "allow",
     trace: "retain-on-failure",
   },
   webServer: {
     stdout: process.env.FLASH_PERFORMANCE_DIAGNOSTICS === "1" ? "pipe" : "ignore",
-    command: isPwaE2e
+    command: isProductionE2e
       ? `npm run start -- --hostname 127.0.0.1 --port ${e2ePort}`
       : `npm run dev -- --hostname 127.0.0.1 --port ${e2ePort}`,
     url: e2eBaseURL,
-    reuseExistingServer: isPwaE2e ? false : process.env.FLASH_RUNTIME_SCOPE !== "pilot",
+    reuseExistingServer: !isProductionE2e && process.env.FLASH_RUNTIME_SCOPE !== "pilot",
     timeout: 120_000,
     env: localEnv,
   },
