@@ -203,6 +203,14 @@ controles coinciden con los de sus demos locales. Las publicaciones existentes c
 asignada. Para usar una versión nueva, selecciónala desde el calendario mientras la publicación
 permita cambiar de versión.
 
+En una instalación existente, las migraciones habilitan los controles de parciales sin crear ni
+publicar versiones del contenido. Desde el portal superadmin, usa «Crear corrección» sobre cada v1
+para preparar Cumbre lógica v2 y La Biblia v2, activa los controles correspondientes y publica ambas.
+Después selecciónalas en publicaciones editables del calendario. Este flujo conserva los intentos,
+los resultados y las versiones asignadas a las publicaciones ya abiertas o cerradas.
+Si una base ya tiene una v2 publicada, se conserva: editar una migración ya aplicada no la revierte
+ni libera ese número de versión.
+
 Carga los diccionarios de Mini-Wordle y los recursos privados de imagen; el mapa SVG de Canarias
 se rasteriza a PNG durante la preparación. No crea intentos ni resultados históricos. Las cuentas,
 credenciales fijas locales y metadatos quedan en `output/fixtures/tabarnia.json`; el comando imprime

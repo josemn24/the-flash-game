@@ -1364,40 +1364,5 @@ begin
 end;
 $$;
 
--- Offer Cumbre lógica v2 in the calendar without repointing any existing publication.
-do $$
-declare
-  previous_version constant uuid := 'dc880007-4a51-7fad-d259-6029d2c11ae6';
-  next_version constant uuid := 'a82cc0fe-d8af-014d-a7ba-a9f114bf2a32';
-begin
-  insert into private.challenge_versions (
-    id, challenge_definition_id, version_number, config_schema_version, mode,
-    title, subtitle, description, max_score, global_time_limit_ms, mode_config, created_by_player_id
-  )
-  select next_version, v.challenge_definition_id, 2, v.config_schema_version, v.mode,
-    v.title, v.subtitle, v.description, v.max_score, v.global_time_limit_ms,
-    '{"connectPairsTimeoutPartialCredit":true}'::jsonb, v.created_by_player_id
-  from private.challenge_versions v
-  where v.id = previous_version and v.status in ('published', 'archived')
-    and not exists (
-      select 1 from private.challenge_items item
-      join private.question_versions q on q.id = item.question_version_id
-      where item.challenge_version_id = v.id and q.status <> 'published'
-    )
-  on conflict do nothing;
-  if not found then return; end if;
-
-  insert into private.challenge_items (
-    id, challenge_version_id, question_version_id, position, points, config_schema_version, mode_config
-  )
-  select md5('the-flash-game:tabarnia:challenge-item:' || next_version || ':' || definition.slug)::uuid,
-    next_version, item.question_version_id, item.position, item.points,
-    item.config_schema_version, item.mode_config
-  from private.challenge_items item
-  join private.question_versions q on q.id = item.question_version_id
-  join private.question_definitions definition on definition.id = q.question_definition_id
-  where item.challenge_version_id = previous_version;
-
-  update private.challenge_versions set status = 'published' where id = next_version;
-end;
-$$;
+-- Existing installations create and publish opt-in versions through the editorial portal.
+-- Migrations must leave challenge content, publications and attempts unchanged.

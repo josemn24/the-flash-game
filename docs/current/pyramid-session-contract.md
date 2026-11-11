@@ -83,8 +83,10 @@ recibir su confirmación.
 ### Crédito al vencer el reloj en Conectar parejas
 
 `modeConfig.connectPairsTimeoutPartialCredit: true` activa esta regla por versión en Pirámides con
-al menos un nivel de Conectar parejas. Cumbre lógica v2 la activa. El servidor usa el último
-tablero válido guardado antes del límite del nivel. Un envío final recibido a tiempo tiene prioridad.
+al menos un nivel de Conectar parejas. El seed de instalaciones nuevas la activa en Cumbre lógica v2.
+Las instalaciones existentes preparan y publican sus versiones desde el portal superadmin.
+El servidor usa el último tablero válido guardado antes del límite del nivel. Un envío final recibido
+a tiempo tiene prioridad.
 
 - Con un tablero incompleto, el crédito es el menor de `peso − 1`,
   `floor(peso × parejas conectadas / parejas totales)` y
