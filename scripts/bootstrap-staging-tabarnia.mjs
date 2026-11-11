@@ -7,6 +7,7 @@ import {
   getAvatarMetadata,
   getSbrMapMetadata,
   prepareSpainAssets,
+  TABARNIA_LOGIC_PYRAMID_V1_ID,
   TABARNIA_USERS,
   tabarniaChallengeCount,
   tabarniaManifest,
@@ -208,7 +209,7 @@ async function validateTabarniaDomain(
 
   const publications = (
     await client.query(
-      `select scheduled.id::text, scheduled.status,
+      `select scheduled.id::text, scheduled.status, scheduled.challenge_version_id::text,
               extract(epoch from scheduled.opens_at - season.starts_at)::integer as opens_after,
               extract(epoch from scheduled.closes_at - scheduled.opens_at)::integer as duration
          from public.scheduled_challenges scheduled
@@ -220,15 +221,28 @@ async function validateTabarniaDomain(
   ).rows;
   assertEqual(
     publications.map((row) => [row.id, row.status, row.opens_after, row.duration]),
-    data.publications.map((item) => [
+    data.publications.map((item, index) => [
       item.id,
-      item.status,
+      item.slug === "pyramid-logic-definition" ? publications[index]?.status : item.status,
       item.opensAfterMinutes * 60,
       item.durationMinutes * 60,
     ]),
     `La temporada Tabarnia debe publicar ${data.publications.length} desafíos en ventanas de 24 horas.`,
   );
 
+  const publishedData = data.publications.map((item, index) => {
+    const row = publications[index];
+    if (
+      row.challenge_version_id !== item.challengeVersionId &&
+      !(
+        item.slug === "pyramid-logic-definition" &&
+        row.challenge_version_id === TABARNIA_LOGIC_PYRAMID_V1_ID
+      )
+    ) {
+      throw new Error(`La publicación de ${item.title} referencia otra versión.`);
+    }
+    return { ...item, status: row.status, challengeVersionId: row.challenge_version_id };
+  });
   const challenges = (
     await client.query(
       `select version.id::text as version_id, version.title, version.mode, version.status,
@@ -286,6 +300,7 @@ async function validateTabarniaDomain(
       throw new Error(`El registro del asset Tabarnia ${expected.objectPath} no coincide.`);
     }
   }
+  return { ...data, publications: publishedData };
 }
 
 async function applyTabarniaDomain(
@@ -326,7 +341,7 @@ async function applyTabarniaDomain(
           wrapTransaction: false,
         }),
       );
-      await validateTabarniaDomain(
+      const data = await validateTabarniaDomain(
         client,
         accounts,
         avatarMetadata,
@@ -335,6 +350,7 @@ async function applyTabarniaDomain(
         startsAt,
       );
       await client.query("commit");
+      return data;
     } catch (error) {
       await client.query("rollback").catch(() => undefined);
       throw error;
@@ -342,7 +358,7 @@ async function applyTabarniaDomain(
   });
 }
 
-async function writeManifest(config, accounts, avatarMetadata, startsAt, manifestPath) {
+async function writeManifest(config, accounts, manifestPath, data) {
   const users = Object.fromEntries(
     TABARNIA_USERS.map((user) => [
       user.label,
@@ -361,7 +377,7 @@ async function writeManifest(config, accounts, avatarMetadata, startsAt, manifes
     projectRef: config.projectRef,
     generatedAt: new Date().toISOString(),
     users,
-    data: tabarniaManifest(accounts, avatarMetadata, "production", startsAt),
+    data,
   });
 }
 
@@ -440,8 +456,9 @@ export async function runTabarniaBootstrap({
       );
     }
 
+    let data;
     try {
-      await applyTabarniaDomain(
+      data = await applyTabarniaDomain(
         config,
         accounts,
         avatarMetadata,
@@ -454,13 +471,7 @@ export async function runTabarniaBootstrap({
       await (dependencies.removeUploadedObjects ?? removeUploadedObjects)(service, uploadedObjects);
       throw error;
     }
-    await (dependencies.writeManifest ?? writeManifest)(
-      config,
-      accounts,
-      avatarMetadata,
-      startsAt,
-      manifestPath,
-    );
+    await (dependencies.writeManifest ?? writeManifest)(config, accounts, manifestPath, data);
 
     return {
       dryRun: false,

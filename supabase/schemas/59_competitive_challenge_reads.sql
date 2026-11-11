@@ -29,8 +29,13 @@ begin
       select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
       from public.get_my_survival_challenge(target_room_slug, target_publication_id) row;
     when 'pyramid' then
-      select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
-      from public.get_my_pyramid_challenge(target_room_slug, target_publication_id) row;
+      select jsonb_agg(to_jsonb(row) || jsonb_strip_nulls(jsonb_build_object(
+        'connect_pairs_timeout_partial_credit', version.mode_config->'connectPairsTimeoutPartialCredit',
+        'word_search_timeout_partial_credit', version.mode_config->'wordSearchTimeoutPartialCredit',
+        'queens_timeout_partial_credit', version.mode_config->'queensTimeoutPartialCredit'
+      )) order by row.item_position) into challenge_rows
+      from public.get_my_pyramid_challenge(target_room_slug, target_publication_id) row
+      join private.challenge_versions version on version.id = row.challenge_version_id;
     when 'narrative' then
       select jsonb_agg(to_jsonb(row) order by row.item_position) into challenge_rows
       from public.get_my_narrative_challenge(target_room_slug, target_publication_id) row;

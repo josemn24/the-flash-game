@@ -1,6 +1,8 @@
 "use client";
 
-import { isTimeTrialFormat, TIME_TRIAL_TIMEOUT_CREDIT_KEYS } from "@/lib/timeTrial";
+import { PYRAMID_TIMEOUT_CREDIT_FORMATS } from "@/lib/gameplay/pyramidTimeoutCredit";
+
+import { isTimeTrialFormat } from "@/lib/timeTrial";
 import { randomUuid } from "@/lib/randomUuid";
 
 import {
@@ -169,6 +171,10 @@ export function EditorialManagement({
     editableQuestionTypes?.every((type) => type === firstEditableType)
       ? firstEditableType
       : undefined;
+  const pyramidTimeoutCreditFormats = PYRAMID_TIMEOUT_CREDIT_FORMATS.filter(
+    (format) =>
+      editableQuestionTypes?.includes(format) || editableQuestionTypes?.includes(undefined),
+  );
 
   const documentSummary = parsedDocument
     ? `${parsedDocument.challenge.mode === "survival" ? "Supervivencia" : parsedDocument.challenge.mode === "alphabet" ? "Alphabet" : parsedDocument.challenge.mode === "narrative" ? "Narrativa" : parsedDocument.challenge.mode === "pyramid" ? "La Pirámide" : parsedDocument.challenge.mode === "time-trial" ? "Contrarreloj" : "Flash"} · ${parsedDocument.challenge.mode === "pyramid" ? `${parsedDocument.questions.length}/7 niveles` : `${parsedDocument.questions.length} preguntas`} · ${parsedDocument.questions.reduce((total, question) => total + question.points, 0)} puntos`
@@ -295,20 +301,19 @@ export function EditorialManagement({
               fieldId={fieldId}
               document={editableDocument}
               timeoutCreditFormat={timeoutCreditFormat}
-              onTimeoutPartialCreditChange={(enabled) => {
-                if (editableDocument)
-                  setDocumentText(
-                    formatFlashEditorialDocument({
-                      ...editableDocument,
-                      challenge: {
-                        ...editableDocument.challenge,
-                        modeConfig:
-                          enabled && timeoutCreditFormat
-                            ? { [TIME_TRIAL_TIMEOUT_CREDIT_KEYS[timeoutCreditFormat]]: true }
-                            : {},
-                      },
-                    }),
-                  );
+              pyramidTimeoutCreditFormats={pyramidTimeoutCreditFormats}
+              onTimeoutPartialCreditChange={(key, enabled) => {
+                if (!editableDocument) return;
+                const { challenge } = editableDocument;
+                const modeConfig = challenge.mode === "pyramid" ? { ...challenge.modeConfig } : {};
+                if (enabled) modeConfig[key] = true;
+                else delete modeConfig[key];
+                setDocumentText(
+                  formatFlashEditorialDocument({
+                    ...editableDocument,
+                    challenge: { ...challenge, modeConfig },
+                  }),
+                );
               }}
               libraryDifficulties={Object.fromEntries(
                 (questionLibrary?.entries ?? []).map((q) => [

@@ -45,7 +45,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
     subtitle: "Siete niveles. Sube cuanto puedas.",
     description:
       "Empieza con un patrón sencillo y asciende por siete pruebas de lógica. Solo un acierto completo abre el siguiente nivel.",
-    modeConfig: { attemptSchemaVersion: 2 },
+    modeConfig: { connectPairsTimeoutPartialCredit: true },
     items: [
       {
         questionSlug: "pyramid-square-intruder",

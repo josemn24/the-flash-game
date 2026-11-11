@@ -400,6 +400,7 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
       "Empieza con un patrón sencillo y asciende por siete pruebas de lógica. Solo un acierto completo abre el siguiente nivel.",
     modeConfig: {
       attemptSchemaVersion: 2,
+      connectPairsTimeoutPartialCredit: true,
     },
     items: [
       {

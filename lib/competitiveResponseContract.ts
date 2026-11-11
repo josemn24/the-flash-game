@@ -47,6 +47,13 @@ export const reviewStateValue: Check = (value) => {
           key.length > 0 && Array.isArray(path) && path.every((cell) => integer(cell)),
       )
     );
+  if (value.type === "word-search") {
+    return (
+      Array.isArray(value.foundWordIds) &&
+      value.foundWordIds.every(text) &&
+      new Set(value.foundWordIds).size === value.foundWordIds.length
+    );
+  }
   return value.type === "queens" && Array.isArray(value.queens) && value.queens.every(integer);
 };
 export function isRecord(v: unknown): v is ResponseRecord {
@@ -414,6 +421,9 @@ export function resultDetails(
       incorrectAttempts: integer,
       marksUsed: integer,
       solved: boolean,
+      timeoutPartialCredit: (value) => value === undefined || value === true,
+      correctPlacements: (value) => value === undefined || integer(value),
+      requiredPlacements: (value) => value === undefined || integer(value),
     }),
     "time-maze": shape({ moves: integer, optimalMoves: integer, reachedExit: boolean }),
     zip: shape({
@@ -471,6 +481,7 @@ export function resultDetails(
       totalWords: integer,
       incorrectSelections: integer,
       solved: boolean,
+      timeoutPartialCredit: (value) => value === undefined || value === true,
     }),
   } satisfies Record<import("@/types/contracts/result-details").AnswerResultDetails["type"], Check>;
   return (

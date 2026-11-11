@@ -212,6 +212,9 @@ export type ServerSurvivalChallenge = Omit<ServerFlashChallenge, "mode"> & {
 
 export type ServerPyramidChallenge = Omit<ServerFlashChallenge, "mode" | "slots"> & {
   readonly mode: "pyramid";
+  readonly connectPairsTimeoutPartialCredit?: boolean;
+  readonly wordSearchTimeoutPartialCredit?: boolean;
+  readonly queensTimeoutPartialCredit?: boolean;
   readonly attemptVersion: number;
   readonly availableFrom: string;
   readonly availableUntil: string;

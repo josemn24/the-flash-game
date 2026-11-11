@@ -7,6 +7,7 @@ import type {
 } from "@/types/gameplay/scoring";
 import {
   calculateConnectPairsMetrics,
+  connectPairsCompletedRouteMetrics,
   isValidConnectPairsAnswer,
   isValidConnectPairsConfiguration,
 } from "@/lib/connectPairs";
@@ -93,6 +94,30 @@ export function evaluateConnectPairs({
       coverage: metrics.coverageRatio,
       conflicts: metrics.conflicts,
     },
+  };
+}
+
+/** Timeout credit counts completed routes only, with the same cap in both modes. */
+export function connectPairsTimeoutPartial(
+  question: ConnectPairsQuestion,
+  paths: Readonly<Record<string, readonly number[]>>,
+) {
+  const metrics = connectPairsCompletedRouteMetrics(question, paths);
+  const { connectedPairs, totalPairs, coveredCells, totalCells } = metrics;
+  const points = Math.min(
+    question.points - 1,
+    Math.floor((question.points * connectedPairs) / totalPairs),
+    Math.floor((question.points * coveredCells) / totalCells),
+  );
+  return {
+    points,
+    details: {
+      type: "connect-pairs",
+      timeoutPartialCredit: true,
+      ...metrics,
+      coverage: coveredCells / totalCells,
+      conflicts: 0,
+    } as const,
   };
 }
 

@@ -1,3 +1,4 @@
+import { pyramidTimeoutCreditOptions } from "@/lib/gameplay/pyramidTimeoutCredit";
 import { mockDomainStore } from "@/data/mock/store";
 import { scheduledChallengeRouteAliases } from "@/data/mock/constants";
 import { isCompetitiveQuestionType } from "@/lib/question-formats/definitions";
@@ -64,6 +65,7 @@ export function createMockLocalPyramidDefinition(
       mode: "pyramid",
       maxScore: 100,
       attemptVersion: version.versionNumber,
+      ...pyramidTimeoutCreditOptions(version.modeConfig),
       availableFrom: publication.opensAt,
       availableUntil: publication.closesAt,
       levels: slots,

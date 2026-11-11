@@ -18,6 +18,13 @@ import {
   normalizePyramidResult,
 } from "@/lib/gameplay/pyramidProgress";
 import { evaluateCompetitiveReceipt } from "@/lib/scoringCore/competitiveReceipt";
+import { calculateConnectPairsMetrics } from "@/lib/connectPairs";
+import { connectPairsTimeoutPartial } from "@/lib/scoringCore/questions/connectPairs";
+import {
+  pyramidTimeoutCreditEnabled,
+  timeoutPartialPoints,
+} from "@/lib/gameplay/pyramidTimeoutCredit";
+import { QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS } from "@/lib/queens";
 import { pyramidEvaluation, pyramidNullEvaluation } from "@/lib/scoringCore/pyramid";
 import { scaleProgressiveCluePenalty } from "@/lib/scoringCore/questions/progressiveClues";
 import { isMatchingAnswer } from "@/lib/scoringCore/questions/matching";
@@ -45,6 +52,7 @@ type Receipt = {
   answer: AnswerValue | null;
   timeUsedMs: number;
   timedOut: boolean;
+  checkpointTimeUsedMs?: number;
   result?: AnswerResult;
 };
 type Cached = {
@@ -80,6 +88,9 @@ export function createLocalPyramidSessionProvider(
   let receipt: Receipt | undefined;
   const answers: AnswerResult[] = [];
   const formats = levels.map(initialFormatState);
+  const checkpointSavedAt = new Map<number, number>();
+  const usesTimeoutCredit = (level: CompiledLevel) =>
+    pyramidTimeoutCreditEnabled(definition.challenge, level.question.type);
   const cache = new Map<string, Cached>();
   const enqueue = createLocalCommandQueue();
   const accept = (
@@ -131,8 +142,94 @@ export function createLocalPyramidSessionProvider(
         : q.type === "word-search"
           ? { foundWordIds: state.selections.map((s) => s.targetId) }
           : pending.answer;
+    let reviewState = formatReviewState(level, state);
+    if (
+      !reviewState &&
+      pending.checkpointTimeUsedMs !== undefined &&
+      q.type === "queens" &&
+      q.prefilledQueens?.length === q.grid.rows
+    ) {
+      reviewState = { type: "queens", queens: [...state.queens] };
+    }
+    let checkpointEvaluation: ReturnType<typeof pyramidEvaluation> | undefined;
+    if (
+      pending.checkpointTimeUsedMs !== undefined &&
+      q.type === "connect-pairs" &&
+      reviewState?.type === "connect-pairs"
+    ) {
+      const paths = Object.fromEntries(
+        Object.entries(reviewState.paths).map(([id, path]) => [id, [...path]]),
+      );
+      if (calculateConnectPairsMetrics(q, { paths }).exact) {
+        checkpointEvaluation = evaluateCompetitiveReceipt({
+          question: q,
+          answer: { paths },
+          receipt: { timeUsedMs: pending.checkpointTimeUsedMs as DurationMs, timedOut: false },
+        });
+      } else {
+        const partial = connectPairsTimeoutPartial(q, paths);
+        checkpointEvaluation = {
+          ...partial,
+          status: partial.points > 0 ? "partial" : "unanswered",
+        };
+      }
+    }
+    if (
+      pending.checkpointTimeUsedMs !== undefined &&
+      q.type === "queens" &&
+      reviewState?.type === "queens" &&
+      state.incorrectValidations < QUEENS_PYRAMID_MAX_INCORRECT_VALIDATIONS
+    ) {
+      const scored = evaluateCompetitiveReceipt({
+        question: q,
+        answer: { queens: [...reviewState.queens], marks: [] },
+        receipt: { timeUsedMs: pending.checkpointTimeUsedMs as DurationMs, timedOut: false },
+        incorrectAttempts: state.incorrectValidations,
+      });
+      if (scored.status === "correct") {
+        checkpointEvaluation = scored;
+      } else if (scored.details?.type === "queens") {
+        const fixed = new Set(q.prefilledQueens ?? []);
+        const requiredPlacements = q.grid.rows - fixed.size;
+        const correctPlacements = reviewState.queens.filter(
+          (cell) => !fixed.has(cell) && q.solution.includes(cell),
+        ).length;
+        const points = timeoutPartialPoints(q.points, correctPlacements, requiredPlacements);
+        checkpointEvaluation = {
+          status: points > 0 ? "partial" : "unanswered",
+          points,
+          details: {
+            ...scored.details,
+            timeoutPartialCredit: true,
+            correctPlacements,
+            requiredPlacements,
+          },
+        };
+      }
+    }
+    if (pending.timedOut && q.type === "word-search" && usesTimeoutCredit(level)) {
+      const foundWordIds = state.selections.map((selection) => selection.targetId);
+      if (foundWordIds.length > 0) {
+        const points = timeoutPartialPoints(q.points, foundWordIds.length, q.targets.length);
+        reviewState = { type: "word-search", foundWordIds };
+        checkpointEvaluation = {
+          status: points > 0 ? "partial" : "unanswered",
+          points,
+          details: {
+            type: "word-search",
+            timeoutPartialCredit: true,
+            foundWords: foundWordIds.length,
+            totalWords: q.targets.length,
+            incorrectSelections: state.incorrectSelections,
+            solved: false,
+          },
+        };
+      }
+    }
+    const unanswered = pending.answer === null && usesTimeoutCredit(level);
     const evaluated =
-      pyramidNullEvaluation(effective) ??
+      checkpointEvaluation ??
+      pyramidNullEvaluation(unanswered ? null : effective) ??
       pyramidEvaluation(
         evaluateCompetitiveReceipt({
           question: q,
@@ -164,13 +261,13 @@ export function createLocalPyramidSessionProvider(
       questionId: level.source.challengeItemId,
       answer: pending.answer,
       status: evaluated.status,
-      isCorrect: evaluated.status === "correct" || evaluated.status === "partial",
+      isCorrect:
+        evaluated.status === "correct" ||
+        (evaluated.status === "partial" && checkpointEvaluation === undefined),
       points: evaluated.points,
       timeUsed: pending.timeUsedMs / 1000,
       ...(evaluated.details ? { details: evaluated.details } : {}),
-      ...((pending.timedOut || pending.answer === null) && formatReviewState(level, state)
-        ? { reviewState: formatReviewState(level, state) }
-        : {}),
+      ...((pending.timedOut || pending.answer === null) && reviewState ? { reviewState } : {}),
     });
     pending.result = result;
     answers.push(result);
@@ -189,16 +286,23 @@ export function createLocalPyramidSessionProvider(
       timeUsedMs: pending.timeUsedMs,
       timedOut: pending.timedOut,
       ...(result.details ? { details: result.details } : {}),
+      ...(result.reviewState ? { reviewState: result.reviewState } : {}),
     });
   };
   const receive = (index: number, answer: AnswerValue | null, now: number): Receipt => {
     if (!active) return reject("interaction_not_presented");
     if (now < active.presentedAt) return reject("request_predates_presentation");
-    const pending = {
+    const timedOut = now >= active.deadlineAt;
+    const useCheckpoint = timedOut && usesTimeoutCredit(levels[index]!);
+    const savedAt = useCheckpoint ? checkpointSavedAt.get(index) : undefined;
+    const pending: Receipt = {
       index,
-      answer: structuredClone(answer),
+      answer: useCheckpoint ? null : structuredClone(answer),
       timeUsedMs: Math.floor(Math.max(0, Math.min(now, active.deadlineAt) - active.presentedAt)),
-      timedOut: now >= active.deadlineAt,
+      timedOut,
+      ...(savedAt !== undefined && savedAt >= active.presentedAt && savedAt < active.deadlineAt
+        ? { checkpointTimeUsedMs: Math.floor(savedAt - active.presentedAt) }
+        : {}),
     };
     receipt = pending;
     active = null;
@@ -358,15 +462,13 @@ export function createLocalPyramidSessionProvider(
             pending = receive(index, answer, now);
             revision++;
           } else {
-            // Drafts can still be saved after the per-level deadline, as on the server.
-            if (
-              operation !== "queensDraft" &&
-              operation !== "connectPairsDraft" &&
-              now >= active.deadlineAt
-            )
+            const savesDraft = operation === "queensDraft" || operation === "connectPairsDraft";
+            if (now >= active.deadlineAt && (!savesDraft || usesTimeoutCredit(level)))
               return reject("deadline_reached");
             const transition = transitionFormat(level, formats[index]!, command, dictionaries);
             formats[index] = transition.state;
+            if ((savesDraft || operation === "queensValidation") && usesTimeoutCredit(level))
+              checkpointSavedAt.set(index, now);
             update = transition.update;
             if (operation === "miniWordleGuess")
               update = { ...update, timeUsedMs: Math.floor(now - active.presentedAt) };

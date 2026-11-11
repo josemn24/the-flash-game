@@ -13,7 +13,10 @@ export function ReviewContent({
 }: ReviewProps<PracticeQuestionOfType<"word-search">>) {
   const answer: WordSearchAnswer = isWordSearchAnswer(result.answer)
     ? result.answer
-    : { foundWordIds: [] };
+    : {
+        foundWordIds:
+          result.reviewState?.type === "word-search" ? [...result.reviewState.foundWordIds] : [],
+      };
   const details = result.details?.type === "word-search" ? result.details : undefined;
   const foundIds = new Set(answer.foundWordIds);
   return (

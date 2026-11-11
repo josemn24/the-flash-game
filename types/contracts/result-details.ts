@@ -60,6 +60,9 @@ export type AnswerResultDetails =
   | {
       type: "queens";
       failureReason?: "attempts_exhausted";
+      timeoutPartialCredit?: true;
+      correctPlacements?: number;
+      requiredPlacements?: number;
       placedQueens: number;
       completedRows: number;
       completedColumns: number;
@@ -152,6 +155,7 @@ export type AnswerResultDetails =
     }
   | {
       type: "word-search";
+      timeoutPartialCredit?: true;
       foundWords: number;
       totalWords: number;
       incorrectSelections: number;

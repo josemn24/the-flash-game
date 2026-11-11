@@ -197,6 +197,11 @@ Alphabet (16 letras, 150 segundos, 100 puntos), Flow Free (siete tableros de
 100 puntos), en ese orden y en ventanas consecutivas de 24 horas. La novena ventana ocupa
 las horas 192 a 216 desde el inicio. La temporada dura 17 días con el perfil predeterminado.
 
+Las instalaciones nuevas programan Cumbre lógica v2 con crédito parcial al vencer el reloj en
+Conexiones. En una instalación existente, la migración publica v2 si está disponible el contenido
+original, y el calendario conserva la versión ya asignada. Para usar v2, selecciónala desde el
+calendario mientras la publicación permita cambiar de versión.
+
 Carga los diccionarios de Mini-Wordle y los recursos privados de imagen; el mapa SVG de Canarias
 se rasteriza a PNG durante la preparación. No crea intentos ni resultados históricos. Las cuentas,
 credenciales fijas locales y metadatos quedan en `output/fixtures/tabarnia.json`; el comando imprime

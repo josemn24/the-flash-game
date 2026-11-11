@@ -9,6 +9,7 @@ declare
   question jsonb;
   question_slug text;
   trial_format text;
+  pyramid_question_types text[] := '{}';
   question_format text;
   seen_slugs text[] := array[]::text[];
   question_index integer;
@@ -56,7 +57,6 @@ begin
       or (challenge->'modeConfig'->>'lives')::numeric <> trunc((challenge->'modeConfig'->>'lives')::numeric)
       or (challenge->'modeConfig'->>'lives')::integer not between 1 and 20
     ))
-    or (challenge->>'mode' = 'pyramid' and challenge->'modeConfig' <> '{}'::jsonb)
     or (challenge->>'mode' = 'time-trial'
       and not private.is_valid_time_trial_config(challenge->'modeConfig', 'queens')
       and not private.is_valid_time_trial_config(challenge->'modeConfig', 'connect-pairs')) then
@@ -137,6 +137,11 @@ begin
       ) then
         raise exception 'unsupported_question' using errcode = '22023';
       end if;
+      if challenge->>'mode' = 'pyramid' then
+        select q.type into question_format from private.question_versions q
+        where q.id = (question->>'questionVersionId')::uuid;
+        pyramid_question_types := array_append(pyramid_question_types, question_format);
+      end if;
       total_points := total_points + (question->>'points')::integer;
       continue;
     end if;
@@ -155,6 +160,9 @@ begin
       raise exception 'unsupported_question' using errcode = '22023';
     end if;
     perform private.validate_flash_question_document(question - 'points' - 'modeConfig');
+    if challenge->>'mode' = 'pyramid' then
+      pyramid_question_types := array_append(pyramid_question_types, question->>'type');
+    end if;
     if challenge->>'mode' = 'time-trial' and question->>'type' = 'connect-pairs'
       and not private.connect_pairs_answer_valid(question->'publicPayload',
         jsonb_build_object('paths',question->'solutionPayload'->'paths')) then
@@ -176,6 +184,11 @@ begin
     total_points := total_points + question_points::integer;
     seen_slugs := seen_slugs || question_slug;
   end loop;
+
+  if challenge->>'mode' = 'pyramid'
+    and not private.is_valid_pyramid_config(challenge->'modeConfig', pyramid_question_types) then
+    raise exception 'invalid_content' using errcode = '22023';
+  end if;
   if challenge->>'mode' = 'alphabet' then
     if exists (
       select 1 from jsonb_array_elements(document->'questions') question_row

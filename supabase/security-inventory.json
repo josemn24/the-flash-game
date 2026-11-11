@@ -570,6 +570,11 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.is_valid_pyramid_config": {
+      "arguments": "config jsonb, question_types text[]",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
     "private.is_valid_pyramid_level_config": {
       "arguments": "value jsonb",
       "securityDefiner": false,

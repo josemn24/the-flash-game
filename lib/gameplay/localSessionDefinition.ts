@@ -1,3 +1,7 @@
+import {
+  PYRAMID_TIMEOUT_CREDIT_FORMATS,
+  pyramidTimeoutCreditEnabled,
+} from "./pyramidTimeoutCredit";
 import { competitiveCapabilityFor } from "@/lib/question-formats/definitions";
 import { readResolvedStoredQuestion } from "@/lib/question-formats/storedRegistry";
 import { COMPETITIVE_RESOLVERS } from "@/lib/scoringCore/resolution/registry";
@@ -61,6 +65,11 @@ export function compileDefinition(input: LocalPyramidDefinition): {
     !Number.isFinite(Date.parse(challenge.availableFrom)) ||
     !Number.isFinite(Date.parse(challenge.availableUntil)) ||
     Date.parse(challenge.availableFrom) >= Date.parse(challenge.availableUntil) ||
+    PYRAMID_TIMEOUT_CREDIT_FORMATS.some(
+      (format) =>
+        pyramidTimeoutCreditEnabled(challenge, format) &&
+        !challenge.levels.some((level) => level.questionType === format),
+    ) ||
     challenge.levels.length !== 7 ||
     levels.length !== 7 ||
     challenge.maxScore !== 100 ||

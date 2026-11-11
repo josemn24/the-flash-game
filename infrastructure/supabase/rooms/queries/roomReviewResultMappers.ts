@@ -1,3 +1,4 @@
+import { hasTimeoutPartialCredit } from "@/lib/gameplay/pyramidTimeoutCredit";
 import type { AnswerReview } from "@/types/gameplay/completion";
 import type { AnswerResult } from "@/types/gameplay/result";
 import type { RoomMemberReviewReadRow } from "./roomReadContracts";
@@ -7,14 +8,15 @@ export function toHistoricalAnswerReview(row: RoomMemberReviewReadRow): AnswerRe
     row.answer_status === "timeout" || row.answer_status === null
       ? "unanswered"
       : row.answer_status;
+  const details = (row.result_details ?? undefined) as AnswerReview["details"];
   return {
     questionId: row.challenge_item_id,
     answer: row.answer as AnswerReview["answer"],
     status,
-    isCorrect: status === "correct" || status === "partial",
+    isCorrect: status === "correct" || (status === "partial" && !hasTimeoutPartialCredit(details)),
     points: row.points ?? 0,
     timeUsed: (row.time_used_ms ?? 0) / 1_000,
-    ...(row.result_details ? { details: row.result_details as AnswerReview["details"] } : {}),
+    ...(details ? { details } : {}),
     ...(row.review_state ? { reviewState: row.review_state as AnswerReview["reviewState"] } : {}),
   };
 }

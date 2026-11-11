@@ -71,7 +71,10 @@ begin
       or jsonb_typeof(version_config->'beats') is distinct from 'array'
     ))
     or (version_mode = 'pyramid' and (
-      version_config <> '{}'::jsonb or item_count <> 7
+      not private.is_valid_pyramid_config(version_config, array(
+        select q.type from private.challenge_items item join private.question_versions q on q.id = item.question_version_id
+        where item.challenge_version_id = version_id))
+      or item_count <> 7
       or (select count(distinct item.mode_config->>'levelId')
         from private.challenge_items item where item.challenge_version_id = version_id) <> 7
       or exists (select 1 from private.challenge_items item

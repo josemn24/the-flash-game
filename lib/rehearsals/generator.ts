@@ -1,3 +1,4 @@
+import { pyramidTimeoutCreditOptions } from "@/lib/gameplay/pyramidTimeoutCredit";
 import { competitiveCapabilityFor } from "@/lib/question-formats/definitions";
 import { getWordSearchPath, isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { readStoredQuestion } from "@/lib/question-formats/storedRegistry";
@@ -386,6 +387,7 @@ function materialize(
           ...base,
           mode: t.mode,
           attemptVersion: 1,
+          ...pyramidTimeoutCreditOptions(t.modeConfig),
           availableFrom: "1970-01-01T00:00:00.000Z",
           availableUntil: "9999-12-31T23:59:59.999Z",
           levels: slots.map((s, i) => ({

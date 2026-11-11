@@ -19,6 +19,11 @@ export function ReviewContent({ question, result }: ReviewProps<PracticeQuestion
       {details?.failureReason === "attempts_exhausted" ? (
         <p>Has agotado los tres intentos.</p>
       ) : null}
+      {details?.timeoutPartialCredit && details.correctPlacements !== undefined ? (
+        <p>
+          Acertaste {details.correctPlacements} de {details.requiredPlacements} coronas por colocar.
+        </p>
+      ) : null}
       <div className={styles.queensReviewPair}>
         <div>
           <span className={styles.memoryGridLabel}>Tu tablero</span>

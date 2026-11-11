@@ -22,3 +22,20 @@ $$;
 alter function private.is_valid_pyramid_level_config(jsonb) owner to postgres;
 revoke all on function private.is_valid_pyramid_level_config(jsonb)
   from public, anon, authenticated, service_role;
+
+create function private.is_valid_pyramid_config(config jsonb, question_types text[]) returns boolean
+language sql immutable set search_path = '' as $$
+  select case when jsonb_typeof(config) = 'object' then not exists (
+    select 1 from jsonb_each(config) option
+    where option.value <> 'true'::jsonb
+      or not coalesce((case option.key
+        when 'connectPairsTimeoutPartialCredit' then 'connect-pairs'
+        when 'wordSearchTimeoutPartialCredit' then 'word-search'
+        when 'queensTimeoutPartialCredit' then 'queens'
+      end) = any(question_types), false)
+  ) else false end;
+$$;
+
+alter function private.is_valid_pyramid_config(jsonb, text[]) owner to postgres;
+revoke all on function private.is_valid_pyramid_config(jsonb, text[])
+  from public, anon, authenticated, service_role;

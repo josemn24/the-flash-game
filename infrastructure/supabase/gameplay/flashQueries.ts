@@ -1,3 +1,4 @@
+import { hasTimeoutPartialCredit } from "@/lib/gameplay/pyramidTimeoutCredit";
 import { assertAttemptLifecycle } from "@/lib/attemptLifecycle";
 import { reviewStateValue } from "@/lib/competitiveResponseContract";
 import type { AttemptOutcome } from "@/types/domain/attempt";
@@ -358,9 +359,7 @@ export class SupabaseFlashQueries {
         row.answer_status === "correct" ||
         (row.answer_status === "partial" &&
           row.review_state?.type !== "queens" &&
-          !(
-            row.result_details?.type === "connect-pairs" && row.result_details.timeoutPartialCredit
-          )),
+          !hasTimeoutPartialCredit(row.result_details ?? undefined)),
       points: row.points,
       timeUsed: row.time_used_ms / 1000,
       ...(row.result_details ? { details: row.result_details } : {}),

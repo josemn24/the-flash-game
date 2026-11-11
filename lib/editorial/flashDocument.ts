@@ -1,3 +1,8 @@
+import {
+  PYRAMID_TIMEOUT_CREDIT_FORMATS,
+  PYRAMID_TIMEOUT_CREDIT_KEYS,
+  pyramidTimeoutCreditEnabled,
+} from "@/lib/gameplay/pyramidTimeoutCredit";
 import { isTimeTrialFormat, TIME_TRIAL_TIMEOUT_CREDIT_KEYS } from "@/lib/timeTrial";
 import { parseEditorialQuestion as parseQuestion } from "@/lib/question-formats/editorialRegistry";
 import {
@@ -161,7 +166,14 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
       (Object.keys(challenge.modeConfig).length < 2 ||
         !isRecord(challenge.modeConfig.prologue) ||
         !Array.isArray(challenge.modeConfig.beats))) ||
-    (challenge.mode === "pyramid" && Object.keys(challenge.modeConfig).length !== 0)
+    (challenge.mode === "pyramid" &&
+      Object.entries(challenge.modeConfig).some(
+        ([key, enabled]) =>
+          enabled !== true ||
+          !PYRAMID_TIMEOUT_CREDIT_FORMATS.some(
+            (format) => PYRAMID_TIMEOUT_CREDIT_KEYS[format] === key,
+          ),
+      ))
   ) {
     throw new FlashEditorialValidationError(["challenge no cumple el contrato Flash."]);
   }
@@ -246,6 +258,18 @@ function parseDocument(value: unknown, editing: boolean): FlashEditorialDocument
         nonEmptyString(modeConfig.briefing.description, 1000)
       );
     });
+    if (
+      !editing &&
+      PYRAMID_TIMEOUT_CREDIT_FORMATS.some(
+        (format) =>
+          pyramidTimeoutCreditEnabled(modeConfig, format) &&
+          !parsedQuestions.some((question) => "source" in question || question.type === format),
+      )
+    ) {
+      throw new FlashEditorialValidationError([
+        "Cada opción de puntos parciales requiere un nivel del formato correspondiente.",
+      ]);
+    }
     if (!validLevels || new Set(levelIds).size !== parsedQuestions.length) {
       throw new FlashEditorialValidationError([
         "La Pirámide requiere siete niveles con id, etiqueta y briefing válidos y únicos.",

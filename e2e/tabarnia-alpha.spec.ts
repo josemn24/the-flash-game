@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import { drawConexionesPaths, reachConexiones, sevenPointPaths } from "./support/cumbre-logica";
 import { dockerSql } from "../scripts/support/supabase-local.mjs";
 
 type Account = { email: string; password: string };
@@ -307,4 +308,58 @@ test.describe("Tabarnia alpha", () => {
       page.getByText(/Jesús salió de la ciudad y pasó la noche en Betania/),
     ).toBeVisible();
   });
+});
+
+test("Cumbre lógica acredita el parcial en la revisión y el ranking competitivo", async ({
+  page,
+}) => {
+  test.skip(!process.env.SUPABASE_TEST_WORKDIR, "Requiere el stack desechable de E2E.");
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const { data, users } = await fixture();
+  const publication = data.publications[4]!;
+  expect(publication.title).toBe("Cumbre lógica");
+  await dockerSql(`begin;
+    update public.scheduled_challenges
+      set status = 'cancelled', cancelled_at = clock_timestamp()
+      where season_id = '${data.seasonId}' and status = 'open';
+    update public.scheduled_challenges
+      set opens_at = clock_timestamp() + interval '200 milliseconds',
+          closes_at = clock_timestamp() + interval '1 hour'
+      where id = '${publication.id}';
+    select pg_sleep(0.3);
+    set local role service_role;
+    select private.run_calendar_tick_command('{"runId":"tabarnia-pyramid-credit-e2e"}'::jsonb);
+    commit;`);
+
+  await signIn(page, users.dark);
+  await page.goto(`/desafios/${publication.id}?roomId=${data.room.slug}`);
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
+  const board = await reachConexiones(page);
+  const completion = page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/competitive/attempts/") &&
+      response.url().endsWith("/complete") &&
+      response.request().method() === "POST" &&
+      response.ok(),
+    { timeout: 45_000 },
+  );
+  await drawConexionesPaths(board, sevenPointPaths);
+  const completed = await (await completion).json();
+  expect(completed).toMatchObject({ outcome: "failed" });
+  expect(completed.score).toBeGreaterThan(7);
+  await expect(page.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
+  await expect(page.getByText("+7 puntos en Conexiones")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("+7 puntos en Conexiones")).toBeVisible();
+  await page.getByRole("button", { name: "Ver respuestas" }).click();
+  await expect(page.getByText("4 de 7 superados")).toBeVisible();
+  await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(2);
+
+  await dockerSql(`update public.scheduled_challenges set status = 'closed'
+    where id = '${publication.id}';`);
+  await page.goto(`/salas/${data.room.slug}/historial/${publication.id}`);
+  await expect(
+    page.getByLabel(new RegExp(`Dark, ${completed.score} Flash Points`)).first(),
+  ).toBeVisible();
 });

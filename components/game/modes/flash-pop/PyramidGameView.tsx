@@ -1,5 +1,7 @@
 "use client";
 
+import { pyramidTimeoutCreditEnabled } from "@/lib/gameplay/pyramidTimeoutCredit";
+
 import { CompetitiveLifecycleNotice } from "@/components/game/shared/CompetitiveLifecycleNotice";
 
 import { motion } from "motion/react";
@@ -42,7 +44,8 @@ function PyramidFeedback({
   isLast: boolean;
 }) {
   const passed = result.status === "correct" && result.isCorrect;
-  const timedOut = result.status === "unanswered";
+  const partial = result.status === "partial" && result.points > 0;
+  const timedOut = result.status === "unanswered" || partial;
   const zeroProximityEstimate =
     result.details?.type === "estimation" && result.details.proximity === 0;
   const status = passed ? "correct" : timedOut ? "unanswered" : "incorrect";
@@ -71,7 +74,7 @@ function PyramidFeedback({
       eyebrow={levelLabel}
       title={title}
       body={body}
-      points={passed ? result.points : zeroProximityEstimate ? 0 : undefined}
+      points={passed || partial ? result.points : zeroProximityEstimate ? 0 : undefined}
     />
   );
 }
@@ -129,6 +132,10 @@ export function PyramidGameView({
   const totalTime = session.results.reduce((sum, result) => sum + result.timeUsed, 0);
   const accuracy = calculateResultAccuracy(session.results.map(getAnswerResultAccuracyUnit));
   const outcome = session.pyramidProgress?.outcome;
+  const partial = session.results.find(
+    (result) => result.status === "partial" && result.points > 0,
+  );
+  const partialLevel = challenge.levels.find((level) => level.id === partial?.questionId);
   const reviewChallenge =
     session.reviewChallenge?.mode === "pyramid" ? session.reviewChallenge : null;
   const reviewLevels = challenge.levels.map((level) => {
@@ -208,6 +215,15 @@ export function PyramidGameView({
             <p className={styles.briefingFormat}>{currentLevel.briefing.format}</p>
             <h1 id="pyramid-briefing-title">{currentLevel.briefing.title}</h1>
             <p className={styles.briefingDescription}>{currentLevel.briefing.description}</p>
+            {pyramidTimeoutCreditEnabled(challenge, currentLevel.questionType) ? (
+              <p className={styles.briefingDescription}>
+                {currentLevel.questionType === "connect-pairs"
+                  ? "Al agotarse el tiempo, las rutas completas guardadas pueden sumar puntos parciales."
+                  : currentLevel.questionType === "word-search"
+                    ? "Al agotarse el tiempo, las palabras encontradas pueden sumar puntos parciales."
+                    : "Al agotarse el tiempo, tus coronas bien colocadas pueden sumar puntos parciales."}
+              </p>
+            ) : null}
             {session.levelNotice ? (
               <p className={styles.levelNotice} role="alert">
                 {session.levelNotice}
@@ -291,7 +307,10 @@ export function PyramidGameView({
             gameTitle: "La Pirámide",
             statusLabel: "Completado",
             title: outcome === "summit" ? "Cima conquistada" : "Ascenso terminado",
-            subtitle: challenge.subtitle,
+            subtitle:
+              partial && partialLevel
+                ? `+${partial.points} puntos en ${partialLevel.label}`
+                : challenge.subtitle,
             score: session.score,
             maxScore: challenge.maxScore,
             scoreUnit: "flashPoints",

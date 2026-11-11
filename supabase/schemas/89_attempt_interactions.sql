@@ -160,7 +160,11 @@ begin
     insert into private.answer_receipts(attempt_id, challenge_item_id, challenge_version_id, answer,
       received_at, presented_at, effective_submitted_at, time_used_ms, timed_out, client_time_used_ms)
     values(a.id, segment.challenge_item_id, a.challenge_version_id,
-      case when input->'answer' = 'null'::jsonb and exists (
+      case when late and cv.mode = 'pyramid'
+        and cv.mode_config->'connectPairsTimeoutPartialCredit' = 'true'::jsonb
+        and exists (select 1 from private.question_versions q
+          where q.id = item.question_version_id and q.type = 'connect-pairs') then null
+      when input->'answer' = 'null'::jsonb and exists (
         select 1 from private.question_versions timeout_question
         where timeout_question.id = item.question_version_id and timeout_question.type = 'word-hashtag'
       ) then coalesce(a.progress_payload->'answer', jsonb_build_object('swaps', '[]'::jsonb))

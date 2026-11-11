@@ -139,6 +139,10 @@ begin
     raise exception 'interaction_not_presented' using errcode = '55000';
   end if;
   select * into unit from private.attempt_timing_units where id = segment.timing_unit_id;
+  if exists (select 1 from private.challenge_versions cv
+    where cv.id = a.challenge_version_id and cv.mode = 'pyramid'
+      and cv.mode_config->'wordSearchTimeoutPartialCredit' = 'true'::jsonb
+  ) then instant := clock_timestamp(); end if;
   if instant >= unit.deadline_at then
     raise exception 'deadline_reached' using errcode = '55000';
   end if;

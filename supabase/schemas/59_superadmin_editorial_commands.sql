@@ -479,7 +479,9 @@ begin
     raise exception 'invalid_content' using errcode = '22023';
   end if;
   if challenge_row.mode = 'pyramid' and (
-    challenge_row.mode_config <> '{}'::jsonb
+    not private.is_valid_pyramid_config(challenge_row.mode_config, array(
+      select q.type from private.challenge_items item join private.question_versions q on q.id = item.question_version_id
+      where item.challenge_version_id = challenge_version_id_value))
     or (select count(*) from private.challenge_items item
       where item.challenge_version_id = challenge_version_id_value) <> 7
     or (select count(distinct item.mode_config->>'levelId') from private.challenge_items item

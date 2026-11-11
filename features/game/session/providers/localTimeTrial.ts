@@ -14,7 +14,7 @@ import type {
 import type { AnswerResult, AnswerResultDetails } from "@/types/gameplay/result";
 import type { LocalTimeTrialDefinition } from "@/types/gameplay/local-time-trial";
 import { evaluateCompetitiveReceipt } from "@/lib/scoringCore/competitiveReceipt";
-import { connectPairsCompletedRouteMetrics } from "@/lib/connectPairs";
+import { connectPairsTimeoutPartial } from "@/lib/scoringCore/questions/connectPairs";
 import { randomUuid } from "@/lib/randomUuid";
 import { systemSessionClock } from "../clock";
 import { compileTimeTrialDefinition } from "./localShared/definition";
@@ -195,20 +195,7 @@ export function createLocalTimeTrialSessionProvider(
       reviewState?.type === "connect-pairs" &&
       level.question.type === "connect-pairs"
     ) {
-      const metrics = connectPairsCompletedRouteMetrics(level.question, reviewState.paths);
-      const { connectedPairs, totalPairs, coveredCells, totalCells } = metrics;
-      points = Math.min(
-        weight - 1,
-        Math.floor((weight * connectedPairs) / totalPairs),
-        Math.floor((weight * coveredCells) / totalCells),
-      );
-      details = {
-        type: "connect-pairs",
-        timeoutPartialCredit: true,
-        ...metrics,
-        coverage: coveredCells / totalCells,
-        conflicts: 0,
-      };
+      ({ points, details } = connectPairsTimeoutPartial(level.question, reviewState.paths));
     }
     const result: AnswerResult = {
       questionId: level.source.challengeItemId,

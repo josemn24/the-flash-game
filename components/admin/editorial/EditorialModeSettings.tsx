@@ -1,3 +1,9 @@
+import {
+  PYRAMID_TIMEOUT_CREDIT_FORMATS,
+  PYRAMID_TIMEOUT_CREDIT_KEYS,
+  type PyramidTimeoutCreditFormat,
+  type PyramidTimeoutCreditKey,
+} from "@/lib/gameplay/pyramidTimeoutCredit";
 import { Button, FormField, Input, Select } from "@/components/ui";
 import { TIME_TRIAL_TIMEOUT_CREDIT_KEYS } from "@/lib/timeTrial";
 import type { TimeTrialFormat } from "@/types/domain/time-trial";
@@ -11,6 +17,7 @@ export function EditorialModeSettings({
   onGlobalDurationChange,
   onTimeoutPartialCreditChange,
   timeoutCreditFormat,
+  pyramidTimeoutCreditFormats,
   onQuestionPointsChange,
   onQuestionMove,
   onQuestionDifficultyChange,
@@ -26,15 +33,25 @@ export function EditorialModeSettings({
   readonly onModeChange: (mode: FlashEditorialDocument["challenge"]["mode"]) => void;
   readonly onLivesChange: (lives: number) => void;
   readonly onGlobalDurationChange?: (seconds: string) => void;
-  readonly onTimeoutPartialCreditChange?: (enabled: boolean) => void;
+  readonly onTimeoutPartialCreditChange?: (key: PyramidTimeoutCreditKey, enabled: boolean) => void;
   readonly timeoutCreditFormat?: TimeTrialFormat;
+  readonly pyramidTimeoutCreditFormats?: readonly PyramidTimeoutCreditFormat[];
   readonly onQuestionPointsChange?: (index: number, points: number) => void;
   readonly onQuestionMove?: (index: number, offset: -1 | 1) => void;
 }) {
   if (!parsedDocument) return null;
-  const timeoutCreditEnabled = Object.values(TIME_TRIAL_TIMEOUT_CREDIT_KEYS).some(
-    (key) => parsedDocument.challenge.modeConfig[key] === true,
+  const modeConfig = parsedDocument.challenge.modeConfig;
+  const activeTimeTrialCredit = Object.values(TIME_TRIAL_TIMEOUT_CREDIT_KEYS).find(
+    (key) => modeConfig[key] === true,
   );
+  const timeTrialCreditKey = timeoutCreditFormat
+    ? TIME_TRIAL_TIMEOUT_CREDIT_KEYS[timeoutCreditFormat]
+    : activeTimeTrialCredit;
+  const pyramidFormatLabels = {
+    "connect-pairs": "Conectar parejas",
+    "word-search": "Sopa de letras",
+    queens: "Queens",
+  };
   return (
     <div className={styles.draftSelector}>
       <FormField id={fieldId + "-modo-del-desafio"} label="Modo del desafío" density="compact">
@@ -106,12 +123,29 @@ export function EditorialModeSettings({
         </FormField>
       ) : null}
       {parsedDocument.challenge.mode === "pyramid" ? (
-        <p className={styles.helper}>
-          Configura siete niveles, con una pregunta de biblioteca compatible por nivel, briefings y
-          100 puntos en total. Admite los formatos competitivos evaluados por servidor, incluidos
-          Verdadero/Falso, Ordenar, Clasificar, Matriz lógica, Zip, Escape y Hashtag de palabras.
-          Solo una respuesta completamente correcta abre el nivel siguiente y acredita sus puntos.
-        </p>
+        <>
+          <p className={styles.helper}>
+            Configura siete niveles con preguntas compatibles, briefings y 100 puntos en total. Solo
+            una resolución completa abre el nivel siguiente.
+          </p>
+          {PYRAMID_TIMEOUT_CREDIT_FORMATS.map((format) => {
+            const key = PYRAMID_TIMEOUT_CREDIT_KEYS[format];
+            const checked = modeConfig[key] === true;
+            if (!checked && !pyramidTimeoutCreditFormats?.includes(format)) return null;
+            return (
+              <label key={format}>
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(event) =>
+                    onTimeoutPartialCreditChange?.(key, event.currentTarget.checked)
+                  }
+                />{" "}
+                Puntos parciales en {pyramidFormatLabels[format]} al agotar el tiempo
+              </label>
+            );
+          })}
+        </>
       ) : null}
       {parsedDocument.challenge.mode === "time-trial" ? (
         <>
@@ -137,12 +171,14 @@ export function EditorialModeSettings({
               />
             )}
           </FormField>
-          {timeoutCreditFormat || timeoutCreditEnabled ? (
+          {timeTrialCreditKey ? (
             <label>
               <input
                 type="checkbox"
-                checked={timeoutCreditEnabled}
-                onChange={(event) => onTimeoutPartialCreditChange?.(event.currentTarget.checked)}
+                checked={activeTimeTrialCredit !== undefined}
+                onChange={(event) =>
+                  onTimeoutPartialCreditChange?.(timeTrialCreditKey, event.currentTarget.checked)
+                }
               />{" "}
               Puntos parciales al agotar el tiempo
             </label>

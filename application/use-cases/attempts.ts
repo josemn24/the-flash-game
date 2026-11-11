@@ -426,10 +426,8 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
       }
       throw error;
     }
-    return {
-      ...recorded,
-      ...(result.details ? { details: result.details } : {}),
-    };
+    const details = recorded.details ?? result.details;
+    return { ...recorded, ...(details ? { details } : {}) };
   }
 
   private async evaluateTerminalCommand<
