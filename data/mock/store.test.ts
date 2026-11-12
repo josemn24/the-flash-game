@@ -71,9 +71,9 @@ describe("normalized mock domain store", () => {
     ).toBe(false);
   });
 
-  it("stores 105 versioned questions and supports all 31 current contracts", () => {
-    expect(mockDomainStore.questionDefinitions).toHaveLength(105);
-    expect(mockDomainStore.questionVersions).toHaveLength(105);
+  it("stores 106 versioned questions and supports all 31 current contracts", () => {
+    expect(mockDomainStore.questionDefinitions).toHaveLength(106);
+    expect(mockDomainStore.questionVersions).toHaveLength(106);
     expect(Object.values(QUESTION_FORMAT_CATALOG)).toHaveLength(31);
     for (const format of Object.values(QUESTION_FORMAT_CATALOG)) {
       expect(() => normalizeLegacyQuestionFixture(format.examples[0].question)).not.toThrow();
@@ -83,7 +83,7 @@ describe("normalized mock domain store", () => {
     }
   });
 
-  it("round-trips all 105 canonical questions through the exhaustive legacy adapter", () => {
+  it("round-trips all 106 canonical questions through the exhaustive legacy adapter", () => {
     for (const fixture of publishedQuestionFixtures) {
       const normalized = normalizeLegacyQuestionFixture(projectLegacyQuestion(fixture));
       expect(normalized).toEqual({

@@ -304,38 +304,45 @@ describe("Cumbre lógica Conexiones at the deadline", () => {
       definition.challenge.levels.map((slot) => slot.id),
     );
     const { levels } = compileDefinition(definition);
+    const index = levels.findIndex((level) => level.question.type === "connect-pairs");
+    const question = levels[index]?.question;
+    if (question?.type !== "connect-pairs") throw new Error("Expected Conexiones");
     await driver.begin();
-    for (const [index, level] of levels.slice(0, 4).entries()) {
-      await driver.open(index);
+    for (const [previousIndex, level] of levels.slice(0, index).entries()) {
+      await driver.open(previousIndex);
       for (const action of correctActions(level.question)) {
-        await driver.action(action, index);
+        await driver.action(action, previousIndex);
       }
     }
-    await driver.open(4);
-    const question = levels[4]!.question;
-    if (question.type !== "connect-pairs") throw new Error("Expected Conexiones");
-    const { circle, diamond, star } = question.solutionPaths;
-    const partial = { circle, diamond, star: star.slice(0, 2) };
-    return { clock, driver, partial, question };
+    await driver.open(index);
+    const { a, b, c, d } = question.solutionPaths;
+    const partial = { a, b, c, d: d.slice(0, 2) };
+    return { clock, driver, partial, question, index };
   }
 
-  it("credits seven points, rejects a draft at the deadline, and closes without a sixth level", async () => {
-    const { clock, driver, partial, question } = await atConexiones();
-    await driver.issue("connectPairsDraft", { paths: partial }, 4);
+  it("credits four points, rejects a draft at the deadline, and ends the ascent", async () => {
+    const { clock, driver, partial, question, index } = await atConexiones();
+    await driver.issue("connectPairsDraft", { paths: partial }, index);
     clock.advance(35000);
     expect(
       await driver.execute(
-        driver.command("connectPairsDraft", { paths: question.solutionPaths }, 4),
+        driver.command("connectPairsDraft", { paths: question.solutionPaths }, index),
       ),
     ).toMatchObject({ kind: "rejected", code: "deadline_reached" });
-    const timeout = driver.command("answer", { answer: { paths: question.solutionPaths } }, 4);
+    const timeout = driver.command("answer", { answer: { paths: question.solutionPaths } }, index);
     const evaluation = await driver.execute(timeout);
     expect(evaluation).toMatchObject({
       kind: "accepted",
       state: {
         status: "partial",
-        points: 7,
-        details: { timeoutPartialCredit: true, connectedPairs: 2, coveredCells: 12 },
+        points: 4,
+        details: {
+          timeoutPartialCredit: true,
+          connectedPairs: 3,
+          totalPairs: 6,
+          coveredCells: 11,
+          totalCells: 36,
+        },
         reviewState: { type: "connect-pairs", paths: partial },
       },
     });
@@ -345,45 +352,51 @@ describe("Cumbre lógica Conexiones at the deadline", () => {
       code: "pyramid_level_failed",
     });
     const completed = await driver.issue("complete");
-    expect(completed.state.score).toBe(62);
+    expect(completed.state.score).toBe(89);
     expect(completed.state.answers?.at(-1)).toMatchObject({
       status: "partial",
       isCorrect: false,
-      points: 7,
+      points: 4,
     });
-    expect(completed.state.answers).toHaveLength(5);
+    expect(completed.state.answers).toHaveLength(7);
   });
 
   it.each(["empty", "open", "disabled", "interrupted"] as const)(
     "awards zero for a %s checkpoint",
     async (scenario) => {
-      const { clock, driver, partial } = await atConexiones(scenario !== "disabled");
-      const paths =
-        scenario === "empty" ? {} : scenario === "open" ? { star: partial.star } : partial;
-      await driver.issue("connectPairsDraft", { paths }, 4);
+      const { clock, driver, partial, index } = await atConexiones(scenario !== "disabled");
+      const paths = scenario === "empty" ? {} : scenario === "open" ? { d: partial.d } : partial;
+      await driver.issue("connectPairsDraft", { paths }, index);
       clock.advance(scenario === "interrupted" ? 1 : 35000);
       const recovered = await driver.issue("recover");
-      expect(recovered.state.score).toBe(55);
+      expect(recovered.state.score).toBe(85);
       expect(recovered.state.answers?.at(-1)).toMatchObject({ points: 0, status: "unanswered" });
     },
   );
 
-  it("recovers a solved checkpoint with normal speed points and opens Cerradura", async () => {
-    const { clock, driver, question } = await atConexiones();
+  it("recovers a solved checkpoint with normal speed points and completes the ascent", async () => {
+    const { clock, driver, question, index } = await atConexiones();
     clock.advance(17500);
-    await driver.issue("connectPairsDraft", { paths: question.solutionPaths }, 4);
+    await driver.issue("connectPairsDraft", { paths: question.solutionPaths }, index);
     clock.advance(17500);
     const recovered = await driver.issue("recover");
-    expect(recovered.state.phase).toBe("briefing");
+    expect(recovered).toMatchObject({
+      effect: "completed",
+      state: { phase: "results", score: 97 },
+    });
+    expect(recovered.state.answers).toHaveLength(7);
     expect(recovered.state.answers?.at(-1)).toMatchObject({ status: "correct", points: 12 });
-    expect((await driver.issue("prepare")).state.challengeItemId).toBe(driver.itemIds[5]);
+    expect(await driver.execute(driver.command("prepare"))).toMatchObject({
+      kind: "rejected",
+      code: "attempt_terminal",
+    });
   });
 
   it("gives priority to a timely final answer over a partial draft during recovery", async () => {
-    const { clock, driver, partial, question } = await atConexiones();
-    await driver.issue("connectPairsDraft", { paths: partial }, 4);
+    const { clock, driver, partial, question, index } = await atConexiones();
+    await driver.issue("connectPairsDraft", { paths: partial }, index);
     clock.advance(17500);
-    const command = driver.command("answer", { answer: { paths: question.solutionPaths } }, 4);
+    const command = driver.command("answer", { answer: { paths: question.solutionPaths } }, index);
     const controller = new AbortController();
     const pending = driver.execute(command, controller.signal);
     await Promise.resolve();
@@ -392,6 +405,11 @@ describe("Cumbre lógica Conexiones at the deadline", () => {
     await driver.issue("start");
     clock.advance(17500);
     const recovered = await driver.issue("recover");
+    expect(recovered).toMatchObject({
+      effect: "completed",
+      state: { phase: "results", score: 97 },
+    });
+    expect(recovered.state.answers).toHaveLength(7);
     expect(recovered.state.answers?.at(-1)).toMatchObject({ status: "correct", points: 12 });
   });
 });

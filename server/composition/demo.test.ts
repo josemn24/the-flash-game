@@ -11,9 +11,9 @@ describe("demo local Pyramid composition", () => {
       "multiple-choice",
       "logic-matrix",
       "ordering",
-      "connect-pairs",
-      "logic-code",
       "queens",
+      "logic-code",
+      "connect-pairs",
     ]);
   });
 
