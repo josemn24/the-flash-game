@@ -57,7 +57,7 @@ function squareQuestion(size: number, pairCount = size): ConnectPairsQuestion {
 
 type ConnectPairsBoard = {
   grid: { rows: number; columns: number };
-  pairs: { id: string; endpoints: [number, number] }[];
+  pairs: { id: string; endpoints: readonly [number, number] }[];
 };
 
 function countFullCoverageSolutions(board: ConnectPairsBoard, limit = 2) {
