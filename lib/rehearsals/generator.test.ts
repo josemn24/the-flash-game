@@ -1,7 +1,12 @@
 import { expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { rehearsalBank } from "@/infrastructure/rehearsals/bank";
-import { bankQuestionCase, rehearsalTemplates } from "@/test-utils/rehearsals/fixtures";
+import {
+  bankQuestionCase,
+  projectTemplate,
+  rehearsalTemplates,
+} from "@/test-utils/rehearsals/fixtures";
+import { TABARNIA_PYRAMID_LOGIC_CONTENT } from "@/scripts/fixtures/scenarios/tabarnia-pyramid-logic.mjs";
 import { getWordSearchPath, isValidWordSearchConfiguration } from "@/lib/wordSearch";
 import { activeQuestions } from "./catalog";
 import { REHEARSAL_DIFFICULTIES, REHEARSAL_LETTERS } from "./audit";
@@ -60,6 +65,53 @@ it("is deterministic, independent of bank order, and varies by seed", () => {
   ).toBeGreaterThan(1);
   expect(new Set(chosen(a, bank).map(exerciseHash)).size).toBe(t.questions.length);
   expect(JSON.stringify({ bank, t })).toBe(before);
+});
+
+it("varies Cumbre lógica Entrada at medium difficulty while retaining its official timing and points", () => {
+  const { challenge, questions } = TABARNIA_PYRAMID_LOGIC_CONTENT;
+  const template = projectTemplate({
+    challengeVersionId: challenge.slug,
+    title: challenge.title,
+    mode: "pyramid",
+    globalTimeLimitMs: null,
+    modeConfig: challenge.modeConfig,
+    questions: challenge.items.map((item) => {
+      const question = questions.find((q) => q.slug === item.questionSlug)!;
+      return {
+        type: question.type,
+        payloadSchemaVersion: 1,
+        difficulty: "medium",
+        timeLimitMs: question.publicPayload.timeLimitMs,
+        points: item.points,
+        modeConfig: item.modeConfig,
+        publicPayload: {
+          ...question.publicPayload.payload,
+          question: question.publicPayload.prompt,
+        },
+      };
+    }),
+  });
+  const candidates = rehearsalCandidates(bank, template, 0).filter(
+    (question) => question.difficulty === "medium",
+  );
+  expect(
+    new Set(candidates.map((question) => question.familyId ?? question.id)).size,
+  ).toBeGreaterThanOrEqual(3);
+  const seen = new Set<string>();
+  for (let seed = 0; seed < 64; seed++) {
+    const run = generateRehearsal(bank, template, `cumbre-entrada-variety-${seed}`);
+    const first = chosen(run, bank)[0]!;
+    expect(first.type).toBe("odd-one-out");
+    expect(first.difficulty).toBe("medium");
+    expect(run.definition.levels[0]!.publicQuestion.timeLimitMs).toBe(25000);
+    expect(run.definition.challenge.mode).toBe("pyramid");
+    if (run.definition.challenge.mode !== "pyramid") throw new Error("pyramid expected");
+    expect(run.definition.challenge.levels[0]!.points).toBe(13);
+    expect(run.difficultyFallbacks).toEqual([]);
+    seen.add(first.id);
+    expect(replayRehearsal(bank, template, run.recipe)).toEqual(run);
+  }
+  expect(seen.size).toBeGreaterThanOrEqual(3);
 });
 
 it.each(REHEARSAL_DIFFICULTIES)(

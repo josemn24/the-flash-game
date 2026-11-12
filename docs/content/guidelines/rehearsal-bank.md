@@ -125,6 +125,20 @@ inventario con `npm run rehearsals:history:register`, que rechaza cambios histó
 preview con una semilla fija.
 El [procedimiento técnico](../../current/rehearsals.md) detalla selección y compatibilidad.
 
+La ampliación de Intruso añade cinco preguntas y deja el banco en 418 preguntas activas: cuatro medias
+y una difícil. Números triangulares tiene dificultad difícil en su versión inicial.
+Cada una trabaja un criterio matemático distinto: potencias de dos, divisibilidad de 60, equivalencia
+con 3/4, conversiones a 90 minutos y números triangulares. Todas presentan cinco opciones y una sola
+excepción, con la respuesta distribuida entre las cinco posiciones. Sus explicaciones comprueban
+las opciones mediante potencias, divisiones, simplificación de fracciones, conversiones o sumas.
+Las cinco familias medias permiten variar Entrada de Cumbre lógica manteniendo sus tiempos y puntos.
+
+Matriz lógica añade dos preguntas medias y deja el banco en 420 preguntas activas. Ambas presentan
+una matriz 3×3, una casilla vacía y cuatro opciones, con el enunciado «¿Qué número falta?». Una
+requiere inferir que el tercer número es la suma de los dos primeros de cada fila; la otra usa su
+producto. Las explicaciones verifican las dos filas completas y aplican la misma operación a la
+última. Son familias independientes y permiten cinco alternativas medias en Cámara de Cumbre lógica.
+
 ## Referencias de la ampliación de Alfabeto
 
 Las pistas y explicaciones son de redacción propia. Para comprobar acepciones y variantes menos

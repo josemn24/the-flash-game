@@ -2068,5 +2068,40 @@
     "id": "bank-parejas-cumbre-anterior",
     "version": 1,
     "contentHash": "9c61a3725279c1026a33f83950123ab4e9956646d91879479a2823bc0f993bba"
+  },
+  {
+    "id": "bank-intruso-divisores-sesenta",
+    "version": 1,
+    "contentHash": "c33dbfe47902c421ac23205251742d0924d6e189236a9b6008e69602f565f5da"
+  },
+  {
+    "id": "bank-intruso-duraciones-equivalentes",
+    "version": 1,
+    "contentHash": "dd0b7ef9a5760f5af268a7b06f23a85785559a99080d7bd91bad0f15c361a9c2"
+  },
+  {
+    "id": "bank-intruso-fracciones-equivalentes",
+    "version": 1,
+    "contentHash": "0053bc337427a836958f6d44e0592394e77d6176365e522504cc4044998fdf5d"
+  },
+  {
+    "id": "bank-intruso-numeros-triangulares",
+    "version": 1,
+    "contentHash": "441c0cb645455bcee5863b1efecdde3cca19f9960be4407f92322dca0cbca8d3"
+  },
+  {
+    "id": "bank-intruso-potencias-dos",
+    "version": 1,
+    "contentHash": "4681aa31fe0fd117b5ed9a1c9dbfb751d450b544767c416569c40d4ec09cc05d"
+  },
+  {
+    "id": "bank-matriz-producto-filas",
+    "version": 1,
+    "contentHash": "5984f25496b077c2e2cfc414474c5093ccc9b3e78cdeb3c04efc9a268f28d9e8"
+  },
+  {
+    "id": "bank-matriz-suma-filas",
+    "version": 1,
+    "contentHash": "83540c3aa4dc3371ccb2bca3648eeb2115382d1a0fd624d5dd28dfa4bca27735"
   }
 ]
