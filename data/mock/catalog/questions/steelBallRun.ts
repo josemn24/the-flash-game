@@ -286,7 +286,7 @@ export const steelBallRunQuestions = defineQuestionCatalog([
       },
       prompt: "¿Qué paisaje aparece en la imagen?",
       context: null,
-      timeLimitMs: 20000,
+      timeLimitMs: 25000,
       payload: {
         surface: {
           src: "/visuals/sbr/grand-canyon-nps.jpg",
@@ -341,7 +341,7 @@ export const steelBallRunQuestions = defineQuestionCatalog([
       },
       prompt: "Marca aproximadamente dónde se encuentra el Gran Cañón en este mapa.",
       context: null,
-      timeLimitMs: 18000,
+      timeLimitMs: 25000,
       payload: {
         surface: {
           src: "/visuals/sbr/usa-location-map.svg",
