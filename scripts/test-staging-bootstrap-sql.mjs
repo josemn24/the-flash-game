@@ -104,10 +104,10 @@ do $$ begin
   if not exists (
     select 1 from public.scheduled_challenges sc
     join private.challenge_versions cv on cv.id = sc.challenge_version_id
-    where sc.id = '${data.publications[4].id}' and cv.version_number = 2
+    where sc.id = '${data.publications[4].id}' and cv.version_number = 3
       and cv.mode_config = '{"connectPairsTimeoutPartialCredit":true,"orderingPartialCredit":true,"queensTimeoutPartialCredit":true}'::jsonb
   ) then
-    raise exception 'fresh Tabarnia must install Cumbre lógica v2 with all supported partials';
+    raise exception 'fresh Tabarnia must install Cumbre lógica v3 with all supported partials';
   end if;
   if not exists (
     select 1 from public.scheduled_challenges sc
