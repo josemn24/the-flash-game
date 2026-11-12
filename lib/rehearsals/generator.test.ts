@@ -114,6 +114,41 @@ it("varies Cumbre lógica Entrada at medium difficulty while retaining its offic
   expect(seen.size).toBeGreaterThanOrEqual(3);
 });
 
+it("varies La Biblia classification at medium difficulty while retaining its official timing and points", () => {
+  const template = rehearsalTemplates.find(
+    (candidate) => candidate.challengeVersionId === "pyramid-abrahamic-definition",
+  )!;
+  const index = template.questions.findIndex((question) => question.type === "classification");
+  const added = [
+    "bank-clasificar-animales",
+    "bank-clasificar-fracciones-decimales-porcentajes",
+    "bank-clasificar-rocas",
+  ];
+  const candidates = rehearsalCandidates(bank, template, index).filter(
+    (question) => question.difficulty === "medium",
+  );
+  expect(candidates.map((question) => question.id)).toEqual(expect.arrayContaining(added));
+  expect(
+    new Set(candidates.map((question) => question.familyId ?? question.id)).size,
+  ).toBeGreaterThanOrEqual(4);
+
+  const seen = new Set<string>();
+  for (let seed = 0; seed < 64; seed++) {
+    const run = generateRehearsal(bank, template, `bible-classification-variety-${seed}`);
+    const question = chosen(run, bank)[index]!;
+    expect(question.type).toBe("classification");
+    expect(question.difficulty).toBe("medium");
+    expect(run.definition.levels[index]!.publicQuestion.timeLimitMs).toBe(50000);
+    expect(run.definition.challenge.mode).toBe("pyramid");
+    if (run.definition.challenge.mode !== "pyramid") throw new Error("pyramid expected");
+    expect(run.definition.challenge.levels[index]!.points).toBe(15);
+    expect(run.difficultyFallbacks).toEqual([]);
+    seen.add(question.id);
+  }
+  expect([...seen]).toEqual(expect.arrayContaining(added));
+  expect(seen.size).toBeGreaterThanOrEqual(4);
+});
+
 it.each(REHEARSAL_DIFFICULTIES)(
   "varies every alphabet letter across seeds at %s difficulty while retaining its structure",
   (difficulty) => {

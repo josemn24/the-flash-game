@@ -2103,5 +2103,20 @@
     "id": "bank-matriz-suma-filas",
     "version": 1,
     "contentHash": "83540c3aa4dc3371ccb2bca3648eeb2115382d1a0fd624d5dd28dfa4bca27735"
+  },
+  {
+    "id": "bank-clasificar-animales",
+    "version": 1,
+    "contentHash": "2e4b8caa9ea7d40dcdd31cb584b8f8d3bf31f1340a0e28812dc32b0dd4b2d711"
+  },
+  {
+    "id": "bank-clasificar-fracciones-decimales-porcentajes",
+    "version": 1,
+    "contentHash": "9fbd43a2e8fc467d6c74a89445f9d33ce3b2f09cdc58cd3d872645d4753a6a1e"
+  },
+  {
+    "id": "bank-clasificar-rocas",
+    "version": 1,
+    "contentHash": "df80ae7ef5cd8c615ff7d49e0638e5918b182538363fc01e1fe4b4280f5653a1"
   }
 ]

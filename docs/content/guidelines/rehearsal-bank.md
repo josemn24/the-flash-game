@@ -139,6 +139,16 @@ requiere inferir que el tercer número es la suma de los dos primeros de cada fi
 producto. Las explicaciones verifican las dos filas completas y aplican la misma operación a la
 última. Son familias independientes y permiten cinco alternativas medias en Cámara de Cumbre lógica.
 
+Clasificación añade tres preguntas medias y deja el banco en 423 preguntas activas. El formato
+reúne tres fáciles, cuatro medias y una difícil, en siete familias independientes. Las nuevas
+preguntas clasifican animales por grupo zoológico, fracciones, decimales y porcentajes respecto de
+un medio y rocas por origen. Tienen nueve elementos intercalados y tres categorías con tres elementos
+cada una. La dificultad exige distinguir grupo zoológico y desplazamiento, convertir representaciones
+numéricas o reconocer el proceso de formación de las rocas. Las explicaciones justifican los nueve
+elementos y muestran las conversiones numéricas. Admiten Flash, Supervivencia y Pirámide; La Biblia
+dispone de cuatro alternativas medias y conserva sus 50 segundos y 15 puntos. Se registran versiones
+nuevas sin modificar las huellas ni las recetas anteriores.
+
 ## Referencias de la ampliación de Alfabeto
 
 Las pistas y explicaciones son de redacción propia. Para comprobar acepciones y variantes menos
@@ -201,3 +211,11 @@ acontecimientos con fuentes patrimoniales e institucionales:
 - Canadian War Museum: [el atentado de Sarajevo como detonante inmediato de la Primera Guerra Mundial](https://www.warmuseum.ca/firstworldwar/history/going-to-war/origins-and-early-phases/war-begins-in-europe/).
 - The Metropolitan Museum of Art: [la caída del Imperio romano de Occidente en 476 y la conquista otomana de Constantinopla en 1453](https://www.metmuseum.org/it/essays/the-roman-empire-27-b-c-393-a-d).
 - Britannica: [la Hégira de 622](https://www.britannica.com/topic/Islamic-calendar). Château de Versailles: [la Revolución francesa desde 1789](https://en.chateauversailles.fr/discover/history/key-dates/versailles-heart-french-revolution).
+
+## Referencias de la ampliación de Clasificación
+
+Los enunciados y explicaciones son de redacción propia. La clasificación geológica se contrasta con:
+
+- UNED, CristaMine: [rocas ígneas, incluidos granito, basalto y obsidiana](https://www.intecca.uned.es/difusiongiccu/grado/CRISTAMINE/paginas_contenidos/Petrologia/igneas.html).
+- Servicio Geológico Mexicano: [rocas sedimentarias](https://www.sgm.gob.mx/Web/MuseoVirtual/Rocas/Rocas-sedimentarias.html).
+- Junta de Andalucía: [rocas ígneas y metamórficas, incluidos mármol, pizarra y gneis](https://edea.juntadeandalucia.es/bancorecursos/file/f61ffd2e-aa26-4a39-8afd-34b975a13915/1/es-an_2021061512_9140315.zip/2_rocas_gneas_y_metamrficas.html?temp.hb=true&temp.hn=true).
