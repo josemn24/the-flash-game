@@ -81,6 +81,17 @@ it("rejects invalid metadata and current duplicate exercises while allowing arch
   ).toThrow("asset");
 });
 
+it("keeps the connect-pairs bank at eleven boards across the intended difficulty spread", () => {
+  const connectPairs = active.filter((question) => question.type === "connect-pairs");
+  expect(connectPairs).toHaveLength(11);
+  expect(connectPairs.filter((question) => question.difficulty === "easy")).toHaveLength(3);
+  expect(connectPairs.filter((question) => question.difficulty === "medium")).toHaveLength(5);
+  expect(connectPairs.filter((question) => question.difficulty === "hard")).toHaveLength(3);
+  expect(connectPairs.some((question) => question.id === "bank-parejas-cumbre-anterior")).toBe(
+    true,
+  );
+});
+
 it("has specific explanations and complete capability-derived letter/difficulty coverage", () => {
   expect(activeQuality(bank)).toEqual({ duplicates: [], genericExplanations: [] });
   const audit = auditRehearsalBank(bank);

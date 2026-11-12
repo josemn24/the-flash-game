@@ -340,7 +340,7 @@ function challengeVersionId(slug) {
     "animals-alphabet-definition": "challenge-version:animals-alphabet-v1",
     "spain-survival-definition": "challenge-version:spain-survival-v1",
     "pyramid-abrahamic-definition": "challenge-version:bible-pyramid-v2",
-    "pyramid-logic-definition": "challenge-version:tabarnia-pyramid-logic-v2",
+    "pyramid-logic-definition": "challenge-version:tabarnia-pyramid-logic-v3",
     [TABARNIA_QUEENS_TIME_TRIAL.challenge.slug]: "challenge-version:tabarnia-queens-time-trial-v1",
     [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]:
       "challenge-version:tabarnia-connect-pairs-time-trial-v1",
@@ -519,7 +519,7 @@ function tabarniaChallenges() {
       definitionSlug: "tabarnia-piramide-cumbre-logica",
       id: challengeId(logicPyramid.slug),
       versionId: challengeVersionId(logicPyramid.slug),
-      versionNumber: 2,
+      versionNumber: 3,
       items: logicPyramid.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
     },
     {

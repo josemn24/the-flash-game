@@ -458,16 +458,16 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
         },
       },
       {
-        questionSlug: "pyramid-connect-pairs-trap",
+        questionSlug: "pyramid-summit-queens",
         points: 15,
         modeConfig: {
-          levelId: "trap",
-          label: "Conexiones",
+          levelId: "summit",
+          label: "Cima",
           briefing: {
-            title: "Cubre la cuadrícula",
-            format: "Conectar parejas",
+            title: "Conquista la cima",
+            format: "Queens",
             description:
-              "Une cada pareja de símbolos con rutas ortogonales y cubre todas las casillas.",
+              "Coloca cinco coronas sin repetir fila, columna o región y sin que se toquen.",
           },
         },
       },
@@ -486,16 +486,16 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
         },
       },
       {
-        questionSlug: "pyramid-summit-queens",
+        questionSlug: "pyramid-connect-pairs-spiral",
         points: 15,
         modeConfig: {
-          levelId: "summit",
-          label: "Cima",
+          levelId: "trap",
+          label: "Conexiones",
           briefing: {
-            title: "Conquista la cima",
-            format: "Queens",
+            title: "Cubre la cuadrícula",
+            format: "Conectar parejas",
             description:
-              "Coloca cinco coronas sin repetir fila, columna o región y sin que se toquen.",
+              "Une cada pareja de símbolos con rutas ortogonales y cubre todas las casillas.",
           },
         },
       },

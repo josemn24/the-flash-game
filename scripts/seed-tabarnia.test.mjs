@@ -16,6 +16,7 @@ import { TABARNIAVERSO_QUESTIONS } from "./fixtures/scenarios/tabarniaverso.mjs"
 import { publishedChallengeFixtures } from "../data/mock/catalog/challenges.ts";
 import { pyramidPartialCreditOptions } from "../lib/gameplay/pyramidPartialCredit.ts";
 import { deterministicUuid } from "./support/supabase-local.mjs";
+import { TABARNIA_PYRAMID_LOGIC_CONTENT } from "./fixtures/scenarios/tabarnia-pyramid-logic.mjs";
 
 function accounts() {
   return Object.fromEntries(
@@ -86,10 +87,42 @@ function spainAssets() {
 }
 
 describe("Tabarnia seed", () => {
+  it("seeds Queens fifth and 6×6 connect pairs seventh in Cumbre lógica", () => {
+    const challenge = TABARNIA_PYRAMID_LOGIC_CONTENT.challenge;
+    const queensLevel = challenge.items[4];
+    const connectPairsLevel = challenge.items[6];
+    const question = TABARNIA_PYRAMID_LOGIC_CONTENT.questions.find(
+      (entry) => entry.slug === "pyramid-connect-pairs-spiral",
+    );
+
+    expect(challenge.items).toHaveLength(7);
+    expect(challenge.items.reduce((sum, level) => sum + level.points, 0)).toBe(100);
+    expect(queensLevel).toMatchObject({
+      questionSlug: "pyramid-summit-queens",
+      points: 15,
+      modeConfig: { levelId: "summit", briefing: { format: "Queens" } },
+    });
+    expect(connectPairsLevel).toMatchObject({
+      questionSlug: "pyramid-connect-pairs-spiral",
+      points: 15,
+      modeConfig: { levelId: "trap", briefing: { format: "Conectar parejas" } },
+    });
+    expect(question?.publicPayload).toMatchObject({
+      timeLimitMs: 35000,
+      payload: {
+        grid: { rows: 6, columns: 6 },
+        pairs: expect.arrayContaining([
+          expect.objectContaining({ symbol: "A" }),
+          expect.objectContaining({ symbol: "F" }),
+        ]),
+      },
+    });
+  });
+
   it.each([
     {
       slug: "pyramid-logic-definition",
-      version: 2,
+      version: 3,
       question: "pyramid-constraint-order",
       config: {
         connectPairsTimeoutPartialCredit: true,
