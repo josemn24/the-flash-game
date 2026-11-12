@@ -10,6 +10,7 @@ import {
 } from "@/lib/connectPairs";
 import { QUESTION_FORMAT_CATALOG } from "@/features/question-formats/catalog";
 import type { ConnectPairsQuestion } from "@/types/gameplay/scoring";
+import rehearsalConnectPairs from "@/data/rehearsals/bank/connect-pairs.json";
 
 const question = questionsById["pyramid-connect-pairs-trap"];
 const example = QUESTION_FORMAT_CATALOG["connect-pairs"].examples[0].question;
@@ -53,6 +54,158 @@ function squareQuestion(size: number, pairCount = size): ConnectPairsQuestion {
     explanation: "",
   };
 }
+
+type ConnectPairsBoard = {
+  grid: { rows: number; columns: number };
+  pairs: { id: string; endpoints: readonly [number, number] }[];
+};
+
+function countFullCoverageSolutions(board: ConnectPairsBoard, limit = 2) {
+  const { rows, columns } = board.grid;
+  const cellCount = rows * columns;
+  const used = Array<boolean>(cellCount).fill(false);
+  const endpointPair = Array<number>(cellCount).fill(-1);
+  const neighbors = Array.from({ length: cellCount }, (_, cell) => {
+    const row = Math.floor(cell / columns);
+    const column = cell % columns;
+    return [
+      row > 0 ? cell - columns : -1,
+      row + 1 < rows ? cell + columns : -1,
+      column > 0 ? cell - 1 : -1,
+      column + 1 < columns ? cell + 1 : -1,
+    ].filter((neighbor) => neighbor >= 0);
+  });
+
+  board.pairs.forEach(({ endpoints }, pairIndex) => {
+    for (const endpoint of endpoints) {
+      if (endpoint < 0 || endpoint >= cellCount || endpointPair[endpoint] !== -1)
+        throw new Error("Invalid connect-pairs endpoints");
+      endpointPair[endpoint] = pairIndex;
+    }
+  });
+
+  function regionsCanStillBeCovered(pairIndex: number, current: number, target: number) {
+    const seen = Array<boolean>(cellCount).fill(false);
+
+    // Each free region must contain complete endpoint pairs; the active route must reach its target region.
+    for (let start = 0; start < cellCount; start++) {
+      if (used[start] || seen[start]) continue;
+      const region = [start];
+      seen[start] = true;
+      let endpoints = 0;
+      let hasTarget = false;
+      let regionTouchesPath = false;
+
+      for (let index = 0; index < region.length; index++) {
+        const cell = region[index]!;
+        if (neighbors[current]!.includes(cell)) regionTouchesPath = true;
+        if (endpointPair[cell] !== -1) {
+          endpoints++;
+          if (cell === target) hasTarget = true;
+          else if (endpointPair[cell] === pairIndex) return false;
+        }
+        for (const neighbor of neighbors[cell]!) {
+          if (!used[neighbor] && !seen[neighbor]) {
+            seen[neighbor] = true;
+            region.push(neighbor);
+          }
+        }
+      }
+
+      if (hasTarget) {
+        if (!regionTouchesPath || endpoints < 1 || (endpoints - 1) % 2 !== 0) return false;
+      } else if (endpoints < 2 || endpoints % 2 !== 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function assignPair(pairIndex: number): number {
+    if (pairIndex === board.pairs.length) return used.every(Boolean) ? 1 : 0;
+
+    const [start, target] = board.pairs[pairIndex]!.endpoints;
+    if (used[start] || used[target]) return 0;
+    used[start] = true;
+
+    function extend(current: number): number {
+      if (!regionsCanStillBeCovered(pairIndex, current, target)) return 0;
+      let solutions = 0;
+
+      for (const next of neighbors[current]!) {
+        if (used[next]) continue;
+        const endpointOwner = endpointPair[next]!;
+        if (endpointOwner !== -1 && next !== target) continue;
+
+        used[next] = true;
+        if (next === target) solutions += assignPair(pairIndex + 1);
+        else solutions += extend(next);
+        used[next] = false;
+        if (solutions >= limit) return limit;
+      }
+      return solutions;
+    }
+
+    const solutions = extend(start);
+    used[start] = false;
+    return solutions;
+  }
+
+  return assignPair(0);
+}
+
+function assertSolutionCoversBoard(board: ConnectPairsBoard, paths: Record<string, number[]>) {
+  const cellCount = board.grid.rows * board.grid.columns;
+  const seen = new Set<number>();
+  for (const [pair, path] of Object.entries(paths)) {
+    const matchedPair = board.pairs.find(
+      ({ id, endpoints }) =>
+        id === pair &&
+        ((path[0] === endpoints[0] && path.at(-1) === endpoints[1]) ||
+          (path[0] === endpoints[1] && path.at(-1) === endpoints[0])),
+    );
+    expect(matchedPair, pair).toBeDefined();
+    expect(path.length).toBeGreaterThanOrEqual(2);
+    for (const [index, cell] of path.entries()) {
+      expect(cell).toBeGreaterThanOrEqual(0);
+      expect(cell).toBeLessThan(cellCount);
+      expect(seen.has(cell), `overlapping cell ${cell}`).toBe(false);
+      seen.add(cell);
+      if (index > 0)
+        expect(neighborsAreAdjacent(path[index - 1]!, cell, board.grid.columns)).toBe(true);
+    }
+  }
+  expect(Object.keys(paths)).toHaveLength(board.pairs.length);
+  expect(seen.size).toBe(cellCount);
+}
+
+function neighborsAreAdjacent(first: number, second: number, columns: number) {
+  return (
+    Math.abs(Math.floor(first / columns) - Math.floor(second / columns)) +
+      Math.abs((first % columns) - (second % columns)) ===
+    1
+  );
+}
+
+describe("Connect pairs authored solution uniqueness", () => {
+  const spiralQuestion = questionsById["pyramid-connect-pairs-spiral"];
+  const previousBoard = rehearsalConnectPairs.find(
+    (entry) => entry.id === "bank-parejas-cumbre-anterior",
+  )!;
+
+  it.each([
+    ["Cumbre lógica 6×6", spiralQuestion, spiralQuestion.solutionPaths],
+    ["variante editorial 5×5", previousBoard.publicPayload, previousBoard.solutionPayload.paths],
+  ])(
+    "exhaustively validates the %s solution",
+    (_label, untypedBoard, solutionPaths) => {
+      const board = untypedBoard as ConnectPairsBoard;
+      assertSolutionCoversBoard(board, solutionPaths as Record<string, number[]>);
+      expect(countFullCoverageSolutions(board)).toBe(1);
+    },
+    30000,
+  );
+});
 
 describe("Connect pairs square board sizes", () => {
   it.each([4, 5, 6, 7, 8])("validates a %i×%i board at the pair limit", (size) => {

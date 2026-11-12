@@ -1,3 +1,4 @@
+import { isDraftCommand } from "./checkpoints";
 import type { ServerFlashTerminalReview } from "@/types/gameplay/challenge";
 import { reviewFor } from "../modes/policy";
 import { createAdvancement } from "./advance";
@@ -58,12 +59,7 @@ export function createAttemptLifecycle(runtime: SessionRuntime) {
     const state = runtime.state();
     // Keep the outstanding answer/pass until it is accepted or reconciled.
     if (state.phase === "results" || state.phase === "review" || state.attemptExpired) return;
-    if (
-      state.busy ||
-      (state.pendingCommand &&
-        state.pendingCommand.operation !== "queensDraft" &&
-        state.pendingCommand.operation !== "connectPairsDraft")
-    ) {
+    if (state.busy || (state.pendingCommand && !isDraftCommand(state.pendingCommand.operation))) {
       runtime.commit({ type: "phase", phase: "finalizing" });
       return;
     }

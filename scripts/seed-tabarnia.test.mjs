@@ -13,6 +13,10 @@ import {
   tabarniaMultiverseQuestions,
 } from "./fixtures/scenarios/tabarnia-multiverse.mjs";
 import { TABARNIAVERSO_QUESTIONS } from "./fixtures/scenarios/tabarniaverso.mjs";
+import { publishedChallengeFixtures } from "../data/mock/catalog/challenges.ts";
+import { pyramidPartialCreditOptions } from "../lib/gameplay/pyramidPartialCredit.ts";
+import { deterministicUuid } from "./support/supabase-local.mjs";
+import { TABARNIA_PYRAMID_LOGIC_CONTENT } from "./fixtures/scenarios/tabarnia-pyramid-logic.mjs";
 
 function accounts() {
   return Object.fromEntries(
@@ -83,6 +87,85 @@ function spainAssets() {
 }
 
 describe("Tabarnia seed", () => {
+  it("seeds Queens fifth and 6×6 connect pairs seventh in Cumbre lógica", () => {
+    const challenge = TABARNIA_PYRAMID_LOGIC_CONTENT.challenge;
+    const queensLevel = challenge.items[4];
+    const connectPairsLevel = challenge.items[6];
+    const question = TABARNIA_PYRAMID_LOGIC_CONTENT.questions.find(
+      (entry) => entry.slug === "pyramid-connect-pairs-spiral",
+    );
+
+    expect(challenge.items).toHaveLength(7);
+    expect(challenge.items.reduce((sum, level) => sum + level.points, 0)).toBe(100);
+    expect(queensLevel).toMatchObject({
+      questionSlug: "pyramid-summit-queens",
+      points: 15,
+      modeConfig: { levelId: "summit", briefing: { format: "Queens" } },
+    });
+    expect(connectPairsLevel).toMatchObject({
+      questionSlug: "pyramid-connect-pairs-spiral",
+      points: 15,
+      modeConfig: { levelId: "trap", briefing: { format: "Conectar parejas" } },
+    });
+    expect(question?.publicPayload).toMatchObject({
+      timeLimitMs: 35000,
+      payload: {
+        grid: { rows: 6, columns: 6 },
+        pairs: expect.arrayContaining([
+          expect.objectContaining({ symbol: "A" }),
+          expect.objectContaining({ symbol: "F" }),
+        ]),
+      },
+    });
+  });
+
+  it.each([
+    {
+      slug: "pyramid-logic-definition",
+      version: 3,
+      question: "pyramid-constraint-order",
+      config: {
+        connectPairsTimeoutPartialCredit: true,
+        orderingPartialCredit: true,
+        queensTimeoutPartialCredit: true,
+      },
+    },
+    {
+      slug: "pyramid-abrahamic-definition",
+      version: 2,
+      question: "abrahamic-order-torah-books",
+      config: {
+        matchingPartialCredit: true,
+        orderingPartialCredit: true,
+        wordSearchTimeoutPartialCredit: true,
+        classificationPartialCredit: true,
+      },
+    },
+  ])("installs $slug v$version with the same partials as its local demo", (example) => {
+    const input = {
+      accounts: accounts(),
+      sbrAssetMetadata: {},
+      spainAssets: spainAssets(),
+      avatarMetadata: avatarMetadata(),
+    };
+    const publication = tabarniaManifest(input.accounts, input.avatarMetadata).publications.find(
+      (row) => row.slug === example.slug,
+    );
+    const mock = publishedChallengeFixtures.find((row) => row.slug === example.slug);
+    expect(pyramidPartialCreditOptions(mock.modeConfig)).toEqual(example.config);
+    const sql = buildTabarniaDomainSql({ ...input, conflictSafe: true });
+    expect(sql).toContain(
+      `'${publication.challengeVersionId}', '${publication.challengeId}', ${example.version}, 1, 'draft', 'pyramid'`,
+    );
+    expect(sql).toContain(JSON.stringify(example.config));
+    expect(sql).toContain(
+      deterministicUuid(
+        "the-flash-game:tabarnia",
+        `challenge-item:${publication.challengeVersionId}:${example.question}`,
+      ),
+    );
+  });
+
   it("ships avatar files matching their declared image formats", async () => {
     for (const user of TABARNIA_USERS.filter((user) => user.avatarFile)) {
       const metadata = await sharp(`public/flash-pop/avatars/${user.avatarFile}`).metadata();

@@ -6,5 +6,17 @@ export function ReviewContent({
   question,
   result,
 }: ReviewProps<PracticeQuestionOfType<"ordering">>) {
-  return <AnswerPair answer={result.answer} correct={question.correctOrder} />;
+  const snapshot =
+    result.reviewState?.type === "ordering" ? result.reviewState.answer : result.answer;
+  const details = result.details?.type === "ordering" ? result.details : undefined;
+  return (
+    <>
+      {details ? (
+        <p>
+          {details.correctItems} de {details.totalItems} elementos en su posición correcta.
+        </p>
+      ) : null}
+      <AnswerPair answer={snapshot} correct={question.correctOrder} />
+    </>
+  );
 }

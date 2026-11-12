@@ -45,7 +45,11 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
     subtitle: "Siete niveles. Sube cuanto puedas.",
     description:
       "Empieza con un patrón sencillo y asciende por siete pruebas de lógica. Solo un acierto completo abre el siguiente nivel.",
-    modeConfig: { attemptSchemaVersion: 2 },
+    modeConfig: {
+      connectPairsTimeoutPartialCredit: true,
+      orderingPartialCredit: true,
+      queensTimeoutPartialCredit: true,
+    },
     items: [
       {
         questionSlug: "pyramid-square-intruder",
@@ -100,16 +104,16 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
         },
       },
       {
-        questionSlug: "pyramid-connect-pairs-trap",
+        questionSlug: "pyramid-summit-queens",
         points: 15,
         modeConfig: {
-          levelId: "trap",
-          label: "Conexiones",
+          levelId: "summit",
+          label: "Cima",
           briefing: {
-            title: "Cubre la cuadrícula",
-            format: "Conectar parejas",
+            title: "Conquista la cima",
+            format: "Queens",
             description:
-              "Une cada pareja de símbolos con rutas ortogonales y cubre todas las casillas.",
+              "Coloca cinco coronas sin repetir fila, columna o región y sin que se toquen.",
           },
         },
       },
@@ -128,16 +132,16 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
         },
       },
       {
-        questionSlug: "pyramid-summit-queens",
+        questionSlug: "pyramid-connect-pairs-spiral",
         points: 15,
         modeConfig: {
-          levelId: "summit",
-          label: "Cima",
+          levelId: "trap",
+          label: "Conexiones",
           briefing: {
-            title: "Conquista la cima",
-            format: "Queens",
+            title: "Cubre la cuadrícula",
+            format: "Conectar parejas",
             description:
-              "Coloca cinco coronas sin repetir fila, columna o región y sin que se toquen.",
+              "Une cada pareja de símbolos con rutas ortogonales y cubre todas las casillas.",
           },
         },
       },
@@ -246,40 +250,38 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
         "Las figuras y las flechas rotan de forma independiente en cada fila y columna. La casilla final necesita un triángulo con flecha hacia arriba.",
     }),
     question({
-      slug: "pyramid-connect-pairs-trap",
+      slug: "pyramid-connect-pairs-spiral",
       type: "connect-pairs",
       category: "Lógica espacial",
       topics: ["spatial_logic_puzzles"],
       cognitiveSkills: ["logical_reasoning", "problem_solving"],
       formatSkills: ["planning", "deduction"],
-      prompt: "Conecta cada pareja de símbolos y cubre toda la cuadrícula.",
+      prompt: "Conecta las seis parejas y cubre toda la cuadrícula 6×6.",
       timeLimitMs: 35000,
       payload: {
-        grid: { rows: 5, columns: 5 },
+        grid: { rows: 6, columns: 6 },
         pairs: [
-          { id: "circle", label: "Círculo", symbol: "●", endpoints: [0, 9], color: "#35e8ff" },
-          {
-            id: "triangle",
-            label: "Triángulo",
-            symbol: "▲",
-            endpoints: [8, 10],
-            color: "#d7ff18",
-          },
-          { id: "diamond", label: "Rombo", symbol: "◆", endpoints: [11, 18], color: "#ff6d73" },
-          { id: "star", label: "Estrella", symbol: "★", endpoints: [17, 24], color: "#b994ff" },
+          { id: "a", label: "Pareja A", symbol: "A", endpoints: [0, 7], color: "#0825fa" },
+          { id: "b", label: "Pareja B", symbol: "B", endpoints: [6, 15], color: "#107f12" },
+          { id: "c", label: "Pareja C", symbol: "C", endpoints: [9, 16], color: "#2cfefe" },
+          { id: "d", label: "Pareja D", symbol: "D", endpoints: [8, 18], color: "#fc0e1c" },
+          { id: "e", label: "Pareja E", symbol: "E", endpoints: [22, 25], color: "#fb7f23" },
+          { id: "f", label: "Pareja F", symbol: "F", endpoints: [26, 28], color: "#eded33" },
         ],
         requireFullCoverage: true,
       },
       solution: {
         paths: {
-          circle: [0, 1, 2, 3, 4, 9],
-          triangle: [8, 7, 6, 5, 10],
-          diamond: [11, 12, 13, 14, 19, 18],
-          star: [17, 16, 15, 20, 21, 22, 23, 24],
+          a: [0, 1, 7],
+          b: [6, 12, 13, 14, 15],
+          c: [9, 10, 16],
+          d: [8, 2, 3, 4, 5, 11, 17, 23, 29, 35, 34, 33, 32, 31, 30, 24, 18],
+          e: [22, 21, 20, 19, 25],
+          f: [26, 27, 28],
         },
       },
       explanation:
-        "Cada símbolo se une con su pareja mediante una ruta ortogonal. Las cuatro rutas cubren las 25 casillas sin cruzarse ni solaparse.",
+        "Las seis rutas conectan sus extremos con pasos ortogonales y cubren las 36 casillas sin cruces ni solapamientos.",
     }),
     question({
       slug: "pyramid-secret-code",

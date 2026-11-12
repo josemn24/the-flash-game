@@ -295,6 +295,53 @@ export const pyramidQuestions = defineQuestionCatalog([
     },
   },
   {
+    slug: "pyramid-connect-pairs-spiral",
+    practicePoints: 100,
+    type: "connect-pairs",
+    publicPayload: {
+      category: "Lógica espacial",
+      tags: {
+        domains: ["mathematics"],
+        topics: ["spatial_logic_puzzles"],
+        cognitiveSkills: ["logical_reasoning", "problem_solving"],
+        formatSkills: ["planning", "deduction"],
+        lifeSkills: [],
+      },
+      prompt: "Conecta las seis parejas y cubre toda la cuadrícula 6×6.",
+      context: null,
+      timeLimitMs: 35000,
+      payload: {
+        grid: { rows: 6, columns: 6 },
+        pairs: [
+          { id: "a", label: "Pareja A", symbol: "A", endpoints: [0, 7], color: "#0825fa" },
+          { id: "b", label: "Pareja B", symbol: "B", endpoints: [6, 15], color: "#107f12" },
+          { id: "c", label: "Pareja C", symbol: "C", endpoints: [9, 16], color: "#2cfefe" },
+          { id: "d", label: "Pareja D", symbol: "D", endpoints: [8, 18], color: "#fc0e1c" },
+          { id: "e", label: "Pareja E", symbol: "E", endpoints: [22, 25], color: "#fb7f23" },
+          { id: "f", label: "Pareja F", symbol: "F", endpoints: [26, 28], color: "#eded33" },
+        ],
+        requireFullCoverage: true,
+      },
+    },
+    privatePayload: {
+      solution: {
+        explanation:
+          "Las seis rutas conectan sus extremos con pasos ortogonales y cubren las 36 casillas sin cruces ni solapamientos.",
+        payload: {
+          paths: {
+            a: [0, 1, 7],
+            b: [6, 12, 13, 14, 15],
+            c: [9, 10, 16],
+            d: [8, 2, 3, 4, 5, 11, 17, 23, 29, 35, 34, 33, 32, 31, 30, 24, 18],
+            e: [22, 21, 20, 19, 25],
+            f: [26, 27, 28],
+          },
+        },
+      },
+      reveals: [],
+    },
+  },
+  {
     slug: "pyramid-secret-code",
     practicePoints: 100,
     type: "logic-code",

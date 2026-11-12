@@ -129,6 +129,11 @@ begin
           raise exception 'invalid_time_trial_content' using errcode = '22023';
         end if;
         perform private.assert_time_trial_content(new.id);
+      elsif new.mode = 'pyramid' and not private.is_valid_pyramid_config(new.mode_config, array(
+        select q.type from private.challenge_items item join private.question_versions q on q.id = item.question_version_id
+        where item.challenge_version_id = new.id
+      )) then
+        raise exception 'invalid_content' using errcode = '22023';
       end if;
       if exists (select 1 from private.challenge_items i join private.question_versions q on q.id = i.question_version_id
         where i.challenge_version_id = new.id and q.status <> 'published') then
@@ -334,9 +339,25 @@ declare
   challenge_mode text;
   challenge_config jsonb;
   question_version uuid;
+  question_format text;
+  question_limit_ms integer;
+  draft_answer jsonb;
+  correct_items integer;
+  total_items integer;
+  scoring_time_ms bigint;
   public_payload jsonb;
   solution jsonb;
   checkpoint_solved boolean := false;
+  checkpoint_deadline timestamptz;
+  checkpoint_saved_at timestamptz;
+  pyramid_connect_pairs boolean;
+  pyramid_queens boolean;
+  pyramid_word_search boolean;
+  queens_progress jsonb;
+  saved_speed_score integer;
+  found_word_ids jsonb;
+  total_words integer;
+  incorrect_selections integer;
   correct_placements integer;
   required_placements integer;
   connected_pairs integer;
@@ -363,21 +384,145 @@ begin
   if exists (select 1 from public.scheduled_challenges where id = a.scheduled_challenge_id and status = 'cancelled') then
     raise exception 'Publication cancelled';
   end if;
-  select i.points, cv.mode, cv.mode_config, i.question_version_id
-    into item_points, challenge_mode, challenge_config, question_version
+  select i.points, cv.mode, cv.mode_config, i.question_version_id, q.type, q.time_limit_ms,
+    cv.mode = 'pyramid' and q.type = 'connect-pairs'
+      and coalesce(cv.mode_config->'connectPairsTimeoutPartialCredit' = 'true'::jsonb, false),
+    cv.mode = 'pyramid' and q.type = 'queens'
+      and coalesce(cv.mode_config->'queensTimeoutPartialCredit' = 'true'::jsonb, false),
+    cv.mode = 'pyramid' and q.type = 'word-search'
+      and coalesce(cv.mode_config->'wordSearchTimeoutPartialCredit' = 'true'::jsonb, false)
+    into item_points, challenge_mode, challenge_config, question_version, question_format, question_limit_ms,
+      pyramid_connect_pairs, pyramid_queens, pyramid_word_search
   from private.challenge_items i
   join private.challenge_versions cv on cv.id = i.challenge_version_id
+  join private.question_versions q on q.id = i.question_version_id
   where i.id = new.challenge_item_id;
+  if challenge_mode = 'pyramid' and private.pyramid_draft_enabled(challenge_config, question_format) then
+    new.status := 'unanswered';
+    new.points := 0;
+    new.result_details := null;
+    new.review_state := null;
+    if r.timed_out then
+      select unit.deadline_at into checkpoint_deadline
+      from private.attempt_timing_units unit
+      where unit.attempt_id = a.id and unit.challenge_item_id = new.challenge_item_id
+        and unit.scope = 'level';
+      if checkpoint_deadline is null or r.received_at < checkpoint_deadline
+        or r.effective_submitted_at <> checkpoint_deadline
+        or a.progress_payload->>'kind' is distinct from 'pyramid-draft'
+        or a.progress_payload->>'challengeItemId' is distinct from new.challenge_item_id::text then
+        return new;
+      end if;
+      checkpoint_saved_at := (a.progress_payload->>'savedAt')::timestamptz;
+      if checkpoint_saved_at is null or checkpoint_saved_at < r.presented_at
+        or checkpoint_saved_at >= checkpoint_deadline then return new; end if;
+      draft_answer := a.progress_payload->'answer';
+      scoring_time_ms := floor(extract(epoch from (checkpoint_saved_at - r.presented_at)) * 1000)::bigint;
+    else
+      draft_answer := r.answer;
+      scoring_time_ms := r.time_used_ms;
+    end if;
+    if draft_answer is null or draft_answer = 'null'::jsonb then return new; end if;
+
+    select s.solution_payload into solution
+    from private.question_version_solutions s where s.question_version_id = question_version;
+    if question_format = 'ordering' then
+      solution := solution->'correctOrder';
+      total_items := jsonb_array_length(solution);
+      select count(*)::integer into correct_items
+      from jsonb_array_elements(draft_answer) with ordinality chosen(value, position)
+      where chosen.value = solution->(chosen.position::integer - 1);
+    else
+      solution := solution->(case question_format when 'matching' then 'matches' else 'categoriesByItem' end);
+      select count(*)::integer, count(*) filter (where value = draft_answer->key)::integer
+        into total_items, correct_items
+      from jsonb_each(solution);
+    end if;
+    if total_items is null or total_items <= 0 then return new; end if;
+    if r.timed_out then
+      new.review_state := jsonb_build_object('type', question_format, 'answer', draft_answer);
+    end if;
+    new.result_details := jsonb_build_object('type', question_format) ||
+      case when question_format = 'matching'
+        then jsonb_build_object('correctPairs', correct_items, 'totalPairs', total_items)
+        else jsonb_build_object('correctItems', correct_items, 'totalItems', total_items) end;
+    if correct_items = total_items then
+      new.status := 'correct';
+      new.points := round(item_points * (1 - 0.4 *
+        least(scoring_time_ms, question_limit_ms)::numeric / question_limit_ms))::integer;
+    else
+      new.points := least(item_points - 1, item_points * correct_items / total_items);
+      if new.points > 0 then
+        new.status := 'partial';
+        new.result_details := new.result_details || jsonb_build_object(
+          'pyramidPartialCredit', case when r.timed_out then 'timeout' else 'submission' end);
+      elsif not r.timed_out then
+        new.status := 'incorrect';
+      end if;
+    end if;
+    return new;
+  end if;
+  if (pyramid_queens or pyramid_word_search) and not r.timed_out
+    and (r.answer is null or r.answer = 'null'::jsonb) then
+    new.status := 'unanswered';
+    new.points := 0;
+    return new;
+  end if;
+  if challenge_mode = 'time-trial' then
+    checkpoint_deadline := a.deadline_at;
+  elsif r.timed_out and (pyramid_connect_pairs or pyramid_queens or pyramid_word_search) then
+    select unit.deadline_at into checkpoint_deadline
+    from private.attempt_timing_units unit
+    where unit.attempt_id = a.id and unit.challenge_item_id = new.challenge_item_id
+      and unit.scope = 'level';
+    checkpoint_saved_at := (a.progress_payload->>'savedAt')::timestamptz;
+  end if;
   if challenge_mode = 'time-trial'
     and (new.status = 'partial' or new.points <> case when new.status = 'correct' then item_points else 0 end
       or (new.status = 'correct' and (r.timed_out or r.received_at >= a.deadline_at))) then
     raise exception 'Invalid Contrarreloj score';
   end if;
-  if challenge_mode = 'time-trial'
-    and new.status = 'unanswered' and r.timed_out and r.received_at >= a.deadline_at
-    and r.effective_submitted_at = a.deadline_at
+  if ((challenge_mode = 'time-trial' and new.status = 'unanswered')
+      or pyramid_connect_pairs or pyramid_queens or pyramid_word_search)
+    and r.timed_out and r.received_at >= checkpoint_deadline
+    and r.effective_submitted_at = checkpoint_deadline
     and (r.answer is null or r.answer = 'null'::jsonb) then
+    if challenge_mode = 'pyramid' then
+      new.status := 'unanswered';
+      new.points := 0;
+    end if;
+    if pyramid_word_search then
+      select coalesce(jsonb_agg(e.matched_target_id order by e.sequence) filter (where e.correct), '[]'::jsonb),
+        count(*) filter (where not e.correct)::integer
+        into found_word_ids, incorrect_selections
+      from private.word_search_selection_events e
+      where e.attempt_id = a.id and e.challenge_item_id = new.challenge_item_id
+        and e.received_at >= r.presented_at and e.received_at < checkpoint_deadline;
+      select jsonb_array_length(q.public_payload->'targets') into total_words
+      from private.question_versions q where q.id = question_version;
+      if total_words > 0 and jsonb_array_length(found_word_ids) > 0 then
+        new.review_state := jsonb_build_object('type', 'word-search', 'foundWordIds', found_word_ids);
+        new.points := least(item_points - 1, item_points * jsonb_array_length(found_word_ids) / total_words);
+        new.result_details := jsonb_build_object('type', 'word-search', 'timeoutPartialCredit', true,
+          'foundWords', jsonb_array_length(found_word_ids), 'totalWords', total_words,
+          'incorrectSelections', incorrect_selections, 'solved', false);
+        if new.points > 0 then new.status := 'partial'; end if;
+      end if;
+      return new;
+    end if;
+    if challenge_mode = 'pyramid' and
+      (checkpoint_saved_at is null or checkpoint_saved_at < r.presented_at or checkpoint_saved_at >= checkpoint_deadline)
+    then return new; end if;
+
     new.review_state := private.attempt_review_state(a.id, new.challenge_item_id);
+    -- A saved board with all crowns fixed can be solved without any own placements.
+    if pyramid_queens and new.review_state is null and a.progress_payload->>'kind' = 'queens'
+      and a.progress_payload->>'challengeItemId' = new.challenge_item_id::text then
+      select jsonb_build_object('type', 'queens', 'queens', a.progress_payload->'queens') into new.review_state
+      from private.question_versions q
+      where q.id = question_version and jsonb_array_length(q.public_payload->'prefilledQueens')
+        = (q.public_payload->'grid'->>'rows')::integer;
+    end if;
     if new.review_state->>'type' = 'queens' then
       select q.public_payload, to_jsonb(array(
         select value::integer from jsonb_array_elements_text(s.solution_payload->'solution')
@@ -386,9 +531,14 @@ begin
       from private.question_versions q
       join private.question_version_solutions s on s.question_version_id = q.id
       where q.id = question_version;
+      queens_progress := private.queens_progress(a.id, new.challenge_item_id);
       checkpoint_solved := new.review_state->'queens' = solution
-        and (private.queens_progress(a.id, new.challenge_item_id)->>'solved')::boolean;
-      if not checkpoint_solved and challenge_config = '{"queensTimeoutPartialCredit":true}'::jsonb then
+        and (queens_progress->>'solved')::boolean;
+      if pyramid_queens and (queens_progress->>'incorrectValidations')::integer >= 3 then
+        return new;
+      end if;
+      if not checkpoint_solved and (pyramid_queens
+        or challenge_config = '{"queensTimeoutPartialCredit":true}'::jsonb) then
         required_placements := (public_payload->'grid'->>'rows')::integer
           - jsonb_array_length(public_payload->'prefilledQueens');
         select count(distinct cell.value)::integer into correct_placements
@@ -399,12 +549,24 @@ begin
           new.points := least(item_points - 1, item_points * correct_placements / required_placements);
         end if;
       end if;
+      if pyramid_queens then
+        new.result_details := jsonb_build_object('type', 'queens',
+          'placedQueens', queens_progress->'placedQueens', 'completedRows', queens_progress->'completedRows',
+          'completedColumns', queens_progress->'completedColumns', 'completedRegions', queens_progress->'completedRegions',
+          'conflictingQueens', queens_progress->'conflictingQueens', 'incorrectAttempts', queens_progress->'incorrectValidations',
+          'marksUsed', 0, 'solved', checkpoint_solved);
+        if not checkpoint_solved then
+          new.result_details := new.result_details || jsonb_build_object('timeoutPartialCredit', true,
+            'correctPlacements', correct_placements, 'requiredPlacements', required_placements);
+        end if;
+      end if;
     elsif new.review_state->>'type' = 'connect-pairs' then
       select q.public_payload into public_payload
       from private.question_versions q where q.id = question_version;
       checkpoint_solved := private.connect_pairs_answer_valid(
         public_payload, jsonb_build_object('paths', new.review_state->'paths'));
-      if not checkpoint_solved and challenge_config = '{"connectPairsTimeoutPartialCredit":true}'::jsonb then
+      if not checkpoint_solved and (pyramid_connect_pairs
+        or challenge_config = '{"connectPairsTimeoutPartialCredit":true}'::jsonb) then
         total_pairs := jsonb_array_length(public_payload->'pairs');
         total_cells := (public_payload->'grid'->>'rows')::integer * (public_payload->'grid'->>'columns')::integer;
         -- The review snapshot has already passed the draft validator, including overlap checks.
@@ -424,7 +586,18 @@ begin
     if checkpoint_solved then
       new.status := 'correct';
       new.points := item_points;
-      new.result_details := null;
+      if pyramid_connect_pairs or pyramid_queens then
+        -- Score the solved checkpoint at its accepted save time.
+        saved_speed_score := round(item_points * (1 - 0.4 *
+          floor(extract(epoch from (checkpoint_saved_at - r.presented_at)) * 1000)
+            / (extract(epoch from (checkpoint_deadline - r.presented_at)) * 1000)))::integer;
+        new.points := saved_speed_score;
+        if pyramid_queens then
+          new.points := greatest(0, greatest(saved_speed_score, ceil(item_points * 0.6)::integer)
+            - round(item_points * 0.05)::integer * (queens_progress->>'incorrectValidations')::integer);
+        end if;
+      end if;
+      if not pyramid_queens then new.result_details := null; end if;
     elsif new.points > 0 then
       new.status := 'partial';
     end if;

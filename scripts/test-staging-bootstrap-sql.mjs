@@ -102,6 +102,22 @@ do $$ begin
     raise exception 'expected nine Tabarnia publications';
   end if;
   if not exists (
+    select 1 from public.scheduled_challenges sc
+    join private.challenge_versions cv on cv.id = sc.challenge_version_id
+    where sc.id = '${data.publications[4].id}' and cv.version_number = 3
+      and cv.mode_config = '{"connectPairsTimeoutPartialCredit":true,"orderingPartialCredit":true,"queensTimeoutPartialCredit":true}'::jsonb
+  ) then
+    raise exception 'fresh Tabarnia must install Cumbre lógica v3 with all supported partials';
+  end if;
+  if not exists (
+    select 1 from public.scheduled_challenges sc
+    join private.challenge_versions cv on cv.id = sc.challenge_version_id
+    where sc.id = '${data.publications[7].id}' and cv.version_number = 2
+      and cv.mode_config = '{"matchingPartialCredit":true,"orderingPartialCredit":true,"wordSearchTimeoutPartialCredit":true,"classificationPartialCredit":true}'::jsonb
+  ) then
+    raise exception 'fresh Tabarnia must install La Biblia v2 with all supported partials';
+  end if;
+  if not exists (
     select 1 from private.question_definitions d
     join private.question_versions v on v.question_definition_id = d.id
     join private.question_version_solutions s on s.question_version_id = v.id

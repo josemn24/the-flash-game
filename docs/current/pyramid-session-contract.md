@@ -63,8 +63,9 @@ resolución temporal; su llegada a cero no acredita ni finaliza por sí sola el 
 
 - Solo una resolución final `correct` supera un nivel. `partial`, `incorrect` o `unanswered`
   terminan el ascenso con `failed`; una validación intermedia fallida no es una resolución final.
-- El nivel no superado aporta cero puntos, incluso si el evaluador del formato produjo crédito
-  parcial. Se conservan los puntos de los niveles anteriores.
+- El jugador conserva los puntos anteriores. Por defecto, un nivel no superado aporta cero, incluso si el
+  evaluador produjo crédito parcial. Conectar parejas, Sopa de letras y Queens pueden acreditar
+  puntos al vencer el reloj si su opción está activa en la versión.
 - Una resolución correcta usa el peso y las reglas de puntuación del formato, incluida velocidad
   o penalizaciones cuando correspondan. No se sustituye por un premio fijo por nivel.
 - Siete niveles correctos producen `summit`, con independencia del total obtenido. Llegar al
@@ -78,6 +79,50 @@ resolución temporal; su llegada a cero no acredita ni finaliza por sí sola el 
 Las señales visuales de desenlace y las evaluaciones pueden existir antes de confirmar `complete`.
 No se deben confundir con el estado terminal persistido ni mostrar un cierre aceptado antes de
 recibir su confirmación.
+
+### Crédito al vencer el reloj en Conectar parejas
+
+`modeConfig.connectPairsTimeoutPartialCredit: true` activa esta regla por versión en Pirámides con
+al menos un nivel de Conectar parejas. El seed de instalaciones nuevas la activa en Cumbre lógica v2.
+Las instalaciones existentes preparan y publican sus versiones desde el portal superadmin.
+El servidor usa el último tablero válido guardado antes del límite del nivel. Un envío final recibido
+a tiempo tiene prioridad.
+
+- Con un tablero incompleto, el crédito es el menor de `peso − 1`,
+  `floor(peso × parejas conectadas / parejas totales)` y
+  `floor(peso × casillas en rutas completas / casillas totales)`. Las rutas abiertas solo aparecen
+  en la revisión. Un crédito positivo se registra como `partial`, suma al ranking y termina el ascenso.
+- Un tablero completo guardado a tiempo se registra como acierto. Puntúa por velocidad con la hora
+  del guardado y abre el siguiente nivel. Una interrupción antes del límite sin envío final no acredita
+  el borrador. Los reintentos reutilizan la resolución guardada.
+
+### Crédito al vencer el reloj en Sopa de letras y Queens
+
+El editor permite activar `wordSearchTimeoutPartialCredit` y `queensTimeoutPartialCredit`
+por separado. Cada opción requiere un nivel de su formato y puede coexistir con las otras.
+Para activar la regla en una publicación, selecciona una versión publicada con la opción activa.
+
+- En Sopa de letras se cuentan las palabras distintas que el servidor confirmó antes del límite.
+  Las selecciones incorrectas no suman. La última palabra encontrada a tiempo cierra con un acierto.
+- En Queens se compara el último tablero guardado a tiempo con la solución. Solo cuentan las coronas
+  propias bien colocadas. Un tablero completo y válido se puntúa por velocidad a la hora del guardado,
+  con las penalizaciones previas. El tercer fallo de validación sigue cerrando el nivel con cero.
+- El parcial es `min(peso − 1, floor(peso × aciertos / elementos por resolver))`. No tiene descuento
+  por tiempo ni por fallos previos. Suma al ranking y termina el ascenso. Una resolución final
+  aceptada a tiempo tiene prioridad y una interrupción antes del límite no acredita el borrador.
+
+### Crédito al confirmar o vencer en Emparejamiento, Clasificación y Ordenación
+
+Las opciones de versión `matchingPartialCredit`, `classificationPartialCredit` y
+`orderingPartialCredit` se activan de forma independiente. Cada una exige un nivel de su formato.
+
+- Se cuenta cada pareja correcta, cada elemento en su categoría correcta o cada elemento en su posición
+  exacta, según el formato. Un parcial positivo usa `min(peso − 1, floor(peso × aciertos / total))`
+  tanto al confirmar como al vencer. Aporta puntos al cierre del intento y termina el ascenso.
+- La confirmación completa recibida a tiempo tiene prioridad. Sin ella, el servidor evalúa al vencer
+  el último borrador aceptado antes del límite. Un borrador resuelto puntúa por velocidad según su hora
+  de guardado y permite avanzar. El orden inicial sin movimientos y la recuperación antes del límite
+  sin confirmación aportan cero.
 
 ## 4. Queens: una interacción puede continuar después de un fallo
 
@@ -114,7 +159,8 @@ es por prueba, y no se comparte entre niveles ni se configura como vidas de Supe
   reemplaza una respuesta ya recibida por una respuesta nula.
 - **Nivel activo interrumpido:** el servidor cierra el intervalo y reconstruye la resolución desde
   la recepción y los eventos privados del formato. Para una respuesta nula de Pirámide, el evaluador
-  devuelve `unanswered` con cero puntos, incluso antes de agotar el plazo. Una resolución no correcta
+  devuelve `unanswered` con cero puntos, salvo el crédito al vencer cuando está activo para el
+  formato. Una resolución no correcta
   impide continuar y cierra el ascenso como `completed` / `failed`.
 - **Abandono explícito:** termina como `abandoned`, no reanuda y no concede otro intento oficial.
   Cerrar una pestaña por sí solo no demuestra abandono; la inactividad se reconcilia en servidor.

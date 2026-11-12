@@ -211,7 +211,14 @@ begin
     raise exception 'interaction_not_presented' using errcode = '55000';
   end if;
   instant := clock_timestamp();
-  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial') and instant >= a.deadline_at then
+  if exists (
+    select 1 from private.challenge_versions cv
+    where cv.id = a.challenge_version_id
+      and (cv.mode = 'time-trial' and instant >= a.deadline_at
+        or cv.mode = 'pyramid' and cv.mode_config->'queensTimeoutPartialCredit' = 'true'::jsonb
+          and exists (select 1 from private.attempt_timing_units timing
+            where timing.id = segment.timing_unit_id and instant >= timing.deadline_at))
+  ) then
     raise exception 'deadline_reached' using errcode = '55000';
   end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
@@ -241,7 +248,8 @@ begin
     raise exception 'queens_answer_overflow' using errcode = '22023';
   end if;
   update public.attempts
-    set progress_payload = jsonb_build_object('kind', 'queens', 'challengeItemId', item.id, 'queens', to_jsonb(normalized)),
+    set progress_payload = jsonb_build_object('kind', 'queens', 'challengeItemId', item.id,
+          'queens', to_jsonb(normalized), 'savedAt', instant),
         lock_version = lock_version + 1, last_activity_at = instant
     where id = a.id returning * into a;
   progress := private.queens_progress(a.id, item.id);
@@ -359,7 +367,14 @@ begin
   end if;
   if instant >= unit.deadline_at then raise exception 'deadline_reached' using errcode = '55000'; end if;
   instant := clock_timestamp();
-  if exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial') and instant >= a.deadline_at then
+  if exists (
+    select 1 from private.challenge_versions cv
+    where cv.id = a.challenge_version_id
+      and (cv.mode = 'time-trial' and instant >= a.deadline_at
+        or cv.mode = 'pyramid' and cv.mode_config->'queensTimeoutPartialCredit' = 'true'::jsonb
+          and exists (select 1 from private.attempt_timing_units timing
+            where timing.id = segment.timing_unit_id and instant >= timing.deadline_at))
+  ) then
     raise exception 'deadline_reached' using errcode = '55000';
   end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
@@ -403,7 +418,8 @@ begin
   cross join jsonb_array_elements_text(qs.solution_payload->'solution') value
   where qs.question_version_id = question.id;
   update public.attempts
-    set progress_payload = jsonb_build_object('kind', 'queens', 'challengeItemId', item.id, 'queens', to_jsonb(normalized)),
+    set progress_payload = jsonb_build_object('kind', 'queens', 'challengeItemId', item.id,
+          'queens', to_jsonb(normalized), 'savedAt', instant),
         lock_version = lock_version + 1, last_activity_at = instant
     where id = a.id;
   progress := private.queens_progress(a.id, item.id);

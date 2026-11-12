@@ -1,3 +1,7 @@
+import {
+  PYRAMID_PARTIAL_CREDIT_KEYS,
+  type PyramidPartialCreditFormat,
+} from "@/lib/gameplay/pyramidPartialCredit";
 import { sessionValidationContext } from "@/features/game/session/sessionResult";
 import { test, expect, type BrowserContext, type APIRequestContext } from "@playwright/test";
 import { readFileSync } from "node:fs";
@@ -27,6 +31,8 @@ import {
 
 type CaseIds = {
   publicationId: string;
+  roomSlug: string;
+  timeLimitMs?: number;
   seasonId: string;
   challengeVersionId: string;
   itemIds: string[];
@@ -132,6 +138,7 @@ class Pair {
     readonly example: SessionCase,
     readonly ids: CaseIds,
     api: APIRequestContext,
+    readonly partialCreditFormat?: PyramidPartialCreditFormat,
   ) {
     const definition = this.definition;
     this.local = new SessionDriver(
@@ -150,11 +157,20 @@ class Pair {
     );
   }
   get definition() {
-    return definitionFor(this.example, {
+    const definition = definitionFor(this.example, {
       challengeId: this.ids.publicationId,
       itemIds: this.ids.itemIds,
       questionIds: this.ids.questionIds,
+      duration: this.ids.timeLimitMs,
     });
+    if (!this.partialCreditFormat) return definition;
+    return {
+      ...definition,
+      challenge: {
+        ...definition.challenge,
+        [PYRAMID_PARTIAL_CREDIT_KEYS[this.partialCreditFormat]]: true,
+      },
+    };
   }
   async issue(operation: GameSessionOperation, data: object = {}, index = 0) {
     const remoteCommand = this.remote.command(operation, data, index);
@@ -656,3 +672,150 @@ test("Word Hashtag: legal reversible moves exhaust the authoritative move budget
   expect(confirmed(final!).state).toMatchObject({ points: 0, movesRemaining: 0 });
   await pair.issue("complete");
 });
+
+for (const format of ["word-search", "queens"] as const) {
+  test(`${format} opt-in timeout credit survives reload and reaches the ranking`, async () => {
+    test.setTimeout(90_000);
+    const example = sessionCases.find((row) => row.document.type === format)!;
+    const ids = fixture().data.cases[`${format}-timeout-credit`]!;
+    const context = contexts.get("alice")!;
+    const pair = new Pair(example, ids, context.request, format);
+    await pair.begin();
+    await pair.open();
+    const question = resolvedFor(pair.definition);
+    const points = format === "queens" ? 8 : 7;
+    if (question.type === "queens") {
+      await pair.issue("queensDraft", { queens: question.solution.slice(0, 4) });
+    } else {
+      await pair.issue("wordSearchSelection", { startCell: 0, endCell: 3 });
+    }
+    await new Promise((resolve) =>
+      setTimeout(resolve, Math.max(0, pair.anchor + ids.timeLimitMs! - Date.now() + 75)),
+    );
+    const scored = (await pair.issue("answer", { answer: null })).remote;
+    expect(scored).toMatchObject({
+      kind: "accepted",
+      state: { status: "partial", points, details: { timeoutPartialCredit: true } },
+    });
+    expect((await pair.issue("prepare")).remote).toMatchObject({
+      kind: "rejected",
+      code: "pyramid_level_failed",
+    });
+    expect((await pair.issue("complete")).remote).toMatchObject({
+      effect: "completed",
+      state: { score: points },
+    });
+
+    const page = await context.newPage();
+    try {
+      const resultUrl = `${origin}/desafios/${ids.publicationId}?roomId=${ids.roomSlug}`;
+      await page.goto(resultUrl);
+      await expect(page.getByText(`+${points} puntos en Nivel 1`)).toBeVisible();
+      await page.reload();
+      await page.getByRole("button", { name: "Ver respuestas" }).click();
+      await expect(page.getByText("0 de 7 superados")).toBeVisible();
+      await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(6);
+      await page.locator("details").first().locator("summary").click();
+      if (format === "word-search") {
+        await expect(
+          page
+            .getByRole("list", { name: "Resultado de las palabras objetivo" })
+            .getByText("encontrada", { exact: true }),
+        ).toHaveCount(1);
+      } else {
+        await expect(page.getByText("Acertaste 3 de 5 coronas por colocar.")).toBeVisible();
+      }
+      await page.goto(`${origin}/salas/${ids.roomSlug}/ranking`);
+      const playerRow = page.getByRole("listitem").filter({
+        has: page.getByRole("img", { name: "Conformidad alice", exact: true }),
+      });
+      await expect(playerRow.getByRole("img", { name: `${points} Flash Points` })).toBeVisible();
+    } finally {
+      await page.close();
+    }
+  });
+}
+
+for (const scenario of [
+  {
+    format: "matching",
+    answer: { l1: "r1", l2: "r3", l3: "r2" },
+    points: 4,
+    source: "submission",
+    reviewText: "Tercero",
+  },
+  {
+    format: "classification",
+    answer: { Brújula: "útil en 1890" },
+    points: 7,
+    source: "timeout",
+    reviewText: "Sin respuesta",
+  },
+  {
+    format: "ordering",
+    answer: ["Denver", "San Diego", "Nueva York"],
+    points: 4,
+    source: "timeout",
+    reviewText: "1 de 3 elementos en su posición correcta.",
+  },
+] as const) {
+  const { format, answer, points, source, reviewText } = scenario;
+  test(`${format} opt-in draft credit survives reload and reaches the ranking`, async () => {
+    test.setTimeout(90_000);
+    const example = sessionCases.find((row) => row.document.type === format)!;
+    const ids = fixture().data.cases[`${format}-timeout-credit`]!;
+    const context = contexts.get("alice")!;
+    const pair = new Pair(example, ids, context.request, format);
+    await pair.begin();
+    await pair.open();
+    if (source === "timeout") {
+      const draft = (await pair.issue("pyramidDraft", { answer })).remote;
+      expect(draft).toMatchObject({
+        kind: "accepted",
+        effect: "progress",
+        state: { reviewState: { type: format, answer } },
+      });
+      await new Promise((resolve) =>
+        setTimeout(resolve, Math.max(0, pair.anchor + ids.timeLimitMs! - Date.now() + 75)),
+      );
+    }
+    const scored = (await pair.issue("answer", { answer: source === "submission" ? answer : null }))
+      .remote;
+    expect(scored).toMatchObject({
+      kind: "accepted",
+      state: { status: "partial", points, details: { pyramidPartialCredit: source } },
+    });
+    expect((await pair.issue("prepare")).remote).toMatchObject({
+      kind: "rejected",
+      code: "pyramid_level_failed",
+    });
+    expect((await pair.issue("complete")).remote).toMatchObject({
+      effect: "completed",
+      state: { score: points },
+    });
+
+    const page = await context.newPage();
+    try {
+      await page.goto(`${origin}/desafios/${ids.publicationId}?roomId=${ids.roomSlug}`);
+      await expect(page.getByText(`+${points} puntos en Nivel 1`)).toBeVisible();
+      await page.reload();
+      await page.getByRole("button", { name: "Ver respuestas" }).click();
+      await expect(page.getByText("0 de 7 superados")).toBeVisible();
+      await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(6);
+      const review = page.locator("details").first();
+      await review.locator("summary").click();
+      await expect(review.getByText(reviewText, { exact: true }).first()).toBeVisible();
+      await page.goto(`${origin}/salas/${ids.roomSlug}`);
+      await expect(
+        page.getByLabel(new RegExp(`Conformidad alice, ${points} Flash Points`)).first(),
+      ).toBeVisible();
+      await page.goto(`${origin}/salas/${ids.roomSlug}/ranking`);
+      const playerRow = page.getByRole("listitem").filter({
+        has: page.getByRole("img", { name: "Conformidad alice", exact: true }),
+      });
+      await expect(playerRow.getByRole("img", { name: `${points} Flash Points` })).toBeVisible();
+    } finally {
+      await page.close();
+    }
+  });
+}

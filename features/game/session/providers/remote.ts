@@ -1,3 +1,4 @@
+import { hasAccreditedPartialCredit } from "@/lib/gameplay/pyramidPartialCredit";
 import type { GameMode } from "@/types/domain/content";
 import { resultDetails } from "@/lib/competitiveResponseContract";
 import { checkedTimeTrial } from "@/lib/competitiveResponseContract";
@@ -72,7 +73,7 @@ function answers(value: unknown, allowOmittedNullAnswers: boolean): AnswerResult
         status === "correct" ||
         (status === "partial" &&
           (row.reviewState as AnswerResult["reviewState"])?.type !== "queens" &&
-          !(details?.type === "connect-pairs" && details.timeoutPartialCredit)),
+          !hasAccreditedPartialCredit(details)),
       points: row.points as number,
       timeUsed: (row.timeUsedMs as number) / 1000,
       ...(details ? { details } : {}),

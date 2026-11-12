@@ -1,3 +1,4 @@
+import { hasAccreditedPartialCredit } from "@/lib/gameplay/pyramidPartialCredit";
 import type { AnswerValue } from "@/types/contracts";
 import type { AnswerResult } from "@/types/gameplay/result";
 import type {
@@ -67,9 +68,11 @@ export function evaluated(
     question,
     result: {
       questionId: question.id,
-      answer,
+      answer: response.timedOut && response.reviewState ? null : answer,
       status,
-      isCorrect: status === "correct" || status === "partial",
+      isCorrect:
+        status === "correct" ||
+        (status === "partial" && !hasAccreditedPartialCredit(response.details)),
       points: response.points,
       timeUsed: response.timeUsedMs / 1000,
       ...(response.details ? { details: response.details as AnswerResult["details"] } : {}),

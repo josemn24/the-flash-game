@@ -1,3 +1,4 @@
+import { isDraftCommand } from "../core/checkpoints";
 import type { CommandOrigin } from "../core/runtime";
 import type { Operation, SessionState } from "../core/sessionReducer";
 
@@ -80,8 +81,7 @@ export const timeTrialFinalization: FinalizationPolicy = {
     if (
       checkpoint === "after-after" &&
       (origin === "takeover" || (operation !== "complete" && operation !== "recover")) &&
-      operation !== "queensDraft" &&
-      operation !== "connectPairsDraft" &&
+      !isDraftCommand(operation) &&
       requested
     )
       return { type: "finalize" };

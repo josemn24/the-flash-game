@@ -1931,6 +1931,71 @@ describe("superseded checkpoint ownership", () => {
     expect(calls.connectPairsDraft).toHaveBeenCalledTimes(3);
   });
 
+  it("checkpoints an Ordering edit and sends no unsaved order at expiry", async () => {
+    const challenge: ServerPyramidChallenge = {
+      ...base,
+      mode: "pyramid",
+      orderingPartialCredit: true,
+      attemptVersion: 1,
+      availableFrom: "",
+      availableUntil: "",
+      levels: [
+        {
+          ...slot("a"),
+          questionType: "ordering",
+          levelId: "level",
+          label: "Nivel",
+          briefing: { title: "", format: "", description: "" },
+        },
+      ],
+    };
+    const { engine, calls } = setup(challenge);
+    calls.prepare.mockResolvedValue({
+      ...prepared("a", 2, { question: "Ordena", items: ["A", "B", "C"] }),
+      presentedAt: null,
+      deadlineAt: null,
+    });
+    calls.activate.mockResolvedValue(prepared("a", 3));
+    const draft = deferred<Record<string, unknown>>();
+    const saved = ["B", "A", "C"];
+    calls.pyramidDraft.mockImplementation(() => draft.promise);
+    calls.answer.mockResolvedValue({
+      ...accepted(5, "partial"),
+      points: 3,
+      timedOut: true,
+      details: {
+        type: "ordering",
+        correctItems: 1,
+        totalItems: 3,
+        pyramidPartialCredit: "timeout",
+      },
+      reviewState: { type: "ordering", answer: saved },
+    });
+    await play(engine);
+    await engine.lifecycle.activate();
+    expect(calls.pyramidDraft).not.toHaveBeenCalled();
+    engine.interactions.updateDraft(saved);
+    await vi.advanceTimersByTimeAsync(300);
+    expect(calls.pyramidDraft).toHaveBeenCalledWith(expect.objectContaining({ answer: saved }));
+    engine.interactions.updateDraft(["B", "C", "A"]);
+    vi.setSystemTime(Date.parse("2026-10-02T10:01:00Z"));
+    await engine.interactions.onTimeUp();
+    expect(calls.answer).toHaveBeenCalledWith(expect.objectContaining({ answer: null }));
+    expect(engine.getSnapshot().results).toEqual([
+      expect.objectContaining({
+        status: "partial",
+        isCorrect: false,
+        points: 3,
+        reviewState: { type: "ordering", answer: saved },
+      }),
+    ]);
+    draft.resolve({ lockVersion: 4, reviewState: { type: "ordering", answer: saved } });
+    await vi.advanceTimersByTimeAsync(1200);
+    expect(calls.pyramidDraft).toHaveBeenCalledOnce();
+    expect(calls.prepare).toHaveBeenCalledOnce();
+    expect(calls.complete).toHaveBeenCalledOnce();
+  });
+
   it("keeps the current validation status timer when an older checkpoint finishes", async () => {
     const { engine, calls } = setup({
       ...flash,

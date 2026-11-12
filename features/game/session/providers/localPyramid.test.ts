@@ -20,6 +20,7 @@ import {
 } from "@/test-utils/game-session-conformance/driver";
 import type { LocalPyramidDefinition } from "@/types/gameplay/local-pyramid";
 import { compileDefinition } from "./localShared/definition";
+import { createMockFlashPopPyramidDemoDefinition } from "@/infrastructure/mock/localPyramidDefinition";
 
 function setup(test = sessionCases[0]!, definition: LocalPyramidDefinition = definitionFor(test)) {
   const clock = manualClock();
@@ -285,5 +286,403 @@ describe("local authority, replay and recovery", () => {
     ]);
     expect(first.kind).toBe("accepted");
     expect(second).toMatchObject({ kind: "rejected", code: "stale_version" });
+  });
+});
+
+describe("Cumbre lógica Conexiones at the deadline", () => {
+  async function atConexiones(enabled = true) {
+    const original = createMockFlashPopPyramidDemoDefinition();
+    const definition = {
+      ...original,
+      challenge: { ...original.challenge, connectPairsTimeoutPartialCredit: enabled },
+    };
+    const clock = manualClock();
+    const authority = createLocalPyramidSessionProvider({ definition, clock });
+    const driver = new SessionDriver(
+      authority,
+      definition.challenge.id,
+      definition.challenge.levels.map((slot) => slot.id),
+    );
+    const { levels } = compileDefinition(definition);
+    const index = levels.findIndex((level) => level.question.type === "connect-pairs");
+    const question = levels[index]?.question;
+    if (question?.type !== "connect-pairs") throw new Error("Expected Conexiones");
+    await driver.begin();
+    for (const [previousIndex, level] of levels.slice(0, index).entries()) {
+      await driver.open(previousIndex);
+      for (const action of correctActions(level.question)) {
+        await driver.action(action, previousIndex);
+      }
+    }
+    await driver.open(index);
+    const { a, b, c, d } = question.solutionPaths;
+    const partial = { a, b, c, d: d.slice(0, 2) };
+    return { clock, driver, partial, question, index };
+  }
+
+  it("credits four points, rejects a draft at the deadline, and ends the ascent", async () => {
+    const { clock, driver, partial, question, index } = await atConexiones();
+    await driver.issue("connectPairsDraft", { paths: partial }, index);
+    clock.advance(35000);
+    expect(
+      await driver.execute(
+        driver.command("connectPairsDraft", { paths: question.solutionPaths }, index),
+      ),
+    ).toMatchObject({ kind: "rejected", code: "deadline_reached" });
+    const timeout = driver.command("answer", { answer: { paths: question.solutionPaths } }, index);
+    const evaluation = await driver.execute(timeout);
+    expect(evaluation).toMatchObject({
+      kind: "accepted",
+      state: {
+        status: "partial",
+        points: 4,
+        details: {
+          timeoutPartialCredit: true,
+          connectedPairs: 3,
+          totalPairs: 6,
+          coveredCells: 11,
+          totalCells: 36,
+        },
+        reviewState: { type: "connect-pairs", paths: partial },
+      },
+    });
+    expect(await driver.execute(timeout)).toEqual(evaluation);
+    expect(await driver.execute(driver.command("prepare"))).toMatchObject({
+      kind: "rejected",
+      code: "pyramid_level_failed",
+    });
+    const completed = await driver.issue("complete");
+    expect(completed.state.score).toBe(89);
+    expect(completed.state.answers?.at(-1)).toMatchObject({
+      status: "partial",
+      isCorrect: false,
+      points: 4,
+    });
+    expect(completed.state.answers).toHaveLength(7);
+  });
+
+  it.each(["empty", "open", "disabled", "interrupted"] as const)(
+    "awards zero for a %s checkpoint",
+    async (scenario) => {
+      const { clock, driver, partial, index } = await atConexiones(scenario !== "disabled");
+      const paths = scenario === "empty" ? {} : scenario === "open" ? { d: partial.d } : partial;
+      await driver.issue("connectPairsDraft", { paths }, index);
+      clock.advance(scenario === "interrupted" ? 1 : 35000);
+      const recovered = await driver.issue("recover");
+      expect(recovered.state.score).toBe(85);
+      expect(recovered.state.answers?.at(-1)).toMatchObject({ points: 0, status: "unanswered" });
+    },
+  );
+
+  it("recovers a solved checkpoint with normal speed points and completes the ascent", async () => {
+    const { clock, driver, question, index } = await atConexiones();
+    clock.advance(17500);
+    await driver.issue("connectPairsDraft", { paths: question.solutionPaths }, index);
+    clock.advance(17500);
+    const recovered = await driver.issue("recover");
+    expect(recovered).toMatchObject({
+      effect: "completed",
+      state: { phase: "results", score: 97 },
+    });
+    expect(recovered.state.answers).toHaveLength(7);
+    expect(recovered.state.answers?.at(-1)).toMatchObject({ status: "correct", points: 12 });
+    expect(await driver.execute(driver.command("prepare"))).toMatchObject({
+      kind: "rejected",
+      code: "attempt_terminal",
+    });
+  });
+
+  it("gives priority to a timely final answer over a partial draft during recovery", async () => {
+    const { clock, driver, partial, question, index } = await atConexiones();
+    await driver.issue("connectPairsDraft", { paths: partial }, index);
+    clock.advance(17500);
+    const command = driver.command("answer", { answer: { paths: question.solutionPaths } }, index);
+    const controller = new AbortController();
+    const pending = driver.execute(command, controller.signal);
+    await Promise.resolve();
+    controller.abort();
+    expect(await pending).toMatchObject({ kind: "uncertain", code: "request_cancelled" });
+    await driver.issue("start");
+    clock.advance(17500);
+    const recovered = await driver.issue("recover");
+    expect(recovered).toMatchObject({
+      effect: "completed",
+      state: { phase: "results", score: 97 },
+    });
+    expect(recovered.state.answers).toHaveLength(7);
+    expect(recovered.state.answers?.at(-1)).toMatchObject({ status: "correct", points: 12 });
+  });
+});
+
+describe("versioned Word Search and Queens timeout credit", () => {
+  async function openPartialLevel(format: "word-search" | "queens", enabled = true) {
+    const example = sessionCases.find((row) => row.document.type === format)!;
+    const original = definitionFor(example);
+    const definition = {
+      ...original,
+      challenge: {
+        ...original.challenge,
+        [format === "queens" ? "queensTimeoutPartialCredit" : "wordSearchTimeoutPartialCredit"]:
+          enabled,
+      },
+    };
+    const { driver, clock } = setup(example, definition);
+    const question = resolvedFor(definition);
+    await driver.begin();
+    await driver.open();
+    return { driver, clock, question };
+  }
+
+  it("credits only confirmed distinct words on expiry and keeps them in review", async () => {
+    const { driver, clock } = await openPartialLevel("word-search");
+    await driver.issue("wordSearchSelection", { startCell: 0, endCell: 4 });
+    await driver.issue("wordSearchSelection", { startCell: 0, endCell: 3 });
+    expect(
+      await driver.execute(driver.command("wordSearchSelection", { startCell: 3, endCell: 0 })),
+    ).toMatchObject({ code: "word_search_target_already_found" });
+    clock.advance(90_000);
+    const command = driver.command("recover");
+    const result = await driver.execute(command);
+    expect(result).toMatchObject({
+      effect: "completed",
+      state: {
+        score: 7,
+        answers: [
+          {
+            status: "partial",
+            points: 7,
+            isCorrect: false,
+            reviewState: { type: "word-search", foundWordIds: ["casa"] },
+            details: { timeoutPartialCredit: true, incorrectSelections: 1 },
+          },
+        ],
+      },
+    });
+    expect(await driver.execute(command)).toEqual(result);
+  });
+
+  it.each([true, false])(
+    "uses the version rule for a partially solved Queens board (enabled %s)",
+    async (enabled) => {
+      const { driver, clock, question } = await openPartialLevel("queens", enabled);
+      if (question.type !== "queens") throw new Error("Expected Queens");
+      await driver.issue("queensDraft", { queens: question.solution.slice(0, 4) });
+      clock.advance(90_000);
+      if (enabled) {
+        expect(
+          await driver.execute(driver.command("queensDraft", { queens: question.solution })),
+        ).toMatchObject({ code: "deadline_reached" });
+      }
+      const evaluation = await driver.issue("answer", { answer: null });
+      expect(evaluation.state).toMatchObject({ points: enabled ? 8 : 0 });
+      if (enabled) {
+        expect(evaluation.state).toMatchObject({
+          status: "partial",
+          details: { timeoutPartialCredit: true, correctPlacements: 3, requiredPlacements: 5 },
+        });
+      }
+      expect(await driver.execute(driver.command("prepare"))).toMatchObject({
+        code: "pyramid_level_failed",
+      });
+    },
+  );
+
+  it.each([true, false])(
+    "recognizes a saved full Queens board only after expiry (expired %s)",
+    async (expired) => {
+      const { driver, clock, question } = await openPartialLevel("queens");
+      if (question.type !== "queens") throw new Error("Expected Queens");
+      const incorrectBoard = [...question.solution.slice(0, -1), 34];
+      await driver.issue("queensValidation", { queens: incorrectBoard });
+      clock.advance(45_000);
+      await driver.issue("queensDraft", { queens: question.solution });
+      clock.advance(expired ? 45_000 : 100);
+      const recovered = await driver.issue("recover");
+      expect(recovered.state.answers?.[0]).toMatchObject({
+        status: expired ? "correct" : "unanswered",
+        points: expired ? 10 : 0,
+        reviewState: { type: "queens", queens: question.solution },
+      });
+      if (expired)
+        expect((await driver.issue("prepare")).state.challengeItemId).toBe(driver.itemIds[1]);
+      else expect(recovered.effect).toBe("completed");
+    },
+  );
+  it("recognizes an explicitly saved complete board with all Queens fixed", async () => {
+    const example = sessionCases.find((row) => row.document.type === "queens")!;
+    const original = definitionFor(example);
+    const [first, ...rest] = original.levels;
+    const question = resolvedFor(original);
+    if (question.type !== "queens" || first?.publicQuestion.type !== "queens")
+      throw new Error("Expected Queens");
+    const { clock, driver } = setup(example, {
+      challenge: { ...original.challenge, queensTimeoutPartialCredit: true },
+      levels: [
+        {
+          ...first,
+          publicQuestion: {
+            ...first.publicQuestion,
+            payload: { ...first.publicQuestion.payload, prefilledQueens: question.solution },
+          },
+        },
+        ...rest,
+      ],
+    });
+    await driver.begin();
+    await driver.open();
+    await driver.issue("queensDraft", { queens: [] });
+    clock.advance(90_000);
+    expect((await driver.issue("answer", { answer: null })).state).toMatchObject({
+      status: "correct",
+      points: 14,
+      reviewState: { type: "queens", queens: question.solution },
+    });
+  });
+});
+
+describe("Pyramid credit for matching, classification and ordering", () => {
+  const cases = [
+    {
+      format: "matching",
+      key: "matchingPartialCredit",
+      draft: { l1: "r1" },
+      submission: { l1: "r1", l2: "r3", l3: "r2" },
+      zeroAnswer: { l1: "r2", l2: "r3", l3: "r1" },
+      solved: { l1: "r1", l2: "r2", l3: "r3" },
+      points: 4,
+    },
+    {
+      format: "classification",
+      key: "classificationPartialCredit",
+      draft: { Brújula: "útil en 1890" },
+      submission: { Brújula: "útil en 1890", "Navegador GPS": "útil en 1890" },
+      zeroAnswer: { Brújula: "anacrónico", "Navegador GPS": "útil en 1890" },
+      solved: { Brújula: "útil en 1890", "Navegador GPS": "anacrónico" },
+      points: 7,
+    },
+    {
+      format: "ordering",
+      key: "orderingPartialCredit",
+      draft: ["Denver", "San Diego", "Nueva York"],
+      submission: ["Nueva York", "Denver", "San Diego"],
+      zeroAnswer: ["Denver", "Nueva York", "San Diego"],
+      solved: ["San Diego", "Denver", "Nueva York"],
+      points: 4,
+    },
+  ] as const;
+
+  async function open(test: (typeof cases)[number], enabled = true) {
+    const example = sessionCases.find((row) => row.document.type === test.format)!;
+    const definition = definitionFor(example, { duration: 10_000 });
+    const { clock, driver } = setup(example, {
+      ...definition,
+      challenge: { ...definition.challenge, ...(enabled ? { [test.key]: true } : {}) },
+    });
+    await driver.begin();
+    await driver.open();
+    return { clock, driver };
+  }
+
+  it.each(cases)("scores a final $format answer ahead of a solved draft", async (test) => {
+    const { driver } = await open(test);
+    const originalAnswer = driver.command("answer", { answer: test.submission });
+    await driver.issue("pyramidDraft", { answer: test.solved });
+    const result = await driver.execute(originalAnswer);
+    expect(result).toMatchObject({
+      effect: "evaluated",
+      state: {
+        status: "partial",
+        points: test.points,
+        details: { pyramidPartialCredit: "submission" },
+      },
+    });
+    expect(await driver.execute(originalAnswer)).toEqual(result);
+    expect(await driver.execute(driver.command("prepare"))).toMatchObject({
+      code: "pyramid_level_failed",
+    });
+    const completed = await driver.issue("complete");
+    expect(completed.state).toMatchObject({
+      score: test.points,
+      answers: [{ status: "partial", isCorrect: false, answer: test.submission }],
+    });
+  });
+
+  it.each(cases)("recovers the accepted $format draft after expiry", async (test) => {
+    const { clock, driver } = await open(test);
+    await driver.issue("pyramidDraft", { answer: test.draft });
+    clock.advance(10_000);
+    expect(
+      await driver.execute(driver.command("pyramidDraft", { answer: test.solved })),
+    ).toMatchObject({
+      code: "deadline_reached",
+    });
+    const command = driver.command("recover");
+    const result = await driver.execute(command);
+    expect(result).toMatchObject({
+      effect: "completed",
+      state: {
+        score: test.points,
+        answers: [
+          {
+            status: "partial",
+            isCorrect: false,
+            answer: null,
+            reviewState: { type: test.format, answer: test.draft },
+            details: { pyramidPartialCredit: "timeout" },
+          },
+        ],
+      },
+    });
+    expect(await driver.execute(command)).toEqual(result);
+  });
+
+  it.each(cases)("uses the $format save time for a solved draft", async (test) => {
+    const { clock, driver } = await open(test);
+    clock.advance(2500);
+    await driver.issue("pyramidDraft", { answer: test.solved });
+    clock.advance(7500);
+    expect((await driver.issue("answer", { answer: null })).state).toMatchObject({
+      status: "correct",
+      points: 13,
+      reviewState: { type: test.format, answer: test.solved },
+    });
+    expect((await driver.issue("prepare")).state.challengeItemId).toBe(driver.itemIds[1]);
+  });
+
+  it.each(cases)("keeps $format partials disabled by default", async (test) => {
+    const { driver } = await open(test, false);
+    expect(
+      await driver.execute(driver.command("pyramidDraft", { answer: test.draft })),
+    ).toMatchObject({
+      code: "invalid_command",
+    });
+    expect((await driver.issue("answer", { answer: test.submission })).state.points).toBe(0);
+  });
+
+  it.each(cases)("awards zero when $format has no correct elements", async (test) => {
+    for (const timedOut of [false, true]) {
+      const { driver, clock } = await open(test);
+      if (timedOut) {
+        await driver.issue("pyramidDraft", { answer: test.zeroAnswer });
+        clock.advance(10_000);
+      }
+      expect(
+        (await driver.issue("answer", { answer: timedOut ? null : test.zeroAnswer })).state,
+      ).toMatchObject({ status: timedOut ? "unanswered" : "incorrect", points: 0 });
+      expect(await driver.execute(driver.command("prepare"))).toMatchObject({
+        code: "pyramid_level_failed",
+      });
+      expect((await driver.issue("complete")).state.score).toBe(0);
+    }
+  });
+
+  it("awards zero for an unedited order or an early interruption", async () => {
+    const test = cases[2];
+    const untouched = await open(test);
+    untouched.clock.advance(10_000);
+    expect((await untouched.driver.issue("recover")).state.score).toBe(0);
+    const interrupted = await open(test);
+    await interrupted.driver.issue("pyramidDraft", { answer: test.solved });
+    expect((await interrupted.driver.issue("recover")).state.score).toBe(0);
   });
 });

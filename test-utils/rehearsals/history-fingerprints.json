@@ -2063,5 +2063,10 @@
     "id": "bank-historia-tratado-tordesillas",
     "version": 1,
     "contentHash": "8dbd1413067459d03dec12701fc11cc3f25fa56d234983d71bf801456dd00ce2"
+  },
+  {
+    "id": "bank-parejas-cumbre-anterior",
+    "version": 1,
+    "contentHash": "9c61a3725279c1026a33f83950123ab4e9956646d91879479a2823bc0f993bba"
   }
 ]

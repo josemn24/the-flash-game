@@ -93,9 +93,15 @@ begin
           join private.question_versions question on question.id = item.question_version_id
           where ix.attempt_id = a.id and ix.ended_at is null
             and ix.challenge_item_id = (input->>'challengeItemId')::uuid
-            and question.type = 'connect-pairs'
-            and received < unit.deadline_at
-            and (cv.mode <> 'time-trial' or received < a.deadline_at)
+            and (
+              (question.type = 'connect-pairs' and received < unit.deadline_at
+                and (cv.mode <> 'time-trial' or received < a.deadline_at))
+              or (cv.mode = 'pyramid' and private.pyramid_draft_enabled(cv.mode_config, question.type)
+                and a.progress_payload->>'kind' = 'pyramid-draft'
+                and a.progress_payload->>'challengeItemId' = ix.challenge_item_id::text
+                and (a.progress_payload->>'baseRevision')::bigint = expected
+                and a.lock_version = expected + 1)
+            )
         )) or
         (op = 'complete' and cv.mode = 'time-trial' and a.deadline_at is not null
           and received >= a.deadline_at

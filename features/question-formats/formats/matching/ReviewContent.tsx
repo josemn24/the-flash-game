@@ -1,6 +1,7 @@
 import { CheckIcon, CrossIcon } from "@/components/ui";
 import styles from "@/components/game/shared/ReviewAnswers.module.css";
 import { isMatchingAnswer } from "@/lib/scoring";
+import { isPyramidDraftAnswer } from "@/lib/gameplay/pyramidPartialCredit";
 import type { PracticeQuestionOfType } from "@/types/gameplay/practice";
 import type { ReviewProps } from "../../rendererTypes";
 
@@ -8,7 +9,12 @@ export function ReviewContent({
   question,
   result,
 }: ReviewProps<PracticeQuestionOfType<"matching">>) {
-  const answer = isMatchingAnswer(result.answer) ? result.answer : null;
+  const snapshot =
+    result.reviewState?.type === "matching" ? result.reviewState.answer : result.answer;
+  const answer =
+    isMatchingAnswer(snapshot) || (isPyramidDraftAnswer(snapshot) && !Array.isArray(snapshot))
+      ? snapshot
+      : null;
   return (
     <div className={styles.classificationReviewList}>
       {question.leftItems.map((item) => {

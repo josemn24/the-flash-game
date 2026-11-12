@@ -15,7 +15,7 @@ dificultad `easy | medium | hard`, tiempo de referencia y los contratos canónic
 solución. La letra es explícita para Alfabeto. Las familias permiten evitar variantes muy parecidas.
 Las dimensiones y parámetros mecánicos se derivan del contenido.
 
-El banco actual contiene 412 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
+El banco actual contiene 413 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
 letra y dificultad; la ampliación incorpora 130 ejercicios sin modificar las preguntas ni recetas
 históricas. La prueba conserva las letras y su orden oficial, y cada entrada recibe una nueva
 semilla. La variedad se aplica entre alternativas de la dificultad solicitada; no hay exclusión
@@ -28,10 +28,10 @@ y dos medias. Las preguntas admiten Flash, Supervivencia y Pirámide.
 Emparejar dispone de doce preguntas: dos fáciles, nueve medias y una difícil, en siete familias.
 La tanda de historia añade una media que relaciona monumentos con sus civilizaciones o contextos.
 
-Conectar parejas ofrece diez tableros: tres fáciles, cuatro medios y tres difíciles. Se han añadido
-dos fáciles de 4×4 y dos medios de 5×5, con recorridos completos sin cruces, una única solución y
+Conectar parejas ofrece once tableros: tres fáciles, cinco medios y tres difíciles. Se han añadido
+dos fáciles de 4×4 y tres medios de 5×5, con recorridos completos sin cruces, una única solución y
 distribuciones nuevas. La referencia actual de siete posiciones medias conserva una asignación
-completa: utiliza los cuatro medios y tres fáciles, y notifica las tres sustituciones en
+completa: utiliza los cinco medios y dos fáciles, y notifica las dos sustituciones en
 `difficultyFallbacks`. Al agotar esas alternativas, distintas semillas pueden variar su orden.
 
 Queens ofrece once tableros: tres fáciles, cinco medios y tres difíciles. La ampliación añade

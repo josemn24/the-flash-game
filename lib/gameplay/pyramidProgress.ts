@@ -1,3 +1,4 @@
+import { hasAccreditedPartialCredit } from "./pyramidPartialCredit";
 import type { PyramidAttemptOutcome } from "@/types/domain/attempt";
 import type { AnswerResult } from "@/types/gameplay";
 
@@ -15,7 +16,8 @@ export function isPyramidLevelPassed(result: Pick<AnswerResult, "status" | "isCo
 }
 
 export function normalizePyramidResult(result: AnswerResult): AnswerResult {
-  return isPyramidLevelPassed(result) ? result : { ...result, points: 0 };
+  const earnedPartial = result.status === "partial" && hasAccreditedPartialCredit(result.details);
+  return isPyramidLevelPassed(result) || earnedPartial ? result : { ...result, points: 0 };
 }
 
 /** Rebuilds official Pyramid progress from ordered, server-evaluated answers. */

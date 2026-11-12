@@ -16,7 +16,13 @@ export type AnswerResult = {
   reviewState?: ReviewState;
 };
 
-/** Review-only snapshot of an incomplete board captured by the server at closure. */
+/** Review-only snapshot of accepted progress captured at closure. */
 export type ReviewState =
   | { readonly type: "connect-pairs"; readonly paths: Readonly<Record<string, readonly number[]>> }
-  | { readonly type: "queens"; readonly queens: readonly number[] };
+  | { readonly type: "queens"; readonly queens: readonly number[] }
+  | { readonly type: "word-search"; readonly foundWordIds: readonly string[] }
+  | PyramidDraftReviewState;
+
+export type PyramidDraftReviewState =
+  | { readonly type: "matching" | "classification"; readonly answer: Record<string, string> }
+  | { readonly type: "ordering"; readonly answer: string[] };

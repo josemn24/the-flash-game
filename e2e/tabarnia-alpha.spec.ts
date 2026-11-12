@@ -1,5 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+import {
+  drawConexionesPaths,
+  reachConexiones,
+  reachOrden,
+  sevenPointPaths,
+} from "./support/cumbre-logica";
 import { dockerSql } from "../scripts/support/supabase-local.mjs";
 
 type Account = { email: string; password: string };
@@ -307,4 +313,97 @@ test.describe("Tabarnia alpha", () => {
       page.getByText(/Jesús salió de la ciudad y pasó la noche en Betania/),
     ).toBeVisible();
   });
+});
+
+test("Cumbre lógica recién instalada acredita los parciales de Orden y Conexiones", async ({
+  page,
+  browser,
+  baseURL,
+}) => {
+  test.skip(!process.env.SUPABASE_TEST_WORKDIR, "Requiere el stack desechable de E2E.");
+  test.setTimeout(120_000);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  const { data, users } = await fixture();
+  const publication = data.publications[4]!;
+  expect(publication.title).toBe("Cumbre lógica");
+  await dockerSql(`begin;
+    update public.scheduled_challenges
+      set status = 'cancelled', cancelled_at = clock_timestamp()
+      where season_id = '${data.seasonId}' and status = 'open';
+    update public.scheduled_challenges
+      set opens_at = clock_timestamp() + interval '200 milliseconds',
+          closes_at = clock_timestamp() + interval '1 hour'
+      where id = '${publication.id}';
+    select pg_sleep(0.3);
+    set local role service_role;
+    select private.run_calendar_tick_command('{"runId":"tabarnia-pyramid-credit-e2e"}'::jsonb);
+    commit;`);
+
+  const orderContext = await browser.newContext({ baseURL, reducedMotion: "reduce" });
+  const orderPage = await orderContext.newPage();
+  try {
+    await signIn(orderPage, users.ches);
+    await orderPage.goto(`/desafios/${publication.id}?roomId=${data.room.slug}`);
+    await orderPage.getByRole("button", { name: "Empezar desafío" }).click();
+    await reachOrden(orderPage);
+    for (const item of ["Río", "Mar", "Luna"]) {
+      await orderPage.getByRole("button", { name: `Mover ${item} arriba` }).click();
+    }
+    const answerResponse = orderPage.waitForResponse(
+      (response) =>
+        response.url().endsWith("/answer") &&
+        response.request().method() === "POST" &&
+        response.ok(),
+    );
+    await orderPage.getByRole("button", { name: "Confirmar orden" }).click();
+    expect(await (await answerResponse).json()).toMatchObject({
+      status: "partial",
+      points: 8,
+      details: {
+        type: "ordering",
+        correctItems: 3,
+        totalItems: 5,
+        pyramidPartialCredit: "submission",
+      },
+    });
+    await expect(orderPage.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
+    await orderPage.reload();
+    await expect(orderPage.getByText("+8 puntos en Orden")).toBeVisible();
+    await orderPage.getByRole("button", { name: "Ver respuestas" }).click();
+    await expect(orderPage.getByText("3 de 7 superados")).toBeVisible();
+    await expect(orderPage.getByText("No alcanzado", { exact: true })).toHaveCount(3);
+  } finally {
+    await orderContext.close();
+  }
+
+  await signIn(page, users.dark);
+  await page.goto(`/desafios/${publication.id}?roomId=${data.room.slug}`);
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
+  const board = await reachConexiones(page);
+  const completion = page.waitForResponse(
+    (response) =>
+      response.url().includes("/api/competitive/attempts/") &&
+      response.url().endsWith("/complete") &&
+      response.request().method() === "POST" &&
+      response.ok(),
+    { timeout: 45_000 },
+  );
+  await drawConexionesPaths(board, sevenPointPaths);
+  const completed = await (await completion).json();
+  expect(completed).toMatchObject({ outcome: "failed" });
+  expect(completed.score).toBeGreaterThan(7);
+  await expect(page.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
+  await expect(page.getByText("+7 puntos en Conexiones")).toBeVisible();
+  await page.reload();
+  await expect(page.getByText("+7 puntos en Conexiones")).toBeVisible();
+  await page.getByRole("button", { name: "Ver respuestas" }).click();
+  await expect(page.getByText("4 de 7 superados")).toBeVisible();
+  await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(2);
+
+  await dockerSql(`update public.scheduled_challenges set status = 'closed'
+    where id = '${publication.id}';`);
+  await page.goto(`/salas/${data.room.slug}/historial/${publication.id}`);
+  await expect(
+    page.getByLabel(new RegExp(`Dark, ${completed.score} Flash Points`)).first(),
+  ).toBeVisible();
 });

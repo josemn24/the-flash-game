@@ -124,6 +124,96 @@ describe("EditorialManagement", () => {
     expect(select).toContain('disabled=""');
     expect(select).toContain('<option value="hard" selected="">Difícil</option>');
   });
+  it("shows independent Pyramid credit controls with the configured formats selected", () => {
+    const formats = [
+      "connect-pairs",
+      "word-search",
+      "queens",
+      "matching",
+      "classification",
+      "ordering",
+    ] as const;
+    const questionLibrary = {
+      source: "supabase" as const,
+      total: formats.length,
+      page: 1,
+      pageSize: 50,
+      entries: formats.map((type, index) => ({
+        questionVersionId: `00000000-0000-4000-8000-00000000009${index}`,
+        questionDefinitionId: `definition-${index}`,
+        versionNumber: 1,
+        status: "published" as const,
+        slug: type,
+        type,
+        question: type,
+        category: null,
+        tags: {},
+        timeLimitMs: 15000,
+        createdAt: "2026-10-20",
+        updatedAt: "2026-10-20",
+        publishedAt: "2026-10-20",
+        versionCount: 1,
+        usageCount: 1,
+      })),
+    };
+    const draft: FlashEditorialDocument = {
+      challenge: {
+        ...document.challenge,
+        mode: "pyramid",
+        modeConfig: {
+          connectPairsTimeoutPartialCredit: true,
+          queensTimeoutPartialCredit: true,
+          matchingPartialCredit: true,
+          orderingPartialCredit: true,
+        },
+      },
+      questions: Array.from({ length: 7 }, (_, index) => {
+        const modeConfig = {
+          levelId: `level-${index}`,
+          label: `Nivel ${index + 1}`,
+          briefing: { title: "Prueba", format: "Formato", description: "Sube un nivel." },
+        };
+        const question = questionLibrary.entries[index];
+        return question
+          ? {
+              source: "library" as const,
+              questionVersionId: question.questionVersionId,
+              points: 10,
+              modeConfig,
+            }
+          : {
+              ...document.questions[0]!,
+              slug: `inline-${index}`,
+              points: index === 6 ? 40 : 10,
+              modeConfig,
+            };
+      }),
+    };
+    const markup = renderToStaticMarkup(
+      <EditorialManagement
+        context={{
+          source: "supabase",
+          entries: [{ ...entry("draft", "1"), mode: "pyramid", document: draft }],
+        }}
+        questionLibrary={questionLibrary}
+      />,
+    );
+    for (const [label, enabled, suffix] of [
+      ["Conectar parejas", true, "al agotar el tiempo"],
+      ["Sopa de letras", false, "al agotar el tiempo"],
+      ["Queens", true, "al agotar el tiempo"],
+      ["Emparejamiento", true, "al confirmar o agotar el tiempo"],
+      ["Clasificación", false, "al confirmar o agotar el tiempo"],
+      ["Ordenación", true, "al confirmar o agotar el tiempo"],
+    ] as const) {
+      const input = markup.match(
+        new RegExp(`(<input[^>]*>) Puntos parciales en ${label} ${suffix}`),
+      )?.[1];
+      expect(input).toContain('type="checkbox"');
+      expect(input?.includes('checked=""')).toBe(enabled);
+    }
+  });
+
   it("renders protected preview and publishing controls only for a draft", () => {
     const context: SuperadminEditorialContext = {
       entries: [entry("draft", "1"), entry("published", "2")],

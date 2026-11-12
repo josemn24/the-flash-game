@@ -12,6 +12,7 @@ import { testCalendarContract } from "./test-calendar-contract.mjs";
 import { testAttemptContinuationContract } from "./test-attempt-continuation-contract.mjs";
 import { testCheckpointContract } from "./test-checkpoint-contract.mjs";
 import { testStagingBootstrapSql } from "./test-staging-bootstrap-sql.mjs";
+import { testPyramidMigrationUpgrade } from "./test-pyramid-migration-upgrade.mjs";
 
 const container = process.env.SUPABASE_DB_CONTAINER ?? "supabase_db_the-flash-game";
 const sourceDirectory = process.argv.includes("--migrations")
@@ -43,6 +44,21 @@ function docker(args, input = "") {
 const sql = (input) =>
   docker(["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", database], input);
 let created = false;
+async function withContractDatabase(run) {
+  const contractDatabase = `flash_contract_${randomUUID().replaceAll("-", "")}`;
+  await docker(["createdb", "-U", "postgres", contractDatabase]);
+  try {
+    const contractSql = (input) =>
+      docker(
+        ["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", contractDatabase],
+        input,
+      );
+    await contractSql(await readFile("supabase/tests/support/bootstrap.sql", "utf8"));
+    await run(contractSql);
+  } finally {
+    await docker(["dropdb", "-U", "postgres", "--force", contractDatabase]);
+  }
+}
 try {
   await docker(["createdb", "-U", "postgres", database]);
   created = true;
@@ -91,21 +107,22 @@ try {
     testCheckpointContract,
     testAttemptContinuationContract,
   ]) {
-    const contractDatabase = `flash_contract_${randomUUID().replaceAll("-", "")}`;
-    await docker(["createdb", "-U", "postgres", contractDatabase]);
-    try {
-      const contractSql = (input) =>
-        docker(
-          ["psql", "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-U", "postgres", "-d", contractDatabase],
-          input,
-        );
-      await contractSql(await readFile("supabase/tests/support/bootstrap.sql", "utf8"));
+    await withContractDatabase(async (contractSql) => {
       await contractSql(`begin;\n${statements.join("\n")}\ncommit;`);
       await contract(contractSql);
       console.log(`${contract.name}: passed.`);
-    } finally {
-      await docker(["dropdb", "-U", "postgres", "--force", contractDatabase]);
-    }
+    });
+  }
+  if (sourceDirectory === "supabase/migrations") {
+    await withContractDatabase((contractSql) =>
+      testPyramidMigrationUpgrade(
+        contractSql,
+        files.map((name, index) => ({ name, source: statements[index] })),
+      ),
+    );
+    console.log(
+      "Pyramid upgrade preserved existing data; both v2 drafts were created through the portal command.",
+    );
   }
   console.log("Concurrent command tests passed (independent PostgreSQL connections).");
 } finally {

@@ -1,3 +1,4 @@
+import { isDraftCommand } from "./checkpoints";
 import { formatFailure } from "../formats/failure";
 import {
   GameSessionCommandError,
@@ -190,15 +191,10 @@ export class CompetitiveSessionEngine {
     step: CommandStep<K>,
   ): Promise<boolean> => {
     if (!this.active || this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
-    const draftItemId =
-      command.operation === "queensDraft" || command.operation === "connectPairsDraft"
-        ? (command.input as { challengeItemId: string }).challengeItemId
-        : null;
-    if (
-      this.snapshot.phase !== "playing" &&
-      (command.operation === "queensDraft" || command.operation === "connectPairsDraft")
-    )
-      return false;
+    const draftItemId = isDraftCommand(command.operation)
+      ? (command.input as { challengeItemId: string }).challengeItemId
+      : null;
+    if (this.snapshot.phase !== "playing" && isDraftCommand(command.operation)) return false;
     if (draftItemId !== null && this.snapshot.question?.id !== draftItemId) return false;
     const execution = this.execution(command);
     const { generation } = execution;
@@ -313,8 +309,7 @@ export class CompetitiveSessionEngine {
   ): Promise<boolean> => {
     if (!this.active || this.snapshot.lifecycleError?.recoveryAction === "refresh") return false;
     const pending = this.snapshot.pendingCommand;
-    if (pending && pending.operation !== "queensDraft" && pending.operation !== "connectPairsDraft")
-      return false;
+    if (pending && !isDraftCommand(pending.operation)) return false;
     // Retire every browser-side effect owned by the old checkpoint, including
     // its retry. A late finally must not clear a newer execution's state.
     const generation = ++this.generation;
@@ -421,8 +416,7 @@ export class CompetitiveSessionEngine {
       });
       return;
     }
-    const isCheckpoint =
-      command.operation === "queensDraft" || command.operation === "connectPairsDraft";
+    const isCheckpoint = isDraftCommand(command.operation);
     const checkpointFailure = error instanceof GameSessionCommandError ? error.failure : undefined;
     const retryFinalization =
       command.operation === "complete" &&

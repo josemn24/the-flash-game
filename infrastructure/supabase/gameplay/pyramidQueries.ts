@@ -23,6 +23,12 @@ type PyramidReadRow = Omit<
   challenge_mode: "pyramid";
   challenge_version_number: number;
   question_count: number;
+  connect_pairs_timeout_partial_credit?: boolean;
+  word_search_timeout_partial_credit?: boolean;
+  queens_timeout_partial_credit?: boolean;
+  matching_partial_credit?: boolean;
+  classification_partial_credit?: boolean;
+  ordering_partial_credit?: boolean;
   level_id: string;
   level_label: string;
   briefing_title: string;
@@ -38,6 +44,14 @@ function isPyramidReadRow(value: unknown): value is PyramidReadRow {
   }
   const row = value as Record<string, unknown>;
   return (
+    [
+      row.connect_pairs_timeout_partial_credit,
+      row.word_search_timeout_partial_credit,
+      row.queens_timeout_partial_credit,
+      row.matching_partial_credit,
+      row.classification_partial_credit,
+      row.ordering_partial_credit,
+    ].every((flag) => flag === undefined || typeof flag === "boolean") &&
     typeof row.challenge_version_number === "number" &&
     Number.isSafeInteger(row.challenge_version_number) &&
     row.challenge_version_number > 0 &&
@@ -138,6 +152,14 @@ export class SupabasePyramidQueries {
       description: first.challenge_description,
       mode: "pyramid",
       attemptVersion: first.challenge_version_number,
+      ...(first.connect_pairs_timeout_partial_credit
+        ? { connectPairsTimeoutPartialCredit: true }
+        : {}),
+      ...(first.word_search_timeout_partial_credit ? { wordSearchTimeoutPartialCredit: true } : {}),
+      ...(first.queens_timeout_partial_credit ? { queensTimeoutPartialCredit: true } : {}),
+      ...(first.matching_partial_credit ? { matchingPartialCredit: true } : {}),
+      ...(first.classification_partial_credit ? { classificationPartialCredit: true } : {}),
+      ...(first.ordering_partial_credit ? { orderingPartialCredit: true } : {}),
       availableFrom: first.publication_opens_at,
       availableUntil: first.publication_closes_at,
       levels: rows.map((row) => ({

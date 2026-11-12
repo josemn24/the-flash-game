@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { getMiniWordleDictionaryUrl } from "@/lib/miniWordleDictionary";
 import { updateSession } from "@/infrastructure/supabase/auth/proxy";
 import {
   AUTH_DEADLINE_HEADER,
@@ -11,7 +12,7 @@ import {
   isKnownDesignSystemPath,
 } from "@/features/design-system/access";
 import {
-  FLASH_POP_CHALLENGE_ID,
+  FLASH_POP_PREVIEW_CHALLENGE_IDS,
   FLASH_POP_ALPHABET_PILOT_ID,
   FLASH_POP_FLASH_PILOT_ID,
   FLASH_POP_SURVIVAL_PILOT_ID,
@@ -29,7 +30,12 @@ function clearAuthContextHeaders(headers: Headers) {
 
 function localCompetitiveDemoResponse(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  if (pathname === "/demo/flash-pop" || pathname === "/demo/flash-pop/") {
+  if (
+    pathname === "/demo/flash-pop" ||
+    pathname === "/demo/flash-pop/" ||
+    pathname === getMiniWordleDictionaryUrl(4) ||
+    pathname === getMiniWordleDictionaryUrl(5)
+  ) {
     const requestHeaders = new Headers(request.headers);
     clearAuthContextHeaders(requestHeaders);
     return NextResponse.next({ request: { headers: requestHeaders } });
@@ -38,7 +44,7 @@ function localCompetitiveDemoResponse(request: NextRequest) {
   const challengeId = pathname.slice(pyramidDemoPrefix.length).replace(/\/$/, "");
   if (
     ![
-      FLASH_POP_CHALLENGE_ID,
+      ...FLASH_POP_PREVIEW_CHALLENGE_IDS,
       FLASH_POP_FLASH_PILOT_ID,
       FLASH_POP_ALPHABET_PILOT_ID,
       FLASH_POP_SURVIVAL_PILOT_ID,

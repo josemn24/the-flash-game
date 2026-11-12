@@ -35,7 +35,9 @@ import type {
   SaveQueensDraftInput,
   SaveQueensDraftResult,
   SaveConnectPairsDraftInput,
+  SavePyramidDraftInput,
   SaveConnectPairsDraftResult,
+  SavePyramidDraftResult,
   SubmitAnswerInput,
   SubmitAnswerResult,
   SubmitLogicCodeAttemptInput,
@@ -76,6 +78,7 @@ export type AttemptUseCaseDependencies = {
     | "submitQueensPlacement"
     | "saveQueensDraft"
     | "saveConnectPairsDraft"
+    | "savePyramidDraft"
     | "validateQueensBoard"
     | "revealProgressiveClue"
     | "readEvaluationContext"
@@ -348,6 +351,10 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
     return this.commands.saveConnectPairsDraft(input);
   }
 
+  savePyramidDraft(input: SavePyramidDraftInput): Promise<SavePyramidDraftResult> {
+    return this.commands.savePyramidDraft(input);
+  }
+
   async validateQueensBoard(input: ValidateQueensBoardInput): Promise<ValidateQueensBoardResult> {
     return this.evaluateTerminalCommand(input, await this.commands.validateQueensBoard(input));
   }
@@ -426,10 +433,8 @@ export class ApplicationAttemptUseCases implements AttemptUseCases {
       }
       throw error;
     }
-    return {
-      ...recorded,
-      ...(result.details ? { details: result.details } : {}),
-    };
+    const details = recorded.details ?? result.details;
+    return { ...recorded, ...(details ? { details } : {}) };
   }
 
   private async evaluateTerminalCommand<

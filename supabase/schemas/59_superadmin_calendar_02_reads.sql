@@ -145,7 +145,8 @@ language sql stable security definer set search_path = '' as $$
         and (version.mode_config->>'lives')::integer between 1 and compatibility.question_count
       or version.mode = 'time-trial'
         and version.global_time_limit_ms > 0
-      or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
+      or version.mode = 'pyramid'
+        and private.is_valid_pyramid_config(version.mode_config, compatibility.question_types)
         and compatibility.question_count = 7
       or version.mode = 'narrative'
         and jsonb_typeof(version.mode_config) = 'object'
@@ -164,6 +165,7 @@ language sql stable security definer set search_path = '' as $$
   join lateral (
     select
       count(*)::bigint as question_count,
+      array_agg(distinct question.type) as question_types,
       (count(*) between 2 and 20 and version.mode in ('flash', 'alphabet', 'survival', 'narrative', 'time-trial')
         or count(*) = 7 and version.mode = 'pyramid')
         and coalesce(bool_and(item.position between 1 and case when version.mode = 'pyramid' then 7 else 20 end), false)

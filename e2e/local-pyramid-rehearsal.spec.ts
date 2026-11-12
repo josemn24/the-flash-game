@@ -1,17 +1,14 @@
 import { placeQueensCrown } from "./support/queens";
 import { expect, test } from "@playwright/test";
+import {
+  drawConexionesPaths,
+  openLevel,
+  reachConexiones,
+  sevenPointPaths,
+  waitForBriefing,
+} from "./support/cumbre-logica";
 
 const rehearsalPath = "/demo/flash-pop/desafios/tabarnia-challenge-05";
-
-async function openLevel(page: import("@playwright/test").Page, title: string) {
-  await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 15_000 });
-  await page.getByRole("button", { name: "Empezar nivel" }).click();
-  await expect(page.getByRole("timer")).toBeVisible({ timeout: 15_000 });
-}
-
-async function waitForBriefing(page: import("@playwright/test").Page, title: string) {
-  await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 15_000 });
-}
 
 test("plays, reviews, and repeats the seven-level local Pyramid without backend calls", async ({
   page,
@@ -36,55 +33,14 @@ test("plays, reviews, and repeats the seven-level local Pyramid without backend 
   await expect(start).toBeFocused();
   await page.keyboard.press("Enter");
 
-  await openLevel(page, "Encuentra el intruso");
-  await page.getByRole("button", { name: "27", exact: true }).click();
-  await waitForBriefing(page, "Completa la secuencia");
-
-  await openLevel(page, "Completa la secuencia");
-  const sequence = page.getByRole("region", { name: "Secuencia numérica" });
-  await expect(sequence).toBeVisible();
-  await expect(sequence.locator('[aria-label="Secuencia: 2, 6, 12, 20, ?"]')).toBeVisible();
-  await page.getByRole("button", { name: "30", exact: true }).click();
-  await waitForBriefing(page, "Construye el orden");
-
-  await openLevel(page, "Construye el orden");
-  const currentOrder = ["Sol", "Río", "Nube", "Mar", "Luna"];
-  const correctOrder = ["Río", "Mar", "Sol", "Luna", "Nube"];
-  for (const [targetIndex, item] of correctOrder.entries()) {
-    let index = currentOrder.indexOf(item);
-    while (index > targetIndex) {
-      await page.getByRole("button", { name: `Mover ${item} arriba` }).click();
-      [currentOrder[index - 1], currentOrder[index]] = [
-        currentOrder[index]!,
-        currentOrder[index - 1]!,
-      ];
-      index -= 1;
-    }
-  }
-  await page.getByRole("button", { name: "Confirmar orden" }).click();
-  await waitForBriefing(page, "Completa la matriz");
-
-  await openLevel(page, "Completa la matriz");
-  await page.getByRole("button", { name: "Opción 1: Triángulo y flecha arriba" }).click();
-  await waitForBriefing(page, "Cubre la cuadrícula");
-
-  await openLevel(page, "Cubre la cuadrícula");
-  const board = page.getByRole("grid", { name: /Tablero de Conectar parejas/ });
+  const board = await reachConexiones(page);
   const paths = [
     [0, 1, 2, 3, 4, 9],
     [8, 7, 6, 5, 10],
     [11, 12, 13, 14, 19, 18],
     [17, 16, 15, 20, 21, 22, 23, 24],
   ];
-  for (const path of paths) {
-    for (const cell of path) {
-      const row = Math.floor(cell / 5) + 1;
-      const column = (cell % 5) + 1;
-      await board
-        .getByRole("button", { name: new RegExp(`^Fila ${row}, columna ${column}(?:$|:)`) })
-        .click();
-    }
-  }
+  await drawConexionesPaths(board, paths);
   await waitForBriefing(page, "Descifra la cerradura");
 
   await openLevel(page, "Descifra la cerradura");
@@ -124,6 +80,20 @@ test("plays, reviews, and repeats the seven-level local Pyramid without backend 
   expect(backendRequests).toEqual([]);
 });
 
+test("shows timeout credit for Conexiones and keeps Cerradura locked", async ({ page }) => {
+  await page.clock.install();
+  await page.goto(rehearsalPath);
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
+  const board = await reachConexiones(page);
+  await drawConexionesPaths(board, sevenPointPaths);
+  await page.clock.runFor(36_000);
+  await expect(page.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
+  await expect(page.getByText("+7 puntos en Conexiones")).toBeVisible();
+  await page.getByRole("button", { name: "Ver respuestas" }).click();
+  await expect(page.getByText("4 de 7 superados")).toBeVisible();
+  await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(2);
+});
+
 test("supports a mobile reduced-motion layout and keyboard start without authentication", async ({
   page,
 }) => {
@@ -142,6 +112,28 @@ test("supports a mobile reduced-motion layout and keyboard start without authent
 });
 
 test("returns 404 for unapproved local challenge ids", async ({ request }) => {
-  const response = await request.get("/demo/flash-pop/desafios/tabarnia-challenge-06");
+  const response = await request.get("/demo/flash-pop/desafios/tabarnia-challenge-99");
   expect(response.status()).toBe(404);
+});
+
+test("plays La Biblia locally and credits a confirmed matching partial", async ({ page }) => {
+  await page.goto("/demo/flash-pop/desafios/tabarnia-challenge-06");
+  await expect(page.getByRole("heading", { name: "La Biblia", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Empezar desafío" }).click();
+  await openLevel(page, "Relaciona las figuras");
+  for (const [left, right] of [
+    ["Noé", "Arca"],
+    ["Moisés", "Éxodo"],
+    ["David", "Nazaret"],
+    ["Jesús", "Goliat"],
+  ]) {
+    await page.getByRole("button", { name: left, exact: true }).click();
+    await page.getByRole("button", { name: right, exact: true }).click();
+  }
+  await page.getByRole("button", { name: "Comprobar parejas" }).click();
+  await expect(page.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
+  await expect(page.getByText("+6 puntos en Entrada")).toBeVisible();
+  await page.getByRole("button", { name: "Ver respuestas" }).click();
+  await expect(page.getByText("0 de 7 superados")).toBeVisible();
+  await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(6);
 });

@@ -155,7 +155,20 @@ export function createCompetitiveInput(source: CompetitiveInputSource): Competit
         props: { question, locked, ...answer },
       };
     case "ordering":
-      return { context: "competitive", format: "ordering", props: { question, locked, ...answer } };
+      return {
+        context: "competitive",
+        format: "ordering",
+        props: {
+          question,
+          locked,
+          ...answer,
+          ...progress,
+          pendingAnswer:
+            Array.isArray(pendingAnswer) && pendingAnswer.every((item) => typeof item === "string")
+              ? pendingAnswer
+              : undefined,
+        },
+      };
     case "progressive-clues":
       return {
         context: "competitive",

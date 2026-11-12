@@ -14,7 +14,9 @@ import type {
   SaveQueensDraftInput,
   SaveQueensDraftResult,
   SaveConnectPairsDraftInput,
+  SavePyramidDraftInput,
   SaveConnectPairsDraftResult,
+  SavePyramidDraftResult,
   StartAttemptInput,
   StartAttemptResult,
   TakeOverAttemptInput,
@@ -98,6 +100,7 @@ export interface AttemptUseCases {
   submitQueensPlacement(input: SubmitQueensPlacementInput): Promise<SubmitQueensPlacementResult>;
   saveQueensDraft(input: SaveQueensDraftInput): Promise<SaveQueensDraftResult>;
   saveConnectPairsDraft(input: SaveConnectPairsDraftInput): Promise<SaveConnectPairsDraftResult>;
+  savePyramidDraft(input: SavePyramidDraftInput): Promise<SavePyramidDraftResult>;
   validateQueensBoard(input: ValidateQueensBoardInput): Promise<ValidateQueensBoardResult>;
   revealProgressiveClue(input: RevealProgressiveClueInput): Promise<RevealProgressiveClueResult>;
 }

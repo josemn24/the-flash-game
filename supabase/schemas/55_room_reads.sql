@@ -131,7 +131,8 @@ language sql stable security definer set search_path = '' as $$
               and jsonb_typeof(cv.mode_config->'lives') = 'number'
               and (cv.mode_config->>'lives')::integer between 1 and count(*)
               and (select count(*) from jsonb_object_keys(cv.mode_config)) = 1
-            or cv.mode = 'pyramid' and cv.mode_config = '{}'::jsonb
+            or cv.mode = 'pyramid'
+              and private.is_valid_pyramid_config(cv.mode_config, array_agg(distinct q.type))
               and bool_and(private.is_valid_pyramid_level_config(items.mode_config))
               and count(distinct items.mode_config->>'levelId') = 7
             or cv.mode = 'narrative'
@@ -240,7 +241,8 @@ language sql stable security definer set search_path = '' as $$
             and jsonb_typeof(version.mode_config->'lives') = 'number'
             and (version.mode_config->>'lives')::integer between 1 and count(*)
             and (select count(*) from jsonb_object_keys(version.mode_config)) = 1
-          or version.mode = 'pyramid' and version.mode_config = '{}'::jsonb
+          or version.mode = 'pyramid'
+            and private.is_valid_pyramid_config(version.mode_config, array_agg(distinct question.type))
             and bool_and(private.is_valid_pyramid_level_config(item.mode_config))
             and count(distinct item.mode_config->>'levelId') = 7
           or version.mode = 'narrative'

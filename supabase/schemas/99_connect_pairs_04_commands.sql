@@ -62,6 +62,10 @@ begin
     and exists (select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id and cv.mode = 'time-trial') then
     raise exception 'deadline_reached' using errcode = '55000';
   end if;
+  if instant >= unit.deadline_at and exists (
+    select 1 from private.challenge_versions cv where cv.id = a.challenge_version_id
+      and cv.mode = 'pyramid' and cv.mode_config->'connectPairsTimeoutPartialCredit' = 'true'::jsonb
+  ) then raise exception 'deadline_reached' using errcode = '55000'; end if;
   select * into item from private.challenge_items where id = segment.challenge_item_id;
   select * into question from private.question_versions where id = item.question_version_id;
   if question.type <> 'connect-pairs' or question.payload_schema_version <> 1
@@ -71,7 +75,8 @@ begin
 
   snapshot := jsonb_build_object('type', 'connect-pairs', 'paths', input->'paths');
   update public.attempts set
-    progress_payload = jsonb_build_object('kind', 'connect-pairs', 'challengeItemId', item.id, 'paths', input->'paths'),
+    progress_payload = jsonb_build_object('kind', 'connect-pairs', 'challengeItemId', item.id,
+      'paths', input->'paths', 'savedAt', instant),
     lock_version = lock_version + 1,
     last_activity_at = instant
   where id = a.id returning * into a;

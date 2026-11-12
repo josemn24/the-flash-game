@@ -16,8 +16,15 @@ export type AnswerResultDetails =
       type: "matching";
       correctPairs: number;
       totalPairs: number;
+      pyramidPartialCredit?: "submission" | "timeout";
       /** Legacy field kept only when reading results produced by the old pair protocol. */
       incorrectAttempts?: number;
+    }
+  | {
+      type: "classification" | "ordering";
+      correctItems: number;
+      totalItems: number;
+      pyramidPartialCredit?: "submission" | "timeout";
     }
   | {
       type: "connect-pairs";
@@ -60,6 +67,9 @@ export type AnswerResultDetails =
   | {
       type: "queens";
       failureReason?: "attempts_exhausted";
+      timeoutPartialCredit?: true;
+      correctPlacements?: number;
+      requiredPlacements?: number;
       placedQueens: number;
       completedRows: number;
       completedColumns: number;
@@ -152,6 +162,7 @@ export type AnswerResultDetails =
     }
   | {
       type: "word-search";
+      timeoutPartialCredit?: true;
       foundWords: number;
       totalWords: number;
       incorrectSelections: number;

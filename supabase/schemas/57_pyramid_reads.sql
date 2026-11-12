@@ -73,7 +73,9 @@ language sql stable security definer set search_path = '' as $$
         schedule.status, season.status, season.starts_at, season.ends_at,
         schedule.opens_at, schedule.closes_at, statement_timestamp()) or attempt.id is not null)
       and version.status in ('published', 'archived') and version.mode = 'pyramid'
-      and version.config_schema_version = 1 and version.mode_config = '{}'::jsonb
+      and version.config_schema_version = 1 and private.is_valid_pyramid_config(version.mode_config, array(
+        select q.type from private.challenge_items item join private.question_versions q on q.id = item.question_version_id
+        where item.challenge_version_id = version.id))
       and version.max_score = 100
       and (select count(*) from private.challenge_items item where item.challenge_version_id = version.id) = 7
       and (select count(*) from private.challenge_items item

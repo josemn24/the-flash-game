@@ -339,8 +339,8 @@ function challengeVersionId(slug) {
   const labels = {
     "animals-alphabet-definition": "challenge-version:animals-alphabet-v1",
     "spain-survival-definition": "challenge-version:spain-survival-v1",
-    "pyramid-abrahamic-definition": "challenge-version:bible-pyramid-v1",
-    "pyramid-logic-definition": "challenge-version:tabarnia-pyramid-logic-v1",
+    "pyramid-abrahamic-definition": "challenge-version:bible-pyramid-v2",
+    "pyramid-logic-definition": "challenge-version:tabarnia-pyramid-logic-v3",
     [TABARNIA_QUEENS_TIME_TRIAL.challenge.slug]: "challenge-version:tabarnia-queens-time-trial-v1",
     [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]:
       "challenge-version:tabarnia-connect-pairs-time-trial-v1",
@@ -349,6 +349,12 @@ function challengeVersionId(slug) {
   };
   return stableId(labels[slug]);
 }
+
+export const TABARNIA_LOGIC_PYRAMID_V1_ID = stableId("challenge-version:tabarnia-pyramid-logic-v1");
+export const TABARNIA_PYRAMID_LEGACY_VERSION_IDS = {
+  "pyramid-logic-definition": [TABARNIA_LOGIC_PYRAMID_V1_ID],
+  "pyramid-abrahamic-definition": [stableId("challenge-version:bible-pyramid-v1")],
+};
 
 function publicationId(slug) {
   return stableId(`publication:${slug}`);
@@ -513,7 +519,7 @@ function tabarniaChallenges() {
       definitionSlug: "tabarnia-piramide-cumbre-logica",
       id: challengeId(logicPyramid.slug),
       versionId: challengeVersionId(logicPyramid.slug),
-      modeConfig: {},
+      versionNumber: 3,
       items: logicPyramid.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
     },
     {
@@ -541,7 +547,13 @@ function tabarniaChallenges() {
       definitionSlug: "tabarnia-piramide-biblia",
       id: challengeId(bible.slug),
       versionId: challengeVersionId(bible.slug),
-      modeConfig: {},
+      versionNumber: 2,
+      modeConfig: {
+        matchingPartialCredit: true,
+        orderingPartialCredit: true,
+        wordSearchTimeoutPartialCredit: true,
+        classificationPartialCredit: true,
+      },
       items: bible.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
     },
     {
@@ -691,7 +703,11 @@ export function buildTabarniaDomainSql({
   const challengeItemSql = items
     .map(({ item, challenge, index }) => {
       const config = item.modeConfig ?? {};
-      return `(${sqlString(stableId(`challenge-item:${item.questionSlug}`))}, ${sqlString(challenge.versionId)}, ${sqlString(stableId(`question-version:${item.questionSlug}`))}, ${index + 1}, ${item.points}, 1, ${sqlString(JSON.stringify(config))})`;
+      const itemKey =
+        challenge.versionNumber > 1
+          ? `challenge-item:${challenge.versionId}:${item.questionSlug}`
+          : `challenge-item:${item.questionSlug}`;
+      return `(${sqlString(stableId(itemKey))}, ${sqlString(challenge.versionId)}, ${sqlString(stableId(`question-version:${item.questionSlug}`))}, ${index + 1}, ${item.points}, 1, ${sqlString(JSON.stringify(config))})`;
     })
     .join(",\n");
   const challengeItemInsertSource = conflictSafe
@@ -764,7 +780,7 @@ export function buildTabarniaDomainSql({
   const challengeVersionSql = challenges
     .map(
       (challenge) =>
-        `(${sqlString(challenge.versionId)}, ${sqlString(challenge.id)}, 1, 1, 'draft', ${sqlString(challenge.mode)}, ${sqlString(challenge.title)}, ${sqlString(challenge.subtitle)}, ${sqlString(challenge.description)}, 100, ${challenge.globalTimeLimitMs ?? "null"}, ${sqlString(JSON.stringify(challenge.modeConfig))}, ${sqlString(xesmona)}, null)`,
+        `(${sqlString(challenge.versionId)}, ${sqlString(challenge.id)}, ${challenge.versionNumber ?? 1}, 1, 'draft', ${sqlString(challenge.mode)}, ${sqlString(challenge.title)}, ${sqlString(challenge.subtitle)}, ${sqlString(challenge.description)}, 100, ${challenge.globalTimeLimitMs ?? "null"}, ${sqlString(JSON.stringify(challenge.modeConfig))}, ${sqlString(xesmona)}, null)`,
     )
     .join(",\n");
   const scheduledSql = challenges

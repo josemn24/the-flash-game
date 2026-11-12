@@ -17,8 +17,21 @@ const cases = corpus.filter((row) => {
   return true;
 });
 const queen = cases.find((row) => row.document.type === "queens");
+const creditCases = [
+  ["queens", "queensTimeoutPartialCredit"],
+  ["word-search", "wordSearchTimeoutPartialCredit"],
+  ["matching", "matchingPartialCredit"],
+  ["classification", "classificationPartialCredit"],
+  ["ordering", "orderingPartialCredit"],
+].map(([format, key]) => ({
+  ...cases.find((row) => row.document.type === format),
+  id: `${format}-timeout-credit`,
+  modeConfig: { [key]: true },
+  timeLimitMs: 8000,
+}));
 const publications = [
   ...cases,
+  ...creditCases,
   ...[1, 2].map((failures) => ({ ...queen, id: `queens-after-${failures}` })),
   ...["mini-wordle", "progressive-clues"].map((type) => ({
     ...cases.find((row) => row.document.type === type),
@@ -36,13 +49,14 @@ function sample(test) {
   return sessionFixture({
     id: `conformance-${test.id}`,
     mode: "pyramid",
+    modeConfig: test.modeConfig,
     title: `Conformidad ${test.id}`,
     questions: Array.from({ length: 7 }, (_, index) => {
       const document = index === 0 ? test.document : cases[0].document;
       return {
         type: document.type,
         payloadSchemaVersion: document.payloadSchemaVersion,
-        timeLimitMs: document.timeLimitMs,
+        timeLimitMs: test.timeLimitMs ?? document.timeLimitMs,
         points: index === 6 ? 16 : 14,
         publicPayload: document.publicPayload,
         solution: document.solutionPayload,
@@ -102,6 +116,8 @@ const scenario = {
           test.id,
           {
             publicationId: stableId(`${test.id}:publication`),
+            roomSlug: `conformance-${test.id}-main`,
+            ...(test.timeLimitMs ? { timeLimitMs: test.timeLimitMs } : {}),
             seasonId: stableId(`${test.id}:season`),
             challengeVersionId: stableId(`${test.id}:challenge-version`),
             itemIds: Array.from({ length: 7 }, (_, i) => stableId(`${test.id}:item-${i}`)),

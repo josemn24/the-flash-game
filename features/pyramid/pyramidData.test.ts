@@ -8,6 +8,7 @@ import { createMockLocalPyramidDefinition } from "@/infrastructure/mock/localPyr
 import { scheduledChallengeRouteAliases } from "@/data/mock/constants";
 import { compileDefinition } from "@/features/game/session/providers/localShared/definition";
 import { mockQuestionsById as questionsById } from "@/test-utils/mockGameplay";
+import { publishedChallengeFixtures } from "@/data/mock/catalog/challenges";
 import { getChallengeAvailabilityStatus } from "@/lib/challengeAvailability";
 import { calculateConnectPairsMetrics, isValidConnectPairsConfiguration } from "@/lib/connectPairs";
 import { evaluateAnswer, isValidLogicMatrixConfiguration } from "@/lib/scoring";
@@ -31,6 +32,18 @@ describe("Cumbre lógica", () => {
   it("defines seven unique levels worth exactly 100 points", () => {
     const definition = challengeDefinitions["pyramid-logic-definition"];
     expect(() => validatePyramidChallengeDefinition(definition)).not.toThrow();
+    expect(
+      publishedChallengeFixtures.find((fixture) => fixture.slug === "pyramid-logic-definition")
+        ?.modeConfig,
+    ).toMatchObject({ attemptSchemaVersion: 2 });
+    expect(
+      publishedChallengeFixtures.find((fixture) => fixture.slug === "pyramid-logic-definition")
+        ?.items[4],
+    ).toMatchObject({ questionSlug: "pyramid-summit-queens", points: 15 });
+    expect(
+      publishedChallengeFixtures.find((fixture) => fixture.slug === "pyramid-logic-definition")
+        ?.items[6],
+    ).toMatchObject({ questionSlug: "pyramid-connect-pairs-spiral", points: 15 });
     expect(definition.levels).toHaveLength(7);
     expect(new Set(getPyramidQuestionIds(definition))).toHaveProperty("size", 7);
     expect(
@@ -53,20 +66,28 @@ describe("Cumbre lógica", () => {
     expect(challenge.levels.map((level) => level.question.points)).toEqual([
       13, 14, 14, 14, 15, 15, 15,
     ]);
+    expect(challenge.levels[4]?.question).toMatchObject({ type: "queens", points: 15 });
+    expect(challenge.levels[6]?.question).toMatchObject({
+      type: "connect-pairs",
+      points: 15,
+      timeLimit: 35,
+      grid: { rows: 6, columns: 6 },
+    });
     expect(challenge.levels.map((level) => level.briefing.format)).toEqual([
       "Encontrar el intruso",
       "Secuencia numérica",
       "Matriz visual",
       "Ordenación lógica",
-      "Conectar parejas",
-      "Código secreto",
       "Queens",
+      "Código secreto",
+      "Conectar parejas",
     ]);
   });
 
   it("keeps the advanced puzzle configurations valid", () => {
     const matrix = questionsById["pyramid-shape-direction-matrix"];
     const trap = questionsById["pyramid-connect-pairs-trap"];
+    const spiral = questionsById["pyramid-connect-pairs-spiral"];
     const code = questionsById["pyramid-secret-code"];
     const queens = questionsById["pyramid-summit-queens"];
     const miniWordle = questionsById["abrahamic-mini-wordle-josue"];
@@ -81,6 +102,26 @@ describe("Cumbre lógica", () => {
       conflicts: 0,
       exact: true,
     });
+    expect(spiral.grid).toEqual({ rows: 6, columns: 6 });
+    expect(spiral.pairs.map((pair) => pair.symbol)).toEqual(["A", "B", "C", "D", "E", "F"]);
+    expect(spiral.pairs.map((pair) => pair.color)).toEqual([
+      "#0825fa",
+      "#107f12",
+      "#2cfefe",
+      "#fc0e1c",
+      "#fb7f23",
+      "#eded33",
+    ]);
+    expect(spiral.pairs).toHaveLength(6);
+    expect(isValidConnectPairsConfiguration(spiral)).toBe(true);
+    expect(calculateConnectPairsMetrics(spiral, { paths: spiral.solutionPaths })).toMatchObject({
+      connectedPairs: 6,
+      totalPairs: 6,
+      coveredCells: 36,
+      totalCells: 36,
+      conflicts: 0,
+      exact: true,
+    });
     expect(code.correctAnswer).toBe("507");
     expect(miniWordle.additionalGuesses).toEqual(
       expect.arrayContaining(["AARON", "CALEB", "ELIAS", "JACOB", "TAMAR", "YUSUF"]),
@@ -91,27 +132,27 @@ describe("Cumbre lógica", () => {
     expect(countQueensSolutions(queens)).toBe(1);
   });
 
-  it("ends the ascent on a partial trap submission and passes only complete coverage", () => {
+  it("ends the ascent on a partial spiral submission and passes only complete coverage", () => {
     const challenge = canonicalPyramid("tabarnia-challenge-05");
     expect(challenge?.mode).toBe("pyramid");
     if (challenge?.mode !== "pyramid") throw new Error("Expected pyramid challenge");
-    const trap = challenge.levels[4]?.question;
-    if (trap?.type !== "connect-pairs") throw new Error("Expected connect-pairs trap");
+    const spiral = challenge.levels[6]?.question;
+    if (spiral?.type !== "connect-pairs") throw new Error("Expected connect-pairs spiral");
 
     const complete = evaluateAnswer({
-      question: trap,
-      answer: { paths: trap.solutionPaths },
+      question: spiral,
+      answer: { paths: spiral.solutionPaths },
       timeUsed: 5,
     });
     const partial = evaluateAnswer({
-      question: trap,
-      answer: { paths: { circle: trap.solutionPaths.circle } },
+      question: spiral,
+      answer: { paths: { a: spiral.solutionPaths.a } },
       timeUsed: 5,
     });
     const timedOut = evaluateAnswer({
-      question: trap,
-      answer: { paths: { circle: trap.solutionPaths.circle } },
-      timeUsed: trap.timeLimit,
+      question: spiral,
+      answer: { paths: { a: spiral.solutionPaths.a } },
+      timeUsed: spiral.timeLimit,
       timedOut: true,
     });
 

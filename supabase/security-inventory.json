@@ -570,6 +570,11 @@
       "securityDefiner": true,
       "executeRoles": []
     },
+    "private.is_valid_pyramid_config": {
+      "arguments": "config jsonb, question_types text[]",
+      "securityDefiner": false,
+      "executeRoles": []
+    },
     "private.is_valid_pyramid_level_config": {
       "arguments": "value jsonb",
       "securityDefiner": false,
@@ -878,6 +883,24 @@
       "arguments": "input jsonb",
       "securityDefiner": true,
       "executeRoles": ["service_role"]
+    },
+    "private.save_pyramid_draft": {
+      "arguments": "input jsonb",
+      "securityDefiner": true,
+      "executeRoles": ["service_role"],
+      "volatility": "v"
+    },
+    "private.pyramid_draft_enabled": {
+      "arguments": "config jsonb, format text",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "i"
+    },
+    "private.pyramid_draft_valid": {
+      "arguments": "format text, payload jsonb, answer jsonb, require_complete boolean",
+      "securityDefiner": false,
+      "executeRoles": [],
+      "volatility": "s"
     },
     "private.save_connect_pairs_draft": {
       "arguments": "input jsonb",

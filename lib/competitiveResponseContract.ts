@@ -47,6 +47,21 @@ export const reviewStateValue: Check = (value) => {
           key.length > 0 && Array.isArray(path) && path.every((cell) => integer(cell)),
       )
     );
+  if (value.type === "matching" || value.type === "classification")
+    return isRecord(value.answer) && Object.values(value.answer).every(text);
+  if (value.type === "ordering")
+    return (
+      Array.isArray(value.answer) &&
+      value.answer.every(text) &&
+      new Set(value.answer).size === value.answer.length
+    );
+  if (value.type === "word-search") {
+    return (
+      Array.isArray(value.foundWordIds) &&
+      value.foundWordIds.every(text) &&
+      new Set(value.foundWordIds).size === value.foundWordIds.length
+    );
+  }
   return value.type === "queens" && Array.isArray(value.queens) && value.queens.every(integer);
 };
 export function isRecord(v: unknown): v is ResponseRecord {
@@ -163,6 +178,7 @@ export function formatFields(operation: string, row: ResponseRecord, evaluated: 
         "response.revealedClues",
       );
       break;
+    case "pyramidDraft":
     case "connectPairsDraft":
       fields(row, { challengeItemId: text, reviewState: reviewStateValue });
       break;
@@ -378,10 +394,14 @@ export function resultDetails(
   const finite: Check = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0;
   const ratio: Check = (v) => finite(v) && Number(v) <= 1;
   const point = shape({ x: ratio, y: ratio });
+  const pyramidPartialCredit = oneOf(undefined, "submission", "timeout");
+  const itemCounts = shape({ correctItems: integer, totalItems: integer, pyramidPartialCredit });
   const schemas = {
     "logic-code": shape({ submittedCodes: list(text), incorrectAttempts: integer }),
     estimation: shape({ difference: finite, proximity: ratio }),
-    matching: shape({ correctPairs: integer, totalPairs: integer }),
+    matching: shape({ correctPairs: integer, totalPairs: integer, pyramidPartialCredit }),
+    classification: itemCounts,
+    ordering: itemCounts,
     "connect-pairs": shape({
       connectedPairs: integer,
       totalPairs: integer,
@@ -414,6 +434,9 @@ export function resultDetails(
       incorrectAttempts: integer,
       marksUsed: integer,
       solved: boolean,
+      timeoutPartialCredit: (value) => value === undefined || value === true,
+      correctPlacements: (value) => value === undefined || integer(value),
+      requiredPlacements: (value) => value === undefined || integer(value),
     }),
     "time-maze": shape({ moves: integer, optimalMoves: integer, reachedExit: boolean }),
     zip: shape({
@@ -471,6 +494,7 @@ export function resultDetails(
       totalWords: integer,
       incorrectSelections: integer,
       solved: boolean,
+      timeoutPartialCredit: (value) => value === undefined || value === true,
     }),
   } satisfies Record<import("@/types/contracts/result-details").AnswerResultDetails["type"], Check>;
   return (

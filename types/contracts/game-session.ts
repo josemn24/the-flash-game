@@ -10,6 +10,8 @@ export type SessionCommandContext = {
 type Mutation = SessionCommandContext & { readonly idempotencyKey: string };
 type Interaction = Mutation & { readonly challengeItemId: string };
 
+export type PyramidDraftAnswer = Record<string, string> | string[];
+
 export type GameSessionCommandInputs = {
   prepareSession: { readonly challengeId: string };
   start: { readonly challengeId: string; readonly idempotencyKey: string };
@@ -25,6 +27,7 @@ export type GameSessionCommandInputs = {
   logicCodeAttempt: Interaction & { readonly code: string };
   wordHashtagSwap: Interaction & { readonly fromCell: number; readonly toCell: number };
   progressiveClueReveal: Interaction;
+  pyramidDraft: Interaction & { readonly answer: PyramidDraftAnswer };
   queensDraft: Interaction & { readonly queens: readonly number[] };
   connectPairsDraft: Interaction & { readonly paths: Readonly<Record<string, readonly number[]>> };
   queensValidation: Interaction & { readonly queens: readonly number[] };

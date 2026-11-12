@@ -1,3 +1,4 @@
+import { pyramidPartialCreditOptions } from "@/lib/gameplay/pyramidPartialCredit";
 import { mockDomainStore } from "@/data/mock/store";
 import { scheduledChallengeRouteAliases } from "@/data/mock/constants";
 import { isCompetitiveQuestionType } from "@/lib/question-formats/definitions";
@@ -10,7 +11,10 @@ import type {
   LocalSurvivalDefinition,
 } from "@/types/gameplay/local-pyramid";
 import type { LocalAlphabetDefinition } from "@/types/gameplay/local-alphabet";
-import { FLASH_POP_ALPHABET_PILOT_ID } from "@/features/flash-pop/demoSocial";
+import {
+  FLASH_POP_ALPHABET_PILOT_ID,
+  type FlashPopChallengeId,
+} from "@/features/flash-pop/demoSocial";
 import type {
   ServerAlphabetChallenge,
   ServerFlashQuestion,
@@ -64,6 +68,7 @@ export function createMockLocalPyramidDefinition(
       mode: "pyramid",
       maxScore: 100,
       attemptVersion: version.versionNumber,
+      ...pyramidPartialCreditOptions(version.modeConfig),
       availableFrom: publication.opensAt,
       availableUntil: publication.closesAt,
       levels: slots,
@@ -228,8 +233,9 @@ export function createMockFlashPopAlphabetDemoDefinition(): LocalAlphabetDefinit
 }
 
 /** Canonical fixture composition for the date-independent Flash Pop rehearsal route. */
-export function createMockFlashPopPyramidDemoDefinition(): LocalPyramidDefinition {
-  const routeId = "tabarnia-challenge-05" as const;
+export function createMockFlashPopPyramidDemoDefinition(
+  routeId: FlashPopChallengeId = "tabarnia-challenge-05",
+): LocalPyramidDefinition {
   const definition = createMockLocalPyramidDefinition(scheduledChallengeRouteAliases[routeId]);
   return {
     ...definition,

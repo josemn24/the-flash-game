@@ -25,6 +25,13 @@ function isOrderingAnswer(
   );
 }
 
+export function calculateOrderingMetrics(question: OrderingQuestion, answer: string[]) {
+  return {
+    correctItems: answer.filter((item, index) => item === question.correctOrder[index]).length,
+    totalItems: question.correctOrder.length,
+  };
+}
+
 function isCorrect(question: ResolvedQuestion, answer: ResolvedAnswerValue) {
   const orderingQuestion = asQuestion(question);
   return (
@@ -44,10 +51,7 @@ export function evaluateOrdering({
     return { isCorrect: false, status: "incorrect", points: 0 };
   }
 
-  const correctItems = answer.filter(
-    (item, index) => item === orderingQuestion.correctOrder[index],
-  ).length;
-  const totalItems = orderingQuestion.correctOrder.length;
+  const { correctItems, totalItems } = calculateOrderingMetrics(orderingQuestion, answer);
   const correct = correctItems === totalItems;
 
   return {
