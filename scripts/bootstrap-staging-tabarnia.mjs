@@ -162,7 +162,9 @@ async function validateTabarniaDomain(
 
   const season = (
     await client.query(
-      "select room_id::text, status, extract(epoch from ends_at - starts_at)::integer as duration_seconds from public.seasons where id = $1",
+      `select room_id::text, status, starts_at,
+              extract(epoch from ends_at - starts_at)::integer as duration_seconds
+         from public.seasons where id = $1`,
       [data.seasonId],
     )
   ).rows[0];
@@ -170,9 +172,9 @@ async function validateTabarniaDomain(
     !season ||
     season.room_id !== data.room.id ||
     season.status !== "active" ||
-    season.duration_seconds !== 17 * 24 * 60 * 60
+    season.duration_seconds <= 0
   ) {
-    throw new Error("La temporada Tabarnia no coincide con el perfil técnico de 24 horas.");
+    throw new Error("La temporada Tabarnia debe pertenecer a la sala y tener un intervalo válido.");
   }
 
   const role = (
@@ -209,9 +211,11 @@ async function validateTabarniaDomain(
 
   const publications = (
     await client.query(
-      `select scheduled.id::text, scheduled.status, scheduled.challenge_version_id::text,
-              extract(epoch from scheduled.opens_at - season.starts_at)::integer as opens_after,
-              extract(epoch from scheduled.closes_at - scheduled.opens_at)::integer as duration
+      `select scheduled.id::text, scheduled.number, scheduled.status,
+              scheduled.challenge_version_id::text,
+              extract(epoch from scheduled.opens_at - season.starts_at)::integer as opens_after_seconds,
+              extract(epoch from scheduled.closes_at - scheduled.opens_at)::integer as duration_seconds,
+              extract(epoch from season.ends_at - scheduled.closes_at)::integer as closes_before_end_seconds
          from public.scheduled_challenges scheduled
          join public.seasons season on season.id = scheduled.season_id
         where scheduled.season_id = $1
@@ -219,16 +223,36 @@ async function validateTabarniaDomain(
       [data.seasonId],
     )
   ).rows;
-  assertEqual(
-    publications.map((row) => [row.id, row.status, row.opens_after, row.duration]),
-    data.publications.map((item, index) => [
-      item.id,
-      TABARNIA_PYRAMID_LEGACY_VERSION_IDS[item.slug] ? publications[index]?.status : item.status,
-      item.opensAfterMinutes * 60,
-      item.durationMinutes * 60,
-    ]),
-    `La temporada Tabarnia debe publicar ${data.publications.length} desafíos en ventanas de 24 horas.`,
-  );
+  if (publications.length !== data.publications.length) {
+    throw new Error(
+      `La temporada Tabarnia debe contener ${data.publications.length} publicaciones.`,
+    );
+  }
+
+  let previousPublication = null;
+  for (const [index, row] of publications.entries()) {
+    const expected = data.publications[index];
+    if (row.id !== expected.id || row.number !== expected.number) {
+      throw new Error("El orden de las publicaciones de Tabarnia no coincide con el esperado.");
+    }
+    if (
+      row.opens_after_seconds < 0 ||
+      row.duration_seconds !== expected.durationMinutes * 60 ||
+      row.closes_before_end_seconds < 0
+    ) {
+      throw new Error(
+        `La publicación ${expected.number} debe durar 24 horas y quedar dentro de la temporada.`,
+      );
+    }
+    if (
+      previousPublication &&
+      row.opens_after_seconds <
+        previousPublication.opens_after_seconds + previousPublication.duration_seconds
+    ) {
+      throw new Error("Las ventanas de publicación de Tabarnia no pueden solaparse.");
+    }
+    previousPublication = row;
+  }
 
   const publishedData = data.publications.map((item, index) => {
     const row = publications[index];
@@ -238,7 +262,17 @@ async function validateTabarniaDomain(
     ) {
       throw new Error(`La publicación de ${item.title} referencia otra versión.`);
     }
-    return { ...item, status: row.status, challengeVersionId: row.challenge_version_id };
+    const opensAfterMinutes = row.opens_after_seconds / 60;
+    const durationMinutes = row.duration_seconds / 60;
+    return {
+      ...item,
+      opensAfterMinutes,
+      durationMinutes,
+      opensAfterHours: opensAfterMinutes / 60,
+      durationHours: durationMinutes / 60,
+      status: row.status,
+      challengeVersionId: row.challenge_version_id,
+    };
   });
   const challenges = (
     await client.query(
@@ -297,7 +331,12 @@ async function validateTabarniaDomain(
       throw new Error(`El registro del asset Tabarnia ${expected.objectPath} no coincide.`);
     }
   }
-  return { ...data, publications: publishedData };
+  return {
+    ...data,
+    seasonStartsAt: new Date(season.starts_at).toISOString(),
+    seasonDurationMinutes: season.duration_seconds / 60,
+    publications: publishedData,
+  };
 }
 
 async function applyTabarniaDomain(

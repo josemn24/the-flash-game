@@ -5,7 +5,7 @@ formato en `bank/`. Cada entrada declara `id`, `version`, `type`, `payloadSchema
 `difficulty`, `referenceTimeLimitMs`, `publicPayload` y `solutionPayload`. `alphabetLetter` es
 obligatorio si admite Alfabeto; `familyId` agrupa variantes para favorecer variedad.
 
-El banco actual contiene **413 preguntas activas**. Alfabeto dispone de **243 preguntas**: tres
+El banco actual contiene **423 preguntas activas**. Alfabeto dispone de **243 preguntas**: tres
 familias independientes por cada una de las 27 letras españolas y cada dificultad. La ampliación
 añade 130 ejercicios (22 fáciles, 54 medios y 54 difíciles) y conserva intacta la base inicial.
 Las preguntas de respuesta corta también admiten Flash, Supervivencia y Pirámide.
@@ -14,6 +14,18 @@ Elección múltiple contiene **25 preguntas**: diez fáciles, doce medias y tres
 en 19 familias independientes. La tanda de historia añade una fácil sobre Tenochtitlan y dos medias
 sobre Haití y el detonante de la Primera Guerra Mundial. Admiten Flash, Supervivencia y Pirámide;
 las versiones anteriores se conservan intactas.
+
+Encontrar el intruso contiene **11 preguntas**: cuatro fáciles, cinco medias y dos difíciles. Las cuatro
+medias nuevas trabajan potencias de dos, divisores, fracciones equivalentes y duraciones equivalentes;
+la pregunta de números triangulares es difícil. Cada criterio tiene una familia
+independiente. Admiten Flash, Supervivencia y Pirámide. Entrada de Cumbre lógica puede elegir entre
+las cinco medias y conserva sus 25 segundos y 13 puntos; distintas semillas permiten variar el
+ejercicio, aunque puede repetirse entre partidas.
+
+Matriz lógica contiene **7 preguntas**: una fácil, cinco medias y una difícil. Las dos medias nuevas
+relacionan los dos primeros números de cada fila con el tercero mediante suma o producto. Ambas
+usan el enunciado «¿Qué número falta?» y cuatro opciones. Admiten Flash, Supervivencia y Pirámide;
+Cámara de Cumbre lógica puede elegir entre las cinco medias y conserva sus 35 segundos y 14 puntos.
 
 Conectar parejas contiene **11 tableros**: tres fáciles, cinco medios y tres difíciles. La
 ampliación añade dos tableros fáciles de 4×4 y tres medios de 5×5, con soluciones completas y únicas
@@ -48,6 +60,12 @@ independientes. La ampliación añade cuatro medias y dos difíciles sobre durac
 velocidades y descuentos sucesivos. Admiten Flash, Supervivencia y Pirámide. Las referencias con
 hasta tres posiciones de Ordenar mantienen su dificultad tanto en nivel medio como difícil;
 las medias permiten variar el conjunto y las difíciles también cuando no se agotan las tres.
+
+Clasificar contiene **8 preguntas**: tres fáciles, cuatro medias y una difícil, en siete familias.
+Las tres medias nuevas trabajan grupos zoológicos, comparación de fracciones, decimales y porcentajes
+con un medio, y origen de las rocas. Cada una tiene nueve elementos y tres categorías. Admiten Flash,
+Supervivencia y Pirámide. El sexto nivel de La Biblia puede elegir entre las cuatro medias y conserva
+sus 50 segundos y 15 puntos; las versiones y recetas anteriores permanecen reproducibles.
 
 La tanda de filosofía incorpora cuatro preguntas: validez y verdad (Verdadero/falso, media),
 autores y obras (Emparejar, fácil), Sócrates (Pistas progresivas, media) y cronología de pensadores

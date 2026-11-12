@@ -235,5 +235,146 @@
       },
       "explanation": "La última cifra decide divisibilidad por 2; la suma de cifras decide por 3. Así 14 y 46 son pares con suma no múltiplo de 3; 21 y 51 son impares con suma múltiplo de 3; 30 y 72 cumplen ambas; 25 y 77 no cumplen ninguna."
     }
+  },
+  {
+    "id": "bank-clasificar-animales",
+    "version": 1,
+    "type": "classification",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-clasificar-animales",
+    "publicPayload": {
+      "category": "Biología",
+      "tags": {
+        "domains": ["natural_sciences"],
+        "topics": ["biology_taxonomy"],
+        "cognitiveSkills": ["memory", "scientific_reasoning"],
+        "formatSkills": ["classification", "comparison"],
+        "lifeSkills": []
+      },
+      "question": "Clasifica cada animal según su grupo zoológico.",
+      "categories": ["Mamíferos", "Aves", "Anfibios"],
+      "items": [
+        { "label": "Pingüino" },
+        { "label": "Ballena" },
+        { "label": "Murciélago" },
+        { "label": "Rana" },
+        { "label": "Águila" },
+        { "label": "Sapo" },
+        { "label": "Salamandra" },
+        { "label": "Delfín" },
+        { "label": "Avestruz" }
+      ]
+    },
+    "solutionPayload": {
+      "categoriesByItem": {
+        "Ballena": "Mamíferos",
+        "Pingüino": "Aves",
+        "Rana": "Anfibios",
+        "Delfín": "Mamíferos",
+        "Avestruz": "Aves",
+        "Sapo": "Anfibios",
+        "Murciélago": "Mamíferos",
+        "Águila": "Aves",
+        "Salamandra": "Anfibios"
+      },
+      "explanation": "Ballena, delfín y murciélago son mamíferos: respiran por pulmones y alimentan a sus crías con leche, aunque naden o vuelen. Pingüino, avestruz y águila son aves con plumas, aunque los dos primeros no vuelen. Rana, sapo y salamandra son anfibios de piel desnuda y glandular. El grupo zoológico no se decide solo por el medio en que vive el animal o por cómo se desplaza."
+    }
+  },
+  {
+    "id": "bank-clasificar-fracciones-decimales-porcentajes",
+    "version": 1,
+    "type": "classification",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-clasificar-fracciones-decimales-porcentajes",
+    "publicPayload": {
+      "category": "Matemáticas",
+      "tags": {
+        "domains": ["mathematics"],
+        "topics": ["arithmetic"],
+        "cognitiveSkills": ["quantitative_reasoning"],
+        "formatSkills": ["classification", "comparison", "calculation"],
+        "lifeSkills": []
+      },
+      "question": "Clasifica cada valor comparándolo con un medio (1/2).",
+      "categories": ["Menor que 1/2", "Igual a 1/2", "Mayor que 1/2"],
+      "items": [
+        { "label": "0,6" },
+        { "label": "3/6" },
+        { "label": "45 %" },
+        { "label": "0,5" },
+        { "label": "2/5" },
+        { "label": "70 %" },
+        { "label": "0,3" },
+        { "label": "5/8" },
+        { "label": "50 %" }
+      ]
+    },
+    "solutionPayload": {
+      "categoriesByItem": {
+        "0,6": "Mayor que 1/2",
+        "3/6": "Igual a 1/2",
+        "45 %": "Menor que 1/2",
+        "0,5": "Igual a 1/2",
+        "2/5": "Menor que 1/2",
+        "70 %": "Mayor que 1/2",
+        "0,3": "Menor que 1/2",
+        "5/8": "Mayor que 1/2",
+        "50 %": "Igual a 1/2"
+      },
+      "explanation": "Un medio equivale a 0,5 y a 50 %. Son menores 0,3 = 30 %, 2/5 = 0,4 = 40 % y 45 % = 0,45. Son iguales 0,5, 3/6 = 1/2 y 50 % = 0,5. Son mayores 0,6 = 60 %, 5/8 = 0,625 = 62,5 % y 70 % = 0,7. Convertir las fracciones, los decimales y los porcentajes a una misma representación permite compararlos."
+    }
+  },
+  {
+    "id": "bank-clasificar-rocas",
+    "version": 1,
+    "type": "classification",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 60000,
+    "familyId": "bank-clasificar-rocas",
+    "publicPayload": {
+      "category": "Geología",
+      "tags": {
+        "domains": ["natural_sciences"],
+        "topics": [],
+        "cognitiveSkills": ["memory", "scientific_reasoning"],
+        "formatSkills": ["classification", "comparison"],
+        "lifeSkills": []
+      },
+      "question": "Clasifica cada roca según su origen geológico.",
+      "categories": ["Ígneas", "Sedimentarias", "Metamórficas"],
+      "items": [
+        { "label": "Mármol" },
+        { "label": "Granito" },
+        { "label": "Basalto" },
+        { "label": "Arenisca" },
+        { "label": "Gneis" },
+        { "label": "Caliza" },
+        { "label": "Pizarra" },
+        { "label": "Obsidiana" },
+        { "label": "Conglomerado" }
+      ]
+    },
+    "solutionPayload": {
+      "categoriesByItem": {
+        "Mármol": "Metamórficas",
+        "Granito": "Ígneas",
+        "Arenisca": "Sedimentarias",
+        "Basalto": "Ígneas",
+        "Caliza": "Sedimentarias",
+        "Pizarra": "Metamórficas",
+        "Conglomerado": "Sedimentarias",
+        "Gneis": "Metamórficas",
+        "Obsidiana": "Ígneas"
+      },
+      "explanation": "Granito, basalto y obsidiana son ígneas, formadas al solidificarse magma o lava: el granito se enfría en profundidad y el basalto y la obsidiana son volcánicos. Arenisca y conglomerado se forman a partir de sedimentos consolidados; la caliza es una roca sedimentaria carbonatada. Mármol, pizarra y gneis son metamórficas, originadas por la transformación de rocas previas bajo presión y temperatura."
+    }
   }
 ]

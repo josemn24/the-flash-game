@@ -66,13 +66,23 @@ describe("Cumbre lógica", () => {
     expect(challenge.levels.map((level) => level.question.points)).toEqual([
       13, 14, 14, 14, 15, 15, 15,
     ]);
-    expect(challenge.levels[4]?.question).toMatchObject({ type: "queens", points: 15 });
+    expect(challenge.levels[4]?.question).toMatchObject({
+      type: "queens",
+      points: 15,
+      timeLimit: 30,
+    });
     expect(challenge.levels[6]?.question).toMatchObject({
       type: "connect-pairs",
       points: 15,
-      timeLimit: 35,
+      timeLimit: 20,
       grid: { rows: 6, columns: 6 },
     });
+    expect(challenge.levels.map((level) => level.timeLimitMs)).toEqual([
+      25000, 25000, 35000, 35000, 30000, 45000, 20000,
+    ]);
+    expect(challenge.levels.map((level) => level.question.timeLimit)).toEqual([
+      25, 25, 35, 35, 30, 45, 20,
+    ]);
     expect(challenge.levels.map((level) => level.briefing.format)).toEqual([
       "Encontrar el intruso",
       "Secuencia numérica",
@@ -82,6 +92,30 @@ describe("Cumbre lógica", () => {
       "Código secreto",
       "Conectar parejas",
     ]);
+  });
+
+  it("keeps level names, formats and introductions in ascent order", () => {
+    const challenge = canonicalPyramid("tabarnia-challenge-05");
+    expect(challenge.levels.map((level) => [level.label, level.question.type])).toEqual([
+      ["Entrada", "odd-one-out"],
+      ["Patrón", "multiple-choice"],
+      ["Cámara", "logic-matrix"],
+      ["Orden", "ordering"],
+      ["Coronas", "queens"],
+      ["Cerradura", "logic-code"],
+      ["Cima", "connect-pairs"],
+    ]);
+    expect(challenge.levels[4]?.briefing).toEqual({
+      title: "Coloca las coronas",
+      format: "Queens",
+      description: "Coloca cinco coronas sin repetir fila, columna o región y sin que se toquen.",
+    });
+    expect(challenge.levels[6]?.briefing).toEqual({
+      title: "Conquista la cima",
+      format: "Conectar parejas",
+      description:
+        "Une las seis parejas con rutas ortogonales y cubre las 36 casillas para conquistar la cima.",
+    });
   });
 
   it("keeps the advanced puzzle configurations valid", () => {

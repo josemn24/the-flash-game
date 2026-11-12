@@ -343,5 +343,154 @@
       "correctOptionId": "p8",
       "explanation": "La regla da 2² + 3² = 13 y 3² + 4² = 25. En la última fila, 4² + 5² = 16 + 25 = 41."
     }
+  },
+  {
+    "id": "bank-matriz-suma-filas",
+    "version": 1,
+    "type": "logic-matrix",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 35000,
+    "familyId": "bank-matriz-suma-filas",
+    "publicPayload": {
+      "question": "¿Qué número falta?",
+      "pieces": [
+        {
+          "id": "p0",
+          "symbol": "4",
+          "label": "4"
+        },
+        {
+          "id": "p1",
+          "symbol": "7",
+          "label": "7"
+        },
+        {
+          "id": "p2",
+          "symbol": "11",
+          "label": "11"
+        },
+        {
+          "id": "p3",
+          "symbol": "6",
+          "label": "6"
+        },
+        {
+          "id": "p4",
+          "symbol": "9",
+          "label": "9"
+        },
+        {
+          "id": "p5",
+          "symbol": "15",
+          "label": "15"
+        },
+        {
+          "id": "p6",
+          "symbol": "8",
+          "label": "8"
+        },
+        {
+          "id": "p7",
+          "symbol": "5",
+          "label": "5"
+        },
+        {
+          "id": "p8",
+          "symbol": "12",
+          "label": "12"
+        },
+        {
+          "id": "p9",
+          "symbol": "13",
+          "label": "13"
+        },
+        {
+          "id": "p10",
+          "symbol": "14",
+          "label": "14"
+        }
+      ],
+      "cells": ["p0", "p1", "p2", "p3", "p4", "p5", "p6", "p7", null],
+      "optionIds": ["p8", "p9", "p10", "p5"],
+      "showPieceLabels": false
+    },
+    "solutionPayload": {
+      "correctOptionId": "p9",
+      "explanation": "En cada fila, el tercer número es la suma de los dos primeros: 4 + 7 = 11, 6 + 9 = 15 y 8 + 5 = 13."
+    }
+  },
+  {
+    "id": "bank-matriz-producto-filas",
+    "version": 1,
+    "type": "logic-matrix",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 35000,
+    "familyId": "bank-matriz-producto-filas",
+    "publicPayload": {
+      "question": "¿Qué número falta?",
+      "pieces": [
+        {
+          "id": "p0",
+          "symbol": "3",
+          "label": "3"
+        },
+        {
+          "id": "p1",
+          "symbol": "4",
+          "label": "4"
+        },
+        {
+          "id": "p2",
+          "symbol": "12",
+          "label": "12"
+        },
+        {
+          "id": "p3",
+          "symbol": "5",
+          "label": "5"
+        },
+        {
+          "id": "p4",
+          "symbol": "15",
+          "label": "15"
+        },
+        {
+          "id": "p5",
+          "symbol": "6",
+          "label": "6"
+        },
+        {
+          "id": "p6",
+          "symbol": "18",
+          "label": "18"
+        },
+        {
+          "id": "p7",
+          "symbol": "20",
+          "label": "20"
+        },
+        {
+          "id": "p8",
+          "symbol": "24",
+          "label": "24"
+        },
+        {
+          "id": "p9",
+          "symbol": "30",
+          "label": "30"
+        }
+      ],
+      "cells": ["p0", "p1", "p2", "p3", "p0", "p4", "p1", "p5", null],
+      "optionIds": ["p6", "p7", "p8", "p9"],
+      "showPieceLabels": false
+    },
+    "solutionPayload": {
+      "correctOptionId": "p8",
+      "explanation": "En cada fila, el tercer número es el producto de los dos primeros: 3 × 4 = 12, 5 × 3 = 15 y 4 × 6 = 24."
+    }
   }
 ]

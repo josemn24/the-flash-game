@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import {
   drawConexionesPaths,
-  reachConexiones,
+  reachCima,
   reachOrden,
   sevenPointPaths,
 } from "./support/cumbre-logica";
@@ -315,7 +315,7 @@ test.describe("Tabarnia alpha", () => {
   });
 });
 
-test("Cumbre lógica recién instalada acredita los parciales de Orden y Conexiones", async ({
+test("Cumbre lógica recién instalada acredita los parciales de Orden y Cima", async ({
   page,
   browser,
   baseURL,
@@ -379,7 +379,7 @@ test("Cumbre lógica recién instalada acredita los parciales de Orden y Conexio
   await signIn(page, users.dark);
   await page.goto(`/desafios/${publication.id}?roomId=${data.room.slug}`);
   await page.getByRole("button", { name: "Empezar desafío" }).click();
-  const board = await reachConexiones(page);
+  const board = await reachCima(page);
   const completion = page.waitForResponse(
     (response) =>
       response.url().includes("/api/competitive/attempts/") &&
@@ -393,12 +393,12 @@ test("Cumbre lógica recién instalada acredita los parciales de Orden y Conexio
   expect(completed).toMatchObject({ outcome: "failed" });
   expect(completed.score).toBeGreaterThan(7);
   await expect(page.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
-  await expect(page.getByText("+7 puntos en Conexiones")).toBeVisible();
+  await expect(page.getByText("+7 puntos en Cima")).toBeVisible();
   await page.reload();
-  await expect(page.getByText("+7 puntos en Conexiones")).toBeVisible();
+  await expect(page.getByText("+7 puntos en Cima")).toBeVisible();
   await page.getByRole("button", { name: "Ver respuestas" }).click();
-  await expect(page.getByText("4 de 7 superados")).toBeVisible();
-  await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(2);
+  await expect(page.getByText("6 de 7 superados")).toBeVisible();
+  await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(0);
 
   await dockerSql(`update public.scheduled_challenges set status = 'closed'
     where id = '${publication.id}';`);

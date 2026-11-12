@@ -228,5 +228,200 @@
       "correctAnswer": "i2",
       "explanation": "51 = 3 × 17 es compuesto. Para los demás basta probar los primos hasta su raíz cuadrada: ninguno es divisible por 2, 3, 5 o 7 cuando corresponde."
     }
+  },
+  {
+    "id": "bank-intruso-potencias-dos",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "bank-intruso-potencias-dos",
+    "publicPayload": {
+      "question": "¿Qué número no es una potencia de dos?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "16"
+        },
+        {
+          "id": "i1",
+          "label": "32"
+        },
+        {
+          "id": "i2",
+          "label": "48"
+        },
+        {
+          "id": "i3",
+          "label": "64"
+        },
+        {
+          "id": "i4",
+          "label": "128"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i2",
+      "explanation": "16 = 2⁴, 32 = 2⁵, 64 = 2⁶ y 128 = 2⁷. El 48 queda entre 32 y 64; no se obtiene multiplicando únicamente factores iguales a dos."
+    }
+  },
+  {
+    "id": "bank-intruso-divisores-sesenta",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "bank-intruso-divisores-sesenta",
+    "publicPayload": {
+      "question": "¿Cuál de estos números no es un divisor de 60?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "8"
+        },
+        {
+          "id": "i1",
+          "label": "3"
+        },
+        {
+          "id": "i2",
+          "label": "5"
+        },
+        {
+          "id": "i3",
+          "label": "12"
+        },
+        {
+          "id": "i4",
+          "label": "15"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i0",
+      "explanation": "60 ÷ 3 = 20, 60 ÷ 5 = 12, 60 ÷ 12 = 5 y 60 ÷ 15 = 4 son divisiones exactas entre enteros. En cambio, 60 ÷ 8 = 7,5: ocho no divide a 60 sin resto."
+    }
+  },
+  {
+    "id": "bank-intruso-fracciones-equivalentes",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "bank-intruso-fracciones-equivalentes",
+    "publicPayload": {
+      "question": "¿Qué fracción no equivale a tres cuartos (3/4)?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "6/8"
+        },
+        {
+          "id": "i1",
+          "label": "10/16"
+        },
+        {
+          "id": "i2",
+          "label": "9/12"
+        },
+        {
+          "id": "i3",
+          "label": "15/20"
+        },
+        {
+          "id": "i4",
+          "label": "18/24"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i1",
+      "explanation": "6/8, 9/12, 15/20 y 18/24 se obtienen multiplicando el numerador y el denominador de 3/4 por 2, 3, 5 y 6. En cambio, 10/16 se simplifica a 5/8, que es distinto de 3/4."
+    }
+  },
+  {
+    "id": "bank-intruso-duraciones-equivalentes",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "medium",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "bank-intruso-duraciones-equivalentes",
+    "publicPayload": {
+      "question": "¿Cuál de estas duraciones no equivale a 90 minutos?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "90 minutos"
+        },
+        {
+          "id": "i1",
+          "label": "1,5 horas"
+        },
+        {
+          "id": "i2",
+          "label": "5400 segundos"
+        },
+        {
+          "id": "i3",
+          "label": "1 hora y 45 minutos"
+        },
+        {
+          "id": "i4",
+          "label": "1 hora y 30 minutos"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i3",
+      "explanation": "1,5 horas son 1,5 × 60 = 90 minutos; 5400 segundos son 5400 ÷ 60 = 90 minutos, y una hora y media son 60 + 30 = 90 minutos. Una hora y 45 minutos suma 105 minutos, por lo que es la duración diferente."
+    }
+  },
+  {
+    "id": "bank-intruso-numeros-triangulares",
+    "version": 1,
+    "type": "odd-one-out",
+    "payloadSchemaVersion": 1,
+    "modes": ["flash", "survival", "pyramid"],
+    "difficulty": "hard",
+    "referenceTimeLimitMs": 30000,
+    "familyId": "bank-intruso-numeros-triangulares",
+    "publicPayload": {
+      "question": "¿Qué número no es triangular, es decir, no es una suma de enteros consecutivos desde 1?",
+      "items": [
+        {
+          "id": "i0",
+          "label": "6"
+        },
+        {
+          "id": "i1",
+          "label": "10"
+        },
+        {
+          "id": "i2",
+          "label": "15"
+        },
+        {
+          "id": "i3",
+          "label": "21"
+        },
+        {
+          "id": "i4",
+          "label": "25"
+        }
+      ]
+    },
+    "solutionPayload": {
+      "correctAnswer": "i4",
+      "explanation": "Las sumas 1 + 2 + 3 = 6, 1 + 2 + 3 + 4 = 10, 1 + … + 5 = 15 y 1 + … + 6 = 21 son números triangulares. La siguiente suma es 1 + … + 7 = 28. El 25 queda entre 21 y 28 y no es triangular."
+    }
   }
 ]

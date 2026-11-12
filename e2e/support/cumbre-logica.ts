@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import { placeQueensCrown } from "./queens";
 
 export async function openLevel(page: Page, title: string) {
   await expect(page.getByRole("heading", { name: title })).toBeVisible({ timeout: 15_000 });
@@ -29,7 +30,7 @@ export async function reachOrden(page: Page) {
   await openLevel(page, "Construye el orden");
 }
 
-export async function reachConexiones(page: Page) {
+export async function reachCoronas(page: Page) {
   await reachOrden(page);
   const currentOrder = ["Sol", "Río", "Nube", "Mar", "Luna"];
   const correctOrder = ["Río", "Mar", "Sol", "Luna", "Nube"];
@@ -45,17 +46,41 @@ export async function reachConexiones(page: Page) {
     }
   }
   await page.getByRole("button", { name: "Confirmar orden" }).click();
-  await waitForBriefing(page, "Cubre la cuadrícula");
+  await waitForBriefing(page, "Coloca las coronas");
+  await expect(page.getByLabel("Condiciones del nivel")).toContainText("30 s");
 
-  await openLevel(page, "Cubre la cuadrícula");
-  return page.getByRole("grid", { name: /Tablero de Conectar parejas/ });
+  await openLevel(page, "Coloca las coronas");
+  return page.getByRole("grid", { name: "Tablero Queens de 5 por 5" });
+}
+
+export async function reachCima(page: Page) {
+  const queensBoard = await reachCoronas(page);
+  for (const [row, column] of [
+    [2, 1],
+    [3, 4],
+    [4, 2],
+    [5, 5],
+  ]) {
+    await placeQueensCrown(
+      queensBoard.getByRole("gridcell", { name: new RegExp(`Fila ${row}, columna ${column}`) }),
+    );
+  }
+  await waitForBriefing(page, "Descifra la cerradura");
+  await openLevel(page, "Descifra la cerradura");
+  await page.getByLabel("Cifra 1 de 3").fill("507");
+  await page.getByRole("button", { name: "Enviar código" }).click();
+  await waitForBriefing(page, "Conquista la cima");
+  await expect(page.getByLabel("Condiciones del nivel")).toContainText("20 s");
+
+  await openLevel(page, "Conquista la cima");
+  return page.getByRole("grid", { name: /Tablero de Conectar parejas de 6×6/ });
 }
 
 export async function drawConexionesPaths(board: Locator, paths: readonly (readonly number[])[]) {
   for (const path of paths) {
     for (const cell of path) {
-      const row = Math.floor(cell / 5) + 1;
-      const column = (cell % 5) + 1;
+      const row = Math.floor(cell / 6) + 1;
+      const column = (cell % 6) + 1;
       await board
         .getByRole("button", {
           name: new RegExp(`^Fila ${row}, columna ${column}(?:$|:)`),
@@ -65,7 +90,17 @@ export async function drawConexionesPaths(board: Locator, paths: readonly (reado
   }
 }
 
+export const completeSpiralPaths = [
+  [0, 1, 7],
+  [6, 12, 13, 14, 15],
+  [9, 10, 16],
+  [8, 2, 3, 4, 5, 11, 17, 23, 29, 35, 34, 33, 32, 31, 30, 24, 18],
+  [22, 21, 20, 19, 25],
+  [26, 27, 28],
+] as const;
+
 export const sevenPointPaths = [
-  [0, 1, 2, 3, 4, 9],
-  [11, 12, 13, 14, 19, 18],
+  completeSpiralPaths[1],
+  completeSpiralPaths[2],
+  completeSpiralPaths[3],
 ] as const;

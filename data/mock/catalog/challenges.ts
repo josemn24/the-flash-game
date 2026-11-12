@@ -462,9 +462,9 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
         points: 15,
         modeConfig: {
           levelId: "summit",
-          label: "Cima",
+          label: "Coronas",
           briefing: {
-            title: "Conquista la cima",
+            title: "Coloca las coronas",
             format: "Queens",
             description:
               "Coloca cinco coronas sin repetir fila, columna o región y sin que se toquen.",
@@ -490,12 +490,12 @@ export const publishedChallengeFixtures = defineChallengeCatalog([
         points: 15,
         modeConfig: {
           levelId: "trap",
-          label: "Conexiones",
+          label: "Cima",
           briefing: {
-            title: "Cubre la cuadrícula",
+            title: "Conquista la cima",
             format: "Conectar parejas",
             description:
-              "Une cada pareja de símbolos con rutas ortogonales y cubre todas las casillas.",
+              "Une las seis parejas con rutas ortogonales y cubre las 36 casillas para conquistar la cima.",
           },
         },
       },

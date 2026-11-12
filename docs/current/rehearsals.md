@@ -15,7 +15,7 @@ dificultad `easy | medium | hard`, tiempo de referencia y los contratos canónic
 solución. La letra es explícita para Alfabeto. Las familias permiten evitar variantes muy parecidas.
 Las dimensiones y parámetros mecánicos se derivan del contenido.
 
-El banco actual contiene 413 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
+El banco actual contiene 423 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
 letra y dificultad; la ampliación incorpora 130 ejercicios sin modificar las preguntas ni recetas
 históricas. La prueba conserva las letras y su orden oficial, y cada entrada recibe una nueva
 semilla. La variedad se aplica entre alternativas de la dificultad solicitada; no hay exclusión
@@ -24,6 +24,18 @@ de preguntas vistas en sesiones anteriores.
 Elección múltiple dispone de 25 preguntas: diez fáciles, doce medias y tres difíciles, con
 respectivamente cuatro, doce y tres familias independientes. La tanda de historia añade una fácil
 y dos medias. Las preguntas admiten Flash, Supervivencia y Pirámide.
+
+Encontrar el intruso ofrece once preguntas: cuatro fáciles, cinco medias y dos difíciles. Las cuatro
+medias nuevas cubren potencias de dos, divisores, fracciones equivalentes y duraciones equivalentes.
+Números triangulares es difícil. Todas tienen familias independientes y
+explicaciones verificables. Entrada de Cumbre lógica conserva sus 25 segundos y 13 puntos y puede
+variar entre las cinco medias, sin sustituir dificultad. El generador no excluye ejercicios vistos
+en partidas anteriores.
+
+Matriz lógica ofrece siete preguntas: una fácil, cinco medias y una difícil. Las dos medias nuevas
+usan el enunciado «¿Qué número falta?» y piden inferir una suma o un producto entre las dos primeras
+casillas de cada fila para obtener la tercera. Tienen cuatro opciones y familias independientes.
+Cámara de Cumbre lógica conserva sus 35 segundos y 14 puntos y puede variar entre las cinco medias.
 
 Emparejar dispone de doce preguntas: dos fáciles, nueve medias y una difícil, en siete familias.
 La tanda de historia añade una media que relaciona monumentos con sus civilizaciones o contextos.
@@ -59,6 +71,13 @@ explicación del recorrido, la jerarquía o los cálculos. Las cinco estructuras
 este formato se comprueban en nivel medio y difícil: conservan la dificultad y no repiten ejercicios.
 Distintas semillas cambian el conjunto cuando quedan alternativas; si se utilizan las tres difíciles,
 puede variar su orden. Las dos sustituciones de Ordenar en las referencias de Supervivencia desaparecen.
+
+Clasificar dispone de ocho preguntas: tres fáciles, cuatro medias y una difícil, en siete familias.
+Las tres medias nuevas clasifican nueve animales por grupo zoológico, nueve valores expresados como
+fracciones, decimales o porcentajes respecto de un medio y nueve rocas por origen geológico. Cada una
+usa tres categorías, con tres elementos por categoría, y admite Flash, Supervivencia y Pirámide.
+La Biblia puede variar su sexto nivel entre las cuatro medias sin sustituir dificultad, conservando
+50 segundos y 15 puntos. Las preguntas y recetas anteriores se mantienen sin cambios.
 
 La ampliación temática de filosofía añade cuatro ejercicios: un Verdadero/falso medio sobre validez
 y verdad, un Emparejar fácil de autores y obras, unas Pistas progresivas medias sobre Sócrates y un

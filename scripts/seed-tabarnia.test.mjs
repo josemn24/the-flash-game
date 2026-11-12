@@ -87,6 +87,30 @@ function spainAssets() {
 }
 
 describe("Tabarnia seed", () => {
+  it("persists the level names, order and introductions from the Cumbre lógica catalog", () => {
+    const { challenge } = TABARNIA_PYRAMID_LOGIC_CONTENT;
+    const catalog = publishedChallengeFixtures.find((row) => row.slug === challenge.slug);
+    expect(challenge.items.map((item) => item.modeConfig.label)).toEqual([
+      "Entrada",
+      "Patrón",
+      "Cámara",
+      "Orden",
+      "Coronas",
+      "Cerradura",
+      "Cima",
+    ]);
+    expect(challenge.items).toEqual(catalog.items);
+    const sql = buildTabarniaDomainSql({
+      accounts: accounts(),
+      sbrAssetMetadata: {},
+      spainAssets: spainAssets(),
+      avatarMetadata: avatarMetadata(),
+      conflictSafe: true,
+    });
+    for (const index of [4, 6])
+      expect(sql).toContain(JSON.stringify(challenge.items[index].modeConfig));
+  });
+
   it("seeds Queens fifth and 6×6 connect pairs seventh in Cumbre lógica", () => {
     const challenge = TABARNIA_PYRAMID_LOGIC_CONTENT.challenge;
     const queensLevel = challenge.items[4];
@@ -97,6 +121,13 @@ describe("Tabarnia seed", () => {
 
     expect(challenge.items).toHaveLength(7);
     expect(challenge.items.reduce((sum, level) => sum + level.points, 0)).toBe(100);
+    expect(
+      challenge.items.map(
+        (item) =>
+          TABARNIA_PYRAMID_LOGIC_CONTENT.questions.find((entry) => entry.slug === item.questionSlug)
+            .publicPayload.timeLimitMs,
+      ),
+    ).toEqual([25000, 25000, 35000, 35000, 30000, 45000, 20000]);
     expect(queensLevel).toMatchObject({
       questionSlug: "pyramid-summit-queens",
       points: 15,
@@ -108,7 +139,7 @@ describe("Tabarnia seed", () => {
       modeConfig: { levelId: "trap", briefing: { format: "Conectar parejas" } },
     });
     expect(question?.publicPayload).toMatchObject({
-      timeLimitMs: 35000,
+      timeLimitMs: 20000,
       payload: {
         grid: { rows: 6, columns: 6 },
         pairs: expect.arrayContaining([
