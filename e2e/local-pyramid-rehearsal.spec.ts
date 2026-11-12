@@ -1,9 +1,11 @@
 import { placeQueensCrown } from "./support/queens";
 import { expect, test } from "@playwright/test";
 import {
+  completeSpiralPaths,
   drawConexionesPaths,
   openLevel,
-  reachConexiones,
+  reachCima,
+  reachCoronas,
   sevenPointPaths,
   waitForBriefing,
 } from "./support/cumbre-logica";
@@ -33,23 +35,18 @@ test("plays, reviews, and repeats the seven-level local Pyramid without backend 
   await expect(start).toBeFocused();
   await page.keyboard.press("Enter");
 
-  const board = await reachConexiones(page);
-  const paths = [
-    [0, 1, 2, 3, 4, 9],
-    [8, 7, 6, 5, 10],
-    [11, 12, 13, 14, 19, 18],
-    [17, 16, 15, 20, 21, 22, 23, 24],
-  ];
-  await drawConexionesPaths(board, paths);
-  await waitForBriefing(page, "Descifra la cerradura");
-
-  await openLevel(page, "Descifra la cerradura");
-  await page.getByLabel("Cifra 1 de 3").fill("507");
-  await page.getByRole("button", { name: "Enviar código" }).click();
-  await waitForBriefing(page, "Conquista la cima");
-
-  await openLevel(page, "Conquista la cima");
-  const queensBoard = page.getByRole("grid", { name: "Tablero Queens de 5 por 5" });
+  const levelMap = page.getByRole("list", { name: "Niveles de La Pirámide" });
+  await expect(levelMap.locator("li > span")).toHaveText(["7", "6", "5", "4", "3", "2", "1"]);
+  await expect(levelMap.locator("li > strong")).toHaveText([
+    "Cima",
+    "Cerradura",
+    "Coronas",
+    "Orden",
+    "Cámara",
+    "Patrón",
+    "Entrada",
+  ]);
+  const queensBoard = await reachCoronas(page);
   const firstQueen = queensBoard.getByRole("gridcell", { name: /Fila 2, columna 1/ });
   await firstQueen.focus();
   await page.keyboard.press("Space");
@@ -66,6 +63,16 @@ test("plays, reviews, and repeats the seven-level local Pyramid without backend 
     );
   }
 
+  await waitForBriefing(page, "Descifra la cerradura");
+  await openLevel(page, "Descifra la cerradura");
+  await page.getByLabel("Cifra 1 de 3").fill("507");
+  await page.getByRole("button", { name: "Enviar código" }).click();
+  await waitForBriefing(page, "Conquista la cima");
+  await expect(page.getByLabel("Condiciones del nivel")).toContainText("20 s");
+  await openLevel(page, "Conquista la cima");
+  const board = page.getByRole("grid", { name: /Tablero de Conectar parejas de 6×6/ });
+  await drawConexionesPaths(board, completeSpiralPaths);
+
   await expect(page.getByRole("heading", { name: "Cima conquistada" })).toBeVisible({
     timeout: 20_000,
   });
@@ -80,18 +87,18 @@ test("plays, reviews, and repeats the seven-level local Pyramid without backend 
   expect(backendRequests).toEqual([]);
 });
 
-test("shows timeout credit for Conexiones and keeps Cerradura locked", async ({ page }) => {
+test("shows timeout credit at Cima after completing the first six levels", async ({ page }) => {
   await page.clock.install();
   await page.goto(rehearsalPath);
   await page.getByRole("button", { name: "Empezar desafío" }).click();
-  const board = await reachConexiones(page);
+  const board = await reachCima(page);
   await drawConexionesPaths(board, sevenPointPaths);
-  await page.clock.runFor(36_000);
+  await page.clock.runFor(21_000);
   await expect(page.getByRole("heading", { name: "Ascenso terminado" })).toBeVisible();
-  await expect(page.getByText("+7 puntos en Conexiones")).toBeVisible();
+  await expect(page.getByText("+7 puntos en Cima")).toBeVisible();
   await page.getByRole("button", { name: "Ver respuestas" }).click();
-  await expect(page.getByText("4 de 7 superados")).toBeVisible();
-  await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(2);
+  await expect(page.getByText("6 de 7 superados")).toBeVisible();
+  await expect(page.getByText("No alcanzado", { exact: true })).toHaveCount(0);
 });
 
 test("supports a mobile reduced-motion layout and keyboard start without authentication", async ({

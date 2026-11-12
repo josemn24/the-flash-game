@@ -108,9 +108,9 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
         points: 15,
         modeConfig: {
           levelId: "summit",
-          label: "Cima",
+          label: "Coronas",
           briefing: {
-            title: "Conquista la cima",
+            title: "Coloca las coronas",
             format: "Queens",
             description:
               "Coloca cinco coronas sin repetir fila, columna o región y sin que se toquen.",
@@ -136,12 +136,12 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
         points: 15,
         modeConfig: {
           levelId: "trap",
-          label: "Conexiones",
+          label: "Cima",
           briefing: {
-            title: "Cubre la cuadrícula",
+            title: "Conquista la cima",
             format: "Conectar parejas",
             description:
-              "Une cada pareja de símbolos con rutas ortogonales y cubre todas las casillas.",
+              "Une las seis parejas con rutas ortogonales y cubre las 36 casillas para conquistar la cima.",
           },
         },
       },
@@ -257,7 +257,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       cognitiveSkills: ["logical_reasoning", "problem_solving"],
       formatSkills: ["planning", "deduction"],
       prompt: "Conecta las seis parejas y cubre toda la cuadrícula 6×6.",
-      timeLimitMs: 35000,
+      timeLimitMs: 20000,
       payload: {
         grid: { rows: 6, columns: 6 },
         pairs: [
@@ -314,7 +314,7 @@ export const TABARNIA_PYRAMID_LOGIC_CONTENT = {
       cognitiveSkills: ["logical_reasoning", "problem_solving"],
       formatSkills: ["deduction", "planning"],
       prompt: "Coloca cinco coronas sin repetir fila, columna o región.",
-      timeLimitMs: 45000,
+      timeLimitMs: 30000,
       payload: {
         grid: { rows: 5, columns: 5 },
         regions: [0, 1, 1, 1, 4, 0, 2, 1, 4, 4, 0, 2, 1, 4, 3, 0, 2, 4, 4, 3, 2, 2, 3, 3, 3],

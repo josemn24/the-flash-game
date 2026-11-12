@@ -309,7 +309,7 @@ export const pyramidQuestions = defineQuestionCatalog([
       },
       prompt: "Conecta las seis parejas y cubre toda la cuadrícula 6×6.",
       context: null,
-      timeLimitMs: 35000,
+      timeLimitMs: 20000,
       payload: {
         grid: { rows: 6, columns: 6 },
         pairs: [
@@ -409,7 +409,7 @@ export const pyramidQuestions = defineQuestionCatalog([
       },
       prompt: "Coloca cinco coronas sin repetir fila, columna o región.",
       context: null,
-      timeLimitMs: 45000,
+      timeLimitMs: 30000,
       payload: {
         grid: {
           rows: 5,

@@ -323,7 +323,7 @@ describe("Cumbre lógica Conexiones at the deadline", () => {
   it("credits four points, rejects a draft at the deadline, and ends the ascent", async () => {
     const { clock, driver, partial, question, index } = await atConexiones();
     await driver.issue("connectPairsDraft", { paths: partial }, index);
-    clock.advance(35000);
+    clock.advance(question.timeLimit * 1000);
     expect(
       await driver.execute(
         driver.command("connectPairsDraft", { paths: question.solutionPaths }, index),
@@ -364,10 +364,12 @@ describe("Cumbre lógica Conexiones at the deadline", () => {
   it.each(["empty", "open", "disabled", "interrupted"] as const)(
     "awards zero for a %s checkpoint",
     async (scenario) => {
-      const { clock, driver, partial, index } = await atConexiones(scenario !== "disabled");
+      const { clock, driver, partial, question, index } = await atConexiones(
+        scenario !== "disabled",
+      );
       const paths = scenario === "empty" ? {} : scenario === "open" ? { d: partial.d } : partial;
       await driver.issue("connectPairsDraft", { paths }, index);
-      clock.advance(scenario === "interrupted" ? 1 : 35000);
+      clock.advance(scenario === "interrupted" ? 1 : question.timeLimit * 1000);
       const recovered = await driver.issue("recover");
       expect(recovered.state.score).toBe(85);
       expect(recovered.state.answers?.at(-1)).toMatchObject({ points: 0, status: "unanswered" });
@@ -376,9 +378,9 @@ describe("Cumbre lógica Conexiones at the deadline", () => {
 
   it("recovers a solved checkpoint with normal speed points and completes the ascent", async () => {
     const { clock, driver, question, index } = await atConexiones();
-    clock.advance(17500);
+    clock.advance(question.timeLimit * 500);
     await driver.issue("connectPairsDraft", { paths: question.solutionPaths }, index);
-    clock.advance(17500);
+    clock.advance(question.timeLimit * 500);
     const recovered = await driver.issue("recover");
     expect(recovered).toMatchObject({
       effect: "completed",
@@ -395,7 +397,7 @@ describe("Cumbre lógica Conexiones at the deadline", () => {
   it("gives priority to a timely final answer over a partial draft during recovery", async () => {
     const { clock, driver, partial, question, index } = await atConexiones();
     await driver.issue("connectPairsDraft", { paths: partial }, index);
-    clock.advance(17500);
+    clock.advance(question.timeLimit * 500);
     const command = driver.command("answer", { answer: { paths: question.solutionPaths } }, index);
     const controller = new AbortController();
     const pending = driver.execute(command, controller.signal);
@@ -403,7 +405,7 @@ describe("Cumbre lógica Conexiones at the deadline", () => {
     controller.abort();
     expect(await pending).toMatchObject({ kind: "uncertain", code: "request_cancelled" });
     await driver.issue("start");
-    clock.advance(17500);
+    clock.advance(question.timeLimit * 500);
     const recovered = await driver.issue("recover");
     expect(recovered).toMatchObject({
       effect: "completed",

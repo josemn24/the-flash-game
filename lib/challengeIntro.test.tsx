@@ -62,7 +62,7 @@ describe("challenge intro model", () => {
     expect(alphabet).toBeDefined();
     expect(pyramid).toBeDefined();
     expect(buildChallengeIntroModel(alphabet!).metrics[1].value).toBe("2 min");
-    expect(buildChallengeIntroModel(pyramid!).metrics[1].value).toBe("4 min");
+    expect(buildChallengeIntroModel(pyramid!).metrics[1].value).toBe("3 min");
     expect(
       buildChallengeIntroModel(challenges.find((challenge) => challenge.mode === "narrative")!)
         .metrics[2].value,
