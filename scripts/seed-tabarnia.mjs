@@ -544,7 +544,7 @@ function tabarniaChallenges() {
       id: challengeId(connectPairsTimeTrial.slug),
       versionId: challengeVersionId(connectPairsTimeTrial.slug),
       versionNumber: 2,
-      modeConfig: {},
+      modeConfig: connectPairsTimeTrial.modeConfig,
       items: connectPairsTimeTrial.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
     },
     {

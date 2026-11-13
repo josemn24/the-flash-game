@@ -197,8 +197,9 @@ Alphabet (16 letras, 150 segundos, 100 puntos), Flow Free (nueve tableros de
 100 puntos), en ese orden y en ventanas consecutivas de 24 horas. La novena ventana ocupa
 las horas 192 a 216 desde el inicio. La temporada dura 17 días con el perfil predeterminado.
 
-Las instalaciones nuevas programan Cumbre lógica v2 con parciales en Ordenación, Conexiones y Queens,
-y La Biblia v2 con parciales en Emparejamiento, Ordenación, Sopa de letras y Clasificación. Estos
+Las instalaciones nuevas programan Cumbre lógica v2 con parciales en Ordenación, Conexiones y Queens;
+La Biblia v2 con parciales en Emparejamiento, Ordenación, Sopa de letras y Clasificación, y
+Flow Free v2 con nueve tableros y parcial al agotar el reloj en el tablero en curso. Estos
 controles coinciden con los de sus demos locales. Las publicaciones existentes conservan su versión
 asignada. Para usar una versión nueva, selecciónala desde el calendario mientras la publicación
 permita cambiar de versión.
@@ -206,7 +207,8 @@ permita cambiar de versión.
 En una instalación existente, las migraciones habilitan los controles de parciales sin crear ni
 publicar versiones del contenido. Desde el portal superadmin, usa «Crear corrección» sobre cada v1
 para preparar Cumbre lógica v2 y La Biblia v2, activa los controles correspondientes y publica ambas.
-Después selecciónalas en publicaciones editables del calendario. Este flujo conserva los intentos,
+Haz lo mismo con Flow Free: su v2 añade dos tableros y
+activa `connectPairsTimeoutPartialCredit`. Después selecciónalas en publicaciones editables del calendario. Este flujo conserva los intentos,
 los resultados y las versiones asignadas a las publicaciones ya abiertas o cerradas.
 Si una base ya tiene una v2 publicada, se conserva: editar una migración ya aplicada no la revierte
 ni libera ese número de versión.

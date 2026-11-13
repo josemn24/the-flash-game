@@ -225,6 +225,11 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain(
       `'${publication.challengeVersionId}', '${publication.challengeId}', 2, 1, 'draft', 'time-trial'`,
     );
+    expect(sql).toMatch(
+      new RegExp(
+        `'${publication.challengeVersionId}'[^\\n]*'\\{"connectPairsTimeoutPartialCredit":true\\}'`,
+      ),
+    );
     for (const { questionSlug } of TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.items)
       expect(sql).toContain(
         deterministicUuid(

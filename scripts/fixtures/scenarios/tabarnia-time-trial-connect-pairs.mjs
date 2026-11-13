@@ -121,10 +121,11 @@ export const TABARNIA_CONNECT_PAIRS_TIME_TRIAL = {
     title: "Flow Free",
     subtitle: "Nueve tableros. Un único reloj.",
     description:
-      "Conecta nueve tableros de 4×4 a 7×7 con un reloj compartido de dos minutos y medio, empezando con un 4×4 fácil. Borrar y rehacer rutas no consume puntos ni intentos.",
+      "Conecta nueve tableros de 4×4 a 7×7 con un reloj compartido de dos minutos y medio, empezando con un 4×4 fácil. Borrar y rehacer rutas no consume puntos ni intentos. Si se agota el tiempo, el tablero en curso suma puntos parciales por las parejas conectadas.",
     mode: "time-trial",
     globalTimeLimitMs: 150_000,
-    modeConfig: {},
+    // Al agotarse el reloj, el tablero en curso puntúa por parejas y casillas completas.
+    modeConfig: { connectPairsTimeoutPartialCredit: true },
     items: boards.map((board) => ({
       questionSlug: board.slug,
       points: board.points,

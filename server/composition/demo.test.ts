@@ -72,6 +72,9 @@ describe("demo local Time Trial composition", () => {
     expect(definition?.levels).toHaveLength(boardCount);
     expect(definition?.challenge.slots.every((slot) => slot.questionType === format)).toBe(true);
     expect(definition?.challenge.timeLimitMs).toBe(150_000);
+    expect(definition?.challenge.connectPairsTimeoutPartialCredit).toBe(
+      format === "connect-pairs" ? true : undefined,
+    );
     expect(definition?.challenge.slots.reduce((sum, slot) => sum + slot.points, 0)).toBe(100);
   });
 

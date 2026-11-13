@@ -40,12 +40,21 @@ const sequences = [
     weights: index === 0 ? [12, 13, 13, 14, 15, 16, 17] : [8, 9, 9, 10, 11, 12, 13, 14, 14],
     // Tableros añadidos después de congelar la huella; no forman parte de ella.
     addedSlugs: index === 0 ? [] : [/-5x5-easy$/, /-7x7-hard$/],
+    modeConfig: index === 0 ? {} : { connectPairsTimeoutPartialCredit: true },
   })),
 ];
 
 describe.each(sequences)(
   "$name",
-  ({ challenge, questions, originalFingerprint, sizes, weights, addedSlugs = [] }) => {
+  ({
+    challenge,
+    questions,
+    originalFingerprint,
+    sizes,
+    weights,
+    addedSlugs = [],
+    modeConfig = {},
+  }) => {
     it("publishes the agreed boards with the agreed clock, sequence and scoring", () => {
       const metadata = { ...challenge };
       delete metadata.items;
@@ -56,6 +65,7 @@ describe.each(sequences)(
         }).questions,
       ).toHaveLength(sizes.length);
       expect(challenge.globalTimeLimitMs).toBe(150_000);
+      expect(challenge.modeConfig ?? {}).toEqual(modeConfig);
       expect(questions.map((q) => q.publicPayload.grid.rows)).toEqual(sizes);
       expect(questions.map((q) => q.points)).toEqual(weights);
       expect(weights.reduce((sum, weight) => sum + weight, 0)).toBe(100);
