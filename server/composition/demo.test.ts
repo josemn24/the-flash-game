@@ -63,13 +63,13 @@ describe("demo local Flash composition", () => {
 
 describe("demo local Time Trial composition", () => {
   it.each([
-    ["tabarnia-time-trial-queens-01", "queens", "Queens"],
-    ["tabarnia-time-trial-connect-pairs-01", "connect-pairs", "Flow Free"],
-  ] as const)("loads the approved %s fixture", (id, format, title) => {
+    ["tabarnia-time-trial-queens-01", "queens", "Queens", 7],
+    ["tabarnia-time-trial-connect-pairs-01", "connect-pairs", "Flow Free", 9],
+  ] as const)("loads the approved %s fixture", (id, format, title, boardCount) => {
     const definition = createDemoReadServices().localTimeTrial.getDefinition(id);
     expect(definition?.challenge).toMatchObject({ id, mode: "time-trial", title });
-    expect(definition?.challenge.slots).toHaveLength(7);
-    expect(definition?.levels).toHaveLength(7);
+    expect(definition?.challenge.slots).toHaveLength(boardCount);
+    expect(definition?.levels).toHaveLength(boardCount);
     expect(definition?.challenge.slots.every((slot) => slot.questionType === format)).toBe(true);
     expect(definition?.challenge.timeLimitMs).toBe(150_000);
     expect(definition?.challenge.slots.reduce((sum, slot) => sum + slot.points, 0)).toBe(100);

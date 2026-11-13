@@ -5,6 +5,8 @@ import { TABARNIA_QUEENS_TIME_TRIAL } from "../scripts/fixtures/scenarios/tabarn
 
 const queensPath = "/demo/flash-pop/desafios/tabarnia-time-trial-queens-01";
 const connectPairsPath = "/demo/flash-pop/desafios/tabarnia-time-trial-connect-pairs-01";
+const queensBoardCount = TABARNIA_QUEENS_TIME_TRIAL.questions.length;
+const connectPairsBoardCount = TABARNIA_CONNECT_PAIRS_TIME_TRIAL.questions.length;
 const backendPath = /\/auth\/v1(?:\/|$)|\/storage\/v1(?:\/|$)|\/api\/competitive(?:\/|$)/i;
 
 async function finishCountdown(page: Page) {
@@ -51,7 +53,7 @@ test.describe("Queens touch interactions", () => {
   test("erasing an X through the final crown preserves all lives on mobile", async ({ page }) => {
     await page.goto(queensPath);
     await page.getByRole("button", { name: "Empezar desafío" }).click();
-    await expect(page.getByText("Prueba 1 de 6", { exact: true })).toBeVisible();
+    await expect(page.getByText(`Prueba 1 de ${queensBoardCount}`, { exact: true })).toBeVisible();
     const question = TABARNIA_QUEENS_TIME_TRIAL.questions[0]!;
     const size = question.publicPayload.grid.rows;
     const solution = question.solutionPayload.solution;
@@ -73,7 +75,7 @@ test.describe("Queens touch interactions", () => {
     await target.tap();
     await expect(target).toHaveAccessibleName(/: vacía/);
     await page.waitForTimeout(900);
-    await expect(page.getByText("Prueba 1 de 6", { exact: true })).toBeVisible();
+    await expect(page.getByText(`Prueba 1 de ${queensBoardCount}`, { exact: true })).toBeVisible();
     await expect(
       page.getByLabel("3 de 3 intentos restantes en este tablero", { exact: true }),
     ).toBeVisible();
@@ -81,7 +83,7 @@ test.describe("Queens touch interactions", () => {
     const final = queensCell(page, editable.at(-1)!, size);
     await final.tap();
     await final.tap();
-    await expect(page.getByText("Prueba 2 de 6", { exact: true })).toBeVisible();
+    await expect(page.getByText(`Prueba 2 de ${queensBoardCount}`, { exact: true })).toBeVisible();
   });
 });
 
@@ -108,27 +110,33 @@ test("local Queens Time Trial shares the competitive view, can be reviewed and r
 
       await expect(page.getByRole("heading", { name: "Queens" })).toBeVisible();
       await expect(page.getByRole("timer")).toBeVisible();
-      await expect(page.getByText("Prueba 1 de 6", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText(`Prueba 1 de ${queensBoardCount}`, { exact: true }),
+      ).toBeVisible();
       for (
         let questionIndex = 0;
         questionIndex < TABARNIA_QUEENS_TIME_TRIAL.questions.length;
         questionIndex += 1
       ) {
         await expect(
-          page.getByText(`Prueba ${questionIndex + 1} de 6`, { exact: true }),
+          page.getByText(`Prueba ${questionIndex + 1} de ${queensBoardCount}`, { exact: true }),
         ).toBeVisible();
         await solveQueens(page, questionIndex);
       }
       await expect(page.getByRole("heading", { name: "Todas las pruebas resueltas" })).toBeVisible({
         timeout: 15_000,
       });
-      await expect(page.getByText("6/6", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText(`${queensBoardCount}/${queensBoardCount}`, { exact: true }),
+      ).toBeVisible();
       await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
       await page.getByRole("button", { name: "Ver respuestas" }).click();
       await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible({
         timeout: 10_000,
       });
-      await expect(page.getByText("6 de 6 resueltas")).toBeVisible();
+      await expect(
+        page.getByText(`${queensBoardCount} de ${queensBoardCount} resueltas`),
+      ).toBeVisible();
       await page.getByRole("button", { name: "Volver al resultado" }).click();
       if (run === 1) await page.getByRole("button", { name: "Repetir ensayo" }).click();
     });
@@ -136,7 +144,7 @@ test("local Queens Time Trial shares the competitive view, can be reviewed and r
   expect(backendRequests).toEqual([]);
 });
 
-test("local Connect Pairs Time Trial reviews and replays all six boards without backend calls", async ({
+test("local Connect Pairs Time Trial reviews and replays every board without backend calls", async ({
   page,
 }) => {
   test.setTimeout(180_000);
@@ -167,7 +175,9 @@ test("local Connect Pairs Time Trial reviews and replays all six boards without 
         const question = TABARNIA_CONNECT_PAIRS_TIME_TRIAL.questions[questionIndex]!;
         const size = question.publicPayload.grid.rows;
         await expect(
-          page.getByText(`Prueba ${questionIndex + 1} de 6`, { exact: true }),
+          page.getByText(`Prueba ${questionIndex + 1} de ${connectPairsBoardCount}`, {
+            exact: true,
+          }),
         ).toBeVisible();
         await expect(page.getByRole("grid", { name: new RegExp(`${size}×${size}`) })).toBeVisible();
         await solveConnectPairs(page, questionIndex);
@@ -175,11 +185,15 @@ test("local Connect Pairs Time Trial reviews and replays all six boards without 
       await expect(
         page.getByRole("heading", { name: "Todas las pruebas resueltas" }),
       ).toBeVisible();
-      await expect(page.getByText("6/6", { exact: true })).toBeVisible();
+      await expect(
+        page.getByText(`${connectPairsBoardCount}/${connectPairsBoardCount}`, { exact: true }),
+      ).toBeVisible();
       await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
       await page.getByRole("button", { name: "Ver respuestas" }).click();
       await expect(page.getByRole("heading", { name: "Historial de respuestas" })).toBeVisible();
-      await expect(page.getByText("6 de 6 resueltas")).toBeVisible();
+      await expect(
+        page.getByText(`${connectPairsBoardCount} de ${connectPairsBoardCount} resueltas`),
+      ).toBeVisible();
       await page.getByRole("button", { name: "Volver al resultado" }).click();
       if (run === 1) await page.getByRole("button", { name: "Repetir ensayo" }).click();
     });

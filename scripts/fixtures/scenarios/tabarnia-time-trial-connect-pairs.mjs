@@ -61,35 +61,67 @@ const existingBoards = betaVipConnectPairsQuestions.slice(1).map((question, inde
   };
 });
 
-const introPaths = {
-  a: [0, 1, 2, 3],
-  b: [4, 5, 9, 8],
-  c: [6, 7, 11, 10],
-  d: [12, 13, 14, 15],
-};
-const boards = [
-  {
-    slug: "tabarnia-connect-pairs-time-trial-intro-4x4",
-    size: 4,
-    points: 12,
-    paths: introPaths,
-    pairs: Object.entries(introPaths).map(([id, cells]) => ({
+/** @param {Record<string, number[]>} paths */
+function boardFromPaths(slug, size, paths) {
+  return {
+    slug,
+    size,
+    paths,
+    pairs: Object.entries(paths).map(([id, cells]) => ({
       id,
       label: `Pareja ${id.toUpperCase()}`,
       symbol: id.toUpperCase(),
       endpoints: [cells[0], cells.at(-1)],
     })),
-  },
-  ...existingBoards,
+  };
+}
+
+const introBoard = boardFromPaths("tabarnia-connect-pairs-time-trial-intro-4x4", 4, {
+  a: [0, 1, 2, 3],
+  b: [4, 5, 9, 8],
+  c: [6, 7, 11, 10],
+  d: [12, 13, 14, 15],
+});
+
+// Tableros propios de Tabarnia, con solución única verificada.
+const easyFiveBoard = boardFromPaths("tabarnia-connect-pairs-time-trial-5x5-easy", 5, {
+  a: [1, 0, 5, 10, 15, 20, 21, 22, 23, 24],
+  b: [2, 3, 8, 13, 12],
+  c: [7, 6, 11, 16, 17, 18],
+  d: [4, 9, 14, 19],
+});
+const hardSevenBoard = boardFromPaths("tabarnia-connect-pairs-time-trial-7x7-hard", 7, {
+  a: [0, 7, 14, 21, 28, 35, 42, 43],
+  b: [10, 3, 2, 1, 8, 15, 22, 23, 24, 25, 32],
+  c: [11, 4, 5, 6, 13, 20, 27, 34, 41, 48, 47, 46],
+  d: [9, 16, 17, 18],
+  e: [12, 19, 26, 33, 40, 39],
+  f: [29, 36, 37, 44],
+  g: [30, 31, 38, 45],
+});
+
+// Orden de dificultad creciente; los pesos suman 100 y sustituyen a los de BetaVIP.
+const boardSequence = [
+  [introBoard, 8],
+  [existingBoards[0], 9],
+  [easyFiveBoard, 9],
+  [existingBoards[1], 10],
+  [existingBoards[2], 11],
+  [existingBoards[3], 12],
+  [existingBoards[4], 13],
+  [existingBoards[5], 14],
+  [hardSevenBoard, 14],
 ];
+/** @type {Array<{ slug: string, size: number, points: number, paths: Record<string, number[]>, pairs: Array<{ id: string, label: string, symbol: string, endpoints: number[] }> }>} */
+const boards = boardSequence.map(([board, points]) => ({ ...board, points }));
 
 export const TABARNIA_CONNECT_PAIRS_TIME_TRIAL = {
   challenge: {
     slug: "tabarnia-time-trial-connect-pairs",
     title: "Flow Free",
-    subtitle: "Siete tableros. Un único reloj.",
+    subtitle: "Nueve tableros. Un único reloj.",
     description:
-      "Conecta siete tableros de 4×4 a 7×7 con un reloj compartido de dos minutos y medio, empezando con un 4×4 fácil. Borrar y rehacer rutas no consume puntos ni intentos.",
+      "Conecta nueve tableros de 4×4 a 7×7 con un reloj compartido de dos minutos y medio, empezando con un 4×4 fácil. Borrar y rehacer rutas no consume puntos ni intentos.",
     mode: "time-trial",
     globalTimeLimitMs: 150_000,
     modeConfig: {},

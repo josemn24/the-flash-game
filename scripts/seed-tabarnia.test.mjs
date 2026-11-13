@@ -5,6 +5,7 @@ import { supabaseCompetitiveEvaluator } from "../server/evaluation/competitive-e
 import {
   buildTabarniaDomainSql,
   setupTabarniaDataset,
+  TABARNIA_LEGACY_VERSION_IDS,
   tabarniaManifest,
   TABARNIA_USERS,
 } from "./seed-tabarnia.mjs";
@@ -16,6 +17,7 @@ import { TABARNIAVERSO_QUESTIONS } from "./fixtures/scenarios/tabarniaverso.mjs"
 import { publishedChallengeFixtures } from "../data/mock/catalog/challenges.ts";
 import { pyramidPartialCreditOptions } from "../lib/gameplay/pyramidPartialCredit.ts";
 import { deterministicUuid } from "./support/supabase-local.mjs";
+import { TABARNIA_CONNECT_PAIRS_TIME_TRIAL } from "./fixtures/scenarios/tabarnia-time-trial-connect-pairs.mjs";
 import { TABARNIA_PYRAMID_LOGIC_CONTENT } from "./fixtures/scenarios/tabarnia-pyramid-logic.mjs";
 
 function accounts() {
@@ -195,6 +197,41 @@ describe("Tabarnia seed", () => {
         `challenge-item:${publication.challengeVersionId}:${example.question}`,
       ),
     );
+  });
+
+  it("installs Flow Free v2 with versioned items and keeps v1 as legacy", () => {
+    const input = {
+      accounts: accounts(),
+      sbrAssetMetadata: {},
+      spainAssets: spainAssets(),
+      avatarMetadata: avatarMetadata(),
+    };
+    const slug = TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug;
+    const publication = tabarniaManifest(input.accounts, input.avatarMetadata).publications.find(
+      (row) => row.slug === slug,
+    );
+    const v1 = deterministicUuid(
+      "the-flash-game:tabarnia",
+      "challenge-version:tabarnia-connect-pairs-time-trial-v1",
+    );
+    expect(publication.challengeVersionId).toBe(
+      deterministicUuid(
+        "the-flash-game:tabarnia",
+        "challenge-version:tabarnia-connect-pairs-time-trial-v2",
+      ),
+    );
+    expect(TABARNIA_LEGACY_VERSION_IDS[slug]).toEqual([v1]);
+    const sql = buildTabarniaDomainSql({ ...input, conflictSafe: true });
+    expect(sql).toContain(
+      `'${publication.challengeVersionId}', '${publication.challengeId}', 2, 1, 'draft', 'time-trial'`,
+    );
+    for (const { questionSlug } of TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.items)
+      expect(sql).toContain(
+        deterministicUuid(
+          "the-flash-game:tabarnia",
+          `challenge-item:${publication.challengeVersionId}:${questionSlug}`,
+        ),
+      );
   });
 
   it("ships avatar files matching their declared image formats", async () => {
@@ -655,6 +692,8 @@ describe("Tabarnia seed", () => {
     expect(sql).toContain("pyramid-summit-queens");
     expect(sql).toContain("tabarnia-queens-time-trial-6");
     expect(sql).toContain("tabarnia-connect-pairs-time-trial-6");
+    expect(sql).toContain("tabarnia-connect-pairs-time-trial-5x5-easy");
+    expect(sql).toContain("tabarnia-connect-pairs-time-trial-7x7-hard");
     expect(sql).toContain("'time-trial'");
     expect(sql).toContain('"correctAnswer":"square-29"');
     expect(sql).toContain('"correctOptionId":"triangle-up"');
@@ -871,7 +910,7 @@ describe("Tabarnia seed", () => {
       ["survival", 20, 100],
       ["pyramid", 7, 100],
       ["alphabet", 16, 100],
-      ["time-trial", 7, 100],
+      ["time-trial", 9, 100],
       ["pyramid", 7, 100],
       ["flash", 16, 100],
     ]);

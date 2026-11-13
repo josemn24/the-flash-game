@@ -7,7 +7,7 @@ import {
   getAvatarMetadata,
   getSbrMapMetadata,
   prepareSpainAssets,
-  TABARNIA_PYRAMID_LEGACY_VERSION_IDS,
+  TABARNIA_LEGACY_VERSION_IDS,
   TABARNIA_USERS,
   tabarniaChallengeCount,
   tabarniaManifest,
@@ -258,7 +258,7 @@ async function validateTabarniaDomain(
     const row = publications[index];
     if (
       row.challenge_version_id !== item.challengeVersionId &&
-      !TABARNIA_PYRAMID_LEGACY_VERSION_IDS[item.slug]?.includes(row.challenge_version_id)
+      !TABARNIA_LEGACY_VERSION_IDS[item.slug]?.includes(row.challenge_version_id)
     ) {
       throw new Error(`La publicación de ${item.title} referencia otra versión.`);
     }
