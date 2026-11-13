@@ -2118,5 +2118,30 @@
     "id": "bank-clasificar-rocas",
     "version": 1,
     "contentHash": "df80ae7ef5cd8c615ff7d49e0638e5918b182538363fc01e1fe4b4280f5653a1"
+  },
+  {
+    "id": "bank-parejas-rodeo-exterior",
+    "version": 1,
+    "contentHash": "8e21dd2945ec5ff1a79f626883ddec5d38ad34adfb2e8a4bcf451889549552f6"
+  },
+  {
+    "id": "bank-parejas-doble-pasillo",
+    "version": 1,
+    "contentHash": "d1d58cc45a8f4252daa8742e5275560088b3016893b1fec1e064450e54b9d200"
+  },
+  {
+    "id": "bank-parejas-marco-naranja",
+    "version": 1,
+    "contentHash": "185e74f22f0cc06d49f09c29aef8b4d434887a8915887804c0a2ad62fe400aca"
+  },
+  {
+    "id": "bank-parejas-gran-vuelta",
+    "version": 1,
+    "contentHash": "47452dfc3596735b7e8ffac1abc3beb03845f6c5dbb61d8711d493db2b0cc12a"
+  },
+  {
+    "id": "bank-parejas-seis-lineas",
+    "version": 1,
+    "contentHash": "67ad5841adf63c11404b85655ffb868aadd1d73cd30c83d2e1c33d4ddbf2e000"
   }
 ]

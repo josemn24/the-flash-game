@@ -15,7 +15,7 @@ dificultad `easy | medium | hard`, tiempo de referencia y los contratos canónic
 solución. La letra es explícita para Alfabeto. Las familias permiten evitar variantes muy parecidas.
 Las dimensiones y parámetros mecánicos se derivan del contenido.
 
-El banco actual contiene 423 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
+El banco actual contiene 428 preguntas activas. Las 243 de Alfabeto ofrecen tres familias por
 letra y dificultad; la ampliación incorpora 130 ejercicios sin modificar las preguntas ni recetas
 históricas. La prueba conserva las letras y su orden oficial, y cada entrada recibe una nueva
 semilla. La variedad se aplica entre alternativas de la dificultad solicitada; no hay exclusión
@@ -40,11 +40,12 @@ Cámara de Cumbre lógica conserva sus 35 segundos y 14 puntos y puede variar en
 Emparejar dispone de doce preguntas: dos fáciles, nueve medias y una difícil, en siete familias.
 La tanda de historia añade una media que relaciona monumentos con sus civilizaciones o contextos.
 
-Conectar parejas ofrece once tableros: tres fáciles, cinco medios y tres difíciles. Se han añadido
+Conectar parejas ofrece dieciséis tableros: cuatro fáciles, siete medios y cinco difíciles. Los cinco
+últimos son un 6×6 fácil, dos 6×6 (medio y difícil) y dos 7×7 de seis parejas, uno medio y otro difícil, con solución única. Antes se habían añadido
 dos fáciles de 4×4 y tres medios de 5×5, con recorridos completos sin cruces, una única solución y
 distribuciones nuevas. La referencia actual de siete posiciones medias conserva una asignación
-completa: utiliza los cinco medios y dos fáciles, y notifica las dos sustituciones en
-`difficultyFallbacks`. Al agotar esas alternativas, distintas semillas pueden variar su orden.
+completa: utiliza los siete medios y no necesita sustituciones, por lo que
+`difficultyFallbacks` queda vacío. Distintas semillas pueden variar su orden.
 
 Queens ofrece once tableros: tres fáciles, cinco medios y tres difíciles. La ampliación añade
 dos fáciles de 4×4 y dos medios de 5×5, con regiones conectadas y una única solución aun sin
