@@ -144,8 +144,8 @@ export const scenario = {
       (await sqlCount(
         `select count(*) from private.challenge_items i join private.challenge_versions v on v.id = i.challenge_version_id join private.question_versions q on q.id = i.question_version_id where v.id = '${connectPairsTimeTrial.challengeVersionId}' and v.mode = 'time-trial' and v.global_time_limit_ms = 150000 and q.type = 'connect-pairs';`,
         config.dbContainer,
-      )) === 7,
-      "Flow Free publica siete tableros con reloj global de 150 segundos",
+      )) === 9,
+      "Flow Free publica nueve tableros con reloj global de 150 segundos",
     );
     assert(
       (await sqlCount(

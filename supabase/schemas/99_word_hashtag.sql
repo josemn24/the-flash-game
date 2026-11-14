@@ -137,6 +137,11 @@ begin
     join private.question_version_solutions qs on qs.question_version_id = q.id
     where a.id = target_attempt and i.id = target_item and q.type = 'word-hashtag';
   if public_payload is null or solution_payload is null then return null; end if;
+  -- Progress left by another item (for example a previous Pyramid level's draft) is not ours.
+  if progress_payload->>'kind' is distinct from 'word-hashtag'
+    or progress_payload->>'challengeItemId' is distinct from target_item::text then
+    progress_payload := null;
+  end if;
 
   select array_agg(nullif(value #>> '{}', '') order by ordinality)
     into solution from jsonb_array_elements(private.word_hashtag_solution_letters(solution_payload)) with ordinality;
@@ -267,7 +272,12 @@ begin
     raise exception 'unsupported_question' using errcode = '22023';
   end if;
   max_moves := (question.public_payload->>'maxMoves')::integer;
-  current_progress := coalesce(a.progress_payload, jsonb_build_object(
+  current_progress := a.progress_payload;
+  -- Progress left by a previous item is stale: this board starts with no swaps.
+  if current_progress->>'challengeItemId' is distinct from item.id::text then
+    current_progress := null;
+  end if;
+  current_progress := coalesce(current_progress, jsonb_build_object(
     'kind', 'word-hashtag', 'challengeItemId', item.id,
     'answer', jsonb_build_object('swaps', '[]'::jsonb)));
   if current_progress->>'kind' <> 'word-hashtag' or current_progress->>'challengeItemId' <> item.id::text then

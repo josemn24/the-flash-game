@@ -343,7 +343,7 @@ function challengeVersionId(slug) {
     "pyramid-logic-definition": "challenge-version:tabarnia-pyramid-logic-v3",
     [TABARNIA_QUEENS_TIME_TRIAL.challenge.slug]: "challenge-version:tabarnia-queens-time-trial-v1",
     [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]:
-      "challenge-version:tabarnia-connect-pairs-time-trial-v1",
+      "challenge-version:tabarnia-connect-pairs-time-trial-v3",
     "steel-ball-run": "challenge-version:steel-ball-run-v1",
     [TABARNIAVERSO_SLUG]: "challenge-version:tabarniaverso-v1",
   };
@@ -351,9 +351,15 @@ function challengeVersionId(slug) {
 }
 
 export const TABARNIA_LOGIC_PYRAMID_V1_ID = stableId("challenge-version:tabarnia-pyramid-logic-v1");
-export const TABARNIA_PYRAMID_LEGACY_VERSION_IDS = {
+// Versiones anteriores que staging puede seguir publicando tras un bootstrap conservador.
+export const TABARNIA_LEGACY_VERSION_IDS = {
   "pyramid-logic-definition": [TABARNIA_LOGIC_PYRAMID_V1_ID],
   "pyramid-abrahamic-definition": [stableId("challenge-version:bible-pyramid-v1")],
+  [TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.slug]: [
+    stableId("challenge-version:tabarnia-connect-pairs-time-trial-v1"),
+    // La v2 de 7 tableros ya está publicada y programada en staging.
+    stableId("challenge-version:tabarnia-connect-pairs-time-trial-v2"),
+  ],
 };
 
 function publicationId(slug) {
@@ -539,7 +545,8 @@ function tabarniaChallenges() {
       definitionSlug: "tabarnia-contrarreloj-conectar-parejas",
       id: challengeId(connectPairsTimeTrial.slug),
       versionId: challengeVersionId(connectPairsTimeTrial.slug),
-      modeConfig: {},
+      versionNumber: 3,
+      modeConfig: connectPairsTimeTrial.modeConfig,
       items: connectPairsTimeTrial.items.map((item) => ({ ...item, modeConfig: item.modeConfig })),
     },
     {

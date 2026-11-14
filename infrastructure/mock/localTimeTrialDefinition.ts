@@ -20,6 +20,10 @@ function localTimeTrialDefinition(
   subtitle: string,
   questions: readonly TimeTrialFixtureQuestion[],
   globalTimeLimitMs = 120_000,
+  partialCredit: Pick<
+    ServerTimeTrialChallenge,
+    "queensTimeoutPartialCredit" | "connectPairsTimeoutPartialCredit"
+  > = {},
 ): LocalTimeTrialDefinition {
   const levels = questions.map((question, index) => {
     const challengeItemId = `${id}-item-${index + 1}`;
@@ -52,6 +56,7 @@ function localTimeTrialDefinition(
     description: "Ensayo local con el mismo flujo de una partida competitiva.",
     mode: "time-trial",
     timeLimitMs: globalTimeLimitMs,
+    ...partialCredit,
     maxScore: 100,
     slots: questions.map((question, index) => ({
       id: levels[index]!.challengeItemId,
@@ -96,5 +101,8 @@ export function createMockFlashPopTimeTrialConnectPairsDemoDefinition() {
     TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.subtitle,
     questions as TimeTrialFixtureQuestion[],
     TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.globalTimeLimitMs,
+    TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.modeConfig.connectPairsTimeoutPartialCredit
+      ? { connectPairsTimeoutPartialCredit: true }
+      : {},
   );
 }

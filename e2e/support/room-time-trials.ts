@@ -9,7 +9,9 @@ import { TABARNIA_CONNECT_PAIRS_TIME_TRIAL } from "../../scripts/fixtures/scenar
 type Question = {
   publicPayload: { grid: { rows: number }; prefilledQueens?: number[] };
   solutionPayload: { solution?: number[]; paths?: Record<string, number[] | undefined> };
+  points?: number;
 };
+const pointsOf = (items: Array<{ points: number }>) => items.map((item) => item.points);
 type Fixture = {
   users: Record<string, { email: string; password: string; playerId: string }>;
   data: {
@@ -44,22 +46,39 @@ export function roomTimeTrialTests(
   devices: Array<"desktop" | "mobile">,
   formats = ["queens", "connect-pairs"],
 ) {
-  const sequences: Array<{ format: string; title: string; questions: Question[] }> =
+  const sequences: Array<{
+    format: string;
+    title: string;
+    questions: Question[];
+    weights: number[];
+  }> =
     room === "betavip"
       ? [
-          { format: "queens", title: "Escalera de coronas", questions: betaVipTimeTrialQuestions },
+          {
+            format: "queens",
+            title: "Escalera de coronas",
+            questions: betaVipTimeTrialQuestions,
+            weights: pointsOf(betaVipTimeTrialQuestions),
+          },
           {
             format: "connect-pairs",
             title: "Circuito de parejas",
             questions: betaVipConnectPairsQuestions,
+            weights: pointsOf(betaVipConnectPairsQuestions),
           },
         ]
       : [
-          { format: "queens", title: "Queens", questions: TABARNIA_QUEENS_TIME_TRIAL.questions },
+          {
+            format: "queens",
+            title: "Queens",
+            questions: TABARNIA_QUEENS_TIME_TRIAL.questions,
+            weights: pointsOf(TABARNIA_QUEENS_TIME_TRIAL.challenge.items),
+          },
           {
             format: "connect-pairs",
             title: "Flow Free",
             questions: TABARNIA_CONNECT_PAIRS_TIME_TRIAL.questions,
+            weights: pointsOf(TABARNIA_CONNECT_PAIRS_TIME_TRIAL.challenge.items),
           },
         ];
 
@@ -71,7 +90,7 @@ export function roomTimeTrialTests(
             device === "mobile" ? { width: 390, height: 844 } : { width: 1280, height: 900 },
           hasTouch: device === "mobile",
         });
-        test(`${sequence.title}: siete pruebas, puntuación acumulada y un único reloj`, async ({
+        test(`${sequence.title}: ${sequence.questions.length} pruebas, puntuación acumulada y un único reloj`, async ({
           page,
         }) => {
           test.setTimeout(150_000);
@@ -96,6 +115,10 @@ export function roomTimeTrialTests(
             set local role service_role;
             select private.run_calendar_tick_command('{"runId":"${room}-${sequence.format}-${device}"}'::jsonb);
             commit;`);
+          const boardCount = sequence.questions.length;
+          const cumulativePoints = sequence.questions.map((_, index) =>
+            sequence.weights.slice(0, index + 1).reduce((sum, weight) => sum + weight, 0),
+          );
           const preparations: Array<{ deadlineAt: string }> = [];
           page.on("response", async (response) => {
             if (response.url().endsWith("/prepare") && response.ok())
@@ -114,7 +137,9 @@ export function roomTimeTrialTests(
           await page.getByRole("button", { name: "Empezar desafío" }).click();
 
           for (const [index, question] of sequence.questions.entries()) {
-            await expect(page.getByText(`Prueba ${index + 1} de 7`, { exact: true })).toBeVisible({
+            await expect(
+              page.getByText(`Prueba ${index + 1} de ${boardCount}`, { exact: true }),
+            ).toBeVisible({
               timeout: 15_000,
             });
             if (index === 0) {
@@ -151,10 +176,10 @@ export function roomTimeTrialTests(
               }
             }
             // Wait for evaluation before reading persisted points; the last solve closes immediately.
-            if (index < 6)
-              await expect(page.getByText(`Prueba ${index + 2} de 7`, { exact: true })).toBeVisible(
-                { timeout: 15_000 },
-              );
+            if (index < boardCount - 1)
+              await expect(
+                page.getByText(`Prueba ${index + 2} de ${boardCount}`, { exact: true }),
+              ).toBeVisible({ timeout: 15_000 });
             else
               await expect(
                 page.getByRole("heading", { name: "Todas las pruebas resueltas" }),
@@ -163,16 +188,20 @@ export function roomTimeTrialTests(
               await dockerSql(`select coalesce(sum(aa.points),0) from private.attempt_answers aa
               join public.attempts a on a.id = aa.attempt_id where a.scheduled_challenge_id = '${publication.id}'
               and a.player_id = '${account.playerId}' and a.kind = 'competitive';`);
-            expect(Number(stdout.trim())).toBe([12, 25, 38, 52, 67, 83, 100][index]);
+            expect(Number(stdout.trim())).toBe(cumulativePoints[index]);
           }
-          await expect(page.getByText("7/7", { exact: true })).toBeVisible();
+          await expect(
+            page.getByText(`${boardCount}/${boardCount}`, { exact: true }),
+          ).toBeVisible();
           await expect(page.getByLabel("100 de 100 puntos")).toBeVisible();
-          expect(preparations).toHaveLength(7);
+          expect(preparations).toHaveLength(boardCount);
           expect(preparations[0].deadlineAt).toEqual(expect.any(String));
           expect(new Set(preparations.map((p) => p.deadlineAt)).size).toBe(1);
           expect(JSON.stringify(preparations)).not.toMatch(/solutionPayload|"solution"/);
           await page.reload();
-          await expect(page.getByText("7/7", { exact: true })).toBeVisible();
+          await expect(
+            page.getByText(`${boardCount}/${boardCount}`, { exact: true }),
+          ).toBeVisible();
           const { stdout } = await dockerSql(`select count(*) from private.flash_point_entries
             where player_id = '${account.playerId}' and scheduled_challenge_id = '${publication.id}' and amount = 100;`);
           expect(Number(stdout.trim())).toBe(1);

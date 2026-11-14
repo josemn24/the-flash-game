@@ -147,8 +147,13 @@ begin
     delete from private.prepared_interactions where attempt_id = a.id;
   end if;
 
+  -- A level never inherits progress saved by a previous level (for example a
+  -- Classification draft), which would otherwise block its own commands.
   update public.attempts
-  set lock_version = lock_version + 1, last_activity_at = instant
+  set lock_version = lock_version + 1, last_activity_at = instant,
+    progress_payload = case
+      when progress_payload->>'challengeItemId' is distinct from segment.challenge_item_id::text then null
+      else progress_payload end
   where id = a.id returning * into a;
   result := jsonb_build_object(
     'attemptId', a.id,

@@ -5,7 +5,7 @@ formato en `bank/`. Cada entrada declara `id`, `version`, `type`, `payloadSchema
 `difficulty`, `referenceTimeLimitMs`, `publicPayload` y `solutionPayload`. `alphabetLetter` es
 obligatorio si admite Alfabeto; `familyId` agrupa variantes para favorecer variedad.
 
-El banco actual contiene **423 preguntas activas**. Alfabeto dispone de **243 preguntas**: tres
+El banco actual contiene **428 preguntas activas**. Alfabeto dispone de **243 preguntas**: tres
 familias independientes por cada una de las 27 letras españolas y cada dificultad. La ampliación
 añade 130 ejercicios (22 fáciles, 54 medios y 54 difíciles) y conserva intacta la base inicial.
 Las preguntas de respuesta corta también admiten Flash, Supervivencia y Pirámide.
@@ -27,12 +27,13 @@ relacionan los dos primeros números de cada fila con el tercero mediante suma o
 usan el enunciado «¿Qué número falta?» y cuatro opciones. Admiten Flash, Supervivencia y Pirámide;
 Cámara de Cumbre lógica puede elegir entre las cinco medias y conserva sus 35 segundos y 14 puntos.
 
-Conectar parejas contiene **11 tableros**: tres fáciles, cinco medios y tres difíciles. La
-ampliación añade dos tableros fáciles de 4×4 y tres medios de 5×5, con soluciones completas y únicas
+Conectar parejas contiene **16 tableros**: cuatro fáciles, siete medios y cinco difíciles. Una
+ampliación posterior añade un 6×6 fácil de seis parejas, dos 6×6 (uno medio de cinco parejas y otro difícil de cuatro) y dos 7×7 de seis parejas, uno medio y otro difícil, con solución única. La
+ampliación anterior añadió dos tableros fáciles de 4×4 y tres medios de 5×5, con soluciones completas y únicas
 y distribuciones distintas incluso al comparar rotaciones y reflejos con el banco previo y los
 escenarios BetaVIP. Admiten Flash, Supervivencia, Pirámide y Contrarreloj. La estructura de referencia
-actual de siete tableros medios utiliza los cinco medios y dos fáciles, con dos sustituciones
-de dificultad. Al agotar ambas reservas, solo puede variar el orden de esos tableros.
+actual de siete tableros medios se completa con los siete medios, sin sustituciones de dificultad.
+Al agotar esa reserva, solo puede variar el orden de esos tableros.
 
 Queens contiene **11 tableros**: tres fáciles, cinco medios y tres difíciles. Se añaden dos fáciles
 de 4×4, cada uno con una corona inicial, y dos medios de 5×5, con una o ninguna corona inicial.

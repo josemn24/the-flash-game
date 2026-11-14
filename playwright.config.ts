@@ -62,7 +62,7 @@ const localEnv = {
   FLASH_ADMIN_RATE_LIMIT_BURST: process.env.FLASH_ADMIN_RATE_LIMIT_BURST || "100",
   EXPECTED_SCHEMA_REVISION:
     process.env.EXPECTED_SCHEMA_REVISION ||
-    "20261111100000_pyramid_matching_classification_ordering_credit",
+    "20261114120000_pyramid_stale_progress_isolation",
 };
 
 export default defineConfig({

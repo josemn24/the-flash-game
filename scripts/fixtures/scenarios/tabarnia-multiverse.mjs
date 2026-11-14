@@ -13,7 +13,7 @@ export const TABARNIA_FICTION_ALPHABET = {
       letter: "A",
       prompt: "Joven de Agrabah que encuentra una lámpara mágica y conoce al Genio.",
       correctAnswer: "Aladdin",
-      acceptedAnswers: ["Aladdin", "Aladín"],
+      acceptedAnswers: ["Aladdin", "Aladín", "Aladino"],
       domain: "media_entertainment",
       topic: "cinema",
       explanation: "Aladdin encuentra una lámpara mágica cuyo Genio cambia el rumbo de su vida.",
