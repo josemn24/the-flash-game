@@ -486,6 +486,7 @@ describe("Tabarnia seed", () => {
     it.each([
       { letter: "A", answer: "Aladdín" },
       { letter: "A", answer: "Aladín" },
+      { letter: "A", answer: "Aladino" },
       { letter: "A", answer: "ALADDIN" },
       { letter: "C", answer: "CIRI" },
       { letter: "P", answer: "Pokemon" },
