@@ -172,7 +172,11 @@ begin
       when input->'answer' = 'null'::jsonb and exists (
         select 1 from private.question_versions timeout_question
         where timeout_question.id = item.question_version_id and timeout_question.type = 'word-hashtag'
-      ) then coalesce(a.progress_payload->'answer', jsonb_build_object('swaps', '[]'::jsonb))
+      ) then case
+        when a.progress_payload->>'kind' = 'word-hashtag'
+          and a.progress_payload->>'challengeItemId' = segment.challenge_item_id::text
+        then coalesce(a.progress_payload->'answer', jsonb_build_object('swaps', '[]'::jsonb))
+        else jsonb_build_object('swaps', '[]'::jsonb) end
       else input->'answer' end,
       received, presented,
       effective, used_ms, late, (input->>'clientTimeUsedMs')::bigint) returning * into receipt;
