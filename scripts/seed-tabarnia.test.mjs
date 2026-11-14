@@ -214,16 +214,20 @@ describe("Tabarnia seed", () => {
       "the-flash-game:tabarnia",
       "challenge-version:tabarnia-connect-pairs-time-trial-v1",
     );
+    const v2 = deterministicUuid(
+      "the-flash-game:tabarnia",
+      "challenge-version:tabarnia-connect-pairs-time-trial-v2",
+    );
     expect(publication.challengeVersionId).toBe(
       deterministicUuid(
         "the-flash-game:tabarnia",
-        "challenge-version:tabarnia-connect-pairs-time-trial-v2",
+        "challenge-version:tabarnia-connect-pairs-time-trial-v3",
       ),
     );
-    expect(TABARNIA_LEGACY_VERSION_IDS[slug]).toEqual([v1]);
+    expect(TABARNIA_LEGACY_VERSION_IDS[slug]).toEqual([v1, v2]);
     const sql = buildTabarniaDomainSql({ ...input, conflictSafe: true });
     expect(sql).toContain(
-      `'${publication.challengeVersionId}', '${publication.challengeId}', 2, 1, 'draft', 'time-trial'`,
+      `'${publication.challengeVersionId}', '${publication.challengeId}', 3, 1, 'draft', 'time-trial'`,
     );
     expect(sql).toMatch(
       new RegExp(
