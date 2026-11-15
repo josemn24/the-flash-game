@@ -120,7 +120,11 @@
       "subtitle": "Siete niveles. Una herencia compartida.",
       "description": "Asciende por siete pruebas sobre personajes, textos y tradiciones del judaísmo, el cristianismo y el islam. Solo un acierto completo abre el siguiente nivel.",
       "modeConfig": {
-        "attemptSchemaVersion": 1
+        "attemptSchemaVersion": 1,
+        "matchingPartialCredit": true,
+        "orderingPartialCredit": true,
+        "wordSearchTimeoutPartialCredit": true,
+        "classificationPartialCredit": true
       },
       "items": [
         {

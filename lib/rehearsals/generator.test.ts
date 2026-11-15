@@ -114,6 +114,23 @@ it("varies Cumbre lógica Entrada at medium difficulty while retaining its offic
   expect(seen.size).toBeGreaterThanOrEqual(3);
 });
 
+it("keeps La Biblia partial credit in its rehearsals, matching the published version", () => {
+  const template = rehearsalTemplates.find(
+    (candidate) => candidate.challengeVersionId === "pyramid-abrahamic-definition",
+  )!;
+  const run = generateRehearsal(bank, template, "bible-partial-credit");
+  expect(run.definition.challenge.mode).toBe("pyramid");
+  if (run.definition.challenge.mode !== "pyramid") throw new Error("pyramid expected");
+  expect(run.definition.challenge).toMatchObject({
+    matchingPartialCredit: true,
+    orderingPartialCredit: true,
+    wordSearchTimeoutPartialCredit: true,
+    classificationPartialCredit: true,
+  });
+  expect(run.definition.challenge.connectPairsTimeoutPartialCredit).toBeUndefined();
+  expect(run.definition.challenge.queensTimeoutPartialCredit).toBeUndefined();
+});
+
 it("varies La Biblia classification at medium difficulty while retaining its official timing and points", () => {
   const template = rehearsalTemplates.find(
     (candidate) => candidate.challengeVersionId === "pyramid-abrahamic-definition",
