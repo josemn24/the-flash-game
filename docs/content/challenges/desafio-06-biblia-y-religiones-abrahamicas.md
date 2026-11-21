@@ -141,11 +141,11 @@ Identificar a un personaje a partir de cuatro pistas que aparecen progresivament
 
 ### Secuencia de pistas
 
-Las pistas deben mostrarse en este orden, desde la referencia más amplia hasta la identificación más clara:
+Las pistas deben mostrarse en este orden, empezando por la alianza y terminando con el nombre islámico:
 
-1. «Mi historia aparece tanto en la Biblia como en el Corán.»
-2. «Soy considerado un patriarca y una figura de referencia para varias tradiciones.»
-3. «Dios estableció conmigo una alianza y me prometió una gran descendencia.»
+1. «Dios estableció conmigo una alianza y me prometió una gran descendencia.»
+2. «Mi historia aparece tanto en la Biblia como en el Corán.»
+3. «Soy considerado un patriarca y una figura de referencia para varias tradiciones.»
 4. «En la tradición islámica también se me conoce como Ibrahim.»
 
 La cuarta pista no debe ser necesaria para un jugador con conocimientos básicos, pero permite resolver la prueba sin depender exclusivamente de la memoria del nombre bíblico.
@@ -175,9 +175,9 @@ La respuesta se escribirá sin necesidad de acento y se comparará con normaliza
   category: "Biblia y religiones abrahámicas",
   question: "¿Qué personaje bíblico soy?",
   clues: [
+    "Dios estableció conmigo una alianza y me prometió una gran descendencia.",
     "Mi historia aparece tanto en la Biblia como en el Corán.",
     "Soy considerado un patriarca y una figura de referencia para varias tradiciones.",
-    "Dios estableció conmigo una alianza y me prometió una gran descendencia.",
     "En la tradición islámica también se me conoce como Ibrahim.",
   ],
   cluePenalty: 14, // se escala a 2 puntos por pista con 14 puntos de nivel
