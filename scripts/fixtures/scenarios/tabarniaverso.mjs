@@ -216,7 +216,7 @@ const questions = [
     prompt: "¿Cuál es la capital de Australia?",
     solution: {
       correctAnswer: "Canberra",
-      acceptedAnswers: ["Canberra"],
+      acceptedAnswers: ["Canberra", "Camberra"],
       explanation: "Canberra es la capital federal de Australia.",
     },
   }),

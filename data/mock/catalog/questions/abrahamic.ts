@@ -104,15 +104,15 @@ export const abrahamicQuestions = defineQuestionCatalog([
       reveals: [
         {
           clueIndex: 0,
-          clue: "Mi historia aparece tanto en la Biblia como en el Corán.",
+          clue: "Dios estableció conmigo una alianza y me prometió una gran descendencia.",
         },
         {
           clueIndex: 1,
-          clue: "Soy considerado un patriarca y una figura de referencia para varias tradiciones.",
+          clue: "Mi historia aparece tanto en la Biblia como en el Corán.",
         },
         {
           clueIndex: 2,
-          clue: "Dios estableció conmigo una alianza y me prometió una gran descendencia.",
+          clue: "Soy considerado un patriarca y una figura de referencia para varias tradiciones.",
         },
         {
           clueIndex: 3,

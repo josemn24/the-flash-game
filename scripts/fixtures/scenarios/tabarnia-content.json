@@ -120,7 +120,11 @@
       "subtitle": "Siete niveles. Una herencia compartida.",
       "description": "Asciende por siete pruebas sobre personajes, textos y tradiciones del judaísmo, el cristianismo y el islam. Solo un acierto completo abre el siguiente nivel.",
       "modeConfig": {
-        "attemptSchemaVersion": 1
+        "attemptSchemaVersion": 1,
+        "matchingPartialCredit": true,
+        "orderingPartialCredit": true,
+        "wordSearchTimeoutPartialCredit": true,
+        "classificationPartialCredit": true
       },
       "items": [
         {
@@ -1131,15 +1135,15 @@
         "reveals": [
           {
             "clueIndex": 0,
-            "clue": "Mi historia aparece tanto en la Biblia como en el Corán."
+            "clue": "Dios estableció conmigo una alianza y me prometió una gran descendencia."
           },
           {
             "clueIndex": 1,
-            "clue": "Soy considerado un patriarca y una figura de referencia para varias tradiciones."
+            "clue": "Mi historia aparece tanto en la Biblia como en el Corán."
           },
           {
             "clueIndex": 2,
-            "clue": "Dios estableció conmigo una alianza y me prometió una gran descendencia."
+            "clue": "Soy considerado un patriarca y una figura de referencia para varias tradiciones."
           },
           {
             "clueIndex": 3,

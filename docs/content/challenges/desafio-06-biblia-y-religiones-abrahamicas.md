@@ -2,7 +2,7 @@
 
 ## Estado del documento
 
-Documento de diseño editorial. Las pruebas se definirán una a una antes de incorporarlas a los datos jugables.
+Documento de diseño editorial alineado con los datos jugables: las siete pruebas están implementadas en el catálogo (`data/mock/catalog/challenges.ts` y `data/mock/catalog/questions/abrahamic.ts`) y se instalan en Supabase mediante `scripts/seed-tabarnia.mjs` como la versión 2 de `tabarnia-piramide-biblia`. Si este documento y el código difieren, prevalece el código.
 
 ## Concepto general
 
@@ -14,17 +14,47 @@ La Pirámide tendrá siete niveles con dificultad creciente. Un nivel solo se co
 
 La puntuación por nivel sigue la progresión de **Cumbre lógica**: 13, 14, 14, 14, 15, 15 y 15 puntos, para un total de 100.
 
+## Puntuación parcial
+
+La versión activa habilita crédito parcial en cuatro formatos mediante estas opciones de `modeConfig`:
+
+```ts
+{
+  attemptSchemaVersion: 1,
+  matchingPartialCredit: true,
+  orderingPartialCredit: true,
+  wordSearchTimeoutPartialCredit: true,
+  classificationPartialCredit: true,
+}
+```
+
+| Nivel | Formato        | Opción                           | Qué cuenta                                  |
+| ----- | -------------- | -------------------------------- | ------------------------------------------- |
+| 1     | Emparejamiento | `matchingPartialCredit`          | Parejas correctas, al confirmar o al vencer |
+| 3     | Ordenación     | `orderingPartialCredit`          | Elementos en su posición exacta             |
+| 5     | Sopa de letras | `wordSearchTimeoutPartialCredit` | Palabras confirmadas antes del límite       |
+| 6     | Clasificación  | `classificationPartialCredit`    | Elementos en su categoría correcta          |
+
+Reglas comunes (véase el [contrato de la Pirámide](../../current/pyramid-session-contract.md)):
+
+- El parcial es `min(peso − 1, floor(peso × aciertos / total))`: nunca alcanza el peso completo y no
+  tiene descuento por tiempo ni por fallos previos.
+- Suma puntos al ranking, pero **no supera el nivel**: un resultado parcial termina el ascenso.
+- Una confirmación completa correcta recibida a tiempo tiene prioridad y permite avanzar.
+- Orden inicial sin movimientos, o recuperación antes del límite sin confirmar, aportan cero.
+- Adivinanza por pistas, Mini-Wordle y Hashtag no tienen crédito parcial: un fallo o un timeout aportan cero.
+
 ## Pruebas
 
-| Nivel | Formato               | Tema                                                | Estado                    |
-| ----- | --------------------- | --------------------------------------------------- | ------------------------- |
-| 1     | Emparejamiento        | Personajes y asociaciones bíblicas                  | Definida provisionalmente |
-| 2     | Adivinanza por pistas | Patriarca compartido por las religiones abrahámicas | Definida provisionalmente |
-| 3     | Ordenación            | Los cinco libros de la Torá                         | Definida provisionalmente |
-| 4     | Mini-Wordle           | Personaje bíblico: Josué                            | Definida provisionalmente |
-| 5     | Sopa de letras        | Personajes bíblicos                                 | Definida provisionalmente |
-| 6     | Clasificación         | El mapa de las tres tradiciones                     | Definida provisionalmente |
-| 7     | Hashtag               | Personaje, lugar, texto y elemento religioso — Cima | Definida provisionalmente |
+| Nivel | Formato               | Tema                                                | Estado       |
+| ----- | --------------------- | --------------------------------------------------- | ------------ |
+| 1     | Emparejamiento        | Personajes y asociaciones bíblicas                  | Implementada |
+| 2     | Adivinanza por pistas | Patriarca compartido por las religiones abrahámicas | Implementada |
+| 3     | Ordenación            | Los cinco libros de la Torá                         | Implementada |
+| 4     | Mini-Wordle           | Personaje bíblico: Josué                            | Implementada |
+| 5     | Sopa de letras        | Personajes bíblicos                                 | Implementada |
+| 6     | Clasificación         | El mapa de las tres tradiciones                     | Implementada |
+| 7     | Hashtag               | Personaje, lugar, texto y elemento religioso — Cima | Implementada |
 
 ## Prueba 1 — Emparejamiento: personajes y asociaciones bíblicas
 
@@ -37,7 +67,7 @@ Relacionar cuatro personajes bíblicos con la asociación más conocida de cada 
 - **Formato:** Emparejamiento.
 - **Pregunta:** «Relaciona cada personaje bíblico con su asociación más conocida».
 - **Parejas:** cuatro.
-- **Tiempo límite propuesto:** 15 segundos.
+- **Tiempo límite:** 18 segundos.
 - **Puntuación:** 13 puntos como primer nivel.
 - **Dificultad:** fácil.
 - **Condición de éxito:** completar las cuatro parejas para superar el nivel.
@@ -63,6 +93,7 @@ Se han elegido asociaciones muy reconocibles y se ha evitado incluir varias resp
 - El nivel solo se supera al completar las cuatro parejas.
 - Un timeout o una respuesta incompleta hacen fallar el nivel y bloquean la subida al siguiente peldaño.
 - La puntuación se ajusta por velocidad y conserva la penalización vigente por intentos incorrectos.
+- Con `matchingPartialCredit`, las parejas correctas al confirmar o vencer aportan crédito parcial, aunque el nivel no se supere.
 
 ### Configuración técnica validada
 
@@ -84,7 +115,7 @@ Se han elegido asociaciones muy reconocibles y se ha evitado incluir varias resp
     { id: "nazaret", label: "Nazaret" },
     { id: "exodo", label: "Éxodo" },
   ],
-  timeLimit: 15,
+  timeLimit: 18,
   points: 13,
 }
 ```
@@ -102,7 +133,7 @@ Identificar a un personaje a partir de cuatro pistas que aparecen progresivament
 - **Respuesta principal:** `Abraham`.
 - **Respuesta alternativa aceptada:** `Ibrahim`, nombre utilizado en la tradición islámica.
 - **Número de pistas:** cuatro.
-- **Tiempo límite propuesto:** 35 segundos.
+- **Tiempo límite:** 35 segundos.
 - **Puntuación:** 14 puntos como segundo nivel.
 - **Penalización por pista:** 2 puntos por cada pista adicional que se revele, antes del ajuste por velocidad.
 - **Dificultad:** fácil-media.
@@ -110,16 +141,16 @@ Identificar a un personaje a partir de cuatro pistas que aparecen progresivament
 
 ### Secuencia de pistas
 
-Las pistas deben mostrarse en este orden, desde la referencia más amplia hasta la identificación más clara:
+Las pistas deben mostrarse en este orden, empezando por la alianza y terminando con el nombre islámico:
 
-1. «Mi historia aparece tanto en la Biblia como en el Corán.»
-2. «Soy considerado un patriarca y una figura de referencia para varias tradiciones.»
-3. «Dios estableció conmigo una alianza y me prometió una gran descendencia.»
+1. «Dios estableció conmigo una alianza y me prometió una gran descendencia.»
+2. «Mi historia aparece tanto en la Biblia como en el Corán.»
+3. «Soy considerado un patriarca y una figura de referencia para varias tradiciones.»
 4. «En la tradición islámica también se me conoce como Ibrahim.»
 
 La cuarta pista no debe ser necesaria para un jugador con conocimientos básicos, pero permite resolver la prueba sin depender exclusivamente de la memoria del nombre bíblico.
 
-El contenido base conserva 100 puntos. Con los 14 puntos asignados a este nivel, `cluePenalty: 14` se escala a una penalización efectiva de 2 puntos por cada pista adicional.
+El contenido base conserva 100 puntos. Con los 14 puntos asignados a este nivel, `cluePenalty: 14` (valor almacenado) se escala a una penalización efectiva de 2 puntos por cada pista adicional.
 
 ### Criterio editorial
 
@@ -135,7 +166,7 @@ La respuesta se escribirá sin necesidad de acento y se comparará con normaliza
 - Resolver con menos pistas conserva más puntos.
 - Al acertar, se desbloquea el tercer nivel.
 
-### Configuración técnica orientativa
+### Configuración técnica
 
 ```ts
 {
@@ -144,12 +175,12 @@ La respuesta se escribirá sin necesidad de acento y se comparará con normaliza
   category: "Biblia y religiones abrahámicas",
   question: "¿Qué personaje bíblico soy?",
   clues: [
+    "Dios estableció conmigo una alianza y me prometió una gran descendencia.",
     "Mi historia aparece tanto en la Biblia como en el Corán.",
     "Soy considerado un patriarca y una figura de referencia para varias tradiciones.",
-    "Dios estableció conmigo una alianza y me prometió una gran descendencia.",
     "En la tradición islámica también se me conoce como Ibrahim.",
   ],
-  cluePenalty: 2,
+  cluePenalty: 14, // se escala a 2 puntos por pista con 14 puntos de nivel
   correctAnswer: "Abraham",
   acceptedAnswers: ["Abraham", "Ibrahim"],
   timeLimit: 35,
@@ -174,7 +205,7 @@ Ordenar los cinco libros que forman la Torá, también llamada Pentateuco, segú
 - **Formato:** Ordenación.
 - **Pregunta:** «Ordena los cinco libros de la Torá según su orden tradicional».
 - **Elementos:** cinco.
-- **Tiempo límite propuesto:** 30 segundos.
+- **Tiempo límite:** 30 segundos.
 - **Puntuación:** 14 puntos como tercer nivel.
 - **Dificultad:** fácil-media.
 - **Condición de éxito:** colocar correctamente los cinco libros para superar el nivel.
@@ -192,8 +223,9 @@ La pregunta debe utilizar la expresión «orden tradicional» para dejar claro q
 - La respuesta se confirma una sola vez.
 - El nivel solo se supera si los cinco elementos están en el orden correcto.
 - Un orden incorrecto o el timeout hacen fallar el nivel.
+- Con `orderingPartialCredit`, los elementos en su posición exacta aportan crédito parcial al confirmar o vencer, sin superar el nivel.
 
-### Configuración técnica orientativa
+### Configuración técnica
 
 ```ts
 {
@@ -222,8 +254,8 @@ Descubrir el nombre de un personaje bíblico de cinco letras utilizando el feedb
 - **Respuesta normalizada:** `JOSUE`.
 - **Longitud:** cinco letras.
 - **Intentos máximos:** seis.
-- **Tiempo límite propuesto:** 60 segundos.
-- **Puntuación:** 14 puntos si ocupa el cuarto nivel de la Pirámide.
+- **Tiempo límite:** 60 segundos.
+- **Puntuación:** 14 puntos como cuarto nivel.
 - **Penalización:** 10 % de los puntos base por cada intento fallido anterior, manteniendo la política actual del formato.
 - **Resultado:** si no se descubre la palabra en seis intentos o antes del tiempo límite, el nivel se considera fallido y no se desbloquea el siguiente.
 
@@ -267,7 +299,7 @@ Se propone colocarlo en el cuarto nivel. Con seis intentos, cinco letras y un no
 
 Cuatro intentos serían demasiado exigentes para un nombre propio. Cinco podrían funcionar, pero seis proporciona una experiencia más cercana al Wordle convencional y compensa la posible ausencia de `JOSUE` en el vocabulario habitual del jugador.
 
-### Configuración técnica orientativa
+### Configuración técnica
 
 ```ts
 {
@@ -287,15 +319,9 @@ Cuatro intentos serían demasiado exigentes para un nombre propio. Cinco podría
 }
 ```
 
-Los valores de `points` y la posición del nivel quedan sujetos al orden definitivo de las siete pruebas.
+### Estado de implementación
 
-### Pendientes de implementación
-
-- Adaptar el Mini-Wordle actual de cuatro a cinco letras.
-- Generar o incorporar el diccionario español de cinco letras.
-- Cambiar el número máximo de intentos de cuatro a seis, o hacer ambos valores configurables por pregunta.
-- Añadir pruebas de validación para tildes, nombres propios, palabras temáticas y letras repetidas.
-- Confirmar la posición final de esta prueba y su puntuación dentro de los 100 puntos de la Pirámide.
+El Mini-Wordle ya admite cinco letras, seis intentos y el diccionario español de cinco letras (`data/dictionaries/mini-wordle-es-5.overrides.json`). La configuración del nivel está en `abrahamic.ts` (`maxAttempts: 6`, 60 s).
 
 ## Prueba 5 — Sopa de letras: personajes bíblicos
 
@@ -311,7 +337,7 @@ Encontrar seis personajes bíblicos ocultos en una cuadrícula de letras. La lis
 - **Palabras objetivo normalizadas:** `ISAAC`, `JACOB`, `ESTER`, `JESUS`, `JUDAS`, `PEDRO`.
 - **Cuadrícula propuesta:** 8 × 8.
 - **Direcciones:** horizontal, vertical y diagonal, incluyendo algunas palabras invertidas.
-- **Tiempo límite propuesto:** 45 segundos.
+- **Tiempo límite:** 60 segundos.
 - **Puntuación:** 15 puntos como quinto nivel.
 - **Dificultad:** media-alta.
 - **Condición de éxito:** encontrar las seis palabras.
@@ -341,8 +367,9 @@ La prueba busca los nombres, no distinguir entre las diferentes figuras bíblica
 - Las selecciones incorrectas no restan puntos, pero consumen tiempo.
 - Encontrar solo parte de las palabras no permite superar el nivel.
 - Un timeout o una lista incompleta hacen fallar la prueba y bloquean la subida al siguiente nivel.
+- Con `wordSearchTimeoutPartialCredit`, las palabras distintas confirmadas antes del límite aportan crédito parcial, sin superar el nivel.
 
-### Configuración técnica orientativa
+### Configuración técnica
 
 ```ts
 {
@@ -369,7 +396,7 @@ La prueba busca los nombres, no distinguir entre las diferentes figuras bíblica
     { id: "judas", word: "JUDAS", startCell: 50, endCell: 54 },
     { id: "pedro", word: "PEDRO", startCell: 11, endCell: 47 },
   ],
-  timeLimit: 45,
+  timeLimit: 60,
   points: 15,
 }
 ```
@@ -390,7 +417,7 @@ La prueba funciona como nivel avanzado porque exige distinguir textos, celebraci
 - **Pregunta:** «Clasifica los elementos por tradición».
 - **Categorías:** Judaísmo, Cristianismo e Islam.
 - **Elementos:** nueve, tres por categoría.
-- **Tiempo límite propuesto:** 50 segundos.
+- **Tiempo límite:** 50 segundos.
 - **Puntuación:** 15 puntos como sexto nivel.
 - **Dificultad:** alta.
 - **Condición de éxito:** clasificar correctamente los nueve elementos.
@@ -408,10 +435,11 @@ Los elementos se han elegido por su asociación principal y suficientemente reco
 ### Reglas dentro de la Pirámide
 
 - Las nueve tarjetas aparecen mezcladas y se pueden corregir antes de confirmar.
-- Solo nueve aciertos desbloquean el séptimo nivel; un resultado parcial queda disponible para revisión, pero termina el ascenso.
-- Un error en la confirmación o el timeout hacen fallar el desafío completo.
+- Solo nueve aciertos desbloquean el séptimo nivel.
+- Con `classificationPartialCredit`, un resultado parcial (al confirmar o vencer) aporta `min(15 − 1, floor(15 × aciertos / 9))` puntos y queda disponible para revisión, pero termina el ascenso.
+- Un error en la confirmación o el timeout hacen fallar el nivel y, con él, el ascenso.
 
-### Configuración técnica orientativa
+### Configuración técnica
 
 ```ts
 {
@@ -457,7 +485,7 @@ La mezcla de categorías aumenta el número de combinaciones posibles y evita qu
 - **Lugar:** `TABOR`.
 - **Texto:** `TORAH`.
 - **Elemento del culto:** `ALTAR`.
-- **Tiempo límite propuesto:** 45 segundos.
+- **Tiempo límite:** 45 segundos.
 - **Puntuación:** 15 puntos como Cima.
 - **Dificultad:** muy alta.
 - **Movimientos:** estado inicial con seis movimientos óptimos y siete movimientos máximos permitidos.

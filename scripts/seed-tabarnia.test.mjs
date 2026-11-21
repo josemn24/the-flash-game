@@ -623,12 +623,13 @@ describe("Tabarnia seed", () => {
       }
     });
 
-    it("normalizes the single accepted spelling of Canberra", () => {
+    it("accepts Canberra and the Spanish spelling Camberra", () => {
       const question = TABARNIAVERSO_QUESTIONS.find(
         ({ slug }) => slug === "tabarniaverso-capital-australia",
       );
-      expect(question.solutionPayload.acceptedAnswers).toEqual(["Canberra"]);
+      expect(question.solutionPayload.acceptedAnswers).toEqual(["Canberra", "Camberra"]);
       expect(evaluate(question, "canberra")).toMatchObject({ status: "correct", points: 6 });
+      expect(evaluate(question, "Camberra")).toMatchObject({ status: "correct", points: 6 });
       expect(evaluate(question, "Sídney")).toMatchObject({ status: "incorrect", points: 0 });
     });
   });
