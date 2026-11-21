@@ -28,7 +28,7 @@ export const BETA_VIP_ALPHABET = {
       letter: "C",
       prompt: "Capital de Australia.",
       correctAnswer: "Canberra",
-      acceptedAnswers: ["Canberra"],
+      acceptedAnswers: ["Canberra", "Camberra"],
       topic: "capitals",
       explanation: "Canberra es la capital de Australia.",
     },

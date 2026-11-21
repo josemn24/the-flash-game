@@ -22,7 +22,7 @@ export const alphabetConformanceQuestions = [
     publicPayload: { question: "Capital de Australia" },
     solution: {
       correctAnswer: "Canberra",
-      acceptedAnswers: ["Canberra"],
+      acceptedAnswers: ["Canberra", "Camberra"],
       explanation: "Canberra.",
     },
   },
