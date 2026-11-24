@@ -2,14 +2,17 @@
 
 ## Estado del ciclo
 
-- **Estado:** Preparación técnica verificada en local; staging y configuración real pendientes, sin ejecución ni resultados de usuarios.
-- **Estado de máquina:** MVP_DESIGN
-- **Siguiente puerta:** READY_TO_RUN
-- **Condición de avance:** nueve desafíos seleccionados y probados, cohorte y calendario concretados, fuentes de medición verificadas y control de preparación completo.
+- **Estado:** Cerrado el 2026-11-24 con decisión estratégica `PERSEVERAR`. HYP-001 queda `Inconclusa` para el protocolo diario.
+- **Estado de máquina al cierre:** NEXT_CYCLE
+- **Ciclo sucesor:** [CYCLE-002 — Tabarnia 2](CYCLE-002.md).
 - **Responsable:** Jose Moreno
-- **Versión del protocolo:** `tabarnia-daily-v2`, definida el 2026-10-24; pendiente de congelar antes de ejecutar.
-- **Fecha de inicio:** Pendiente; no se han enviado invitaciones ni recogido resultados según el registro disponible.
-- **Fecha de revisión:** Tras el corte de datos y el seguimiento cualitativo de la temporada.
+- **Versión del protocolo:** `tabarnia-daily-v2`, definida el 2026-10-24. No se registró su congelación antes de ejecutar (ver sección 10).
+- **Fecha de inicio:** invitaciones enviadas el 2026-11-05; `T0` = 2026-11-06 14:00 UTC.
+- **Corte principal:** `Tdatos` = 2026-11-22 14:00 UTC (cierre del desafío nueve + 24 h).
+- **Seguimiento cualitativo:** hasta el 2026-11-28. Las aportaciones posteriores al cierre estratégico se pueden registrar con fecha y fuente en este expediente.
+
+> Nota de registro (2026-11-24): las secciones 1 a 9 conservan el diseño previo a la ejecución sin
+> reescribirlo. Lo ocurrido durante la temporada se registra en las secciones 10, 12, 13, 14 y 16.
 
 ## 1. Contexto
 
@@ -48,7 +51,7 @@ El ciclo orienta esa decisión; no valida por sí solo retención a largo plazo,
 
 ## 4. Hipótesis crítica
 
-**Referencia:** HYP-001, en estado `Priorizada` hasta iniciar la recogida de datos.
+**Referencia:** HYP-001, en estado `Priorizada` hasta iniciar la recogida de datos. Tras la ejecución, clasificada como `Inconclusa` por calidad del experimento (sección 13).
 
 Creemos que Tabarnia obtiene suficiente valor del loop de desafíos asíncronos y ranking acumulado para que al menos ocho de las 14 personas invitadas completen seis o más desafíos, incluidos al menos dos de los desafíos siete, ocho y nueve.
 
@@ -249,10 +252,12 @@ Detener cuando los nueve desafíos no presenten bloqueos de claridad/calidad y u
 
 ## 10. Control READY_TO_RUN
 
-- **Estado:** No superado. Contrato y vehículo contrastados en Supabase local y E2E aislado; staging, contenido, cohorte y calendario real siguen pendientes.
-- **Versión a congelar:** `tabarnia-daily-v2`; fecha de congelación pendiente.
+- **Estado:** No superado formalmente. La temporada se ejecutó en staging sin registrar el cierre de este control ni la congelación del protocolo. Las casillas abiertas se conservan tal como estaban antes del inicio; no se marcan a posteriori.
+- **Versión a congelar:** `tabarnia-daily-v2`; congelación no registrada.
 - **Responsable de aprobación:** Jose Moreno.
-- **Inicio previsto, cohorte nominal y calendario absoluto:** Pendientes de registrar. Canal elegido: grupo privado de Telegram; referencia concreta pendiente de configurar.
+- **Inicio previsto, cohorte nominal y calendario absoluto:** no se registraron aquí antes de iniciar. Lo ocurrido se documenta en la sección 12.
+
+**Registro posterior a la ejecución (2026-11-24).** Según el responsable, las 14 invitaciones se enviaron por mensaje privado de Telegram el 2026-11-05, la víspera de `T0`, sin sustituciones. Las 14 cuentas de la cohorte quedaron provisionadas en la sala ese mismo día (2026-11-05 19:52 UTC). El control adicional previo a `T0` (catorce envíos, sin sustituciones y acceso provisionado) se considera cumplido según esa declaración. La aplicación no registra las invitaciones; la prueba de envío está en Telegram. No consta la prueba individual previa de los nueve desafíos ni el ensayo completo del análisis externo.
 
 ### Comprobaciones
 
@@ -291,95 +296,191 @@ La aplicación registra datos sin exigir este control Lean. El control distingue
 
 ## 12. Resultados observados
 
-**Estado:** Pendiente de ejecución
+**Estado:** Registrados el 2026-11-24. Los datos de juego proceden de una extracción de solo lectura de staging y de su contraste con los CSV del portal del 2026-11-22. Se incluyen las encuestas de Telegram aportadas por el responsable. El resto del expediente externo sigue pendiente.
 
 ### Datos
 
-Pendiente.
+- **Entorno:** staging. Sala `tabarnia`, temporada «Temporada Alpha de Tabarnia» (`798830d1-9a34-7031-62b4-5c75597a1157`). El último desafío cerró el 2026-11-21 a las 14:00 UTC y `season.ends_at` fue el 2026-11-23 a las 14:00 UTC. La medición se abrió el 2026-11-05 a las 19:52 UTC y se cerró administrativamente el 2026-11-23 a las 15:03 UTC, con la temporada en estado `finished`. El límite de admisión de eventos era `season.ends_at`.
+- **Cohorte:** las 14 cuentas con rol `member` en la sala. Queda excluida la cuenta con rol `owner`, que actuó como cuenta operativa. Ninguna cuenta de superadministración pertenece a la sala.
+- **Extracción:** estado de la base de datos consultado el 2026-11-24 con transacciones de solo lectura. A esa fecha no hay intentos `in_progress`, ni `invalidated`, ni finalizados después de `Tdatos`. Tampoco hay intentos iniciados fuera de la ventana de su publicación. Por eso el estado actual reproduce el corte sin necesidad de reconciliación adicional. Las consultas se conservan fuera del repositorio, junto con la correspondencia entre códigos y personas del expediente privado.
+- **Publicaciones** (instantes en UTC; los modos y versiones proceden del contenido publicado):
+
+| #   | Desafío           | Modo       | Versión                                            | Ventana                   |
+| --- | ----------------- | ---------- | -------------------------------------------------- | ------------------------- |
+| 1   | Steel Ball Run    | flash      | `tabarnia-flash-01` v1                             | 06-11 14:00 – 07-11 14:00 |
+| 2   | Reino de animales | alphabet   | `tabarnia-reino-animales` v1                       | 08-11 14:00 – 09-11 14:00 |
+| 3   | Queens            | time-trial | `tabarnia-contrarreloj-queens` v2                  | 09-11 14:00 – 10-11 14:00 |
+| 4   | España            | survival   | `tabarnia-supervivencia-espana` v1                 | 10-11 14:00 – 11-11 14:00 |
+| 5   | Cumbre lógica     | pyramid    | `tabarnia-piramide-cumbre-logica` v4               | 13-11 14:00 – 14-11 14:00 |
+| 6   | Multiverso friki  | alphabet   | `tabarnia-el-multiverso-se-juega-letra-a-letra` v2 | 14-11 14:00 – 15-11 14:00 |
+| 7   | Flow Free         | time-trial | `tabarnia-contrarreloj-conectar-parejas` v3        | 16-11 14:00 – 17-11 14:00 |
+| 8   | La Biblia         | pyramid    | `tabarnia-piramide-biblia` v2                      | 17-11 14:00 – 18-11 14:00 |
+| 9   | Tabarniaverso     | flash      | `tabarniaverso` v1                                 | 20-11 14:00 – 21-11 14:00 |
+
+- **Intentos de la cohorte:** 112 competitivos iniciados, con 111 `completed` y 1 `abandoned`. No hay intentos de tipo `test`.
 
 ### Comportamientos observados
 
-Pendiente.
+**Distribución de desafíos completados por persona (cohorte de 14):**
+
+| Desafíos completados | 0   | 1–4 | 5   | 6   | 7   | 8   | 9   |
+| -------------------- | --- | --- | --- | --- | --- | --- | --- |
+| Personas             | 1   | 0   | 1   | 0   | 1   | 0   | 11  |
+
+- Una persona quedó sin eventos ni intentos registrados. Con la captura disponible se desconoce si llegó a entrar en la aplicación.
+- Una persona completó los desafíos 1 a 4 y 6, y ninguno de los tres últimos.
+- Una persona completó siete desafíos (1, 2, 4, 5, 6, 7 y 9), incluidos dos de los tres últimos.
+- Once personas completaron los nueve.
+
+**M02 — evolución por publicación (cohorte de 14):**
+
+| #               | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   |
+| --------------- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Inician `S_i`   | 13  | 13  | 13  | 13  | 12  | 13  | 12  | 11  | 12  |
+| Completan `C_i` | 13  | 13  | 12  | 13  | 12  | 13  | 12  | 11  | 12  |
+
+**Métricas auxiliares** (ventana `T0`–`Tdatos` salvo indicación):
+
+- **M01 — activación temprana:** 13/14 completaron el primer desafío antes de `T0 + 48 h`. El segundo abrió justo en ese límite. La activación total a `Tdatos` también es 13/14.
+- **M03 — de la introducción al inicio:** conversión observada del 100 % en las nueve ventanas. La consulta cruza, por persona y publicación, las introducciones recibidas dentro de la ventana y los inicios competitivos de esa misma ventana. En cada publicación la intersección coincide con los recuentos de introducciones e inicios, con cero inicios sin evento de introducción.
+- **M04 — terminan lo que empiezan:** 111/112 intentos iniciados terminan como `completed`.
+- **M05 — llegan al final:** 12/14 completan al menos dos de los desafíos siete, ocho y nueve; restringido a activados tempranos, 12/13.
+- **M07 — consulta del ranking:** 11/14 personas lo consultaron al menos una vez. Ventanas de publicación distintas con consulta por persona: mediana 8 (rango 1–9).
+- **M08 — ensayos y revisión:** 12/14 iniciaron al menos un ensayo, 11/14 completaron alguno y 12/14 visualizaron alguna revisión. La captura cubre del 2026-11-05 al cierre de la temporada; el tramo posterior no tiene captura y no se interpreta como falta de uso.
+- **Finales por tiempo:** entre los intentos de la temporada (incluida la cuenta operativa) constan 16 finales por `time_limit`, 1 por `inactivity_timeout` y 10 por `all_solved`. Falta etiquetar qué finales por tiempo no tuvieron ninguna respuesta o acción voluntaria aceptada, como exige 7.2. No modifica el cómputo principal.
+
+**Análisis exploratorio por pregunta.** La extracción de staging del 2026-11-24 reunió 114 posiciones publicadas y 1.215 presentaciones en la cohorte. Se considera presentada una posición al activarse su reloj en servidor. Los aciertos incluyen recalificaciones y se dividen entre quienes llegaron a la posición.
+
+- Los mismos 13 jugadores completaron ambos Alfabetos. En las posiciones alcanzadas, Emparejar obtuvo 66/70 aciertos y Conectar parejas en Contrarreloj, 95/100 tableros resueltos. Los mapas obtuvieron algún crédito en 4/25 presentaciones. Son resultados de resolución en el contenido jugado.
+- En `Cumbre lógica`, cuatro de seis jugadores agotaron los 30 segundos de Queens en el nivel 5 y hubo una cima en 12 intentos. En `La Biblia`, nadie de los tres que llegaron a la sopa de letras del nivel 5 avanzó. Dos recibieron crédito parcial por palabras acertadas antes del vencimiento.
+- En el ranking efectivo de la cohorte, retirar las dos Pirámides manteniendo fijos los demás resultados cambia la posición de nueve personas y el primer puesto. Retirar los dos Alfabetos también mueve a nueve personas, con el mismo líder. Es una comparación sobre los resultados existentes.
 
 ### Opiniones declaradas
 
-Pendiente.
+**M06 — disfrute de 1 a 5 en la aplicación.** La consulta de staging del 2026-11-24 confirma 24 valoraciones vigentes de 10 de las 14 personas. El desglose por publicación coincide con el export del 2026-11-22.
+
+| #                      | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    |
+| ---------------------- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+| Personas que responden | 8    | 2    | 4    | 1    | 1    | 2    | 3    | 1    | 2    |
+| Media                  | 3,88 | 5,00 | 4,25 | 5,00 | 2,00 | 5,00 | 4,67 | 4,00 | 4,00 |
+| Mediana                | 4    | 5    | 4    | 5    | 2    | 5    | 5    | 4    | 4    |
+
+Tras el primer desafío se recibieron entre una y cuatro valoraciones por publicación. La muestra por desafío es pequeña. El seguimiento cualitativo del ciclo cierra el 2026-11-28 a las 14:00 UTC, siete días después del último desafío. Las valoraciones en la app pueden revisarse hasta el 2026-11-30 a las 14:00 UTC, siete días después de `season.ends_at`. El análisis conserva el corte de la extracción.
+
+**Encuestas de Telegram.** Recuentos de las capturas aportadas por el responsable, en agregado.
+
+1. **14 de noviembre, comparación de los cinco primeros desafíos.** `Cumbre lógica` recibió 3/8 votos como favorita y 5/9 como la menos gustada. En el grupo que respondió a ambas preguntas, las ocho personas la situaron en uno de esos extremos. El cruce exploratorio con staging muestra que 2/3 de quienes la eligieron como favorita llegaron al nivel 5 o más, frente a 1/5 del otro grupo. Una correspondencia de nombre es probable. Al excluirla, el resultado es 1/2 frente a 1/5. Cada modo estaba representado por un único desafío y `Cumbre lógica` era el más reciente.
+2. **20 de noviembre, preferencias generales de selección múltiple.** De seis personas, seis marcaron tableros de lógica, cuatro Alfabeto temático, tres cultura general sin eliminación y una preguntas hasta ser eliminada. La consigna pedía hasta dos opciones y una persona marcó las cuatro. Al retirar ese voto, el orden se mantiene (5/5, 3/5, 2/5 y 0/5). El voto por tableros agrupa mecánicas como Queens y Conectar parejas.
+
+Ambas encuestas son voluntarias y aportan preferencias declaradas. El resto del seguimiento cualitativo y las entrevistas siguen pendientes.
 
 ### Métrica obtenida
 
-Pendiente.
+```text
+R = 12 personas cumplen Sostenida(p) = C(p) >= 6 y L(p) >= 2
+Métrica principal = 12 / 14 = 85,7 %
+```
+
+No hay oportunidades no evaluables: el límite inferior y el superior coinciden en 12. Comparada solo numéricamente con 7.3, la cifra supera el umbral de apoyo (`R >= 8`). La clasificación final depende de la calidad del experimento (sección 14).
 
 ### Anomalías
 
-Pendiente.
+- El único intento abandonado corresponde al desafío 3. Se inició a las 13:38 UTC, 22 minutos antes del cierre de la ventana, y terminó por `inactivity_timeout` a las 14:00:43 UTC. La persona afectada cumple igualmente `Sostenida(p)` con siete desafíos.
+- Trece respuestas de texto corto pasaron de incorrectas a correctas tras recalificarse. Siete correspondían a «Interestelar» en `Multiverso friki` y seis a «Camberra» en `Tabarniaverso`.
+- De las 1.214 recepciones de posiciones alcanzadas, 86 quedaron marcadas por vencimiento. Ninguna de las 1.214 guardó el tiempo del cliente. Los registros permiten consultar el resultado del servidor y dejan sin verificar el reloj que veía el jugador.
+- `app_version` vale `0.1.0` en todos los eventos de la temporada. Durante esas fechas hubo cambios integrados en el repositorio, pero el campo carece de detalle para vincular un evento con un despliegue concreto.
 
 ### Datos faltantes
 
-Pendiente.
+- **Resto del expediente externo:** registro de invitaciones con fechas, avisos por publicación, ayuda solicitada, incidencias, minutos de operación, costes y seguimiento cualitativo final. Los diagnósticos de staging aportan contexto para M09. Las tasas completas de incidencias y el esfuerzo operativo de M10 quedan pendientes.
+- **Prueba individual previa** de los nueve desafíos: no consta.
+- **Tiempo hasta el primer inicio:** no calculable sin la fecha de envío de cada invitación.
+- **Etiquetado de finales por tiempo sin interacción** (7.2): pendiente.
 
 ### Desviaciones del experimento
 
-Pendiente.
+1. **Calendario adaptativo no congelado.** El responsable espació las publicaciones durante la ejecución para evitar saturar al grupo y por su propia disponibilidad. Hubo huecos sin desafío entre las ventanas 1–2 (7–8 nov), 4–5 (11–13 nov), 6–7 (15–16 nov) y 8–9 (18–20 nov). El desafío 9, que el 2026-11-17 estaba programado para el 22–23 nov, se adelantó al 20–21 nov. La temporada duró 15 días en lugar de nueve ventanas consecutivas de 24 h. La decisión de espaciar se tomó mientras se observaba la participación.
+2. **Protocolo sin congelar.** No se registró el cierre de `READY_TO_RUN`, ni la congelación de `tabarnia-daily-v2`, ni la versión de aplicación y esquema antes de iniciar.
+3. **Cambios integrados durante la recogida.** El repositorio incorporó ajustes de crédito parcial y por vencimiento en Pirámide y Contrarreloj entre el 10 y el 14 de noviembre. Staging confirma configuraciones de crédito parcial en las versiones publicadas de esos modos y recalificaciones de respuestas. Queda por verificar cuándo se desplegó cada cambio de aplicación o esquema.
+4. **Versiones de contenido publicadas poco antes de abrir.** Las versiones usadas en los desafíos 3, 5, 6 y 8 se publicaron entre el 2026-11-09 y el 2026-11-15, en todos los casos antes de abrir su ventana. La extracción identifica las versiones asignadas, con cobertura de auditoría durante cada ventana pendiente de contrastar.
+5. **Invitaciones fuera de la aplicación.** Se enviaron por Telegram y las cuentas se provisionaron directamente; el producto no conserva rastro de los envíos.
+6. **Entorno.** La ejecución se hizo en staging. El ciclo no había fijado de antemano el entorno objetivo.
 
 ## 13. Análisis del aprendizaje
 
-**Estado:** Pendiente
+**Estado:** Clasificación registrada el 2026-11-24. Incluye las encuestas de Telegram disponibles. El seguimiento cualitativo, que cierra el 2026-11-28, está en curso.
 
 ### Comparación con los umbrales
 
-Pendiente.
+`R = 12/14`. Numéricamente supera el umbral de apoyo (`R >= 8`) por cuatro personas, y no hay datos no evaluables que abran un intervalo entre categorías. La comparación no es aplicable tal como se diseñó, porque la ejecución no siguió el calendario del protocolo (sección 14).
 
-### Evidencia que apoya la hipótesis
+### Señales favorables en la temporada observada
 
-Pendiente.
+- Once de las 14 personas invitadas completaron los nueve desafíos, y doce mantuvieron participación según la definición previa.
+- La participación por publicación se mantuvo entre 11 y 13 de 14 durante toda la temporada, sin caída progresiva marcada.
+- La conversión observada de introducción a inicio fue del 100 % en las nueve ventanas, y 111 de 112 intentos iniciados terminaron.
+- Once personas consultaron el ranking, la mayoría en casi todas las ventanas.
 
-### Evidencia que debilita la hipótesis
+### Límites de la recurrencia observada
 
-Pendiente.
+- Una persona quedó sin intentos registrados y otra dejó de jugar antes de los tres últimos desafíos.
 
 ### Explicaciones alternativas
 
-Pendiente.
+- **Cadencia flexible.** La alta participación puede deberse en parte a que el organizador ajustó el ritmo al grupo. Este resultado no evalúa una cadencia diaria estricta de nueve días consecutivos, que es la condición de HYP-001.
+- **Relación personal y avisos.** La relación directa con el organizador y los avisos en Telegram pueden haber sostenido la participación con independencia del valor del juego.
+- **Novedad.** Es la primera temporada; la novedad puede inflar la participación.
 
 ### Sesgos y limitaciones
 
-Pendiente.
+Muestra pequeña y de conveniencia (14 personas), un solo grupo y una sola temporada. Las 126 oportunidades son observaciones repetidas de las mismas personas. El organizador decidió el calendario mientras observaba la participación. Las valoraciones por desafío son escasas y las encuestas de Telegram recogen respuestas voluntarias. Los datos de finalización tienen un corte distinto del disfrute. Además, la fecha de despliegue de los cambios de aplicación sigue sin verificarse y faltan avisos, incidencias y esfuerzo operativo del expediente.
 
 ### Clasificación de la hipótesis
 
-Pendiente: Apoyada, Debilitada, Refutada o Inconclusa.
+**Inconclusa**, por calidad del experimento. Según 7.6, «un calendario distinto del congelado invalida la ejecución de este protocolo». El calendario real fue adaptativo, duró 15 días en lugar de nueve consecutivos y se ajustó viendo la participación. No se reinterpretan la hipótesis ni los umbrales después de observar el resultado.
 
 ### Qué hemos aprendido
 
-Pendiente.
+En esta cohorte, una competición asíncrona con nueve desafíos variados y cadencia flexible decidida por el organizador obtuvo participación recurrente muy alta: 12 de 14 según la definición previa y 11 de 14 completando todos los desafíos. Es una señal fuerte de recurrencia en este grupo, aunque no valida la hipótesis tal como se formuló.
+
+- **Modos y formatos (HYP-002, exploratoria).** Alfabeto temático reúne una preferencia declarada y una participación repetida. Los tableros de lógica concentraron el interés en la encuesta general y `Cumbre lógica` recibió votos en ambos extremos. Conviene probar cuánto pesan los tableros, la eliminación y el reloj por separado.
+- **Fiabilidad (HYP-006, contexto).** Las variantes válidas rechazadas justifican revisar la corrección editorial de texto corto. Para diagnosticar la experiencia cerca del plazo hace falta recuperar un caso concreto o medir juntos el tiempo visible al enviar y la recepción en servidor.
 
 ### Qué no podemos afirmar
 
-Pendiente.
+- Que el grupo sostenga una cadencia diaria estricta de nueve días consecutivos.
+- Que el resultado se repita en una segunda temporada, sin novedad, o en otros grupos.
+- Qué parte del efecto se debe al juego, al ranking, a la cadencia, a los avisos o a la relación con el organizador.
+- Qué explica el disfrute declarado y cuánto se traduce en volver a jugar.
+- Si las diferencias entre modos y formatos se deben a las reglas, al tema, a la dificultad o al orden de publicación.
 
 ### Nivel de confianza
 
-Pendiente.
+Alto en la medición del comportamiento observado: hechos persistidos completos, sin datos no evaluables ni intentos pendientes. Bajo en la validez respecto al protocolo diario diseñado, por las desviaciones de la sección 12.
 
 ## 14. Calidad del experimento
 
-Si el diseño no permite aprendizaje fiable, decidir explícitamente si hay que repetir, reparar, ampliar la muestra, modificar la medición o declarar el resultado inconcluso antes de valorar la estrategia.
+**Decisión metodológica (2026-11-24): declarar el resultado inconcluso** para el protocolo diario. El calendario se adaptó durante la ejecución y el protocolo no estaba congelado. Las finalizaciones son reproducibles con la extracción contrastada. La calidad de la corrección, los cronómetros y la captura de navegación tienen las limitaciones documentadas en la sección 12.
+
+La medición de finalización es fiable: no hay intentos en curso ni invalidados, ni finalizaciones posteriores al corte, y la cohorte está completa. Lo que no es válido es la condición experimental, porque la cadencia diaria no se aplicó. Si se quiere evaluar HYP-001 tal como está formulada, o una variante con cadencia flexible, habría que repetir con un calendario congelado antes de iniciar y con la versión de la aplicación registrada. Esa repetición se decide en la sección 15 y no se presupone aquí.
 
 ## 15. Decisión estratégica
 
-**Decisión estratégica:** Pendiente — seleccionar una única opción: PERSEVERAR, PIVOTAR o PARAR.
+**Decisión estratégica:** `PERSEVERAR`, registrada por Jose Moreno el 2026-11-24.
 
-Un resultado defectuoso no implica por sí solo pivotar o parar. Si se recomienda PIVOTAR, documentar la señal suficiente, el elemento que cambia, la visión conservada, la nueva hipótesis, el siguiente experimento y el criterio para volver a pivotar o parar.
+Se conserva la propuesta de competir entre amigos en una sala privada, con desafíos asíncronos y ranking de temporada. La inversión aprobada en este ciclo es preparar una segunda temporada de Tabarnia con la cohorte original. Primero se comprobará si vuelven a jugar y se medirá el esfuerzo de organizarla. La ampliación a otras salas se evaluará con ese resultado.
+
+La decisión se apoya en la participación observada en staging. Doce de los 14 invitados cumplieron la regla de participación sostenida y once completaron los nueve desafíos. Hay confianza alta en ese recuento y evidencia limitada sobre la repetición entre temporadas y la transferencia a otros grupos. La clasificación metodológica de HYP-001 queda registrada en la sección 14.
+
+El responsable tomó la decisión con la evidencia disponible el 2026-11-24. El seguimiento cualitativo sigue abierto hasta el 2026-11-28 y el expediente operativo está incompleto. El esfuerzo de Tabarnia 1 se comparará solo si se puede documentar con un alcance comparable.
 
 ## 16. Próxima incertidumbre
 
-Dependerá de los resultados: barreras de acceso o juego, pérdida de interés, contribución del ranking, contenido/cadencia o esfuerzo de operación. La preferencia entre formatos permanece como candidata exploratoria; no se presupone que sea el siguiente problema que resolver. Repetición entre temporadas, otros grupos y modelo de negocio requieren evidencia posterior.
-
-Esta incertidumbre no abre un segundo ciclo activo. Se mantiene como candidata para priorización después de analizar la recurrencia de CYCLE-001.
+**¿Vuelve a jugar la cohorte en una segunda temporada con un calendario realista fijado antes de empezar?** La hipótesis de repetición entre temporadas se documenta como HYP-010 en el único ciclo activo, [CYCLE-002](CYCLE-002.md). El esfuerzo operativo será una medida auxiliar para orientar la reutilización de contenido y la programación automática. La cadencia diaria estricta queda como pregunta separada.
 
 ## 17. Próxima acción
 
-Seleccionar y registrar los nueve desafíos candidatos para la alpha de Tabarnia.
+Seleccionar y registrar las nueve versiones candidatas en el calendario de [CYCLE-002](CYCLE-002.md#calendario-y-mezcla-de-modos).
 
 ## 18. Documentos que deben actualizarse
 

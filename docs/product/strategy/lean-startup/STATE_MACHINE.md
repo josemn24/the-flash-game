@@ -168,4 +168,4 @@ No se sale de `MEASUREMENT_DESIGN` porque una sección esté rellenada, sino por
 
 ## Estado actual
 
-CYCLE-001 se encuentra en `MVP_DESIGN`, dentro de la fase `Preparación del MVP`. Su siguiente puerta es `READY_TO_RUN`; las condiciones pendientes se mantienen en el ciclo activo y en `STATE.md`.
+[CYCLE-001](cycles/CYCLE-001.md#15-decisión-estratégica) registró `PERSEVERAR` y cerró al pasar por `NEXT_CYCLE`. El único ciclo activo, [CYCLE-002](cycles/CYCLE-002.md), está en `EXPERIMENT_DESIGN`, dentro de la fase `Diseño del experimento`. Su siguiente puerta es `MVP_DESIGN`. Las condiciones están en el ciclo activo y en [STATE](STATE.md).

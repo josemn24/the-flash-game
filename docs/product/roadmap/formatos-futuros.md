@@ -1,11 +1,64 @@
-> Estado: propuesta. Mecánicas candidatas, sin implementación ni prioridad comprometida.
+> Estado: propuesta. Formatos nuevos y ampliaciones pendientes de validar.
 
 # Formatos futuros
 
-Estas ideas se separaron del catálogo editorial el 2026-10-24. Un formato futuro no se habilita
-por aparecer aquí: requiere contrato, interacción accesible, validación, puntuación y conformidad
-en cada modo que lo admita. La [matriz vigente](../../current/status.md) describe las capacidades reales.
-La estrategia y los experimentos activos determinan si merece la pena construir una candidata.
+Este roadmap reúne ideas de formatos y ampliaciones del catálogo editorial. Para habilitar un
+formato se necesita un contrato de interacción accesible, validación, puntuación y conformidad en
+cada modo que lo admita. La [matriz vigente](../../current/status.md) describe las capacidades reales.
+
+## Puzles de tablero
+
+### Regiones rectangulares — Primer formato nuevo a probar
+
+El jugador divide la cuadrícula en rectángulos hasta cubrirla por completo. Cada rectángulo
+contiene exactamente una pista numérica y ocupa tantas casillas como indica esa pista. Un 8
+puede resolverse con un rectángulo de 2 × 4 o de 4 × 2, según el espacio que quede para las
+otras regiones. La idea procede del [archivo de propuestas de regiones rectangulares](../../archive/ideas-juegos-futuros.md#patches--regiones-rectangulares).
+
+- **Primer ensayo.** Crear unos pocos tableros propios de 5 × 5 con pistas numéricas y solución
+  única verificada. Permitir seleccionar dos esquinas, editar una región y deshacer con toque
+  o teclado. Las regiones deben cubrir todas las casillas una sola vez.
+- **Qué medir.** Si se entiende la regla con un ejemplo, cuántas personas resuelven el tablero,
+  cuánto tardan y cuántas eligen jugar otro. Con esa señal se podrá valorar su uso en Flash o
+  en un futuro [Tablero único](modos-de-juego-futuros.md#tablero-único).
+
+### Zip / Una línea — Ampliación a 6 × 6 con muros
+
+- **Implementado.** Tablero fijo de **5 × 5**, con pasos ortogonales libres entre celdas adyacentes.
+  El jugador pasa por los números en orden y visita cada casilla una vez. Está disponible en la
+  biblioteca y admite competición en modos como Flash. [Reglas actuales](../../content/formatos-de-juego.md#zip--una-línea--implementada) ·
+  [Registro competitivo](../../../lib/question-formats/zip/definition.ts).
+- **Ampliación propuesta.** Admitir un tablero de **6 × 6** y muros que bloqueen el paso entre
+  dos casillas. Se mantienen el orden de los números y la cobertura completa. Validar una única
+  solución y calibrar el tamaño y los muros por separado para saber qué aumenta la dificultad.
+  [Variantes exploratorias](../../archive/ideas-juegos-futuros.md#zip--una-línea).
+
+### Mini-sudoku — Ampliación a 6 × 6
+
+- **Implementado.** Mini-sudoku de **4 × 4**, con números del 1 al 4, bloques de 2 × 2 y tres o
+  cuatro casillas vacías. Está disponible **solo en práctica**. [Formato actual](../../content/formatos-de-juego.md#mini-sudoku--implementada) ·
+  [Matriz de capacidades](../../current/status.md#modos-y-formatos).
+- **Ampliación propuesta.** Sudoku de **6 × 6**, con números del 1 al 6 y bloques de dos columnas
+  por tres filas. Verificar una única solución, comprobar la comodidad del teclado en móvil y
+  calibrar la duración como reto largo. El primer ensayo puede hacerse en práctica.
+
+### Crucigrama aritmético — Propuesta
+
+Completar las casillas numéricas de una cuadrícula de operaciones horizontales y verticales.
+Una casilla compartida debe satisfacer las dos igualdades en las que aparece. En un primer
+ensayo, usar una cuadrícula pequeña, números enteros, divisiones exactas y solución única.
+Las operaciones aisladas se pueden probar ya como [Cálculo relámpago](../../content/formatos-de-juego.md#cálculo-relámpago--disponible-como-contenido).
+
+### Anillas de colores — Propuesta
+
+Mover la anilla superior de un palo a otro con capacidad hasta agrupar las anillas por color.
+Para que se puedan distinguir en móvil, acompañar el color con símbolos o patrones. Empezar
+con disposiciones resolubles y comprobar cuántos movimientos requiere la solución. Puede ser
+un segundo formato para [Movimientos mínimos](modos-de-juego-futuros.md#movimientos-mínimos)
+si el primer ensayo con el deslizante muestra ganas de repetir.
+[Idea de Anillas en el archivo](../../archive/ideas-juegos-futuros.md#anillas-de-colores).
+
+## Otras propuestas
 
 ### Diferencias visuales — Futura
 
@@ -146,5 +199,4 @@ Antes de habilitar competición, definir:
 - La estrategia editorial: datos estructurados, assets, validación de soluciones, dificultad y coste de producción.
 - Las reglas de recuperación y la evidencia necesaria para admitir el formato en cada modo.
 
-Registrar la decisión y actualizar capacidades, contratos y pruebas con la entrega. Esta lista no
-fija una prioridad entre propuestas ni habilita formatos por sí sola.
+Registrar la decisión y actualizar capacidades, contratos y pruebas con la entrega.
