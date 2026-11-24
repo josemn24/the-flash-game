@@ -4,61 +4,59 @@
 
 ## Resumen
 
-- Fase actual: Preparación del MVP
-- Estado detallado: MVP_DESIGN; siguiente puerta READY_TO_RUN, todavía no superada.
+- Fase actual: Análisis del aprendizaje
+- Estado detallado: LEARNING_ANALYSIS; siguiente puerta DECISION.
 - Ciclo activo: `cycles/CYCLE-001.md`
-- Hipótesis crítica: HYP-001 — Participación recurrente en una competición asíncrona entre amistades
+- Hipótesis crítica: HYP-001 — Participación recurrente en una competición asíncrona entre amistades. Estado: `Inconclusa` por calidad del experimento (2026-11-24).
 - Pregunta de aprendizaje: ¿Las 14 personas invitadas a Tabarnia mantienen participación voluntaria hasta el final de nueve desafíos diarios?
 - Decisión pendiente: ¿La evidencia justifica PERSEVERAR con una segunda temporada y qué fricción debe resolverse antes de ampliar?
-- Diseño: 14 invitaciones, nueve ventanas consecutivas de 24 horas, un intento por publicación; protocolo `tabarnia-daily-v2` definido el 2026-10-24 y pendiente de congelar.
-- Métrica principal: personas que completan al menos seis desafíos, incluidos dos de los tres últimos, divididas entre las 14 invitaciones; ocho o más apoya, cuatro o menos debilita y cinco a siete resulta inconcluso, sujeto a calidad de datos.
-- Fuente del contrato: [CYCLE-001, sección 7](cycles/CYCLE-001.md#7-contrato-de-medición). Tabarnia utiliza la medición automática común por temporada; la cohorte de invitaciones y el cálculo del estudio se preparan fuera de la aplicación. Verificación del entorno objetivo y del análisis pendiente.
-- Separación de responsabilidades: todas las salas recogen datos comunes; los criterios de éxito de Tabarnia se fijan aquí y se evalúan posteriormente, sin configurar ni bloquear la aplicación.
-- Límites de fuentes: el retorno del portal cuenta inicios en dos publicaciones y no sustituye la métrica principal. Los CSV muestran agregados y estado actual; el ensayo externo debe contrastar fechas, corte, auditoría y tramos sin captura según las secciones 7.4–7.5 del ciclo.
-- Incertidumbre principal: aceptación y participación recurrente de Tabarnia en el loop social asíncrono.
+- Ejecución: temporada jugada en staging. Invitaciones enviadas el 2026-11-05; nueve desafíos entre `T0` = 2026-11-06 14:00 UTC y el 2026-11-21; corte `Tdatos` = 2026-11-22 14:00 UTC; seguimiento cualitativo hasta el 2026-11-28.
+- Resultado principal: `R = 12/14` (85,7 %). Once personas completaron los nueve desafíos, una completó siete, una completó cinco y una quedó sin intentos registrados. Numéricamente supera el umbral de apoyo (`R >= 8`).
+- Motivo de la inconclusión: el calendario se adaptó durante la ejecución según la reacción del grupo y la disponibilidad del organizador (15 días con huecos en lugar de nueve ventanas consecutivas de 24 h) y el protocolo `tabarnia-daily-v2` no se congeló. Según la sección 7.6 del ciclo, eso invalida la ejecución del protocolo. La cadencia diaria no se probó.
+- Fuente del contrato y de los resultados: [CYCLE-001](cycles/CYCLE-001.md), secciones 7 y 12–14.
+- Datos faltantes: resto del expediente externo (avisos, incidencias, minutos y costes) y cierre del seguimiento cualitativo. M09 y M10 siguen pendientes.
 - Responsable: Jose Moreno
-- Próxima revisión: Tras el corte principal (cierre del noveno desafío + 24 horas) y el seguimiento cualitativo de siete días; inicio pendiente.
-- Bloqueos: Nueve versiones y orden sin seleccionar; cohorte nominal, calendario absoluto, prueba individual y operación de staging sin verificar. La implementación y las pruebas locales no permiten iniciar la alpha sin ese control.
-- Hipótesis secundaria candidata: HYP-002 — Preferencia y contribución de modos y formatos; permanece en `Borrador` y no abre un segundo ciclo.
+- Próxima revisión: tras el cierre del seguimiento cualitativo el 2026-11-28.
+- Hipótesis secundaria candidata: HYP-002 — Preferencia y contribución de modos y formatos. Permanece en `Borrador` y recoge señales exploratorias de Telegram y staging.
 - Mapa ampliado: HYP-003 a HYP-009 cubren segmento, canal, operativa, técnica, legal o regulatoria, crecimiento e ingresos; todas permanecen en `Borrador`.
-- Instrumentos complementarios previstos: disfrute opcional 1–5 en app; problemas, encuesta final y hasta cinco conversaciones voluntarias por Telegram o entrevista, registrados en el expediente privado del estudio; separados del comportamiento y de la clasificación principal.
-
 - Conservación: expediente externo identificable del estudio durante 90 días desde el cierre del informe, con eliminación a cargo del responsable; resumen agregado conservado. Los datos automáticos y partidas oficiales mantienen su política vigente.
 
 ## Próxima acción
 
-Seleccionar y registrar en CYCLE-001 los nueve desafíos candidatos para la alpha de Tabarnia.
+Completar las secciones 12 y 13 de CYCLE-001 con el seguimiento cualitativo hasta el 2026-11-28 y consignar qué avisos, incidencias, minutos y costes siguen sin verificarse.
 
 ## Lo que sabemos
 
 ### Hechos observados
 
-- El repositorio combina recorridos mock/práctica con un vehículo técnico persistido localmente sobre
-  Supabase: dispone de Auth, salas, temporadas, publicaciones, intentos, rankings, portal privado y
-  varios formatos competitivos server-side. Fuente: `../../../current/status.md`.
-- La disponibilidad de este vehículo técnico no constituye evidencia de que Tabarnia participe de
-  forma recurrente ni de que el loop social aporte valor.
-- El responsable ha solicitado 14 invitaciones y nueve desafíos diarios; CYCLE-001 conserva la revisión del diseño previo, sin resultados ni decisiones estratégicas inventados.
+- En la temporada de Tabarnia en staging, 12 de las 14 personas invitadas completaron seis o más desafíos, incluidos al menos dos de los tres últimos. Once completaron los nueve. Fuente: [CYCLE-001, sección 12](cycles/CYCLE-001.md#12-resultados-observados).
+- La participación por publicación se mantuvo entre 11 y 13 de 14, y 111 de 112 intentos iniciados terminaron.
+- El calendario real fue adaptativo y no siguió las nueve ventanas consecutivas del protocolo.
+- Diez personas dejaron 24 valoraciones en la app. Se recibieron entre una y cuatro valoraciones por desafío después del primero.
 
 ### Evidencia disponible
 
-- No hay evidencia de comportamiento de usuarios ni resultados Lean registrados.
+- Comportamiento de la cohorte de Tabarnia en una temporada, con medición completa de finalizaciones. La ejecución no es válida respecto al protocolo diario diseñado.
+- Dos encuestas de Telegram y análisis por pregunta en staging, con señales sobre preferencias, progresión y corrección. [Resultados del ciclo](cycles/CYCLE-001.md#12-resultados-observados).
 
 ## Lo que creemos
 
 ### Inferencias
 
-- La adopción y repetición del loop social es más incierta que ampliar formatos o infraestructura técnica.
+- La alta recurrencia observada justifica considerar una segunda temporada con el mismo grupo y un calendario fijado antes de jugar. Su priorización queda pendiente de la decisión estratégica.
+- La cadencia puede ser una variable relevante para sostener la participación.
 
 ### Supuestos
 
-- Tabarnia podría querer competir de manera asíncrona con nueve desafíos breves y un resultado acumulado.
+- La relación personal con el organizador, los avisos y la novedad contribuyeron a la participación en una medida desconocida.
 
 ## Lo que desconocemos
 
-- La aceptación real de las 14 invitaciones, la disposición a volver, los formatos que mejor sostienen la participación y el interés por el ranking.
-- La contribución relativa de cada modo o formato no se puede atribuir con los datos actuales; solo está prevista como observación exploratoria de CYCLE-001.
-- La transferibilidad a otros segmentos, el canal fuera de la cohorte inicial, la carga operativa, la fiabilidad del vehículo, los requisitos legales o regulatorios, el crecimiento y los ingresos.
+- Si el grupo sostendría una cadencia diaria estricta de nueve días consecutivos.
+- Si la participación se repite en una segunda temporada, sin novedad, o en otros grupos.
+- Qué parte del efecto se debe al juego, al ranking, a la cadencia, a los avisos o a la relación con el organizador.
+- Qué experiencias explican las preferencias declaradas y cuáles hacen que la gente quiera volver. Sigue abierto el seguimiento cualitativo.
+- La carga operativa real de la temporada, la fricción técnica, los requisitos legales o regulatorios, el crecimiento y los ingresos.
 
 ## Referencias
 

@@ -9,7 +9,7 @@ Las hipótesis representan creencias importantes que deben comprobarse antes de 
 ### HYP-001 — Participación recurrente en una competición asíncrona entre amistades
 
 - **Tipo:** Problema
-- **Estado:** Priorizada
+- **Estado:** Inconclusa (2026-11-24, por calidad del experimento)
 - **Prioridad:** Alta
 - **Incertidumbre:** Alta
 - **Coste de estar equivocados:** Alto
@@ -34,7 +34,7 @@ Confirmar si este grupo encuentra valor suficiente en una actividad competitiva 
 
 Al menos ocho de las 14 personas invitadas completan voluntariamente seis o más de los nueve desafíos diarios, incluidos dos de los desafíos siete, ocho y nueve. Cada publicación tiene una ventana de 24 horas y un intento oficial. Quienes rechazan, no acceden o dejan de jugar siguen en el denominador; no se condiciona la métrica a aceptar la invitación.
 
-El [contrato de CYCLE-001](cycles/CYCLE-001.md#7-contrato-de-medición), versión `tabarnia-daily-v2`, define finalización, corte, deduplicación, fuentes y tratamiento de datos faltantes. Una derrota reglamentaria cuenta como finalización; ensayo o abandono no. Ranking, disfrute y costes son contexto. Los criterios se evaluarán posteriormente con datos comunes de temporada y el expediente privado de invitaciones, incidencias y feedback. No hay un motor de evaluación Lean en la aplicación. La preparación del análisis y del entorno objetivo sigue pendiente, sin recogida de datos reales iniciada; HYP-001 permanece `Priorizada`.
+El [contrato de CYCLE-001](cycles/CYCLE-001.md#7-contrato-de-medición), versión `tabarnia-daily-v2`, define finalización, corte, deduplicación, fuentes y tratamiento de datos faltantes. Una derrota reglamentaria cuenta como finalización; ensayo o abandono no. Ranking, disfrute y costes son contexto. El análisis combina datos de temporada y el expediente privado de invitaciones, incidencias y feedback. No hay un motor de evaluación Lean en la aplicación.
 
 «Personas que vuelven» en el portal significa iniciar dos publicaciones distintas y no equivale
 a la participación sostenida de esta hipótesis. La cobertura temporal y la reconstrucción del corte
@@ -74,6 +74,12 @@ deben verificarse con las fuentes detalladas; los CSV comunes por sí solos no c
 
 Entre cinco y siete personas cumplen la definición, o problemas de calidad del experimento impiden clasificarlo según el contrato. Los umbrales se fijan antes de observar resultados; no prueban demanda fuera de esta cohorte ni sostenibilidad a largo plazo.
 
+**Resultado de CYCLE-001 (2026-11-24)**
+
+La temporada se ejecutó en staging con la cohorte de 14 personas invitadas. `R = 12/14`: once personas completaron los nueve desafíos y una completó siete con dos de los tres últimos. Numéricamente supera el umbral de apoyo.
+
+La hipótesis queda `Inconclusa` por calidad del experimento: el calendario se adaptó durante la ejecución (15 días con huecos en lugar de nueve ventanas consecutivas de 24 h) y el protocolo no se congeló. La cadencia diaria que exige la hipótesis no se probó. Lo observado es una señal fuerte de recurrencia en esta cohorte con cadencia flexible decidida por el organizador. Detalle en [CYCLE-001, secciones 12–14](cycles/CYCLE-001.md#12-resultados-observados).
+
 **Decisión que permitirá tomar**
 
 Si la evidencia justifica PERSEVERAR con una segunda temporada del mismo loop social o si, tras revisar la calidad del experimento, hay que reconsiderar estrategia antes de ampliar el producto.
@@ -98,7 +104,7 @@ Creemos que determinados modos y formatos de desafío generan más activación, 
 
 No está seleccionada como hipótesis crítica ni tiene todavía decisión, experimento, población, métrica principal o umbrales propios. En CYCLE-001 solo puede observarse de forma exploratoria, sin cambiar la decisión principal sobre recurrencia.
 
-La encuesta post-temporada prevista en CYCLE-001 podrá aportar opiniones declaradas para esta hipótesis, pero no demostrará por sí sola preferencia ni intención de repetición.
+**Señales exploratorias de CYCLE-001.** En Telegram, 6/6 personas eligieron tableros de lógica y 4/6 eligieron Alfabeto temático. Los mismos 13 jugadores completaron ambos Alfabetos. `Cumbre lógica` recibió 3/8 votos como favorita y 5/9 como la menos gustada. Estas señales orientan qué comparar, y los efectos de la mecánica, el tema, la dificultad y la eliminación siguen abiertos. [Resultados del ciclo](cycles/CYCLE-001.md#opiniones-declaradas).
 
 **Qué tendría que definirse antes de probarla**
 
@@ -137,7 +143,7 @@ Estas hipótesis amplían el mapa de incertidumbres del proyecto, pero no son hi
 - **Tipo:** Operativa
 - **Estado:** Borrador
 - **Hipótesis candidata:** una única persona responsable puede preparar, publicar, registrar y cerrar una temporada sin una carga que impida repetirla.
-- **Desconocido actual:** esfuerzo real, incidencias y capacidad de mantener la operación.
+- **Desconocido actual:** esfuerzo real, incidencias y capacidad de mantener la operación. CYCLE-001 aporta contexto: el organizador ajustó el calendario a mano según su disponibilidad. Los minutos y costes del expediente externo no se han registrado todavía.
 - **Ciclo relacionado:** Ninguno.
 
 ### HYP-006 — Fiabilidad técnica del vehículo mínimo
@@ -145,7 +151,8 @@ Estas hipótesis amplían el mapa de incertidumbres del proyecto, pero no son hi
 - **Tipo:** Técnica
 - **Estado:** Borrador
 - **Hipótesis candidata:** el vehículo mínimo puede permitir el acceso privado, ejecutar los desafíos y registrar participación, resultados y ranking con fiabilidad suficiente para aprender.
-- **Desconocido actual:** si las capacidades competitivas y la captura común por temporada ya implementadas funcionarán sin incidencias relevantes en el entorno y dispositivos usados por Tabarnia. Siguen pendientes la verificación del entorno objetivo y el ensayo del análisis externo, incluida su cobertura temporal. La evidencia local no acredita ese recorrido real.
+- **Contexto de staging:** 111 de 112 intentos iniciados por la cohorte terminaron, con un abandono por inactividad. Trece respuestas de texto corto se recalificaron a acierto por variantes válidas. Hubo 86 recepciones marcadas por vencimiento y la extracción carece del tiempo del cliente para verificar el reloj visible. [Anomalías del ciclo](cycles/CYCLE-001.md#anomalías).
+- **Desconocido actual:** la frecuencia y el alcance de incidencias en los dispositivos utilizados, la coherencia de los relojes cerca del plazo y la cobertura del registro externo de incidencias.
 - **Ciclo relacionado:** CYCLE-001 la trata como condición de calidad del experimento, no como hipótesis principal.
 
 ### HYP-007 — Cumplimiento y expectativas sobre datos y resultados
@@ -179,4 +186,4 @@ Estas hipótesis amplían el mapa de incertidumbres del proyecto, pero no son hi
 
 ## Hipótesis cerradas
 
-- Ninguna todavía.
+- Ninguna. HYP-001 tiene una clasificación `Inconclusa` en CYCLE-001, pero sigue abierta hasta registrar la decisión estratégica del ciclo.

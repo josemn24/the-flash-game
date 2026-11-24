@@ -2,7 +2,7 @@
 
 ## Estado de la estrategia
 
-Provisional. Describe la apuesta vigente para CYCLE-001; no es evidencia de demanda ni forma parte inmutable de la visión.
+Provisional. Describe la apuesta vigente para CYCLE-001; no es evidencia de demanda ni forma parte inmutable de la visión. La temporada de CYCLE-001 se ejecutó en staging y su resultado se registró el 2026-11-24 como inconcluso por calidad del experimento. Las apuestas se revisarán al registrar la decisión estratégica del ciclo.
 
 ## Objetivo estratégico actual
 
@@ -10,31 +10,30 @@ Obtener evidencia sobre si un grupo inicial repite desafíos compartidos de form
 
 ## Segmento
 
-Tabarnia: cohorte de 14 amistades a quienes Jose invitará a una sala privada de la primera alpha. Lista nominal y envíos pendientes; cuentas de pruebas y organizador en su función operativa quedan excluidos de la medición.
+Tabarnia: cohorte de 14 amistades invitadas por Jose a una sala privada de la primera alpha. Las invitaciones se enviaron por Telegram el 2026-11-05; la cuenta operativa con rol `owner` queda excluida de la medición.
 
-**Estado de evidencia:** supuesto; todavía no se han enviado invitaciones ni observado participación.
+**Estado de evidencia:** observado en una temporada. 12 de 14 personas mantuvieron participación según la definición de CYCLE-001, con cadencia flexible. No prueba transferencia a otros grupos.
 
 ## Problema
 
 Comprobar si este grupo obtiene valor de una actividad competitiva recurrente que no exige coincidir en tiempo real.
 
-**Estado de evidencia:** hipótesis HYP-001, no hecho observado.
+**Estado de evidencia:** HYP-001 quedó `Inconclusa` respecto al protocolo diario. Hay comportamiento recurrente observado y preferencias declaradas de una parte del grupo. Sigue abierta su relación con la repetición en otra temporada.
 
 ## Propuesta de valor
 
 Desafíos mentales breves, variados y comparables que permiten competir con amistades en una ventana compartida y seguir una puntuación acumulada de temporada.
 
-**Estado de evidencia:** afirmación estratégica; pendiente de observar comportamiento repetido.
+**Estado de evidencia:** comportamiento repetido observado en una temporada de Tabarnia con cadencia flexible; no aísla qué elemento de la propuesta lo produce.
 
 ## Solución o vehículo actual
 
-Una alpha con una sala privada, nueve desafíos diarios en ventanas consecutivas de 24 horas, un intento por participante y publicación, puntuaciones comparables y ranking acumulado. El protocolo `tabarnia-daily-v2` está definido y pendiente de congelar; sustituye el diseño anterior antes de observar resultados.
+Una alpha con una sala privada, nueve desafíos, un intento por participante y publicación, puntuaciones comparables y ranking acumulado. El protocolo `tabarnia-daily-v2` preveía nueve ventanas consecutivas de 24 horas. En la ejecución real, el organizador espació las publicaciones durante 15 días y el protocolo no se congeló.
 
 El repositorio ya aporta Auth, salas, temporadas, publicaciones, intentos, rankings, programación
-local, portal privado y varios recorridos server-side sobre Supabase. La selección de los nueve
-desafíos, la preparación concreta de la cohorte y la validación de staging siguen pendientes. La
-medición está contrastada en Supabase local y E2E aislado; esa verificación técnica no constituye
-evidencia de demanda.
+local, portal privado y varios recorridos server-side sobre Supabase. La temporada de Tabarnia se
+jugó en staging con nueve desafíos de cinco modos distintos. El detalle está en la sección 12 de
+CYCLE-001.
 
 **Fuente:** `cycles/CYCLE-001.md`; `../../../../README.md` y `../../../current/status.md` para los
 límites actuales de la aplicación.
@@ -57,7 +56,7 @@ Activación, evolución por desafío, introducción a inicio, finalización, con
 
 Invitación directa de Jose a la cohorte definida y un aviso general al abrir cada publicación, en el grupo privado de Telegram fijado antes de iniciar. La ayuda solicitada y los contactos adicionales se registran; no se planifica insistencia individual para forzar participación. No se usarán campañas ni adquisición pagada. El resultado evaluará una experiencia con esos avisos, sin atribuirle uso espontáneo sin recordatorios.
 
-**Estado de evidencia:** supuesto operativo.
+**Estado de evidencia:** el responsable declaró el envío de invitaciones privadas por Telegram y aportó dos encuestas del grupo. Queda pendiente contrastar el registro de avisos y ayuda por publicación.
 
 ## Ingresos
 
@@ -69,9 +68,9 @@ Desconocido. La alpha no busca validar adquisición ni expansión; busca aprendi
 
 ## Operación
 
-Jose Moreno es el responsable. La fase de juego dura nueve días, con corte principal 24 horas después del cierre del noveno desafío y seguimiento cualitativo hasta siete días después de ese cierre. Antes se exige prueba individual sin exposición de respuestas oficiales, verificación operativa del entorno y prueba completa de medición.
+Jose Moreno es el responsable. En la ejecución de CYCLE-001, la fase de juego duró 15 días en lugar de nueve, porque el responsable ajustó el calendario a su disponibilidad y al ritmo del grupo. El diseño previsto era el siguiente: la fase de juego dura nueve días, con corte principal 24 horas después del cierre del noveno desafío y seguimiento cualitativo hasta siete días después de ese cierre. Antes se exige prueba individual sin exposición de respuestas oficiales, verificación operativa del entorno y prueba completa de medición.
 
-Se congelan criterios y lista nominal antes de enviar invitaciones reales, cuyo registro inicia la recogida de datos. Como control organizativo del estudio, la apertura requiere 14 invitaciones enviadas y acceso provisionado. La aplicación no impone ese control. Si no se cumple, no se abre y se conserva la desviación; no se sustituyen participantes ni se ajustan umbrales tras observar comportamiento. Fecha absoluta, participantes y contenidos siguen pendientes. Supabase y el portal aportan actividad, disfrute 1–5 y CSV comunes. Invitaciones, feedback externo, incidencias y costes se conservan en el expediente privado del estudio. El responsable elimina las copias identificables de ese expediente a los 90 días del cierre, conservando agregados; los datos automáticos de la aplicación mantienen su política vigente. La implementación no inicia la alpha.
+Se congelan criterios y lista nominal antes de enviar invitaciones reales, cuyo registro inicia la recogida de datos. Como control organizativo del estudio, la apertura requiere 14 invitaciones enviadas y acceso provisionado. La aplicación no impone ese control. Si no se cumple, no se abre y se conserva la desviación; no se sustituyen participantes ni se ajustan umbrales tras observar comportamiento. Supabase y el portal aportan actividad, disfrute 1–5 y CSV comunes. Invitaciones, feedback externo, incidencias y costes se conservan en el expediente privado del estudio. El responsable elimina las copias identificables de ese expediente a los 90 días del cierre, conservando agregados; los datos automáticos de la aplicación mantienen su política vigente. La implementación no inicia la alpha.
 
 ## Ventajas esperadas
 
@@ -83,7 +82,7 @@ Son inferencias y supuestos; HYP-001 evalúa principalmente la repetición, no d
 
 ## Principales incertidumbres
 
-1. Si la cohorte acepta y completa repetidamente los desafíos.
+1. Si la cohorte vuelve a jugar una segunda temporada con un calendario fijado de antemano. Es una candidata a siguiente incertidumbre, pendiente de la decisión del ciclo.
 2. Si la propuesta de valor, la cadencia y el ranking contribuyen al comportamiento observado.
 3. Si el vehículo técnico propuesto es realmente el mecanismo mínimo para obtener esa evidencia.
 4. Ingresos, crecimiento y viabilidad fuera de una primera cohorte.

@@ -168,4 +168,4 @@ No se sale de `MEASUREMENT_DESIGN` porque una sección esté rellenada, sino por
 
 ## Estado actual
 
-CYCLE-001 se encuentra en `MVP_DESIGN`, dentro de la fase `Preparación del MVP`. Su siguiente puerta es `READY_TO_RUN`; las condiciones pendientes se mantienen en el ciclo activo y en `STATE.md`.
+CYCLE-001 se encuentra en `LEARNING_ANALYSIS`, dentro de la fase `Análisis del aprendizaje`. La temporada se ejecutó sin superar formalmente `READY_TO_RUN`; esa desviación queda registrada en el ciclo. Su siguiente puerta es `DECISION`; las condiciones pendientes se mantienen en el ciclo activo y en `STATE.md`.
