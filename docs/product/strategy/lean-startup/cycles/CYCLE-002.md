@@ -5,7 +5,7 @@
 - **Estado:** Diseño. Único ciclo activo tras la decisión [PERSEVERAR de CYCLE-001](CYCLE-001.md#15-decisión-estratégica).
 - **Estado de máquina:** EXPERIMENT_DESIGN
 - **Siguiente puerta:** MVP_DESIGN
-- **Condición de avance:** seleccionar las nueve versiones candidatas y comprobar que pueden usarse con el calendario y el alcance definidos.
+- **Condición de avance:** seleccionar las nueve versiones candidatas y confirmar un alcance técnico viable para publicarlas con la cadencia, las reglas de competición y la medición acordadas.
 - **Responsable:** Jose Moreno
 - **Protocolo:** `tabarnia-s2-v1`, borrador hasta la congelación.
 - **Fecha de inicio:** pendiente de fijar. `T0` es la apertura del primer desafío.
@@ -20,13 +20,13 @@ Decidir si hay repetición suficiente para probar un paquete de temporada con ot
 
 ## 3. Pregunta de aprendizaje
 
-¿Cuántas de las 14 personas invitadas a Tabarnia 1 volverán a participar de forma sostenida en Tabarnia 2 con un calendario fijado antes de empezar?
+¿Cuántas de las 14 personas invitadas a Tabarnia 1 volverán a participar de forma sostenida en Tabarnia 2 durante nueve días consecutivos, con el calendario fijado antes de empezar?
 
 ## 4. Hipótesis crítica
 
 **Referencia:** [HYP-010](../HYPOTHESES.md#hyp-010--repetición-entre-temporadas-en-tabarnia), `Priorizada`.
 
-Al menos ocho de las 14 personas de la cohorte original completarán seis o más de los nueve desafíos de Tabarnia 2, incluidos al menos dos de los desafíos siete, ocho y nueve, con nueve ventanas de 24 horas repartidas en 15 días y fijadas de antemano.
+Al menos ocho de las 14 personas de la cohorte original completarán seis o más de los nueve desafíos de Tabarnia 2, incluidos al menos dos de los desafíos siete, ocho y nueve, con nueve ventanas consecutivas de 24 horas fijadas de antemano.
 
 ## 5. Por qué esta hipótesis es prioritaria
 
@@ -75,32 +75,44 @@ Comparar con Tabarnia 1 únicamente si se recupera un registro con cobertura y c
 
 ### Calendario y mezcla de modos
 
-Cada publicación se abre a partir de `T0` más el desplazamiento indicado y dura 24 horas. Se propone fijar `T0` a las 15:00 en `Europe/Madrid`, la hora de apertura de la primera temporada. Antes de invitar se registrarán las nueve ventanas absolutas en UTC y su equivalente en Madrid, junto con sus versiones y los avisos previstos. Los desplazamientos se calculan en bloques de 24 horas desde `T0`.
+Cada ventana dura 24 horas. La siguiente abre en el momento en que cierra la anterior. Se propone fijar `T0` a las 15:00 en `Europe/Madrid`, la hora de apertura de la primera temporada. Antes de invitar se registrarán las nueve ventanas absolutas en UTC y su equivalente en Madrid, junto con sus versiones y los avisos previstos. Los desplazamientos se calculan en bloques de 24 horas desde `T0`.
 
-| #   | Día | Abre        | Cierra      | Modo                            |
-| --- | --- | ----------- | ----------- | ------------------------------- |
-| 1   | 1   | `T0`        | `T0 + 1 d`  | Flash                           |
-| 2   | 3   | `T0 + 2 d`  | `T0 + 3 d`  | Alfabeto temático               |
-| 3   | 4   | `T0 + 3 d`  | `T0 + 4 d`  | Contrarreloj · Queens           |
-| 4   | 5   | `T0 + 4 d`  | `T0 + 5 d`  | Flash                           |
-| 5   | 8   | `T0 + 7 d`  | `T0 + 8 d`  | Alfabeto temático               |
-| 6   | 9   | `T0 + 8 d`  | `T0 + 9 d`  | Flash                           |
-| 7   | 11  | `T0 + 10 d` | `T0 + 11 d` | Contrarreloj · Conectar parejas |
-| 8   | 12  | `T0 + 11 d` | `T0 + 12 d` | Alfabeto temático               |
-| 9   | 15  | `T0 + 14 d` | `T0 + 15 d` | Pirámide especial               |
+| Día | Abre       | Cierra     | Modo              | Contenido                                                          |
+| --- | ---------- | ---------- | ----------------- | ------------------------------------------------------------------ |
+| 1   | `T0`       | `T0 + 1 d` | Flash             | Cultura general variada, con preguntas cortas                      |
+| 2   | `T0 + 1 d` | `T0 + 2 d` | Contrarreloj      | Lógica · Queens                                                    |
+| 3   | `T0 + 2 d` | `T0 + 3 d` | Alfabeto          | Cultura general, con pistas de varias categorías                    |
+| 4   | `T0 + 3 d` | `T0 + 4 d` | Tablero único     | Lógica · Escape                                                    |
+| 5   | `T0 + 4 d` | `T0 + 5 d` | Pirámide especial | Lógica · Mini-sudoku 4×4, Operaciones cruzadas y Conectar parejas    |
+| 6   | `T0 + 5 d` | `T0 + 6 d` | Contrarreloj      | Lógica · Zip 5×5                                                   |
+| 7   | `T0 + 6 d` | `T0 + 7 d` | Alfabeto          | Cultura general, con pistas nuevas y dificultad similar al primero |
+| 8   | `T0 + 7 d` | `T0 + 8 d` | Tablero único     | Lógica · Regiones rectangulares                                    |
+| 9   | `T0 + 8 d` | `T0 + 9 d` | Flash             | Cultura general, con formatos como ordenación y emparejamiento      |
 
-Tres Flash, tres Alfabetos, dos Contrarrelojes y una Pirámide especial. La Pirámide es la novena publicación oficial y cuenta en recurrencia y ranking. Supervivencia queda fuera de la rotación de Tabarnia 2. `Tdatos = T0 + 16 d` y el seguimiento cualitativo termina siete días después del último cierre, en `T0 + 22 d`.
+Las nueve publicaciones son oficiales y cuentan para la recurrencia y el ranking. El tramo final de la métrica abarca Alfabeto, Tablero único y Flash. `Tdatos = T0 + 10 d` y el seguimiento cualitativo termina siete días después del último cierre, en `T0 + 16 d`.
 
 ### Operación y controles
 
 - Usar la sala privada de Tabarnia en staging. Registrar el envío a las 14 personas de la cohorte original y que el acceso está disponible antes de abrir el primer desafío. Prever un aviso general en Telegram por apertura y registrar la ayuda y los contactos adicionales.
-- Seleccionar contenido revisado y reutilizar plantillas donde encajen. Revisar variantes en las respuestas de texto corto, especialmente títulos traducidos y nombres alternativos. Hacer una prueba de la Pirámide para calibrar el nivel que bloquea el avance, y comprobar el cierre cerca del plazo con los medios actuales.
+- Seleccionar contenido revisado y reutilizar plantillas donde encajen. Revisar variantes en las respuestas de texto corto, especialmente títulos traducidos y nombres alternativos. Para la Pirámide, ensayar el Mini-sudoku en el primer tramo, Operaciones cruzadas a media altura y Conectar parejas más adelante. Dar ejemplos jugables de los formatos nuevos con tableros distintos a los oficiales y calibrar el tiempo de cada nivel con pruebas en móvil.
 - Congelar la cohorte, el calendario, versiones de contenido, aplicación y esquema, el protocolo de medición y las reglas de puntuación antes de invitar. Registrar las desviaciones al producirse. Ante un fallo bloqueante, detener la operación afectada y documentar la pérdida de comparabilidad antes de interpretar el resultado.
-- Este diseño prueba la repetición de la experiencia completa. El tema, la mezcla de modos, la pausa entre temporadas, los avisos y la relación con el anfitrión pueden influir. Será un grupo y una temporada. Las comparaciones entre modos y formatos serán exploratorias.
+- Este diseño prueba la repetición de la experiencia completa con cadencia diaria. La mezcla de modos, la cadencia, la pausa entre temporadas, los avisos y la relación con el anfitrión pueden influir. Con un grupo y una temporada, las diferencias respecto a Tabarnia 1 y las comparaciones entre modos y formatos se interpretarán de forma descriptiva.
 
 ## 9. MVP o vehículo experimental
 
 Usar el portal, el calendario, los intentos y las exportaciones existentes. Preparar los nueve desafíos juntos desde un calendario de referencia y usar plantillas o contenido reutilizable cuando esté disponible. El organizador revisa la propuesta y simula con el portal el flujo de elegir fecha, ritmo y paquete. La nueva interfaz de autoservicio y el generador competitivo quedan como opciones a evaluar con los datos de esfuerzo y recurrencia.
+
+### Implementación pendiente para esta mezcla
+
+| Publicación | Punto de partida | Pendiente para probarla en competición |
+| ----------- | ---------------- | -------------------------------------- |
+| Días 1, 2, 3, 7 y 9 | Flash, Alfabeto y Contrarreloj con Queens ya disponibles. | Preparar y validar contenido, incluida la corrección de variantes de texto en cultura general. |
+| Día 4 · Tablero único de Escape | Escape ya admite competición en otros modos. [Propuesta de Tablero único](../../../roadmap/modos-de-juego-futuros.md#tablero-único). | Implementar el recorrido de un solo tablero, con un intento oficial, reloj que arranca con el tablero listo, validación y tiempos del servidor, límite y resultado al vencer, clasificación por tiempo de resolución y Flash Points para la temporada. |
+| Día 5 · Pirámide especial | Pirámide y Conectar parejas ya disponibles. [Mini-sudoku](../../../roadmap/formatos-futuros.md#mini-sudoku--ampliación-a-6--6) solo en práctica. [Operaciones cruzadas](../../../roadmap/formatos-futuros.md#crucigrama-aritmético--propuesta) figura como propuesta. | Habilitar Mini-sudoku 4×4 en Pirámide e implementar Operaciones cruzadas con validación de soluciones. Comprobar las transiciones, la eliminación y la puntuación y calibrar el peso del tiempo. |
+| Día 6 · Contrarreloj de Zip | Zip 5×5 existe. [Contrarreloj admite Queens y Conectar parejas](../../../../current/domain/contrarreloj.md#propósito-y-alcance). | Habilitar una secuencia de tableros Zip 5×5 en Contrarreloj, con configuración en el portal, validación de cada tablero, avance y cierre de la partida. |
+| Día 8 · Tablero único de Regiones rectangulares | [Primer formato nuevo que se quiere prototipar](../../../roadmap/formatos-futuros.md#regiones-rectangulares--primer-formato-nuevo-a-probar). | Implementar el tablero 5×5 y su validador, comprobar unicidad de solución y probar la interacción en móvil. Integrarlo en el mismo recorrido de Tablero único que Escape. |
+
+En staging, comprobar cada recorrido nuevo desde la publicación hasta la finalización y su reflejo en ranking y exportaciones. Ensayar un intento resuelto y otro que agote el tiempo, comprobar el reloj cerca del plazo y verificar el estado persistido que cuenta para la recurrencia. Registrar el trabajo de implementación como inversión inicial, por separado del esfuerzo recurrente de preparar y operar la temporada.
 
 La preparación termina cuando quedan verificadas las nueve versiones, el calendario absoluto, el acceso de la cohorte y una extracción de prueba capaz de calcular la métrica. El expediente privado conserva invitaciones, extractos y registros de organización. Los informes usan recuentos agregados. Se eliminan las copias identificables del expediente a los 90 días del cierre del informe, según la política del estudio.
 
@@ -109,13 +121,14 @@ La preparación termina cuando quedan verificadas las nueve versiones, el calend
 **Estado:** Pendiente. Responsable de aprobación: Jose Moreno. Ventanas absolutas, versiones candidatas y fecha de congelación pendientes.
 
 - [ ] Nueve versiones seleccionadas y probadas, con variantes de respuesta y calibración de la Pirámide revisadas.
+- [ ] Integraciones de Zip, Tablero único y niveles nuevos de Pirámide verificadas en staging, con intentos y puntuaciones reproducibles.
 - [ ] Fecha `T0`, ventanas y avisos definidos con zona, y cohorte y acceso verificados.
 - [ ] Extracción del corte y registro de minutos ensayados con datos de prueba.
 - [ ] Protocolo, contenido, calendario y versiones técnicas congelados antes de invitar.
 
 ## 11. Plan de ejecución
 
-1. Seleccionar las versiones y preparar el calendario en el portal.
+1. Acotar las integraciones pendientes, seleccionar las versiones candidatas y verificar los nueve recorridos al preparar el calendario en el portal.
 2. Verificar las fuentes de medición, congelar el diseño y registrar las 14 invitaciones.
 3. Ejecutar las publicaciones con los avisos fijados y registrar minutos e incidencias.
 4. Conciliar al corte, completar el seguimiento y comparar recurrencia y esfuerzo con sus criterios.
@@ -142,7 +155,7 @@ Si se observa repetición, comprobar si otro anfitrión puede poner la experienc
 
 ## 17. Próxima acción
 
-Seleccionar y registrar las nueve versiones candidatas en el calendario de este ciclo.
+Confirmar el alcance mínimo de las integraciones pendientes para poder seleccionar las nueve versiones candidatas.
 
 ## 18. Documentos que deben actualizarse
 

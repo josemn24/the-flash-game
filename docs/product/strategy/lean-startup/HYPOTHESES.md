@@ -13,7 +13,7 @@ Las hipótesis representan creencias importantes que deben comprobarse antes de 
 - **Prioridad:** Alta
 - **Coste de estar equivocados:** Alto antes de invertir en más salas o en automatización.
 
-Al menos ocho de las 14 personas invitadas a Tabarnia 1 volverán a jugar de forma sostenida en Tabarnia 2. Cada una debe completar seis o más de los nueve desafíos, incluidos al menos dos de los tres últimos. La segunda temporada tendrá nueve ventanas de 24 horas repartidas en 15 días, con el calendario fijado antes de convocar a la cohorte original.
+Al menos ocho de las 14 personas invitadas a Tabarnia 1 volverán a jugar de forma sostenida en Tabarnia 2. Cada una debe completar seis o más de los nueve desafíos, incluidos al menos dos de los tres últimos. La segunda temporada tendrá nueve ventanas consecutivas de 24 horas, con el calendario fijado antes de convocar a la cohorte original.
 
 **Evidencia y decisión.** Ocho o más apoyan la prueba con otro anfitrión, cinco a siete dejan el resultado inconcluso y cuatro o menos debilitan la hipótesis. Una desviación que impida interpretar la medición también lleva a un resultado inconcluso. Los minutos de operación son una medida auxiliar vinculada a HYP-005. [Contrato de CYCLE-002](cycles/CYCLE-002.md#7-métrica-y-umbrales).
 

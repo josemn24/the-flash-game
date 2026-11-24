@@ -8,10 +8,11 @@
 - Estado detallado: `EXPERIMENT_DESIGN`. Siguiente puerta: `MVP_DESIGN`.
 - Ciclo activo: [CYCLE-002 — Tabarnia 2](cycles/CYCLE-002.md).
 - Hipótesis crítica: HYP-010, repetición entre temporadas en Tabarnia. Estado: `Priorizada`.
-- Incertidumbre principal: si la cohorte original vuelve a jugar otra temporada con fechas fijadas de antemano.
+- Incertidumbre principal: si la cohorte original vuelve a jugar de forma sostenida durante nueve días consecutivos.
 - Decisión que debe informar: si procede probar el paquete de temporada con otro anfitrión y dónde reducir primero el trabajo de organización.
 - Criterio principal: de los 14 invitados originales, al menos ocho completan seis de nueve desafíos o más, incluidos dos de los tres últimos. Cinco a siete deja el resultado inconcluso y cuatro o menos debilita la hipótesis.
-- Diseño: nueve ventanas de 24 horas en 15 días, con tres Flash, tres Alfabetos, dos Contrarrelojes y una Pirámide especial como cierre. Falta fijar la fecha de inicio y seleccionar las versiones.
+- Diseño: nueve ventanas consecutivas de 24 horas, con dos Flash, dos Alfabetos, dos Contrarrelojes, dos Tableros únicos y una Pirámide especial el día 5. Alfabeto, Tablero único y Flash ocupan los días 7, 8 y 9. Falta fijar la fecha de inicio y seleccionar las versiones. [Calendario](cycles/CYCLE-002.md#calendario-y-mezcla-de-modos).
+- Implementación pendiente: Zip en Contrarreloj, Tablero único con Escape y Regiones rectangulares, y Mini-sudoku 4×4 y Operaciones cruzadas en Pirámide. [Alcance técnico](cycles/CYCLE-002.md#implementación-pendiente-para-esta-mezcla).
 - Esfuerzo operativo: minutos activos por fase e intervenciones manuales de calendario. El registro distinguirá trabajo recurrente e inversión inicial.
 - Ciclo anterior: [CYCLE-001](cycles/CYCLE-001.md#15-decisión-estratégica) se cerró con `PERSEVERAR` el 2026-11-24. La participación observada fue 12/14 y HYP-001 quedó `Inconclusa` para el protocolo diario.
 - Responsable: Jose Moreno
@@ -19,7 +20,7 @@
 
 ## Próxima acción
 
-Seleccionar y registrar las nueve versiones candidatas en el [calendario de CYCLE-002](cycles/CYCLE-002.md#calendario-y-mezcla-de-modos).
+Confirmar el [alcance mínimo de las integraciones pendientes](cycles/CYCLE-002.md#implementación-pendiente-para-esta-mezcla) para poder seleccionar las nueve versiones candidatas.
 
 ## Lo que sabemos
 

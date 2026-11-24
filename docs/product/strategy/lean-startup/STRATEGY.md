@@ -6,7 +6,7 @@ Provisional. [CYCLE-001](cycles/CYCLE-001.md#15-decisión-estratégica) se cerr�
 
 ## Objetivo estratégico actual
 
-Comprobar si la cohorte de Tabarnia vuelve a jugar una segunda temporada asíncrona con el calendario fijado antes de empezar. Medir el trabajo de preparación y operación para decidir si procede probar el paquete con otro anfitrión y qué conviene simplificar primero.
+Comprobar si la cohorte de Tabarnia vuelve a jugar una segunda temporada asíncrona de nueve días consecutivos con el calendario fijado antes de empezar. Medir el trabajo de preparación y operación para decidir si procede probar el paquete con otro anfitrión y qué conviene simplificar primero.
 
 ## Segmento
 
@@ -28,7 +28,7 @@ Desafíos mentales breves, variados y comparables que permiten competir con amis
 
 ## Solución o vehículo actual
 
-Tabarnia 2 usará la sala privada y el ranking acumulado con un intento por participante y publicación. El diseño reparte nueve ventanas de 24 horas en 15 días, con tres Flash, tres Alfabetos, dos Contrarrelojes y una Pirámide especial. El organizador prepara el calendario completo desde el portal y usa plantillas y contenido revisado donde encajen. [Diseño de Tabarnia 2](cycles/CYCLE-002.md#calendario-y-mezcla-de-modos).
+Tabarnia 2 usará la sala privada y el ranking acumulado con un intento por participante y publicación. Habrá nueve ventanas consecutivas de 24 horas, con dos Flash y dos Alfabetos de cultura general, dos Contrarrelojes y dos Tableros únicos de lógica y una Pirámide especial de lógica el día 5. El organizador prepara el calendario completo desde el portal y usa plantillas y contenido revisado donde encajen. [Diseño de Tabarnia 2](cycles/CYCLE-002.md#calendario-y-mezcla-de-modos).
 
 El repositorio ya aporta Auth, salas, temporadas, publicaciones, intentos, rankings, programación
 local, portal privado y varios recorridos server-side sobre Supabase. La temporada de Tabarnia se
