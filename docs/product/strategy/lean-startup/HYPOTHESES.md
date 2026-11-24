@@ -4,7 +4,20 @@
 
 Las hipótesis representan creencias importantes que deben comprobarse antes de tomar decisiones relevantes. El detalle de cambios, evidencia y decisiones vive en su ciclo relacionado; aquí solo se mantiene el resumen actual.
 
-## Hipótesis activas
+## Hipótesis priorizada
+
+### HYP-010 — Repetición entre temporadas en Tabarnia
+
+- **Tipo:** Valor / uso
+- **Estado:** Priorizada
+- **Prioridad:** Alta
+- **Coste de estar equivocados:** Alto antes de invertir en más salas o en automatización.
+
+Al menos ocho de las 14 personas invitadas a Tabarnia 1 volverán a jugar de forma sostenida en Tabarnia 2. Cada una debe completar seis o más de los nueve desafíos, incluidos al menos dos de los tres últimos. La segunda temporada tendrá nueve ventanas de 24 horas repartidas en 15 días, con el calendario fijado antes de convocar a la cohorte original.
+
+**Evidencia y decisión.** Ocho o más apoyan la prueba con otro anfitrión, cinco a siete dejan el resultado inconcluso y cuatro o menos debilitan la hipótesis. Una desviación que impida interpretar la medición también lleva a un resultado inconcluso. Los minutos de operación son una medida auxiliar vinculada a HYP-005. [Contrato de CYCLE-002](cycles/CYCLE-002.md#7-métrica-y-umbrales).
+
+## Hipótesis evaluadas y exploratorias
 
 ### HYP-001 — Participación recurrente en una competición asíncrona entre amistades
 
@@ -80,9 +93,9 @@ La temporada se ejecutó en staging con la cohorte de 14 personas invitadas. `R 
 
 La hipótesis queda `Inconclusa` por calidad del experimento: el calendario se adaptó durante la ejecución (15 días con huecos en lugar de nueve ventanas consecutivas de 24 h) y el protocolo no se congeló. La cadencia diaria que exige la hipótesis no se probó. Lo observado es una señal fuerte de recurrencia en esta cohorte con cadencia flexible decidida por el organizador. Detalle en [CYCLE-001, secciones 12–14](cycles/CYCLE-001.md#12-resultados-observados).
 
-**Decisión que permitirá tomar**
+**Decisión registrada**
 
-Si la evidencia justifica PERSEVERAR con una segunda temporada del mismo loop social o si, tras revisar la calidad del experimento, hay que reconsiderar estrategia antes de ampliar el producto.
+Jose Moreno decidió `PERSEVERAR` con la segunda temporada el 2026-11-24. La clasificación de HYP-001 permanece `Inconclusa` para el protocolo diario. La repetición entre temporadas pasa a [HYP-010](#hyp-010--repetición-entre-temporadas-en-tabarnia). [Decisión de CYCLE-001](cycles/CYCLE-001.md#15-decisión-estratégica).
 
 **Ciclo relacionado**
 
@@ -144,7 +157,7 @@ Estas hipótesis amplían el mapa de incertidumbres del proyecto, pero no son hi
 - **Estado:** Borrador
 - **Hipótesis candidata:** una única persona responsable puede preparar, publicar, registrar y cerrar una temporada sin una carga que impida repetirla.
 - **Desconocido actual:** esfuerzo real, incidencias y capacidad de mantener la operación. CYCLE-001 aporta contexto: el organizador ajustó el calendario a mano según su disponibilidad. Los minutos y costes del expediente externo no se han registrado todavía.
-- **Ciclo relacionado:** Ninguno.
+- **Ciclo relacionado:** CYCLE-002 medirá el esfuerzo como contexto de HYP-010, sin evaluar todavía la viabilidad a escala. [Registro operativo](cycles/CYCLE-002.md#esfuerzo-de-organizar-la-temporada).
 
 ### HYP-006 — Fiabilidad técnica del vehículo mínimo
 
@@ -186,4 +199,4 @@ Estas hipótesis amplían el mapa de incertidumbres del proyecto, pero no son hi
 
 ## Hipótesis cerradas
 
-- Ninguna. HYP-001 tiene una clasificación `Inconclusa` en CYCLE-001, pero sigue abierta hasta registrar la decisión estratégica del ciclo.
+- HYP-001 se cerró en CYCLE-001 con resultado `Inconclusa` para el protocolo diario. HYP-010 plantea una pregunta distinta sobre repetición entre temporadas.

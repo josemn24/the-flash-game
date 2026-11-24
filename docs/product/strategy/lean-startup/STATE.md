@@ -4,26 +4,22 @@
 
 ## Resumen
 
-- Fase actual: Análisis del aprendizaje
-- Estado detallado: LEARNING_ANALYSIS; siguiente puerta DECISION.
-- Ciclo activo: `cycles/CYCLE-001.md`
-- Hipótesis crítica: HYP-001 — Participación recurrente en una competición asíncrona entre amistades. Estado: `Inconclusa` por calidad del experimento (2026-11-24).
-- Pregunta de aprendizaje: ¿Las 14 personas invitadas a Tabarnia mantienen participación voluntaria hasta el final de nueve desafíos diarios?
-- Decisión pendiente: ¿La evidencia justifica PERSEVERAR con una segunda temporada y qué fricción debe resolverse antes de ampliar?
-- Ejecución: temporada jugada en staging. Invitaciones enviadas el 2026-11-05; nueve desafíos entre `T0` = 2026-11-06 14:00 UTC y el 2026-11-21; corte `Tdatos` = 2026-11-22 14:00 UTC; seguimiento cualitativo hasta el 2026-11-28.
-- Resultado principal: `R = 12/14` (85,7 %). Once personas completaron los nueve desafíos, una completó siete, una completó cinco y una quedó sin intentos registrados. Numéricamente supera el umbral de apoyo (`R >= 8`).
-- Motivo de la inconclusión: el calendario se adaptó durante la ejecución según la reacción del grupo y la disponibilidad del organizador (15 días con huecos en lugar de nueve ventanas consecutivas de 24 h) y el protocolo `tabarnia-daily-v2` no se congeló. Según la sección 7.6 del ciclo, eso invalida la ejecución del protocolo. La cadencia diaria no se probó.
-- Fuente del contrato y de los resultados: [CYCLE-001](cycles/CYCLE-001.md), secciones 7 y 12–14.
-- Datos faltantes: resto del expediente externo (avisos, incidencias, minutos y costes) y cierre del seguimiento cualitativo. M09 y M10 siguen pendientes.
+- Fase actual: Diseño del experimento.
+- Estado detallado: `EXPERIMENT_DESIGN`. Siguiente puerta: `MVP_DESIGN`.
+- Ciclo activo: [CYCLE-002 — Tabarnia 2](cycles/CYCLE-002.md).
+- Hipótesis crítica: HYP-010, repetición entre temporadas en Tabarnia. Estado: `Priorizada`.
+- Incertidumbre principal: si la cohorte original vuelve a jugar otra temporada con fechas fijadas de antemano.
+- Decisión que debe informar: si procede probar el paquete de temporada con otro anfitrión y dónde reducir primero el trabajo de organización.
+- Criterio principal: de los 14 invitados originales, al menos ocho completan seis de nueve desafíos o más, incluidos dos de los tres últimos. Cinco a siete deja el resultado inconcluso y cuatro o menos debilita la hipótesis.
+- Diseño: nueve ventanas de 24 horas en 15 días, con tres Flash, tres Alfabetos, dos Contrarrelojes y una Pirámide especial como cierre. Falta fijar la fecha de inicio y seleccionar las versiones.
+- Esfuerzo operativo: minutos activos por fase e intervenciones manuales de calendario. El registro distinguirá trabajo recurrente e inversión inicial.
+- Ciclo anterior: [CYCLE-001](cycles/CYCLE-001.md#15-decisión-estratégica) se cerró con `PERSEVERAR` el 2026-11-24. La participación observada fue 12/14 y HYP-001 quedó `Inconclusa` para el protocolo diario.
 - Responsable: Jose Moreno
-- Próxima revisión: tras el cierre del seguimiento cualitativo el 2026-11-28.
-- Hipótesis secundaria candidata: HYP-002 — Preferencia y contribución de modos y formatos. Permanece en `Borrador` y recoge señales exploratorias de Telegram y staging.
-- Mapa ampliado: HYP-003 a HYP-009 cubren segmento, canal, operativa, técnica, legal o regulatoria, crecimiento e ingresos; todas permanecen en `Borrador`.
-- Conservación: expediente externo identificable del estudio durante 90 días desde el cierre del informe, con eliminación a cargo del responsable; resumen agregado conservado. Los datos automáticos y partidas oficiales mantienen su política vigente.
+- Hipótesis complementarias: HYP-002 (modos y formatos) y HYP-005 (viabilidad operativa) siguen en `Borrador` y aportan contexto.
 
 ## Próxima acción
 
-Completar las secciones 12 y 13 de CYCLE-001 con el seguimiento cualitativo hasta el 2026-11-28 y consignar qué avisos, incidencias, minutos y costes siguen sin verificarse.
+Seleccionar y registrar las nueve versiones candidatas en el [calendario de CYCLE-002](cycles/CYCLE-002.md#calendario-y-mezcla-de-modos).
 
 ## Lo que sabemos
 
@@ -43,7 +39,7 @@ Completar las secciones 12 y 13 de CYCLE-001 con el seguimiento cualitativo hast
 
 ### Inferencias
 
-- La alta recurrencia observada justifica considerar una segunda temporada con el mismo grupo y un calendario fijado antes de jugar. Su priorización queda pendiente de la decisión estratégica.
+- La recurrencia observada justifica probar una segunda temporada con el mismo grupo y un calendario fijado antes de jugar.
 - La cadencia puede ser una variable relevante para sostener la participación.
 
 ### Supuestos
@@ -53,7 +49,7 @@ Completar las secciones 12 y 13 de CYCLE-001 con el seguimiento cualitativo hast
 ## Lo que desconocemos
 
 - Si el grupo sostendría una cadencia diaria estricta de nueve días consecutivos.
-- Si la participación se repite en una segunda temporada, sin novedad, o en otros grupos.
+- Si la participación se repite en una segunda temporada o en otros grupos.
 - Qué parte del efecto se debe al juego, al ranking, a la cadencia, a los avisos o a la relación con el organizador.
 - Qué experiencias explican las preferencias declaradas y cuáles hacen que la gente quiera volver. Sigue abierto el seguimiento cualitativo.
 - La carga operativa real de la temporada, la fricción técnica, los requisitos legales o regulatorios, el crecimiento y los ingresos.
@@ -64,4 +60,4 @@ Completar las secciones 12 y 13 de CYCLE-001 con el seguimiento cualitativo hast
 - Máquina de estados: `STATE_MACHINE.md`
 - Estrategia: `STRATEGY.md`
 - Hipótesis: `HYPOTHESES.md`
-- Ciclo activo: `cycles/CYCLE-001.md`
+- Ciclo activo: `cycles/CYCLE-002.md`

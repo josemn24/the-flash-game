@@ -2,15 +2,14 @@
 
 ## Estado del ciclo
 
-- **Estado:** Ejecutado en staging con desviaciones del protocolo. Resultados registrados el 2026-11-24; HYP-001 clasificada como `Inconclusa` por calidad del experimento. Decisión estratégica pendiente.
-- **Estado de máquina:** LEARNING_ANALYSIS
-- **Siguiente puerta:** DECISION
-- **Condición de avance:** completar el análisis con el seguimiento cualitativo que cierra el 2026-11-28 y consignar qué partes del expediente externo siguen sin verificarse. La decisión estratégica se registrará después.
+- **Estado:** Cerrado el 2026-11-24 con decisión estratégica `PERSEVERAR`. HYP-001 queda `Inconclusa` para el protocolo diario.
+- **Estado de máquina al cierre:** NEXT_CYCLE
+- **Ciclo sucesor:** [CYCLE-002 — Tabarnia 2](CYCLE-002.md).
 - **Responsable:** Jose Moreno
 - **Versión del protocolo:** `tabarnia-daily-v2`, definida el 2026-10-24. No se registró su congelación antes de ejecutar (ver sección 10).
 - **Fecha de inicio:** invitaciones enviadas el 2026-11-05; `T0` = 2026-11-06 14:00 UTC.
 - **Corte principal:** `Tdatos` = 2026-11-22 14:00 UTC (cierre del desafío nueve + 24 h).
-- **Fecha de revisión:** Tras el seguimiento cualitativo, que termina el 2026-11-28.
+- **Seguimiento cualitativo:** hasta el 2026-11-28. Las aportaciones posteriores al cierre estratégico se pueden registrar con fecha y fuente en este expediente.
 
 > Nota de registro (2026-11-24): las secciones 1 a 9 conservan el diseño previo a la ejecución sin
 > reescribirlo. Lo ocurrido durante la temporada se registra en las secciones 10, 12, 13, 14 y 16.
@@ -467,21 +466,21 @@ La medición de finalización es fiable: no hay intentos en curso ni invalidados
 
 ## 15. Decisión estratégica
 
-**Decisión estratégica:** Pendiente — seleccionar una única opción: PERSEVERAR, PIVOTAR o PARAR.
+**Decisión estratégica:** `PERSEVERAR`, registrada por Jose Moreno el 2026-11-24.
 
-La decisión metodológica está registrada en la sección 14. La decisión estratégica se registrará al revisar el seguimiento cualitativo que cierra el 2026-11-28 y el expediente externo disponible.
+Se conserva la propuesta de competir entre amigos en una sala privada, con desafíos asíncronos y ranking de temporada. La inversión aprobada en este ciclo es preparar una segunda temporada de Tabarnia con la cohorte original. Primero se comprobará si vuelven a jugar y se medirá el esfuerzo de organizarla. La ampliación a otras salas se evaluará con ese resultado.
 
-Un resultado defectuoso no implica por sí solo pivotar o parar. Si se recomienda PIVOTAR, documentar la señal suficiente, el elemento que cambia, la visión conservada, la nueva hipótesis, el siguiente experimento y el criterio para volver a pivotar o parar.
+La decisión se apoya en la participación observada en staging. Doce de los 14 invitados cumplieron la regla de participación sostenida y once completaron los nueve desafíos. Hay confianza alta en ese recuento y evidencia limitada sobre la repetición entre temporadas y la transferencia a otros grupos. La clasificación metodológica de HYP-001 queda registrada en la sección 14.
+
+El responsable tomó la decisión con la evidencia disponible el 2026-11-24. El seguimiento cualitativo sigue abierto hasta el 2026-11-28 y el expediente operativo está incompleto. El esfuerzo de Tabarnia 1 se comparará solo si se puede documentar con un alcance comparable.
 
 ## 16. Próxima incertidumbre
 
-Candidata principal para la decisión pendiente: **¿vuelve a jugar la cohorte en una segunda temporada con un calendario realista fijado antes de empezar?** Esto permite observar repetición pasada la novedad. La cadencia diaria estricta queda como pregunta separada y ganaría prioridad si publicar a diario fuera una decisión de producto. El tiempo de preparación, programación y soporte aportaría contexto para evaluar qué trabajo merece automatizarse.
-
-Esta incertidumbre no abre un segundo ciclo activo. Se priorizará al registrar la decisión de la sección 15.
+**¿Vuelve a jugar la cohorte en una segunda temporada con un calendario realista fijado antes de empezar?** La hipótesis de repetición entre temporadas se documenta como HYP-010 en el único ciclo activo, [CYCLE-002](CYCLE-002.md). El esfuerzo operativo será una medida auxiliar para orientar la reutilización de contenido y la programación automática. La cadencia diaria estricta queda como pregunta separada.
 
 ## 17. Próxima acción
 
-Completar las secciones 12 y 13 con el seguimiento cualitativo hasta el 2026-11-28 y consignar qué avisos, incidencias, minutos y costes siguen sin verificarse.
+Seleccionar y registrar las nueve versiones candidatas en el calendario de [CYCLE-002](CYCLE-002.md#calendario-y-mezcla-de-modos).
 
 ## 18. Documentos que deben actualizarse
 
