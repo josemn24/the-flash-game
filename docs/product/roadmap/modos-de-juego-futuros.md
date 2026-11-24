@@ -99,6 +99,15 @@ Los primeros modos a validar deberían ser:
 
 Todos deberían validarse primero en modalidad asíncrona. Estos modos pueden reutilizar las etapas, preguntas, formatos y reglas de puntuación actuales con cambios relativamente contenidos. Duelo encaja como caso particular cuando una sala tiene dos jugadores. Narrativo también puede alinearse con salas si todos juegan la misma misión y puntúan individualmente. La primera versión prevista del modo es una misión lineal de cuatro o cinco minutos, tres movimientos, ocho pruebas y un cuaderno de campo que alimenta el cierre. Equipos, cooperación profunda, conquista o creación de retos tienen potencial, pero conviene validarlos cuando la sala todos contra todos y el ranking individual ya hayan demostrado tracción.
 
+## Ideas destacadas para explorar
+
+- [Duelo asíncrono](#duelo-asíncrono). Competir con un amigo y poder pedir revancha.
+- [Tablero único](#tablero-único). Resolver un solo puzle difícil en el menor tiempo posible.
+- [Movimientos mínimos](#movimientos-mínimos). Resolver el mismo puzle con menos acciones que los demás.
+
+Son propuestas de producto pendientes de validar. El alcance de la próxima temporada está en el
+[ciclo Lean activo](../strategy/lean-startup/STATE.md).
+
 ## Catálogo de modos
 
 ### Flash
@@ -136,6 +145,33 @@ partida conservando los puntos. Resolver toda la secuencia detiene el reloj y co
   consumir tiempo en esperas técnicas sin una política definida.
 
 Su documentación no compromete una fecha de entrega ni modifica la prioridad de la shortlist.
+
+#### Tablero único
+
+Variante candidata de Contrarreloj. Todos reciben un único tablero difícil de Queens o Conectar
+parejas en la misma ventana. Cada jugador tiene un intento oficial. El reloj empieza cuando el
+tablero está listo y se detiene al resolverlo. La partida tiene un límite de tiempo calibrado con
+pruebas previas y se puede revisar el progreso al vencer.
+
+- **Resultado.** La clasificación del desafío ordena los tableros resueltos por tiempo. Si se
+  integra en una temporada, queda por definir una escala de Flash Points por tiempo con un mínimo
+  para quienes lo resuelvan. El [contrato vigente de Contrarreloj](../../current/domain/contrarreloj.md#propósito-y-alcance)
+  admite secuencias de 2 a 20 tableros.
+- **Primer ensayo.** Ofrecer un Conectar parejas curado como prueba voluntaria y cronometrada.
+  Registrar cuántos lo resuelven, cuánto tardan y cuántos eligen jugar otro tablero difícil.
+
+### Movimientos mínimos
+
+Todos reciben la misma posición inicial de un
+[rompecabezas deslizante](../../content/formatos-de-juego.md#rompecabezas-deslizante--implementada).
+Entre quienes lo resuelven, gana quien lo haga con menos desplazamientos. A igualdad de
+movimientos, gana el menor tiempo. La regla permite dedicar tiempo a planear el recorrido antes
+de mover una ficha.
+
+- **Por definir.** Qué acciones cuentan como movimiento y cómo se registra un deshacer. La
+  posición de partida ha de ser resoluble y el recuento debe ser equivalente con teclado y táctil.
+- **Primer ensayo.** Usar un deslizante 3 × 3 de práctica y comparar las soluciones por
+  movimientos y tiempo. Observar si la gente entiende el recuento y vuelve a intentarlo para mejorar su marca.
 
 ### Supervivencia
 
@@ -211,8 +247,19 @@ Dos jugadores reciben retos equivalentes y compiten por puntuación, precisión 
 - **Ritmo:** asíncrono / tiempo real.
 - **Cómo funciona:** ambos jugadores completan la misma ronda o una ronda equivalente; gana quien obtenga mejor resultado total.
 - **Encaje con The Flash:** puede aparecer sin sistema propio cuando una sala tiene exactamente dos jugadores.
-- **V1 validable:** tratarlo como sala de dos participantes con el mismo ranking individual y sin reglas adicionales.
+- **V1 validable:** [Duelo asíncrono](#duelo-asíncrono) en una sala de dos participantes.
 - **Riesgos:** si evoluciona a tiempo real exigirá sincronización, latencia y resolución de desconexiones.
+
+#### Duelo asíncrono
+
+Dos amigos juegan las mismas tres pruebas en una ventana compartida. Cada uno puede jugar cuando
+le venga bien. El marcador se revela cuando han terminado ambos o cuando cierra la ventana. Queda
+por decidir cómo se muestra el resultado cuando juega una sola persona.
+
+- **Primer ensayo.** Formar parejas voluntarias y usar un desafío existente con una ventana
+  común. Compartir el marcador al cierre y ofrecer una revancha opcional.
+- **Señal de interés.** Registrar cuántas parejas completan el duelo por ambas partes y cuántas
+  llegan a jugar la revancha.
 
 ### Cooperativo
 
